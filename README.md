@@ -14,6 +14,7 @@ A modern, real-time HR masterdata management platform built with Next.js, TypeSc
 ## Technology Stack
 
 ### Frontend
+
 - **Next.js 16.0** - React meta-framework with App Router
 - **TypeScript 5.9** - Type-safe development with strict mode
 - **React 19.2** - UI component library
@@ -21,11 +22,13 @@ A modern, real-time HR masterdata management platform built with Next.js, TypeSc
 - **shadcn/ui** - Accessible component library (to be added in later stories)
 
 ### Backend
+
 - **Next.js API Routes** - Serverless API endpoints
 - **Supabase** - PostgreSQL database with real-time subscriptions (to be configured in Story 1.2)
 - **Row-Level Security (RLS)** - Database-level access control
 
 ### Development Tools
+
 - **pnpm 10.19** - Fast, disk-efficient package manager
 - **ESLint 9.38** - Code linting with Next.js configuration
 - **Prettier 3.6** - Code formatting
@@ -33,6 +36,7 @@ A modern, real-time HR masterdata management platform built with Next.js, TypeSc
 - **React Testing Library 16.3** - Component testing utilities
 
 ### Deployment
+
 - **Vercel** - Frontend and API hosting (to be configured in Task 8)
 - **GitHub Actions** - CI/CD pipeline (optional)
 
@@ -86,16 +90,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Development Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server with hot reload |
-| `pnpm build` | Build production bundle |
-| `pnpm start` | Run production server locally |
-| `pnpm lint` | Run ESLint to check code quality |
+| Command           | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| `pnpm dev`        | Start development server with hot reload       |
+| `pnpm build`      | Build production bundle                        |
+| `pnpm start`      | Run production server locally                  |
+| `pnpm lint`       | Run ESLint to check code quality               |
 | `pnpm type-check` | Run TypeScript compiler without emitting files |
-| `pnpm test` | Run unit tests with Vitest |
-| `pnpm test:watch` | Run tests in watch mode |
-| `pnpm format` | Format code with Prettier |
+| `pnpm test`       | Run unit tests with Vitest                     |
+| `pnpm test:watch` | Run tests in watch mode                        |
+| `pnpm format`     | Format code with Prettier                      |
 
 ## Project Structure
 
@@ -144,6 +148,7 @@ Or connect your GitHub repository to Vercel for automatic deployments on push to
 ## Contributing
 
 This is a private project. For development guidelines, see:
+
 - [Coding Standards](docs/architecture/coding-standards.md)
 - [Development Workflow](docs/architecture/development-workflow.md)
 - [Tech Stack](docs/architecture/tech-stack.md)
@@ -151,4 +156,3 @@ This is a private project. For development guidelines, see:
 ## License
 
 Proprietary - All rights reserved
-
