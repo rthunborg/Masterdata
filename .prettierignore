@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+out/
+build/
+
+# Misc
+pnpm-lock.yaml
+package-lock.json
