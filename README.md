@@ -24,7 +24,7 @@ A modern, real-time HR masterdata management platform built with Next.js, TypeSc
 ### Backend
 
 - **Next.js API Routes** - Serverless API endpoints
-- **Supabase** - PostgreSQL database with real-time subscriptions (to be configured in Story 1.2)
+- **Supabase** - PostgreSQL database with real-time subscriptions and authentication
 - **Row-Level Security (RLS)** - Database-level access control
 
 ### Development Tools
@@ -63,24 +63,60 @@ cd hr-masterdata
 pnpm install
 ```
 
-### 3. Configure Environment Variables
+### 3. Set Up Supabase Project
 
-Copy the environment template and populate with your values:
+#### Create Supabase Project
+
+1. Go to [https://supabase.com/dashboard](https://supabase.com/dashboard) and sign in (or create an account)
+2. Click "New Project"
+3. Fill in project details:
+   - Name: `hr-masterdata` (or your preferred name)
+   - Database Password: Generate a strong password (save this securely)
+   - Region: Select region closest to your users
+4. Wait for database provisioning to complete (~2 minutes)
+
+#### Get Supabase Credentials
+
+1. Navigate to **Project Settings** > **API**
+2. Copy the following values:
+   - **Project URL** → Use for `NEXT_PUBLIC_SUPABASE_URL`
+   - **anon/public** key → Use for `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **service_role** key → Use for `SUPABASE_SERVICE_ROLE_KEY` (keep secret!)
+
+#### Enable Email Authentication
+
+1. Navigate to **Authentication** > **Providers**
+2. Ensure **Email** provider is enabled
+3. For development: Disable email confirmation (can enable for production)
+
+#### Run Database Migrations
+
+1. Navigate to **SQL Editor** in Supabase Dashboard
+2. Execute migrations in order (copy/paste content from `supabase/migrations/` directory):
+   - `20250126000000_initial_schema.sql` - Core tables
+   - `20250126000001_external_party_tables.sql` - Party data tables
+   - `20250126000002_rls_policies.sql` - Security policies
+   - `20250126000003_seed_column_config.sql` - Initial column configurations
+3. Verify execution using **Table Editor** to confirm all tables exist
+
+### 4. Configure Environment Variables
+
+Copy the environment template and populate with your Supabase credentials:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your Supabase credentials (will be provided in Story 1.2):
+Edit `.env.local` with your Supabase credentials from Step 3:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### 4. Run Development Server
+### 5. Run Development Server
 
 ```bash
 pnpm dev
@@ -109,16 +145,21 @@ hr-masterdata/
 │   ├── app/                 # Next.js App Router (routes and pages)
 │   │   ├── layout.tsx       # Root layout
 │   │   ├── page.tsx         # Home page
-│   │   └── api/             # API routes (to be added)
+│   │   └── api/             # API routes
 │   ├── components/          # React components (to be added)
 │   │   └── ui/              # shadcn/ui components
-│   ├── lib/                 # Shared libraries (to be added)
+│   ├── lib/                 # Shared libraries
+│   │   ├── supabase/        # Supabase client configuration
 │   │   ├── types/           # TypeScript type definitions
-│   │   ├── services/        # Frontend API services
-│   │   ├── server/          # Server-only code
-│   │   └── utils/           # Utility functions
+│   │   ├── services/        # Frontend API services (to be added)
+│   │   ├── server/          # Server-only code (to be added)
+│   │   └── utils/           # Utility functions (to be added)
 │   └── styles/
 │       └── globals.css      # Global styles and Tailwind imports
+├── supabase/
+│   ├── migrations/          # Database migration files
+│   ├── seed.sql             # Development seed data
+│   └── config.toml          # Supabase configuration
 ├── public/                  # Static assets
 ├── tests/                   # Test files (to be added)
 │   ├── unit/                # Unit tests
@@ -130,6 +171,30 @@ hr-masterdata/
 ├── vitest.config.ts         # Vitest test configuration
 └── package.json             # Dependencies and scripts
 ```
+
+## Database Schema
+
+The application uses PostgreSQL (via Supabase) with the following core tables:
+
+- **users** - Application users with role-based access control
+- **employees** - Employee masterdata (HR-managed)
+- **column_config** - Dynamic column definitions and permissions
+- **important_dates** - Shared operational calendar
+- **sodexo_data**, **omc_data**, **payroll_data**, **toplux_data** - External party custom data (JSONB)
+
+For detailed schema documentation, see [docs/architecture/database-schema.md](docs/architecture/database-schema.md).
+
+### Migration Workflow
+
+**Development (Manual Migrations via Supabase Dashboard):**
+
+1. Create migration file in `supabase/migrations/` with format: `YYYYMMDDHHMMSS_description.sql`
+2. Copy SQL content to Supabase Dashboard > SQL Editor
+3. Execute migration
+4. Commit migration file to Git
+
+**Production:**
+Migrations are currently run manually. Future stories may implement Supabase CLI for automated migrations.
 
 ## Deployment
 
