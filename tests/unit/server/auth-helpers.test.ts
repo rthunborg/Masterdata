@@ -1,28 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockUsers } from "../../utils/role-test-utils";
 import { UserRole } from "@/lib/types/user";
-
-// Mock getUserFromSession first
-vi.mock("@/lib/server/auth", async () => {
-  const actual = await vi.importActual("@/lib/server/auth");
-  return {
-    ...actual,
-    getUserFromSession: vi.fn(),
-  };
-});
-
-// Import after mocking
-const { 
-  requireAuthAPI, 
-  requireRoleAPI, 
+import {
+  requireAuthAPI,
+  requireRoleAPI,
   requireHRAdminAPI,
   createUnauthorizedResponse,
   createForbiddenResponse,
   createErrorResponse,
-  getUserFromSession
-} = await import("@/lib/server/auth");
+} from "@/lib/server/auth";
 
-const mockGetUserFromSession = vi.mocked(getUserFromSession);
+// Mock the Supabase client
+const mockSupabaseClient = {
+  auth: {
+    getSession: vi.fn(),
+  },
+  from: vi.fn(),
+};
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(() => mockSupabaseClient),
+}));
 
 describe("Auth Helper Functions", () => {
 
@@ -32,15 +30,44 @@ describe("Auth Helper Functions", () => {
 
   describe("requireAuthAPI", () => {
     it("should return user when authenticated", async () => {
-      mockGetUserFromSession.mockResolvedValue(mockUsers.hrAdmin);
+      // Mock Supabase session
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
+        error: null,
+      });
+      
+      // Mock user data query
+      mockSupabaseClient.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: mockUsers.hrAdmin.id,
+                email: mockUsers.hrAdmin.email,
+                role: mockUsers.hrAdmin.role,
+                is_active: true,
+                created_at: mockUsers.hrAdmin.created_at,
+              },
+              error: null,
+            }),
+          }),
+        }),
+      });
 
       const result = await requireAuthAPI();
 
-      expect(result).toEqual(mockUsers.hrAdmin);
+      expect(result).toMatchObject({
+        id: mockUsers.hrAdmin.id,
+        email: mockUsers.hrAdmin.email,
+        role: mockUsers.hrAdmin.role,
+      });
     });
 
     it("should throw error when not authenticated", async () => {
-      mockGetUserFromSession.mockResolvedValue(null);
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: null },
+        error: null,
+      });
 
       await expect(requireAuthAPI()).rejects.toThrow("Authentication required");
     });
@@ -48,45 +75,155 @@ describe("Auth Helper Functions", () => {
 
   describe("requireRoleAPI", () => {
     it("should return user when role is allowed", async () => {
-      mockGetUserFromSession.mockResolvedValue(mockUsers.hrAdmin);
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
+        error: null,
+      });
       
+      mockSupabaseClient.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: mockUsers.hrAdmin.id,
+                email: mockUsers.hrAdmin.email,
+                role: mockUsers.hrAdmin.role,
+                is_active: true,
+                created_at: mockUsers.hrAdmin.created_at,
+              },
+              error: null,
+            }),
+          }),
+        }),
+      });
+
       const result = await requireRoleAPI([UserRole.HR_ADMIN]);
 
-      expect(result).toEqual(mockUsers.hrAdmin);
+      expect(result).toMatchObject({
+        id: mockUsers.hrAdmin.id,
+        role: mockUsers.hrAdmin.role,
+      });
     });
 
     it("should throw error when role is not allowed", async () => {
-      mockGetUserFromSession.mockResolvedValue(mockUsers.sodexo);
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: mockUsers.sodexo.auth_id } } },
+        error: null,
+      });
+      
+      mockSupabaseClient.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: mockUsers.sodexo.id,
+                email: mockUsers.sodexo.email,
+                role: mockUsers.sodexo.role,
+                is_active: true,
+                created_at: mockUsers.sodexo.created_at,
+              },
+              error: null,
+            }),
+          }),
+        }),
+      });
 
       await expect(requireRoleAPI([UserRole.HR_ADMIN])).rejects.toThrow("Insufficient permissions");
     });
 
     it("should allow multiple roles", async () => {
-      mockGetUserFromSession.mockResolvedValue(mockUsers.sodexo);
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: mockUsers.sodexo.auth_id } } },
+        error: null,
+      });
+      
+      mockSupabaseClient.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: mockUsers.sodexo.id,
+                email: mockUsers.sodexo.email,
+                role: mockUsers.sodexo.role,
+                is_active: true,
+                created_at: mockUsers.sodexo.created_at,
+              },
+              error: null,
+            }),
+          }),
+        }),
+      });
 
       const result = await requireRoleAPI([UserRole.SODEXO, UserRole.OMC]);
 
-      expect(result).toEqual(mockUsers.sodexo);
+      expect(result).toMatchObject({
+        id: mockUsers.sodexo.id,
+        role: mockUsers.sodexo.role,
+      });
     });
 
     it("should throw error when not authenticated", async () => {
-      mockGetUserFromSession.mockResolvedValue(null);
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: null },
+        error: null,
+      });
 
       await expect(requireRoleAPI([UserRole.HR_ADMIN])).rejects.toThrow("Authentication required");
     });
-  });
-
-  describe("requireHRAdminAPI", () => {
+  });  describe("requireHRAdminAPI", () => {
     it("should return user when user is HR admin", async () => {
-      mockGetUserFromSession.mockResolvedValue(mockUsers.hrAdmin);
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
+        error: null,
+      });
+      
+      mockSupabaseClient.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: mockUsers.hrAdmin.id,
+                email: mockUsers.hrAdmin.email,
+                role: mockUsers.hrAdmin.role,
+                is_active: true,
+                created_at: mockUsers.hrAdmin.created_at,
+              },
+              error: null,
+            }),
+          }),
+        }),
+      });
 
       const result = await requireHRAdminAPI();
 
-      expect(result).toEqual(mockUsers.hrAdmin);
+      expect(result).toMatchObject({
+        id: mockUsers.hrAdmin.id,
+        role: mockUsers.hrAdmin.role,
+      });
     });
 
     it("should throw error when user is not HR admin", async () => {
-      mockGetUserFromSession.mockResolvedValue(mockUsers.sodexo);
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: mockUsers.sodexo.auth_id } } },
+        error: null,
+      });
+      
+      mockSupabaseClient.from.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                id: mockUsers.sodexo.id,
+                email: mockUsers.sodexo.email,
+                role: mockUsers.sodexo.role,
+                is_active: true,
+                created_at: mockUsers.sodexo.created_at,
+              },
+              error: null,
+            }),
+          }),
+        }),
+      });
 
       await expect(requireHRAdminAPI()).rejects.toThrow("Insufficient permissions");
     });

@@ -392,15 +392,74 @@ export async function GET() {
 
 This project is configured for deployment on Vercel.
 
-**Production URL:** (To be added after deployment)
+**Production URL:** (To be configured)  
+**System Health:** [Health Check](https://your-app.vercel.app/api/health) (To be configured)  
+**Deployment Status:** [![Deployment Status](https://img.shields.io/badge/status-pending-yellow)](https://vercel.com)
 
 ### Deploy to Vercel
 
-1. Install Vercel CLI: `pnpm add -g vercel`
-2. Link project: `vercel link`
-3. Deploy: `vercel --prod`
+#### Prerequisites
 
-Or connect your GitHub repository to Vercel for automatic deployments on push to `main`.
+- GitHub repository connected to Vercel
+- Supabase project created and configured
+
+#### Deployment Steps
+
+1. **Connect Repository to Vercel**
+   - Visit [https://vercel.com/new](https://vercel.com/new)
+   - Import your GitHub repository
+   - Select the `hr-masterdata` directory as the root
+
+2. **Configure Environment Variables**
+   - In Vercel Project Settings > Environment Variables, add:
+     ```
+     NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+     ```
+   - Add for all environments (Production, Preview, Development)
+
+3. **Configure Build Settings**
+   - Framework Preset: **Next.js** (auto-detected)
+   - Build Command: `pnpm build` (auto-configured)
+   - Output Directory: `.next` (default)
+   - Install Command: `pnpm install --frozen-lockfile`
+
+4. **Deploy**
+   - Click **Deploy**
+   - Wait for build to complete (~2-3 minutes)
+   - Access your production URL
+
+5. **Enable Automatic Deployments**
+   - Push to `main` branch triggers production deployment
+   - Pull requests trigger preview deployments
+
+#### Verify Deployment
+
+After deployment completes, verify the following:
+
+1. **Landing Page**: Visit production URL - should display landing page
+2. **Health Check**: Visit `/api/health` - should return JSON: `{"status":"ok","version":"0.1.0","timestamp":"..."}`
+3. **Login Flow**: Navigate to `/login` - should display login page
+4. **Authentication**: Login with test credentials - should redirect to dashboard
+5. **Protected Routes**: Try accessing `/admin/*` without HR admin role - should show 403 page
+
+#### Troubleshooting
+
+- **Build Failures**: Check Vercel build logs for TypeScript or dependency errors
+- **Runtime Errors**: Check Vercel Function Logs in dashboard
+- **Authentication Issues**: Verify environment variables are set correctly
+- **Database Connection**: Ensure Supabase project is running and accessible
+
+### Local Production Build
+
+Test production build locally before deploying:
+
+```bash
+pnpm build
+pnpm start
+```
+
+Open [http://localhost:3000](http://localhost:3000) to test the production build.
 
 ## Contributing
 
