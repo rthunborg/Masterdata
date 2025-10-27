@@ -5,11 +5,59 @@ A modern, real-time HR masterdata management platform built with Next.js, TypeSc
 ## Features
 
 - **Real-time Employee Data Management** - Create, read, update, and archive employee records with instant updates
-- **Role-Based Access Control** - HR Admin, External Party, and Read-Only roles with granular permissions
+- **Role-Based Access Control** - Middleware and API-level protection with five distinct user roles
+- **Protected Routes** - Admin panel accessible only to HR administrators with automatic role validation
 - **Custom Column Configuration** - External parties can define custom fields for employee tracking
 - **Important Dates Calendar** - Track birthdays, anniversaries, and custom milestones
 - **CSV Import/Export** - Bulk data operations for efficient data management
 - **Responsive Design** - Mobile-friendly interface built with Tailwind CSS and shadcn/ui
+
+## Role-Based Access Control
+
+The application implements comprehensive role-based access control at both the route and API levels.
+
+### User Roles
+
+| Role         | Description            | Access Level                                                                   |
+| ------------ | ---------------------- | ------------------------------------------------------------------------------ |
+| **hr_admin** | HR Administrator       | Full system access - can manage users, employees, and all configurations       |
+| **sodexo**   | Sodexo External Party  | Limited access - can view employees and manage Sodexo-specific custom columns  |
+| **omc**      | OMC External Party     | Limited access - can view employees and manage OMC-specific custom columns     |
+| **payroll**  | Payroll External Party | Limited access - can view employees and manage payroll-specific custom columns |
+| **toplux**   | Toplux External Party  | Limited access - can view employees and manage Toplux-specific custom columns  |
+
+### Route Protection
+
+| Route          | Access                                              | Redirect on Unauthorized                           |
+| -------------- | --------------------------------------------------- | -------------------------------------------------- |
+| `/`            | Public                                              | -                                                  |
+| `/login`       | Public (redirects to `/dashboard` if authenticated) | -                                                  |
+| `/dashboard/*` | All authenticated users                             | `/login`                                           |
+| `/admin/*`     | HR Admin only                                       | `/403` for wrong role, `/login` if unauthenticated |
+| `/403`         | Public (error page)                                 | -                                                  |
+
+### API Endpoint Protection
+
+| Endpoint           | Method    | Required Role          | Error Response                            |
+| ------------------ | --------- | ---------------------- | ----------------------------------------- |
+| `/api/profile`     | GET       | Any authenticated user | 401 if unauthenticated                    |
+| `/api/admin/users` | GET, POST | HR Admin only          | 401 if unauthenticated, 403 if wrong role |
+| `/api/auth/login`  | POST      | Public                 | -                                         |
+| `/api/auth/logout` | POST      | Any authenticated user | -                                         |
+
+### Authentication Flow
+
+1. **Login**: Users authenticate with email/password via Supabase Auth
+2. **Session Management**: 8-hour session timeout with automatic refresh
+3. **Role Validation**: User role fetched from `users` table and validated on each request
+4. **Middleware Protection**: Next.js proxy function validates routes before page render
+5. **API Protection**: Server-side helpers validate authentication and roles for API endpoints
+
+### Error Handling
+
+- **401 Unauthorized**: Authentication required (redirects to `/login`)
+- **403 Forbidden**: Insufficient role permissions (displays `/403` page)
+- **User-friendly Error Messages**: Clear explanations and next steps for access violations
 
 ## Technology Stack
 
@@ -195,6 +243,150 @@ For detailed schema documentation, see [docs/architecture/database-schema.md](do
 
 **Production:**
 Migrations are currently run manually. Future stories may implement Supabase CLI for automated migrations.
+
+## API Authentication
+
+All API endpoints require proper authentication and role validation.
+
+### Authentication Headers
+
+The application uses Supabase Auth for session management. When making API requests:
+
+1. **Browser Requests**: Cookies are automatically included for authenticated users
+2. **External API Calls**: Include the Authorization header with a valid JWT token
+
+```bash
+Authorization: Bearer <jwt-token>
+```
+
+### Testing API Endpoints with curl
+
+#### Profile Endpoint (Any Authenticated User)
+
+```bash
+# Success (authenticated user)
+curl -X GET http://localhost:3000/api/profile \
+  -H "Cookie: sb-access-token=<valid-jwt-token>"
+
+# Error Response (unauthenticated)
+# HTTP 401: {"error":{"code":"UNAUTHORIZED","message":"Authentication required"}}
+```
+
+#### Admin Endpoints (HR Admin Only)
+
+```bash
+# Success (HR Admin)
+curl -X GET http://localhost:3000/api/admin/users \
+  -H "Cookie: sb-access-token=<hr-admin-jwt-token>"
+
+# Error Response (external party user)
+# HTTP 403: {"error":{"code":"FORBIDDEN","message":"Insufficient permissions"}}
+
+# Error Response (unauthenticated)
+# HTTP 401: {"error":{"code":"UNAUTHORIZED","message":"Authentication required"}}
+```
+
+### API Response Format
+
+All API endpoints follow a consistent response format:
+
+#### Success Response
+
+```json
+{
+  "data": {
+    // Response data
+  }
+}
+```
+
+#### Error Response
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message"
+  }
+}
+```
+
+### Common Error Codes
+
+| Code               | Status | Description                                         |
+| ------------------ | ------ | --------------------------------------------------- |
+| `UNAUTHORIZED`     | 401    | Authentication required                             |
+| `FORBIDDEN`        | 403    | Insufficient permissions for the requested resource |
+| `VALIDATION_ERROR` | 400    | Invalid input data                                  |
+| `INTERNAL_ERROR`   | 500    | Unexpected server error                             |
+
+## Developer Guide: Adding Protected Routes
+
+### Adding New Admin Routes
+
+1. Create route file under `/src/app/admin/`
+2. Routes are automatically protected by the admin layout
+3. Only HR Admin users can access these routes
+
+```typescript
+// src/app/admin/new-feature/page.tsx
+export default function NewAdminFeature() {
+  // This route is automatically protected
+  return <div>Admin-only content</div>;
+}
+```
+
+### Adding New API Endpoints
+
+1. Use the provided auth helpers for role validation:
+
+```typescript
+// src/app/api/admin/new-endpoint/route.ts
+import { requireHRAdminAPI, createErrorResponse } from '@/lib/server/auth';
+
+export async function GET() {
+  try {
+    // Require HR Admin role
+    const user = await requireHRAdminAPI();
+
+    // Your endpoint logic here
+    return NextResponse.json({ data: { message: 'Success' } });
+  } catch (error) {
+    return createErrorResponse(error);
+  }
+}
+```
+
+2. For endpoints requiring any authenticated user:
+
+```typescript
+import { requireAuthAPI, createErrorResponse } from '@/lib/server/auth';
+
+export async function GET() {
+  try {
+    const user = await requireAuthAPI();
+    // Endpoint logic
+  } catch (error) {
+    return createErrorResponse(error);
+  }
+}
+```
+
+3. For endpoints requiring specific roles:
+
+```typescript
+import { requireRoleAPI, createErrorResponse } from '@/lib/server/auth';
+import { UserRole } from '@/lib/types/user';
+
+export async function GET() {
+  try {
+    const user = await requireRoleAPI([UserRole.HR_ADMIN, UserRole.SODEXO]);
+    // Endpoint logic
+  } catch (error) {
+    return createErrorResponse(error);
+  }
+}
+```
 
 ## Deployment
 
