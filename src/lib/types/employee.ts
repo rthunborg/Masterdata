@@ -16,6 +16,7 @@ export interface Employee {
   comments: string | null;
   created_at: string;
   updated_at: string;
+  customData?: Record<string, string | number | boolean | null>; // Custom column data from party tables
 }
 
 export type EmployeeFormData = Omit<

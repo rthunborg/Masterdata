@@ -1,0 +1,279 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  createCustomColumnSchema,
+  type CreateCustomColumnInput,
+} from "@/lib/validation/column-validation";
+import { columnConfigService } from "@/lib/services/column-config-service";
+import { useUIStore } from "@/lib/store/ui-store";
+import { useColumns } from "@/lib/hooks/use-columns";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+/**
+ * Add Column Modal Component
+ * Allows external party users to create custom columns
+ */
+export function AddColumnModal() {
+  const { modals, closeModal } = useUIStore();
+  const { columns, refetch } = useColumns();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+
+  // Extract existing categories from columns
+  const existingCategories = Array.from(
+    new Set(
+      columns
+        .map((col) => col.category)
+        .filter((cat): cat is string => cat !== null && cat !== "")
+    )
+  ).sort();
+
+  const form = useForm<CreateCustomColumnInput>({
+    resolver: zodResolver(createCustomColumnSchema),
+    defaultValues: {
+      column_name: "",
+      column_type: "text",
+      category: "",
+    },
+  });
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!modals.addColumn) {
+      form.reset();
+    }
+  }, [modals.addColumn, form]);
+
+  const onSubmit = async (data: CreateCustomColumnInput) => {
+    // Client-side duplicate check
+    const existingColumnNames = columns.map((col) =>
+      col.column_name.toLowerCase()
+    );
+    if (existingColumnNames.includes(data.column_name.toLowerCase())) {
+      form.setError("column_name", {
+        type: "manual",
+        message: "Column name already exists. Please choose a different name.",
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // Remove category if empty string
+      const submitData = {
+        ...data,
+        category: data.category && data.category.trim() ? data.category : undefined,
+      };
+
+      const newColumn = await columnConfigService.createCustomColumn(submitData);
+
+      toast.success(`Column '${newColumn.column_name}' created successfully`);
+
+      // Refetch columns to update the table
+      refetch();
+
+      // Close modal and reset form
+      closeModal("addColumn");
+      form.reset();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to create column";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog
+      open={modals.addColumn}
+      onOpenChange={() => closeModal("addColumn")}
+    >
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Add Custom Column</DialogTitle>
+          <DialogDescription>
+            Create a new custom column to track additional employee data specific
+            to your department&apos;s needs.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Column Name */}
+            <FormField
+              control={form.control}
+              name="column_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Column Name *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., Recruitment Team"
+                      {...field}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Column Type */}
+            <FormField
+              control={form.control}
+              name="column_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Column Type *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isSubmitting}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="text">Text</SelectItem>
+                      <SelectItem value="number">Number</SelectItem>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="boolean">Boolean</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Category (Combobox with autocomplete) */}
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Category (Optional)</FormLabel>
+                  <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={categoryOpen}
+                          className={cn(
+                            "justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                          disabled={isSubmitting}
+                        >
+                          {field.value || "Select or type a category"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] p-0">
+                      <Command>
+                        <CommandInput
+                          placeholder="Search or type new category..."
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
+                        <CommandEmpty>
+                          Press Enter to create &quot;{field.value}&quot;
+                        </CommandEmpty>
+                        {existingCategories.length > 0 && (
+                          <CommandGroup heading="Existing Categories">
+                            {existingCategories.map((category) => (
+                              <CommandItem
+                                key={category}
+                                value={category}
+                                onSelect={() => {
+                                  field.onChange(category);
+                                  setCategoryOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value === category
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {category}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => closeModal("addColumn")}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create Column"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
