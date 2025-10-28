@@ -9,8 +9,8 @@ Enable HR Admin to create, read, update, and archive employee masterdata records
 **Epic 3: Role-Based Column Visibility & External Party Views**  
 Implement dynamic column permissions, role-based table views, and enable external parties to view their assigned masterdata columns in read-only mode.
 
-**Epic 4: External Party Custom Columns & Real-Time Sync**  
-Enable external parties to create and edit their own custom columns with category organization, and implement real-time data synchronization across all user views.
+**Epic 4: External Party Custom Columns, Real-Time Sync & Change Notifications**  
+Enable external parties to create and edit their own custom columns with category organization, implement real-time data synchronization across all user views, and provide visual notifications when changes affect the user's current filtered/sorted view.
 
 **Epic 5: Admin Configuration & Role Preview**  
 Provide HR Admin with comprehensive column permission management, user account management, and "View As" role preview capabilities.

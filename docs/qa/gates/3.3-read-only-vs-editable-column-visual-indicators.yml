@@ -1,0 +1,50 @@
+schema: 1
+story: "3.3"
+story_title: "Read-Only vs Editable Column Visual Indicators"
+gate: PASS
+status_reason: "Excellent implementation with comprehensive testing, proper accessibility, and future-proof refactoring. All acceptance criteria met with high quality."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-10-28T14:26:00Z"
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 95
+
+evidence:
+  tests_reviewed: 23
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: "Permission checks correctly delegate to role_permissions data structure. Refactored to remove redundant isHRAdmin check, making security enforcement cleaner and more maintainable."
+  performance:
+    status: PASS
+    notes: "CSS-only visual changes with no performance impact. Permission checks memoized in useMemo. Tooltip rendered on-demand only."
+  reliability:
+    status: PASS
+    notes: "Proper error handling with safe fallback to read-only. Backward compatibility maintained with canEdit defaulting to true."
+  maintainability:
+    status: PASS
+    notes: "Clean component separation. Well-documented code with clear comments. Future-proof design ready for Epic 4 custom columns."
+
+recommendations:
+  immediate: []
+  future:
+    - action: "Consider extracting permission logic into a custom hook (useColumnPermissions) in Epic 4 when custom columns are added"
+      refs: ["src/components/dashboard/employee-table.tsx:197-203"]
+    - action: "The skipped tooltip auto-dismiss test could be implemented with better Radix UI + fake timer setup, but not critical"
+      refs: ["tests/unit/components/editable-cell.test.tsx:66"]
+
+refactoring_performed:
+  - file: "src/components/dashboard/employee-table.tsx"
+    lines: "197-203"
+    change: "Simplified permission logic from 'isHRAdmin && config.role_permissions[user?.role]?.edit' to just 'config.role_permissions[userRole]?.edit ?? false'"
+    why: "The original logic was redundant and would block Epic 4's external party custom column editing. The role_permissions data structure is the single source of truth for edit permissions."
+    how: "Removed isHRAdmin guard and rely purely on role_permissions configuration. Added clarifying comments about current (Epic 3) vs future (Epic 4) behavior. Added nullish coalescing for safety."
+    impact: "Makes code future-proof for Epic 4. Tests all still pass. No behavioral change for current Epic 3 scope since masterdata columns have edit:false for all non-HR-Admin roles."

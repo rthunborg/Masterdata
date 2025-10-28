@@ -1,6 +1,6 @@
-# Epic 4: External Party Custom Columns & Real-Time Sync
+# Epic 4: External Party Custom Columns, Real-Time Sync & Change Notifications
 
-**Epic Goal**: Enable external parties to create and manage their own custom data columns with category organization, ensuring complete data isolation between parties. Implement real-time synchronization so that masterdata changes by HR Admin instantly propagate to all external party views. This epic delivers the core value proposition of autonomous data management with live updates.
+**Epic Goal**: Enable external parties to create and manage their own custom data columns with category organization, ensuring complete data isolation between parties. Implement real-time synchronization so that masterdata changes by HR Admin instantly propagate to all external party views. Provide visual notifications to external parties when data changes affect their current filtered/sorted view. This epic delivers the core value proposition of autonomous data management with live updates and change awareness.
 
 ## Story 4.1: Custom Column Definition and Storage Schema
 
@@ -95,5 +95,27 @@ so that **I always have current employee information**.
 8. Real-time functionality gracefully degrades if Supabase real-time connection fails (fallback to polling every 5 seconds or display warning message)
 9. Real-time sync tested manually: open two browser windows (one as HR Admin, one as external party), verify changes propagate
 10. Performance remains acceptable with real-time sync active (no noticeable lag or memory leaks)
+11. Real-time change events trigger ViewStateTracker to evaluate if notification should be shown to external party users (implemented in Story 4.6)
+
+## Story 4.6: Change Notifications for External Party Views
+
+As an **external party user**,  
+I want **to receive visual notifications when masterdata changes affect my current filtered/sorted view**,  
+so that **I'm aware when employees enter, leave, or are updated in my view without manually refreshing**.
+
+### Acceptance Criteria
+
+1. When HR Admin updates masterdata causing an employee to newly match the external party's active filter criteria (e.g., hire_date change moves employee into filtered date range), a toast notification appears: "1 new employee matches your filters: [Employee Name]"
+2. When HR Admin updates masterdata causing an employee to no longer match the external party's active filter criteria, a toast notification appears: "1 employee no longer matches your filters: [Employee Name]"
+3. When HR Admin updates a masterdata field for an employee already visible in the external party's view, a toast notification appears: "Employee [Name] was updated ([Field] changed)"
+4. Notifications appear as non-intrusive toast messages in the bottom-right corner using Sonner library (already in project)
+5. Notifications are dismissible by clicking the X icon or automatically dismiss after 5 seconds
+6. If multiple employees are affected simultaneously (e.g., bulk import), notifications are batched: "3 new employees match your filters"
+7. Clicking a notification focuses/scrolls to the affected employee row in the table (optional enhancement for MVP)
+8. Notifications only trigger for changes affecting the user's current view state (if no filters active, only show "Employee [Name] was updated")
+9. ViewStateTracker custom hook tracks current filter/sort state and visible employee IDs to determine notification triggers
+10. Notifications do not trigger for the user's own edits to custom columns (only for HR masterdata changes)
+11. Performance: Notification logic executes in <100ms after real-time event received
+12. Accessibility: Notifications are announced to screen readers using ARIA live regions
 
 ---

@@ -74,5 +74,6 @@ so that **I can view current employee masterdata relevant to my work**.
 8. Logout functionality works correctly for external party users
 9. External party user cannot create, archive, or delete employees (buttons/actions hidden or disabled)
 10. Manual testing completed with at least 2 different external party role accounts verifying correct column visibility
+11. Dashboard includes toast notification container (Sonner Toaster component) for receiving change notifications from real-time sync (implemented in Epic 4)
 
 ---

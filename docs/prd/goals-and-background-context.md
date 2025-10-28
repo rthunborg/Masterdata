@@ -20,10 +20,11 @@ The HR Masterdata Management System will provide a unified spreadsheet-like web 
 
 ## Change Log
 
-| Date       | Version | Description                                                                  | Author  |
-| ---------- | ------- | ---------------------------------------------------------------------------- | ------- |
-| 2025-10-26 | 0.1     | Initial PRD draft                                                            | PM John |
-| 2025-10-26 | 0.2     | Added termination tracking and CSV import; updated field names to match data | PM John |
-| 2025-10-26 | 0.3     | Added important dates reference calendar for operational scheduling          | PM John |
+| Date       | Version | Description                                                                  | Author   |
+| ---------- | ------- | ---------------------------------------------------------------------------- | -------- |
+| 2025-10-26 | 0.1     | Initial PRD draft                                                            | PM John  |
+| 2025-10-26 | 0.2     | Added termination tracking and CSV import; updated field names to match data | PM John  |
+| 2025-10-26 | 0.3     | Added important dates reference calendar for operational scheduling          | PM John  |
+| 2025-10-28 | 0.4     | Added change notification requirements (FR21, NFR16, Story 4.6)              | PO Sarah |
 
 ---

@@ -84,6 +84,7 @@ src/
        use-employees.ts      # Employee data hook with real-time
        use-columns.ts        # Column config hook
        use-realtime.ts       # Supabase realtime hook
+       use-view-state-tracker.ts  # Track filtered view state for notifications
     utils/                    # Utility functions
        cn.ts                 # Tailwind class merger
        validation.ts         # Zod schemas
@@ -133,12 +134,13 @@ interface UIStore {
     addColumn: boolean;
     addUser: boolean;
   };
-  openModal: (modal: keyof UIStore['modals']) => void;
-  closeModal: (modal: keyof UIStore['modals']) => void;
+  openModal: (modal: keyof UIStore["modals"]) => void;
+  closeModal: (modal: keyof UIStore["modals"]) => void;
 }
 ```
 
 **State Management Patterns:**
+
 - **Local component state (useState):** For form inputs, UI toggles, temporary state
 - **Global auth state (Zustand):** User session, authentication status
 - **Global UI state (Zustand):** Modal visibility, preview mode, global UI flags
@@ -151,31 +153,31 @@ interface UIStore {
 
 `
 / (public)
- /login  Login page (unauthenticated only)
- /health  Health check (public API)
+/login Login page (unauthenticated only)
+/health Health check (public API)
 
 /dashboard (protected - all authenticated users)
- /  Employee table (role-based column visibility)
- /important-dates  Important dates calendar
- /admin (protected - HR Admin only)
-    /users  User management
-    /columns  Column settings
+/ Employee table (role-based column visibility)
+/important-dates Important dates calendar
+/admin (protected - HR Admin only)
+/users User management
+/columns Column settings
 
 /api (serverless functions)
- /api/auth/*
- /api/employees/*
- /api/columns/*
- /api/important-dates/*
- /api/admin/*
+/api/auth/_
+/api/employees/_
+/api/columns/_
+/api/important-dates/_
+/api/admin/\*
 `
 
 **Protected Route Pattern:**
 
 ```typescript
 // middleware.ts
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
@@ -186,25 +188,25 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession();
 
   // Redirect unauthenticated users to login
-  if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/login', req.url));
+  if (!session && req.nextUrl.pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   // Redirect authenticated users away from login
-  if (session && req.nextUrl.pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+  if (session && req.nextUrl.pathname === "/login") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // Check role for admin routes
-  if (req.nextUrl.pathname.startsWith('/dashboard/admin')) {
+  if (req.nextUrl.pathname.startsWith("/dashboard/admin")) {
     const { data: user } = await supabase
-      .from('users')
-      .select('role')
-      .eq('auth_user_id', session?.user.id)
+      .from("users")
+      .select("role")
+      .eq("auth_user_id", session?.user.id)
       .single();
 
-    if (user?.role !== 'hr_admin') {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+    if (user?.role !== "hr_admin") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }
 
@@ -212,9 +214,153 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login'],
+  matcher: ["/dashboard/:path*", "/login"],
 };
 ```
+
+## Notification System
+
+**Purpose:** Provide non-intrusive, real-time change awareness to external party users when masterdata updates affect their filtered/sorted views.
+
+**Component:** `src/lib/hooks/use-view-state-tracker.ts`
+
+**Pattern:** Client-side change detection with toast notifications
+
+**Implementation:**
+
+- Use existing Sonner toast library (already in project from Story 2.6)
+- ViewStateTracker hook: Tracks current filter/sort state + visible employee IDs
+- On Supabase real-time event: Compare change against current view state
+- Trigger notification if change affects visibility or values
+
+**Notification Types:**
+
+1. **Employee Added to View:** "1 new employee matches your filters: [Employee Name]"
+2. **Employee Removed from View:** "1 employee no longer matches your filters: [Employee Name]"
+3. **Employee Updated in View:** "Employee [Name] was updated ([Field] changed)"
+4. **Batched Changes:** "3 new employees match your filters" (for bulk operations)
+
+**State Tracking:**
+
+```typescript
+interface ViewState {
+  visibleEmployeeIds: Set<string>;
+  activeFilters: FilterState;
+  activeSortColumn: string | null;
+  activeSortDirection: "asc" | "desc" | null;
+}
+
+function useViewStateTracker(employees: Employee[], filters: any, sort: any) {
+  const [viewState, setViewState] = useState<ViewState>({
+    visibleEmployeeIds: new Set(employees.map((e) => e.id)),
+    activeFilters: filters,
+    activeSortColumn: sort?.column || null,
+    activeSortDirection: sort?.direction || null,
+  });
+
+  // Update viewState whenever employees, filters, or sort changes
+  useEffect(() => {
+    setViewState({
+      visibleEmployeeIds: new Set(employees.map((e) => e.id)),
+      activeFilters: filters,
+      activeSortColumn: sort?.column || null,
+      activeSortDirection: sort?.direction || null,
+    });
+  }, [employees, filters, sort]);
+
+  return viewState;
+}
+```
+
+**Change Detection Logic:**
+
+```typescript
+type NotificationType = "added" | "removed" | "updated" | null;
+
+function detectViewImpact(
+  oldEmployee: Employee | null,
+  newEmployee: Employee,
+  viewState: ViewState
+): NotificationType {
+  const wasVisible = oldEmployee
+    ? viewState.visibleEmployeeIds.has(oldEmployee.id)
+    : false;
+  const isNowVisible = employeeMatchesFilters(
+    newEmployee,
+    viewState.activeFilters
+  );
+
+  if (!wasVisible && isNowVisible) return "added";
+  if (wasVisible && !isNowVisible) return "removed";
+  if (wasVisible && isNowVisible) return "updated";
+  return null; // Change doesn't affect this user's view
+}
+
+function employeeMatchesFilters(
+  employee: Employee,
+  filters: Record<string, any>
+): boolean {
+  // Implement filter matching logic based on active filters
+  // For TanStack Table global filter, check if employee matches search term
+  // For date range filters, check if employee falls within range
+  return true; // Simplified - actual implementation in Story 4.6
+}
+```
+
+**Notification Display:**
+
+- Position: Bottom-right corner (Sonner default)
+- Duration: 5 seconds auto-dismiss or manual dismiss
+- Accessibility: ARIA live region for screen reader announcements
+- Non-blocking: User can continue working while notification is visible
+
+**Usage Example:**
+
+```typescript
+// In employee-table.tsx component
+import { useViewStateTracker } from "@/lib/hooks/use-view-state-tracker";
+import { toast } from "sonner";
+
+const viewState = useViewStateTracker(employees, filters, sort);
+
+// On real-time event
+useEffect(() => {
+  const channel = supabase
+    .channel("employees")
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "employees" },
+      (payload) => {
+        const notificationType = detectViewImpact(
+          payload.old,
+          payload.new,
+          viewState
+        );
+
+        if (notificationType === "added") {
+          toast.info(
+            `1 new employee matches your filters: ${payload.new.first_name} ${payload.new.surname}`
+          );
+        } else if (notificationType === "removed") {
+          toast.info(
+            `1 employee no longer matches your filters: ${payload.old.first_name} ${payload.old.surname}`
+          );
+        } else if (notificationType === "updated") {
+          toast.info(
+            `Employee ${payload.new.first_name} ${payload.new.surname} was updated`
+          );
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [viewState]);
+```
+
+---
 
 ## Frontend Services Layer
 
@@ -222,7 +368,7 @@ export const config = {
 
 ```typescript
 // lib/services/api-client.ts
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 const supabase = createClientComponentClient();
 
@@ -237,14 +383,14 @@ export async function apiRequest<T>(
   const response = await fetch(endpoint, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options?.headers,
     },
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error?.message || 'API request failed');
+    throw new Error(error.error?.message || "API request failed");
   }
 
   return response.json();

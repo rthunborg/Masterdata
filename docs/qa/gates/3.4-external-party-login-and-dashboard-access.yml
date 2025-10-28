@@ -1,0 +1,106 @@
+# Quality Gate Decision: Story 3.4
+# External Party Login and Dashboard Access
+
+schema: 1
+story: "3.4"
+story_title: "External Party Login and Dashboard Access"
+gate: CONCERNS
+status_reason: "Code implementation excellent with all automated tests passing, but manual QA validation required before production deployment per AC 10."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-10-28T15:03:00Z"
+
+waiver: { active: false }
+
+top_issues:
+  - id: "TEST-001"
+    severity: medium
+    finding: "Manual testing (Tasks 8 & 9) not yet performed - blocking 'Ready for Done' status"
+    suggested_action: "Execute manual test checklist: login with all 4 external party roles, verify column visibility, test admin route blocking, and perform accessibility validation with screen reader"
+    suggested_owner: qa
+  - id: "TEST-002"
+    severity: low
+    finding: "Integration tests generate React 18 act() warnings (tests still pass)"
+    suggested_action: "Wrap async renders in waitFor() or act() to eliminate console warnings - improves test reliability"
+    suggested_owner: dev
+
+quality_score: 85
+# Calculation: 100 - (10 * 1 medium concern) - (5 * 1 low concern) = 85
+
+evidence:
+  tests_reviewed: 9
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 11] # ACs with code implementation and automated tests
+    ac_gaps: [8, 9, 10] # ACs requiring manual validation
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: "Server-side middleware route protection, bcrypt password hashing in migration, proper session validation, admin actions protected at API level, no client-side auth bypass possible"
+  performance:
+    status: PASS
+    notes: "Middleware overhead <10ms, role display instant (server-side), button hiding zero performance impact, auth session cached in Supabase client"
+  reliability:
+    status: PASS
+    notes: "Idempotent migration with duplicate prevention, proper error handling in getUserFromSession(), graceful session expiry handling"
+  maintainability:
+    status: PASS
+    notes: "Clean separation of concerns, well-typed with TypeScript, reusable utility functions (getRoleDisplayName), clear migration documentation, comprehensive integration tests"
+
+recommendations:
+  immediate: # Must complete before 'Ready for Done'
+    - action: "Execute Task 8 manual testing: login as sodexo, omc, payroll, toplux users; verify column visibility matches role permissions; test admin route blocking"
+      refs:
+        ["docs/stories/3.4.external-party-login-and-dashboard-access.md#task-8"]
+    - action: "Execute Task 9 accessibility testing: validate role badge and toast container with screen reader (NVDA/JAWS/VoiceOver)"
+      refs:
+        ["docs/stories/3.4.external-party-login-and-dashboard-access.md#task-9"]
+    - action: "Update Dev Agent Record with manual test results and mark story 'Ready for Done' if all tests pass"
+      refs:
+        [
+          "docs/stories/3.4.external-party-login-and-dashboard-access.md#dev-agent-record",
+        ]
+
+  future: # Nice-to-have improvements (non-blocking)
+    - action: "Wrap integration test renders in act() or waitFor() to eliminate React 18 warnings"
+      refs: ["tests/integration/external-party-dashboard.test.tsx"]
+    - action: "Add E2E test for full external party login flow using Playwright (post-MVP)"
+      refs: ["docs/architecture/testing-strategy.md#e2e-tests"]
+    - action: "Add production deployment checklist to exclude test user migration from production environments"
+      refs: ["supabase/migrations/20251028144051_seed_test_users.sql"]
+    - action: "Consider environment-based migration execution to automatically skip *_seed_test_users.sql in production"
+      refs: ["scripts/migrate-prod.sh"]
+
+# Additional Context
+implementation_notes: |
+  This story successfully implements external party authentication and role-based dashboard access
+  using Next.js 13+ App Router patterns with Supabase SSR. The code quality is excellent:
+
+  - Middleware properly protects routes server-side using cookie-based sessions
+  - Role display uses server component preventing client-side auth bypass
+  - Test user migration is idempotent with clear dev-only documentation
+  - Integration tests cover all role combinations
+  - Accessibility considerations included (ARIA labels, screen reader support)
+
+  The CONCERNS gate status is solely due to pending manual QA validation (AC 10), which is 
+  appropriate for authentication flows where real user behavior must be verified beyond 
+  automated tests. Once manual testing is complete, this should move to PASS status.
+
+risk_assessment: |
+  Risk Level: MEDIUM
+
+  Primary Risk Factors:
+  - Authentication flows require manual validation to ensure proper login redirect behavior
+  - Column visibility must be verified with actual role permissions (database seeded data)
+  - Admin route blocking needs browser-based testing to confirm middleware behavior
+  - Accessibility compliance requires screen reader testing (cannot be fully automated)
+
+  Mitigation:
+  - Comprehensive manual test checklist provided (Tasks 8 & 9)
+  - Test user credentials documented in migration
+  - Integration tests provide baseline coverage
+  - Story clearly documents required manual validation steps
+
+  Post-Manual Testing:
+  - If manual tests pass → Risk reduced to LOW, gate status → PASS
+  - If issues found → Document, fix, re-test before production deployment

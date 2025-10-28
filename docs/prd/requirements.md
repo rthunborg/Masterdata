@@ -48,6 +48,8 @@
 
 **FR20:** All data changes (create, update, archive) must be persisted immediately to the database with appropriate error handling and user feedback on success or failure.
 
+**FR21:** External party users must receive visual notifications when masterdata changes cause employee records to enter, leave, or be modified within their current filtered/sorted view, ensuring awareness of data changes affecting their workflow.
+
 ## Non Functional
 
 **NFR1:** The system must leverage Supabase and Vercel free-tier services exclusively to maintain zero monthly operational costs (excluding optional domain registration).
@@ -79,5 +81,7 @@
 **NFR14:** The codebase must use TypeScript throughout for type safety and maintainability.
 
 **NFR15:** The system architecture must support future enhancements including audit logs, bulk operations, and advanced filtering without requiring major refactoring.
+
+**NFR16:** Change notifications must be non-intrusive (toast/banner style), dismissible, and provide clear context about what changed without interrupting user workflow.
 
 ---
