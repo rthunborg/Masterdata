@@ -39,10 +39,11 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Get user
+  // Get user - using type assertion for Edge Runtime compatibility
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } = await (supabase.auth as any).getUser();
 
   const { pathname } = request.nextUrl;
 
