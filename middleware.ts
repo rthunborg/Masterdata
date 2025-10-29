@@ -1,99 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// Inline UserRole enum to avoid importing from @/lib/types/user
-// which may not be compatible with Edge Runtime
-enum UserRole {
-  HR_ADMIN = "hr_admin",
-  SODEXO = "sodexo",
-  OMC = "omc",
-  PAYROLL = "payroll",
-  TOPLUX = "toplux",
-}
-
-export async function middleware(request: NextRequest) {
+/**
+ * Simplified middleware for basic route protection
+ * Auth validation is handled in page components and API routes
+ */
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Check for Supabase auth cookie
+  const authCookie = request.cookies.get('sb-access-token') || 
+                     request.cookies.get('sb-refresh-token');
+  
+  const isAuthenticated = !!authCookie;
 
-  // Skip middleware logic for login page - it's public
-  if (pathname === "/login") {
-    return NextResponse.next();
+  // Redirect unauthenticated users from protected routes to login
+  if (!isAuthenticated && pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Dynamically import Supabase only when needed (not for /login)
-  const { createServerClient } = await import("@supabase/ssr");
-
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // Get user - using type assertion for Edge Runtime compatibility
-  const {
-    data: { user },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = await (supabase.auth as any).getUser();
-
-  // Redirect unauthenticated users trying to access dashboard to login
-  if (pathname.startsWith("/dashboard") && !user) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+  // Redirect authenticated users away from login
+  if (isAuthenticated && pathname === "/login") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // Check role for admin routes
-  if (pathname.startsWith("/admin") && user) {
-    // Get user role from database
-    const { data: userRecord } = await supabase
-      .from("users")
-      .select("role")
-      .eq("auth_user_id", user.id)
-      .eq("is_active", true)
-      .single();
-
-    // Redirect non-admin users to dashboard
-    if (!userRecord || userRecord.role !== UserRole.HR_ADMIN) {
-      const dashboardUrl = new URL("/dashboard", request.url);
-      return NextResponse.redirect(dashboardUrl);
-    }
-  }
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes - handled separately)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public assets
-     * - root path (/) for public landing page
-     */
     "/dashboard/:path*",
     "/login",
     "/admin/:path*",
-    "/403",
   ],
 };
