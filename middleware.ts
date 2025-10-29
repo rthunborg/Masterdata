@@ -1,6 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { UserRole } from "@/lib/types/user";
+
+// Inline UserRole enum to avoid importing from @/lib/types/user
+// which may not be compatible with Edge Runtime
+enum UserRole {
+  HR_ADMIN = "hr_admin",
+  SODEXO = "sodexo",
+  OMC = "omc",
+  PAYROLL = "payroll",
+  TOPLUX = "toplux",
+}
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -30,37 +39,37 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Get session
+  // Get session - use getUser() instead of getSession() for better type safety
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
   // Redirect unauthenticated users trying to access dashboard to login
-  if (pathname.startsWith("/dashboard") && !session) {
+  if (pathname.startsWith("/dashboard") && !user) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // Redirect authenticated users away from login page to dashboard
-  if (pathname === "/login" && session) {
+  if (pathname === "/login" && user) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }
 
   // Check role for admin routes
-  if (pathname.startsWith("/admin") && session) {
+  if (pathname.startsWith("/admin") && user) {
     // Get user role from database
-    const { data: user } = await supabase
+    const { data: userRecord } = await supabase
       .from("users")
       .select("role")
-      .eq("auth_user_id", session.user.id)
+      .eq("auth_user_id", user.id)
       .eq("is_active", true)
       .single();
 
     // Redirect non-admin users to dashboard
-    if (!user || user.role !== UserRole.HR_ADMIN) {
+    if (!userRecord || userRecord.role !== UserRole.HR_ADMIN) {
       const dashboardUrl = new URL("/dashboard", request.url);
       return NextResponse.redirect(dashboardUrl);
     }
