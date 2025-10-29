@@ -228,6 +228,7 @@ export function ImportantDatesTable({
               variant="ghost"
               size="sm"
               onClick={() => handleDeleteClick(row.original)}
+              aria-label="Delete important date"
             >
               <Trash2 className="h-4 w-4 text-red-600" />
             </Button>
@@ -260,7 +261,7 @@ export function ImportantDatesTable({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" role="status" aria-label="Loading"></div>
       </div>
     );
   }

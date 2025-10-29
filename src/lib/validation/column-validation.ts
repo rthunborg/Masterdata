@@ -62,3 +62,48 @@ export const updateCustomDataSchema = z.record(
  * Type inference for custom data update
  */
 export type UpdateCustomDataInput = z.infer<typeof updateCustomDataSchema>;
+
+/**
+ * Schema for individual role permission
+ */
+const rolePermissionSchema = z
+  .object({
+    view: z.boolean(),
+    edit: z.boolean(),
+  })
+  .refine((data) => !data.edit || data.view, {
+    message: "Edit permission requires View permission",
+  });
+
+/**
+ * Schema for updating column permissions
+ */
+export const updateColumnPermissionsSchema = z.object({
+  role_permissions: z.record(z.string(), rolePermissionSchema),
+});
+
+/**
+ * Type inference for update column permissions
+ */
+export type UpdateColumnPermissionsInput = z.infer<
+  typeof updateColumnPermissionsSchema
+>;
+
+/**
+ * Schema for bulk permission updates
+ */
+export const bulkUpdatePermissionsSchema = z.object({
+  column_ids: z.array(z.string().uuid()),
+  roles: z.array(
+    z.enum(["hr_admin", "sodexo", "omc", "payroll", "toplux"])
+  ),
+  permission_type: z.enum(["view", "edit"]),
+  value: z.boolean(),
+});
+
+/**
+ * Type inference for bulk permission updates
+ */
+export type BulkUpdatePermissionsInput = z.infer<
+  typeof bulkUpdatePermissionsSchema
+>;

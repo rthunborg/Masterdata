@@ -47,6 +47,7 @@ import { useAuth } from "@/lib/hooks/use-auth";
 import { useColumns } from "@/lib/hooks/use-columns";
 import { getEmployeeFieldValue } from "@/lib/utils/column-mapping";
 import { cn } from "@/lib/utils";
+import { useUIStore } from "@/lib/store/ui-store";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -95,8 +96,14 @@ export function EmployeeTable({
   const { user } = useAuth();
   const isHRAdmin = user?.role === "hr_admin";
   
-  // Fetch column configurations based on user role
-  const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns();
+  // Get preview mode state
+  const { previewRole, isPreviewMode } = useUIStore();
+  
+  // Determine effective role for column filtering
+  const effectiveRole = previewRole || user?.role;
+  
+  // Fetch column configurations based on effective role (for preview mode)
+  const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns(effectiveRole);
   
   const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = React.useState(false);
@@ -256,11 +263,10 @@ export function EmployeeTable({
   const columns: ColumnDef<Employee>[] = React.useMemo(() => {
     const dataColumns: ColumnDef<Employee>[] = columnConfigs.map((config) => {
       // Determine if user can edit this column based on role permissions
-      // For now: only HR Admin can edit masterdata columns (Epic 3)
-      // Future: Epic 4 will allow external parties to edit their custom columns
-      const userRole = user?.role || "";
+      // In preview mode, all editing is disabled
+      const userRole = effectiveRole || "";
       const hasEditPermission = config.role_permissions[userRole]?.edit ?? false;
-      const canEdit = hasEditPermission;
+      const canEdit = hasEditPermission && !isPreviewMode; // Disable editing in preview mode
       
       // Determine cell renderer based on column type and permissions
       const getCellRenderer = (): ColumnDef<Employee>['cell'] => {
@@ -386,11 +392,13 @@ export function EmployeeTable({
         },
         id: config.id,
         enableSorting: true,
-        sortingFn: config.column_type === "date" ? (rowA, rowB) => {
-          const dateA = new Date(getEmployeeFieldValue(rowA.original, config.column_name) as string).getTime();
-          const dateB = new Date(getEmployeeFieldValue(rowB.original, config.column_name) as string).getTime();
-          return dateA - dateB;
-        } : undefined,
+        ...(config.column_type === "date" && {
+          sortingFn: (rowA, rowB) => {
+            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.column_name) as string).getTime();
+            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.column_name) as string).getTime();
+            return dateA - dateB;
+          },
+        }),
         cell: getCellRenderer(),
       };
     });
@@ -454,7 +462,7 @@ export function EmployeeTable({
     }
 
     return dataColumns;
-  }, [columnConfigs, isHRAdmin, user, handleMasterdataUpdate, handleCustomDataUpdate]);
+  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode]);
 
   const table = useReactTable({
     data: employees,

@@ -3,7 +3,7 @@
  * Monitors visible employee IDs, active filters, and sort state
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import type { Employee } from "@/lib/types/employee";
 import type { ViewState, FilterState } from "@/lib/types/notifications";
 
@@ -28,22 +28,22 @@ export function useViewStateTracker({
   filters,
   sort,
 }: UseViewStateTrackerOptions): ViewState {
-  const [viewState, setViewState] = useState<ViewState>({
-    visibleEmployeeIds: new Set<string>(),
-    activeFilters: filters,
-    activeSortColumn: sort?.column || null,
-    activeSortDirection: sort?.direction || null,
-  });
+  // Memoize employee IDs to prevent infinite re-renders
+  const visibleEmployeeIds = useMemo(
+    () => new Set(employees.map((e) => e.id)),
+    [employees]
+  );
 
-  // Update viewState whenever employees, filters, or sort changes
-  useEffect(() => {
-    setViewState({
-      visibleEmployeeIds: new Set(employees.map((e) => e.id)),
+  // Construct view state using memoized values
+  const viewState = useMemo<ViewState>(
+    () => ({
+      visibleEmployeeIds,
       activeFilters: filters,
       activeSortColumn: sort?.column || null,
       activeSortDirection: sort?.direction || null,
-    });
-  }, [employees, filters, sort]);
+    }),
+    [visibleEmployeeIds, filters, sort]
+  );
 
   return viewState;
 }

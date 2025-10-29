@@ -2,19 +2,25 @@ import { useState, useEffect, useCallback } from "react";
 import { columnConfigService } from "@/lib/services/column-config-service";
 import { useAuth } from "@/lib/hooks/use-auth";
 import type { ColumnConfig } from "@/lib/types/column-config";
+import type { UserRole } from "@/lib/types/user";
 
 /**
  * Custom hook to fetch and filter column configurations based on user role
  * Returns only columns where role_permissions[userRole].view = true
+ * 
+ * @param effectiveRole - Optional role to use for filtering (for preview mode)
  */
-export function useColumns() {
+export function useColumns(effectiveRole?: UserRole) {
   const { user } = useAuth();
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Use effectiveRole if provided, otherwise use user's actual role
+  const roleToUse = effectiveRole || user?.role;
+
   const fetchColumns = useCallback(async () => {
-    if (!user) {
+    if (!roleToUse) {
       setIsLoading(false);
       return;
     }
@@ -25,7 +31,7 @@ export function useColumns() {
 
       // Filter columns by role permissions
       const visibleColumns = allColumns.filter((column) => {
-        const rolePerms = column.role_permissions[user.role];
+        const rolePerms = column.role_permissions[roleToUse];
         return rolePerms && rolePerms.view === true;
       });
 
@@ -39,7 +45,7 @@ export function useColumns() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [roleToUse]);
 
   useEffect(() => {
     fetchColumns();

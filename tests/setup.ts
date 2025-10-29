@@ -53,3 +53,15 @@ class ResizeObserverMock {
 }
 
 global.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
+
+// Mock scrollIntoView for JSDOM (used by Radix UI Select component)
+if (typeof Element !== 'undefined') {
+  Element.prototype.scrollIntoView = vi.fn();
+}
+
+// Mock hasPointerCapture for JSDOM (used by Radix UI components)
+if (typeof Element !== 'undefined' && !Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = vi.fn(() => false);
+  Element.prototype.setPointerCapture = vi.fn();
+  Element.prototype.releasePointerCapture = vi.fn();
+}

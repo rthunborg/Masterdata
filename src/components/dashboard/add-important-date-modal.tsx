@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -48,6 +48,7 @@ export function AddImportantDateModal({
   onSuccess,
 }: AddImportantDateModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const prevIsOpenRef = useRef(false);
 
   const form = useForm<CreateImportantDateInput>({
     resolver: zodResolver(createImportantDateSchema),
@@ -60,6 +61,22 @@ export function AddImportantDateModal({
       notes: null,
     },
   });
+
+  // Reset form when modal transitions from closed to open
+  useEffect(() => {
+    if (isOpen && !prevIsOpenRef.current) {
+      form.reset({
+        week_number: null,
+        year: new Date().getFullYear(),
+        category: "Stena Dates",
+        date_description: "",
+        date_value: "",
+        notes: null,
+      });
+    }
+    prevIsOpenRef.current = isOpen;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const onSubmit = async (data: CreateImportantDateInput) => {
     try {

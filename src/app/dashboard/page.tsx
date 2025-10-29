@@ -17,6 +17,8 @@ import { AddColumnModal } from "@/components/dashboard/add-column-modal";
 import { EditColumnModal } from "@/components/dashboard/edit-column-modal";
 import { ManageColumnsDialog } from "@/components/dashboard/manage-columns-dropdown";
 import { ImportEmployeesModal } from "@/components/dashboard/import-employees-modal";
+import { RoleSelector } from "@/components/dashboard/role-selector";
+import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
 import { useState } from "react";
 import { Plus, Upload, Columns } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
@@ -24,7 +26,7 @@ import { useUIStore } from "@/lib/store/ui-store";
 export default function DashboardPage() {
   const { user, logout, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const { openModal } = useUIStore();
+  const { openModal, isPreviewMode } = useUIStore();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [includeArchived, setIncludeArchived] = useState(false);
@@ -82,6 +84,9 @@ export default function DashboardPage() {
 
   return (
     <div className="px-4 sm:px-0">
+      {/* Role Preview Banner - Shows at top when in preview mode */}
+      <RolePreviewBanner />
+      
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">Employee List</h2>
@@ -89,14 +94,27 @@ export default function DashboardPage() {
             View and manage all active employees
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {/* Role Selector - Only visible to HR Admin */}
+          {user?.role === "hr_admin" && (
+            <RoleSelector />
+          )}
           {user?.role === "hr_admin" && (
             <>
-              <Button onClick={() => setIsAddModalOpen(true)}>
+              <Button 
+                onClick={() => setIsAddModalOpen(true)}
+                disabled={isPreviewMode}
+                title={isPreviewMode ? "Editing disabled in preview mode" : ""}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Employee
               </Button>
-              <Button onClick={() => setIsImportModalOpen(true)} variant="outline">
+              <Button 
+                onClick={() => setIsImportModalOpen(true)} 
+                variant="outline"
+                disabled={isPreviewMode}
+                title={isPreviewMode ? "Editing disabled in preview mode" : ""}
+              >
                 <Upload className="h-4 w-4 mr-2" />
                 Import Employees
               </Button>

@@ -67,3 +67,20 @@ export interface ExternalPartyData {
   created_at: string;
   updated_at: string;
 }
+
+/**
+ * Request type for updating column permissions
+ */
+export interface UpdateColumnPermissionsRequest {
+  role_permissions: RolePermissions;
+}
+
+/**
+ * Request type for bulk updating permissions across multiple columns/roles
+ */
+export interface BulkUpdatePermissionsRequest {
+  column_ids: string[];
+  roles: string[];
+  permission_type: 'view' | 'edit';
+  value: boolean;
+}
