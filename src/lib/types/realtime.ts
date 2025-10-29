@@ -4,7 +4,7 @@
 
 export type RealtimeEventType = "INSERT" | "UPDATE" | "DELETE";
 
-export interface RealtimePayload<T = any> {
+export interface RealtimePayload<T = Record<string, unknown>> {
   schema: string;
   table: string;
   commit_timestamp: string;
@@ -14,7 +14,7 @@ export interface RealtimePayload<T = any> {
   errors: string[] | null;
 }
 
-export interface RealtimeEvent<T = any> {
+export interface RealtimeEvent<T = Record<string, unknown>> {
   eventType: RealtimeEventType;
   schema: string;
   table: string;
@@ -25,8 +25,8 @@ export interface RealtimeEvent<T = any> {
 
 export interface EmployeeRealtimeEvent extends RealtimeEvent {
   table: "employees";
-  old?: any;
-  new?: any;
+  old?: Record<string, unknown>;
+  new?: Record<string, unknown>;
 }
 
 export type RealtimeConnectionStatus = 

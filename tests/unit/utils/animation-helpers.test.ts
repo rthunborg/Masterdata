@@ -126,7 +126,7 @@ describe("animation-helpers", () => {
         
         // Mock performance.memory
         const originalPerformance = global.performance;
-        (global.performance as any) = {
+        (global.performance as { memory?: { usedJSHeapSize: number } }) = {
           ...originalPerformance,
           memory: {
             usedJSHeapSize: 50 * 1024 * 1024, // 50MB

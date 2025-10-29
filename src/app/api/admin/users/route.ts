@@ -4,7 +4,7 @@ import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { createUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Enforce HR Admin role
     await requireHRAdminAPI();

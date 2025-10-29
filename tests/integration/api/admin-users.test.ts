@@ -158,8 +158,7 @@ describe('GET /api/admin/users', () => {
   it('returns user list for HR Admin (200)', async () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
 
-    const request = new NextRequest('http://localhost/api/admin/users');
-    const response = await GET(request);
+    const response = await GET();
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -179,8 +178,7 @@ describe('GET /api/admin/users', () => {
   it('returns 403 for non-admin roles (Sodexo)', async () => {
     mockRequireHRAdminAPI.mockRejectedValue(new Error('Insufficient permissions'));
 
-    const request = new NextRequest('http://localhost/api/admin/users');
-    const response = await GET(request);
+    const response = await GET();
     const data = await response.json();
 
     expect(response.status).toBe(403);
@@ -190,8 +188,7 @@ describe('GET /api/admin/users', () => {
   it('returns 401 for unauthenticated requests', async () => {
     mockRequireHRAdminAPI.mockRejectedValue(new Error('Authentication required'));
 
-    const request = new NextRequest('http://localhost/api/admin/users');
-    const response = await GET(request);
+    const response = await GET();
     const data = await response.json();
 
     expect(response.status).toBe(401);

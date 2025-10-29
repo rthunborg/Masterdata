@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { NextRequest } from "next/server";
 import { mockUsers } from "../../utils/role-test-utils";
 
 // Mock Supabase client first
@@ -123,8 +122,7 @@ describe("API Route Role Protection Integration", () => {
     it("should return user list for HR admin", async () => {
       mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
 
-      const request = new NextRequest("http://localhost/api/admin/users");
-      const response = await AdminUsersGET(request);
+      const response = await AdminUsersGET();
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -139,8 +137,7 @@ describe("API Route Role Protection Integration", () => {
     it("should return 403 for external party users", async () => {
       mockRequireHRAdminAPI.mockRejectedValue(new Error("Insufficient permissions"));
 
-      const request = new NextRequest("http://localhost/api/admin/users");
-      const response = await AdminUsersGET(request);
+      const response = await AdminUsersGET();
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -151,8 +148,7 @@ describe("API Route Role Protection Integration", () => {
     it("should return 401 for unauthenticated requests", async () => {
       mockRequireHRAdminAPI.mockRejectedValue(new Error("Authentication required"));
 
-      const request = new NextRequest("http://localhost/api/admin/users");
-      const response = await AdminUsersGET(request);
+      const response = await AdminUsersGET();
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -165,7 +161,7 @@ describe("API Route Role Protection Integration", () => {
     it("should consistently handle authentication errors", async () => {
       const apis = [
         { name: "Profile", handler: () => ProfileGET(), mockFn: mockRequireAuthAPI },
-        { name: "Admin Users", handler: () => AdminUsersGET(new NextRequest("http://localhost/api/admin/users")), mockFn: mockRequireHRAdminAPI },
+        { name: "Admin Users", handler: () => AdminUsersGET(), mockFn: mockRequireHRAdminAPI },
       ];
 
       for (const api of apis) {
@@ -183,8 +179,7 @@ describe("API Route Role Protection Integration", () => {
     it("should consistently handle permission errors", async () => {
       mockRequireHRAdminAPI.mockRejectedValue(new Error("Insufficient permissions"));
 
-      const request = new NextRequest("http://localhost/api/admin/users");
-      const response = await AdminUsersGET(request);
+      const response = await AdminUsersGET();
       const data = await response.json();
 
       expect(response.status).toBe(403);

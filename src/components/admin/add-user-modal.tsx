@@ -41,7 +41,6 @@ interface AddUserModalProps {
 
 export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
 
   const form = useForm<CreateUserInput>({
     resolver: zodResolver(createUserSchema),
@@ -59,7 +58,6 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
       const response = await adminService.createUser(data);
       
       // Show success message with temporary password
-      setTemporaryPassword(response.temporary_password);
       toast.success(
         `User ${response.email} created successfully. Initial password: ${response.temporary_password}`,
         { duration: 10000 }
@@ -71,7 +69,6 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
       // Close after brief delay to allow user to see success message
       setTimeout(() => {
         onClose();
-        setTemporaryPassword(null);
       }, 500);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create user");
@@ -83,7 +80,6 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
   const handleClose = () => {
     if (!isLoading) {
       form.reset();
-      setTemporaryPassword(null);
       onClose();
     }
   };

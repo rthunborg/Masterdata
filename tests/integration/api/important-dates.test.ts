@@ -20,12 +20,6 @@ describe("GET /api/important-dates", () => {
     created_at: "2025-01-01T00:00:00Z",
   };
 
-  const mockHRAdminUser = {
-    ...mockAuthUser,
-    email: "admin@example.com",
-    role: UserRole.HR_ADMIN,
-  };
-
   const mockImportantDates: ImportantDate[] = [
     {
       id: "date-1",
@@ -142,12 +136,6 @@ describe("POST /api/important-dates", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
-  };
-
-  const mockExternalUser = {
-    ...mockHRAdminUser,
-    email: "sodexo@example.com",
-    role: UserRole.SODEXO,
   };
 
   const validFormData: ImportantDateFormData = {

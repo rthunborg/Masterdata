@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
-import { proxy } from "@/proxy";
+import { middleware } from "../../../middleware";
 import { mockUsers } from "../../utils/role-test-utils";
 import { createServerClient } from "@supabase/ssr";
 
@@ -53,7 +53,7 @@ describe("Proxy Role Protection", () => {
       });
 
       const request = new NextRequest("http://localhost:3000/dashboard");
-      const response = await proxy(request);
+      const response = await middleware(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe("http://localhost:3000/login");
@@ -65,7 +65,7 @@ describe("Proxy Role Protection", () => {
       });
 
       const request = new NextRequest("http://localhost:3000/admin");
-      const response = await proxy(request);
+      const response = await middleware(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe("http://localhost:3000/login");
@@ -77,7 +77,7 @@ describe("Proxy Role Protection", () => {
       });
 
       const request = new NextRequest("http://localhost:3000/login");
-      const response = await proxy(request);
+      const response = await middleware(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe("http://localhost:3000/dashboard");
@@ -108,7 +108,7 @@ describe("Proxy Role Protection", () => {
       });
 
       const request = new NextRequest("http://localhost:3000/admin");
-      const response = await proxy(request);
+      const response = await middleware(request);
 
       expect(response.status).toBe(200);
       expect(response.headers.get("x-user-id")).toBe(mockUsers.hrAdmin.id);
@@ -136,7 +136,7 @@ describe("Proxy Role Protection", () => {
       });
 
       const request = new NextRequest("http://localhost:3000/admin");
-      const response = await proxy(request);
+      const response = await middleware(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe("http://localhost:3000/403");
@@ -163,7 +163,7 @@ describe("Proxy Role Protection", () => {
       });
 
       const request = new NextRequest("http://localhost:3000/dashboard");
-      const response = await proxy(request);
+      const response = await middleware(request);
 
       expect(response.status).toBe(200);
       expect(response.headers.get("x-user-id")).toBe(mockUsers.sodexo.id);
@@ -195,7 +195,7 @@ describe("Proxy Role Protection", () => {
       mockSupabaseClient.auth.signOut.mockResolvedValue({ error: null });
 
       const request = new NextRequest("http://localhost:3000/dashboard");
-      const response = await proxy(request);
+      const response = await middleware(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe("http://localhost:3000/login");
@@ -221,10 +221,11 @@ describe("Proxy Role Protection", () => {
       });
 
       const request = new NextRequest("http://localhost:3000/dashboard");
-      const response = await proxy(request);
+      const response = await middleware(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe("http://localhost:3000/login");
     });
   });
 });
+

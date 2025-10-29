@@ -23,21 +23,20 @@ export function highlightRow(
  * @param wait - Wait time in milliseconds
  * @returns Debounced function with cancel method
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   wait: number
 ): T & { cancel: () => void } {
   let timeout: NodeJS.Timeout | null = null;
 
-  const debounced = function (this: any, ...args: Parameters<T>) {
-    const context = this;
+  const debounced = function (...args: Parameters<T>) {
     
     if (timeout) {
       clearTimeout(timeout);
     }
     
     timeout = setTimeout(() => {
-      func.apply(context, args);
+      func(...args);
     }, wait);
   } as T & { cancel: () => void };
 
@@ -75,9 +74,11 @@ export const performanceTracker = {
    */
   trackMemoryUsage(): void {
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      const usage = memory.usedJSHeapSize / 1024 / 1024;
-      console.log(`Memory usage: ${usage.toFixed(2)}MB`);
+      const memory = (performance as { memory?: { usedJSHeapSize: number } }).memory;
+      if (memory) {
+        const usage = memory.usedJSHeapSize / 1024 / 1024;
+        console.log(`Memory usage: ${usage.toFixed(2)}MB`);
+      }
     }
   }
 };

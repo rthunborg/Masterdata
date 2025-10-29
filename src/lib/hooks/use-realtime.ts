@@ -45,9 +45,10 @@ export function useRealtime({
   onEvent,
   enabled = true,
 }: UseRealtimeOptions): UseRealtimeReturn {
-  const [status, setStatus] = useState<RealtimeConnectionStatus>(() => 
-    enabled ? "connecting" : "disconnected"
-  );
+  // Disable react compiler for this function due to complex state management
+  "use no memo";
+  
+  const [internalStatus, setInternalStatus] = useState<RealtimeConnectionStatus>("disconnected");
   const [error, setError] = useState<Error | null>(null);
   const [lastEvent, setLastEvent] = useState<RealtimeEvent | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -55,9 +56,11 @@ export function useRealtime({
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
 
+  // Compute status based on enabled and internal status to avoid setState in effect
+  const status: RealtimeConnectionStatus = !enabled ? "disconnected" : internalStatus;
+
   const handleEvent = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (payload: RealtimePostgresChangesPayload<any>) => {
+    (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
       const realtimeEvent: RealtimeEvent = {
         eventType: payload.eventType as RealtimeEventType,
         schema: payload.schema,
@@ -73,13 +76,13 @@ export function useRealtime({
     [onEvent]
   );
 
-  // Handle enabled state changes
-  useEffect(() => {
-    setStatus(enabled ? "connecting" : "disconnected");
-  }, [enabled]);
-
   useEffect(() => {
     if (!enabled) {
+      // Clean up existing channel
+      if (channelRef.current) {
+        supabaseRef.current.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
       return;
     }
 
@@ -104,27 +107,27 @@ export function useRealtime({
       )
       .subscribe((status: string, err?: Error) => {
         if (status === "SUBSCRIBED") {
-          setStatus("connected");
+          setInternalStatus("connected");
           setError(null);
           reconnectAttempts.current = 0;
         } else if (status === "CHANNEL_ERROR") {
-          setStatus("disconnected");
+          setInternalStatus("disconnected");
           setError(err || new Error("Channel subscription error"));
           
           // Attempt reconnection
           if (reconnectAttempts.current < maxReconnectAttempts) {
             reconnectAttempts.current += 1;
-            setStatus("reconnecting");
+            setInternalStatus("reconnecting");
             
             setTimeout(() => {
               channel.subscribe();
             }, Math.min(1000 * Math.pow(2, reconnectAttempts.current), 10000));
           }
         } else if (status === "TIMED_OUT") {
-          setStatus("disconnected");
+          setInternalStatus("disconnected");
           setError(new Error("Connection timed out"));
         } else if (status === "CLOSED") {
-          setStatus("disconnected");
+          setInternalStatus("disconnected");
         }
       });
 

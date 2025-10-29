@@ -72,15 +72,15 @@ describe("useRealtime", () => {
 
   it("should handle event callbacks", async () => {
     const onEvent = vi.fn();
-    let eventHandler: any;
+    let eventHandler: (payload: Record<string, unknown>) => void;
 
-    mockChannel.on.mockImplementation((type, config, handler) => {
+    mockChannel.on.mockImplementation((_type: string, _config: Record<string, unknown>, handler: (payload: Record<string, unknown>) => void) => {
       eventHandler = handler;
       return mockChannel;
     });
 
-    mockChannel.subscribe.mockImplementation((callback) => {
-      callback("SUBSCRIBED", null);
+    mockChannel.subscribe.mockImplementation((callback: (status: string) => void) => {
+      callback("SUBSCRIBED");
       return mockChannel;
     });
 

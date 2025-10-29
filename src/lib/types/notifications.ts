@@ -2,8 +2,6 @@
  * Notification type definitions for change notifications
  */
 
-import type { Employee } from "./employee";
-
 export type NotificationType = "added" | "removed" | "updated" | null;
 
 export interface ViewState {

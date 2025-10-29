@@ -184,7 +184,7 @@ export function useEmployees({
 
       if (event.eventType === "INSERT" && event.new) {
         // Add new employee to list
-        const newEmployee = event.new as Employee;
+        const newEmployee = event.new as unknown as Employee;
         
         // Fetch custom data if needed
         if (userRole && userRole !== "hr_admin") {
@@ -220,10 +220,10 @@ export function useEmployees({
             });
           }
         }
-      } else if (event.eventType === "UPDATE" && event.new) {
+      } else if (event.eventType === "UPDATE" && event.new && event.old) {
         // Update existing employee
-        const updatedEmployee = event.new as Employee;
-        const oldEmployee = event.old as Employee | undefined;
+        const updatedEmployee = event.new as unknown as Employee;
+        const oldEmployee = event.old as unknown as Employee | undefined;
         
         // Fetch custom data if needed
         if (userRole && userRole !== "hr_admin") {
@@ -287,7 +287,7 @@ export function useEmployees({
         }
       } else if (event.eventType === "DELETE" && event.old) {
         // Remove deleted employee
-        const deletedEmployee = event.old as Employee;
+        const deletedEmployee = event.old as unknown as Employee;
         setEmployees((prev) => prev.filter((emp) => emp.id !== deletedEmployee.id));
 
         // Note: DELETE events typically don't trigger notifications as employee is removed from DB
@@ -304,7 +304,7 @@ export function useEmployees({
 
   // Debounce real-time event handling to prevent UI thrashing
   const debouncedHandleRealtimeEvent = useMemo(
-    () => debounce(handleRealtimeEvent, 100),
+    () => debounce((event: RealtimeEvent) => handleRealtimeEvent(event), 100),
     [handleRealtimeEvent]
   );
 
