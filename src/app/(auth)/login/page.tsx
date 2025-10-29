@@ -13,6 +13,9 @@ import { loginFormSchema, type LoginFormData } from "@/lib/validation/auth-schem
 import { useAuthStore } from "@/lib/store/auth-store";
 import { mapSupabaseAuthError } from "@/lib/utils/error-handling";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

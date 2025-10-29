@@ -12,6 +12,13 @@ enum UserRole {
 }
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Skip middleware logic for login page - it's public
+  if (pathname === "/login") {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -45,18 +52,10 @@ export async function middleware(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = await (supabase.auth as any).getUser();
 
-  const { pathname } = request.nextUrl;
-
   // Redirect unauthenticated users trying to access dashboard to login
   if (pathname.startsWith("/dashboard") && !user) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Redirect authenticated users away from login page to dashboard
-  if (pathname === "/login" && user) {
-    const dashboardUrl = new URL("/dashboard", request.url);
-    return NextResponse.redirect(dashboardUrl);
   }
 
   // Check role for admin routes
@@ -89,9 +88,9 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public assets
      * - root path (/) for public landing page
-     * - login (public page, no auth needed)
      */
     "/dashboard/:path*",
+    "/login",
     "/admin/:path*",
     "/403",
   ],
