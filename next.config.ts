@@ -3,15 +3,13 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
-  webpack: (config, { nextRuntime }) => {
-    // Avoid bundling issues with @supabase packages in Edge Runtime
-    if (nextRuntime === 'edge') {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        // Ensure proper bundling for edge runtime
-      };
-    }
-    return config;
+  // Exclude Supabase from bundling to avoid Edge Runtime issues
+  serverExternalPackages: ['@supabase/ssr', '@supabase/supabase-js'],
+  // Force experimental features for server components
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
 };
 
