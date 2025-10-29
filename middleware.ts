@@ -1,4 +1,3 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Inline UserRole enum to avoid importing from @/lib/types/user
@@ -18,6 +17,9 @@ export async function middleware(request: NextRequest) {
   if (pathname === "/login") {
     return NextResponse.next();
   }
+
+  // Dynamically import Supabase only when needed (not for /login)
+  const { createServerClient } = await import("@supabase/ssr");
 
   let response = NextResponse.next({
     request: {
