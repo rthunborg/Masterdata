@@ -1,59 +1,59 @@
-00:13:36.005 
+00:20:23.956 
 ├ ƒ /api/columns/[id]
-00:13:36.006 
+00:20:23.957 
 ├ ƒ /api/employees
-00:13:36.006 
+00:20:23.957 
 ├ ƒ /api/employees/[id]
-00:13:36.006 
+00:20:23.957 
 ├ ƒ /api/employees/[id]/archive
-00:13:36.006 
+00:20:23.958 
 ├ ƒ /api/employees/[id]/custom-data
-00:13:36.006 
+00:20:23.958 
 ├ ƒ /api/employees/[id]/reactivate
-00:13:36.006 
+00:20:23.958 
 ├ ƒ /api/employees/[id]/terminate
-00:13:36.006 
+00:20:23.958 
 ├ ƒ /api/employees/[id]/unarchive
-00:13:36.006 
+00:20:23.960 
 ├ ƒ /api/employees/import
-00:13:36.007 
+00:20:23.960 
 ├ ƒ /api/health
-00:13:36.007 
+00:20:23.960 
 ├ ƒ /api/important-dates
-00:13:36.007 
+00:20:23.960 
 ├ ƒ /api/important-dates/[id]
-00:13:36.007 
+00:20:23.960 
 ├ ƒ /api/profile
-00:13:36.007 
+00:20:23.960 
 ├ ƒ /api/test-db
-00:13:36.007 
+00:20:23.960 
 ├ ƒ /dashboard
-00:13:36.008 
+00:20:23.960 
 ├ ƒ /dashboard/admin/columns
-00:13:36.008 
+00:20:23.960 
 ├ ƒ /dashboard/admin/users
-00:13:36.008 
+00:20:23.960 
 ├ ƒ /dashboard/important-dates
-00:13:36.008 
+00:20:23.960 
 └ ○ /login
-00:13:36.008 
-00:13:36.008 
-00:13:36.009 
+00:20:23.960 
+00:20:23.960 
+00:20:23.960 
 ○  (Static)   prerendered as static content
-00:13:36.009 
+00:20:23.960 
 ƒ  (Dynamic)  server-rendered on demand
-00:13:36.009 
-00:13:36.062 
+00:20:23.960 
+00:20:24.013 
 Build Completed in /vercel/output [48s]
-00:13:36.162 
+00:20:24.116 
 Deploying outputs...
-00:13:38.782 
+00:20:26.502 
 Deployment completed
-00:13:39.556 
+00:20:27.287 
 Creating build cache...
-00:14:06.390 
-Created build cache: 26.827s
-00:14:06.390 
+00:20:54.418 
+Created build cache: 27.123s
+00:20:54.419 
 Uploading build cache [186.12 MB]
-00:14:09.881 
-Build cache uploaded: 3.497s
+00:20:57.044 
+Build cache uploaded: 2.632s
