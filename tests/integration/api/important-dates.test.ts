@@ -322,7 +322,7 @@ describe("PATCH /api/important-dates/[id]", () => {
         body: JSON.stringify(updateData),
       }
     );
-    const response = await PATCH(request, { params: { id: "date-1" } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: "date-1" }) });
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -353,7 +353,7 @@ describe("PATCH /api/important-dates/[id]", () => {
         body: JSON.stringify({ notes: "Try to update" }),
       }
     );
-    const response = await PATCH(request, { params: { id: "date-1" } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: "date-1" }) });
     const json = await response.json();
 
     expect(response.status).toBe(403);
@@ -373,7 +373,7 @@ describe("PATCH /api/important-dates/[id]", () => {
         body: JSON.stringify({ notes: "Update" }),
       }
     );
-    const response = await PATCH(request, { params: { id: "non-existent" } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: "non-existent" }) });
     const json = await response.json();
 
     expect(response.status).toBe(404);
@@ -394,7 +394,7 @@ describe("PATCH /api/important-dates/[id]", () => {
         body: JSON.stringify(invalidData),
       }
     );
-    const response = await PATCH(request, { params: { id: "date-1" } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: "date-1" }) });
     const json = await response.json();
 
     expect(response.status).toBe(400);
@@ -426,7 +426,7 @@ describe("DELETE /api/important-dates/[id]", () => {
         method: "DELETE",
       }
     );
-    const response = await DELETE(request, { params: { id: "date-1" } });
+    const response = await DELETE(request, { params: Promise.resolve({ id: "date-1" }) });
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -456,7 +456,7 @@ describe("DELETE /api/important-dates/[id]", () => {
         method: "DELETE",
       }
     );
-    const response = await DELETE(request, { params: { id: "date-1" } });
+    const response = await DELETE(request, { params: Promise.resolve({ id: "date-1" }) });
     const json = await response.json();
 
     expect(response.status).toBe(403);
@@ -475,7 +475,7 @@ describe("DELETE /api/important-dates/[id]", () => {
         method: "DELETE",
       }
     );
-    const response = await DELETE(request, { params: { id: "non-existent" } });
+    const response = await DELETE(request, { params: Promise.resolve({ id: "non-existent" }) });
     const json = await response.json();
 
     expect(response.status).toBe(404);

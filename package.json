@@ -11,7 +11,9 @@
     "test": "vitest",
     "test:integration": "dotenv -e .env.test -- vitest --run tests/integration",
     "test:watch": "vitest watch",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "setup:test-users": "npx tsx scripts/apply-external-party-test-users.ts",
+    "setup:test-users:prod": "npx tsx scripts/apply-external-party-test-users.ts --prod"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

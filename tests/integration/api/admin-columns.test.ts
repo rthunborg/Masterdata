@@ -238,7 +238,7 @@ describe("PATCH /api/admin/columns/[id]", () => {
       }),
     });
 
-    const response = await PATCH(request, { params: { id: "col-1" } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: "col-1" }) });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -259,7 +259,7 @@ describe("PATCH /api/admin/columns/[id]", () => {
       }),
     });
 
-    const response = await PATCH(request, { params: { id: "col-1" } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: "col-1" }) });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -281,7 +281,7 @@ describe("PATCH /api/admin/columns/[id]", () => {
       }),
     });
 
-    const response = await PATCH(request, { params: { id: "col-1" } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: "col-1" }) });
     const data = await response.json();
 
     expect(response.status).toBe(403);
@@ -320,7 +320,7 @@ describe("PATCH /api/admin/columns/[id]", () => {
       }
     );
 
-    const response = await PATCH(request, { params: { id: "nonexistent-id" } });
+    const response = await PATCH(request, { params: Promise.resolve({ id: "nonexistent-id" }) });
     const data = await response.json();
 
     expect(response.status).toBe(404);

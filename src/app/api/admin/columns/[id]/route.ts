@@ -11,11 +11,14 @@ import { ZodError } from "zod";
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Enforce HR Admin role
     await requireHRAdminAPI();
+
+    // Await params (Next.js 15+ requirement)
+    const { id } = await params;
 
     const supabase = await createClient();
     const body = await request.json();
@@ -42,7 +45,7 @@ export async function PATCH(
     const { data: updatedColumn, error } = await supabase
       .from("column_config")
       .update({ role_permissions: validated.role_permissions })
-      .eq("id", params.id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -103,14 +106,16 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Enforce HR Admin role
     const user = await requireHRAdminAPI();
 
+    // Await params (Next.js 15+ requirement)
+    const { id: columnId } = await params;
+
     const supabase = await createClient();
-    const columnId = params.id;
 
     // Fetch column to verify it exists and is not masterdata
     const { data: column, error: fetchError } = await supabase
