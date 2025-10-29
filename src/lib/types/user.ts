@@ -48,3 +48,21 @@ export interface User {
 export interface SessionUser extends User {
   auth_id: string;
 }
+
+// Form data for creating users
+export interface CreateUserRequest {
+  email: string;
+  password: string;
+  role: UserRole;
+  is_active: boolean;
+}
+
+// Form data for updating user status
+export interface UpdateUserRequest {
+  is_active: boolean;
+}
+
+// API response when creating a user
+export interface CreateUserResponse extends User {
+  temporary_password: string;
+}

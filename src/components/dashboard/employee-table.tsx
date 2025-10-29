@@ -56,6 +56,9 @@ interface EmployeeTableProps {
   onIncludeArchivedChange?: (value: boolean) => void;
   includeTerminated?: boolean;
   onIncludeTerminatedChange?: (value: boolean) => void;
+  isRealtimeConnected?: boolean;
+  updatedEmployeeId?: string | null;
+  onGlobalFilterChange?: (value: string) => void;
 }
 
 // Custom global filter function for multi-column search
@@ -85,6 +88,9 @@ export function EmployeeTable({
   onIncludeArchivedChange,
   includeTerminated = false,
   onIncludeTerminatedChange,
+  isRealtimeConnected = false,
+  updatedEmployeeId = null,
+  onGlobalFilterChange,
 }: EmployeeTableProps) {
   const { user } = useAuth();
   const isHRAdmin = user?.role === "hr_admin";
@@ -103,6 +109,39 @@ export function EmployeeTable({
   // Search and sort state
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  
+  // Row refs for scrolling
+  const rowRefs = React.useRef<Map<string, HTMLTableRowElement>>(new Map());
+
+  // Notify parent of global filter changes
+  React.useEffect(() => {
+    onGlobalFilterChange?.(globalFilter);
+  }, [globalFilter, onGlobalFilterChange]);
+
+  // Scroll to employee function
+  const scrollToEmployee = React.useCallback((employeeId: string) => {
+    const rowElement = rowRefs.current.get(employeeId);
+    if (rowElement) {
+      rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      rowElement.classList.add("ring-2", "ring-blue-500", "ring-offset-2");
+      setTimeout(() => {
+        rowElement.classList.remove("ring-2", "ring-blue-500", "ring-offset-2");
+      }, 3000);
+    }
+  }, []);
+
+  // Listen for scroll-to-employee events from notifications
+  React.useEffect(() => {
+    const handleScrollToEmployee = (event: Event) => {
+      const customEvent = event as CustomEvent<{ employeeId: string }>;
+      scrollToEmployee(customEvent.detail.employeeId);
+    };
+
+    window.addEventListener("scrollToEmployee", handleScrollToEmployee as EventListener);
+    return () => {
+      window.removeEventListener("scrollToEmployee", handleScrollToEmployee as EventListener);
+    };
+  }, [scrollToEmployee]);
 
   // Handler for masterdata column updates
   const handleMasterdataUpdate = React.useCallback(async (
@@ -520,7 +559,7 @@ export function EmployeeTable({
         </div>
       )}
 
-      {/* Search Input */}
+      {/* Search Input with Connection Status */}
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -539,6 +578,27 @@ export function EmployeeTable({
               <X className="h-4 w-4" />
             </button>
           )}
+        </div>
+
+        {/* Real-time Connection Status Indicator */}
+        <div 
+          className="flex items-center gap-2 px-3 py-2 rounded-md border bg-background"
+          role="status"
+          aria-live="polite"
+          aria-label={isRealtimeConnected ? "Real-time updates connected" : "Real-time updates disconnected"}
+        >
+          <div
+            className={cn(
+              "h-2 w-2 rounded-full",
+              isRealtimeConnected 
+                ? "bg-green-500 animate-pulse" 
+                : "bg-gray-400"
+            )}
+            aria-hidden="true"
+          />
+          <span className="text-sm text-muted-foreground">
+            {isRealtimeConnected ? "Live" : "Offline"}
+          </span>
         </div>
       </div>
 
@@ -571,21 +631,34 @@ export function EmployeeTable({
                 </TableCell>
               </TableRow>
             ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow 
-                  key={row.id}
-                  className={cn(
-                    row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
-                    row.original.is_terminated && !row.original.is_archived && "bg-red-50 text-red-800"
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const isUpdatedRow = updatedEmployeeId === row.original.id;
+                
+                return (
+                  <TableRow 
+                    key={row.id}
+                    ref={(el) => {
+                      if (el) {
+                        rowRefs.current.set(row.original.id, el);
+                      } else {
+                        rowRefs.current.delete(row.original.id);
+                      }
+                    }}
+                    className={cn(
+                      row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
+                      row.original.is_terminated && !row.original.is_archived && "bg-red-50 text-red-800",
+                      isUpdatedRow && "animate-pulse bg-blue-50 border-l-4 border-l-blue-400 transition-all duration-2000"
+                    )}
+                    data-testid={`employee-row-${row.original.id}`}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

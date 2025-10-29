@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/hooks/use-auth";
+import { useEmployees } from "@/lib/hooks/use-employees";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,10 +17,7 @@ import { AddColumnModal } from "@/components/dashboard/add-column-modal";
 import { EditColumnModal } from "@/components/dashboard/edit-column-modal";
 import { ManageColumnsDialog } from "@/components/dashboard/manage-columns-dropdown";
 import { ImportEmployeesModal } from "@/components/dashboard/import-employees-modal";
-import { employeeService } from "@/lib/services/employee-service";
-import { customDataService } from "@/lib/services/custom-data-service";
-import { useEffect, useState } from "react";
-import type { Employee } from "@/lib/types/employee";
+import { useState } from "react";
 import { Plus, Upload, Columns } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
 
@@ -27,60 +25,34 @@ export default function DashboardPage() {
   const { user, logout, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { openModal } = useUIStore();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [isLoadingEmployees, setIsLoadingEmployees] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [includeArchived, setIncludeArchived] = useState(false);
   const [includeTerminated, setIncludeTerminated] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState("");
 
-  const fetchEmployees = async () => {
-    if (!user) return;
-
-    try {
-      setIsLoadingEmployees(true);
-      setError(null);
-      const data = await employeeService.getAll({ includeArchived, includeTerminated });
-      
-      // For external party users, fetch custom data for each employee
-      if (user.role !== "hr_admin") {
-        const employeesWithCustomData = await Promise.all(
-          data.map(async (employee) => {
-            try {
-              const customData = await customDataService.getCustomData(employee.id);
-              return { ...employee, customData };
-            } catch (err) {
-              // If custom data fetch fails, just return employee without custom data
-              console.warn(`Failed to fetch custom data for employee ${employee.id}:`, err);
-              return { ...employee, customData: {} };
-            }
-          })
-        );
-        setEmployees(employeesWithCustomData);
-      } else {
-        setEmployees(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch employees:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to load employees"
-      );
-    } finally {
-      setIsLoadingEmployees(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEmployees();
-  }, [user, includeArchived, includeTerminated]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Use the new real-time enabled hook with notifications
+  const { 
+    employees, 
+    isLoading: isLoadingEmployees, 
+    error, 
+    isConnected,
+    refetch,
+    updatedEmployeeId
+  } = useEmployees({
+    filters: { includeArchived, includeTerminated },
+    enableRealtime: true,
+    userRole: user?.role,
+    enableNotifications: user?.role !== "hr_admin", // Only enable for external parties
+    globalFilter,
+  });
 
   const handleEmployeeAdded = () => {
-    fetchEmployees();
+    refetch();
   };
 
   const handleEmployeesImported = () => {
-    fetchEmployees();
+    refetch();
   };
 
   const handleLogout = async () => {
@@ -151,7 +123,7 @@ export default function DashboardPage() {
             <CardTitle>Error Loading Employees</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-red-600">{error}</p>
+            <p className="text-red-600">{error.message}</p>
             <Button
               onClick={() => window.location.reload()}
               variant="outline"
@@ -173,11 +145,14 @@ export default function DashboardPage() {
             <EmployeeTable
               employees={employees}
               isLoading={isLoadingEmployees}
-              onEmployeeUpdated={fetchEmployees}
+              onEmployeeUpdated={refetch}
               includeArchived={includeArchived}
               onIncludeArchivedChange={setIncludeArchived}
               includeTerminated={includeTerminated}
               onIncludeTerminatedChange={setIncludeTerminated}
+              isRealtimeConnected={isConnected}
+              updatedEmployeeId={updatedEmployeeId}
+              onGlobalFilterChange={setGlobalFilter}
             />
           </CardContent>
         </Card>
