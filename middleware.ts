@@ -39,32 +39,32 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Get session - use getUser() instead of getSession() for better type safety
+  // Get session
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
 
   // Redirect unauthenticated users trying to access dashboard to login
-  if (pathname.startsWith("/dashboard") && !user) {
+  if (pathname.startsWith("/dashboard") && !session) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // Redirect authenticated users away from login page to dashboard
-  if (pathname === "/login" && user) {
+  if (pathname === "/login" && session) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }
 
   // Check role for admin routes
-  if (pathname.startsWith("/admin") && user) {
+  if (pathname.startsWith("/admin") && session) {
     // Get user role from database
     const { data: userRecord } = await supabase
       .from("users")
       .select("role")
-      .eq("auth_user_id", user.id)
+      .eq("auth_user_id", session.user.id)
       .eq("is_active", true)
       .single();
 
