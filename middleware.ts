@@ -89,9 +89,9 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public assets
      * - root path (/) for public landing page
+     * - login (public page, no auth needed)
      */
     "/dashboard/:path*",
-    "/login",
     "/admin/:path*",
     "/403",
   ],
