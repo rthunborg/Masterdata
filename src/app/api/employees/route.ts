@@ -7,6 +7,9 @@ import {
 import { createEmployeeSchema } from "@/lib/validation/employee-schema";
 import { z } from "zod";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
   try {
     // Verify HR Admin role

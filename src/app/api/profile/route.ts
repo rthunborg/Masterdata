@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import type { APIResponse } from "@/lib/types/api";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 // Example protected API route - requires any authenticated user
 export async function GET() {
   try {

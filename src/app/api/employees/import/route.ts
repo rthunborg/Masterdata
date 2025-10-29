@@ -16,6 +16,10 @@ interface ImportError {
   data: Record<string, unknown>;
 }
 
+
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     // Require HR Admin authentication

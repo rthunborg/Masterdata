@@ -4,6 +4,9 @@ import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { updateUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

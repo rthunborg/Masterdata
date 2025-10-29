@@ -8,6 +8,9 @@ import {
 import { updateColumnSchema } from "@/lib/validation/column-validation";
 import { z } from "zod";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 /**
  * PATCH /api/columns/[id]
  * Update an existing custom column (name, category)

@@ -7,6 +7,9 @@ import {
 import { updateEmployeeSchema } from "@/lib/validation/employee-schema";
 import { z } from "zod";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

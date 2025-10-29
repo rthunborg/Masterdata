@@ -5,6 +5,9 @@ import {
   createErrorResponse,
 } from "@/lib/server/auth";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

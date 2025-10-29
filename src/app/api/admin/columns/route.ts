@@ -7,6 +7,10 @@ import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
  * List all column configurations with permissions
  * Authorization: HR Admin only
  */
+
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     // Enforce HR Admin role

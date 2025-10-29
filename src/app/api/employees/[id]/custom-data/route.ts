@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { UserRole } from "@/lib/types/user";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 /**
  * GET /api/employees/[id]/custom-data
  * Get custom column data for a specific employee

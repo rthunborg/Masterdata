@@ -8,6 +8,10 @@ import {
 import { createImportantDateSchema } from "@/lib/validation/important-date-schema";
 import { z } from "zod";
 
+
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
   try {
     // Verify authentication (all users can view)

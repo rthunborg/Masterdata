@@ -4,6 +4,10 @@ import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { createUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
 
+
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     // Enforce HR Admin role

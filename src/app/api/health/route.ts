@@ -7,6 +7,10 @@ import { NextResponse } from "next/server";
  * Returns system health status for monitoring and smoke tests.
  * This endpoint is public and does not require authentication.
  */
+
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function GET() {
   return NextResponse.json({
     status: "ok",

@@ -7,6 +7,9 @@ import {
 import { terminateEmployeeSchema } from "@/lib/validation/employee-schema";
 import { z } from "zod";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

@@ -13,6 +13,10 @@ import { z } from "zod";
  * Fetch all column configurations visible to current user's role
  * Authorization: All authenticated users
  */
+
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     // Verify authentication and get user

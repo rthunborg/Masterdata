@@ -4,6 +4,9 @@ import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { updateColumnPermissionsSchema } from "@/lib/validation/column-validation";
 import { ZodError } from "zod";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 /**
  * PATCH /api/admin/columns/[id]
  * Update column permissions

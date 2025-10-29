@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const supabase = await createClient();

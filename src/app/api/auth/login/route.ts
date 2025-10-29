@@ -4,6 +4,9 @@ import { loginFormSchema } from "@/lib/validation/auth-schema";
 import { userRepository } from "@/lib/server/repositories/user-repository";
 import type { APIResponse, LoginResponse } from "@/lib/types/api";
 
+// Force Node.js runtime for cookies() support
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
