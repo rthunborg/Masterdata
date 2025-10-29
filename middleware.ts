@@ -39,32 +39,32 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Get session
+  // Get user
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
   // Redirect unauthenticated users trying to access dashboard to login
-  if (pathname.startsWith("/dashboard") && !session) {
+  if (pathname.startsWith("/dashboard") && !user) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // Redirect authenticated users away from login page to dashboard
-  if (pathname === "/login" && session) {
+  if (pathname === "/login" && user) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }
 
   // Check role for admin routes
-  if (pathname.startsWith("/admin") && session) {
+  if (pathname.startsWith("/admin") && user) {
     // Get user role from database
     const { data: userRecord } = await supabase
       .from("users")
       .select("role")
-      .eq("auth_user_id", session.user.id)
+      .eq("auth_user_id", user.id)
       .eq("is_active", true)
       .single();
 
