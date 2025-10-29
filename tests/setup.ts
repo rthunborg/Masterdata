@@ -1,5 +1,12 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
+import fetch from 'node-fetch';
+
+// Polyfill fetch for Node.js environment (needed for Supabase client)
+if (!globalThis.fetch) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  globalThis.fetch = fetch as any;
+}
 
 // Mock environment variables
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321';

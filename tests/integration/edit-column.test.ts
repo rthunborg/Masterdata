@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { PATCH } from "@/app/api/columns/[id]/route";
 import { NextRequest } from "next/server";
 import { UserRole } from "@/lib/types/user";
 
-// Mock authentication
+// Mock authentication - MUST be before route import
 vi.mock("@/lib/server/auth", () => ({
   requireAuthAPI: vi.fn().mockResolvedValue({
     id: "user-123",
@@ -54,6 +53,9 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
   },
 }));
 
+// Import route handler AFTER mocks are defined
+import { PATCH } from "@/app/api/columns/[id]/route";
+
 describe("PATCH /api/columns/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -69,7 +71,7 @@ describe("PATCH /api/columns/[id]", () => {
       }
     );
 
-    const response = await PATCH(mockRequest, { params: { id: "col-123" } });
+    const response = await PATCH(mockRequest, { params: Promise.resolve({ id: "col-123" }) });
 
     expect(response.status).toBe(200);
     const data = await response.json();
@@ -85,7 +87,7 @@ describe("PATCH /api/columns/[id]", () => {
       }
     );
 
-    const response = await PATCH(mockRequest, { params: { id: "col-123" } });
+    const response = await PATCH(mockRequest, { params: Promise.resolve({ id: "col-123" }) });
 
     expect(response.status).toBe(200);
     const data = await response.json();
@@ -112,7 +114,7 @@ describe("PATCH /api/columns/[id]", () => {
       }
     );
 
-    const response = await PATCH(mockRequest, { params: { id: "col-123" } });
+    const response = await PATCH(mockRequest, { params: Promise.resolve({ id: "col-123" }) });
 
     expect(response.status).toBe(403);
     const error = await response.json();
@@ -136,7 +138,7 @@ describe("PATCH /api/columns/[id]", () => {
       }
     );
 
-    const response = await PATCH(mockRequest, { params: { id: "sodexo-col" } });
+    const response = await PATCH(mockRequest, { params: Promise.resolve({ id: "sodexo-col" }) });
 
     expect(response.status).toBe(403);
     const error = await response.json();
@@ -152,7 +154,7 @@ describe("PATCH /api/columns/[id]", () => {
       }
     );
 
-    const response = await PATCH(mockRequest, { params: { id: "col-123" } });
+    const response = await PATCH(mockRequest, { params: Promise.resolve({ id: "col-123" }) });
 
     expect(response.status).toBe(400);
     const error = await response.json();
@@ -170,7 +172,7 @@ describe("PATCH /api/columns/[id]", () => {
       }
     );
 
-    const response = await PATCH(mockRequest, { params: { id: "col-123" } });
+    const response = await PATCH(mockRequest, { params: Promise.resolve({ id: "col-123" }) });
 
     expect(response.status).toBe(400);
     const error = await response.json();
@@ -195,7 +197,7 @@ describe("PATCH /api/columns/[id]", () => {
     );
 
     const response = await PATCH(mockRequest, {
-      params: { id: "nonexistent" },
+      params: Promise.resolve({ id: "nonexistent" }),
     });
 
     expect(response.status).toBe(404);

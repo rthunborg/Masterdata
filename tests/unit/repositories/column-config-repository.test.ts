@@ -338,7 +338,7 @@ describe("ColumnConfigRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      const result = await repository.updateColumn("col-custom", { category: "HR" });
+      const result = await repository.updateColumn("col-custom", "user-1", UserRole.SODEXO, { category: "HR" });
 
       expect(result.category).toBe("HR");
       expect(mockClient.update).toHaveBeenCalled();
@@ -365,7 +365,7 @@ describe("ColumnConfigRepository", () => {
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(
-        repository.updateColumn("col-master", { category: "HR" })
+        repository.updateColumn("col-master", "user-1", UserRole.HR_ADMIN, { category: "HR" })
       ).rejects.toThrow("Cannot update masterdata column");
     });
 
@@ -383,7 +383,7 @@ describe("ColumnConfigRepository", () => {
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(
-        repository.updateColumn("nonexistent", { category: "HR" })
+        repository.updateColumn("nonexistent", "user-1", UserRole.HR_ADMIN, { category: "HR" })
       ).rejects.toThrow("Column not found");
     });
   });
