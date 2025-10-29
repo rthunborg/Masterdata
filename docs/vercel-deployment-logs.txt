@@ -1,0 +1,59 @@
+00:13:36.005 
+├ ƒ /api/columns/[id]
+00:13:36.006 
+├ ƒ /api/employees
+00:13:36.006 
+├ ƒ /api/employees/[id]
+00:13:36.006 
+├ ƒ /api/employees/[id]/archive
+00:13:36.006 
+├ ƒ /api/employees/[id]/custom-data
+00:13:36.006 
+├ ƒ /api/employees/[id]/reactivate
+00:13:36.006 
+├ ƒ /api/employees/[id]/terminate
+00:13:36.006 
+├ ƒ /api/employees/[id]/unarchive
+00:13:36.006 
+├ ƒ /api/employees/import
+00:13:36.007 
+├ ƒ /api/health
+00:13:36.007 
+├ ƒ /api/important-dates
+00:13:36.007 
+├ ƒ /api/important-dates/[id]
+00:13:36.007 
+├ ƒ /api/profile
+00:13:36.007 
+├ ƒ /api/test-db
+00:13:36.007 
+├ ƒ /dashboard
+00:13:36.008 
+├ ƒ /dashboard/admin/columns
+00:13:36.008 
+├ ƒ /dashboard/admin/users
+00:13:36.008 
+├ ƒ /dashboard/important-dates
+00:13:36.008 
+└ ○ /login
+00:13:36.008 
+00:13:36.008 
+00:13:36.009 
+○  (Static)   prerendered as static content
+00:13:36.009 
+ƒ  (Dynamic)  server-rendered on demand
+00:13:36.009 
+00:13:36.062 
+Build Completed in /vercel/output [48s]
+00:13:36.162 
+Deploying outputs...
+00:13:38.782 
+Deployment completed
+00:13:39.556 
+Creating build cache...
+00:14:06.390 
+Created build cache: 26.827s
+00:14:06.390 
+Uploading build cache [186.12 MB]
+00:14:09.881 
+Build cache uploaded: 3.497s
