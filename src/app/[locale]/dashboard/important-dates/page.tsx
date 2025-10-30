@@ -93,7 +93,7 @@ export default function ImportantDatesPage() {
           <div>
             <h2 className="text-3xl font-bold text-gray-900">{t('importantDates')}</h2>
             <p className="mt-2 text-gray-600">
-              Reference calendar of important operational dates for Stena and ÖMC
+              {t('pageDescription')}
             </p>
           </div>
           {user?.role === "hr_admin" && (
@@ -126,7 +126,7 @@ export default function ImportantDatesPage() {
           <CardHeader>
             <CardTitle>{t('importantDates')}</CardTitle>
             <CardDescription>
-              Important operational dates organized by week number and category
+              {t('pageSubtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent>

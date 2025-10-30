@@ -102,6 +102,7 @@ export function EmployeeTable({
   const { user } = useAuth();
   const isHRAdmin = user?.role === "hr_admin";
   const t = useTranslations("tooltips");
+  const tDashboard = useTranslations("dashboard");
   
   // Get preview mode state
   const { previewRole, isPreviewMode } = useUIStore();
@@ -559,7 +560,7 @@ export function EmployeeTable({
       <div className="text-center p-8 text-muted-foreground">
         {includeArchived 
           ? "No archived employees found." 
-          : "No employees found. Click 'Add Employee' to create your first record."}
+          : tDashboard('noEmployeesMessage')}
       </div>
     );
   }

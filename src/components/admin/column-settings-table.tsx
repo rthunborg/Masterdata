@@ -38,6 +38,7 @@ export function ColumnSettingsTable({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [columnToDelete, setColumnToDelete] = useState<ColumnConfig | null>(null);
   const t = useTranslations("tooltips");
+  const tForms = useTranslations("forms");
 
   const allRoles: UserRole[] = [
     UserRole.HR_ADMIN,
@@ -160,7 +161,7 @@ export function ColumnSettingsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[200px]">Column Name</TableHead>
+            <TableHead className="w-[200px]">{tForms('columnNameLabel')}</TableHead>
             <TableHead className="w-[100px]">Type</TableHead>
             <TableHead className="w-[120px]">Category</TableHead>
             {allRoles.map((role) => (

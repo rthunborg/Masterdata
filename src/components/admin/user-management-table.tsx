@@ -4,6 +4,7 @@ import { useState } from "react";
 import { User, getRoleDisplayName } from "@/lib/types/user";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { adminService } from "@/lib/services/admin-service";
+import { useTranslations } from "next-intl";
 import {
   Table,
   TableBody,
@@ -35,6 +36,7 @@ export function UserManagementTable({
   onUserStatusChanged,
 }: UserManagementTableProps) {
   const { user: currentUser } = useAuth();
+  const t = useTranslations("admin");
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     user: User | null;
@@ -87,10 +89,10 @@ export function UserManagementTable({
           <TableHeader>
             <TableRow>
               <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
+              <TableHead>{t('roleColumn')}</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t('createdColumn')}</TableHead>
+              <TableHead className="text-right">{t('actionsColumn')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -132,7 +134,7 @@ export function UserManagementTable({
                               : "Deactivate user"
                           }
                         >
-                          Deactivate
+                          {t('deactivateButton')}
                         </Button>
                       ) : (
                         <Button

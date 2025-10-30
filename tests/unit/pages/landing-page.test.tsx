@@ -6,20 +6,20 @@ describe("Landing Page", () => {
   it("renders application name", () => {
     render(<LandingPage />);
     expect(
-      screen.getByText(/HR Masterdata Management System/i)
+      screen.getByText(/Stena Line Säsongsrekrytering/i)
     ).toBeInTheDocument();
   });
 
   it("displays description", () => {
     render(<LandingPage />);
     expect(
-      screen.getByText(/Centralized employee data management platform/i)
+      screen.getByText(/Hantera anställningsdata/i)
     ).toBeInTheDocument();
   });
 
   it("displays login button with correct link", () => {
     render(<LandingPage />);
-    const loginButton = screen.getByText(/Login to System/i);
+    const loginButton = screen.getByText(/Logga in till systemet/i);
     expect(loginButton).toBeInTheDocument();
     expect(loginButton.closest("a")).toHaveAttribute("href", "/login");
   });

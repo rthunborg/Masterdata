@@ -47,7 +47,7 @@ export default function UserManagementPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{t('userManagement')}</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Create and manage user accounts with role assignments
+            {t('userManagementDescription')}
           </p>
         </div>
         <Button onClick={() => setIsAddModalOpen(true)}>

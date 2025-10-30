@@ -66,6 +66,7 @@ export function ImportantDatesTable({
 }: ImportantDatesTableProps) {
   const isHRAdmin = userRole === "hr_admin";
   const t = useTranslations("tooltips");
+  const tDates = useTranslations("dates");
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<ImportantDate | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -127,7 +128,7 @@ export function ImportantDatesTable({
     const cols: ColumnDef<ImportantDate>[] = [
       {
         accessorKey: "week_number",
-        header: "Week Number",
+        header: tDates("weekNumber"),
         enableSorting: true,
         cell: ({ row }) =>
           isHRAdmin ? (
@@ -145,13 +146,13 @@ export function ImportantDatesTable({
       },
       {
         accessorKey: "year",
-        header: "Year",
+        header: tDates("year"),
         enableSorting: true,
         cell: ({ row }) => row.original.year,
       },
       {
         accessorKey: "category",
-        header: "Category",
+        header: tDates("category"),
         enableSorting: true,
         cell: ({ row }) =>
           isHRAdmin ? (
@@ -252,7 +253,7 @@ export function ImportantDatesTable({
     }
 
     return cols;
-  }, [isHRAdmin, handleCellUpdate, t]);
+  }, [isHRAdmin, handleCellUpdate, t, tDates]);
 
   // Filter dates by category
   const filteredDates = React.useMemo(() => {
@@ -285,14 +286,14 @@ export function ImportantDatesTable({
       {/* Category Filter */}
       <div className="flex items-center gap-4">
         <Label htmlFor="category-filter" className="whitespace-nowrap">
-          Filter by Category:
+          {tDates('filterByCategory')}:
         </Label>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger id="category-filter" className="w-[200px]">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="All">All Categories</SelectItem>
+            <SelectItem value="All">{tDates('allCategories')}</SelectItem>
             <SelectItem value="Stena Dates">Stena Dates</SelectItem>
             <SelectItem value="ÖMC Dates">ÖMC Dates</SelectItem>
             <SelectItem value="Other">Other</SelectItem>
@@ -333,7 +334,7 @@ export function ImportantDatesTable({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No important dates found.
+                  {tDates('noImportantDates')}
                 </TableCell>
               </TableRow>
             )}
