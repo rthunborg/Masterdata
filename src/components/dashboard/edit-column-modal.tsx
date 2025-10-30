@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +62,10 @@ export function EditColumnModal() {
   const { columns, refetch } = useColumns();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  
+  const t = useTranslations('modals.editColumn');
+  const tCommon = useTranslations('common');
+  const tForms = useTranslations('forms');
 
   // Find the column being edited
   const editingColumn = columns.find((col) => col.id === editColumnId);
@@ -101,7 +106,7 @@ export function EditColumnModal() {
 
   const onSubmit = async (data: UpdateColumnInput) => {
     if (!editColumnId) {
-      toast.error("No column selected for editing");
+      toast.error(t('noColumnSelected'));
       return;
     }
 
@@ -132,7 +137,7 @@ export function EditColumnModal() {
         submitData
       );
 
-      toast.success(`Column '${updatedColumn.column_name}' updated successfully`);
+      toast.success(t('columnUpdated', { name: updatedColumn.column_name }));
 
       // Refetch columns to update the table
       refetch();
@@ -141,7 +146,7 @@ export function EditColumnModal() {
       closeEditColumnModal();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to update column";
+        error instanceof Error ? error.message : t('updateFailed');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -152,10 +157,9 @@ export function EditColumnModal() {
     <Dialog open={modals.editColumn} onOpenChange={closeEditColumnModal}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Edit Column</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Update the column name or category. Column type cannot be changed for
-            existing columns.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -167,7 +171,7 @@ export function EditColumnModal() {
               name="column_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Column Name *</FormLabel>
+                  <FormLabel>{tForms('columnName')} *</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g., Recruitment Team"
@@ -183,7 +187,7 @@ export function EditColumnModal() {
             {/* Column Type (Read-only) */}
             {editingColumn && (
               <FormItem>
-                <FormLabel>Column Type</FormLabel>
+                <FormLabel>{tForms('columnType')}</FormLabel>
                 <Select value={editingColumn.column_type} disabled>
                   <FormControl>
                     <SelectTrigger>
@@ -198,7 +202,7 @@ export function EditColumnModal() {
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">
-                  Column type cannot be changed for existing columns
+                  {t('columnTypeHint')}
                 </p>
               </FormItem>
             )}
@@ -209,7 +213,7 @@ export function EditColumnModal() {
               name="category"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Category (Optional)</FormLabel>
+                  <FormLabel>{tForms('category')} (Optional)</FormLabel>
                   <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -236,7 +240,7 @@ export function EditColumnModal() {
                           onValueChange={field.onChange}
                         />
                         <CommandEmpty>
-                          Press Enter to create &quot;{field.value}&quot;
+                          Press Enter to create &quot;{field.value || ''}&quot;
                         </CommandEmpty>
                         {existingCategories.length > 0 && (
                           <CommandGroup heading="Existing Categories">
@@ -277,10 +281,10 @@ export function EditColumnModal() {
                 onClick={closeEditColumnModal}
                 disabled={isSubmitting}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save Changes"}
+                {isSubmitting ? t('saving') : t('saveButton')}
               </Button>
             </DialogFooter>
           </form>

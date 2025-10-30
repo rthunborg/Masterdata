@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { columnService } from "@/lib/services/column-service";
 import { ColumnConfig } from "@/lib/types/column-config";
 import { ColumnSettingsTable } from "@/components/admin/column-settings-table";
@@ -10,6 +11,9 @@ import { toast } from "sonner";
 type FilterMode = "all" | "masterdata" | "custom";
 
 export default function ColumnSettingsPage() {
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
+  const tErrors = useTranslations('errors');
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
   const [filteredColumns, setFilteredColumns] = useState<ColumnConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +27,7 @@ export default function ColumnSettingsPage() {
       setFilteredColumns(data);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to load columns"
+        error instanceof Error ? error.message : tErrors('loadFailed')
       );
     } finally {
       setIsLoading(false);
@@ -54,7 +58,7 @@ export default function ColumnSettingsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Column Settings
+            {t('columnSettings')}
           </h1>
           <p className="mt-2 text-sm text-gray-700">
             Configure which roles can view and edit specific columns
@@ -69,7 +73,7 @@ export default function ColumnSettingsPage() {
           onClick={() => setFilterMode("all")}
           size="sm"
         >
-          All Columns
+          {tCommon('all')} Columns
         </Button>
         <Button
           variant={filterMode === "masterdata" ? "default" : "outline"}

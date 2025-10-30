@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +61,10 @@ export function AddColumnModal() {
   const { columns, refetch } = useColumns();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  
+  const t = useTranslations('modals.addColumn');
+  const tCommon = useTranslations('common');
+  const tForms = useTranslations('forms');
 
   // Extract existing categories from columns
   const existingCategories = Array.from(
@@ -94,7 +99,7 @@ export function AddColumnModal() {
     if (existingColumnNames.includes(data.column_name.toLowerCase())) {
       form.setError("column_name", {
         type: "manual",
-        message: "Column name already exists. Please choose a different name.",
+        message: t('duplicateName'),
       });
       return;
     }
@@ -110,7 +115,7 @@ export function AddColumnModal() {
 
       const newColumn = await columnConfigService.createCustomColumn(submitData);
 
-      toast.success(`Column '${newColumn.column_name}' created successfully`);
+      toast.success(t('columnCreated', { name: newColumn.column_name }));
 
       // Refetch columns to update the table
       refetch();
@@ -120,7 +125,7 @@ export function AddColumnModal() {
       form.reset();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to create column";
+        error instanceof Error ? error.message : t('createFailed');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -134,10 +139,9 @@ export function AddColumnModal() {
     >
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Custom Column</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Create a new custom column to track additional employee data specific
-            to your department&apos;s needs.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -149,10 +153,10 @@ export function AddColumnModal() {
               name="column_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Column Name *</FormLabel>
+                  <FormLabel>{tForms('columnName')} *</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., Recruitment Team"
+                      placeholder={t('columnNamePlaceholder')}
                       {...field}
                       disabled={isSubmitting}
                     />
@@ -168,7 +172,7 @@ export function AddColumnModal() {
               name="column_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Column Type *</FormLabel>
+                  <FormLabel>{tForms('columnType')} *</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -176,14 +180,14 @@ export function AddColumnModal() {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a type" />
+                        <SelectValue placeholder={t('columnTypeLabel')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="text">Text</SelectItem>
-                      <SelectItem value="number">Number</SelectItem>
-                      <SelectItem value="date">Date</SelectItem>
-                      <SelectItem value="boolean">Boolean</SelectItem>
+                      <SelectItem value="text">{t('typeText')}</SelectItem>
+                      <SelectItem value="number">{t('typeNumber')}</SelectItem>
+                      <SelectItem value="date">{t('typeDate')}</SelectItem>
+                      <SelectItem value="boolean">{t('typeBoolean')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -197,7 +201,7 @@ export function AddColumnModal() {
               name="category"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Category (Optional)</FormLabel>
+                  <FormLabel>{t('categoryLabel')}</FormLabel>
                   <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -211,7 +215,7 @@ export function AddColumnModal() {
                           )}
                           disabled={isSubmitting}
                         >
-                          {field.value || "Select or type a category"}
+                          {field.value || t('categoryPlaceholder')}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
@@ -219,15 +223,15 @@ export function AddColumnModal() {
                     <PopoverContent className="w-[400px] p-0">
                       <Command>
                         <CommandInput
-                          placeholder="Search or type new category..."
+                          placeholder={t('categorySearch')}
                           value={field.value}
                           onValueChange={field.onChange}
                         />
                         <CommandEmpty>
-                          Press Enter to create &quot;{field.value}&quot;
+                          {t('createCategory', { value: field.value || '' })}
                         </CommandEmpty>
                         {existingCategories.length > 0 && (
-                          <CommandGroup heading="Existing Categories">
+                          <CommandGroup heading={t('existingCategories')}>
                             {existingCategories.map((category) => (
                               <CommandItem
                                 key={category}
@@ -265,10 +269,10 @@ export function AddColumnModal() {
                 onClick={() => closeModal("addColumn")}
                 disabled={isSubmitting}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Column"}
+                {isSubmitting ? t('creating') : t('createButton')}
               </Button>
             </DialogFooter>
           </form>

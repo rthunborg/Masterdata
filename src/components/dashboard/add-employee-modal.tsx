@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -31,7 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
-  createEmployeeSchema,
+  createEmployeeSchemaWithMessages,
   type CreateEmployeeInput,
 } from "@/lib/validation/employee-schema";
 import { employeeService } from "@/lib/services/employee-service";
@@ -48,6 +49,19 @@ export function AddEmployeeModal({
   onSuccess,
 }: AddEmployeeModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
+  const tDashboard = useTranslations('dashboard');
+  const tErrors = useTranslations('errors');
+
+  // Create schema with translated error messages
+  const createEmployeeSchema = createEmployeeSchemaWithMessages(
+    (key: string) => {
+      // Remove 'errors.' prefix to match translation key structure
+      const translationKey = key.replace('errors.', '');
+      return tErrors(translationKey as 'validation.firstNameRequired');
+    }
+  );
 
   const form = useForm<CreateEmployeeInput>({
     resolver: zodResolver(createEmployeeSchema),
@@ -72,11 +86,9 @@ export function AddEmployeeModal({
   const onSubmit = async (data: CreateEmployeeInput) => {
     try {
       setIsSubmitting(true);
-      const newEmployee = await employeeService.create(data);
+      await employeeService.create(data);
       
-      toast.success(
-        `Employee ${newEmployee.first_name} ${newEmployee.surname} created successfully`
-      );
+      toast.success(t('employeeAdded'));
       
       form.reset();
       onSuccess();
@@ -106,14 +118,14 @@ export function AddEmployeeModal({
         error.message.includes("already exists")
       ) {
         form.setError("ssn", {
-          message: "An employee with this SSN already exists",
+          message: t('duplicateSSN'),
         });
       }
       // Generic error
       else {
-        toast.error("Failed to create employee", {
+        toast.error(tErrors('saveFailed'), {
           description:
-            error instanceof Error ? error.message : "Unknown error occurred",
+            error instanceof Error ? error.message : tErrors('serverError'),
         });
       }
     } finally {
@@ -132,9 +144,9 @@ export function AddEmployeeModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Employee</DialogTitle>
+          <DialogTitle>{tDashboard('addEmployee')}</DialogTitle>
           <DialogDescription>
-            Create a new employee record with required information.
+            {t('createEmployeeDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -148,7 +160,7 @@ export function AddEmployeeModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      First Name <span className="text-red-500">*</span>
+                      {t('firstName')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="John" {...field} />
@@ -165,7 +177,7 @@ export function AddEmployeeModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Surname <span className="text-red-500">*</span>
+                      {t('surname')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="Doe" {...field} />
@@ -182,7 +194,7 @@ export function AddEmployeeModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      SSN <span className="text-red-500">*</span>
+                      {t('ssn')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="19850315-1234" {...field} />
@@ -199,7 +211,7 @@ export function AddEmployeeModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Email <span className="text-red-500">*</span>
+                      {t('email')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -219,7 +231,7 @@ export function AddEmployeeModal({
                 name="mobile"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mobile</FormLabel>
+                    <FormLabel>{t('mobile')}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="+46701234567"
@@ -241,7 +253,7 @@ export function AddEmployeeModal({
                 name="rank"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Rank</FormLabel>
+                    <FormLabel>{t('rank')}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="CHEF"
@@ -263,7 +275,7 @@ export function AddEmployeeModal({
                 name="town_district"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Town District</FormLabel>
+                    <FormLabel>{t('townDistrict')}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Stockholm"
@@ -285,22 +297,22 @@ export function AddEmployeeModal({
                 name="gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Gender</FormLabel>
+                    <FormLabel>{t('gender')}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? undefined}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
+                          <SelectValue placeholder={t('selectGender')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
+                        <SelectItem value="Male">{t('genderMale')}</SelectItem>
+                        <SelectItem value="Female">{t('genderFemale')}</SelectItem>
+                        <SelectItem value="Other">{t('genderOther')}</SelectItem>
                         <SelectItem value="Prefer not to say">
-                          Prefer not to say
+                          {t('genderPreferNotToSay')}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -316,7 +328,7 @@ export function AddEmployeeModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Hire Date <span className="text-red-500">*</span>
+                      {t('hireDate')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
@@ -333,10 +345,10 @@ export function AddEmployeeModal({
               name="comments"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Comments</FormLabel>
+                  <FormLabel>{t('comments')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Additional notes about the employee..."
+                      placeholder={t('commentsPlaceholder')}
                       className="resize-none"
                       rows={3}
                       {...field}
@@ -356,10 +368,10 @@ export function AddEmployeeModal({
                 onClick={onClose}
                 disabled={isSubmitting}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save Employee"}
+                {isSubmitting ? `${tCommon('loading')}` : tCommon('save')}
               </Button>
             </DialogFooter>
           </form>

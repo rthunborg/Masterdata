@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -42,7 +42,7 @@ export default function Home() {
 
             <div className="border-t pt-6 mt-6">
               <p className="text-xs text-zinc-500">
-                Version 1.00 | Secure Authentication Required | All rights reserverd 
+                Version 0.1.0 | Secure Authentication Required
               </p>
             </div>
           </div>

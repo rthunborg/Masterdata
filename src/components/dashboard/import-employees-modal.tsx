@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,9 @@ export function ImportEmployeesModal({
   onOpenChange,
   onSuccess,
 }: ImportEmployeesModalProps) {
+  const t = useTranslations('modals.importEmployees');
+  const tCommon = useTranslations('common');
+  
   const [file, setFile] = useState<File | null>(null);
   const [csvData, setCSVData] = useState<CSVRow[]>([]);
   const [csvHeaders, setCSVHeaders] = useState<string[]>([]);
@@ -66,7 +70,7 @@ export function ImportEmployeesModal({
         setCSVData(results.data.slice(0, 5) as CSVRow[]); // Preview first 5 rows
       },
       error: (error) => {
-        toast.error(`Failed to parse CSV: ${error.message}`);
+        toast.error(t('parseFailed', { message: error.message }));
         setFile(null);
       },
     });
@@ -81,13 +85,13 @@ export function ImportEmployeesModal({
       setImportResult(result);
       
       if (result.imported > 0) {
-        toast.success(`Successfully imported ${result.imported} employees!`);
+        toast.success(t('importSuccess', { count: result.imported }));
         onSuccess();
       } else {
-        toast.warning("No employees were imported. Please check the errors.");
+        toast.warning(t('noEmployeesImported'));
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to import employees";
+      const message = error instanceof Error ? error.message : t('importFailed');
       toast.error(message);
     } finally {
       setIsImporting(false);
@@ -108,7 +112,7 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    toast.success("Template downloaded");
+    toast.success(t('templateDownloaded'));
   };
 
   const handleDownloadErrorReport = () => {
@@ -130,7 +134,7 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    toast.success("Error report downloaded");
+    toast.success(t('errorReportDownloaded'));
   };
 
   const handleClose = () => {
@@ -146,11 +150,9 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Import Employees from CSV</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Upload a CSV file with the following columns: First Name, Surname,
-            Social Security No., Email, Mobile, Town District, Rank, Gender,
-            Hire Date (YYYY-MM-DD), Comments
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -166,7 +168,7 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
               />
             </div>
             <Button variant="outline" onClick={handleDownloadTemplate}>
-              Download CSV Template
+              {t('downloadTemplate')}
             </Button>
           </div>
         )}
@@ -175,7 +177,7 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
         {file && csvData.length > 0 && !importResult && (
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium mb-2">CSV Preview (First 5 Rows)</h4>
+              <h4 className="font-medium mb-2">{t('csvPreview')}</h4>
               <div className="border rounded-md overflow-auto max-h-64">
                 <Table>
                   <TableHeader>
@@ -202,8 +204,7 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              Column headers will be automatically mapped to database fields.
-              Required fields: First Name, Surname, SSN, Hire Date.
+              {t('mappingHint')}
             </p>
           </div>
         )}
@@ -214,9 +215,9 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
-            <p className="text-lg font-medium">Importing employees...</p>
+            <p className="text-lg font-medium">{t('importing')}</p>
             <p className="text-sm text-muted-foreground">
-              Please wait while we process your file
+              {t('pleaseWait')}
             </p>
           </div>
         )}
@@ -225,20 +226,20 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
         {importResult && !isImporting && (
           <div className="space-y-4">
             <div className="rounded-lg border p-4 bg-muted/50">
-              <h4 className="font-semibold text-lg mb-2">Import Complete</h4>
+              <h4 className="font-semibold text-lg mb-2">{t('importComplete')}</h4>
               <div className="space-y-1">
                 <p className="text-sm">
                   <span className="font-medium text-green-600">
-                    Successfully imported:
+                    {t('successfullyImported')}
                   </span>{" "}
-                  {importResult.imported} employees
+                  {importResult.imported} {t('employees')}
                 </p>
                 {importResult.skipped > 0 && (
                   <p className="text-sm">
                     <span className="font-medium text-orange-600">
-                      Skipped due to errors:
+                      {t('skippedErrors')}
                     </span>{" "}
-                    {importResult.skipped} rows
+                    {importResult.skipped} {t('rows')}
                   </p>
                 )}
               </div>
@@ -247,27 +248,26 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
             {importResult.errors.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h5 className="font-medium">Errors:</h5>
+                  <h5 className="font-medium">{t('errors')}</h5>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleDownloadErrorReport}
                   >
-                    Download Error Report
+                    {t('downloadErrorReport')}
                   </Button>
                 </div>
                 <div className="border rounded-md p-3 max-h-48 overflow-y-auto bg-muted/30">
                   <ul className="space-y-2 text-sm">
                     {importResult.errors.slice(0, 10).map((err, i) => (
                       <li key={i} className="text-red-600">
-                        <span className="font-medium">Row {err.row}:</span>{" "}
+                        <span className="font-medium">{t('row')} {err.row}:</span>{" "}
                         {err.error}
                       </li>
                     ))}
                     {importResult.errors.length > 10 && (
                       <li className="text-muted-foreground italic">
-                        ... and {importResult.errors.length - 10} more errors
-                        (download report for full list)
+                        {t('moreErrors', { count: importResult.errors.length - 10 })}
                       </li>
                     )}
                   </ul>
@@ -285,15 +285,15 @@ Jane,Smith,19900520-5678,jane.smith@example.com,+46709876543,Gothenburg,Develope
                 onClick={handleClose}
                 disabled={isImporting}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
               {file && !isImporting && (
-                <Button onClick={handleImport}>Import</Button>
+                <Button onClick={handleImport}>{tCommon('import')}</Button>
               )}
             </>
           )}
           {importResult && (
-            <Button onClick={handleClose}>Close</Button>
+            <Button onClick={handleClose}>{tCommon('close')}</Button>
           )}
         </DialogFooter>
       </DialogContent>

@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,10 @@ export function TerminateEmployeeModal({
   onOpenChange,
   onSuccess,
 }: TerminateEmployeeModalProps) {
+  const t = useTranslations('modals.terminateEmployee');
+  const tCommon = useTranslations('common');
+  const tForms = useTranslations('forms');
+  
   const {
     register,
     handleSubmit,
@@ -58,13 +63,13 @@ export function TerminateEmployeeModal({
         data.termination_reason
       );
       toast.success(
-        `${employee.first_name} ${employee.surname} has been marked as terminated.`
+        t('employeeTerminated', { name: `${employee.first_name} ${employee.surname}` })
       );
       onSuccess();
       onOpenChange(false);
       reset();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to terminate employee";
+      const errorMessage = error instanceof Error ? error.message : t('terminateFailed');
       toast.error(errorMessage);
     }
   };
@@ -73,34 +78,33 @@ export function TerminateEmployeeModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Mark Employee as Terminated</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Confirm the termination details for this employee. This action can
-            be reversed later if needed.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
         {employee && (
           <div className="my-4 rounded-lg border p-4">
-            <h4 className="font-medium mb-2">Employee Details</h4>
+            <h4 className="font-medium mb-2">{t('employeeDetails')}</h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="text-muted-foreground">Name:</span>
+                <span className="text-muted-foreground">{t('name')}</span>
                 <span className="ml-2">
                   {employee.first_name} {employee.surname}
                 </span>
               </div>
               <div>
-                <span className="text-muted-foreground">SSN:</span>
+                <span className="text-muted-foreground">{t('ssn')}</span>
                 <span className="ml-2">{employee.ssn}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Rank:</span>
-                <span className="ml-2">{employee.rank || "N/A"}</span>
+                <span className="text-muted-foreground">{t('rank')}</span>
+                <span className="ml-2">{employee.rank || t('notAvailable')}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Gender:</span>
-                <span className="ml-2">{employee.gender || "N/A"}</span>
+                <span className="text-muted-foreground">{t('gender')}</span>
+                <span className="ml-2">{employee.gender || t('notAvailable')}</span>
               </div>
             </div>
           </div>
@@ -108,7 +112,7 @@ export function TerminateEmployeeModal({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="termination_date">Termination Date *</Label>
+            <Label htmlFor="termination_date">{t('terminationDateLabel')} *</Label>
             <Input
               id="termination_date"
               type="date"
@@ -122,10 +126,10 @@ export function TerminateEmployeeModal({
           </div>
 
           <div>
-            <Label htmlFor="termination_reason">Termination Reason *</Label>
+            <Label htmlFor="termination_reason">{t('terminationReasonLabel')} *</Label>
             <Textarea
               id="termination_reason"
-              placeholder="Enter reason for termination..."
+              placeholder={t('terminationReasonPlaceholder')}
               rows={4}
               {...register("termination_reason")}
             />
@@ -143,10 +147,10 @@ export function TerminateEmployeeModal({
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" variant="destructive" disabled={isSubmitting}>
-              Confirm Termination
+              {t('confirmButton')}
             </Button>
           </DialogFooter>
         </form>

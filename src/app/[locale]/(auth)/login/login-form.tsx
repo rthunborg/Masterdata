@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuthStore();
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
 
   const {
     register,
@@ -38,7 +41,7 @@ export default function LoginForm() {
       // Redirect to dashboard on successful login
       router.push("/dashboard");
     } catch (err) {
-      const errorMessage = err instanceof Error ? mapSupabaseAuthError(err) : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? mapSupabaseAuthError(err) : t('loginError');
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -49,9 +52,9 @@ export default function LoginForm() {
   return (
     <Card className="shadow-md bg-white">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">Sign in</CardTitle>
+        <CardTitle className="text-2xl text-center">{t('signIn')}</CardTitle>
         <CardDescription className="text-center">
-          Enter your email and password to access your account
+          {t('loginSubtitle')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -63,11 +66,11 @@ export default function LoginForm() {
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder={t('emailPlaceholder')}
               {...register("email")}
               aria-invalid={errors.email ? "true" : "false"}
               aria-describedby={errors.email ? "email-error" : undefined}
@@ -80,11 +83,11 @@ export default function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('password')}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder={t('passwordPlaceholder')}
               {...register("password")}
               aria-invalid={errors.password ? "true" : "false"}
               aria-describedby={errors.password ? "password-error" : undefined}
@@ -104,10 +107,10 @@ export default function LoginForm() {
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Signing in...
+                {tCommon('loading')}
               </div>
             ) : (
-              "Sign in"
+              t('signIn')
             )}
           </Button>
         </form>

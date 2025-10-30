@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { adminService } from "@/lib/services/admin-service";
 import { User } from "@/lib/types/user";
 import { UserManagementTable } from "@/components/admin/user-management-table";
@@ -9,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export default function UserManagementPage() {
+  const t = useTranslations('admin');
+  const tErrors = useTranslations('errors');
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -19,7 +22,7 @@ export default function UserManagementPage() {
       const data = await adminService.getUsers();
       setUsers(data);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to load users");
+      toast.error(error instanceof Error ? error.message : tErrors('loadFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -42,13 +45,13 @@ export default function UserManagementPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('userManagement')}</h1>
           <p className="mt-2 text-sm text-gray-700">
             Create and manage user accounts with role assignments
           </p>
         </div>
         <Button onClick={() => setIsAddModalOpen(true)}>
-          Add User
+          {t('addUser')}
         </Button>
       </div>
 

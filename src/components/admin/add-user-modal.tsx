@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserSchema, CreateUserInput } from "@/lib/validation/user-validation";
 import { adminService } from "@/lib/services/admin-service";
 import { UserRole, getRoleDisplayName, USER_ROLES } from "@/lib/types/user";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,10 @@ interface AddUserModalProps {
 
 export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  
+  const t = useTranslations('modals.addUser');
+  const tCommon = useTranslations('common');
+  const tForms = useTranslations('forms');
 
   const form = useForm<CreateUserInput>({
     resolver: zodResolver(createUserSchema),
@@ -59,7 +64,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
       
       // Show success message with temporary password
       toast.success(
-        `User ${response.email} created successfully. Initial password: ${response.temporary_password}`,
+        t('userCreated', { email: response.email, password: response.temporary_password }),
         { duration: 10000 }
       );
 
@@ -71,7 +76,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
         onClose();
       }, 500);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create user");
+      toast.error(error instanceof Error ? error.message : t('createFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -88,9 +93,9 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add New User</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Create a new user account with assigned role and access level.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -101,11 +106,11 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t('emailLabel')}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="user@example.com"
+                      placeholder={t('emailPlaceholder')}
                       {...field}
                       disabled={isLoading}
                     />
@@ -120,11 +125,11 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t('passwordLabel')}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Minimum 8 characters"
+                      placeholder={t('passwordPlaceholder')}
                       {...field}
                       disabled={isLoading}
                     />
@@ -139,7 +144,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>{t('roleLabel')}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -147,7 +152,7 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
+                        <SelectValue placeholder={t('rolePlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -176,9 +181,9 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Active</FormLabel>
+                    <FormLabel>{t('isActiveLabel')}</FormLabel>
                     <p className="text-sm text-gray-500">
-                      User can log in immediately after creation
+                      {tForms('activeHint')}
                     </p>
                   </div>
                 </FormItem>
@@ -192,10 +197,10 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
                 onClick={handleClose}
                 disabled={isLoading}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create User"}
+                {isLoading ? t('creating') : t('createButton')}
               </Button>
             </div>
           </form>

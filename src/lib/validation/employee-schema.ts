@@ -7,8 +7,91 @@ import { z } from "zod";
 const ssnRegex = /^\d{6,8}-\d{4}$/;
 
 /**
- * Validation schema for creating a new employee record
- * Used in both frontend form validation and backend API validation
+ * Validation error messages
+ * These can be overridden by providing a translation function
+ * Default messages are in English
+ */
+export const validationMessages = {
+  firstNameRequired: "errors.validation.firstNameRequired",
+  firstNameMaxLength: "errors.validation.firstNameMaxLength",
+  surnameRequired: "errors.validation.surnameRequired",
+  surnameMaxLength: "errors.validation.surnameMaxLength",
+  ssnRequired: "errors.validation.ssnRequired",
+  ssnFormat: "errors.validation.ssnFormat",
+  emailRequired: "errors.validation.emailRequired",
+  emailInvalid: "errors.validation.emailInvalid",
+  hireDateRequired: "errors.validation.hireDateRequired",
+  hireDateInvalid: "errors.validation.hireDateInvalid",
+  hireDateFuture: "errors.validation.hireDateFuture",
+  terminationDateRequired: "errors.validation.terminationDateRequired",
+  terminationDateInvalid: "errors.validation.terminationDateInvalid",
+  terminationReasonRequired: "errors.validation.terminationReasonRequired",
+  terminationReasonMaxLength: "errors.validation.terminationReasonMaxLength",
+  updateFieldRequired: "errors.validation.updateFieldRequired",
+};
+
+/**
+ * Create validation schema with custom error messages
+ * @param t Optional translation function to override default English messages
+ */
+export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
+  const msg = (key: keyof typeof validationMessages) => 
+    t ? t(validationMessages[key]) : validationMessages[key];
+
+  return z.object({
+    first_name: z
+      .string()
+      .min(1, msg('firstNameRequired'))
+      .max(100, msg('firstNameMaxLength')),
+    surname: z
+      .string()
+      .min(1, msg('surnameRequired'))
+      .max(100, msg('surnameMaxLength')),
+    ssn: z
+      .string()
+      .min(1, msg('ssnRequired'))
+      .regex(ssnRegex, msg('ssnFormat')),
+    email: z
+      .string()
+      .min(1, msg('emailRequired'))
+      .email(msg('emailInvalid')),
+    mobile: z.string().nullable().default(null),
+    rank: z.string().nullable().default(null),
+    gender: z
+      .enum(["Male", "Female", "Other", "Prefer not to say"])
+      .nullable()
+      .default(null),
+    town_district: z.string().nullable().default(null),
+    hire_date: z
+      .string()
+      .min(1, msg('hireDateRequired'))
+      .refine((date) => {
+        // Check if it's a valid date format (YYYY-MM-DD)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(date)) return false;
+        
+        const parsed = Date.parse(date);
+        return !isNaN(parsed);
+      }, msg('hireDateInvalid'))
+      .refine((date) => {
+        // Parse as UTC to avoid timezone issues
+        const parsed = new Date(date + "T00:00:00.000Z");
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        return parsed <= today;
+      }, msg('hireDateFuture')),
+    comments: z.string().nullable().default(null),
+    // System-managed fields with defaults
+    is_terminated: z.boolean().default(false),
+    is_archived: z.boolean().default(false),
+    termination_date: z.string().nullable().default(null),
+    termination_reason: z.string().nullable().default(null),
+  });
+}
+
+/**
+ * Default validation schema with English error messages
+ * For backwards compatibility
  */
 export const createEmployeeSchema = z.object({
   first_name: z
@@ -76,6 +159,20 @@ export const updateEmployeeSchema = createEmployeeSchema
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 
 /**
+ * Create update employee schema with custom error messages
+ */
+export function updateEmployeeSchemaWithMessages(t?: (key: string) => string) {
+  const msg = (key: keyof typeof validationMessages) => 
+    t ? t(validationMessages[key]) : validationMessages[key];
+    
+  return createEmployeeSchemaWithMessages(t)
+    .partial()
+    .refine((data) => Object.keys(data).length > 0, {
+      message: msg('updateFieldRequired'),
+    });
+}
+
+/**
  * Validation schema for terminating an employee
  * Both termination date and reason are required
  */
@@ -98,6 +195,32 @@ export const terminateEmployeeSchema = z.object({
 });
 
 export type TerminateEmployeeInput = z.infer<typeof terminateEmployeeSchema>;
+
+/**
+ * Create terminate employee schema with custom error messages
+ */
+export function terminateEmployeeSchemaWithMessages(t?: (key: string) => string) {
+  const msg = (key: keyof typeof validationMessages) => 
+    t ? t(validationMessages[key]) : validationMessages[key];
+
+  return z.object({
+    termination_date: z
+      .string()
+      .min(1, msg('terminationDateRequired'))
+      .refine((date) => {
+        // Check if it's a valid date format (YYYY-MM-DD)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(date)) return false;
+        
+        const parsed = Date.parse(date);
+        return !isNaN(parsed);
+      }, msg('terminationDateInvalid')),
+    termination_reason: z
+      .string()
+      .min(1, msg('terminationReasonRequired'))
+      .max(500, msg('terminationReasonMaxLength')),
+  });
+}
 
 /**
  * Validation schema for CSV import employee data

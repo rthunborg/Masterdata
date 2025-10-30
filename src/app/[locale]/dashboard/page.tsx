@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useEmployees } from "@/lib/hooks/use-employees";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +26,9 @@ import { useUIStore } from "@/lib/store/ui-store";
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { openModal, isPreviewMode } = useUIStore();
+  const t = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
+  const tErrors = useTranslations('errors');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [includeArchived, setIncludeArchived] = useState(false);
@@ -66,7 +70,7 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-600">Not authenticated</p>
+        <p className="text-gray-600">{tErrors('unauthorized')}</p>
       </div>
     );
   }
@@ -78,9 +82,9 @@ export default function DashboardPage() {
       
       <div className="mb-8 flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Employee List</h2>
+          <h2 className="text-3xl font-bold text-gray-900">{t('title')}</h2>
           <p className="mt-2 text-gray-600">
-            View and manage all active employees
+            {t('viewDetails')}
           </p>
         </div>
         <div className="flex gap-2 items-center">
@@ -96,7 +100,7 @@ export default function DashboardPage() {
                 title={isPreviewMode ? "Editing disabled in preview mode" : ""}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Employee
+                {t('addEmployee')}
               </Button>
               <Button 
                 onClick={() => setIsImportModalOpen(true)} 
@@ -105,7 +109,7 @@ export default function DashboardPage() {
                 title={isPreviewMode ? "Editing disabled in preview mode" : ""}
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Import Employees
+                {t('importEmployees')}
               </Button>
             </>
           )}
@@ -113,7 +117,7 @@ export default function DashboardPage() {
             <>
               <Button onClick={() => openModal("addColumn")} variant="outline">
                 <Columns className="h-4 w-4 mr-2" />
-                Add Column
+                {tCommon('add')} {tCommon('filter')}
               </Button>
               <ManageColumnsDialog />
             </>
@@ -124,7 +128,7 @@ export default function DashboardPage() {
       {error ? (
         <Card>
           <CardHeader>
-            <CardTitle>Error Loading Employees</CardTitle>
+            <CardTitle>{tErrors('loadFailed')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-red-600">{error.message}</p>
@@ -140,9 +144,9 @@ export default function DashboardPage() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>All Employees</CardTitle>
+            <CardTitle>{t('all')}</CardTitle>
             <CardDescription>
-              A list of all active, non-archived employees in the system
+              {t('noEmployees')}
             </CardDescription>
           </CardHeader>
           <CardContent>

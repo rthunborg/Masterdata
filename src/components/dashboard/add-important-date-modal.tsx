@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,10 @@ export function AddImportantDateModal({
 }: AddImportantDateModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const prevIsOpenRef = useRef(false);
+  
+  const t = useTranslations('modals.addImportantDate');
+  const tCommon = useTranslations('common');
+  const tForms = useTranslations('forms');
 
   const form = useForm<CreateImportantDateInput>({
     resolver: zodResolver(createImportantDateSchema),
@@ -83,9 +88,7 @@ export function AddImportantDateModal({
       setIsSubmitting(true);
       const newDate = await importantDateService.create(data);
       
-      toast.success(
-        `Important date "${newDate.date_description}" created successfully`
-      );
+      toast.success(t('dateCreated', { description: newDate.date_description }));
       
       form.reset();
       onSuccess();
@@ -111,7 +114,7 @@ export function AddImportantDateModal({
       }
       // Generic error
       else {
-        toast.error("Failed to create important date", {
+        toast.error(t('createFailed'), {
           description:
             error instanceof Error ? error.message : "Unknown error occurred",
         });
@@ -139,9 +142,9 @@ export function AddImportantDateModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Important Date</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Create a new important date entry for operational planning.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -154,13 +157,13 @@ export function AddImportantDateModal({
                 name="week_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Week Number (Optional)</FormLabel>
+                    <FormLabel>{t('weekNumberLabel')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min="1"
                         max="53"
-                        placeholder="e.g., 7"
+                        placeholder={t('weekNumberPlaceholder')}
                         {...field}
                         value={field.value ?? ""}
                         onChange={(e) => {
@@ -181,7 +184,7 @@ export function AddImportantDateModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Year <span className="text-red-500">*</span>
+                      {t('yearLabel')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -204,7 +207,7 @@ export function AddImportantDateModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Category <span className="text-red-500">*</span>
+                      {t('categoryLabel')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -216,9 +219,9 @@ export function AddImportantDateModal({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Stena Dates">Stena Dates</SelectItem>
-                        <SelectItem value="ÖMC Dates">ÖMC Dates</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
+                        <SelectItem value="Stena Dates">{t('categoryStenaDates')}</SelectItem>
+                        <SelectItem value="ÖMC Dates">{t('categoryOmcDates')}</SelectItem>
+                        <SelectItem value="Other">{t('categoryOther')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -233,10 +236,10 @@ export function AddImportantDateModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Date Description <span className="text-red-500">*</span>
+                      {t('dateDescriptionLabel')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Fredag 14/2" {...field} />
+                      <Input placeholder={t('dateDescriptionPlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -251,10 +254,10 @@ export function AddImportantDateModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Date Value <span className="text-red-500">*</span>
+                    {t('dateValueLabel')} <span className="text-red-500">*</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 15-16/2 or 10/4" {...field} />
+                    <Input placeholder={t('dateValuePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -267,10 +270,10 @@ export function AddImportantDateModal({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormLabel>{t('notesLabel')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Additional notes or details..."
+                      placeholder={t('notesPlaceholder')}
                       {...field}
                       value={field.value ?? ""}
                       onChange={(e) => {
@@ -291,10 +294,10 @@ export function AddImportantDateModal({
                 onClick={() => handleOpenChange(false)}
                 disabled={isSubmitting}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create"}
+                {isSubmitting ? t('creating') : t('createButton')}
               </Button>
             </DialogFooter>
           </form>

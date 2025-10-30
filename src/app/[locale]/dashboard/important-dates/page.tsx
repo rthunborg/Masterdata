@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/hooks/use-auth";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,10 +16,13 @@ import { importantDateService } from "@/lib/services/important-date-service";
 import { useEffect, useState } from "react";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { Plus, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/lib/navigation";
 
 export default function ImportantDatesPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const t = useTranslations('dates');
+  const tErrors = useTranslations('errors');
+  const tNavigation = useTranslations('navigation');
   const [dates, setDates] = useState<ImportantDate[]>([]);
   const [isLoadingDates, setIsLoadingDates] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +37,7 @@ export default function ImportantDatesPage() {
     } catch (err) {
       console.error("Failed to fetch important dates:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to load important dates"
+        err instanceof Error ? err.message : t('noDates')
       );
     } finally {
       setIsLoadingDates(false);
@@ -69,7 +73,7 @@ export default function ImportantDatesPage() {
   if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-600">Not authenticated</p>
+        <p className="text-gray-600">{tErrors('unauthorized')}</p>
       </div>
     );
   }
@@ -81,13 +85,13 @@ export default function ImportantDatesPage() {
           <Link href="/dashboard">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              {tNavigation('dashboard')}
             </Button>
           </Link>
         </div>
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Important Dates</h2>
+            <h2 className="text-3xl font-bold text-gray-900">{t('importantDates')}</h2>
             <p className="mt-2 text-gray-600">
               Reference calendar of important operational dates for Stena and ÖMC
             </p>
@@ -95,7 +99,7 @@ export default function ImportantDatesPage() {
           {user?.role === "hr_admin" && (
             <Button onClick={() => setIsAddModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Date
+              {t('addDate')}
             </Button>
           )}
         </div>
@@ -104,7 +108,7 @@ export default function ImportantDatesPage() {
       {error ? (
         <Card>
           <CardHeader>
-            <CardTitle>Error Loading Important Dates</CardTitle>
+            <CardTitle>{tErrors('loadFailed')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-red-600">{error}</p>
@@ -120,7 +124,7 @@ export default function ImportantDatesPage() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>All Important Dates</CardTitle>
+            <CardTitle>{t('importantDates')}</CardTitle>
             <CardDescription>
               Important operational dates organized by week number and category
             </CardDescription>
