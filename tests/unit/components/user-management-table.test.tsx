@@ -10,7 +10,8 @@
  * - Error handling
  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserManagementTable } from '@/components/admin/user-management-table';
 import { User, UserRole } from '@/lib/types/user';
@@ -76,7 +77,7 @@ describe('UserManagementTable', () => {
   });
 
   it('renders user list correctly', () => {
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -95,7 +96,7 @@ describe('UserManagementTable', () => {
   });
 
   it('displays "Deactivate" button for active users', () => {
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -107,7 +108,7 @@ describe('UserManagementTable', () => {
   });
 
   it('displays "Activate" button for inactive users', () => {
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -118,7 +119,7 @@ describe('UserManagementTable', () => {
   });
 
   it('disables deactivate button for current user', () => {
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -134,7 +135,7 @@ describe('UserManagementTable', () => {
   });
 
   it('shows confirmation dialog when deactivate clicked', async () => {
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -166,7 +167,7 @@ describe('UserManagementTable', () => {
       created_at: '2025-01-10T00:00:00Z',
     });
 
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -207,7 +208,7 @@ describe('UserManagementTable', () => {
       created_at: '2025-01-15T00:00:00Z',
     });
 
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -238,7 +239,7 @@ describe('UserManagementTable', () => {
     const mockUpdateUserStatus = vi.mocked(adminService.updateUserStatus);
     mockUpdateUserStatus.mockRejectedValueOnce(new Error('Network error'));
 
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -266,7 +267,7 @@ describe('UserManagementTable', () => {
   });
 
   it('displays "No users found" when list is empty', () => {
-    render(
+    renderWithI18n(
       <UserManagementTable users={[]} onUserStatusChanged={mockOnUserStatusChanged} />
     );
 
@@ -274,7 +275,7 @@ describe('UserManagementTable', () => {
   });
 
   it('formats dates correctly', () => {
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -286,7 +287,7 @@ describe('UserManagementTable', () => {
   });
 
   it('displays active status badge correctly', () => {
-    render(
+    renderWithI18n(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -301,3 +302,4 @@ describe('UserManagementTable', () => {
     expect(inactiveStatuses.length).toBe(1);
   });
 });
+

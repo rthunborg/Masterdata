@@ -3,34 +3,44 @@
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/lib/navigation';
 import { Button } from '@/components/ui/button';
-import { Globe } from 'lucide-react';
 
 export function LanguageToggle() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
 
-  const toggleLocale = () => {
-    const newLocale = locale === 'en' ? 'sv' : 'en';
-    // Use next-intl router which handles locale switching
+  const switchToLocale = (newLocale: 'en' | 'sv') => {
+    if (newLocale === locale) return; // Already on this locale
     router.replace(pathname, { locale: newLocale });
   };
 
   return (
-    <Button
-      onClick={toggleLocale}
-      variant="ghost"
-      size="sm"
-      className="gap-2"
-      aria-label={`Switch to ${locale === 'en' ? 'Swedish' : 'English'}`}
-    >
-      <Globe className="h-4 w-4" />
-      <span className="hidden sm:inline">
-        {locale === 'en' ? '🇬🇧 EN' : '🇸🇪 SV'}
-      </span>
-      <span className="sm:hidden">
-        {locale === 'en' ? '🇬🇧' : '🇸🇪'}
-      </span>
-    </Button>
+    <div className="flex items-center gap-1" role="group" aria-label="Language selection">
+      {/* Swedish Flag */}
+      <Button
+        onClick={() => switchToLocale('sv')}
+        variant={locale === 'sv' ? 'default' : 'ghost'}
+        size="sm"
+        disabled={locale === 'sv'}
+        className={locale === 'sv' ? 'cursor-default' : ''}
+        aria-label="Byt till svenska"
+        aria-pressed={locale === 'sv'}
+      >
+        🇸🇪 <span className="hidden sm:inline ml-1">SV</span>
+      </Button>
+
+      {/* English Flag */}
+      <Button
+        onClick={() => switchToLocale('en')}
+        variant={locale === 'en' ? 'default' : 'ghost'}
+        size="sm"
+        disabled={locale === 'en'}
+        className={locale === 'en' ? 'cursor-default' : ''}
+        aria-label="Switch to English"
+        aria-pressed={locale === 'en'}
+      >
+        🇬🇧 <span className="hidden sm:inline ml-1">EN</span>
+      </Button>
+    </div>
   );
 }

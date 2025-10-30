@@ -10,7 +10,8 @@
  * - Edit→View dependency enforcement
  */
 
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ColumnSettingsTable } from "@/components/admin/column-settings-table";
 import { ColumnConfig } from "@/lib/types/column-config";
@@ -73,7 +74,7 @@ describe("ColumnSettingsTable", () => {
   });
 
   it("renders column list correctly", () => {
-    render(
+    renderWithI18n(
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -93,7 +94,7 @@ describe("ColumnSettingsTable", () => {
   });
 
   it("displays permission toggles for all roles", () => {
-    render(
+    renderWithI18n(
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -118,7 +119,7 @@ describe("ColumnSettingsTable", () => {
       mockUpdatedColumn
     );
 
-    render(
+    renderWithI18n(
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -148,7 +149,7 @@ describe("ColumnSettingsTable", () => {
   });
 
   it("displays empty state when no columns", () => {
-    render(
+    renderWithI18n(
       <ColumnSettingsTable
         columns={[]}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -164,7 +165,7 @@ describe("ColumnSettingsTable", () => {
       new Error("Failed to update permissions")
     );
 
-    render(
+    renderWithI18n(
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -185,3 +186,4 @@ describe("ColumnSettingsTable", () => {
     }
   });
 });
+

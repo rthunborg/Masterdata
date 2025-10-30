@@ -1,4 +1,5 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DeleteColumnModal } from "@/components/admin/delete-column-modal";
 import { columnService } from "@/lib/services/column-service";
@@ -29,7 +30,7 @@ describe("DeleteColumnModal", () => {
   });
 
   it("renders confirmation message with column name", () => {
-    render(
+    renderWithI18n(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -49,7 +50,7 @@ describe("DeleteColumnModal", () => {
   });
 
   it("does not render when column is null", () => {
-    const { container } = render(
+    const { container } = renderWithI18n(
       <DeleteColumnModal
         column={null}
         isOpen={true}
@@ -65,7 +66,7 @@ describe("DeleteColumnModal", () => {
     const mockDeleteColumn = vi.fn().mockResolvedValue(undefined);
     vi.mocked(columnService).deleteColumn = mockDeleteColumn;
 
-    render(
+    renderWithI18n(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -93,7 +94,7 @@ describe("DeleteColumnModal", () => {
     const mockDeleteColumn = vi.fn();
     vi.mocked(columnService).deleteColumn = mockDeleteColumn;
 
-    render(
+    renderWithI18n(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -116,7 +117,7 @@ describe("DeleteColumnModal", () => {
       .mockRejectedValue(new Error("Deletion failed"));
     vi.mocked(columnService).deleteColumn = mockDeleteColumn;
 
-    render(
+    renderWithI18n(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -146,7 +147,7 @@ describe("DeleteColumnModal", () => {
       );
     vi.mocked(columnService).deleteColumn = mockDeleteColumn;
 
-    render(
+    renderWithI18n(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -169,7 +170,7 @@ describe("DeleteColumnModal", () => {
   });
 
   it("shows 'cannot be undone' warning", () => {
-    render(
+    renderWithI18n(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -183,3 +184,4 @@ describe("DeleteColumnModal", () => {
     ).toBeInTheDocument();
   });
 });
+

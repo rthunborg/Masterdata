@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import { useColumns } from "@/lib/hooks/use-columns";
@@ -108,7 +109,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       error: null,
     });
 
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify all columns are present
     expect(screen.getByText("First Name")).toBeInTheDocument();
@@ -176,7 +177,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       error: null,
     });
 
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify only permitted columns are present
     expect(screen.getByText("First Name")).toBeInTheDocument();
@@ -237,7 +238,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       error: null,
     });
 
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify SSN is visible
     expect(screen.getByText("SSN")).toBeInTheDocument();
@@ -271,7 +272,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       error: null,
     });
 
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify error message is displayed
     expect(
@@ -304,7 +305,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       error: null,
     });
 
-    const { container } = render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    const { container } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify skeleton is present (checking for the animation class)
     const skeletons = container.querySelectorAll(".animate-pulse");
@@ -336,7 +337,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       error: new Error("Failed to load columns"),
     });
 
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify error message is displayed
     expect(

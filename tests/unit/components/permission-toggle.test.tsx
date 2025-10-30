@@ -9,14 +9,15 @@
  * - Tooltip displays for disabled toggles
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi } from "vitest";
 import { PermissionToggle } from "@/components/admin/permission-toggle";
 import { UserRole } from "@/lib/types/user";
 
 describe("PermissionToggle", () => {
   it("renders checkbox with correct state", () => {
-    render(
+    renderWithI18n(
       <PermissionToggle
         role={UserRole.SODEXO}
         permissionType="view"
@@ -31,7 +32,7 @@ describe("PermissionToggle", () => {
   });
 
   it("renders unchecked checkbox when value is false", () => {
-    render(
+    renderWithI18n(
       <PermissionToggle
         role={UserRole.SODEXO}
         permissionType="edit"
@@ -46,7 +47,7 @@ describe("PermissionToggle", () => {
 
   it("calls onChange when checkbox clicked", () => {
     const mockOnChange = vi.fn();
-    render(
+    renderWithI18n(
       <PermissionToggle
         role={UserRole.SODEXO}
         permissionType="view"
@@ -63,7 +64,7 @@ describe("PermissionToggle", () => {
 
   it("does not call onChange when disabled", () => {
     const mockOnChange = vi.fn();
-    render(
+    renderWithI18n(
       <PermissionToggle
         role={UserRole.HR_ADMIN}
         permissionType="view"
@@ -82,7 +83,7 @@ describe("PermissionToggle", () => {
   });
 
   it("displays tooltip when disabled and tooltip provided", () => {
-    render(
+    renderWithI18n(
       <PermissionToggle
         role={UserRole.HR_ADMIN}
         permissionType="view"
@@ -98,7 +99,7 @@ describe("PermissionToggle", () => {
   });
 
   it("does not display tooltip when not disabled", () => {
-    render(
+    renderWithI18n(
       <PermissionToggle
         role={UserRole.SODEXO}
         permissionType="view"
@@ -113,3 +114,4 @@ describe("PermissionToggle", () => {
     expect(checkbox).not.toBeDisabled();
   });
 });
+

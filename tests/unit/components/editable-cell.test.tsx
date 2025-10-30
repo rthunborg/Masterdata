@@ -1,4 +1,5 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableCell } from "@/components/dashboard/editable-cell";
 
@@ -11,7 +12,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("Read-Only State (canEdit = false)", () => {
     it("renders read-only cell with gray background", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -30,7 +31,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("has select-text class to allow text selection in read-only cell", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -46,7 +47,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("shows tooltip when read-only cell is clicked", async () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -75,7 +76,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("does not enter edit mode when clicked", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -96,7 +97,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("Editable State (canEdit = true)", () => {
     it("renders editable cell with white background and hover effect", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -115,7 +116,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("enters edit mode when clicked", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -136,7 +137,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("enters edit mode on Enter key", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -156,7 +157,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("enters edit mode on Space key", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -178,7 +179,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("Default Behavior (canEdit not specified)", () => {
     it("defaults to editable when canEdit prop is omitted", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -196,7 +197,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("ARIA Attributes", () => {
     it("sets aria-readonly='true' for read-only cells", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -213,7 +214,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("sets aria-readonly='false' for editable cells", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -230,7 +231,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("has role='gridcell' for proper table semantics", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -247,7 +248,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("Empty Value Handling", () => {
     it("displays em-dash for null value in read-only cell", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value={null}
           employeeId="emp-1"
@@ -262,7 +263,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("displays em-dash for null value in editable cell", () => {
-      render(
+      renderWithI18n(
         <EditableCell
           value={null}
           employeeId="emp-1"
@@ -277,3 +278,4 @@ describe("EditableCell - Permission States", () => {
     });
   });
 });
+

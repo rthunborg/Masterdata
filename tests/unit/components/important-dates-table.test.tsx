@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { screen, fireEvent, within } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { ImportantDatesTable } from "@/components/dashboard/important-dates-table";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { importantDateService } from "@/lib/services/important-date-service";
@@ -64,7 +65,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Rendering", () => {
     it("should render important dates correctly", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -81,7 +82,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should display loading state", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={[]}
           isLoading={true}
@@ -95,7 +96,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should display empty state when no dates exist", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={[]}
           isLoading={false}
@@ -107,7 +108,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should render all table columns", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -127,7 +128,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Role-based Display", () => {
     it("should show delete buttons for HR Admin", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -140,7 +141,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should hide delete buttons for external party users", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -153,7 +154,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should show editable cells for HR Admin", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -168,7 +169,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should show read-only cells for external party users", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -184,7 +185,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Category Filtering", () => {
     it("should render category filter dropdown", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -196,7 +197,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should filter dates by Stena Dates category", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -220,7 +221,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should show all dates when 'All' filter is selected", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -237,7 +238,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Sorting", () => {
     it("should sort by week number ascending by default", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -253,7 +254,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should allow sorting by clicking column headers", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -274,7 +275,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Delete Functionality", () => {
     it("should open delete confirmation dialog when delete button is clicked", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -290,7 +291,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should close dialog on cancel", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -312,7 +313,7 @@ describe("ImportantDatesTable", () => {
       const mockOnDateDeleted = vi.fn();
       vi.mocked(importantDateService.delete).mockResolvedValue();
 
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -337,7 +338,7 @@ describe("ImportantDatesTable", () => {
         new Error("Failed to delete")
       );
 
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -363,7 +364,7 @@ describe("ImportantDatesTable", () => {
         notes: "Updated notes",
       });
 
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -386,7 +387,7 @@ describe("ImportantDatesTable", () => {
         week_number: null,
       };
 
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={[dateWithNullWeek]}
           isLoading={false}
@@ -400,7 +401,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should display em dash for null notes", () => {
-      render(
+      renderWithI18n(
         <ImportantDatesTable
           dates={[mockImportantDates[0]]}
           isLoading={false}
@@ -414,3 +415,4 @@ describe("ImportantDatesTable", () => {
     });
   });
 });
+

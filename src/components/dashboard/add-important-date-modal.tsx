@@ -53,7 +53,6 @@ export function AddImportantDateModal({
   
   const t = useTranslations('modals.addImportantDate');
   const tCommon = useTranslations('common');
-  const tForms = useTranslations('forms');
 
   const form = useForm<CreateImportantDateInput>({
     resolver: zodResolver(createImportantDateSchema),

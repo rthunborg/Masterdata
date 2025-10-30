@@ -4,7 +4,9 @@
 
 **Epic Origin**: User acceptance testing feedback from early beta testers
 
-**Estimated Total Effort**: 18-26 hours (approximately 2-3 days)
+**Estimated Total Effort**: 22-32 hours (approximately 3-4 days)
+
+**Note:** Story 5.9.1 added as critical hotfix to resolve production issues discovered in Story 5.9
 
 ---
 
@@ -79,13 +81,80 @@ so that **I can use the system in my preferred language**.
 3. Create translation files for Swedish (`sv.json`) and English (`en.json`) with all UI text
 4. Clicking flag toggles language preference (stored in localStorage or cookie)
 5. All text in UI updates immediately to selected language (page refresh acceptable for MVP)
-6. Default language: English (can be changed based on browser locale detection)
+6. Default language: **Swedish** (business requirement - Stena Line Sweden operations)
 7. Translate at minimum: Navigation, buttons, form labels, error messages, table headers
 8. User's language preference persists across sessions
 
 **Estimated Effort:** 6-8 hours (includes translation effort)
 
 **Dependencies:** Translation files need to be created (Swedish translations may require native speaker)
+
+**Status:** ✅ **DONE** (95% complete - see Story 5.9.1 for production hotfix)
+
+---
+
+## Story 5.9.1: Fix Language Toggle Production Issues (HOTFIX)
+
+As a **Swedish-speaking user**,  
+I want **the language toggle to work reliably with Swedish as the default language**,  
+so that **I can use the system in my native language without constant resets to English**.
+
+### Acceptance Criteria
+
+1. **Default Locale Changed to Swedish**
+   - System defaults to Swedish language on first visit
+   - URL redirects to `/sv` instead of `/en` for new users
+
+2. **Language Persistence Across Navigation**
+   - User selects Swedish → navigates to another page → language stays Swedish
+   - User selects English → navigates to another page → language stays English
+   - Cookie-based persistence working correctly (NEXT_LOCALE cookie)
+
+3. **Complete Translation Coverage**
+   - No English text visible when Swedish is selected (except technical/API errors)
+   - No translation placeholder keys visible (e.g., "common.allColumns")
+   - All UI elements properly translated in both languages
+
+4. **Improved Language Toggle UX**
+   - Both Swedish (🇸🇪) and English (🇬🇧) flags always visible in header
+   - Active language flag is highlighted (solid button style)
+   - Inactive language flag is clickable (ghost button style)
+   - Active language flag is disabled (prevents accidental re-clicks)
+
+5. **Responsive Design**
+   - Desktop (≥640px): Both flags visible with "SV" and "EN" text labels
+   - Mobile (<640px): Both flags visible (emoji only, no text labels)
+   - Minimum 44px touch target on mobile for accessibility
+
+6. **Accessibility**
+   - ARIA labels present for both flag buttons
+   - `aria-pressed` attribute indicates active language
+   - Keyboard navigation works (Tab + Enter to switch)
+
+7. **Missing Translation Keys Added**
+   - `admin.allColumns` → "All Columns" / "Alla kolumner"
+   - `admin.masterdataOnly` → "Masterdata Only" / "Endast stamdata"
+   - `admin.customOnly` → "Custom Only" / "Endast anpassade"
+   - `admin.configureRolesDescription` → Full description text
+
+8. **Production Validation**
+   - Deploy to production
+   - Test all three issues resolved in live environment
+   - Verify cookie persistence across browser sessions
+
+**Estimated Effort:** 4-6 hours (can be completed in 1 working day)
+
+**Priority:** **P0 (Critical)** - Blocks Story 5.9 completion
+
+**Dependencies:** Story 5.9 must be deployed (already deployed - 95% complete)
+
+**Background:** Story 5.9 was deployed to production with three critical defects discovered during user acceptance testing:
+
+1. Default locale is English (should be Swedish)
+2. Incomplete translations with placeholder keys visible
+3. Poor language toggle UX (only shows one flag at a time)
+
+**See:** `docs/stories/5.9.1.fix-language-toggle-issues.md` for detailed implementation plan
 
 ---
 
@@ -202,21 +271,24 @@ so that **it feels like an official Stena Line tool**.
 
 ## Epic Summary
 
-**Total Stories:** 7 (Stories 5.6-5.12)
+**Total Stories:** 8 (Stories 5.6-5.12 + Story 5.9.1 hotfix)
 
 **Priority Order:**
 
-1. Story 5.12 (Stena Branding) - Highest priority for deployment credibility
-2. Story 5.8 (Sign-out in Header) - Important UX improvement
-3. Story 5.7 (Fix Login Redirect) - Annoying bug, high visibility
-4. Story 5.6 (Remove System Health Button) - Quick win, 30 min
-5. Story 5.9 (Language Toggle) - Important for Swedish users
-6. Story 5.10 (Tooltips) - Nice-to-have UX polish
-7. Story 5.11 (SSN Auto-Format) - Convenience feature
+1. ✅ Story 5.12 (Stena Branding) - Highest priority for deployment credibility - **DONE**
+2. ✅ Story 5.8 (Sign-out in Header) - Important UX improvement - **DONE**
+3. ✅ Story 5.7 (Fix Login Redirect) - Annoying bug, high visibility - **DONE**
+4. ✅ Story 5.6 (Remove System Health Button) - Quick win, 30 min - **DONE**
+5. ✅ Story 5.9 (Language Toggle) - Important for Swedish users - **DONE** (95% complete)
+6. ⏳ **Story 5.9.1 (Fix Language Toggle Issues)** - **P0 CRITICAL HOTFIX** - **IN PROGRESS**
+7. ⏸️ Story 5.10 (Tooltips) - Nice-to-have UX polish - **PENDING**
+8. ⏸️ Story 5.11 (SSN Auto-Format) - Convenience feature - **PENDING**
+
+**Epic Progress:** 62.5% complete (5/8 stories done)
 
 **Definition of Done for Epic 5.5:**
 
-1. ✅ All 7 stories pass acceptance criteria
+1. ✅ All 8 stories pass acceptance criteria
 2. ✅ Automated tests updated and passing (>95% pass rate maintained)
 3. ✅ Visual QA completed (no regressions)
 4. ✅ Accessibility audit passed (WCAG AA compliance)

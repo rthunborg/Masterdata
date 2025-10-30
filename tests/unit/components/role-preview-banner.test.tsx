@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
 import { useUIStore } from "@/lib/store/ui-store";
@@ -34,7 +35,7 @@ describe("RolePreviewBanner", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    render(<RolePreviewBanner />);
+    renderWithI18n(<RolePreviewBanner />);
 
     expect(screen.getByText(/Viewing as Sodexo/i)).toBeInTheDocument();
     expect(screen.getByText(/Preview Mode/i)).toBeInTheDocument();
@@ -61,7 +62,7 @@ describe("RolePreviewBanner", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    render(<RolePreviewBanner />);
+    renderWithI18n(<RolePreviewBanner />);
 
     const exitButton = screen.getByRole("button", { name: /Exit Preview/i });
     fireEvent.click(exitButton);
@@ -89,7 +90,7 @@ describe("RolePreviewBanner", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    const { container } = render(<RolePreviewBanner />);
+    const { container } = renderWithI18n(<RolePreviewBanner />);
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -113,7 +114,7 @@ describe("RolePreviewBanner", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    render(<RolePreviewBanner />);
+    renderWithI18n(<RolePreviewBanner />);
 
     const banner = screen.getByRole("alert");
     expect(banner).toHaveAttribute("aria-live", "polite");
@@ -148,9 +149,10 @@ describe("RolePreviewBanner", () => {
         closeEditColumnModal: vi.fn(),
       });
 
-      const { unmount } = render(<RolePreviewBanner />);
+      const { unmount } = renderWithI18n(<RolePreviewBanner />);
       expect(screen.getByText(new RegExp(`Viewing as ${displayName}`, "i"))).toBeInTheDocument();
       unmount();
     });
   });
 });
+

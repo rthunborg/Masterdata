@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { columnService } from "@/lib/services/column-service";
 import { ColumnConfig } from "@/lib/types/column-config";
@@ -12,14 +12,13 @@ type FilterMode = "all" | "masterdata" | "custom";
 
 export default function ColumnSettingsPage() {
   const t = useTranslations('admin');
-  const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
   const [filteredColumns, setFilteredColumns] = useState<ColumnConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
 
-  const loadColumns = async () => {
+  const loadColumns = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await columnService.getAllColumns();
@@ -32,11 +31,11 @@ export default function ColumnSettingsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [tErrors]);
 
   useEffect(() => {
     loadColumns();
-  }, []);
+  }, [loadColumns]);
 
   // Apply filter when filter mode changes
   useEffect(() => {
@@ -61,7 +60,7 @@ export default function ColumnSettingsPage() {
             {t('columnSettings')}
           </h1>
           <p className="mt-2 text-sm text-gray-700">
-            Configure which roles can view and edit specific columns
+            {t('configureRolesDescription')}
           </p>
         </div>
       </div>
@@ -73,21 +72,21 @@ export default function ColumnSettingsPage() {
           onClick={() => setFilterMode("all")}
           size="sm"
         >
-          {tCommon('all')} Columns
+          {t('allColumns')}
         </Button>
         <Button
           variant={filterMode === "masterdata" ? "default" : "outline"}
           onClick={() => setFilterMode("masterdata")}
           size="sm"
         >
-          Masterdata Only
+          {t('masterdataOnly')}
         </Button>
         <Button
           variant={filterMode === "custom" ? "default" : "outline"}
           onClick={() => setFilterMode("custom")}
           size="sm"
         >
-          Custom Only
+          {t('customOnly')}
         </Button>
       </div>
 

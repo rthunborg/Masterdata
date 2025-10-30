@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { screen, fireEvent, within } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import type { Employee } from "@/lib/types/employee";
 import { UserRole } from "@/lib/types/user";
@@ -282,7 +283,7 @@ describe("EmployeeTable", () => {
   ];
 
   it("should render employee list correctly", () => {
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     expect(screen.getByText("John")).toBeInTheDocument();
     expect(screen.getByText("Doe")).toBeInTheDocument();
@@ -293,7 +294,7 @@ describe("EmployeeTable", () => {
   });
 
   it("should display loading state", () => {
-    render(<EmployeeTable employees={[]} isLoading={true} />);
+    renderWithI18n(<EmployeeTable employees={[]} isLoading={true} />);
 
     const loader = screen.getByRole("status");
     expect(loader).toBeInTheDocument();
@@ -301,7 +302,7 @@ describe("EmployeeTable", () => {
   });
 
   it("should display empty state when no employees", () => {
-    render(<EmployeeTable employees={[]} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={[]} isLoading={false} />);
 
     expect(screen.getByText(/No employees found/i)).toBeInTheDocument();
     expect(
@@ -310,7 +311,7 @@ describe("EmployeeTable", () => {
   });
 
   it("should display null values as em dash", () => {
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Jane has null email, mobile, rank, and town_district
     const cells = screen.getAllByText("—");
@@ -318,14 +319,14 @@ describe("EmployeeTable", () => {
   });
 
   it("should format hire date correctly", () => {
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     expect(screen.getByText("2025-01-15")).toBeInTheDocument();
     expect(screen.getByText("2020-01-01")).toBeInTheDocument();
   });
 
   it("should display status correctly", () => {
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     const activeStatuses = screen.getAllByText("Active");
     expect(activeStatuses).toHaveLength(2);
@@ -338,7 +339,7 @@ describe("EmployeeTable", () => {
       termination_date: "2025-06-01",
     };
 
-    render(
+    renderWithI18n(
       <EmployeeTable employees={[terminatedEmployee]} isLoading={false} />
     );
 
@@ -346,7 +347,7 @@ describe("EmployeeTable", () => {
   });
 
   it("should render table headers including Comments", () => {
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     expect(screen.getByText("First Name")).toBeInTheDocument();
     expect(screen.getByText("Surname")).toBeInTheDocument();
@@ -380,7 +381,7 @@ describe("EmployeeTable", () => {
       setLoading: vi.fn(),
     });
 
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Check that values are displayed as plain text, not in editable cells
     expect(screen.getByText("John")).toBeInTheDocument();
@@ -412,7 +413,7 @@ describe("EmployeeTable", () => {
       setLoading: vi.fn(),
     });
 
-    render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Editable cells should have button role for interaction
     const editButtons = screen.getAllByRole("button");
@@ -421,14 +422,14 @@ describe("EmployeeTable", () => {
 
   describe("Search Functionality", () => {
     it("should render search input with correct placeholder", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       expect(searchInput).toBeInTheDocument();
     });
 
     it("should filter employees by first name (case-insensitive)", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "john" } });
@@ -438,7 +439,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should filter employees by surname", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "Smith" } });
@@ -448,7 +449,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should filter employees by SSN", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "123456" } });
@@ -458,7 +459,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should filter employees by email", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "john@example.com" } });
@@ -468,7 +469,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should filter employees by mobile", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "+46701234567" } });
@@ -478,7 +479,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should filter employees by rank", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "SEV" } });
@@ -488,7 +489,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should filter employees by gender", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "Female" } });
@@ -498,7 +499,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should filter employees by town district", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "Stockholm" } });
@@ -508,7 +509,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should perform case-insensitive partial string matching", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "JOHN" } });
@@ -518,7 +519,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should show empty state when no results match search", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "NonexistentName" } });
@@ -532,7 +533,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should show clear button when search has value", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "John" } });
@@ -542,7 +543,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should clear search when clear button is clicked", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       fireEvent.change(searchInput, { target: { value: "John" } });
@@ -556,7 +557,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should restore full list when search is cleared", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Search employees...");
       
@@ -635,7 +636,7 @@ describe("EmployeeTable", () => {
     ];
 
     it("should display sort indicators on sortable column headers", () => {
-      render(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
 
       // Check that column headers exist and can be sorted
       expect(screen.getByText("First Name")).toBeInTheDocument();
@@ -644,7 +645,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should sort employees by first name ascending", () => {
-      render(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
 
       const firstNameHeader = screen.getByText("First Name");
       fireEvent.click(firstNameHeader);
@@ -658,7 +659,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should sort employees by first name descending on second click", () => {
-      render(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
 
       const firstNameHeader = screen.getByText("First Name");
       
@@ -675,7 +676,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should sort employees by surname alphabetically", () => {
-      render(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
 
       const surnameHeader = screen.getByText("Surname");
       fireEvent.click(surnameHeader);
@@ -687,7 +688,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should sort employees by hire date chronologically", () => {
-      render(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
 
       const hireDateHeader = screen.getByText("Hire Date");
       fireEvent.click(hireDateHeader);
@@ -700,7 +701,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should remove sort on third click (tri-state sorting)", () => {
-      render(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
 
       const firstNameHeader = screen.getByText("First Name");
       
@@ -778,7 +779,7 @@ describe("EmployeeTable", () => {
     ];
 
     it("should filter and then sort the filtered results", () => {
-      render(<EmployeeTable employees={testEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={testEmployees} isLoading={false} />);
 
       // Search for employees in Stockholm
       const searchInput = screen.getByPlaceholderText("Search employees...");
@@ -800,7 +801,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should sort and then filter the sorted results", () => {
-      render(<EmployeeTable employees={testEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={testEmployees} isLoading={false} />);
 
       // First sort by hire date
       const hireDateHeader = screen.getByText("Hire Date");
@@ -822,7 +823,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should maintain sort order when clearing search", () => {
-      render(<EmployeeTable employees={testEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={testEmployees} isLoading={false} />);
 
       // Sort by first name
       const firstNameHeader = screen.getByText("First Name");
@@ -843,7 +844,7 @@ describe("EmployeeTable", () => {
     });
 
     it("should maintain search filter when changing sort order", () => {
-      render(<EmployeeTable employees={testEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={testEmployees} isLoading={false} />);
 
       // Search for "Stockholm"
       const searchInput = screen.getByPlaceholderText("Search employees...");
@@ -869,3 +870,4 @@ describe("EmployeeTable", () => {
     });
   });
 });
+

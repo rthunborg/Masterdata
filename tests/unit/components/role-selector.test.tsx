@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RoleSelector } from "@/components/dashboard/role-selector";
 import { useUIStore } from "@/lib/store/ui-store";
@@ -54,7 +55,7 @@ describe("RoleSelector", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    render(<RoleSelector />);
+    renderWithI18n(<RoleSelector />);
 
     expect(screen.getByLabelText(/View As:/i)).toBeInTheDocument();
   });
@@ -97,7 +98,7 @@ describe("RoleSelector", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    const { container } = render(<RoleSelector />);
+    const { container } = renderWithI18n(<RoleSelector />);
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -139,7 +140,7 @@ describe("RoleSelector", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    render(<RoleSelector />);
+    renderWithI18n(<RoleSelector />);
 
     expect(screen.getByText(/Preview Mode Active/i)).toBeInTheDocument();
   });
@@ -182,8 +183,9 @@ describe("RoleSelector", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    render(<RoleSelector />);
+    renderWithI18n(<RoleSelector />);
 
     expect(screen.queryByText(/Preview Mode Active/i)).not.toBeInTheDocument();
   });
 });
+

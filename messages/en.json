@@ -239,7 +239,11 @@
     "hrAdmin": "HR Admin",
     "externalParty": "External Party",
     "saveSettings": "Save Settings",
-    "settingsSaved": "Settings saved successfully"
+    "settingsSaved": "Settings saved successfully",
+    "allColumns": "All Columns",
+    "masterdataOnly": "Masterdata Only",
+    "customOnly": "Custom Only",
+    "configureRolesDescription": "Configure which roles can view and edit specific columns"
   },
   "errors": {
     "loadFailed": "Failed to load data",

@@ -13,7 +13,7 @@ import {
 import { ImportantDatesTable } from "@/components/dashboard/important-dates-table";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { Plus, ArrowLeft } from "lucide-react";
 import { Link } from "@/lib/navigation";
@@ -28,7 +28,7 @@ export default function ImportantDatesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const fetchDates = async () => {
+  const fetchDates = useCallback(async () => {
     try {
       setIsLoadingDates(true);
       setError(null);
@@ -42,13 +42,13 @@ export default function ImportantDatesPage() {
     } finally {
       setIsLoadingDates(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     if (user) {
       fetchDates();
     }
-  }, [user]);
+  }, [user, fetchDates]);
 
   const handleDateAdded = () => {
     fetchDates();

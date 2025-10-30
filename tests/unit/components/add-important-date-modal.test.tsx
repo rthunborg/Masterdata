@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
 import type { ImportantDate } from "@/lib/types/important-date";
+import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 
 // Mock the important date service
 vi.mock("@/lib/services/important-date-service", () => ({
@@ -31,7 +32,7 @@ describe("AddImportantDateModal", () => {
 
   describe("Rendering", () => {
     it("should render modal with all form fields when open", () => {
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -50,7 +51,7 @@ describe("AddImportantDateModal", () => {
     });
 
     it("should not render modal when isOpen is false", () => {
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={false}
           onClose={mockOnClose}
@@ -62,7 +63,7 @@ describe("AddImportantDateModal", () => {
     });
 
     it("should have default values for year and category", () => {
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -84,7 +85,7 @@ describe("AddImportantDateModal", () => {
     it("should display validation errors for required fields", async () => {
       const user = userEvent.setup();
 
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -117,7 +118,7 @@ describe("AddImportantDateModal", () => {
         updated_at: "2025-01-01T00:00:00Z",
       });
 
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -164,7 +165,7 @@ describe("AddImportantDateModal", () => {
 
       vi.mocked(importantDateService.create).mockResolvedValue(mockCreatedDate);
 
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -215,7 +216,7 @@ describe("AddImportantDateModal", () => {
         new Error("Network error")
       );
 
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -250,7 +251,7 @@ describe("AddImportantDateModal", () => {
     it("should close modal on cancel button click", async () => {
       const user = userEvent.setup();
 
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -267,7 +268,7 @@ describe("AddImportantDateModal", () => {
 
     it("should reset form when modal is closed and reopened", async () => {
       const user = userEvent.setup();
-      const { rerender } = render(
+      const { rerender } = renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -309,7 +310,7 @@ describe("AddImportantDateModal", () => {
 
       vi.mocked(importantDateService.create).mockReturnValue(createPromise as Promise<ImportantDate>);
 
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -350,7 +351,7 @@ describe("AddImportantDateModal", () => {
 
   describe("Category Selection", () => {
     it("should render category field with default value", () => {
-      render(
+      renderWithI18n(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}

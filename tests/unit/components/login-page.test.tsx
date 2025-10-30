@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import LoginForm from '@/app/(auth)/login/login-form';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
+import LoginForm from '@/app/[locale]/(auth)/login/login-form';
 
 // Mock next/navigation
 const mockPush = vi.fn();
@@ -31,7 +32,7 @@ describe('LoginForm', () => {
   });
 
   it('renders login form elements', () => {
-    render(<LoginForm />);
+    renderWithI18n(<LoginForm />);
     
     expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
@@ -40,7 +41,7 @@ describe('LoginForm', () => {
   });
 
   it('shows validation errors for invalid email', async () => {
-    render(<LoginForm />);
+    renderWithI18n(<LoginForm />);
     
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
@@ -57,7 +58,7 @@ describe('LoginForm', () => {
   });
 
   it('shows validation errors for short password', async () => {
-    render(<LoginForm />);
+    renderWithI18n(<LoginForm />);
     
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
@@ -75,7 +76,7 @@ describe('LoginForm', () => {
   it('calls login and redirects on successful form submission', async () => {
     mockLogin.mockResolvedValue(undefined);
     
-    render(<LoginForm />);
+    renderWithI18n(<LoginForm />);
     
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
@@ -96,7 +97,7 @@ describe('LoginForm', () => {
     const errorMessage = 'Invalid credentials';
     mockLogin.mockRejectedValue(new Error(errorMessage));
     
-    render(<LoginForm />);
+    renderWithI18n(<LoginForm />);
     
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
@@ -111,3 +112,4 @@ describe('LoginForm', () => {
     });
   });
 });
+

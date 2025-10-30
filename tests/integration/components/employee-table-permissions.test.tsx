@@ -1,4 +1,5 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import type { Employee } from "@/lib/types/employee";
@@ -153,7 +154,7 @@ describe("EmployeeTable Permission Rendering", () => {
     });
 
     it("renders all masterdata columns as editable (no lock icons)", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       // Check that column headers exist
       expect(screen.getByText("First Name")).toBeInTheDocument();
@@ -169,7 +170,7 @@ describe("EmployeeTable Permission Rendering", () => {
     });
 
     it("all cells should have editable styling (cursor-pointer)", async () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const cells = screen.getAllByRole("gridcell");
       
@@ -208,7 +209,7 @@ describe("EmployeeTable Permission Rendering", () => {
     });
 
     it("renders masterdata columns as read-only (with lock icons)", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       // Column headers should exist
       const firstNameHeader = screen.getByText("First Name").closest("th");
@@ -220,7 +221,7 @@ describe("EmployeeTable Permission Rendering", () => {
     });
 
     it("all cells should have read-only styling (bg-gray-50)", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const cells = screen.getAllByRole("gridcell");
 
@@ -232,7 +233,7 @@ describe("EmployeeTable Permission Rendering", () => {
     });
 
     it("cells should have aria-readonly='true'", () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const cells = screen.getAllByRole("gridcell");
 
@@ -242,7 +243,7 @@ describe("EmployeeTable Permission Rendering", () => {
     });
 
     it("clicking masterdata cell shows read-only tooltip", async () => {
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       // Find a data cell (e.g., John's first name)
       const cells = screen.getAllByRole("gridcell");
@@ -281,7 +282,7 @@ describe("EmployeeTable Permission Rendering", () => {
         setLoading: vi.fn(),
       });
 
-      render(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       // Find column header by role
       const headers = screen.getAllByRole("columnheader");
@@ -319,7 +320,7 @@ describe("EmployeeTable Permission Rendering", () => {
         setLoading: vi.fn(),
       });
 
-      render(<EmployeeTable employees={[]} isLoading={false} />);
+      renderWithI18n(<EmployeeTable employees={[]} isLoading={false} />);
 
       expect(screen.getByText(/No employees found/i)).toBeInTheDocument();
     });

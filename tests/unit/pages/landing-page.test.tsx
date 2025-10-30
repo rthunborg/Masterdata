@@ -31,6 +31,6 @@ describe("Landing Page", () => {
 
   it("displays version number", () => {
     render(<LandingPage />);
-    expect(screen.getByText(/Version 0\.1\.0/i)).toBeInTheDocument();
+    expect(screen.getByText(/Version 1\.00/i)).toBeInTheDocument();
   });
 });

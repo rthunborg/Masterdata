@@ -239,7 +239,11 @@
     "hrAdmin": "HR-admin",
     "externalParty": "Extern part",
     "saveSettings": "Spara inställningar",
-    "settingsSaved": "Inställningar sparade"
+    "settingsSaved": "Inställningar sparade",
+    "allColumns": "Alla kolumner",
+    "masterdataOnly": "Endast stamdata",
+    "customOnly": "Endast anpassade",
+    "configureRolesDescription": "Konfigurera vilka roller som kan visa och redigera specifika kolumner"
   },
   "errors": {
     "loadFailed": "Kunde inte ladda data",

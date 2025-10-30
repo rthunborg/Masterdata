@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import type { Employee } from "@/lib/types/employee";
 
@@ -106,7 +107,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should render employee table with real-time connection indicator", () => {
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -119,7 +120,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should show offline status when not connected", () => {
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -131,7 +132,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should highlight updated employee row", () => {
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -148,7 +149,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should not highlight non-updated rows", () => {
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -163,7 +164,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should display all employees in table", () => {
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -185,7 +186,7 @@ describe("Real-time Employee Sync Integration", () => {
       },
     ];
 
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={archivedEmployees}
         isLoading={false}
@@ -208,7 +209,7 @@ describe("Real-time Employee Sync Integration", () => {
       },
     ];
 
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={terminatedEmployees}
         isLoading={false}
@@ -222,7 +223,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should show loading state", () => {
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={[]}
         isLoading={true}
@@ -234,7 +235,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should show empty state when no employees", () => {
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={[]}
         isLoading={false}
@@ -248,7 +249,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should display search functionality", () => {
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -268,7 +269,7 @@ describe("Real-time Employee Sync Integration", () => {
       },
     ];
 
-    render(
+    renderWithI18n(
       <EmployeeTable
         employees={archivedEmployees}
         isLoading={false}

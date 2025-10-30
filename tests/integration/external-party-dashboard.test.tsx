@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { UserRole, type SessionUser } from "@/lib/types/user";
-import DashboardPage from "@/app/dashboard/page";
+import DashboardPage from "@/app/[locale]/dashboard/page";
 
 // Mock the auth hook
 vi.mock("@/lib/hooks/use-auth", () => ({
@@ -59,7 +60,7 @@ describe("External Party Dashboard Access", () => {
         setLoading: vi.fn(),
       });
 
-      render(<DashboardPage />);
+      renderWithI18n(<DashboardPage />);
       
       // Wait for async state updates to complete
       await waitFor(() => {
@@ -89,7 +90,7 @@ describe("External Party Dashboard Access", () => {
         setLoading: vi.fn(),
       });
 
-      render(<DashboardPage />);
+      renderWithI18n(<DashboardPage />);
       await waitFor(() => {
         expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
       });
@@ -115,7 +116,7 @@ describe("External Party Dashboard Access", () => {
         setLoading: vi.fn(),
       });
 
-      render(<DashboardPage />);
+      renderWithI18n(<DashboardPage />);
       await waitFor(() => {
         expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
       });
@@ -141,7 +142,7 @@ describe("External Party Dashboard Access", () => {
         setLoading: vi.fn(),
       });
 
-      render(<DashboardPage />);
+      renderWithI18n(<DashboardPage />);
       await waitFor(() => {
         expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
       });
@@ -169,7 +170,7 @@ describe("External Party Dashboard Access", () => {
         setLoading: vi.fn(),
       });
 
-      render(<DashboardPage />);
+      renderWithI18n(<DashboardPage />);
       await waitFor(() => {
         expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
       });
@@ -195,7 +196,7 @@ describe("External Party Dashboard Access", () => {
         setLoading: vi.fn(),
       });
 
-      render(<DashboardPage />);
+      renderWithI18n(<DashboardPage />);
       await waitFor(() => {
         expect(screen.queryByText(/Import Employees/i)).not.toBeInTheDocument();
       });
@@ -221,7 +222,7 @@ describe("External Party Dashboard Access", () => {
         setLoading: vi.fn(),
       });
 
-      render(<DashboardPage />);
+      renderWithI18n(<DashboardPage />);
       await waitFor(() => {
         expect(screen.getByText(/Add Employee/i)).toBeInTheDocument();
         expect(screen.getByText(/Import Employees/i)).toBeInTheDocument();
@@ -250,7 +251,7 @@ describe("External Party Dashboard Access", () => {
         setLoading: vi.fn(),
       });
 
-      render(<DashboardPage />);
+      renderWithI18n(<DashboardPage />);
       
       // Sign-out button should NOT be in the dashboard page (it's in the header now)
       await waitFor(() => {

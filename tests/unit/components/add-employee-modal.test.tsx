@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import userEvent from "@testing-library/user-event";
 import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
 import { employeeService } from "@/lib/services/employee-service";
@@ -50,7 +51,7 @@ describe("AddEmployeeModal", () => {
   };
 
   it("should render modal with all form fields", () => {
-    render(
+    renderWithI18n(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -58,8 +59,8 @@ describe("AddEmployeeModal", () => {
       />
     );
 
-    // Check for title
-    expect(screen.getByText("Add New Employee")).toBeInTheDocument();
+    // Check for title (using the correct translation key: "Add Employee" not "Add New Employee")
+    expect(screen.getByText("Add Employee")).toBeInTheDocument();
 
     // Check for required fields
     expect(screen.getByLabelText(/First Name/i)).toBeInTheDocument();
@@ -76,12 +77,12 @@ describe("AddEmployeeModal", () => {
     expect(screen.getByLabelText(/Comments/i)).toBeInTheDocument();
 
     // Check for buttons
-    expect(screen.getByRole("button", { name: /Cancel/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Save Employee/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Save/i })).toBeInTheDocument();
   });
 
   it("should not render modal when isOpen is false", () => {
-    render(
+    renderWithI18n(
       <AddEmployeeModal
         isOpen={false}
         onClose={mockOnClose}
@@ -89,13 +90,13 @@ describe("AddEmployeeModal", () => {
       />
     );
 
-    expect(screen.queryByText("Add New Employee")).not.toBeInTheDocument();
+    expect(screen.queryByText("Add Employee")).not.toBeInTheDocument();
   });
 
   it("should display validation errors for missing required fields", async () => {
     const user = userEvent.setup();
     
-    render(
+    renderWithI18n(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -104,7 +105,7 @@ describe("AddEmployeeModal", () => {
     );
 
     // Click submit without filling required fields
-    const submitButton = screen.getByRole("button", { name: /Save Employee/i });
+    const submitButton = screen.getByRole("button", { name: /Save/i });
     await user.click(submitButton);
 
     // Wait for validation errors
@@ -125,7 +126,7 @@ describe("AddEmployeeModal", () => {
     const user = userEvent.setup();
     vi.mocked(employeeService.create).mockResolvedValue(mockEmployee);
 
-    render(
+    renderWithI18n(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -144,14 +145,14 @@ describe("AddEmployeeModal", () => {
     
     // Hire date should have default value, so we can submit
 
-    const submitButton = screen.getByRole("button", { name: /Save Employee/i });
+    const submitButton = screen.getByRole("button", { name: /Save/i });
     await user.click(submitButton);
 
     // Wait for submission
     await waitFor(() => {
       expect(employeeService.create).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith(
-        "Employee Jane Smith created successfully"
+        "Employee added successfully"
       );
       expect(mockOnSuccess).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
@@ -161,7 +162,7 @@ describe("AddEmployeeModal", () => {
   it("should close modal on cancel button click", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithI18n(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -169,7 +170,7 @@ describe("AddEmployeeModal", () => {
       />
     );
 
-    const cancelButton = screen.getByRole("button", { name: /Cancel/i });
+    const cancelButton = screen.getByRole("button", { name: /cancel/i });
     await user.click(cancelButton);
 
     expect(mockOnClose).toHaveBeenCalled();
@@ -184,7 +185,7 @@ describe("AddEmployeeModal", () => {
     );
     vi.mocked(employeeService.create).mockRejectedValue(duplicateError);
 
-    render(
+    renderWithI18n(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -201,7 +202,7 @@ describe("AddEmployeeModal", () => {
       "jane.smith@example.com"
     );
 
-    const submitButton = screen.getByRole("button", { name: /Save Employee/i });
+    const submitButton = screen.getByRole("button", { name: /Save/i });
     await user.click(submitButton);
 
     // Wait for error message
@@ -221,7 +222,7 @@ describe("AddEmployeeModal", () => {
     const genericError = new Error("Unexpected server error");
     vi.mocked(employeeService.create).mockRejectedValue(genericError);
 
-    render(
+    renderWithI18n(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -238,14 +239,15 @@ describe("AddEmployeeModal", () => {
       "jane.smith@example.com"
     );
 
-    const submitButton = screen.getByRole("button", { name: /Save Employee/i });
+    const submitButton = screen.getByRole("button", { name: /Save/i });
     await user.click(submitButton);
 
     // Wait for error toast
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Failed to create employee", {
+      expect(toast.error).toHaveBeenCalledWith("Failed to save changes", {
         description: "Unexpected server error",
       });
     });
   });
 });
+

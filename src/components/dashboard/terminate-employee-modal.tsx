@@ -42,7 +42,6 @@ export function TerminateEmployeeModal({
 }: TerminateEmployeeModalProps) {
   const t = useTranslations('modals.terminateEmployee');
   const tCommon = useTranslations('common');
-  const tForms = useTranslations('forms');
   
   const {
     register,

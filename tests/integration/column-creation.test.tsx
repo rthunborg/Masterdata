@@ -1,4 +1,5 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AddColumnModal } from "@/components/dashboard/add-column-modal";
 import { columnConfigService } from "@/lib/services/column-config-service";
@@ -74,7 +75,7 @@ describe("Column Creation Integration Flow", () => {
 
     mockCreateCustomColumn.mockResolvedValue(newColumn);
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     // Fill form
     const nameInput = screen.getByLabelText(/column name/i);
@@ -122,7 +123,7 @@ describe("Column Creation Integration Flow", () => {
       refetch: mockRefetch,
     });
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "Test Column" } });
@@ -169,7 +170,7 @@ describe("Column Creation Integration Flow", () => {
       .mockResolvedValueOnce(column1)
       .mockResolvedValueOnce(column2);
 
-    const { rerender } = render(<AddColumnModal />);
+    const { rerender } = renderWithI18n(<AddColumnModal />);
 
     // Create first column
     const nameInput = screen.getByLabelText(/column name/i);
@@ -218,7 +219,7 @@ describe("Column Creation Integration Flow", () => {
       new Error("Server error: Failed to create column")
     );
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
@@ -251,7 +252,7 @@ describe("Column Creation Integration Flow", () => {
       created_at: "2025-10-28T10:00:00Z",
     });
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, {

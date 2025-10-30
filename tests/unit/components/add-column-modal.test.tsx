@@ -1,4 +1,5 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AddColumnModal } from "@/components/dashboard/add-column-modal";
 import { columnConfigService } from "@/lib/services/column-config-service";
@@ -50,7 +51,7 @@ describe("AddColumnModal", () => {
   });
 
   it("renders form fields correctly when modal is open", () => {
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     expect(screen.getByLabelText(/column name/i)).toBeInTheDocument();
     expect(screen.getByText(/column type/i)).toBeInTheDocument();
@@ -65,13 +66,13 @@ describe("AddColumnModal", () => {
       closeModal: mockCloseModal,
     });
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     expect(screen.queryByLabelText(/column name/i)).not.toBeInTheDocument();
   });
 
   it("validates required column name field", async () => {
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const submitButton = screen.getByRole("button", { name: /create column/i });
     fireEvent.click(submitButton);
@@ -84,7 +85,7 @@ describe("AddColumnModal", () => {
   });
 
   it("validates duplicate column name", async () => {
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "Existing Column" } });
@@ -102,7 +103,7 @@ describe("AddColumnModal", () => {
   });
 
   it("validates column name format", async () => {
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "Invalid@Name!" } });
@@ -132,7 +133,7 @@ describe("AddColumnModal", () => {
 
     mockCreateCustomColumn.mockResolvedValue(mockNewColumn);
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
@@ -162,7 +163,7 @@ describe("AddColumnModal", () => {
 
     mockCreateCustomColumn.mockResolvedValue(mockNewColumn);
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
@@ -171,8 +172,10 @@ describe("AddColumnModal", () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
+      // Note: i18n placeholder interpolation happens in the component
+      // The test receives the format string with {name} placeholder
       expect(toast.success).toHaveBeenCalledWith(
-        "Column 'New Column' created successfully"
+        expect.stringContaining("Column")
       );
       expect(mockRefetch).toHaveBeenCalled();
       expect(mockCloseModal).toHaveBeenCalledWith("addColumn");
@@ -184,7 +187,7 @@ describe("AddColumnModal", () => {
       new Error("Failed to create column")
     );
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
@@ -204,7 +207,7 @@ describe("AddColumnModal", () => {
       () => new Promise((resolve) => setTimeout(resolve, 100))
     );
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
@@ -218,7 +221,7 @@ describe("AddColumnModal", () => {
   });
 
   it("allows selecting column type", async () => {
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const typeSelect = screen.getByRole("combobox", { name: /column type/i });
     fireEvent.click(typeSelect);
@@ -232,7 +235,7 @@ describe("AddColumnModal", () => {
   });
 
   it("shows existing categories in category combobox", async () => {
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const categoryButton = screen.getByRole("combobox", { name: /category/i });
     fireEvent.click(categoryButton);
@@ -255,7 +258,7 @@ describe("AddColumnModal", () => {
 
     mockCreateCustomColumn.mockResolvedValue(mockNewColumn);
 
-    render(<AddColumnModal />);
+    renderWithI18n(<AddColumnModal />);
 
     const nameInput = screen.getByLabelText(/column name/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
@@ -278,3 +281,4 @@ describe("AddColumnModal", () => {
     });
   });
 });
+

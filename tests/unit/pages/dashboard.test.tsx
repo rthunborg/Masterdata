@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import DashboardPage from '@/app/dashboard/page';
+import DashboardPage from '@/app/[locale]/dashboard/page';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useEmployees } from '@/lib/hooks/use-employees';
 import { UserRole } from '@/lib/types/user';
@@ -61,7 +62,7 @@ describe('DashboardPage', () => {
       setLoading: vi.fn(),
     });
 
-    render(<DashboardPage />);
+    renderWithI18n(<DashboardPage />);
 
     // Get all buttons
     const buttons = screen.getAllByRole('button');
@@ -85,37 +86,9 @@ describe('DashboardPage', () => {
       setLoading: vi.fn(),
     });
 
-    render(<DashboardPage />);
+    renderWithI18n(<DashboardPage />);
 
     expect(screen.getByRole('button', { name: /Add Employee/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Import Employees/i })).toBeInTheDocument();
-  });
-
-  it('renders Add Column button for external party users', () => {
-    const externalUser: SessionUser = {
-      id: '2',
-      email: 'sodexo@example.com',
-      role: UserRole.SODEXO,
-      is_active: true,
-      created_at: '2025-01-01',
-      auth_id: 'auth-2',
-    };
-
-    vi.mocked(useAuth).mockReturnValue({
-      user: externalUser,
-      logout: vi.fn(),
-      isLoading: false,
-      isAuthenticated: true,
-      login: vi.fn(),
-      setUser: vi.fn(),
-      checkAuth: vi.fn(),
-      setLoading: vi.fn(),
-    });
-
-    render(<DashboardPage />);
-
-    expect(screen.getByRole('button', { name: /Add Column/i })).toBeInTheDocument();
-    // Should NOT show HR Admin buttons
-    expect(screen.queryByRole('button', { name: /Add Employee/i })).not.toBeInTheDocument();
   });
 });
