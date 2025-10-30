@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +14,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,6 +36,7 @@ import {
 } from "@/lib/validation/employee-schema";
 import { employeeService } from "@/lib/services/employee-service";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
+import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { formatImportantDateOption } from "@/lib/utils/format";
 
 interface AddEmployeeModalProps {
@@ -61,8 +61,8 @@ export function AddEmployeeModal({
     useImportantDates('Stena Dates');
   const { dates: omcDates, isLoading: omcLoading } =
     useImportantDates('ÖMC Dates');
-  const { dates: pe3Dates, isLoading: pe3Loading } =
-    useImportantDates('PE3 Dates');
+  const { availableDates: pe3Dates, totalAvailable: pe3Available, isLoading: pe3Loading } =
+    useAvailablePE3Dates();
 
   // Create schema with translated error messages
   const createEmployeeSchema = createEmployeeSchemaWithMessages(
@@ -131,6 +131,20 @@ export function AddEmployeeModal({
             });
           });
         }
+      }
+      // Handle duplicate PE3 date
+      else if (
+        error instanceof Error &&
+        (error.message.includes("DUPLICATE_PE3_DATE") ||
+          error.message.includes("duplicate PE3 date") ||
+          error.message.includes("already assigned"))
+      ) {
+        toast.error(t('duplicatePE3Date'));
+        form.setError("pe3_date", {
+          message: t('pe3DateAlreadyAssigned'),
+        });
+        // Refetch available dates to refresh the dropdown
+        // The useAvailablePE3Dates hook will handle this via real-time subscription
       }
       // Handle duplicate SSN
       else if (
@@ -430,26 +444,48 @@ export function AddEmployeeModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('pe3Date')}</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value ?? undefined}
-                      disabled={pe3Loading}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('selectPe3Date')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {pe3Dates
-                          .filter((d) => new Date(d.date_value) >= new Date())
-                          .map((date) => (
-                            <SelectItem key={date.id} value={date.id}>
-                              {formatImportantDateOption(date)}
+                    <div className="flex gap-2">
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? undefined}
+                        disabled={pe3Loading}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('selectPe3Date')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {pe3Dates.length === 0 && (
+                            <SelectItem value="none" disabled>
+                              {t('noPe3DatesAvailable')}
                             </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                          )}
+                          {pe3Dates
+                            .filter((d) => new Date(d.date_value) >= new Date())
+                            .map((date) => (
+                              <SelectItem key={date.id} value={date.id}>
+                                {formatImportantDateOption(date)}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      {field.value && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => field.onChange(null)}
+                        >
+                          {t('clear')}
+                        </Button>
+                      )}
+                    </div>
+                    <FormDescription>
+                      {pe3Available > 0
+                        ? t('pe3DatesRemaining', { count: pe3Available })
+                        : t('noPe3DatesAvailable')}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

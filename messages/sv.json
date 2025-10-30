@@ -93,12 +93,17 @@
     "genderPreferNotToSay": "Vill inte uppge",
     "commentsPlaceholder": "Ytterligare anteckningar om den anställde...",
     "duplicateSSN": "En anställd med detta personnummer finns redan",
+    "duplicatePE3Date": "Detta PE3-datum är redan tilldelat en annan anställd",
+    "pe3DateAlreadyAssigned": "PE3-datum redan tilldelat. Välj ett annat.",
     "stenaDate": "Stena-datum",
     "omcDate": "ÖMC-datum",
     "pe3Date": "PE3-datum",
     "selectStenaDate": "Välj Stena-datum",
     "selectOmcDate": "Välj ÖMC-datum",
-    "selectPe3Date": "Välj PE3-datum (valfritt)"
+    "selectPe3Date": "Välj PE3-datum (valfritt)",
+    "pe3DatesRemaining": "{count} PE3-datum återstår",
+    "noPe3DatesAvailable": "Inga PE3-datum tillgängliga. Lägg till fler i Viktiga datum.",
+    "clear": "Rensa"
   },
   "modals": {
     "importEmployees": {

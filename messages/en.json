@@ -93,12 +93,17 @@
     "genderPreferNotToSay": "Prefer not to say",
     "commentsPlaceholder": "Additional notes about the employee...",
     "duplicateSSN": "An employee with this SSN already exists",
+    "duplicatePE3Date": "This PE3 date is already assigned to another employee",
+    "pe3DateAlreadyAssigned": "PE3 date already assigned. Please select another.",
     "stenaDate": "Stena Date",
     "omcDate": "ÖMC Date",
     "pe3Date": "PE3 Date",
     "selectStenaDate": "Select Stena Date",
     "selectOmcDate": "Select ÖMC Date",
-    "selectPe3Date": "Select PE3 Date (optional)"
+    "selectPe3Date": "Select PE3 Date (optional)",
+    "pe3DatesRemaining": "{count} PE3 dates remaining",
+    "noPe3DatesAvailable": "No PE3 dates available. Add more in Important Dates.",
+    "clear": "Clear"
   },
   "modals": {
     "importEmployees": {

@@ -1,3 +1,5 @@
+import type { ImportantDate } from "./important-date";
+
 export interface APIResponse<T = unknown> {
   data?: T;
   error?: APIError;
@@ -24,4 +26,12 @@ export interface LoginResponse {
 
 export interface LogoutResponse {
   message: string;
+}
+
+export interface AvailablePE3Response {
+  data: ImportantDate[];
+  meta: {
+    total: number;
+    timestamp: string;
+  };
 }
