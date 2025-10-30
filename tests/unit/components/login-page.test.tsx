@@ -1,18 +1,20 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import LoginPage from '@/app/(auth)/login/page';
+import LoginForm from '@/app/(auth)/login/login-form';
 
 // Mock next/navigation
+const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: mockPush,
   }),
 }));
 
 // Mock auth store
+const mockLogin = vi.fn();
 vi.mock('@/lib/store/auth-store', () => ({
   useAuthStore: () => ({
-    login: vi.fn(),
+    login: mockLogin,
   }),
 }));
 
@@ -23,11 +25,14 @@ vi.mock('sonner', () => ({
   },
 }));
 
-describe('LoginPage', () => {
+describe('LoginForm', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders login form elements', () => {
-    render(<LoginPage />);
+    render(<LoginForm />);
     
-    // Check for title specifically (not the button text)
     expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
@@ -35,16 +40,14 @@ describe('LoginPage', () => {
   });
 
   it('shows validation errors for invalid email', async () => {
-    render(<LoginPage />);
+    render(<LoginForm />);
     
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
     
-    // Fill in invalid email and trigger form submission to show validation
     fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
     fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
     
-    // Submit the form - this should trigger validation
     const form = emailInput.closest('form')!;
     fireEvent.submit(form);
     
@@ -54,16 +57,57 @@ describe('LoginPage', () => {
   });
 
   it('shows validation errors for short password', async () => {
-    render(<LoginPage />);
+    render(<LoginForm />);
     
+    const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
     const submitButton = screen.getByRole('button', { name: /sign in/i });
     
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: '123' } });
     fireEvent.click(submitButton);
     
     await waitFor(() => {
       expect(screen.getByText('Password must be at least 8 characters')).toBeInTheDocument();
+    });
+  });
+
+  it('calls login and redirects on successful form submission', async () => {
+    mockLogin.mockResolvedValue(undefined);
+    
+    render(<LoginForm />);
+    
+    const emailInput = screen.getByLabelText('Email');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'validpassword123');
+      expect(mockPush).toHaveBeenCalledWith('/dashboard');
+    });
+  });
+
+  it('shows error message on failed login', async () => {
+    const { toast } = await import('sonner');
+    const errorMessage = 'Invalid credentials';
+    mockLogin.mockRejectedValue(new Error(errorMessage));
+    
+    render(<LoginForm />);
+    
+    const emailInput = screen.getByLabelText('Email');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
+    fireEvent.click(submitButton);
+    
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalled();
     });
   });
 });
