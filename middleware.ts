@@ -31,9 +31,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle locale routing first
-  const intlResponse = intlMiddleware(request);
+  // Extract locale from pathname
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const firstSegment = pathSegments[0];
+  const isValidLocale = locales.includes(firstSegment as (typeof locales)[number]);
+  
+  // If no locale in path, let intl middleware handle the redirect
+  if (!isValidLocale) {
+    return intlMiddleware(request);
+  }
 
+  const locale = firstSegment;
+  const pathWithoutLocale = pathname.slice(locale.length + 1) || '/';
+
+  // Create response with intl middleware
   const response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -63,28 +74,29 @@ export async function middleware(request: NextRequest) {
     // Refresh session if expired
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Extract locale from pathname
-    const locale = pathname.split('/')[1];
-    const isValidLocale = locales.includes(locale as (typeof locales)[number]);
-    const pathWithoutLocale = isValidLocale ? pathname.slice(locale.length + 1) : pathname;
-
-    // Redirect to login if not authenticated
-    if (!user && !pathWithoutLocale.startsWith('/login')) {
+    // Redirect to login if not authenticated (except on login page itself)
+    if (!user && !pathWithoutLocale.startsWith('/login') && pathWithoutLocale !== '/') {
       const redirectUrl = new URL(`/${locale}/login`, request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
-    // Redirect to dashboard if authenticated user tries to access login
-    if (user && pathWithoutLocale === '/login') {
+    // Redirect authenticated users from root to dashboard
+    if (user && pathWithoutLocale === '/') {
       const redirectUrl = new URL(`/${locale}/dashboard`, request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
-    return intlResponse || response;
+    // Redirect to dashboard if authenticated user tries to access login
+    if (user && pathWithoutLocale.startsWith('/login')) {
+      const redirectUrl = new URL(`/${locale}/dashboard`, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    return response;
   } catch (error) {
     console.error('Middleware error:', error);
     // On error, allow the request to continue to avoid blocking the app
-    return response;
+    return intlMiddleware(request);
   }
 }
 
