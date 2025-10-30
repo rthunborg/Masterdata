@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LogOut } from 'lucide-react';
@@ -25,7 +26,15 @@ export function Header() {
   return (
     <header className="border-b bg-white">
       <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <Image
+            src="/images/stena-logo.png"
+            alt="Stena Line"
+            width={120}
+            height={40}
+            className="h-8 md:h-10 w-auto"
+            priority
+          />
           <h1 className="text-lg font-semibold">HR Masterdata</h1>
         </div>
         <div className="flex items-center gap-3">
