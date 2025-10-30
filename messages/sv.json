@@ -287,5 +287,19 @@
     "users": "Användare",
     "columns": "Kolumner",
     "settings": "Inställningar"
+  },
+  "tooltips": {
+    "archiveEmployee": "Arkivera anställd",
+    "restoreEmployee": "Återställ anställd",
+    "terminateEmployee": "Markera som uppsagd",
+    "reactivateEmployee": "Återaktivera anställd",
+    "addEmployee": "Lägg till ny anställd i systemet",
+    "importCsv": "Importera anställda från CSV-fil",
+    "addColumn": "Skapa en ny anpassad kolumn",
+    "deleteDate": "Ta bort detta viktiga datum",
+    "editColumn": "Redigera kolumnnamn och kategori",
+    "deleteColumn": "Ta bort anpassad kolumn",
+    "hideColumn": "Dölj kolumn från tabell",
+    "showColumn": "Visa kolumn i tabell"
   }
 }

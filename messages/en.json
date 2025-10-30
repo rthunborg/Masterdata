@@ -287,5 +287,19 @@
     "users": "Users",
     "columns": "Columns",
     "settings": "Settings"
+  },
+  "tooltips": {
+    "archiveEmployee": "Archive employee",
+    "restoreEmployee": "Restore employee",
+    "terminateEmployee": "Mark as terminated",
+    "reactivateEmployee": "Reactivate employee",
+    "addEmployee": "Add new employee to the system",
+    "importCsv": "Import employees from CSV file",
+    "addColumn": "Create a new custom column",
+    "deleteDate": "Delete this important date",
+    "editColumn": "Edit column name and category",
+    "deleteColumn": "Delete custom column",
+    "hideColumn": "Hide column from table",
+    "showColumn": "Show column in table"
   }
 }

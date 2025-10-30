@@ -10,11 +10,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Settings, Edit } from "lucide-react";
 import { useColumns } from "@/lib/hooks/use-columns";
 import { useUIStore } from "@/lib/store/ui-store";
 import { groupColumnsByCategory } from "@/lib/utils/column-grouping";
-
+import { useTranslations } from "next-intl";
 /**
  * Manage Columns Dialog Component
  * Shows list of custom columns grouped by category
@@ -23,6 +28,7 @@ import { groupColumnsByCategory } from "@/lib/utils/column-grouping";
 export function ManageColumnsDialog() {
   const { columns } = useColumns();
   const { openEditColumnModal } = useUIStore();
+  const t = useTranslations("tooltips");
   const [open, setOpen] = useState(false);
 
   // Filter to only show custom columns (is_masterdata = false)
@@ -72,15 +78,21 @@ export function ManageColumnsDialog() {
               {/* Columns in this category */}
               <div className="space-y-1">
                 {cols.map((col) => (
-                  <Button
-                    key={col.id}
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => handleEditColumn(col.id)}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    {col.column_name}
-                  </Button>
+                  <Tooltip key={col.id}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => handleEditColumn(col.id)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        {col.column_name}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("editColumn")}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
             </div>

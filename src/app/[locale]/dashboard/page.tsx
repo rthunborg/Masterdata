@@ -11,6 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
 import { AddColumnModal } from "@/components/dashboard/add-column-modal";
@@ -29,6 +34,7 @@ export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
+  const tTooltips = useTranslations('tooltips');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [includeArchived, setIncludeArchived] = useState(false);
@@ -94,31 +100,50 @@ export default function DashboardPage() {
           )}
           {user?.role === "hr_admin" && (
             <>
-              <Button 
-                onClick={() => setIsAddModalOpen(true)}
-                disabled={isPreviewMode}
-                title={isPreviewMode ? "Editing disabled in preview mode" : ""}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {t('addEmployee')}
-              </Button>
-              <Button 
-                onClick={() => setIsImportModalOpen(true)} 
-                variant="outline"
-                disabled={isPreviewMode}
-                title={isPreviewMode ? "Editing disabled in preview mode" : ""}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                {t('importEmployees')}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={() => setIsAddModalOpen(true)}
+                    disabled={isPreviewMode}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('addEmployee')}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{tTooltips('addEmployee')}</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={() => setIsImportModalOpen(true)} 
+                    variant="outline"
+                    disabled={isPreviewMode}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {t('importEmployees')}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{tTooltips('importCsv')}</p>
+                </TooltipContent>
+              </Tooltip>
             </>
           )}
           {user?.role !== "hr_admin" && (
             <>
-              <Button onClick={() => openModal("addColumn")} variant="outline">
-                <Columns className="h-4 w-4 mr-2" />
-                {tCommon('add')} {tCommon('filter')}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={() => openModal("addColumn")} variant="outline">
+                    <Columns className="h-4 w-4 mr-2" />
+                    {tCommon('add')} {tCommon('filter')}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{tTooltips('addColumn')}</p>
+                </TooltipContent>
+              </Tooltip>
               <ManageColumnsDialog />
             </>
           )}

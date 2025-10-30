@@ -38,10 +38,16 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Trash2 } from "lucide-react";
 import { EditableCell } from "./editable-cell";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 interface ImportantDatesTableProps {
   dates: ImportantDate[];
@@ -59,6 +65,7 @@ export function ImportantDatesTable({
   onDateDeleted,
 }: ImportantDatesTableProps) {
   const isHRAdmin = userRole === "hr_admin";
+  const t = useTranslations("tooltips");
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<ImportantDate | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -224,21 +231,28 @@ export function ImportantDatesTable({
         header: "Actions",
         cell: ({ row }) => (
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDeleteClick(row.original)}
-              aria-label="Delete important date"
-            >
-              <Trash2 className="h-4 w-4 text-red-600" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteClick(row.original)}
+                  aria-label="Delete important date"
+                >
+                  <Trash2 className="h-4 w-4 text-red-600" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("deleteDate")}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         ),
       });
     }
 
     return cols;
-  }, [isHRAdmin, handleCellUpdate]);
+  }, [isHRAdmin, handleCellUpdate, t]);
 
   // Filter dates by category
   const filteredDates = React.useMemo(() => {

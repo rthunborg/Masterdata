@@ -158,6 +158,67 @@ so that **I can use the system in my native language without constant resets to 
 
 ---
 
+## Story 5.13: Complete Translation Coverage & Root Page Fixes
+
+As a **Swedish-speaking user**,  
+I want **all UI text to be fully translated and the root page to be Swedish-only**,  
+so that **the system feels native and professional in my language**.
+
+### Acceptance Criteria
+
+1. **Root Page Redesign (Swedish-Only)**
+   - Root page (`/page.tsx`) should NOT use locale routing (no redirect to `/en` or `/sv`)
+   - All content on root page in Swedish only
+   - App title: "Stena Line Säsongsrekrytering" (not "HR Masterdata Management System")
+   - Description: Concise, focused on capabilities (max 2-3 sentences)
+   - Remove all third-party company mentions (Sodexo, Bluegarden, Silkeborg Forsyning)
+   - Keep "Logga in till systemet" button (Swedish)
+
+2. **Navigation Links Translation**
+   - Dashboard layout sidebar links translated:
+     - "Employees" → "Anställda" (Swedish) / "Employees" (English)
+     - "Important Dates" → "Viktiga datum" (Swedish) / "Important Dates" (English)
+
+3. **Employee Table Empty State** - "No employees found. Click 'Add Employee' to create your first record." → Fully translated
+
+4. **Important Dates Page Translations**
+   - Page description paragraph (remove "ÖMC" third-party reference)
+   - Subtitle paragraph fully translated
+   - Table headers: "Week Number", "Year", "Category" → Translated
+   - Filter label: "Filter by Category" → Translated
+   - Dropdown option: "All categories" → Translated
+   - Empty state: "No important dates found." → Translated
+
+5. **Admin Users Page Translations**
+   - Description paragraph fully translated
+   - Table headers: "Role", "Created", "Actions" → Translated
+   - Button: "Deactivate" → Translated
+
+6. **Admin Columns Page Translations** - Form label: "Column Name" → Translated
+
+7. **Translation File Completeness**
+   - All missing translation keys added to `messages/en.json` and `messages/sv.json`
+   - No hardcoded English strings remain in Swedish locale
+   - Translation key audit completed across all `.tsx` files
+
+8. **Third-Party References Removed**
+   - No mentions of "Sodexo", "Bluegarden", "Silkeborg Forsyning", "ÖMC" in user-facing text
+   - Generic references used where needed (e.g., "external partners" if necessary)
+
+**Estimated Effort:** 4-6 hours (1 working day)
+
+**Priority:** **P1 (High)** - Production quality issue affecting Swedish user experience
+
+**Dependencies:** Story 5.9 and 5.9.1 must be complete (already ✅ Done)
+
+**Background:** User feedback revealed ~20 untranslated strings and content issues after Story 5.9 deployment. This story addresses the remaining translation gaps and root page requirements.
+
+**Status:** ⏳ **CURRENT** - Approved and ready for development
+
+**See:** `docs/stories/5.13.complete-translation-coverage-and-root-page-fixes.md` for detailed implementation plan
+
+---
+
 ## Story 5.10: Add Mouseover Tooltips to Action Buttons
 
 As a **user**,  
@@ -269,9 +330,31 @@ so that **it feels like an official Stena Line tool**.
 
 ---
 
+## Business Rules Clarifications
+
+**Discovered During Story 5.9 UAT:**
+
+1. **Root Page Language Policy:**
+   - The root landing page (`/page.tsx`) must be Swedish-only (no locale routing)
+   - Rationale: Primary target audience is Swedish-speaking Stena Line HR staff
+   - Exception: Authenticated users are redirected to locale-aware dashboard
+
+2. **Third-Party Company References:**
+   - Avoid mentioning specific external partner company names in user-facing text
+   - Examples to avoid: "Sodexo", "Bluegarden", "Silkeborg Forsyning", "ÖMC"
+   - Use generic terms like "external partners" or "third-party administrators" if needed
+   - Rationale: Partnerships may change, text should remain evergreen
+
+3. **App Naming Convention:**
+   - Official app name: **"Stena Line Säsongsrekrytering"** (Stena Line Seasonal Recruitment)
+   - Use in: Root page title, browser metadata, login page header
+   - Internal dashboard can use "HR Masterdata" for clarity
+
+---
+
 ## Epic Summary
 
-**Total Stories:** 8 (Stories 5.6-5.12 + Story 5.9.1 hotfix)
+**Total Stories:** 9 (Stories 5.6-5.13 including hotfixes 5.9.1 and 5.13)
 
 **Priority Order:**
 
@@ -279,12 +362,13 @@ so that **it feels like an official Stena Line tool**.
 2. ✅ Story 5.8 (Sign-out in Header) - Important UX improvement - **DONE**
 3. ✅ Story 5.7 (Fix Login Redirect) - Annoying bug, high visibility - **DONE**
 4. ✅ Story 5.6 (Remove System Health Button) - Quick win, 30 min - **DONE**
-5. ✅ Story 5.9 (Language Toggle) - Important for Swedish users - **DONE** (95% complete)
-6. ⏳ **Story 5.9.1 (Fix Language Toggle Issues)** - **P0 CRITICAL HOTFIX** - **IN PROGRESS**
-7. ⏸️ Story 5.10 (Tooltips) - Nice-to-have UX polish - **PENDING**
-8. ⏸️ Story 5.11 (SSN Auto-Format) - Convenience feature - **PENDING**
+5. ✅ Story 5.9 (Language Toggle) - Important for Swedish users - **DONE**
+6. ✅ Story 5.9.1 (Fix Language Toggle Issues) - P0 CRITICAL HOTFIX - **DONE**
+7. ⏳ **Story 5.13 (Complete Translation Coverage & Root Page Fixes)** - **P1 HIGH PRIORITY** - **CURRENT**
+8. ⏸️ Story 5.10 (Tooltips) - Nice-to-have UX polish - **PENDING**
+9. ⏸️ Story 5.11 (SSN Auto-Format) - Convenience feature - **PENDING**
 
-**Epic Progress:** 62.5% complete (5/8 stories done)
+**Epic Progress:** 67% complete (6/9 stories done)
 
 **Definition of Done for Epic 5.5:**
 

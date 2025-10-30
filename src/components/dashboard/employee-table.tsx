@@ -37,6 +37,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock } from "lucide-react";
 import { EditableCell } from "./editable-cell";
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
@@ -48,6 +53,7 @@ import { useColumns } from "@/lib/hooks/use-columns";
 import { getEmployeeFieldValue } from "@/lib/utils/column-mapping";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/lib/store/ui-store";
+import { useTranslations } from "next-intl";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -95,6 +101,7 @@ export function EmployeeTable({
 }: EmployeeTableProps) {
   const { user } = useAuth();
   const isHRAdmin = user?.role === "hr_admin";
+  const t = useTranslations("tooltips");
   
   // Get preview mode state
   const { previewRole, isPreviewMode } = useUIStore();
@@ -416,44 +423,68 @@ export function EmployeeTable({
             <div className="flex gap-2">
               {/* Archive/Unarchive buttons */}
               {employee.is_archived ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleUnarchiveClick(employee)}
-                  title="Restore employee"
-                >
-                  <ArchiveRestore className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleUnarchiveClick(employee)}
+                    >
+                      <ArchiveRestore className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("restoreEmployee")}</p>
+                  </TooltipContent>
+                </Tooltip>
               ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleArchiveClick(employee)}
-                  title="Archive employee"
-                >
-                  <Archive className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleArchiveClick(employee)}
+                    >
+                      <Archive className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("archiveEmployee")}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
 
               {/* Terminate/Reactivate buttons */}
               {employee.is_terminated ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleReactivateClick(employee)}
-                  title="Reactivate employee"
-                >
-                  <UserCheck className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleReactivateClick(employee)}
+                    >
+                      <UserCheck className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("reactivateEmployee")}</p>
+                  </TooltipContent>
+                </Tooltip>
               ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleTerminateClick(employee)}
-                  title="Mark as terminated"
-                >
-                  <UserX className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleTerminateClick(employee)}
+                    >
+                      <UserX className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("terminateEmployee")}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           );
@@ -462,7 +493,7 @@ export function EmployeeTable({
     }
 
     return dataColumns;
-  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode]);
+  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t]);
 
   const table = useReactTable({
     data: employees,

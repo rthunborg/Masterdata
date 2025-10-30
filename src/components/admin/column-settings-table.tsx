@@ -23,6 +23,7 @@ import { PermissionToggle } from "./permission-toggle";
 import { DeleteColumnModal } from "./delete-column-modal";
 import { toast } from "sonner";
 import { Trash2, EyeOff, Eye } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ColumnSettingsTableProps {
   columns: ColumnConfig[];
@@ -36,6 +37,7 @@ export function ColumnSettingsTable({
   const [updatingColumnId, setUpdatingColumnId] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [columnToDelete, setColumnToDelete] = useState<ColumnConfig | null>(null);
+  const t = useTranslations("tooltips");
 
   const allRoles: UserRole[] = [
     UserRole.HR_ADMIN,
@@ -271,7 +273,9 @@ export function ColumnSettingsTable({
                               <Eye className="h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Unhide column</TooltipContent>
+                          <TooltipContent>
+                            <p>{t("showColumn")}</p>
+                          </TooltipContent>
                         </Tooltip>
                       ) : (
                         <Tooltip>
@@ -286,9 +290,11 @@ export function ColumnSettingsTable({
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {column.is_masterdata
-                              ? "Cannot hide masterdata columns"
-                              : "Hide column"}
+                            <p>
+                              {column.is_masterdata
+                                ? "Cannot hide masterdata columns"
+                                : t("hideColumn")}
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -304,9 +310,11 @@ export function ColumnSettingsTable({
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          {column.is_masterdata
-                            ? "Masterdata columns cannot be deleted"
-                            : "Delete column"}
+                          <p>
+                            {column.is_masterdata
+                              ? "Masterdata columns cannot be deleted"
+                              : t("deleteColumn")}
+                          </p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
