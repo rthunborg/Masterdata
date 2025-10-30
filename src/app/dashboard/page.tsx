@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
 import { AddColumnModal } from "@/components/dashboard/add-column-modal";
@@ -24,8 +23,7 @@ import { Plus, Upload, Columns } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
 
 export default function DashboardPage() {
-  const { user, logout, isLoading: authLoading } = useAuth();
-  const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const { openModal, isPreviewMode } = useUIStore();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -55,15 +53,6 @@ export default function DashboardPage() {
 
   const handleEmployeesImported = () => {
     refetch();
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
   };
 
   if (authLoading) {
@@ -129,9 +118,6 @@ export default function DashboardPage() {
               <ManageColumnsDialog />
             </>
           )}
-          <Button onClick={handleLogout} variant="outline">
-            Sign Out
-          </Button>
         </div>
       </div>
 

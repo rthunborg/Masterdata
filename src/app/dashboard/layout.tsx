@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { getUserFromSession } from "@/lib/server/auth";
-import { getRoleDisplayName } from "@/lib/types/user";
 import Link from "next/link";
 import { Toaster } from "sonner";
+import { Header } from "@/components/layout/header";
 
 export default async function DashboardLayout({
   children,
@@ -17,30 +17,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
-                HR Masterdata Management
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-700">
-                <span className="font-medium">{user.email}</span>
-              </div>
-              <div 
-                className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                role="status"
-                aria-label={`Logged in as ${getRoleDisplayName(user.role)}`}
-              >
-                <span className="sr-only">Logged in as: </span>
-                {getRoleDisplayName(user.role)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
       
       {/* Navigation */}
       <nav className="bg-gray-100 border-b">

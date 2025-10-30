@@ -230,7 +230,7 @@ describe("External Party Dashboard Access", () => {
   });
 
   describe("Logout Functionality", () => {
-    it("displays logout button for external party users", async () => {
+    it("does NOT display logout button in dashboard page body (moved to header)", async () => {
       const { useAuth } = await import("@/lib/hooks/use-auth");
       vi.mocked(useAuth).mockReturnValue({
         user: {
@@ -251,39 +251,14 @@ describe("External Party Dashboard Access", () => {
       });
 
       render(<DashboardPage />);
-      await waitFor(() => {
-        expect(screen.getByText(/Sign Out/i)).toBeInTheDocument();
-      });
-    });
-
-    it("calls logout function when logout button is clicked", async () => {
-      const { useAuth } = await import("@/lib/hooks/use-auth");
-      const mockLogout = vi.fn().mockResolvedValue(undefined);
       
-      vi.mocked(useAuth).mockReturnValue({
-        user: {
-          id: "1",
-          email: "sodexo@test.com",
-          role: UserRole.SODEXO,
-          is_active: true,
-          created_at: "2025-01-01",
-          auth_id: "auth-1",
-        } as SessionUser,
-        isAuthenticated: true,
-        isLoading: false,
-        login: vi.fn(),
-        logout: mockLogout,
-        setUser: vi.fn(),
-        checkAuth: vi.fn(),
-        setLoading: vi.fn(),
-      });
-
-      const { getByText } = render(<DashboardPage />);
-      
+      // Sign-out button should NOT be in the dashboard page (it's in the header now)
       await waitFor(() => {
-        const logoutButton = getByText(/Sign Out/i);
-        logoutButton.click();
-        expect(mockLogout).toHaveBeenCalledTimes(1);
+        const buttons = screen.getAllByRole('button');
+        const signOutButton = buttons.find(btn => 
+          btn.textContent?.toLowerCase().includes('sign out')
+        );
+        expect(signOutButton).toBeUndefined();
       });
     });
   });
