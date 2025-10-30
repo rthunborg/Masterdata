@@ -106,6 +106,12 @@
     "clear": "Clear"
   },
   "modals": {
+    "unsavedChanges": {
+      "title": "Unsaved Changes",
+      "description": "Are you sure you want to exit this view? Your data will not be saved.",
+      "continueEditing": "Continue Editing",
+      "discardChanges": "Discard Changes"
+    },
     "importEmployees": {
       "title": "Import Employees from CSV",
       "description": "Upload a CSV file with the following columns: First Name, Surname, Social Security No., Email, Mobile, Town District, Rank, Gender, Hire Date (YYYY-MM-DD), Comments",

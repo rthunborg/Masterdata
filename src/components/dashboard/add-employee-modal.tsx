@@ -38,6 +38,7 @@ import { employeeService } from "@/lib/services/employee-service";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { formatImportantDateOption } from "@/lib/utils/format";
+import { UnsavedChangesDialog } from "@/components/dashboard/unsaved-changes-dialog";
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export function AddEmployeeModal({
   onSuccess,
 }: AddEmployeeModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const t = useTranslations('forms');
   const tCommon = useTranslations('common');
   const tDashboard = useTranslations('dashboard');
@@ -95,6 +97,9 @@ export function AddEmployeeModal({
       termination_reason: null,
     },
   });
+
+  // Extract isDirty from formState for unsaved changes tracking
+  const { isDirty } = form.formState;
 
   const onSubmit = async (data: CreateEmployeeInput) => {
     try {
@@ -169,8 +174,22 @@ export function AddEmployeeModal({
 
   const handleOpenChange = (open: boolean) => {
     if (!open && !isSubmitting) {
+      // Check if form has unsaved changes
+      if (isDirty) {
+        setShowUnsavedDialog(true); // Show confirmation dialog
+      } else {
+        form.reset();
+        onClose(); // Close immediately if form is pristine
+      }
+    }
+  };
+
+  const handleCloseAttempt = () => {
+    if (isDirty) {
+      setShowUnsavedDialog(true); // Show confirmation dialog
+    } else {
       form.reset();
-      onClose();
+      onClose(); // Close immediately if form is pristine
     }
   };
 
@@ -518,7 +537,7 @@ export function AddEmployeeModal({
               <Button
                 type="button"
                 variant="outline"
-                onClick={onClose}
+                onClick={handleCloseAttempt}
                 disabled={isSubmitting}
               >
                 {tCommon('cancel')}
@@ -530,6 +549,16 @@ export function AddEmployeeModal({
           </form>
         </Form>
       </DialogContent>
+
+      <UnsavedChangesDialog
+        isOpen={showUnsavedDialog}
+        onCancel={() => setShowUnsavedDialog(false)}
+        onConfirm={() => {
+          form.reset();
+          setShowUnsavedDialog(false);
+          onClose();
+        }}
+      />
     </Dialog>
   );
 }

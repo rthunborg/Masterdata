@@ -106,6 +106,12 @@
     "clear": "Rensa"
   },
   "modals": {
+    "unsavedChanges": {
+      "title": "Osparade ändringar",
+      "description": "Är du säker på att du vill lämna denna vy? Din data kommer inte att sparas.",
+      "continueEditing": "Fortsätt redigera",
+      "discardChanges": "Kassera ändringar"
+    },
     "importEmployees": {
       "title": "Importera anställda från CSV",
       "description": "Ladda upp en CSV-fil med följande kolumner: Förnamn, Efternamn, Personnummer, E-post, Mobiltelefon, Stadsdel, Rang, Kön, Anställningsdatum (ÅÅÅÅ-MM-DD), Kommentarer",
