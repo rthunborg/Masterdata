@@ -15,4 +15,7 @@ Enable external parties to create and edit their own custom columns with categor
 **Epic 5: Admin Configuration & Role Preview**  
 Provide HR Admin with comprehensive column permission management, user account management, and "View As" role preview capabilities.
 
+**Epic 5.5: Post-MVP Polish & Branding**  
+Apply user feedback-driven enhancements and Stena Line branding including UX improvements (header navigation, tooltips, redirect fixes), bilingual support (Swedish/English), SSN input flexibility, and comprehensive Stena Line visual identity implementation.
+
 ---

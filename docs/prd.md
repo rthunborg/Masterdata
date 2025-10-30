@@ -157,13 +157,38 @@ From a product perspective, the following screens deliver the PRD values and goa
 
 ### Branding
 
-**Minimal, Professional, Functional** - No specific corporate branding requirements. The interface should emphasize clarity and usability over visual flair:
+**Stena Line Visual Identity** - The system reflects Stena Line's corporate brand to establish credibility and professional appearance:
 
-- Clean, modern aesthetic using a standard component library (e.g., shadcn/ui with Tailwind CSS)
-- Neutral color palette with strategic use of color for status indicators
-- Clear typography optimized for readability
-- Icons used sparingly to support recognition (edit, delete, archive, search, sort indicators)
-- Consistent spacing and layout following design system conventions
+**Color Palette:**
+
+- **Core Blue** (#034592) - Primary brand color for buttons, headers, and key UI elements
+- **Core Red** (#e41f1f) - Accent color for alerts, secondary CTAs, and highlights
+- **White** (#ffffff) - Standard background color
+- **Black** (#1a1a1a) - Text color
+- **Beige** (#eae3d2) - Secondary background for text boxes and cards
+- **Secondary Blue** (#3344dd) - Link highlighting (distinct from Core Blue)
+
+**Logo & Imagery:**
+
+- Stena Line logo displayed in application header
+- Stena Danica ocean imagery (`220506_Stena_Danica_006_STE_02134.jpg`) as background on landing and login pages
+
+**Typography:**
+
+- Clean, professional fonts aligned with Stena Line web presence (see stenaline.se for reference)
+- Clear hierarchy with readable font sizes
+
+**Accessibility:**
+
+- All color combinations meet WCAG AA standards (4.5:1 contrast ratio for normal text)
+- Follow Stena guideline: "white or black text colour to secure accessibility"
+- Core Blue backgrounds use white text for readability
+
+**Design Inspiration:**
+
+- Reference https://www.stenaline.se/ for visual consistency, spacing, and patterns
+
+The interface balances brand recognition with clarity and usability, maintaining a professional aesthetic suitable for HR workflows while feeling like an official Stena Line tool.
 
 ### Target Device and Platforms
 
@@ -245,6 +270,9 @@ Enable external parties to create and edit their own custom columns with categor
 
 **Epic 5: Admin Configuration & Role Preview**  
 Provide HR Admin with comprehensive column permission management, user account management, and "View As" role preview capabilities.
+
+**Epic 5.5: Post-MVP Polish & Branding**  
+Apply user feedback-driven enhancements and Stena Line branding including UX improvements (header navigation, tooltips, redirect fixes), bilingual support (Swedish/English), SSN input flexibility, and comprehensive Stena Line visual identity implementation.
 
 ---
 

@@ -25,15 +25,10 @@ export default function Home() {
                 parties like Sodexo, Bluegarden, and Silkeborg Forsyning.
               </p>
 
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <Link href="/login" className="flex-1">
-                  <Button className="w-full" size="lg">
+              <div className="flex justify-center pt-2">
+                <Link href="/login" className="w-full sm:w-auto">
+                  <Button className="w-full sm:w-auto px-12" size="lg">
                     Login to System
-                  </Button>
-                </Link>
-                <Link href="/api/health" target="_blank" className="flex-1">
-                  <Button variant="outline" className="w-full" size="lg">
-                    System Health
                   </Button>
                 </Link>
               </div>

@@ -24,11 +24,9 @@ describe("Landing Page", () => {
     expect(loginButton.closest("a")).toHaveAttribute("href", "/login");
   });
 
-  it("displays system health link", () => {
+  it("does NOT render System Health button", () => {
     render(<LandingPage />);
-    const healthButton = screen.getByText(/System Health/i);
-    expect(healthButton).toBeInTheDocument();
-    expect(healthButton.closest("a")).toHaveAttribute("href", "/api/health");
+    expect(screen.queryByText(/System Health/i)).not.toBeInTheDocument();
   });
 
   it("displays version number", () => {
