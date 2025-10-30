@@ -36,6 +36,8 @@ import {
   type CreateEmployeeInput,
 } from "@/lib/validation/employee-schema";
 import { employeeService } from "@/lib/services/employee-service";
+import { useImportantDates } from "@/lib/hooks/use-important-dates";
+import { formatImportantDateOption } from "@/lib/utils/format";
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
@@ -54,6 +56,14 @@ export function AddEmployeeModal({
   const tDashboard = useTranslations('dashboard');
   const tErrors = useTranslations('errors');
 
+  // Fetch Important Dates with real-time updates
+  const { dates: stenaDates, isLoading: stenaLoading } =
+    useImportantDates('Stena Dates');
+  const { dates: omcDates, isLoading: omcLoading } =
+    useImportantDates('ÖMC Dates');
+  const { dates: pe3Dates, isLoading: pe3Loading } =
+    useImportantDates('PE3 Dates');
+
   // Create schema with translated error messages
   const createEmployeeSchema = createEmployeeSchemaWithMessages(
     (key: string) => {
@@ -69,12 +79,15 @@ export function AddEmployeeModal({
       first_name: "",
       surname: "",
       ssn: "",
-      email: "",
+      email: null,
       mobile: null,
-      rank: null,
+      rank: "",
       gender: null,
       town_district: null,
       hire_date: new Date().toISOString().split("T")[0],
+      stena_date: "",
+      omc_date: "",
+      pe3_date: null,
       comments: null,
       is_terminated: false,
       is_archived: false,
@@ -86,7 +99,14 @@ export function AddEmployeeModal({
   const onSubmit = async (data: CreateEmployeeInput) => {
     try {
       setIsSubmitting(true);
-      await employeeService.create(data);
+      
+      // Normalize email field: convert undefined to null
+      const normalizedData = {
+        ...data,
+        email: data.email ?? null,
+      };
+      
+      await employeeService.create(normalizedData);
       
       toast.success(t('employeeAdded'));
       
@@ -210,14 +230,16 @@ export function AddEmployeeModal({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {t('email')} <span className="text-red-500">*</span>
-                    </FormLabel>
+                    <FormLabel>{t('email')}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="john.doe@example.com"
+                        placeholder="john.doe@example.com (optional)"
                         {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(e.target.value || null)
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -253,16 +275,11 @@ export function AddEmployeeModal({
                 name="rank"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('rank')}</FormLabel>
+                    <FormLabel>
+                      {t('rank')} <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="CHEF"
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) =>
-                          field.onChange(e.target.value || null)
-                        }
-                      />
+                      <Input placeholder="CHEF" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -333,6 +350,106 @@ export function AddEmployeeModal({
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Stena Date */}
+              <FormField
+                control={form.control}
+                name="stena_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('stenaDate')} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? undefined}
+                      disabled={stenaLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('selectStenaDate')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {stenaDates
+                          .filter((d) => new Date(d.date_value) >= new Date())
+                          .map((date) => (
+                            <SelectItem key={date.id} value={date.id}>
+                              {formatImportantDateOption(date)}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* ÖMC Date */}
+              <FormField
+                control={form.control}
+                name="omc_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('omcDate')} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? undefined}
+                      disabled={omcLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('selectOmcDate')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {omcDates
+                          .filter((d) => new Date(d.date_value) >= new Date())
+                          .map((date) => (
+                            <SelectItem key={date.id} value={date.id}>
+                              {formatImportantDateOption(date)}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* PE3 Date */}
+              <FormField
+                control={form.control}
+                name="pe3_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('pe3Date')}</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? undefined}
+                      disabled={pe3Loading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('selectPe3Date')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {pe3Dates
+                          .filter((d) => new Date(d.date_value) >= new Date())
+                          .map((date) => (
+                            <SelectItem key={date.id} value={date.id}>
+                              {formatImportantDateOption(date)}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

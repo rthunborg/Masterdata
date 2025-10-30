@@ -370,6 +370,8 @@ so that **it feels like an official Stena Line tool**.
 
 **Epic Progress:** 67% complete (6/9 stories done)
 
+**Note:** User acceptance testing after Story 5.13 revealed additional requirements documented in **Epic 6: Employee Form & Data Management Enhancements**. Epic 5.5 can be completed independently while Epic 6 addresses UAT feedback.
+
 **Definition of Done for Epic 5.5:**
 
 1. ✅ All 8 stories pass acceptance criteria

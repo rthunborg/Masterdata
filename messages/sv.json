@@ -92,7 +92,13 @@
     "genderOther": "Annat",
     "genderPreferNotToSay": "Vill inte uppge",
     "commentsPlaceholder": "Ytterligare anteckningar om den anställde...",
-    "duplicateSSN": "En anställd med detta personnummer finns redan"
+    "duplicateSSN": "En anställd med detta personnummer finns redan",
+    "stenaDate": "Stena-datum",
+    "omcDate": "ÖMC-datum",
+    "pe3Date": "PE3-datum",
+    "selectStenaDate": "Välj Stena-datum",
+    "selectOmcDate": "Välj ÖMC-datum",
+    "selectPe3Date": "Välj PE3-datum (valfritt)"
   },
   "modals": {
     "importEmployees": {
@@ -281,9 +287,12 @@
       "ssnFormat": "Personnummer måste vara i format ÅÅMMDD-XXXX eller ÅÅMMDDXXXX (10 siffror)",
       "emailRequired": "E-post krävs",
       "emailInvalid": "Ogiltigt e-postformat",
+      "rankRequired": "Grad krävs",
       "hireDateRequired": "Anställningsdatum krävs",
       "hireDateInvalid": "Ogiltigt datumformat",
       "hireDateFuture": "Anställningsdatum kan inte vara i framtiden",
+      "stenaDateRequired": "Stena-datum krävs",
+      "omcDateRequired": "ÖMC-datum krävs",
       "terminationDateRequired": "Uppsägningsdatum krävs",
       "terminationDateInvalid": "Ogiltigt datumformat",
       "terminationReasonRequired": "Uppsägningsorsak krävs",

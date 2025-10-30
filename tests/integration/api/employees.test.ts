@@ -1052,7 +1052,7 @@ describe("SSN Normalization Tests", () => {
         ssn: "8503151234", // Dashless format
         email: "test@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -1061,6 +1061,9 @@ describe("SSN Normalization Tests", () => {
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
       };
 
       const mockCreatedEmployee: Employee = {
@@ -1098,7 +1101,7 @@ describe("SSN Normalization Tests", () => {
         ssn: "850315-1234", // Already normalized
         email: "test@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -1107,6 +1110,9 @@ describe("SSN Normalization Tests", () => {
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
       };
 
       const mockCreatedEmployee: Employee = {
@@ -1143,7 +1149,7 @@ describe("SSN Normalization Tests", () => {
         ssn: "198503151234", // 12 digits with century
         email: "test@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -1152,6 +1158,9 @@ describe("SSN Normalization Tests", () => {
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
       };
 
       const mockCreatedEmployee: Employee = {
@@ -1196,7 +1205,7 @@ describe("SSN Normalization Tests", () => {
         ssn: "900101-1234", // Normalized
         email: "test@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -1205,6 +1214,9 @@ describe("SSN Normalization Tests", () => {
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",
       };
@@ -1242,7 +1254,7 @@ describe("SSN Normalization Tests", () => {
         ssn: "900101-1234",
         email: "test@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -1251,6 +1263,9 @@ describe("SSN Normalization Tests", () => {
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",
       };
@@ -1289,7 +1304,7 @@ describe("SSN Normalization Tests", () => {
         ssn: "850315-1234", // Original SSN unchanged
         email: "test@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -1298,6 +1313,9 @@ describe("SSN Normalization Tests", () => {
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",
       };

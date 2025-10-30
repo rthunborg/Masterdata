@@ -113,7 +113,7 @@ describe("AddEmployeeModal", () => {
       expect(screen.getByText(/First name is required/i)).toBeInTheDocument();
       expect(screen.getByText(/Surname is required/i)).toBeInTheDocument();
       expect(screen.getByText(/SSN is required/i)).toBeInTheDocument();
-      expect(screen.getByText(/Email is required/i)).toBeInTheDocument();
+      expect(screen.getByText(/Rank is required/i)).toBeInTheDocument();
     });
 
     // Should not call service or callbacks
@@ -138,6 +138,7 @@ describe("AddEmployeeModal", () => {
     await user.type(screen.getByLabelText(/First Name/i), "Jane");
     await user.type(screen.getByLabelText(/Surname/i), "Smith");
     await user.type(screen.getByLabelText(/SSN/i), "19900101-1234");
+    await user.type(screen.getByLabelText(/Rank/i), "CAPTAIN");
     await user.type(
       screen.getByLabelText(/Email/i),
       "jane.smith@example.com"
@@ -197,6 +198,7 @@ describe("AddEmployeeModal", () => {
     await user.type(screen.getByLabelText(/First Name/i), "Jane");
     await user.type(screen.getByLabelText(/Surname/i), "Smith");
     await user.type(screen.getByLabelText(/SSN/i), "19900101-1234");
+    await user.type(screen.getByLabelText(/Rank/i), "CAPTAIN");
     await user.type(
       screen.getByLabelText(/Email/i),
       "jane.smith@example.com"
@@ -234,6 +236,7 @@ describe("AddEmployeeModal", () => {
     await user.type(screen.getByLabelText(/First Name/i), "Jane");
     await user.type(screen.getByLabelText(/Surname/i), "Smith");
     await user.type(screen.getByLabelText(/SSN/i), "19900101-1234");
+    await user.type(screen.getByLabelText(/Rank/i), "CAPTAIN");
     await user.type(
       screen.getByLabelText(/Email/i),
       "jane.smith@example.com"

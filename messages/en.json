@@ -92,7 +92,13 @@
     "genderOther": "Other",
     "genderPreferNotToSay": "Prefer not to say",
     "commentsPlaceholder": "Additional notes about the employee...",
-    "duplicateSSN": "An employee with this SSN already exists"
+    "duplicateSSN": "An employee with this SSN already exists",
+    "stenaDate": "Stena Date",
+    "omcDate": "ÖMC Date",
+    "pe3Date": "PE3 Date",
+    "selectStenaDate": "Select Stena Date",
+    "selectOmcDate": "Select ÖMC Date",
+    "selectPe3Date": "Select PE3 Date (optional)"
   },
   "modals": {
     "importEmployees": {
@@ -281,9 +287,12 @@
       "ssnFormat": "SSN must be in format YYMMDD-XXXX or YYMMDDXXXX (10 digits)",
       "emailRequired": "Email is required",
       "emailInvalid": "Invalid email format",
+      "rankRequired": "Rank is required",
       "hireDateRequired": "Hire date is required",
       "hireDateInvalid": "Invalid date format",
       "hireDateFuture": "Hire date cannot be in the future",
+      "stenaDateRequired": "Stena Date is required",
+      "omcDateRequired": "ÖMC Date is required",
       "terminationDateRequired": "Termination date is required",
       "terminationDateInvalid": "Invalid date format",
       "terminationReasonRequired": "Termination reason is required",

@@ -18,4 +18,7 @@ Provide HR Admin with comprehensive column permission management, user account m
 **Epic 5.5: Post-MVP Polish & Branding**  
 Apply user feedback-driven enhancements and Stena Line branding including UX improvements (header navigation, tooltips, redirect fixes), bilingual support (Swedish/English), SSN input flexibility, and comprehensive Stena Line visual identity implementation.
 
+**Epic 6: Employee Form & Data Management Enhancements**  
+Address UAT-discovered usability gaps in employee form validation, data loss prevention, important dates CSV import, column management UX, and user activity tracking to ensure production-ready HR workflows.
+
 ---

@@ -9,6 +9,9 @@ export interface Employee {
   gender: string | null;
   town_district: string | null;
   hire_date: string;
+  stena_date: string | null;
+  omc_date: string | null;
+  pe3_date: string | null;
   termination_date: string | null;
   termination_reason: string | null;
   is_terminated: boolean;

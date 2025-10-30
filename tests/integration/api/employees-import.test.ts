@@ -53,9 +53,9 @@ describe("POST /api/employees/import", () => {
   });
 
   it("should import employees successfully for HR Admin", async () => {
-    const csvContent = `First Name,Surname,SSN,Email,Hire Date
-John,Doe,19850315-1234,john@example.com,2025-01-15
-Jane,Smith,19900520-5678,jane@example.com,2025-02-01`;
+    const csvContent = `First Name,Surname,SSN,Email,Rank,Hire Date
+John,Doe,19850315-1234,john@example.com,CAPTAIN,2025-01-15
+Jane,Smith,19900520-5678,jane@example.com,CHEF,2025-02-01`;
 
     const mockInsertedEmployees: Employee[] = [
       {
@@ -65,7 +65,7 @@ Jane,Smith,19900520-5678,jane@example.com,2025-02-01`;
         ssn: "19850315-1234",
         email: "john@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -74,6 +74,9 @@ Jane,Smith,19900520-5678,jane@example.com,2025-02-01`;
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
       },
@@ -84,7 +87,7 @@ Jane,Smith,19900520-5678,jane@example.com,2025-02-01`;
         ssn: "19900520-5678",
         email: "jane@example.com",
         mobile: null,
-        rank: null,
+        rank: "CHEF",
         gender: null,
         town_district: null,
         hire_date: "2025-02-01",
@@ -93,6 +96,9 @@ Jane,Smith,19900520-5678,jane@example.com,2025-02-01`;
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
       },
@@ -122,9 +128,9 @@ Jane,Smith,19900520-5678,jane@example.com,2025-02-01`;
   });
 
   it("should handle duplicate SSN errors", async () => {
-    const csvContent = `First Name,Surname,SSN,Email,Hire Date
-John,Doe,19850315-1234,john@example.com,2025-01-15
-Jane,Smith,19850315-1234,jane@example.com,2025-02-01`;
+    const csvContent = `First Name,Surname,SSN,Email,Rank,Hire Date
+John,Doe,19850315-1234,john@example.com,CAPTAIN,2025-01-15
+Jane,Smith,19850315-1234,jane@example.com,CHEF,2025-02-01`;
 
     const mockInsertedEmployees: Employee[] = [
       {
@@ -134,7 +140,7 @@ Jane,Smith,19850315-1234,jane@example.com,2025-02-01`;
         ssn: "19850315-1234",
         email: "john@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -143,6 +149,9 @@ Jane,Smith,19850315-1234,jane@example.com,2025-02-01`;
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
       },
@@ -161,7 +170,7 @@ Jane,Smith,19850315-1234,jane@example.com,2025-02-01`;
             ssn: "19850315-1234",
             email: "jane@example.com",
             mobile: null,
-            rank: null,
+            rank: "CHEF",
             gender: null,
             town_district: null,
             hire_date: "2025-02-01",
@@ -170,6 +179,9 @@ Jane,Smith,19850315-1234,jane@example.com,2025-02-01`;
             termination_date: null,
             termination_reason: null,
             comments: null,
+            stena_date: null,
+            omc_date: null,
+            pe3_date: null,
           },
         },
       ],
@@ -335,10 +347,10 @@ John,Doe,19850315-1234,john@example.com,2025-01-15`;
   });
 
   it("should handle partial success scenario", async () => {
-    const csvContent = `First Name,Surname,SSN,Email,Hire Date
-John,Doe,19850315-1234,john@example.com,2025-01-15
-Jane,Smith,19900520-5678,jane@example.com,2025-02-01
-Bob,Johnson,invalid-ssn,bob@example.com,2025-03-01`;
+    const csvContent = `First Name,Surname,SSN,Email,Rank,Hire Date
+John,Doe,19850315-1234,john@example.com,CAPTAIN,2025-01-15
+Jane,Smith,19900520-5678,jane@example.com,CHEF,2025-02-01
+Bob,Johnson,invalid-ssn,bob@example.com,MATE,2025-03-01`;
 
     const mockInsertedEmployees: Employee[] = [
       {
@@ -348,7 +360,7 @@ Bob,Johnson,invalid-ssn,bob@example.com,2025-03-01`;
         ssn: "19850315-1234",
         email: "john@example.com",
         mobile: null,
-        rank: null,
+        rank: "CAPTAIN",
         gender: null,
         town_district: null,
         hire_date: "2025-01-15",
@@ -357,6 +369,9 @@ Bob,Johnson,invalid-ssn,bob@example.com,2025-03-01`;
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
       },
@@ -367,7 +382,7 @@ Bob,Johnson,invalid-ssn,bob@example.com,2025-03-01`;
         ssn: "19900520-5678",
         email: "jane@example.com",
         mobile: null,
-        rank: null,
+        rank: "CHEF",
         gender: null,
         town_district: null,
         hire_date: "2025-02-01",
@@ -376,6 +391,9 @@ Bob,Johnson,invalid-ssn,bob@example.com,2025-03-01`;
         is_terminated: false,
         is_archived: false,
         comments: null,
+        stena_date: null,
+        omc_date: null,
+        pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
       },

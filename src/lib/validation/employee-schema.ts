@@ -29,9 +29,12 @@ export const validationMessages = {
   ssnFormat: "errors.validation.ssnFormat",
   emailRequired: "errors.validation.emailRequired",
   emailInvalid: "errors.validation.emailInvalid",
+  rankRequired: "errors.validation.rankRequired",
   hireDateRequired: "errors.validation.hireDateRequired",
   hireDateInvalid: "errors.validation.hireDateInvalid",
   hireDateFuture: "errors.validation.hireDateFuture",
+  stenaDateRequired: "errors.validation.stenaDateRequired",
+  omcDateRequired: "errors.validation.omcDateRequired",
   terminationDateRequired: "errors.validation.terminationDateRequired",
   terminationDateInvalid: "errors.validation.terminationDateInvalid",
   terminationReasonRequired: "errors.validation.terminationReasonRequired",
@@ -62,10 +65,12 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
       .regex(ssnRegex, msg('ssnFormat')),
     email: z
       .string()
-      .min(1, msg('emailRequired'))
-      .email(msg('emailInvalid')),
+      .email(msg('emailInvalid'))
+      .optional()
+      .nullable()
+      .or(z.literal("")),
     mobile: z.string().nullable().default(null),
-    rank: z.string().nullable().default(null),
+    rank: z.string().min(1, msg('rankRequired')),
     gender: z
       .enum(["Male", "Female", "Other", "Prefer not to say"])
       .nullable()
@@ -89,6 +94,9 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
         today.setUTCHours(0, 0, 0, 0);
         return parsed <= today;
       }, msg('hireDateFuture')),
+    stena_date: z.string().min(1, msg('stenaDateRequired')),
+    omc_date: z.string().min(1, msg('omcDateRequired')),
+    pe3_date: z.string().nullable().default(null),
     comments: z.string().nullable().default(null),
     // System-managed fields with defaults
     is_terminated: z.boolean().default(false),
@@ -117,10 +125,12 @@ export const createEmployeeSchema = z.object({
     .regex(ssnRegex, "SSN must be in format YYYYMMDD-XXXX or YYMMDD-XXXX"),
   email: z
     .string()
-    .min(1, "Email is required")
-    .email("Invalid email format"),
+    .email("Invalid email format")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   mobile: z.string().nullable().default(null),
-  rank: z.string().nullable().default(null),
+  rank: z.string().min(1, "Rank is required"),
   gender: z
     .enum(["Male", "Female", "Other", "Prefer not to say"])
     .nullable()
@@ -144,6 +154,9 @@ export const createEmployeeSchema = z.object({
       today.setUTCHours(0, 0, 0, 0);
       return parsed <= today;
     }, "Hire date cannot be in the future"),
+  stena_date: z.string().min(1, "Stena Date is required"),
+  omc_date: z.string().min(1, "ÖMC Date is required"),
+  pe3_date: z.string().nullable().default(null),
   comments: z.string().nullable().default(null),
   // System-managed fields with defaults
   is_terminated: z.boolean().default(false),
@@ -256,7 +269,7 @@ export const csvImportEmployeeSchema = z.object({
     .optional()
     .or(z.literal("")),
   mobile: z.string().nullable().optional().or(z.literal("")),
-  rank: z.string().nullable().optional().or(z.literal("")),
+  rank: z.string().min(1, "Rank is required"),
   gender: z
     .enum(["Male", "Female", "Other", "Prefer not to say"])
     .nullable()
@@ -281,6 +294,9 @@ export const csvImportEmployeeSchema = z.object({
       today.setUTCHours(0, 0, 0, 0);
       return parsed <= today;
     }, "Hire date cannot be in the future"),
+  stena_date: z.string().nullable().optional().or(z.literal("")),
+  omc_date: z.string().nullable().optional().or(z.literal("")),
+  pe3_date: z.string().nullable().optional().or(z.literal("")),
   comments: z.string().nullable().optional().or(z.literal("")),
   // System-managed fields with defaults
   is_terminated: z.boolean().default(false).optional(),

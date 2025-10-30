@@ -16,6 +16,9 @@ describe("createEmployeeSchema", () => {
     gender: "Male",
     town_district: "Stockholm",
     hire_date: "2024-01-15",
+    stena_date: "uuid-stena-date-123",
+    omc_date: "uuid-omc-date-456",
+    pe3_date: "uuid-pe3-date-789",
     comments: "New hire",
     is_terminated: false,
     is_archived: false,
@@ -49,7 +52,23 @@ describe("createEmployeeSchema", () => {
 
     it("should reject missing email", () => {
       const data = { ...validEmployeeData, email: "" };
-      expect(() => createEmployeeSchema.parse(data)).toThrow("Email is required");
+      // Email is now optional, so this should pass
+      expect(() => createEmployeeSchema.parse(data)).not.toThrow();
+    });
+
+    it("should reject missing rank", () => {
+      const data = { ...validEmployeeData, rank: "" };
+      expect(() => createEmployeeSchema.parse(data)).toThrow("Rank is required");
+    });
+
+    it("should reject missing stena_date", () => {
+      const data = { ...validEmployeeData, stena_date: "" };
+      expect(() => createEmployeeSchema.parse(data)).toThrow("Stena Date is required");
+    });
+
+    it("should reject missing omc_date", () => {
+      const data = { ...validEmployeeData, omc_date: "" };
+      expect(() => createEmployeeSchema.parse(data)).toThrow("ÖMC Date is required");
     });
 
     it("should reject missing hire_date", () => {
@@ -71,6 +90,18 @@ describe("createEmployeeSchema", () => {
         const result = createEmployeeSchema.parse(data);
         expect(result.email).toBe(email);
       });
+    });
+
+    it("should accept empty email (optional field)", () => {
+      const data = { ...validEmployeeData, email: "" };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.email).toBeDefined();
+    });
+
+    it("should accept null email (optional field)", () => {
+      const data = { ...validEmployeeData, email: null };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.email).toBeNull();
     });
 
     it("should reject invalid email formats", () => {
@@ -196,12 +227,15 @@ describe("createEmployeeSchema", () => {
         first_name: "Jane",
         surname: "Smith",
         ssn: "19900101-5678",
-        email: "jane@example.com",
+        email: null,
         hire_date: "2024-01-01",
+        rank: "CHEF", // Required field
+        stena_date: "uuid-stena",
+        omc_date: "uuid-omc",
         mobile: null,
-        rank: null,
         gender: null,
         town_district: null,
+        pe3_date: null,
         comments: null,
         is_terminated: false,
         is_archived: false,
@@ -211,9 +245,10 @@ describe("createEmployeeSchema", () => {
 
       const result = createEmployeeSchema.parse(data);
       expect(result.mobile).toBeNull();
-      expect(result.rank).toBeNull();
+      expect(result.email).toBeNull();
       expect(result.gender).toBeNull();
       expect(result.town_district).toBeNull();
+      expect(result.pe3_date).toBeNull();
       expect(result.comments).toBeNull();
     });
 
@@ -234,6 +269,9 @@ describe("createEmployeeSchema", () => {
         ssn: "19950101-1234",
         email: "test@example.com",
         hire_date: "2024-01-01",
+        rank: "CHEF", // Required field
+        stena_date: "uuid-stena", // Required field
+        omc_date: "uuid-omc", // Required field
       };
 
       const result = createEmployeeSchema.parse(minimalData);
@@ -264,6 +302,44 @@ describe("createEmployeeSchema", () => {
       const result = createEmployeeSchema.parse(data);
       expect(result.first_name.length).toBe(100);
       expect(result.surname.length).toBe(100);
+    });
+  });
+
+  describe("important date fields validation", () => {
+    it("should require stena_date", () => {
+      const data = { ...validEmployeeData, stena_date: "" };
+      expect(() => createEmployeeSchema.parse(data)).toThrow("Stena Date is required");
+    });
+
+    it("should require omc_date", () => {
+      const data = { ...validEmployeeData, omc_date: "" };
+      expect(() => createEmployeeSchema.parse(data)).toThrow("ÖMC Date is required");
+    });
+
+    it("should accept null for pe3_date (optional)", () => {
+      const data = { ...validEmployeeData, pe3_date: null };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.pe3_date).toBeNull();
+    });
+
+    it("should accept valid UUID strings for date fields", () => {
+      const result = createEmployeeSchema.parse(validEmployeeData);
+      expect(result.stena_date).toBe("uuid-stena-date-123");
+      expect(result.omc_date).toBe("uuid-omc-date-456");
+      expect(result.pe3_date).toBe("uuid-pe3-date-789");
+    });
+  });
+
+  describe("rank field validation", () => {
+    it("should require rank", () => {
+      const data = { ...validEmployeeData, rank: "" };
+      expect(() => createEmployeeSchema.parse(data)).toThrow("Rank is required");
+    });
+
+    it("should accept valid rank value", () => {
+      const data = { ...validEmployeeData, rank: "CAPTAIN" };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.rank).toBe("CAPTAIN");
     });
   });
 });

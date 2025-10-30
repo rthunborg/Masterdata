@@ -73,10 +73,11 @@ export async function POST(request: NextRequest) {
       throw validationError;
     }
 
-    // Normalize SSN to standard format (YYMMDD-XXXX)
+    // Normalize SSN to standard format (YYMMDD-XXXX) and email (convert undefined to null)
     const normalizedData = {
       ...validatedData,
       ssn: normalizeSSN(validatedData.ssn),
+      email: validatedData.email ?? null,
     };
 
     // Create employee via repository
