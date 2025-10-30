@@ -110,7 +110,8 @@ describe("createEmployeeSchema", () => {
         "12345-1234",      // Too few digits before dash
         "123456789-1234",  // Too many digits before dash
         "850315+1234",     // Wrong separator
-        "8503151234",      // No separator
+        "123456789",       // 9 digits (invalid length)
+        "12345678901",     // 11 digits (invalid length)
       ];
 
       invalidSSNs.forEach((ssn) => {

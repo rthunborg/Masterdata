@@ -5,6 +5,7 @@ import {
   createErrorResponse,
 } from "@/lib/server/auth";
 import { createEmployeeSchema } from "@/lib/validation/employee-schema";
+import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { z } from "zod";
 
 // Force Node.js runtime for cookies() support
@@ -72,8 +73,14 @@ export async function POST(request: NextRequest) {
       throw validationError;
     }
 
+    // Normalize SSN to standard format (YYMMDD-XXXX)
+    const normalizedData = {
+      ...validatedData,
+      ssn: normalizeSSN(validatedData.ssn),
+    };
+
     // Create employee via repository
-    const employee = await employeeRepository.create(validatedData);
+    const employee = await employeeRepository.create(normalizedData);
 
     // Return successful response
     return NextResponse.json(

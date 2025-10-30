@@ -236,7 +236,7 @@ describe("POST /api/employees", () => {
       expect.objectContaining({
         first_name: validEmployeeData.first_name,
         surname: validEmployeeData.surname,
-        ssn: validEmployeeData.ssn,
+        ssn: "900101-1234", // SSN should be normalized (century stripped)
         email: validEmployeeData.email,
       })
     );
@@ -429,7 +429,11 @@ describe("POST /api/employees", () => {
     expect(json.data).toBeDefined();
     expect(employeeRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        ...minimalData,
+        first_name: minimalData.first_name,
+        surname: minimalData.surname,
+        ssn: "950101-1234", // SSN should be normalized (century stripped)
+        email: minimalData.email,
+        hire_date: minimalData.hire_date,
         mobile: null,
         rank: null,
         gender: null,
@@ -1023,5 +1027,307 @@ describe("POST /api/employees/[id]/reactivate", () => {
 
     expect(response.status).toBe(403);
     expect(json.error.code).toBe("FORBIDDEN");
+  });
+});
+
+describe("SSN Normalization Tests", () => {
+  const mockHRAdminUser = {
+    id: "user-1",
+    auth_id: "auth-1",
+    email: "admin@example.com",
+    role: UserRole.HR_ADMIN,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("POST /api/employees - SSN Normalization", () => {
+    it("should normalize dashless 10-digit SSN on create", async () => {
+      const employeeWithDashlessSSN: EmployeeFormData = {
+        first_name: "Test",
+        surname: "User",
+        ssn: "8503151234", // Dashless format
+        email: "test@example.com",
+        mobile: null,
+        rank: null,
+        gender: null,
+        town_district: null,
+        hire_date: "2025-01-15",
+        termination_date: null,
+        termination_reason: null,
+        is_terminated: false,
+        is_archived: false,
+        comments: null,
+      };
+
+      const mockCreatedEmployee: Employee = {
+        id: "emp-123",
+        ...employeeWithDashlessSSN,
+        ssn: "850315-1234", // Normalized with dash
+        created_at: "2025-10-27T12:00:00Z",
+        updated_at: "2025-10-27T12:00:00Z",
+      };
+
+      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
+
+      const request = new NextRequest("http://localhost:3000/api/employees", {
+        method: "POST",
+        body: JSON.stringify(employeeWithDashlessSSN),
+      });
+
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(json.data.ssn).toBe("850315-1234");
+      expect(employeeRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ssn: "850315-1234", // Verify normalized SSN was passed to repository
+        })
+      );
+    });
+
+    it("should accept and preserve already normalized SSN (with dash)", async () => {
+      const employeeWithDashedSSN: EmployeeFormData = {
+        first_name: "Test",
+        surname: "User",
+        ssn: "850315-1234", // Already normalized
+        email: "test@example.com",
+        mobile: null,
+        rank: null,
+        gender: null,
+        town_district: null,
+        hire_date: "2025-01-15",
+        termination_date: null,
+        termination_reason: null,
+        is_terminated: false,
+        is_archived: false,
+        comments: null,
+      };
+
+      const mockCreatedEmployee: Employee = {
+        id: "emp-124",
+        ...employeeWithDashedSSN,
+        created_at: "2025-10-27T12:00:00Z",
+        updated_at: "2025-10-27T12:00:00Z",
+      };
+
+      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
+
+      const request = new NextRequest("http://localhost:3000/api/employees", {
+        method: "POST",
+        body: JSON.stringify(employeeWithDashedSSN),
+      });
+
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(json.data.ssn).toBe("850315-1234");
+      expect(employeeRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ssn: "850315-1234",
+        })
+      );
+    });
+
+    it("should normalize 12-digit SSN (with century) on create", async () => {
+      const employeeWith12DigitSSN: EmployeeFormData = {
+        first_name: "Test",
+        surname: "User",
+        ssn: "198503151234", // 12 digits with century
+        email: "test@example.com",
+        mobile: null,
+        rank: null,
+        gender: null,
+        town_district: null,
+        hire_date: "2025-01-15",
+        termination_date: null,
+        termination_reason: null,
+        is_terminated: false,
+        is_archived: false,
+        comments: null,
+      };
+
+      const mockCreatedEmployee: Employee = {
+        id: "emp-125",
+        ...employeeWith12DigitSSN,
+        ssn: "850315-1234", // Normalized (century stripped)
+        created_at: "2025-10-27T12:00:00Z",
+        updated_at: "2025-10-27T12:00:00Z",
+      };
+
+      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
+
+      const request = new NextRequest("http://localhost:3000/api/employees", {
+        method: "POST",
+        body: JSON.stringify(employeeWith12DigitSSN),
+      });
+
+      const response = await POST(request);
+      const json = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(json.data.ssn).toBe("850315-1234");
+      expect(employeeRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ssn: "850315-1234",
+        })
+      );
+    });
+  });
+
+  describe("PATCH /api/employees/:id - SSN Normalization", () => {
+    it("should normalize dashless SSN on update", async () => {
+      const updateData = {
+        ssn: "9001011234", // Dashless
+      };
+
+      const mockUpdatedEmployee: Employee = {
+        id: "emp-123",
+        first_name: "Test",
+        surname: "User",
+        ssn: "900101-1234", // Normalized
+        email: "test@example.com",
+        mobile: null,
+        rank: null,
+        gender: null,
+        town_district: null,
+        hire_date: "2025-01-15",
+        termination_date: null,
+        termination_reason: null,
+        is_terminated: false,
+        is_archived: false,
+        comments: null,
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-10-27T12:00:00Z",
+      };
+
+      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
+
+      const request = new NextRequest("http://localhost:3000/api/employees/emp-123", {
+        method: "PATCH",
+        body: JSON.stringify(updateData),
+      });
+
+      const response = await PATCH(request, { params: Promise.resolve({ id: "emp-123" }) });
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.data.ssn).toBe("900101-1234");
+      expect(employeeRepository.update).toHaveBeenCalledWith(
+        "emp-123",
+        expect.objectContaining({
+          ssn: "900101-1234", // Verify normalized SSN was passed
+        })
+      );
+    });
+
+    it("should accept dashed SSN on update", async () => {
+      const updateData = {
+        ssn: "900101-1234", // Already normalized
+      };
+
+      const mockUpdatedEmployee: Employee = {
+        id: "emp-123",
+        first_name: "Test",
+        surname: "User",
+        ssn: "900101-1234",
+        email: "test@example.com",
+        mobile: null,
+        rank: null,
+        gender: null,
+        town_district: null,
+        hire_date: "2025-01-15",
+        termination_date: null,
+        termination_reason: null,
+        is_terminated: false,
+        is_archived: false,
+        comments: null,
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-10-27T12:00:00Z",
+      };
+
+      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
+
+      const request = new NextRequest("http://localhost:3000/api/employees/emp-123", {
+        method: "PATCH",
+        body: JSON.stringify(updateData),
+      });
+
+      const response = await PATCH(request, { params: Promise.resolve({ id: "emp-123" }) });
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.data.ssn).toBe("900101-1234");
+      expect(employeeRepository.update).toHaveBeenCalledWith(
+        "emp-123",
+        expect.objectContaining({
+          ssn: "900101-1234",
+        })
+      );
+    });
+
+    it("should not normalize SSN when updating other fields", async () => {
+      const updateData = {
+        first_name: "Updated",
+        // No SSN field
+      };
+
+      const mockUpdatedEmployee: Employee = {
+        id: "emp-123",
+        first_name: "Updated",
+        surname: "User",
+        ssn: "850315-1234", // Original SSN unchanged
+        email: "test@example.com",
+        mobile: null,
+        rank: null,
+        gender: null,
+        town_district: null,
+        hire_date: "2025-01-15",
+        termination_date: null,
+        termination_reason: null,
+        is_terminated: false,
+        is_archived: false,
+        comments: null,
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-10-27T12:00:00Z",
+      };
+
+      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
+
+      const request = new NextRequest("http://localhost:3000/api/employees/emp-123", {
+        method: "PATCH",
+        body: JSON.stringify(updateData),
+      });
+
+      const response = await PATCH(request, { params: Promise.resolve({ id: "emp-123" }) });
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.data.first_name).toBe("Updated");
+      expect(json.data.ssn).toBe("850315-1234");
+      expect(employeeRepository.update).toHaveBeenCalledWith(
+        "emp-123",
+        expect.objectContaining({
+          first_name: "Updated",
+        })
+      );
+      expect(employeeRepository.update).toHaveBeenCalledWith(
+        "emp-123",
+        expect.not.objectContaining({
+          ssn: expect.anything(),
+        })
+      );
+    });
   });
 });

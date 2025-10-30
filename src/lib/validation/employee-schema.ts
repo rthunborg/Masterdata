@@ -1,10 +1,19 @@
 import { z } from "zod";
 
 /**
- * Swedish SSN format validation: YYYYMMDD-XXXX or YYMMDD-XXXX
- * Example: 19850315-1234 or 850315-1234
+ * Swedish SSN format validation
+ * 
+ * Accepts both formats:
+ * - With dash: YYMMDD-XXXX or YYYYMMDD-XXXX (e.g., 850315-1234 or 19850315-1234)
+ * - Without dash: YYMMDDXXXX or YYYYMMDDXXXX (e.g., 8503151234 or 198503151234)
+ * 
+ * Examples: 
+ * - 850315-1234 (10 characters with dash)
+ * - 8503151234 (10 digits without dash)
+ * - 19850315-1234 (12 characters with dash)
+ * - 198503151234 (12 digits without dash)
  */
-const ssnRegex = /^\d{6,8}-\d{4}$/;
+const ssnRegex = /^\d{10}$|^\d{12}$|^\d{6,8}-\d{4}$/;
 
 /**
  * Validation error messages

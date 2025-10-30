@@ -263,7 +263,7 @@
       "surnameRequired": "Efternamn krävs",
       "surnameMaxLength": "Efternamn måste vara kortare än 100 tecken",
       "ssnRequired": "Personnummer krävs",
-      "ssnFormat": "Personnummer måste vara i formatet ÅÅÅÅMMDD-XXXX eller ÅÅMMDD-XXXX",
+      "ssnFormat": "Personnummer måste vara i format ÅÅMMDD-XXXX eller ÅÅMMDDXXXX (10 siffror)",
       "emailRequired": "E-post krävs",
       "emailInvalid": "Ogiltigt e-postformat",
       "hireDateRequired": "Anställningsdatum krävs",

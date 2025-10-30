@@ -5,6 +5,7 @@ import {
   createErrorResponse,
 } from "@/lib/server/auth";
 import { updateEmployeeSchema } from "@/lib/validation/employee-schema";
+import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { z } from "zod";
 
 // Force Node.js runtime for cookies() support
@@ -49,8 +50,13 @@ export async function PATCH(
       throw validationError;
     }
 
+    // Normalize SSN if it's being updated
+    const normalizedData = validatedData.ssn
+      ? { ...validatedData, ssn: normalizeSSN(validatedData.ssn) }
+      : validatedData;
+
     // Update employee via repository
-    const employee = await employeeRepository.update(id, validatedData);
+    const employee = await employeeRepository.update(id, normalizedData);
 
     // Return successful response
     return NextResponse.json({

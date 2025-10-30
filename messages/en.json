@@ -263,7 +263,7 @@
       "surnameRequired": "Surname is required",
       "surnameMaxLength": "Surname must be less than 100 characters",
       "ssnRequired": "SSN is required",
-      "ssnFormat": "SSN must be in format YYYYMMDD-XXXX or YYMMDD-XXXX",
+      "ssnFormat": "SSN must be in format YYMMDD-XXXX or YYMMDDXXXX (10 digits)",
       "emailRequired": "Email is required",
       "emailInvalid": "Invalid email format",
       "hireDateRequired": "Hire date is required",

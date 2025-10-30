@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { csvImportEmployeeSchema } from "@/lib/validation/employee-schema";
+import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import Papa from "papaparse";
 import type { EmployeeFormData } from "@/lib/types/employee";
 import { z } from "zod";
@@ -167,11 +168,11 @@ export async function POST(request: NextRequest) {
         // Validate using Zod schema
         const validated = csvImportEmployeeSchema.parse(transformedRow);
 
-        // Convert empty email to null
+        // Convert empty email to null and normalize SSN
         const employeeData: EmployeeFormData = {
           first_name: validated.first_name,
           surname: validated.surname,
-          ssn: validated.ssn,
+          ssn: normalizeSSN(validated.ssn), // Normalize SSN to YYMMDD-XXXX format
           email: validated.email === "" || !validated.email ? null : validated.email,
           mobile: validated.mobile === "" || !validated.mobile ? null : validated.mobile,
           rank: validated.rank === "" || !validated.rank ? null : validated.rank,
