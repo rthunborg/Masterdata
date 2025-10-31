@@ -74,7 +74,7 @@ describe("ColumnConfigRepository", () => {
       expect(result).toEqual(mockColumnConfigs);
       expect(result.length).toBe(3);
       expect(mockClient.from).toHaveBeenCalledWith("column_config");
-      expect(mockClient.order).toHaveBeenCalledWith("column_name", { ascending: true });
+      expect(mockClient.order).toHaveBeenCalledWith("display_order", { ascending: true });
     });
 
     it("should return empty array when no columns exist", async () => {

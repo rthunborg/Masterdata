@@ -28,6 +28,7 @@ export interface ColumnConfig {
   role_permissions: RolePermissions;
   is_masterdata: boolean;
   category: string | null;
+  display_order: number;
   created_at: string;
 }
 
@@ -46,6 +47,7 @@ export interface CreateCustomColumnInput {
   column_name: string;
   column_type: ColumnType;
   category?: string;
+  display_order?: number;
 }
 
 /**
@@ -73,6 +75,7 @@ export interface ExternalPartyData {
  */
 export interface UpdateColumnPermissionsRequest {
   role_permissions: RolePermissions;
+  display_order?: number;
 }
 
 /**
@@ -83,4 +86,24 @@ export interface BulkUpdatePermissionsRequest {
   roles: string[];
   permission_type: 'view' | 'edit';
   value: boolean;
+}
+
+/**
+ * Request type for creating a new column (HR Admin only)
+ */
+export interface CreateColumnRequest {
+  column_name: string;
+  column_type: ColumnType;
+  category?: string | null;
+  display_order?: number;
+}
+
+/**
+ * Request type for batch updating display order
+ */
+export interface UpdateDisplayOrderRequest {
+  updates: Array<{
+    id: string;
+    display_order: number;
+  }>;
 }

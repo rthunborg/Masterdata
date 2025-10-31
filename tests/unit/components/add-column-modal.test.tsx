@@ -1,284 +1,341 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react";
-import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
+/**
+ * Unit Tests for AddColumnModal Component
+ * Story 6.6: Column Management UX Improvements - Add Column Modal
+ *
+ * Tests cover:
+ * - Modal rendering and visibility
+ * - Form field rendering and validation
+ * - Submit success flow
+ * - Error handling
+ * - Cancel/close behavior
+ */
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AddColumnModal } from "@/components/dashboard/add-column-modal";
-import { columnConfigService } from "@/lib/services/column-config-service";
-import { useUIStore } from "@/lib/store/ui-store";
-import { useColumns } from "@/lib/hooks/use-columns";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { AddColumnModal } from "@/components/admin/add-column-modal";
+import { columnService } from "@/lib/services/column-service";
 import { toast } from "sonner";
 
 // Mock dependencies
-vi.mock("@/lib/services/column-config-service");
-vi.mock("@/lib/hooks/use-columns");
+vi.mock("@/lib/services/column-service");
 vi.mock("sonner");
-
-// Mock Zustand store
-vi.mock("@/lib/store/ui-store", () => ({
-  useUIStore: vi.fn(),
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => {
+    const translations: Record<string, string> = {
+      "addColumn": "Add Column",
+      "addColumnDescription": "Create a new custom column for employee data",
+      "columnName": "Column Name",
+      "dataType": "Data Type",
+      "category": "Category",
+      "createColumn": "Create Column",
+      "cancel": "Cancel",
+      "text": "Text",
+      "number": "Number",
+      "date": "Date",
+      "boolean": "Boolean",
+    };
+    return translations[key] || key;
+  },
 }));
 
 describe("AddColumnModal", () => {
-  const mockCloseModal = vi.fn();
-  const mockRefetch = vi.fn();
-  const mockCreateCustomColumn = vi.fn();
+  const mockOnClose = vi.fn();
+  const mockOnSuccess = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Setup default mocks
-    (useUIStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      modals: { addColumn: true },
-      closeModal: mockCloseModal,
-    });
-
-    (useColumns as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      columns: [
-        {
-          id: "1",
-          column_name: "Existing Column",
-          column_type: "text",
-          is_masterdata: false,
-          role_permissions: { sodexo: { view: true, edit: true } },
-          category: "Test Category",
-          created_at: "2025-10-28T10:00:00Z",
-        },
-      ],
-      refetch: mockRefetch,
-    });
-
-    (columnConfigService.createCustomColumn as ReturnType<typeof vi.fn>) =
-      mockCreateCustomColumn;
   });
 
-  it("renders form fields correctly when modal is open", () => {
-    renderWithI18n(<AddColumnModal />);
+  it("should not render when closed", () => {
+    render(
+      <AddColumnModal
+        isOpen={false}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
 
-    expect(screen.getByLabelText(/column name/i)).toBeInTheDocument();
-    expect(screen.getByText(/column type/i)).toBeInTheDocument();
-    expect(screen.getByText(/category \(optional\)/i)).toBeInTheDocument();
+    expect(screen.queryByText("Add Column")).not.toBeInTheDocument();
+  });
+
+  it("should render when open", () => {
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
+
+    expect(screen.getByText("Add Column")).toBeInTheDocument();
+    expect(screen.getByText(/create a new custom column/i)).toBeInTheDocument();
+  });
+
+  it("should render all form fields", () => {
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
+
+    expect(screen.getByLabelText("Column Name")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /data type/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Category")).toBeInTheDocument();
+  });
+
+  it("should have Create and Cancel buttons", () => {
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
+
     expect(screen.getByRole("button", { name: /create column/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
   });
 
-  it("does not render when modal is closed", () => {
-    (useUIStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      modals: { addColumn: false },
-      closeModal: mockCloseModal,
-    });
+  it("should call onClose when Cancel is clicked", async () => {
+    const user = userEvent.setup();
+    
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
 
-    renderWithI18n(<AddColumnModal />);
+    const cancelButton = screen.getByRole("button", { name: /cancel/i });
+    await user.click(cancelButton);
 
-    expect(screen.queryByLabelText(/column name/i)).not.toBeInTheDocument();
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
-  it("validates required column name field", async () => {
-    renderWithI18n(<AddColumnModal />);
+  it("should submit form with valid data", async () => {
+    const user = userEvent.setup();
+    
+    vi.mocked(columnService.createColumn).mockResolvedValue({
+      id: "new-col-1",
+      column_name: "Test Column",
+      column_type: "text",
+      category: null,
+      is_masterdata: false,
+      display_order: 100,
+      role_permissions: {
+        hr_admin: { view: true, edit: true },
+        sodexo: { view: false, edit: false },
+        omc: { view: false, edit: false },
+        payroll: { view: false, edit: false },
+        toplux: { view: false, edit: false },
+      },
+      created_at: new Date().toISOString(),
+    });
+
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
+
+    // Fill out form
+    const columnNameInput = screen.getByLabelText("Column Name");
+    await user.type(columnNameInput, "Test Column");
+
+    // Submit form
+    const submitButton = screen.getByRole("button", { name: /create column/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(columnService.createColumn).toHaveBeenCalledWith({
+        column_name: "Test Column",
+        column_type: "text",
+        category: null,
+      });
+    });
+
+    expect(toast.success).toHaveBeenCalledWith('Column "Test Column" created successfully');
+    expect(mockOnSuccess).toHaveBeenCalledTimes(1);
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("should handle submission errors", async () => {
+    const user = userEvent.setup();
+    
+    const errorMessage = "Column with name 'Test Column' already exists";
+    vi.mocked(columnService.createColumn).mockRejectedValue(new Error(errorMessage));
+
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
+
+    const columnNameInput = screen.getByLabelText("Column Name");
+    await user.type(columnNameInput, "Test Column");
 
     const submitButton = screen.getByRole("button", { name: /create column/i });
-    fireEvent.click(submitButton);
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(errorMessage);
+    });
+
+    expect(mockOnSuccess).not.toHaveBeenCalled();
+    expect(mockOnClose).not.toHaveBeenCalled();
+  });
+
+  it("should validate required column name", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
+
+    // Try to submit without filling column name
+    const submitButton = screen.getByRole("button", { name: /create column/i });
+    await user.click(submitButton);
 
     await waitFor(() => {
       expect(screen.getByText(/column name is required/i)).toBeInTheDocument();
     });
 
-    expect(mockCreateCustomColumn).not.toHaveBeenCalled();
+    expect(columnService.createColumn).not.toHaveBeenCalled();
   });
 
-  it("validates duplicate column name", async () => {
-    renderWithI18n(<AddColumnModal />);
-
-    const nameInput = screen.getByLabelText(/column name/i);
-    fireEvent.change(nameInput, { target: { value: "Existing Column" } });
-
-    const submitButton = screen.getByRole("button", { name: /create column/i });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/column name already exists/i)
-      ).toBeInTheDocument();
-    });
-
-    expect(mockCreateCustomColumn).not.toHaveBeenCalled();
-  });
-
-  it("validates column name format", async () => {
-    renderWithI18n(<AddColumnModal />);
-
-    const nameInput = screen.getByLabelText(/column name/i);
-    fireEvent.change(nameInput, { target: { value: "Invalid@Name!" } });
-
-    const submitButton = screen.getByRole("button", { name: /create column/i });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/can only contain letters, numbers/i)
-      ).toBeInTheDocument();
-    });
-
-    expect(mockCreateCustomColumn).not.toHaveBeenCalled();
-  });
-
-  it("calls columnConfigService.createCustomColumn on valid submit", async () => {
-    const mockNewColumn = {
-      id: "new-id",
-      column_name: "New Column",
-      column_type: "text" as const,
-      is_masterdata: false,
-      role_permissions: { sodexo: { view: true, edit: true } },
+  it("should reset form after successful submission", async () => {
+    const user = userEvent.setup();
+    
+    vi.mocked(columnService.createColumn).mockResolvedValue({
+      id: "new-col-1",
+      column_name: "Test Column",
+      column_type: "text",
       category: null,
-      created_at: "2025-10-28T10:00:00Z",
-    };
+      is_masterdata: false,
+      display_order: 100,
+      role_permissions: {
+        hr_admin: { view: true, edit: true },
+        sodexo: { view: false, edit: false },
+        omc: { view: false, edit: false },
+        payroll: { view: false, edit: false },
+        toplux: { view: false, edit: false },
+      },
+      created_at: new Date().toISOString(),
+    });
 
-    mockCreateCustomColumn.mockResolvedValue(mockNewColumn);
+    const { rerender } = render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
 
-    renderWithI18n(<AddColumnModal />);
-
-    const nameInput = screen.getByLabelText(/column name/i);
-    fireEvent.change(nameInput, { target: { value: "New Column" } });
+    const columnNameInput = screen.getByLabelText("Column Name") as HTMLInputElement;
+    await user.type(columnNameInput, "Test Column");
 
     const submitButton = screen.getByRole("button", { name: /create column/i });
-    fireEvent.click(submitButton);
+    await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockCreateCustomColumn).toHaveBeenCalledWith({
-        column_name: "New Column",
+      expect(mockOnSuccess).toHaveBeenCalled();
+    });
+
+    // Re-open modal
+    rerender(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
+
+    // Form should be reset
+    const resetInput = screen.getByLabelText("Column Name") as HTMLInputElement;
+    expect(resetInput.value).toBe("");
+  });
+
+  it("should include category in submission if provided", async () => {
+    const user = userEvent.setup();
+    
+    vi.mocked(columnService.createColumn).mockResolvedValue({
+      id: "new-col-1",
+      column_name: "Test Column",
+      column_type: "text",
+      category: "Test Category",
+      is_masterdata: false,
+      display_order: 100,
+      role_permissions: {
+        hr_admin: { view: true, edit: true },
+        sodexo: { view: false, edit: false },
+        omc: { view: false, edit: false },
+        payroll: { view: false, edit: false },
+        toplux: { view: false, edit: false },
+      },
+      created_at: new Date().toISOString(),
+    });
+
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
+
+    const columnNameInput = screen.getByLabelText("Column Name");
+    await user.type(columnNameInput, "Test Column");
+
+    const categoryInput = screen.getByLabelText("Category");
+    await user.type(categoryInput, "Test Category");
+
+    const submitButton = screen.getByRole("button", { name: /create column/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(columnService.createColumn).toHaveBeenCalledWith({
+        column_name: "Test Column",
         column_type: "text",
-        category: undefined,
+        category: "Test Category",
       });
     });
   });
 
-  it("shows success toast and closes modal after successful creation", async () => {
-    const mockNewColumn = {
-      id: "new-id",
-      column_name: "New Column",
-      column_type: "text" as const,
-      is_masterdata: false,
-      role_permissions: { sodexo: { view: true, edit: true } },
-      category: null,
-      created_at: "2025-10-28T10:00:00Z",
-    };
-
-    mockCreateCustomColumn.mockResolvedValue(mockNewColumn);
-
-    renderWithI18n(<AddColumnModal />);
-
-    const nameInput = screen.getByLabelText(/column name/i);
-    fireEvent.change(nameInput, { target: { value: "New Column" } });
-
-    const submitButton = screen.getByRole("button", { name: /create column/i });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      // Note: i18n placeholder interpolation happens in the component
-      // The test receives the format string with {name} placeholder
-      expect(toast.success).toHaveBeenCalledWith(
-        expect.stringContaining("Column")
-      );
-      expect(mockRefetch).toHaveBeenCalled();
-      expect(mockCloseModal).toHaveBeenCalledWith("addColumn");
-    });
-  });
-
-  it("displays error toast on API failure", async () => {
-    mockCreateCustomColumn.mockRejectedValue(
-      new Error("Failed to create column")
-    );
-
-    renderWithI18n(<AddColumnModal />);
-
-    const nameInput = screen.getByLabelText(/column name/i);
-    fireEvent.change(nameInput, { target: { value: "New Column" } });
-
-    const submitButton = screen.getByRole("button", { name: /create column/i });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Failed to create column");
-    });
-
-    expect(mockCloseModal).not.toHaveBeenCalled();
-  });
-
-  it("disables form during submission", async () => {
-    mockCreateCustomColumn.mockImplementation(
+  it("should disable submit button while submitting", async () => {
+    const user = userEvent.setup();
+    
+    // Mock a slow response
+    vi.mocked(columnService.createColumn).mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 100))
     );
 
-    renderWithI18n(<AddColumnModal />);
+    render(
+      <AddColumnModal
+        isOpen={true}
+        onClose={mockOnClose}
+        onSuccess={mockOnSuccess}
+      />
+    );
 
-    const nameInput = screen.getByLabelText(/column name/i);
-    fireEvent.change(nameInput, { target: { value: "New Column" } });
-
-    const submitButton = screen.getByRole("button", { name: /create column/i });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: /creating/i })).toBeDisabled();
-    });
-  });
-
-  it("allows selecting column type", async () => {
-    renderWithI18n(<AddColumnModal />);
-
-    const typeSelect = screen.getByRole("combobox", { name: /column type/i });
-    fireEvent.click(typeSelect);
-
-    await waitFor(() => {
-      expect(screen.getByRole("option", { name: /text/i })).toBeInTheDocument();
-      expect(screen.getByRole("option", { name: /number/i })).toBeInTheDocument();
-      expect(screen.getByRole("option", { name: /date/i })).toBeInTheDocument();
-      expect(screen.getByRole("option", { name: /boolean/i })).toBeInTheDocument();
-    });
-  });
-
-  it("shows existing categories in category combobox", async () => {
-    renderWithI18n(<AddColumnModal />);
-
-    const categoryButton = screen.getByRole("combobox", { name: /category/i });
-    fireEvent.click(categoryButton);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Category")).toBeInTheDocument();
-    });
-  });
-
-  it("allows creating column with category", async () => {
-    const mockNewColumn = {
-      id: "new-id",
-      column_name: "New Column",
-      column_type: "number" as const,
-      is_masterdata: false,
-      role_permissions: { sodexo: { view: true, edit: true } },
-      category: "Custom Category",
-      created_at: "2025-10-28T10:00:00Z",
-    };
-
-    mockCreateCustomColumn.mockResolvedValue(mockNewColumn);
-
-    renderWithI18n(<AddColumnModal />);
-
-    const nameInput = screen.getByLabelText(/column name/i);
-    fireEvent.change(nameInput, { target: { value: "New Column" } });
-
-    const categoryButton = screen.getByRole("combobox", { name: /category/i });
-    fireEvent.click(categoryButton);
-
-    const categoryInput = screen.getByPlaceholderText(/search or type/i);
-    fireEvent.change(categoryInput, { target: { value: "Custom Category" } });
+    const columnNameInput = screen.getByLabelText("Column Name");
+    await user.type(columnNameInput, "Test Column");
 
     const submitButton = screen.getByRole("button", { name: /create column/i });
-    fireEvent.click(submitButton);
+    await user.click(submitButton);
 
-    await waitFor(() => {
-      expect(mockCreateCustomColumn).toHaveBeenCalledWith({
-        column_name: "New Column",
-        column_type: "text",
-        category: "Custom Category",
-      });
-    });
+    // Button should be disabled during submission
+    expect(submitButton).toBeDisabled();
   });
 });
-

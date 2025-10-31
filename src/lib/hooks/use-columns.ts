@@ -35,7 +35,12 @@ export function useColumns(effectiveRole?: UserRole) {
         return rolePerms && rolePerms.view === true;
       });
 
-      setColumns(visibleColumns);
+      // Sort by display_order to maintain custom column ordering
+      const sortedColumns = visibleColumns.sort(
+        (a, b) => (a.display_order || 0) - (b.display_order || 0)
+      );
+
+      setColumns(sortedColumns);
       setError(null);
     } catch (err) {
       setError(

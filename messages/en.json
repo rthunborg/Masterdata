@@ -79,6 +79,7 @@
     "columnNameLabel": "Column Name",
     "columnType": "Column Type",
     "category": "Category",
+    "dataType": "Data Type",
     "weekNumber": "Week Number",
     "year": "Year",
     "dateDescription": "Date Description",
@@ -275,7 +276,12 @@
     "allColumns": "All Columns",
     "masterdataOnly": "Masterdata Only",
     "customOnly": "Custom Only",
-    "configureRolesDescription": "Configure which roles can view and edit specific columns"
+    "configureRolesDescription": "Configure which roles can view and edit specific columns",
+    "addColumn": "Add Column",
+    "createColumn": "Create Column",
+    "columnName": "Column Name",
+    "dataType": "Data Type",
+    "category": "Category"
   },
   "errors": {
     "loadFailed": "Failed to load data",
@@ -337,5 +343,12 @@
     "deleteColumn": "Delete custom column",
     "hideColumn": "Hide column from table",
     "showColumn": "Show column in table"
+  },
+  "status": {
+    "hidden": "Hidden",
+    "visible": "Visible"
+  },
+  "accessibility": {
+    "reorderColumn": "Reorder column"
   }
 }

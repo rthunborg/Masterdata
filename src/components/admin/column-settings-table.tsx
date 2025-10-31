@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ColumnConfig, RolePermissions } from "@/lib/types/column-config";
 import { UserRole, EXTERNAL_PARTY_ROLES } from "@/lib/types/user";
 import { columnService } from "@/lib/services/column-service";
+import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 import {
   Table,
   TableBody,
@@ -12,17 +18,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { PermissionToggle } from "./permission-toggle";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { DraggableColumnRow } from "./draggable-column-row";
 import { DeleteColumnModal } from "./delete-column-modal";
 import { toast } from "sonner";
-import { Trash2, EyeOff, Eye } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface ColumnSettingsTableProps {
@@ -37,13 +36,49 @@ export function ColumnSettingsTable({
   const [updatingColumnId, setUpdatingColumnId] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [columnToDelete, setColumnToDelete] = useState<ColumnConfig | null>(null);
-  const t = useTranslations("tooltips");
+  const [localColumns, setLocalColumns] = useState<ColumnConfig[]>(columns);
   const tForms = useTranslations("forms");
+
+  // Update local columns when prop changes
+  useEffect(() => {
+    setLocalColumns(columns);
+  }, [columns]);
 
   const allRoles: UserRole[] = [
     UserRole.HR_ADMIN,
     ...EXTERNAL_PARTY_ROLES,
   ];
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = localColumns.findIndex((col) => col.id === active.id);
+    const newIndex = localColumns.findIndex((col) => col.id === over.id);
+
+    // Optimistically reorder columns
+    const reorderedColumns = arrayMove(localColumns, oldIndex, newIndex);
+    setLocalColumns(reorderedColumns);
+
+    // Calculate new display_order values for all columns
+    const updates = reorderedColumns.map((col, index) => ({
+      id: col.id,
+      display_order: index + 1,
+    }));
+
+    try {
+      await columnService.updateColumnOrder(updates);
+      toast.success("Column order updated successfully");
+      onPermissionsUpdated(); // Refresh from server
+    } catch {
+      toast.error("Failed to update column order");
+      // Revert optimistic update on error
+      setLocalColumns(columns);
+    }
+  };
 
   const handlePermissionChange = async (
     column: ColumnConfig,
@@ -158,181 +193,72 @@ export function ColumnSettingsTable({
   return (
     <TooltipProvider>
       <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[200px]">{tForms('columnNameLabel')}</TableHead>
-            <TableHead className="w-[100px]">Type</TableHead>
-            <TableHead className="w-[120px]">Category</TableHead>
-            {allRoles.map((role) => (
-              <TableHead key={role} className="text-center">
-                {role === UserRole.HR_ADMIN ? "HR Admin" : role.toUpperCase()}
-                <div className="text-xs font-normal text-gray-500">
-                  View / Edit
-                </div>
-              </TableHead>
-            ))}
-            <TableHead className="w-[150px] text-center">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {columns.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={4 + allRoles.length}
-                className="text-center text-gray-500"
-              >
-                No columns found
-              </TableCell>
-            </TableRow>
-          ) : (
-            columns.map((column) => {
-              const isUpdating = updatingColumnId === column.id;
-              return (
-                <TableRow key={column.id}>
-                  <TableCell className="font-medium">
-                    {column.column_name}
-                  </TableCell>
-                  <TableCell className="text-gray-600">
-                    {column.column_type}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        column.is_masterdata
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-purple-100 text-purple-800"
-                      }`}
-                    >
-                      {column.is_masterdata ? "Masterdata" : "Custom"}
-                    </span>
-                  </TableCell>
-                  {allRoles.map((role) => {
-                    const permissions = column.role_permissions[role] || {
-                      view: false,
-                      edit: false,
-                    };
-                    const disabled = isPermissionDisabled(column, role);
-
-                    return (
-                      <TableCell key={role} className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <PermissionToggle
-                            role={role}
-                            permissionType="view"
-                            value={permissions.view}
-                            disabled={disabled || isUpdating}
-                            onChange={(value: boolean) =>
-                              handlePermissionChange(
-                                column,
-                                role,
-                                "view",
-                                value
-                              )
-                            }
-                            tooltip={
-                              disabled
-                                ? "HR Admin always has full access to masterdata"
-                                : undefined
-                            }
-                          />
-                          <span className="text-gray-400">/</span>
-                          <PermissionToggle
-                            role={role}
-                            permissionType="edit"
-                            value={permissions.edit}
-                            disabled={disabled || isUpdating}
-                            onChange={(value: boolean) =>
-                              handlePermissionChange(
-                                column,
-                                role,
-                                "edit",
-                                value
-                              )
-                            }
-                            tooltip={
-                              disabled
-                                ? "HR Admin always has full access to masterdata"
-                                : undefined
-                            }
-                          />
-                        </div>
-                      </TableCell>
-                    );
-                  })}
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      {isColumnHidden(column) ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleUnhideColumn(column)}
-                              disabled={isUpdating}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t("showColumn")}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleHideColumn(column)}
-                              disabled={isUpdating || column.is_masterdata}
-                            >
-                              <EyeOff className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              {column.is_masterdata
-                                ? "Cannot hide masterdata columns"
-                                : t("hideColumn")}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteClick(column)}
-                            disabled={isUpdating || column.is_masterdata}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            {column.is_masterdata
-                              ? "Masterdata columns cannot be deleted"
-                              : t("deleteColumn")}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10">Order</TableHead>
+                <TableHead className="w-[200px]">
+                  {tForms("columnNameLabel")}
+                </TableHead>
+                <TableHead className="w-[100px]">Type</TableHead>
+                <TableHead className="w-[120px]">Category</TableHead>
+                <TableHead className="w-[100px] text-center">Status</TableHead>
+                {allRoles.map((role) => (
+                  <TableHead key={role} className="text-center">
+                    {role === UserRole.HR_ADMIN ? "HR Admin" : role.toUpperCase()}
+                    <div className="text-xs font-normal text-gray-500">
+                      View / Edit
                     </div>
+                  </TableHead>
+                ))}
+                <TableHead className="w-[150px] text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {localColumns.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={6 + allRoles.length}
+                    className="text-center text-gray-500"
+                  >
+                    No columns found
                   </TableCell>
                 </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
-    </div>
-    <DeleteColumnModal
-      column={columnToDelete}
-      isOpen={deleteModalOpen}
-      onClose={() => setDeleteModalOpen(false)}
-      onDeleted={handleDeleteConfirm}
-    />
+              ) : (
+                <SortableContext
+                  items={localColumns.map((c) => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {localColumns.map((column) => (
+                    <DraggableColumnRow
+                      key={column.id}
+                      column={column}
+                      allRoles={allRoles}
+                      isUpdating={updatingColumnId === column.id}
+                      isHidden={isColumnHidden(column)}
+                      onPermissionChange={handlePermissionChange}
+                      onHide={handleHideColumn}
+                      onUnhide={handleUnhideColumn}
+                      onDelete={handleDeleteClick}
+                      isPermissionDisabled={isPermissionDisabled}
+                    />
+                  ))}
+                </SortableContext>
+              )}
+            </TableBody>
+          </Table>
+        </DndContext>
+      </div>
+      <DeleteColumnModal
+        column={columnToDelete}
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onDeleted={handleDeleteConfirm}
+      />
     </TooltipProvider>
   );
 }

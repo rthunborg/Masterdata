@@ -3,6 +3,8 @@ import type {
   UpdateColumnPermissionsRequest,
   BulkUpdatePermissionsRequest,
   RolePermissions,
+  CreateColumnRequest,
+  UpdateDisplayOrderRequest,
 } from "@/lib/types/column-config";
 
 export interface ColumnListResponse {
@@ -157,5 +159,49 @@ export const columnService = {
     return this.updateColumnPermissions(id, {
       role_permissions: originalPermissions,
     });
+  },
+
+  /**
+   * Create a new column (HR Admin only)
+   * @param data - Column creation data
+   * @returns Created column configuration
+   */
+  async createColumn(data: CreateColumnRequest): Promise<ColumnConfig> {
+    const response = await fetch("/api/admin/columns", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to create column");
+    }
+
+    const json: ColumnResponse = await response.json();
+    return json.data;
+  },
+
+  /**
+   * Update column display order (batch update for drag-and-drop)
+   * @param updates - Array of column ID and new display_order pairs
+   */
+  async updateColumnOrder(
+    updates: Array<{ id: string; display_order: number }>
+  ): Promise<void> {
+    const response = await fetch("/api/admin/columns/reorder", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ updates }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to update column order");
+    }
   },
 };

@@ -5,7 +5,9 @@ import { useTranslations } from "next-intl";
 import { columnService } from "@/lib/services/column-service";
 import { ColumnConfig } from "@/lib/types/column-config";
 import { ColumnSettingsTable } from "@/components/admin/column-settings-table";
+import { AddColumnModal } from "@/components/admin/add-column-modal";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 type FilterMode = "all" | "masterdata" | "custom";
@@ -13,10 +15,12 @@ type FilterMode = "all" | "masterdata" | "custom";
 export default function ColumnSettingsPage() {
   const t = useTranslations('admin');
   const tErrors = useTranslations('errors');
+  const tTooltips = useTranslations('tooltips');
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
   const [filteredColumns, setFilteredColumns] = useState<ColumnConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   const loadColumns = useCallback(async () => {
     try {
@@ -52,6 +56,10 @@ export default function ColumnSettingsPage() {
     loadColumns();
   };
 
+  const handleAddColumnSuccess = () => {
+    loadColumns();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -63,6 +71,10 @@ export default function ColumnSettingsPage() {
             {t('configureRolesDescription')}
           </p>
         </div>
+        <Button onClick={() => setAddModalOpen(true)} title={tTooltips('addColumn')}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t('addColumn')}
+        </Button>
       </div>
 
       {/* Filter toolbar */}
@@ -100,6 +112,12 @@ export default function ColumnSettingsPage() {
           onPermissionsUpdated={handlePermissionsUpdated}
         />
       )}
+
+      <AddColumnModal
+        isOpen={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onSuccess={handleAddColumnSuccess}
+      />
     </div>
   );
 }

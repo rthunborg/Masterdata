@@ -79,6 +79,7 @@
     "columnNameLabel": "Kolumnnamn",
     "columnType": "Kolumntyp",
     "category": "Kategori",
+    "dataType": "Datatyp",
     "weekNumber": "Veckonummer",
     "year": "År",
     "dateDescription": "Datumbeskrivning",
@@ -275,7 +276,12 @@
     "allColumns": "Alla kolumner",
     "masterdataOnly": "Endast stamdata",
     "customOnly": "Endast anpassade",
-    "configureRolesDescription": "Konfigurera vilka roller som kan visa och redigera specifika kolumner"
+    "configureRolesDescription": "Konfigurera vilka roller som kan visa och redigera specifika kolumner",
+    "addColumn": "Lägg till kolumn",
+    "createColumn": "Skapa kolumn",
+    "columnName": "Kolumnnamn",
+    "dataType": "Datatyp",
+    "category": "Kategori"
   },
   "errors": {
     "loadFailed": "Kunde inte ladda data",
@@ -337,5 +343,12 @@
     "deleteColumn": "Ta bort anpassad kolumn",
     "hideColumn": "Dölj kolumn från tabell",
     "showColumn": "Visa kolumn i tabell"
+  },
+  "status": {
+    "hidden": "Dold",
+    "visible": "Synlig"
+  },
+  "accessibility": {
+    "reorderColumn": "Ordna kolumn"
   }
 }
