@@ -1,0 +1,64 @@
+schema: 1
+story: '6.4'
+story_title: 'Important Dates CSV Import'
+gate: CONCERNS
+status_reason: 'Core functionality is excellent with strong validation and testing. Integration tests not implemented and manual testing not performed. Recommended for completion before production deployment.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-10-31T00:51:00Z'
+
+quality_score: 85
+
+top_issues:
+  - id: 'TEST-001'
+    severity: medium
+    finding: 'Integration tests for API endpoint not implemented (empty test file)'
+    suggested_action: 'Implement integration tests covering authentication, role enforcement, CSV validation, and duplicate detection scenarios'
+    suggested_owner: 'dev'
+  - id: 'TEST-002'
+    severity: medium
+    finding: 'Manual testing not performed - no verification of end-to-end user flows'
+    suggested_action: 'Complete manual testing checklist in Phase 10 before production deployment'
+    suggested_owner: 'dev'
+  - id: 'TEST-003'
+    severity: low
+    finding: 'Service unit tests not implemented (Task 3.2)'
+    suggested_action: 'Consider adding unit tests for importCSV service method or document decision to skip due to thin wrapper pattern'
+    suggested_owner: 'dev'
+
+waiver:
+  active: false
+
+evidence:
+  tests_reviewed: 22
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Excellent security implementation: HR Admin role enforcement via requireHRAdminAPI, RLS policies in database, proper error handling without data leakage, file upload validation, server-side CSV parsing'
+  performance:
+    status: PASS
+    notes: 'Good performance design: Client-side preview limited to 5 rows, batch insert for efficiency, database indexes on week_number/year and category, proper error handling avoids unnecessary retries'
+  reliability:
+    status: PASS
+    notes: 'Strong reliability: Comprehensive validation (22 passing unit tests), duplicate detection both in CSV and against database, graceful error handling with downloadable error reports, partial success support'
+  maintainability:
+    status: PASS
+    notes: 'Excellent maintainability: Clean separation of concerns (validation utility, service layer, repository pattern), well-structured code following project standards, comprehensive test coverage, clear error messages'
+
+recommendations:
+  immediate:
+    - action: 'Implement integration tests for /api/important-dates/import endpoint'
+      refs: ['tests/integration/api/important-dates-import.test.ts']
+    - action: 'Perform manual testing checklist (Phase 10) to verify end-to-end flows'
+      refs: ['docs/stories/6.4.important-dates-csv-import.md']
+  future:
+    - action: 'Consider adding progress streaming for large CSV imports (>1000 rows)'
+      refs: ['src/components/dashboard/import-important-dates-modal.tsx']
+    - action: 'Consider adding CSV validation preview showing all errors before import'
+      refs: ['src/lib/utils/important-dates-csv-validator.ts']
+    - action: 'Document decision to skip service unit tests if thin wrapper pattern is intentional'
+      refs: ['src/lib/services/important-date-service.ts']

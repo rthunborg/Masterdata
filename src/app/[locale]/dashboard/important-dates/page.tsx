@@ -12,10 +12,11 @@ import {
 } from "@/components/ui/card";
 import { ImportantDatesTable } from "@/components/dashboard/important-dates-table";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
+import { ImportImportantDatesModal } from "@/components/dashboard/import-important-dates-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { useEffect, useState, useCallback } from "react";
 import type { ImportantDate } from "@/lib/types/important-date";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Upload } from "lucide-react";
 import { Link } from "@/lib/navigation";
 
 export default function ImportantDatesPage() {
@@ -27,6 +28,7 @@ export default function ImportantDatesPage() {
   const [isLoadingDates, setIsLoadingDates] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const fetchDates = useCallback(async () => {
     try {
@@ -97,10 +99,16 @@ export default function ImportantDatesPage() {
             </p>
           </div>
           {user?.role === "hr_admin" && (
-            <Button onClick={() => setIsAddModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('addDate')}
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setIsImportModalOpen(true)} variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Import Dates
+              </Button>
+              <Button onClick={() => setIsAddModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('addDate')}
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -145,6 +153,12 @@ export default function ImportantDatesPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={handleDateAdded}
+      />
+
+      <ImportImportantDatesModal
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+        onImportComplete={fetchDates}
       />
     </div>
   );

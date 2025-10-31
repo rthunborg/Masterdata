@@ -106,4 +106,44 @@ export const importantDateService = {
       throw new Error(error.error?.message || "Failed to delete important date");
     }
   },
+
+  async importCSV(
+    file: File,
+    columnMapping: Record<string, string>
+  ): Promise<{
+    imported: number;
+    skipped: number;
+    errors: Array<{ row: number; field?: string; message: string }>;
+  }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("columnMapping", JSON.stringify(columnMapping));
+
+    const response = await fetch("/api/important-dates/import", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+
+      // Handle validation errors
+      if (response.status === 400 && error.error?.code === "VALIDATION_ERROR") {
+        throw new Error(error.error.message);
+      }
+
+      // Handle forbidden error
+      if (response.status === 403) {
+        throw new Error(
+          "You do not have permission to import important dates"
+        );
+      }
+
+      // Generic error
+      throw new Error(error.error?.message || "Failed to import important dates");
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
 };

@@ -184,6 +184,9 @@ export async function POST(request: NextRequest) {
           is_archived: false,
           termination_date: null,
           termination_reason: null,
+          stena_date: null,
+          omc_date: null,
+          pe3_date: null,
         };
 
         validEmployees.push(employeeData);

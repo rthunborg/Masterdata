@@ -157,6 +157,54 @@ export class ImportantDateRepository {
       throw new Error("Failed to delete important date");
     }
   }
+
+  async createMany(dates: ImportantDateFormData[]): Promise<{
+    imported: number;
+    skipped: number;
+    errors: Array<{ row: number; field?: string; message: string }>;
+  }> {
+    try {
+      const supabase = await this.getSupabaseClient();
+
+      // Batch insert all dates
+      const { data: insertedDates, error } = await supabase
+        .from("important_dates")
+        .insert(dates)
+        .select();
+
+      if (error) {
+        console.error("Error batch inserting important dates:", error);
+        
+        // If it's a duplicate error (PostgreSQL code 23505), handle gracefully
+        if (error.code === "23505") {
+          return {
+            imported: 0,
+            skipped: dates.length,
+            errors: dates.map((_, index) => ({
+              row: index + 2,
+              message: "Duplicate entry",
+            })),
+          };
+        }
+
+        throw new Error("Failed to batch insert important dates");
+      }
+
+      return {
+        imported: insertedDates?.length || 0,
+        skipped: 0,
+        errors: [],
+      };
+    } catch (error) {
+      // Re-throw our custom errors
+      if (error instanceof Error) {
+        throw error;
+      }
+      // Unexpected errors
+      console.error("Unexpected error batch inserting important dates:", error);
+      throw new Error("Failed to batch insert important dates");
+    }
+  }
 }
 
 export const importantDateRepository = new ImportantDateRepository();
