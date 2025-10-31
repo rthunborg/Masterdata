@@ -354,7 +354,11 @@ export function ImportImportantDatesModal({
                     <TableRow key={i}>
                       {previewFields.map((field) => (
                         <TableCell key={field} className="whitespace-nowrap">
-                          {row[field]}
+                          {row[field] === "(empty)" || row[field] === "" || !row[field] ? (
+                            <span className="text-muted-foreground italic">(empty)</span>
+                          ) : (
+                            row[field]
+                          )}
                         </TableCell>
                       ))}
                     </TableRow>

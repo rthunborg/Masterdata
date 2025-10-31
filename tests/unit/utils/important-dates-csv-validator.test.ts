@@ -218,6 +218,34 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
+
+  it("allows empty string notes field", () => {
+    const row = {
+      year: 2025,
+      category: "Stena Dates",
+      date_description: "Fredag 14/2",
+      date_value: "15-16/2",
+      notes: "",
+    };
+
+    const result = validateImportantDateRow(row);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("allows whitespace-only notes field", () => {
+    const row = {
+      year: 2025,
+      category: "Stena Dates",
+      date_description: "Fredag 14/2",
+      date_value: "15-16/2",
+      notes: "   ",
+    };
+
+    const result = validateImportantDateRow(row);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
 });
 
 describe("detectDuplicates", () => {

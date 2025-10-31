@@ -154,10 +154,13 @@ export async function POST(request: NextRequest) {
           ssn: row.ssn || "",
           email: row.email || null,
           mobile: row.mobile || null,
-          rank: row.rank || null,
+          rank: row.rank || "", // Keep as string for validation (rank is required)
           gender: row.gender || null,
           town_district: row.town_district || null,
           hire_date: row.hire_date || "",
+          stena_date: row.stena_date || null,
+          omc_date: row.omc_date || null,
+          pe3_date: row.pe3_date || null,
           comments: row.comments || null,
           is_terminated: false,
           is_archived: false,
@@ -175,18 +178,18 @@ export async function POST(request: NextRequest) {
           ssn: normalizeSSN(validated.ssn), // Normalize SSN to YYMMDD-XXXX format
           email: validated.email === "" || !validated.email ? null : validated.email,
           mobile: validated.mobile === "" || !validated.mobile ? null : validated.mobile,
-          rank: validated.rank === "" || !validated.rank ? null : validated.rank,
+          rank: validated.rank, // Rank is required, don't convert to null
           gender: validated.gender === "" || !validated.gender ? null : validated.gender,
           town_district: validated.town_district === "" || !validated.town_district ? null : validated.town_district,
           hire_date: validated.hire_date,
+          stena_date: validated.stena_date === "" || !validated.stena_date ? null : validated.stena_date,
+          omc_date: validated.omc_date === "" || !validated.omc_date ? null : validated.omc_date,
+          pe3_date: validated.pe3_date === "" || !validated.pe3_date ? null : validated.pe3_date,
           comments: validated.comments === "" || !validated.comments ? null : validated.comments,
           is_terminated: false,
           is_archived: false,
           termination_date: null,
           termination_reason: null,
-          stena_date: null,
-          omc_date: null,
-          pe3_date: null,
         };
 
         validEmployees.push(employeeData);

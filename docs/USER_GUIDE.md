@@ -30,11 +30,13 @@
 3. If successful, you'll be redirected to the **Dashboard**
 
 **First-Time Login:**
+
 - Your HR administrator will provide your login credentials
 - You'll receive an email with your username (email address)
 - Your initial password will be provided separately (change it after first login)
 
 **Session Timeout:**
+
 - Sessions expire after **8 hours of inactivity**
 - You'll be automatically logged out and redirected to the login page
 - Simply log in again to continue working
@@ -42,14 +44,17 @@
 ### Navigation Overview
 
 **Dashboard (All Users):**
+
 - **Employee Table**: Main view showing employee data with search and filters
 - **Important Dates**: Calendar view of birthdays, anniversaries, and milestones
 
 **Admin Panel (HR Admin Only):**
+
 - **User Management**: Create and manage user accounts
 - **Column Settings**: Configure column permissions for each role
 
 **User Menu (Top Right):**
+
 - View your **profile information**
 - **Log out** of the application
 
@@ -72,14 +77,14 @@ As an HR Administrator, you have full system access to manage employees, users, 
    - A dialog will appear with an employee form
 
 3. **Fill in Employee Information**
-   
+
    **Required Fields:**
    - **First Name**: Employee's first name
    - **Last Name**: Employee's last name
    - **Email**: Employee's work email address (must be unique)
    - **SSN**: Social Security Number (must be unique)
    - **Hire Date**: Employee's start date (use date picker)
-   
+
    **Optional Fields:**
    - **Preferred Name**: Nickname or preferred name
    - **Phone**: Employee's phone number
@@ -99,6 +104,7 @@ As an HR Administrator, you have full system access to manage employees, users, 
    - Fix errors and try again
 
 **Tips:**
+
 - Email addresses must be unique across all employees
 - SSN must be exactly 9 digits (formatted as XXX-XX-XXXX)
 - Hire date cannot be in the future
@@ -114,6 +120,7 @@ As an HR Administrator, you have full system access to manage employees, users, 
 5. Changes are saved automatically and sync to all users in real-time
 
 **Editable Masterdata Columns:**
+
 - First Name, Last Name, Preferred Name
 - Email, Phone
 - Department, Position, Manager
@@ -121,6 +128,7 @@ As an HR Administrator, you have full system access to manage employees, users, 
 - Hire Date
 
 **Read-Only Columns (Cannot Edit Inline):**
+
 - SSN (security restriction - must use Edit Employee dialog)
 - Custom columns created by external parties (only they can edit)
 
@@ -133,6 +141,7 @@ As an HR Administrator, you have full system access to manage employees, users, 
 5. **Click "Save Changes"**
 
 **When to Use Dialog vs Inline Editing:**
+
 - Use **inline editing** for quick single-field updates
 - Use **dialog** for updating multiple fields or changing SSN
 
@@ -149,6 +158,7 @@ Archiving (soft delete) removes employees from the main table view while preserv
 5. Employee is removed from the table and marked as archived
 
 **What Happens When You Archive:**
+
 - Employee disappears from main table view
 - Data is preserved in the database (soft delete)
 - External parties can no longer see the employee
@@ -169,6 +179,7 @@ Archiving (soft delete) removes employees from the main table view while preserv
 5. Employee returns to active status and becomes visible to external parties
 
 **Best Practices:**
+
 - Archive employees who have left the company
 - Do NOT delete employees permanently (preserve historical data)
 - Use termination date field to track when employee left
@@ -183,6 +194,7 @@ Archiving (soft delete) removes employees from the main table view while preserv
 4. **Clear search** to reset view
 
 **Search Tips:**
+
 - Search matches any visible column
 - Search is case-insensitive
 - Use partial words (e.g., "john" matches "Johnson")
@@ -215,19 +227,19 @@ Access: **Admin Panel > Users**
    - **Email**: User's email address (will be their username)
    - **Password**: Temporary password (user should change after first login)
    - **Full Name**: User's full name
-   - **Role**: Select from HR Admin, Sodexo, ÖMC, Payroll, Toplux
+   - **Role**: Select from HR Admin, Sodexo, ï¿½MC, Payroll, Toplux
 4. **Click "Create User"**
 5. **Provide credentials** to the new user (email and temporary password)
 
 **User Role Permissions:**
 
-| Role     | Can See                 | Can Edit             | Admin Access |
-| -------- | ----------------------- | -------------------- | ------------ |
-| HR Admin | All columns and data    | All masterdata       | Yes          |
-| Sodexo   | Permitted columns only  | Sodexo custom only   | No           |
-| ÖMC      | Permitted columns only  | ÖMC custom only      | No           |
-| Payroll  | Permitted columns only  | Payroll custom only  | No           |
-| Toplux   | Permitted columns only  | Toplux custom only   | No           |
+| Role     | Can See                | Can Edit            | Admin Access |
+| -------- | ---------------------- | ------------------- | ------------ |
+| HR Admin | All columns and data   | All masterdata      | Yes          |
+| Sodexo   | Permitted columns only | Sodexo custom only  | No           |
+| ï¿½MC      | Permitted columns only | ï¿½MC custom only     | No           |
+| Payroll  | Permitted columns only | Payroll custom only | No           |
+| Toplux   | Permitted columns only | Toplux custom only  | No           |
 
 #### Deactivating a User
 
@@ -237,12 +249,14 @@ Access: **Admin Panel > Users**
 4. **Confirm deactivation**
 
 **What Happens When You Deactivate:**
+
 - User cannot log in
 - Active sessions are terminated on next page load
 - User data is preserved
 - You can reactivate later
 
 **Security Note:**
+
 - You cannot deactivate your own account (prevents lockout)
 - At least one HR Admin must remain active
 
@@ -264,7 +278,7 @@ Column permissions control which columns each external party role can see. Maste
 The Column Settings page displays a **permission matrix**:
 
 - **Rows**: Each column in the system
-- **Columns**: Each user role (Sodexo, ÖMC, Payroll, Toplux)
+- **Columns**: Each user role (Sodexo, ï¿½MC, Payroll, Toplux)
 - **Checkboxes**: Check to grant permission, uncheck to deny
 
 #### Granting Column Permissions
@@ -276,6 +290,7 @@ The Column Settings page displays a **permission matrix**:
 5. Permission changes take effect **immediately** (users see changes within 2 seconds)
 
 **Example:**
+
 - "Sodexo Meal Budget" column should only be visible to Sodexo users
 - Check the "Sodexo" column box for this row
 - Uncheck all other role boxes
@@ -283,12 +298,14 @@ The Column Settings page displays a **permission matrix**:
 #### Understanding Column Types
 
 **Masterdata Columns (System-Managed):**
+
 - Always visible to all roles
 - Cannot be hidden or deleted
 - Only HR Admin can edit values
 - Examples: First Name, Last Name, Email, SSN, Hire Date
 
 **Custom Columns (Party-Created):**
+
 - Created by external parties for their own data tracking
 - Visibility configured via permission matrix
 - Only the creating party can edit values (HR can view)
@@ -310,9 +327,10 @@ The Role Preview feature lets you see exactly what each external party sees when
 1. **Navigate to any page** (Dashboard or Admin Panel)
 2. **Click your profile menu** (top right)
 3. **Select "View As"** from dropdown
-4. **Choose a role** to preview (Sodexo, ÖMC, Payroll, Toplux)
+4. **Choose a role** to preview (Sodexo, ï¿½MC, Payroll, Toplux)
 
 **What Happens:**
+
 - A **banner appears at the top** indicating you're in preview mode
 - The interface changes to show exactly what that role sees
 - Hidden columns disappear
@@ -322,6 +340,7 @@ The Role Preview feature lets you see exactly what each external party sees when
 #### Using Role Preview Effectively
 
 **Verification Workflow:**
+
 1. **Make permission changes** in Column Settings
 2. **Activate "View As Sodexo"** mode
 3. **Check employee table** - verify only permitted columns visible
@@ -335,6 +354,7 @@ The Role Preview feature lets you see exactly what each external party sees when
 3. You return to full HR Admin view
 
 **Important:**
+
 - Changes made in preview mode are **read-only** and don't save
 - You can still navigate and test functionality
 - Banner remains visible at all times to avoid confusion
@@ -356,7 +376,7 @@ HR Admins can delete custom columns created by external parties when they're no 
 `
 Delete Column: "Sodexo Meal Budget"?
 
-This will permanently delete this column and all data stored in it 
+This will permanently delete this column and all data stored in it
 across all employees. This action cannot be undone.
 
 Affected employees: 247
@@ -368,12 +388,14 @@ Data will be deleted from: sodexo_data table
 5. **Click "Delete Permanently"**
 
 **What Happens:**
+
 - Column is removed from the column_config table
 - All data in that column (across all employees) is permanently deleted
 - External party can no longer see or edit the column
 - Change is immediate (real-time sync)
 
 **Warning:**
+
 - Deletion is **permanent and irreversible**
 - All employee data for that column is lost
 - Consider hiding instead of deleting if you might need the data later
@@ -388,6 +410,7 @@ If you want to temporarily hide a column without deleting data:
 4. Column becomes invisible to all external parties (but data is preserved)
 
 **When to Hide vs Delete:**
+
 - **Hide**: Seasonal data (e.g., "Summer Shift Preference" - hide in winter, unhide in summer)
 - **Hide**: Temporarily sensitive data
 - **Delete**: Obsolete data no longer needed
@@ -397,7 +420,7 @@ If you want to temporarily hide a column without deleting data:
 
 ## External Party Workflows
 
-As an external party user (Sodexo, ÖMC, Payroll, Toplux), you have read-only access to employee masterdata and full control over your party's custom columns.
+As an external party user (Sodexo, ï¿½MC, Payroll, Toplux), you have read-only access to employee masterdata and full control over your party's custom columns.
 
 ### Viewing Employee Data
 
@@ -423,15 +446,18 @@ When you log in, you see the **Employee Table Dashboard** with the following:
 #### Navigating the Employee List
 
 **Search Employees:**
+
 1. Click the **search box** (top left)
 2. Type employee name, email, or any visible field
 3. Results filter automatically
 
 **Sort Employees:**
+
 1. Click any **column header** to sort
 2. Click again to reverse sort order
 
 **Filter Employees:**
+
 1. Click **filter icon** in column header
 2. Set filter criteria
 3. Click **Apply**
@@ -449,6 +475,7 @@ You can edit data in custom columns your party created.
 5. Changes save automatically and sync to HR view in real-time
 
 **Supported Data Types:**
+
 - **Text**: Free-form text entry
 - **Number**: Numeric values only
 - **Date**: Date picker appears
@@ -456,6 +483,7 @@ You can edit data in custom columns your party created.
 - **Yes/No**: Checkbox toggle
 
 **Validation:**
+
 - Required fields show error if left blank
 - Data type constraints enforced (e.g., number fields reject text)
 - Invalid entries show error message below cell
@@ -469,6 +497,7 @@ You can edit data in custom columns your party created.
 5. **Click "Save"**
 
 **Use Case:**
+
 - Update "Shift Schedule" for all employees in a department
 - Set "Meal Plan" for a group of new hires
 
@@ -482,12 +511,12 @@ External parties can create custom columns to track data specific to their needs
 2. **Click the "Manage Columns" button** (gear icon near search)
 3. **Click "+ Add Custom Column"**
 4. **Fill in column configuration**:
-   
+
    **Required Fields:**
    - **Column Name**: Descriptive name (e.g., "Meal Plan Type")
    - **Data Type**: Select from Text, Number, Date, Dropdown, Yes/No
    - **Category**: Organize column (e.g., "Benefits", "Scheduling")
-   
+
    **Optional Fields:**
    - **Description**: Help text explaining the column's purpose
    - **Default Value**: Value for new employees
@@ -497,6 +526,7 @@ External parties can create custom columns to track data specific to their needs
 5. **Click "Create Column"**
 
 **What Happens:**
+
 - New column appears in the employee table (rightmost position)
 - Column is empty for all existing employees
 - Only your party can edit values (HR can view)
@@ -510,17 +540,18 @@ Category: Sodexo Benefits
 Description: Employee's selected meal plan
 Required: Yes
 Dropdown Options:
-  - Basic
-  - Premium
-  - Vegetarian
-  - None
-`
+
+- Basic
+- Premium
+- Vegetarian
+- None
+  `
 
 #### Column Naming Best Practices
 
 - **Be Descriptive**: "Shift Preference" not "SP"
 - **Include Party Name**: "Sodexo Meal Budget" not just "Meal Budget"
-- **Avoid Abbreviations**: "ÖMC Cost Center" not "OMC CC"
+- **Avoid Abbreviations**: "ï¿½MC Cost Center" not "OMC CC"
 - **Use Title Case**: "Employee Meal Plan" not "employee meal plan"
 
 ### Organizing Columns into Categories
@@ -542,6 +573,7 @@ Categories help organize custom columns for easier navigation.
 3. **Save changes**
 
 **Benefits of Categories:**
+
 - Group related columns together
 - Easier to find columns in large tables
 - Visual organization in table view (columns grouped by category)
@@ -567,11 +599,13 @@ Categories help organize custom columns for easier navigation.
 4. **Combine multiple filters** (filters across columns are AND logic)
 
 **Example Filter Scenario:**
+
 - Show only employees in "Sales" department
 - With "Premium" meal plan
 - Hired after January 1, 2024
 
 **Filter Steps:**
+
 1. Filter "Department" = "Sales"
 2. Filter "Meal Plan Type" = "Premium"
 3. Filter "Hire Date" > "2024-01-01"
@@ -607,6 +641,11 @@ Categories help organize custom columns for easier navigation.
 
 **Q: Can I bulk import employees from our existing Excel file?**  
 **A:** Yes, use the "Import CSV" button on the Dashboard. Ensure your CSV matches the required format (template downloadable from the import dialog).
+
+**Required fields:** First Name, Surname, SSN, Rank, Hire Date  
+**Optional fields:** Email (leave blank if unknown), Mobile, Gender, Town District, Stena Date, Ã–MC Date, PE3 Date, Comments
+
+**Note:** As of Epic 6.1, Rank is now mandatory for all employees, while Email is optional. You can import partial data by leaving optional fields empty.
 
 **Q: What happens if I accidentally archive an employee?**  
 **A:** No problem! Archiving is a soft delete. Enable "Show Archived" filter, find the employee, and click "Unarchive" to restore them.
@@ -652,6 +691,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: "Invalid email or password" error**
 
 **Solutions:**
+
 1. **Check Caps Lock**: Passwords are case-sensitive
 2. **Verify Email**: Ensure you're using the email address HR provided
 3. **Copy-Paste Password**: Avoid typos by pasting the password HR sent you
@@ -660,12 +700,14 @@ Categories help organize custom columns for easier navigation.
 **Problem: "Account is deactivated" error**
 
 **Solutions:**
+
 1. **Contact HR**: Your account may have been deactivated
 2. **Verify Employment Status**: Accounts are deactivated when employees leave the company
 
 **Problem: Session expired / Automatically logged out**
 
 **Solutions:**
+
 1. **Log in again**: Sessions expire after 8 hours of inactivity
 2. **Stay Active**: If working on large edits, save frequently and refresh session by navigating between pages
 
@@ -674,12 +716,14 @@ Categories help organize custom columns for easier navigation.
 **Problem: "403 Forbidden - Insufficient Permissions" when accessing Admin Panel**
 
 **Solutions:**
+
 1. **Verify Your Role**: Only HR Admin can access Admin Panel
 2. **Contact HR**: If you believe you should have admin access, ask HR to check your user role
 
 **Problem: Cannot see columns that should be visible**
 
 **Solutions:**
+
 1. **Check Column Permissions**: Ask HR to verify your role has permission in Column Settings
 2. **Refresh Page**: Press Ctrl+F5 (Windows) or Cmd+Shift+R (Mac) to hard refresh
 3. **Clear Browser Cache**: Settings > Privacy > Clear Browsing Data > Cached Images and Files
@@ -687,6 +731,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Cannot edit a column (read-only)**
 
 **Solutions:**
+
 1. **Masterdata Columns**: These are read-only for external parties - only HR can edit
 2. **Other Party's Columns**: You can only edit custom columns your party created
 3. **Permission Issue**: Contact HR to verify you have edit permission for that column
@@ -696,6 +741,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Changes by HR don't appear immediately**
 
 **Solutions:**
+
 1. **Wait 2 Seconds**: Real-time sync has a small delay (should be <2 seconds)
 2. **Check Internet Connection**: Poor connection can delay WebSocket updates
 3. **Refresh Page**: If sync fails, manual refresh (F5) will fetch latest data
@@ -704,6 +750,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: "Connection lost" notification appears**
 
 **Solutions:**
+
 1. **Check Internet**: Verify you're online
 2. **Reconnect**: The app will automatically attempt to reconnect
 3. **Manual Reconnect**: Refresh the page (F5)
@@ -714,6 +761,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Cannot save changes to a cell**
 
 **Solutions:**
+
 1. **Validation Errors**: Check for error messages below the cell
 2. **Required Fields**: Ensure required fields aren't left blank
 3. **Data Type Mismatch**: Number fields require numeric values, Date fields require valid dates
@@ -722,6 +770,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Bulk edit affects wrong employees**
 
 **Solutions:**
+
 1. **Clear Selection**: Click empty area to deselect all, then reselect correct employees
 2. **Use Filters**: Filter to target employees first, then select all visible rows
 3. **Undo Changes**: If you made a mistake, contact HR immediately - they may be able to restore from backups
@@ -729,6 +778,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: CSV import fails**
 
 **Solutions:**
+
 1. **Check File Format**: Must be .csv format (not .xlsx)
 2. **Match Template**: Download CSV template and ensure your file has matching columns
 3. **Encoding**: Save CSV as UTF-8 encoding to avoid character issues
@@ -740,6 +790,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Table loads slowly with many employees**
 
 **Solutions:**
+
 1. **Use Filters**: Filter to a subset of employees (e.g., by department)
 2. **Close Unused Browser Tabs**: Free up memory
 3. **Clear Browser Cache**: Ctrl+Shift+Delete > Clear cache
@@ -748,6 +799,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Scrolling is laggy**
 
 **Solutions:**
+
 1. **Enable Virtual Scrolling**: Already enabled by default for 1,000+ rows
 2. **Reduce Visible Columns**: Hide columns you don't need via column visibility settings
 3. **Close Other Applications**: Free up system resources
@@ -755,6 +807,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Search is slow**
 
 **Solutions:**
+
 1. **Use Specific Keywords**: More specific search terms narrow results faster
 2. **Use Column Filters**: Filter on indexed columns (Email, SSN, Hire Date) for best performance
 3. **Reduce Dataset**: If searching within a department, filter by department first
@@ -764,6 +817,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Interface looks broken or misaligned**
 
 **Solutions:**
+
 1. **Update Browser**: Ensure you're using a supported browser version
 2. **Zoom Level**: Reset browser zoom to 100% (Ctrl+0)
 3. **Disable Browser Extensions**: Ad blockers or privacy extensions may interfere
@@ -772,6 +826,7 @@ Categories help organize custom columns for easier navigation.
 **Problem: Drag-and-drop doesn't work**
 
 **Solutions:**
+
 1. **Enable JavaScript**: Ensure JavaScript is enabled in browser settings
 2. **Update Browser**: Drag-and-drop requires modern browser features
 3. **Try Click-and-Select**: Use checkboxes instead of dragging to select multiple rows

@@ -263,11 +263,14 @@ export const csvImportEmployeeSchema = z.object({
     .min(1, "SSN is required")
     .regex(ssnRegex, "SSN must be in format YYYYMMDD-XXXX or YYMMDD-XXXX"),
   email: z
-    .string()
-    .email("Invalid email format")
-    .nullable()
+    .union([
+      z.string().email("Invalid email format"),
+      z.literal(""),
+      z.null(),
+      z.undefined(),
+    ])
     .optional()
-    .or(z.literal("")),
+    .nullable(),
   mobile: z.string().nullable().optional().or(z.literal("")),
   rank: z.string().min(1, "Rank is required"),
   gender: z
