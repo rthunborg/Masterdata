@@ -43,10 +43,12 @@ export interface User {
   role: UserRole;
   is_active: boolean;
   created_at: string;
+  last_active_at: string | null;
 }
 
 export interface SessionUser extends User {
   auth_id: string;
+  last_active_at: string | null;
 }
 
 // Form data for creating users

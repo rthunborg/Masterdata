@@ -258,6 +258,8 @@
     "roleColumn": "Roll",
     "userCreated": "Skapad",
     "createdColumn": "Skapad",
+    "lastActive": "Senast aktiv",
+    "never": "Aldrig",
     "userUpdated": "Uppdaterad",
     "actionsColumn": "Åtgärder",
     "deactivateButton": "Inaktivera",

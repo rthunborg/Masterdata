@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import createMiddleware from 'next-intl/middleware';
 import { locales, defaultLocale } from './src/i18n';
+import { updateUserActivity } from './src/lib/server/utils/activity-tracker';
 
 // Routes that don't require authentication (excluding /login which needs special handling)
 const PUBLIC_ROUTES = ['/api/auth/login', '/api/health'];
@@ -78,6 +79,17 @@ export async function middleware(request: NextRequest) {
     if (!user && !pathWithoutLocale.startsWith('/login') && pathWithoutLocale !== '/') {
       const redirectUrl = new URL(`/${locale}/login`, request.url);
       return NextResponse.redirect(redirectUrl);
+    }
+
+    // Update user activity asynchronously (non-blocking) if authenticated
+    if (user) {
+      // Update activity asynchronously - don't await to avoid blocking request
+      // Query moved inside updateUserActivity to avoid blocking middleware
+      Promise.resolve().then(() => {
+        updateUserActivity(user.id).catch((err) => {
+          console.error('Failed to update user activity:', err);
+        });
+      });
     }
 
     // Redirect authenticated users from root to dashboard

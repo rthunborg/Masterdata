@@ -4,7 +4,8 @@ import { useState } from "react";
 import { User, getRoleDisplayName } from "@/lib/types/user";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { adminService } from "@/lib/services/admin-service";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatRelativeTime } from "@/lib/utils/format";
 import {
   Table,
   TableBody,
@@ -37,6 +38,7 @@ export function UserManagementTable({
 }: UserManagementTableProps) {
   const { user: currentUser } = useAuth();
   const t = useTranslations("admin");
+  const locale = useLocale();
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     user: User | null;
@@ -91,6 +93,7 @@ export function UserManagementTable({
               <TableHead>Email</TableHead>
               <TableHead>{t('roleColumn')}</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>{t('lastActive')}</TableHead>
               <TableHead>{t('createdColumn')}</TableHead>
               <TableHead className="text-right">{t('actionsColumn')}</TableHead>
             </TableRow>
@@ -98,7 +101,7 @@ export function UserManagementTable({
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-gray-500">
+                <TableCell colSpan={6} className="text-center text-gray-500">
                   No users found
                 </TableCell>
               </TableRow>
@@ -119,6 +122,9 @@ export function UserManagementTable({
                       >
                         {user.is_active ? "Active" : "Inactive"}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      {formatRelativeTime(user.last_active_at, locale, t('never'))}
                     </TableCell>
                     <TableCell>{formatDate(user.created_at)}</TableCell>
                     <TableCell className="text-right">

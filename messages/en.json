@@ -258,6 +258,8 @@
     "roleColumn": "Role",
     "userCreated": "Created",
     "createdColumn": "Created",
+    "lastActive": "Last Active",
+    "never": "Never",
     "userUpdated": "Updated",
     "actionsColumn": "Actions",
     "deactivateButton": "Deactivate",
