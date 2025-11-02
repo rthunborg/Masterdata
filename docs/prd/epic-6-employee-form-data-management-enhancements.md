@@ -54,7 +54,7 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 1. Email field validation changed from mandatory to optional
 2. Rank field validation changed from optional to mandatory
 3. Stena Date field: Dropdown populated from Important Dates table (category: "Stena Dates"), mandatory
-4. ÷MC Date field: Dropdown populated from Important Dates table (category: "÷MC Dates"), mandatory
+4. ÔøΩMC Date field: Dropdown populated from Important Dates table (category: "ÔøΩMC Dates"), mandatory
 5. PE3 Date field: Dropdown populated from Important Dates table (category: "PE3 Dates"), optional
 6. All date dropdowns default to closest future date (date >= today)
 7. Date dropdown options display in format: "Week [number] - [date_description]" (e.g., "Week 14 - Fredag 14/2")
@@ -165,6 +165,22 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 
 ## Story 6.6: Column Management UX Improvements
 
+**‚ö†Ô∏è CRITICAL: Story 6.6 FAILED on November 2, 2025 - Full Revert Required**
+
+**Incident Summary:** Original Story 6.6 implementation (commit `8123a2b`) introduced critical authentication bugs causing redirect loops and login failures. Issues cascaded through Stories 6.7-6.9, requiring full codebase revert to Story 6.5 (`4997647`).
+
+**Root Cause:** Modifications to authentication-critical files (`middleware.ts`, root pages) without comprehensive testing.
+
+**Resolution:** Story 6.6 completely redesigned with strict authentication safeguards. See detailed story document for:
+- Mandatory pre-implementation safety checks
+- Forbidden file modification list
+- Comprehensive authentication regression testing requirements
+- Supabase SSR best practices
+
+**Story Status:** Ready for Re-Implementation with Enhanced Safeguards
+
+---
+
 **As an** HR Admin,  
 **I want** clear visual feedback for hidden columns and the ability to reorder columns via drag-and-drop,  
 **so that** I can customize the table layout for my workflow.
@@ -202,9 +218,16 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
    - "Hidden" / "Visible" badges translated
    - Drag handle accessible label: "Reorder column" (English) / "Ordna kolumn" (Swedish)
 
-**Estimated Effort:** 6-8 hours
+7. **üîí MANDATORY SAFEGUARD (NEW):**
+   - Zero modifications to authentication/routing files (`middleware.ts`, root pages, login pages)
+   - Complete authentication regression testing before merge
+   - PO approval required if ANY auth file must be modified
+
+**Estimated Effort:** 6-8 hours (implementation) + 2 hours (mandatory safety testing)
 
 **Dependencies:** Requires database migration for `display_order` column
+
+**See:** `docs/stories/6.6.column-management-ux-improvements.md` for complete implementation guide with authentication safeguards
 
 ---
 
@@ -260,7 +283,7 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 ### Acceptance Criteria
 
 1. **Login Page:**
-   - Remove text: "Ange dina uppgifter fˆr att komma Ât HR Masterdata-systemet" (Swedish)
+   - Remove text: "Ange dina uppgifter fÔøΩr att komma ÔøΩt HR Masterdata-systemet" (Swedish)
    - Remove text: "Enter your credentials to access the HR Masterdata Management System" (English)
    - Keep only: Login form (email, password, submit button)
    - Keep Stena Line branding (logo, background image)
@@ -269,7 +292,7 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
    - Verify `/sv` route shows Swedish content (investigate why Story 5.13 didn't fix this)
    - Root cause analysis: Check if locale routing middleware is interfering
    - Ensure root page (`src/app/page.tsx`) is NOT wrapped in locale routing
-   - All text in Swedish: "Stena Line S‰songsrekrytering", description paragraph, "Logga in till systemet" button
+   - All text in Swedish: "Stena Line SÔøΩsongsrekrytering", description paragraph, "Logga in till systemet" button
    - No third-party company names mentioned
 
 3. **Testing:**
