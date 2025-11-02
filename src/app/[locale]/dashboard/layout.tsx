@@ -16,6 +16,7 @@ export default async function DashboardLayout({
 
   if (!user) {
     redirect({ href: "/login", locale });
+    return null; // TypeScript guard - this line is never reached due to redirect
   }
 
   const t = await getTranslations({ locale: locale, namespace: 'navigation' });

@@ -1,0 +1,30 @@
+We need to create and run some migrations to get the system set up in a good initial state. For master data columns, here are the ones we should start with and their ordering: 
+
+Stena Date	ÖMC Date	PE3 Date	First Name	Surname	Town district	Mobile	Email	Social Security No.	Rank	Gender	Comments	One	ISPS	Photo	Origo	Lönenivå	Mail lön	Bankuppgifter 	LI 	Passport	Kvitto C17/18	C17 	Crewing/Done
+
+For our external users, below is the master data they should see (no edit) and below their own columns, in correct starting order. Notice that we might have a mix in language here, if a field already exists in English form, such as "First name", use this even if it says "Förnamn" or similar in the Swedish version
+
+ÖMC Masterdata: 
+ÖMC Date	Name	Social Security No.	Contact No.	Email	Rank	Gender
+
+ÖMC Custom: 
+Hotel Required?	Room Number (Shared)	Dietary Requirement?	Joining Instructions sent	Candidate Confirmed	Seably 	Receipt C-17	C-17 Certificate	Receipt C-18	C-18 Certificate	ÖMC Certificate	Uploaded in CrewSF	Completed
+
+
+Payroll Masterdata: 
+Stena Date	Förnamn	Efternamn	Personnummer	Telnr	Mail	Titel
+
+Payroll Custom:
+Ersatt	Fartyg	Klart/sign	Notering
+
+Sodexo Masterdata: 
+Stena Date 	Deltagare 
+Sodexo Custom: 
+<No extra columns here>
+
+Toplux Masterdata: 
+Stena Date	Förnamn	Efternamn	Personnummer	Telnr	Mail	Ort	Titel
+Toplux Custom:
+Stena ID- Origo nummer	Beställning gjord	Fartyg	Skickat beställning till Fartyg/Warehouse	Mottaget	Kontaktat medarbetare	Uthämtat	Mottagit kort	Skickat kort till fartyg
+
+

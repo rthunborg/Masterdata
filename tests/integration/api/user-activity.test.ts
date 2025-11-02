@@ -11,24 +11,23 @@ vi.mock('@/lib/server/auth');
 vi.mock('@/lib/server/repositories/user-repository');
 
 describe('PATCH /api/admin/users/[id]/update-activity', () => {
-  const mockRequireAuthAPI = vi.fn();
-  const mockUserRepository = {
-    updateLastActive: vi.fn(),
-  };
+  const mockGetUserFromSession = vi.fn();
 
   beforeEach(async () => {
     vi.clearAllMocks();
     
     const auth = await import('@/lib/server/auth');
-    vi.mocked(auth.requireAuthAPI).mockImplementation(mockRequireAuthAPI);
+    vi.mocked(auth.getUserFromSession).mockImplementation(mockGetUserFromSession);
     
     const userRepository = await import('@/lib/server/repositories/user-repository');
-    vi.mocked(userRepository.userRepository).mockReturnValue(mockUserRepository);
+    vi.mocked(userRepository.userRepository.updateLastActive).mockResolvedValue(undefined);
   });
 
   it('should update last_active_at for authenticated user', async () => {
-    mockRequireAuthAPI.mockResolvedValue(mockUsers.hrAdmin);
-    mockUserRepository.updateLastActive.mockResolvedValue(undefined);
+    mockGetUserFromSession.mockResolvedValue(mockUsers.hrAdmin);
+
+    const userRepository = await import('@/lib/server/repositories/user-repository');
+    vi.mocked(userRepository.userRepository.updateLastActive).mockResolvedValue(undefined);
 
     const { PATCH } = await import('@/app/api/admin/users/[id]/update-activity/route');
 
@@ -42,11 +41,11 @@ describe('PATCH /api/admin/users/[id]/update-activity', () => {
 
     expect(response.status).toBe(200);
     expect(json.success).toBe(true);
-    expect(mockUserRepository.updateLastActive).toHaveBeenCalledWith('user-123');
+    expect(userRepository.userRepository.updateLastActive).toHaveBeenCalledWith('user-123');
   });
 
   it('should return 401 for unauthenticated request', async () => {
-    mockRequireAuthAPI.mockRejectedValue(new Error('Authentication required'));
+    mockGetUserFromSession.mockResolvedValue(null);
 
     const { PATCH } = await import('@/app/api/admin/users/[id]/update-activity/route');
 
