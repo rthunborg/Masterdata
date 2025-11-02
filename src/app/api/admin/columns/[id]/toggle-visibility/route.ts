@@ -15,13 +15,13 @@ export const runtime = "nodejs";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify HR Admin authentication
     await requireHRAdminAPI();
 
-    const { id } = params;
+    const { id } = await params;
 
     // Parse request body
     const body: ToggleVisibilityRequest = await request.json();
