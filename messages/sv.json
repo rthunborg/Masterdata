@@ -20,6 +20,11 @@
     "yes": "Ja",
     "no": "Nej"
   },
+  "landing": {
+    "title": "Stena Line Säsongsrekrytering",
+    "description": "Centraliserad plattform för hantering av personaldata med rollbaserad åtkomstkontroll och realtidssynkronisering.",
+    "loginButton": "Logga in till systemet"
+  },
   "auth": {
     "email": "E-post",
     "password": "Lösenord",

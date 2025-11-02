@@ -20,6 +20,11 @@
     "yes": "Yes",
     "no": "No"
   },
+  "landing": {
+    "title": "Stena Line Seasonal Recruitment",
+    "description": "Centralized platform for employee data management with role-based access control and real-time synchronization.",
+    "loginButton": "Login to System"
+  },
   "auth": {
     "email": "Email",
     "password": "Password",
