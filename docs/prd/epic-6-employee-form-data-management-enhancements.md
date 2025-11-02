@@ -28,6 +28,7 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 ### Business Impact
 
 **Without Epic 6:**
+
 - HR staff waste time re-entering lost form data (estimated 2-3 incidents per week)
 - Scheduling conflicts from duplicate PE3 date assignments
 - Manual date entry increases error rate and slows employee onboarding
@@ -35,6 +36,7 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 - Unprofessional user experience (text issues, poor column management UX)
 
 **With Epic 6:**
+
 - Zero data loss from accidental modal closure
 - Guaranteed unique PE3 date assignments (inventory management)
 - Faster, more accurate employee onboarding (date pickers from Important Dates)
@@ -172,6 +174,7 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 **Root Cause:** Modifications to authentication-critical files (`middleware.ts`, root pages) without comprehensive testing.
 
 **Resolution:** Story 6.6 completely redesigned with strict authentication safeguards. See detailed story document for:
+
 - Mandatory pre-implementation safety checks
 - Forbidden file modification list
 - Comprehensive authentication regression testing requirements
@@ -195,7 +198,7 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 2. **Hide Column Visual Feedback:**
    - Hidden columns show "Hidden" badge in Column Settings table
    - Visible columns show "Visible" badge or checkmark icon
-   - Toggle button changes text: "Hide"  "Show" based on current state
+   - Toggle button changes text: "Hide" "Show" based on current state
    - Hidden columns do NOT appear in employee table (already implemented, just need visual indicator)
 
 3. **Drag-and-Drop Column Reordering:**
@@ -296,9 +299,9 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
    - No third-party company names mentioned
 
 3. **Testing:**
-   - Navigate to `/`  should show Swedish content
-   - Navigate to `/sv`  should redirect to `/` or show same Swedish content
-   - Navigate to `/en`  should redirect to `/en/dashboard` (authenticated) or `/en/login` (unauthenticated)
+   - Navigate to `/` should show Swedish content
+   - Navigate to `/sv` should redirect to `/` or show same Swedish content
+   - Navigate to `/en` should redirect to `/en/dashboard` (authenticated) or `/en/login` (unauthenticated)
 
 4. **Translations:**
    - Verify all translation keys used in root page exist in `messages/sv.json`
@@ -344,7 +347,7 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 **Epic Progress Tracking:**
 
 - Total Effort: 28-36 hours
-- Critical Path: Stories 6.1  6.2 (form validation dependency)
+- Critical Path: Stories 6.1 6.2 (form validation dependency)
 - Database Migrations: 2 (Stories 6.6, 6.7)
 
 **Definition of Done for Epic 6:**
@@ -359,11 +362,11 @@ After deploying Epic 5.5 (Post-MVP Polish & Branding) to production, comprehensi
 
 **Impact on MVP Success Criteria:**
 
--  Improves data accuracy (form validation aligned with business rules)
--  Reduces HR administrative time (CSV import, date pickers)
--  Prevents data integrity issues (PE3 unique selection)
--  Increases user confidence (data loss prevention)
--  Enhances system professionalism (UI polish)
+- Improves data accuracy (form validation aligned with business rules)
+- Reduces HR administrative time (CSV import, date pickers)
+- Prevents data integrity issues (PE3 unique selection)
+- Increases user confidence (data loss prevention)
+- Enhances system professionalism (UI polish)
 
 ---
 

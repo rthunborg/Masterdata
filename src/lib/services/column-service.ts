@@ -158,4 +158,49 @@ export const columnService = {
       role_permissions: originalPermissions,
     });
   },
+
+  /**
+   * Reorder columns by updating display_order values
+   * @param columns - Array of column IDs and their new display_order values
+   */
+  async reorderColumns(
+    columns: Array<{ id: string; display_order: number }>
+  ): Promise<void> {
+    const response = await fetch("/api/admin/columns/reorder", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ columns }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to reorder columns");
+    }
+  },
+
+  /**
+   * Toggle column visibility
+   * @param id - Column ID
+   * @param isVisible - New visibility state
+   * @returns Updated column configuration
+   */
+  async toggleVisibility(id: string, isVisible: boolean): Promise<ColumnConfig> {
+    const response = await fetch(`/api/admin/columns/${id}/toggle-visibility`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ is_visible: isVisible }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to toggle visibility");
+    }
+
+    const json: ColumnResponse = await response.json();
+    return json.data;
+  },
 };

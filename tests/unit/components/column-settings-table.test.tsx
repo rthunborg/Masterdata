@@ -48,7 +48,10 @@ describe("ColumnSettingsTable", () => {
         toplux: { view: true, edit: false },
       },
       category: null,
+      display_order: 0,
+      is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
+      updated_at: "2025-10-28T00:00:00Z",
     },
     {
       id: "col-2",
@@ -63,7 +66,10 @@ describe("ColumnSettingsTable", () => {
         toplux: { view: false, edit: false },
       },
       category: "Custom",
+      display_order: 1,
+      is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
+      updated_at: "2025-10-28T00:00:00Z",
     },
   ];
 

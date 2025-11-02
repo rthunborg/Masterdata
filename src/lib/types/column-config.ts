@@ -28,7 +28,10 @@ export interface ColumnConfig {
   role_permissions: RolePermissions;
   is_masterdata: boolean;
   category: string | null;
+  display_order: number;
+  is_visible: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 /**
@@ -83,4 +86,21 @@ export interface BulkUpdatePermissionsRequest {
   roles: string[];
   permission_type: 'view' | 'edit';
   value: boolean;
+}
+
+/**
+ * Request type for reordering columns
+ */
+export interface ReorderColumnsRequest {
+  columns: Array<{
+    id: string;
+    display_order: number;
+  }>;
+}
+
+/**
+ * Request type for toggling column visibility
+ */
+export interface ToggleVisibilityRequest {
+  is_visible: boolean;
 }

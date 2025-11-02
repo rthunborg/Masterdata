@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUserFromSession } from "@/lib/server/auth";
-import Link from "next/link";
+import { Link } from "@/lib/navigation";
 import { Toaster } from "sonner";
 import { Header } from "@/components/layout/header";
 import { getTranslations } from "next-intl/server";

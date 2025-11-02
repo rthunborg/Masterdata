@@ -22,8 +22,10 @@ export default function ColumnSettingsPage() {
     try {
       setIsLoading(true);
       const data = await columnService.getAllColumns();
-      setColumns(data);
-      setFilteredColumns(data);
+      // Sort by display_order to ensure correct order after reordering
+      const sortedData = [...data].sort((a, b) => a.display_order - b.display_order);
+      setColumns(sortedData);
+      setFilteredColumns(sortedData);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : tErrors('loadFailed')
@@ -39,13 +41,17 @@ export default function ColumnSettingsPage() {
 
   // Apply filter when filter mode changes
   useEffect(() => {
+    let filtered: ColumnConfig[];
     if (filterMode === "masterdata") {
-      setFilteredColumns(columns.filter((col) => col.is_masterdata));
+      filtered = columns.filter((col) => col.is_masterdata);
     } else if (filterMode === "custom") {
-      setFilteredColumns(columns.filter((col) => !col.is_masterdata));
+      filtered = columns.filter((col) => !col.is_masterdata);
     } else {
-      setFilteredColumns(columns);
+      filtered = columns;
     }
+    // Ensure filtered results maintain display_order
+    const sortedFiltered = [...filtered].sort((a, b) => a.display_order - b.display_order);
+    setFilteredColumns(sortedFiltered);
   }, [filterMode, columns]);
 
   const handlePermissionsUpdated = () => {
@@ -97,6 +103,7 @@ export default function ColumnSettingsPage() {
       ) : (
         <ColumnSettingsTable
           columns={filteredColumns}
+          allColumns={columns}
           onPermissionsUpdated={handlePermissionsUpdated}
         />
       )}

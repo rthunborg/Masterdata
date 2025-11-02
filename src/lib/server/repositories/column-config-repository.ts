@@ -20,6 +20,7 @@ export class ColumnConfigRepository {
       const { data, error } = await supabase
         .from("column_config")
         .select("*")
+        .order("display_order", { ascending: true })
         .order("column_name", { ascending: true });
 
       if (error || !data) {
@@ -221,6 +222,58 @@ export class ColumnConfigRepository {
       console.error("Error deleting column:", error);
       throw new Error(`Failed to delete column: ${error.message}`);
     }
+  }
+
+  /**
+   * Update display order for multiple columns
+   * Used for drag-and-drop reordering
+   */
+  async updateDisplayOrder(
+    columns: Array<{ id: string; display_order: number }>
+  ): Promise<void> {
+    const supabase = await this.getSupabaseClient();
+
+    // Update each column's display_order
+    const updatePromises = columns.map(({ id, display_order }) =>
+      supabase
+        .from("column_config")
+        .update({ display_order })
+        .eq("id", id)
+    );
+
+    const results = await Promise.all(updatePromises);
+
+    // Check for errors
+    const errors = results.filter((r) => r.error);
+    if (errors.length > 0) {
+      console.error("Error updating display order:", errors);
+      throw new Error("Failed to update column display order");
+    }
+  }
+
+  /**
+   * Toggle column visibility
+   */
+  async toggleVisibility(id: string, isVisible: boolean): Promise<ColumnConfig> {
+    const supabase = await this.getSupabaseClient();
+
+    const { data, error } = await supabase
+      .from("column_config")
+      .update({ is_visible: isVisible })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error toggling column visibility:", error);
+      throw new Error(`Failed to toggle visibility: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error("Failed to toggle visibility: No data returned");
+    }
+
+    return data;
   }
 }
 
