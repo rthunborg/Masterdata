@@ -1,0 +1,92 @@
+schema: 1
+story: '6.7'
+story_title: 'Add Last Active Timestamp to User Table'
+gate: FAIL
+status_reason: 'CRITICAL REGRESSION: Implementation broke database query layer - missing last_active_at field in SELECT queries causes "Failed to fetch users" error. Application is non-functional. Additional issues: middleware integration causing routing failures.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-11-02T15:45:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'CRITICAL-001'
+    severity: high
+    finding: 'Database queries missing last_active_at field in SELECT statements - causes runtime failures'
+    suggested_action: 'FIXED BY QA: Updated src/lib/server/auth.ts, src/lib/services/auth-service.ts, src/app/api/admin/users/[id]/route.ts to include last_active_at in all user queries'
+  - id: 'CRITICAL-002'
+    severity: high
+    finding: 'Middleware integration breaks locale routing - /en/login returns 404, redirects to /login'
+    suggested_action: 'Fix middleware to properly integrate with next-intl for locale-prefixed routes. Root cause: middleware not handling locale paths correctly after activity tracking integration.'
+  - id: 'TEST-004'
+    severity: high
+    finding: '222 TypeScript errors in test files - all mock data missing last_active_at field'
+    suggested_action: 'Update all test fixtures to include last_active_at: null in User/SessionUser mocks'
+  - id: 'DOC-001'
+    severity: medium
+    finding: 'Database schema documentation not updated with last_active_at field'
+    suggested_action: 'Update docs/architecture/database-schema.md to document the new column'
+  - id: 'TEST-002'
+    severity: medium
+    finding: 'Missing integration tests for middleware activity tracking and API endpoint'
+    suggested_action: 'Add integration tests to verify end-to-end activity tracking flow'
+  - id: 'TEST-003'
+    severity: low
+    finding: 'Missing component tests for User Management table Last Active column'
+    suggested_action: 'Add tests for sorting, relative time formatting, and null handling in UI'
+  - id: 'PERF-001'
+    severity: low
+    finding: 'Performance measurement not documented - no evidence of <10ms middleware overhead'
+    suggested_action: 'Add performance test or manual measurement documentation'
+
+quality_score: 35
+
+evidence:
+  tests_reviewed: 5
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Authentication properly enforced on API endpoint. Activity tracking uses fire-and-forget pattern with silent failure - no security implications.'
+  performance:
+    status: CONCERNS
+    notes: 'Fire-and-forget pattern implemented correctly, 5-minute throttle prevents excessive writes. However, no documented performance measurement showing <10ms overhead.'
+  reliability:
+    status: FAIL
+    notes: 'CRITICAL: Application is non-functional due to missing database fields in queries. Middleware integration breaks routing. Zero testing before QA handoff.'
+  maintainability:
+    status: CONCERNS
+    notes: 'Code follows repository pattern when working, but incomplete implementation broke existing functionality. 222 test errors indicate lack of pre-deployment validation.'
+
+recommendations:
+  immediate:
+    - action: 'FIX CRITICAL-002: Debug and fix middleware locale routing issue'
+      refs: ['middleware.ts']
+    - action: 'FIX TEST-004: Update all test fixtures with last_active_at field'
+      refs: ['tests/**/*.test.ts', 'tests/**/*.test.tsx']
+    - action: 'RUN npx tsc --noEmit before QA handoff to catch type errors'
+      refs: ['package.json scripts']
+    - action: 'RUN pnpm dev and manually test login flow before QA handoff'
+      refs: ['TESTING_STATUS.md']
+    - action: 'Add database schema documentation'
+      refs: ['docs/architecture/database-schema.md']
+    - action: 'Add integration tests for activity tracking flow'
+      refs: ['tests/integration/api/user-activity.test.ts']
+  future:
+    - action: 'Add component tests for User Management table'
+      refs: ['tests/unit/components/user-management-table.test.tsx']
+    - action: 'Document performance measurements'
+      refs: ['Story 6.7 - Dev Notes or Testing section']
+    - action: 'Add pre-commit hook to run tsc --noEmit'
+      refs: ['.husky/pre-commit']
+
+history:
+  - at: '2025-11-02T15:07:30Z'
+    gate: CONCERNS
+    note: 'Initial review - good architecture, missing tests/docs'
+  - at: '2025-11-02T15:45:00Z'
+    gate: FAIL
+    note: 'Runtime testing revealed critical regression - app non-functional due to missing DB fields and middleware routing failure'

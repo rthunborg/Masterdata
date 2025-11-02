@@ -42,6 +42,7 @@ describe("POST /api/employees/import - Relaxed Validation", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   beforeEach(() => {

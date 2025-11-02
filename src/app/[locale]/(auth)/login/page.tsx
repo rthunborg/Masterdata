@@ -20,9 +20,19 @@ export default async function LoginPage({
           return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
+          // In Server Components, we can't set cookies
+          // Let the middleware handle cookie refresh
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set({
+                name,
+                value,
+                ...options,
+              });
+            });
+          } catch {
+            // Ignore - middleware will handle session refresh
+          }
         },
       },
     }

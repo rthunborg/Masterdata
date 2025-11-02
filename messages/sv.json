@@ -248,6 +248,8 @@
   "admin": {
     "userManagement": "Användarhantering",
     "userManagementDescription": "Skapa och hantera användarkonton med rolltilldelningar",
+    "lastActive": "Senast aktiv",
+    "lastActiveNever": "Aldrig",
     "addUser": "Lägg till användare",
     "editUser": "Redigera användare",
     "deleteUser": "Radera användare",

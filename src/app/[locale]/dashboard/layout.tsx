@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { getUserFromSession } from "@/lib/server/auth";
-import { Link } from "@/lib/navigation";
+import { Link, redirect } from "@/lib/navigation";
 import { Toaster } from "sonner";
 import { Header } from "@/components/layout/header";
 import { getTranslations } from "next-intl/server";
@@ -12,13 +11,13 @@ export default async function DashboardLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   const user = await getUserFromSession();
 
   if (!user) {
-    redirect("/login");
+    redirect({ href: "/login", locale });
   }
 
-  const { locale } = await params;
   const t = await getTranslations({ locale: locale, namespace: 'navigation' });
   const tAdmin = await getTranslations({ locale: locale, namespace: 'admin' });
 

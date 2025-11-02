@@ -248,6 +248,8 @@
   "admin": {
     "userManagement": "User Management",
     "userManagementDescription": "Create and manage user accounts with role assignments",
+    "lastActive": "Last Active",
+    "lastActiveNever": "Never",
     "addUser": "Add User",
     "editUser": "Edit User",
     "deleteUser": "Delete User",

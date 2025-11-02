@@ -12,7 +12,7 @@ export class UserRepository {
       
       const { data, error } = await supabase
         .from("users")
-        .select("id, email, role, is_active, created_at")
+        .select("id, email, role, is_active, created_at, last_active_at")
         .eq("auth_user_id", authUserId)
         .single();
 
@@ -32,7 +32,7 @@ export class UserRepository {
       
       const { data, error } = await supabase
         .from("users")
-        .select("id, email, role, is_active, created_at")
+        .select("id, email, role, is_active, created_at, last_active_at")
         .eq("id", id)
         .single();
 
@@ -61,7 +61,7 @@ export class UserRepository {
       
       const { data, error } = await supabase
         .from("users")
-        .select("id, email, role, is_active, created_at")
+        .select("id, email, role, is_active, created_at, last_active_at")
         .order("created_at", { ascending: false });
 
       if (error || !data) {
@@ -86,6 +86,27 @@ export class UserRepository {
       return !error;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Updates the last_active_at timestamp for a user
+   * Used by middleware for activity tracking
+   * Fire-and-forget pattern - errors are caught silently
+   */
+  async updateLastActive(userId: string): Promise<void> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      
+      await supabase
+        .from("users")
+        .update({ last_active_at: new Date().toISOString() })
+        .eq("id", userId);
+      
+      // Silently succeed or fail - activity tracking shouldn't break requests
+    } catch (error) {
+      // Log error but don't throw - this is fire-and-forget
+      console.error('Failed to update user activity:', error);
     }
   }
 }

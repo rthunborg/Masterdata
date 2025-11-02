@@ -38,7 +38,7 @@ export async function PATCH(
     // Get user to find auth_user_id
     const { data: userToUpdate, error: fetchError } = await supabase
       .from("users")
-      .select("id, auth_user_id, email, role, is_active, created_at")
+      .select("id, auth_user_id, email, role, is_active, created_at, last_active_at")
       .eq("id", id)
       .single();
 
@@ -59,7 +59,7 @@ export async function PATCH(
       .from("users")
       .update({ is_active: validated.is_active })
       .eq("id", id)
-      .select("id, email, role, is_active, created_at")
+      .select("id, email, role, is_active, created_at, last_active_at")
       .single();
 
     if (updateError || !updatedUser) {

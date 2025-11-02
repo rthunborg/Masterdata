@@ -20,6 +20,7 @@ describe("GET /api/employees", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   const mockEmployees: Employee[] = [
@@ -187,6 +188,7 @@ describe("POST /api/employees", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   const validEmployeeData: EmployeeFormData = {
@@ -456,6 +458,7 @@ describe("PATCH /api/employees/[id]", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   const mockEmployee: Employee = {
@@ -714,6 +717,7 @@ describe("POST /api/employees/[id]/terminate", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   const mockEmployee: Employee = {
@@ -913,6 +917,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   const mockEmployee: Employee = {
@@ -1038,6 +1043,7 @@ describe("SSN Normalization Tests", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   beforeEach(() => {

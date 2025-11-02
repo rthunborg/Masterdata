@@ -18,6 +18,7 @@ describe("GET /api/important-dates", () => {
     role: UserRole.SODEXO,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   const mockImportantDates: ImportantDate[] = [
@@ -136,6 +137,7 @@ describe("POST /api/important-dates", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   const validFormData: ImportantDateFormData = {
@@ -276,6 +278,7 @@ describe("PATCH /api/important-dates/[id]", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   const mockUpdatedDate: ImportantDate = {
@@ -398,6 +401,7 @@ describe("DELETE /api/important-dates/[id]", () => {
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   };
 
   beforeEach(() => {

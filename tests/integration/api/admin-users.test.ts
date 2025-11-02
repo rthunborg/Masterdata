@@ -128,6 +128,7 @@ const dbMockUsers: User[] = [
     role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: mockUsers.hrAdmin.created_at,
+    last_active_at: null,
   },
   {
     id: mockUsers.sodexo.id,
@@ -135,6 +136,7 @@ const dbMockUsers: User[] = [
     role: UserRole.SODEXO,
     is_active: true,
     created_at: mockUsers.sodexo.created_at,
+    last_active_at: null,
   },
 ];
 

@@ -23,7 +23,7 @@ class AuthService {
       // Get user record from users table with role
       const { data: userData, error: userError } = await this.supabase
         .from("users")
-        .select("id, email, role, is_active, created_at")
+        .select("id, email, role, is_active, created_at, last_active_at")
         .eq("auth_user_id", authData.user.id)
         .single();
 
@@ -72,7 +72,7 @@ class AuthService {
       // Get user record from users table
       const { data: userData, error: userError } = await this.supabase
         .from("users")
-        .select("id, email, role, is_active, created_at")
+        .select("id, email, role, is_active, created_at, last_active_at")
         .eq("auth_user_id", session.user.id)
         .single();
 

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { User, getRoleDisplayName } from "@/lib/types/user";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { adminService } from "@/lib/services/admin-service";
-import { useTranslations } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import {
   Table,
   TableBody,
@@ -25,6 +25,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+
+type SortColumn = "email" | "role" | "created_at" | "last_active_at";
+type SortDirection = "asc" | "desc";
 
 interface UserManagementTableProps {
   users: User[];
@@ -37,6 +41,7 @@ export function UserManagementTable({
 }: UserManagementTableProps) {
   const { user: currentUser } = useAuth();
   const t = useTranslations("admin");
+  const format = useFormatter();
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     user: User | null;
@@ -47,6 +52,70 @@ export function UserManagementTable({
     action: "deactivate",
   });
   const [isUpdating, setIsUpdating] = useState(false);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("last_active_at");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  const sortedUsers = useMemo(() => {
+    const sorted = [...users].sort((a, b) => {
+      let aValue: string | number | null;
+      let bValue: string | number | null;
+
+      switch (sortColumn) {
+        case "email":
+          aValue = a.email;
+          bValue = b.email;
+          break;
+        case "role":
+          aValue = a.role;
+          bValue = b.role;
+          break;
+        case "created_at":
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+          break;
+        case "last_active_at":
+          // Handle null values - push them to the end
+          if (!a.last_active_at && !b.last_active_at) return 0;
+          if (!a.last_active_at) return 1;
+          if (!b.last_active_at) return -1;
+          aValue = new Date(a.last_active_at).getTime();
+          bValue = new Date(b.last_active_at).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue === null && bValue === null) return 0;
+      if (aValue === null) return 1;
+      if (bValue === null) return -1;
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [users, sortColumn, sortDirection]);
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection(column === "last_active_at" || column === "created_at" ? "desc" : "asc");
+    }
+  };
+
+  const getSortIcon = (column: SortColumn) => {
+    if (sortColumn !== column) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 inline opacity-50" />;
+    }
+    return sortDirection === "asc" ? (
+      <ArrowUp className="ml-2 h-4 w-4 inline" />
+    ) : (
+      <ArrowDown className="ml-2 h-4 w-4 inline" />
+    );
+  };
 
   const handleStatusChange = async () => {
     if (!confirmDialog.user) return;
@@ -82,28 +151,75 @@ export function UserManagementTable({
     });
   };
 
+  const formatRelativeTime = (timestamp: string | null): string => {
+    if (!timestamp) {
+      return t('lastActiveNever');
+    }
+    
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      return format.relativeTime(date, now);
+    } catch {
+      return t('lastActiveNever');
+    }
+  };
+
   return (
     <>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>{t('roleColumn')}</TableHead>
+              <TableHead>
+                <button
+                  onClick={() => handleSort("email")}
+                  className="flex items-center hover:text-gray-900 cursor-pointer"
+                >
+                  Email
+                  {getSortIcon("email")}
+                </button>
+              </TableHead>
+              <TableHead>
+                <button
+                  onClick={() => handleSort("role")}
+                  className="flex items-center hover:text-gray-900 cursor-pointer"
+                >
+                  {t('roleColumn')}
+                  {getSortIcon("role")}
+                </button>
+              </TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>{t('createdColumn')}</TableHead>
+              <TableHead>
+                <button
+                  onClick={() => handleSort("last_active_at")}
+                  className="flex items-center hover:text-gray-900 cursor-pointer"
+                >
+                  {t('lastActive')}
+                  {getSortIcon("last_active_at")}
+                </button>
+              </TableHead>
+              <TableHead>
+                <button
+                  onClick={() => handleSort("created_at")}
+                  className="flex items-center hover:text-gray-900 cursor-pointer"
+                >
+                  {t('createdColumn')}
+                  {getSortIcon("created_at")}
+                </button>
+              </TableHead>
               <TableHead className="text-right">{t('actionsColumn')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length === 0 ? (
+            {sortedUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-gray-500">
+                <TableCell colSpan={6} className="text-center text-gray-500">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => {
+              sortedUsers.map((user) => {
                 const isCurrentUser = currentUser?.id === user.id;
                 return (
                   <TableRow key={user.id}>
@@ -120,6 +236,7 @@ export function UserManagementTable({
                         {user.is_active ? "Active" : "Inactive"}
                       </span>
                     </TableCell>
+                    <TableCell>{formatRelativeTime(user.last_active_at)}</TableCell>
                     <TableCell>{formatDate(user.created_at)}</TableCell>
                     <TableCell className="text-right">
                       {user.is_active ? (

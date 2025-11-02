@@ -10,6 +10,7 @@ export const mockUsers = {
     role: "hr_admin" as UserRole,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   } as SessionUser,
 
   sodexo: {
@@ -19,6 +20,7 @@ export const mockUsers = {
     role: "sodexo" as UserRole,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   } as SessionUser,
 
   omc: {
@@ -28,6 +30,7 @@ export const mockUsers = {
     role: "omc" as UserRole,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   } as SessionUser,
 
   payroll: {
@@ -37,6 +40,7 @@ export const mockUsers = {
     role: "payroll" as UserRole,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   } as SessionUser,
 
   toplux: {
@@ -46,6 +50,7 @@ export const mockUsers = {
     role: "toplux" as UserRole,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   } as SessionUser,
 
   inactive: {
@@ -55,6 +60,7 @@ export const mockUsers = {
     role: "sodexo" as UserRole,
     is_active: false,
     created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
   } as SessionUser,
 };
 

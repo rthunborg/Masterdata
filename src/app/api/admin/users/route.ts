@@ -18,7 +18,7 @@ export async function GET() {
     // Fetch all users ordered by creation date
     const { data: users, error } = await supabase
       .from("users")
-      .select("id, email, role, is_active, created_at")
+      .select("id, email, role, is_active, created_at, last_active_at")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         role: validated.role,
         is_active: validated.is_active,
       })
-      .select("id, email, role, is_active, created_at")
+      .select("id, email, role, is_active, created_at, last_active_at")
       .single();
 
     if (appError || !appUser) {

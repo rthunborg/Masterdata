@@ -17,11 +17,13 @@ CREATE TABLE public.users (
   email TEXT UNIQUE NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('hr_admin', 'sodexo', 'omc', 'payroll', 'toplux')),
   is_active BOOLEAN NOT NULL DEFAULT true,
+  last_active_at TIMESTAMPTZ, -- Automatically updated by middleware on authenticated requests
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_users_email ON public.users(email);
 CREATE INDEX idx_users_role ON public.users(role);
+CREATE INDEX idx_users_last_active ON public.users(last_active_at DESC NULLS LAST);
 
 -- Employees table (masterdata)
 CREATE TABLE public.employees (
@@ -51,10 +53,10 @@ CREATE INDEX idx_employees_hire_date ON public.employees(hire_date);
 CREATE INDEX idx_employees_is_archived ON public.employees(is_archived);
 CREATE INDEX idx_employees_is_terminated ON public.employees(is_terminated);
 CREATE INDEX idx_employees_full_text ON public.employees USING GIN(
-  to_tsvector('english', 
-    COALESCE(first_name, '') || ' ' || 
-    COALESCE(surname, '') || ' ' || 
-    COALESCE(email, '') || ' ' || 
+  to_tsvector('english',
+    COALESCE(first_name, '') || ' ' ||
+    COALESCE(surname, '') || ' ' ||
+    COALESCE(email, '') || ' ' ||
     COALESCE(mobile, '')
   )
 );
@@ -217,7 +219,7 @@ CREATE POLICY "HR Admin can do anything with employees" ON public.employees
 
 CREATE POLICY "External parties can view active employees" ON public.employees
   FOR SELECT USING (
-    is_archived = false AND 
+    is_archived = false AND
     (get_user_role() IN ('sodexo', 'omc', 'payroll', 'toplux'))
   );
 
@@ -346,5 +348,42 @@ INSERT INTO public.column_config (column_name, column_type, is_masterdata, role_
     "toplux": {"view": true, "edit": false}
   }');
 ```
+
+---
+
+## Table Descriptions
+
+### users
+
+Application user accounts that link to Supabase authentication.
+
+**Columns:**
+
+- `id` (UUID, PK): Unique identifier for the user
+- `auth_user_id` (UUID, FK → auth.users): Links to Supabase auth user
+- `email` (TEXT, UNIQUE): User's email address
+- `role` (TEXT): User role enum - one of: `hr_admin`, `sodexo`, `omc`, `payroll`, `toplux`
+- `is_active` (BOOLEAN): Whether the user account is active (default: true)
+- `last_active_at` (TIMESTAMPTZ, nullable): Timestamp of last authenticated request
+  - **Purpose**: Track user activity for account lifecycle management
+  - **Updated by**: Middleware on every authenticated request (with 5-minute throttle)
+  - **Null handling**: NULL indicates user has never logged in since field was added
+  - **Privacy**: Only visible to HR Admin role via User Management interface
+- `created_at` (TIMESTAMPTZ): Account creation timestamp
+
+**Indexes:**
+
+- `idx_users_email`: Fast lookup by email
+- `idx_users_role`: Fast filtering by role
+- `idx_users_last_active`: Efficient sorting by activity (DESC NULLS LAST)
+
+**Activity Tracking Details:**
+
+The `last_active_at` field is automatically maintained by the application middleware to enable HR admins to identify inactive user accounts. The implementation uses:
+
+- **5-minute throttle**: Reduces DB writes by ~90% while maintaining useful granularity
+- **Fire-and-forget pattern**: Activity updates are non-blocking and don't impact request latency
+- **Silent failure**: If activity tracking fails, the user's request continues normally
+- **Index optimization**: DESC NULLS LAST ensures never-active users appear at bottom of sorted lists
 
 ---
