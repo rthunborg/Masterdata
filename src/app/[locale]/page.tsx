@@ -19,10 +19,10 @@ export default function Home() {
           <div className="space-y-6">
             <div className="space-y-3">
               <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
-                {t('title')}
+                <center>{t('title')}</center>
               </h1>
               <p className="text-lg text-zinc-600">
-                {t('description')}
+                <center>{t('description')}</center>
               </p>
             </div>
 

@@ -26,7 +26,9 @@ export function LanguageToggle() {
         aria-label="Byt till svenska"
         aria-pressed={locale === 'sv'}
       >
-        🇸🇪 <span className="hidden sm:inline ml-1">SV</span>
+        <span className="flex items-center gap-1">
+          🇸🇪 <span className="hidden sm:inline">SV</span>
+        </span>
       </Button>
 
       {/* English Flag */}
@@ -39,7 +41,9 @@ export function LanguageToggle() {
         aria-label="Switch to English"
         aria-pressed={locale === 'en'}
       >
-        🇬🇧 <span className="hidden sm:inline ml-1">EN</span>
+        <span className="flex items-center gap-1">
+          🇬🇧 <span className="hidden sm:inline">EN</span>
+        </span>
       </Button>
     </div>
   );

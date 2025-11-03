@@ -63,7 +63,6 @@ interface EmployeeTableProps {
   onIncludeArchivedChange?: (value: boolean) => void;
   includeTerminated?: boolean;
   onIncludeTerminatedChange?: (value: boolean) => void;
-  isRealtimeConnected?: boolean;
   updatedEmployeeId?: string | null;
   onGlobalFilterChange?: (value: string) => void;
 }
@@ -95,7 +94,6 @@ export function EmployeeTable({
   onIncludeArchivedChange,
   includeTerminated = false,
   onIncludeTerminatedChange,
-  isRealtimeConnected = false,
   updatedEmployeeId = null,
   onGlobalFilterChange,
 }: EmployeeTableProps) {
@@ -424,40 +422,7 @@ export function EmployeeTable({
 
           return (
             <div className="flex gap-2">
-              {/* Archive/Unarchive buttons */}
-              {employee.is_archived ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleUnarchiveClick(employee)}
-                    >
-                      <ArchiveRestore className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{t("restoreEmployee")}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleArchiveClick(employee)}
-                    >
-                      <Archive className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{t("archiveEmployee")}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-
-              {/* Terminate/Reactivate buttons */}
+              {/* Terminate/Reactivate buttons (now first) */}
               {employee.is_terminated ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -486,6 +451,39 @@ export function EmployeeTable({
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{t("terminateEmployee")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Archive/Unarchive buttons (now second) */}
+              {employee.is_archived ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleUnarchiveClick(employee)}
+                    >
+                      <ArchiveRestore className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("restoreEmployee")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleArchiveClick(employee)}
+                    >
+                      <Archive className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("archiveEmployee")}</p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -601,7 +599,7 @@ export function EmployeeTable({
         </div>
       )}
 
-      {/* Search Input with Connection Status */}
+      {/* Search Input */}
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -620,27 +618,6 @@ export function EmployeeTable({
               <X className="h-4 w-4" />
             </button>
           )}
-        </div>
-
-        {/* Real-time Connection Status Indicator */}
-        <div 
-          className="flex items-center gap-2 px-3 py-2 rounded-md border bg-background"
-          role="status"
-          aria-live="polite"
-          aria-label={isRealtimeConnected ? "Real-time updates connected" : "Real-time updates disconnected"}
-        >
-          <div
-            className={cn(
-              "h-2 w-2 rounded-full",
-              isRealtimeConnected 
-                ? "bg-green-500 animate-pulse" 
-                : "bg-gray-400"
-            )}
-            aria-hidden="true"
-          />
-          <span className="text-sm text-muted-foreground">
-            {isRealtimeConnected ? "Live" : "Offline"}
-          </span>
         </div>
       </div>
 

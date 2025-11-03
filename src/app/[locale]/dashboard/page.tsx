@@ -24,7 +24,7 @@ import { ManageColumnsDialog } from "@/components/dashboard/manage-columns-dropd
 import { ImportEmployeesModal } from "@/components/dashboard/import-employees-modal";
 import { RoleSelector } from "@/components/dashboard/role-selector";
 import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Upload, Columns } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
 
@@ -37,16 +37,47 @@ export default function DashboardPage() {
   const tTooltips = useTranslations('tooltips');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [includeArchived, setIncludeArchived] = useState(false);
-  const [includeTerminated, setIncludeTerminated] = useState(false);
+  
+  // Initialize filter state from session storage
+  const [includeArchived, setIncludeArchived] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('employeeFilters');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.includeArchived ?? false;
+      }
+    }
+    return false;
+  });
+  
+  const [includeTerminated, setIncludeTerminated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('employeeFilters');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.includeTerminated ?? false;
+      }
+    }
+    return false;
+  });
+  
   const [globalFilter, setGlobalFilter] = useState("");
+
+  // Save filter state to session storage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('employeeFilters', JSON.stringify({
+        includeArchived,
+        includeTerminated
+      }));
+    }
+  }, [includeArchived, includeTerminated]);
 
   // Use the new real-time enabled hook with notifications
   const { 
     employees, 
     isLoading: isLoadingEmployees, 
     error, 
-    isConnected,
     refetch,
     updatedEmployeeId
   } = useEmployees({
@@ -183,7 +214,6 @@ export default function DashboardPage() {
               onIncludeArchivedChange={setIncludeArchived}
               includeTerminated={includeTerminated}
               onIncludeTerminatedChange={setIncludeTerminated}
-              isRealtimeConnected={isConnected}
               updatedEmployeeId={updatedEmployeeId}
               onGlobalFilterChange={setGlobalFilter}
             />
