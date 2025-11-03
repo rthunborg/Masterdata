@@ -64,6 +64,7 @@ function DraggableRow({
   isFirst,
   isLast,
   t,
+  tAdmin,
 }: {
   column: ColumnConfig;
   allRoles: UserRole[];
@@ -83,6 +84,7 @@ function DraggableRow({
   isFirst?: boolean;
   isLast?: boolean;
   t: ReturnType<typeof useTranslations>;
+  tAdmin: ReturnType<typeof useTranslations>;
 }) {
   const {
     attributes,
@@ -153,7 +155,7 @@ function DraggableRow({
               : "bg-purple-100 text-purple-800"
           }`}
         >
-          {column.is_masterdata ? "Masterdata" : "Custom"}
+          {column.is_masterdata ? tAdmin("masterdata") : tAdmin("custom")}
         </span>
       </TableCell>
 
@@ -218,7 +220,7 @@ function DraggableRow({
                 onClick={() => handleToggleVisibility(column)}
                 disabled={isUpdating || column.is_masterdata}
               >
-                {column.is_visible ? "Hide" : "Show"}
+                {column.is_visible ? tAdmin("hide") : tAdmin("show")}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -267,6 +269,7 @@ export function ColumnSettingsTable({
   const [columnToDelete, setColumnToDelete] = useState<ColumnConfig | null>(null);
   const t = useTranslations("tooltips");
   const tForms = useTranslations("forms");
+  const tAdmin = useTranslations("admin");
 
   // Detect mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -484,18 +487,18 @@ export function ColumnSettingsTable({
               <TableRow>
                 <TableHead className="w-[60px]"></TableHead>
                 <TableHead className="w-[200px]">{tForms("columnNameLabel")}</TableHead>
-                <TableHead className="w-[100px]">Type</TableHead>
-                <TableHead className="w-[120px]">Category</TableHead>
-                <TableHead className="w-[100px]">Visibility</TableHead>
+                <TableHead className="w-[100px]">{tAdmin("type")}</TableHead>
+                <TableHead className="w-[120px]">{tAdmin("category")}</TableHead>
+                <TableHead className="w-[100px]">{tAdmin("visibility")}</TableHead>
                 {allRoles.map((role) => (
                   <TableHead key={role} className="text-center">
-                    {role === UserRole.HR_ADMIN ? "HR Admin" : role.toUpperCase()}
+                    {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
                     <div className="text-xs font-normal text-gray-500">
                       View / Edit
                     </div>
                   </TableHead>
                 ))}
-                <TableHead className="w-[150px] text-center">Actions</TableHead>
+                <TableHead className="w-[150px] text-center">{tAdmin("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -526,6 +529,7 @@ export function ColumnSettingsTable({
                       isFirst={index === 0}
                       isLast={index === items.length - 1}
                       t={t}
+                      tAdmin={tAdmin}
                     />
                   ))
                 )}

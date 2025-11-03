@@ -102,7 +102,7 @@ export default function ImportantDatesPage() {
             <div className="flex gap-2">
               <Button onClick={() => setIsImportModalOpen(true)} variant="outline">
                 <Upload className="h-4 w-4 mr-2" />
-                Import Dates
+                {t('importDates')}
               </Button>
               <Button onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />

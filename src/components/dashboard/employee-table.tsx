@@ -103,6 +103,8 @@ export function EmployeeTable({
   const isHRAdmin = user?.role === "hr_admin";
   const t = useTranslations("tooltips");
   const tDashboard = useTranslations("dashboard");
+  const tModals = useTranslations("modals");
+  const tAdmin = useTranslations("admin");
   
   // Get preview mode state
   const { previewRole, isPreviewMode } = useUIStore();
@@ -415,7 +417,7 @@ export function EmployeeTable({
     if (isHRAdmin) {
       dataColumns.push({
         id: "actions",
-        header: "Actions",
+        header: tAdmin("actions"),
         enableSorting: false,
         cell: ({ row }) => {
           const employee = row.original;
@@ -494,7 +496,7 @@ export function EmployeeTable({
     }
 
     return dataColumns;
-  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t]);
+  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin]);
 
   const table = useReactTable({
     data: employees,
@@ -579,7 +581,7 @@ export function EmployeeTable({
                 onCheckedChange={onIncludeArchivedChange}
               />
               <Label htmlFor="show-archived" className="cursor-pointer">
-                Show Archived
+                {tDashboard("showArchived")}
               </Label>
             </div>
           )}
@@ -592,7 +594,7 @@ export function EmployeeTable({
                 onCheckedChange={onIncludeTerminatedChange}
               />
               <Label htmlFor="show-terminated" className="cursor-pointer">
-                Show Terminated
+                {tDashboard("showTerminated")}
               </Label>
             </div>
           )}
@@ -604,7 +606,7 @@ export function EmployeeTable({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search employees..."
+            placeholder={tDashboard("searchPlaceholder")}
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="pl-9 pr-9"
@@ -666,8 +668,8 @@ export function EmployeeTable({
                   className="h-24 text-center text-muted-foreground"
                 >
                   {globalFilter
-                    ? "No employees match your search. Try adjusting your search terms."
-                    : "No employees to display."}
+                    ? tDashboard("noEmployeesMatchSearch")
+                    : tDashboard("noEmployeesToDisplay")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -707,17 +709,17 @@ export function EmployeeTable({
       <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive Employee</AlertDialogTitle>
+            <AlertDialogTitle>{tModals("archive.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to archive {selectedEmployee?.first_name}{" "}
-              {selectedEmployee?.surname}? They will be hidden from the main view but
-              can be recovered later.
+              {tModals("archive.message", { 
+                name: `${selectedEmployee?.first_name} ${selectedEmployee?.surname}` 
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isArchiving}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isArchiving}>{tModals("archive.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmArchive} disabled={isArchiving}>
-              {isArchiving ? "Archiving..." : "Archive"}
+              {isArchiving ? "Archiving..." : tModals("archive.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -726,16 +728,17 @@ export function EmployeeTable({
       <AlertDialog open={unarchiveDialogOpen} onOpenChange={setUnarchiveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Restore Employee</AlertDialogTitle>
+            <AlertDialogTitle>{tModals("restore.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to restore {selectedEmployee?.first_name}{" "}
-              {selectedEmployee?.surname}? They will be returned to the main view.
+              {tModals("restore.message", {
+                name: `${selectedEmployee?.first_name} ${selectedEmployee?.surname}`,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isArchiving}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isArchiving}>{tModals("restore.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmUnarchive} disabled={isArchiving}>
-              {isArchiving ? "Restoring..." : "Restore"}
+              {isArchiving ? tModals("restore.restoring") : tModals("restore.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -754,16 +757,17 @@ export function EmployeeTable({
       <AlertDialog open={reactivateDialogOpen} onOpenChange={setReactivateDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reactivate Employee</AlertDialogTitle>
+            <AlertDialogTitle>{tModals("reactivate.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to reactivate {selectedEmployee?.first_name}{" "}
-              {selectedEmployee?.surname}? This will clear their termination date and reason.
+              {tModals("reactivate.message", {
+                name: `${selectedEmployee?.first_name} ${selectedEmployee?.surname}`,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isReactivating}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isReactivating}>{tModals("reactivate.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmReactivate} disabled={isReactivating}>
-              {isReactivating ? "Reactivating..." : "Reactivate"}
+              {isReactivating ? tModals("reactivate.reactivating") : tModals("reactivate.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

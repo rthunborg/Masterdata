@@ -51,7 +51,14 @@
     "viewDetails": "View Details",
     "editEmployee": "Edit Employee",
     "archiveEmployee": "Archive Employee",
-    "unarchiveEmployee": "Unarchive Employee"
+    "unarchiveEmployee": "Unarchive Employee",
+    "pageTitle": "Employee Management",
+    "showArchived": "Show Archived",
+    "showTerminated": "Show Terminated",
+    "viewAs": "View As",
+    "noEmployeesFound": "No employees found",
+    "noEmployeesMatchSearch": "No employees match your search. Try adjusting your search terms.",
+    "noEmployeesToDisplay": "No employees to display."
   },
   "forms": {
     "firstName": "First Name",
@@ -116,6 +123,32 @@
       "description": "Are you sure you want to exit this view? Your data will not be saved.",
       "continueEditing": "Continue Editing",
       "discardChanges": "Discard Changes"
+    },
+    "archive": {
+      "title": "Archive Employee",
+      "message": "Are you sure you want to archive {name}? They will be hidden from the main view but can be recovered later.",
+      "confirm": "Archive",
+      "cancel": "Cancel"
+    },
+    "terminate": {
+      "title": "Terminate Employee",
+      "message": "Are you sure you want to terminate {name}? This action can be reversed later if needed.",
+      "confirm": "Terminate",
+      "cancel": "Cancel"
+    },
+    "restore": {
+      "title": "Restore Employee",
+      "message": "Are you sure you want to restore {name}? They will be returned to the main view.",
+      "confirm": "Restore",
+      "cancel": "Cancel",
+      "restoring": "Restoring..."
+    },
+    "reactivate": {
+      "title": "Reactivate Employee",
+      "message": "Are you sure you want to reactivate {name}? This will clear their termination date and reason.",
+      "confirm": "Reactivate",
+      "cancel": "Cancel",
+      "reactivating": "Reactivating..."
     },
     "importEmployees": {
       "title": "Import Employees from CSV",
@@ -248,7 +281,14 @@
     "noImportantDates": "No important dates found.",
     "dateAdded": "Date added successfully",
     "dateUpdated": "Date updated successfully",
-    "dateDeleted": "Date deleted successfully"
+    "dateDeleted": "Date deleted successfully",
+    "importDates": "Import Dates",
+    "tableName": "Important Dates",
+    "tableDescription": "Important operational dates organized by week number and category",
+    "dateDescription": "Date Description",
+    "notes": "Notes",
+    "actions": "Actions",
+    "noDataFound": "No important dates found"
   },
   "admin": {
     "userManagement": "User Management",
@@ -282,7 +322,15 @@
     "allColumns": "All Columns",
     "masterdataOnly": "Masterdata Only",
     "customOnly": "Custom Only",
-    "configureRolesDescription": "Configure which roles can view and edit specific columns"
+    "configureRolesDescription": "Configure which roles can view and edit specific columns",
+    "show": "Show",
+    "hide": "Hide",
+    "type": "Type",
+    "category": "Category",
+    "visibility": "Visibility",
+    "actions": "Actions",
+    "masterdata": "Masterdata",
+    "custom": "Custom"
   },
   "errors": {
     "loadFailed": "Failed to load data",

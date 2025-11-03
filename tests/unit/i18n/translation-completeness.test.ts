@@ -82,4 +82,33 @@ describe("Translation Completeness", () => {
     expect(missingEnglish, `Missing required English keys: ${missingEnglish.join(", ")}`).toEqual([]);
     expect(missingSwedish, `Missing required Swedish keys: ${missingSwedish.join(", ")}`).toEqual([]);
   });
+
+  it("should have all required translation keys for Story 7.3", () => {
+    const requiredKeys = [
+      // Restore dialog translations
+      "modals.restore.title",
+      "modals.restore.message",
+      "modals.restore.confirm",
+      "modals.restore.cancel",
+      "modals.restore.restoring",
+      // Reactivate dialog translations
+      "modals.reactivate.title",
+      "modals.reactivate.message",
+      "modals.reactivate.confirm",
+      "modals.reactivate.cancel",
+      "modals.reactivate.reactivating",
+      // Empty state messages
+      "dashboard.noEmployeesMatchSearch",
+      "dashboard.noEmployeesToDisplay",
+      // Category badges
+      "admin.masterdata",
+      "admin.custom",
+    ];
+
+    const missingEnglish = requiredKeys.filter(key => !(key in flatEnglish));
+    const missingSwedish = requiredKeys.filter(key => !(key in flatSwedish));
+
+    expect(missingEnglish, `Missing required English keys: ${missingEnglish.join(", ")}`).toEqual([]);
+    expect(missingSwedish, `Missing required Swedish keys: ${missingSwedish.join(", ")}`).toEqual([]);
+  });
 });

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { UserRole, getRoleDisplayName } from "@/lib/types/user";
 import { Eye } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * Role Selector Dropdown Component
@@ -26,6 +27,7 @@ import { Eye } from "lucide-react";
 export function RoleSelector() {
   const { user } = useAuth();
   const { previewRole, setPreviewRole, isPreviewMode } = useUIStore();
+  const t = useTranslations("dashboard");
 
   // Only render for HR Admin
   if (user?.role !== UserRole.HR_ADMIN) return null;
@@ -44,7 +46,7 @@ export function RoleSelector() {
     <div className="flex items-center gap-2">
       <label htmlFor="role-selector" className="text-sm font-medium flex items-center gap-1.5">
         <Eye className="h-4 w-4" />
-        View As:
+        {t("viewAs")}:
       </label>
       <Select
         value={currentRole}

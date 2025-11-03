@@ -51,7 +51,14 @@
     "viewDetails": "Visa detaljer",
     "editEmployee": "Redigera anställd",
     "archiveEmployee": "Arkivera anställd",
-    "unarchiveEmployee": "Återställ anställd"
+    "unarchiveEmployee": "Återställ anställd",
+    "pageTitle": "Personalhantering",
+    "showArchived": "Visa arkiverade",
+    "showTerminated": "Visa uppsagda",
+    "viewAs": "Visa som",
+    "noEmployeesFound": "Inga anställda hittades",
+    "noEmployeesMatchSearch": "Inga anställda matchar din sökning. Prova att justera dina söktermer.",
+    "noEmployeesToDisplay": "Inga anställda att visa."
   },
   "forms": {
     "firstName": "Förnamn",
@@ -116,6 +123,32 @@
       "description": "Är du säker på att du vill lämna denna vy? Din data kommer inte att sparas.",
       "continueEditing": "Fortsätt redigera",
       "discardChanges": "Kassera ändringar"
+    },
+    "archive": {
+      "title": "Arkivera anställd",
+      "message": "Är du säker på att du vill arkivera {name}? De kommer att döljas från huvudvyn men kan återställas senare.",
+      "confirm": "Arkivera",
+      "cancel": "Avbryt"
+    },
+    "terminate": {
+      "title": "Säg upp anställd",
+      "message": "Är du säker på att du vill säga upp {name}? Denna åtgärd kan återkallas senare vid behov.",
+      "confirm": "Säg upp",
+      "cancel": "Avbryt"
+    },
+    "restore": {
+      "title": "Återställ anställd",
+      "message": "Är du säker på att du vill återställa {name}? De kommer att återställas till huvudvyn.",
+      "confirm": "Återställ",
+      "cancel": "Avbryt",
+      "restoring": "Återställer..."
+    },
+    "reactivate": {
+      "title": "Återaktivera anställd",
+      "message": "Är du säker på att du vill återaktivera {name}? Detta kommer att rensa deras uppsägningsdatum och orsak.",
+      "confirm": "Återaktivera",
+      "cancel": "Avbryt",
+      "reactivating": "Återaktiverar..."
     },
     "importEmployees": {
       "title": "Importera anställda från CSV",
@@ -248,7 +281,14 @@
     "noImportantDates": "Inga viktiga datum hittades.",
     "dateAdded": "Datum tillagt",
     "dateUpdated": "Datum uppdaterat",
-    "dateDeleted": "Datum raderat"
+    "dateDeleted": "Datum raderat",
+    "importDates": "Importera datum",
+    "tableName": "Viktiga datum",
+    "tableDescription": "Viktiga operativa datum organiserade efter veckonummer och kategori",
+    "dateDescription": "Datumbeskrivning",
+    "notes": "Anteckningar",
+    "actions": "Åtgärder",
+    "noDataFound": "Inga viktiga datum hittades"
   },
   "admin": {
     "userManagement": "Användarhantering",
@@ -282,7 +322,15 @@
     "allColumns": "Alla kolumner",
     "masterdataOnly": "Endast stamdata",
     "customOnly": "Endast anpassade",
-    "configureRolesDescription": "Konfigurera vilka roller som kan visa och redigera specifika kolumner"
+    "configureRolesDescription": "Konfigurera vilka roller som kan visa och redigera specifika kolumner",
+    "show": "Visa",
+    "hide": "Dölj",
+    "type": "Typ",
+    "category": "Kategori",
+    "visibility": "Synlighet",
+    "actions": "Åtgärder",
+    "masterdata": "Stamdata",
+    "custom": "Anpassad"
   },
   "errors": {
     "loadFailed": "Kunde inte ladda data",

@@ -171,7 +171,7 @@ export function ImportantDatesTable({
       },
       {
         accessorKey: "date_description",
-        header: "Date Description",
+        header: tDates("dateDescription"),
         enableSorting: true,
         cell: ({ row }) =>
           isHRAdmin ? (
@@ -189,7 +189,7 @@ export function ImportantDatesTable({
       },
       {
         accessorKey: "date_value",
-        header: "Date Value",
+        header: tDates("dateValue"),
         enableSorting: true,
         cell: ({ row }) =>
           isHRAdmin ? (
@@ -207,7 +207,7 @@ export function ImportantDatesTable({
       },
       {
         accessorKey: "notes",
-        header: "Notes",
+        header: tDates("notes"),
         enableSorting: true,
         cell: ({ row }) =>
           isHRAdmin ? (
@@ -229,7 +229,7 @@ export function ImportantDatesTable({
     if (isHRAdmin) {
       cols.push({
         id: "actions",
-        header: "Actions",
+        header: tDates("actions"),
         cell: ({ row }) => (
           <div className="flex gap-2">
             <Tooltip>
