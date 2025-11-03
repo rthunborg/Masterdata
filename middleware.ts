@@ -73,6 +73,28 @@ export async function middleware(request: NextRequest) {
     // Refresh session if expired
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Get user role for authorization checks
+    let userRole: string | null = null;
+    if (user) {
+      const { data: appUser } = await supabase
+        .from('users')
+        .select('role')
+        .eq('auth_user_id', user.id)
+        .single();
+      
+      userRole = appUser?.role || null;
+    }
+
+    // Protect admin-only routes
+    const adminRoutes = ['/dashboard/important-dates', '/dashboard/admin/users', '/dashboard/admin/columns'];
+    const isAdminRoute = adminRoutes.some(route => pathWithoutLocale.startsWith(route));
+    
+    if (isAdminRoute && userRole !== 'hr_admin') {
+      console.log('[Middleware] Access denied to admin route:', pathWithoutLocale, 'User role:', userRole);
+      const redirectUrl = new URL(`/${locale}/dashboard`, request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+
     // Track user activity if authenticated
     if (user) {
       console.log('[Middleware] Authenticated user detected:', user.id);

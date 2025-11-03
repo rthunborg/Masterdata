@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
 import {
-  requireAuthAPI,
   requireHRAdminAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
@@ -14,8 +13,8 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication (all users can view)
-    await requireAuthAPI();
+    // Verify HR Admin role - Important Dates are internal operational data
+    await requireHRAdminAPI();
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;

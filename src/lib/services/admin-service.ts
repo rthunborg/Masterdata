@@ -52,4 +52,15 @@ export const adminService = {
     const json = await response.json();
     return json.data;
   },
+
+  async deleteUser(id: string): Promise<void> {
+    const response = await fetch(`/api/admin/users/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to delete user");
+    }
+  },
 };

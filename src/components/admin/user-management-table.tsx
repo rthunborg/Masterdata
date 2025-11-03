@@ -45,7 +45,7 @@ export function UserManagementTable({
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     user: User | null;
-    action: "activate" | "deactivate";
+    action: "activate" | "deactivate" | "delete";
   }>({
     open: false,
     user: null,
@@ -120,26 +120,34 @@ export function UserManagementTable({
   const handleStatusChange = async () => {
     if (!confirmDialog.user) return;
 
-    const newStatus = confirmDialog.action === "activate";
-
     try {
       setIsUpdating(true);
-      await adminService.updateUserStatus(confirmDialog.user.id, newStatus);
-      toast.success(
-        `User ${confirmDialog.user.email} ${newStatus ? "activated" : "deactivated"} successfully`
-      );
+
+      if (confirmDialog.action === "delete") {
+        // Handle delete action
+        await adminService.deleteUser(confirmDialog.user.id);
+        toast.success(`User ${confirmDialog.user.email} deleted successfully`);
+      } else {
+        // Handle activate/deactivate action
+        const newStatus = confirmDialog.action === "activate";
+        await adminService.updateUserStatus(confirmDialog.user.id, newStatus);
+        toast.success(
+          `User ${confirmDialog.user.email} ${newStatus ? "activated" : "deactivated"} successfully`
+        );
+      }
+
       onUserStatusChanged();
       setConfirmDialog({ open: false, user: null, action: "deactivate" });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update user status"
+        error instanceof Error ? error.message : `Failed to ${confirmDialog.action} user`
       );
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const openConfirmDialog = (user: User, action: "activate" | "deactivate") => {
+  const openConfirmDialog = (user: User, action: "activate" | "deactivate" | "delete") => {
     setConfirmDialog({ open: true, user, action });
   };
 
@@ -239,29 +247,44 @@ export function UserManagementTable({
                     <TableCell>{formatRelativeTime(user.last_active_at)}</TableCell>
                     <TableCell>{formatDate(user.created_at)}</TableCell>
                     <TableCell className="text-right">
-                      {user.is_active ? (
+                      <div className="flex justify-end gap-2">
+                        {user.is_active ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openConfirmDialog(user, "deactivate")}
+                            disabled={isCurrentUser}
+                            title={
+                              isCurrentUser
+                                ? "Cannot deactivate your own account"
+                                : "Deactivate user"
+                            }
+                          >
+                            {t('deactivateButton')}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openConfirmDialog(user, "activate")}
+                          >
+                            Activate
+                          </Button>
+                        )}
                         <Button
-                          variant="outline"
+                          variant="destructive"
                           size="sm"
-                          onClick={() => openConfirmDialog(user, "deactivate")}
+                          onClick={() => openConfirmDialog(user, "delete")}
                           disabled={isCurrentUser}
                           title={
                             isCurrentUser
-                              ? "Cannot deactivate your own account"
-                              : "Deactivate user"
+                              ? "Cannot delete your own account"
+                              : "Delete user permanently"
                           }
                         >
-                          {t('deactivateButton')}
+                          Delete
                         </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openConfirmDialog(user, "activate")}
-                        >
-                          Activate
-                        </Button>
-                      )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -280,28 +303,41 @@ export function UserManagementTable({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmDialog.action === "activate" ? "Activate" : "Deactivate"}{" "}
-              User
+              {confirmDialog.action === "activate" && "Activate User"}
+              {confirmDialog.action === "deactivate" && "Deactivate User"}
+              {confirmDialog.action === "delete" && "Delete User"}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmDialog.action === "activate" ? (
+              {confirmDialog.action === "activate" && (
                 <>
                   Are you sure you want to activate{" "}
                   <strong>{confirmDialog.user?.email}</strong>? They will be
                   able to log in again.
                 </>
-              ) : (
+              )}
+              {confirmDialog.action === "deactivate" && (
                 <>
                   Are you sure you want to deactivate{" "}
                   <strong>{confirmDialog.user?.email}</strong>? They will be
                   logged out and unable to access the system.
                 </>
               )}
+              {confirmDialog.action === "delete" && (
+                <>
+                  Are you sure you want to permanently delete{" "}
+                  <strong>{confirmDialog.user?.email}</strong>? This action cannot be
+                  undone. The user will be completely removed from the system.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isUpdating}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleStatusChange} disabled={isUpdating}>
+            <AlertDialogAction 
+              onClick={handleStatusChange} 
+              disabled={isUpdating}
+              className={confirmDialog.action === "delete" ? "bg-red-600 hover:bg-red-700" : ""}
+            >
               {isUpdating ? "Processing..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -153,4 +153,51 @@ describe("adminService", () => {
       ).rejects.toThrow("Cannot deactivate your own account");
     });
   });
+
+  describe("deleteUser", () => {
+    it("calls DELETE endpoint with correct ID", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: { message: "User deleted successfully" } }),
+      });
+
+      await adminService.deleteUser("user-1");
+
+      expect(mockFetch).toHaveBeenCalledWith("/api/admin/users/user-1", {
+        method: "DELETE",
+      });
+    });
+
+    it("handles last admin protection error", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({
+          error: {
+            code: "FORBIDDEN",
+            message: "Cannot delete the last active HR Admin",
+          },
+        }),
+      });
+
+      await expect(adminService.deleteUser("last-admin-id")).rejects.toThrow(
+        "Cannot delete the last active HR Admin"
+      );
+    });
+
+    it("handles not found error", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({
+          error: {
+            code: "NOT_FOUND",
+            message: "User not found",
+          },
+        }),
+      });
+
+      await expect(adminService.deleteUser("nonexistent-id")).rejects.toThrow(
+        "User not found"
+      );
+    });
+  });
 });

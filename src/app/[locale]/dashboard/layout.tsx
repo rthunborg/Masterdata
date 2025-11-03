@@ -36,12 +36,14 @@ export default async function DashboardLayout({
             >
               {t('employees')}
             </Link>
-            <Link
-              href="/dashboard/important-dates"
-              className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            >
-              {t('importantDates')}
-            </Link>
+            {user.role === "hr_admin" && (
+              <Link
+                href="/dashboard/important-dates"
+                className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              >
+                {t('importantDates')}
+              </Link>
+            )}
             {user.role === "hr_admin" && (
               <Link
                 href="/dashboard/admin/users"

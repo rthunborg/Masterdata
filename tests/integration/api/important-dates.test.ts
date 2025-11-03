@@ -11,11 +11,11 @@ vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/important-date-repository");
 
 describe("GET /api/important-dates", () => {
-  const mockAuthUser = {
+  const mockHRAdminUser = {
     id: "user-1",
     auth_id: "auth-1",
-    email: "user@example.com",
-    role: UserRole.SODEXO,
+    email: "admin@example.com",
+    role: UserRole.HR_ADMIN,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
     last_active_at: null,
@@ -50,8 +50,8 @@ describe("GET /api/important-dates", () => {
     vi.clearAllMocks();
   });
 
-  it("should return important dates for authenticated users", async () => {
-    vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockAuthUser);
+  it("should return important dates for HR Admin users", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findAll).mockResolvedValue(mockImportantDates);
 
     const request = new NextRequest("http://localhost:3000/api/important-dates");
@@ -63,9 +63,9 @@ describe("GET /api/important-dates", () => {
     expect(importantDateRepository.findAll).toHaveBeenCalledWith(undefined);
   });
 
-  it("should filter important dates by category", async () => {
+  it("should filter important dates by category for HR Admin", async () => {
     const stenaDates = [mockImportantDates[0]];
-    vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockAuthUser);
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findAll).mockResolvedValue(stenaDates);
 
     const request = new NextRequest(
@@ -79,8 +79,33 @@ describe("GET /api/important-dates", () => {
     expect(importantDateRepository.findAll).toHaveBeenCalledWith("Stena Dates");
   });
 
+  it("should return 403 for external party users", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+      new Error("Insufficient permissions")
+    );
+    vi.mocked(auth.createErrorResponse).mockReturnValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "FORBIDDEN",
+            message: "Insufficient permissions",
+          },
+        }),
+        { status: 403 }
+      ) as never
+    );
+
+    const request = new NextRequest("http://localhost:3000/api/important-dates");
+    const response = await GET(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(json.error.code).toBe("FORBIDDEN");
+    expect(importantDateRepository.findAll).not.toHaveBeenCalled();
+  });
+
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireAuthAPI).mockRejectedValue(
+    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
       new Error("Authentication required")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -104,7 +129,7 @@ describe("GET /api/important-dates", () => {
   });
 
   it("should handle repository errors gracefully", async () => {
-    vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockAuthUser);
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findAll).mockRejectedValue(
       new Error("Database connection failed")
     );

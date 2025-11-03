@@ -118,7 +118,7 @@ vi.mock('@/lib/server/repositories/user-repository', () => ({
 // Import API handlers after mocking
 const { GET } = await import('@/app/api/admin/users/route');
 const { POST } = await import('@/app/api/admin/users/route');
-const { PATCH } = await import('@/app/api/admin/users/[id]/route');
+const { PATCH, DELETE } = await import('@/app/api/admin/users/[id]/route');
 
 // Mock users that will be returned from database
 const dbMockUsers: User[] = [
@@ -645,5 +645,166 @@ describe('PATCH /api/admin/users/[id]', () => {
 
     expect(response.status).toBe(400);
     expect(data.error).toHaveProperty('code', 'VALIDATION_ERROR');
+  });
+});
+
+describe('DELETE /api/admin/users/[id]', () => {
+  const testUserId = 'test-user-id';
+  const currentUserId = mockUsers.hrAdmin.id;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    
+    // Setup Supabase mocks for DELETE operations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mockSupabaseClient.from as any).mockImplementation((table: string) => {
+      if (table === 'users') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn(() => Promise.resolve({
+                data: {
+                  id: testUserId,
+                  auth_user_id: 'auth-user-id',
+                  email: 'test@example.com',
+                  role: UserRole.TOPLUX,
+                  is_active: true,
+                },
+                error: null,
+              })),
+            })),
+          })),
+          delete: vi.fn(() => ({
+            eq: vi.fn(() => Promise.resolve({
+              error: null,
+            })),
+          })),
+        };
+      }
+      return {
+        select: vi.fn(),
+        delete: vi.fn(),
+      };
+    });
+    
+    // Mock auth.admin.deleteUser
+    mockSupabaseClient.auth.admin.deleteUser = vi.fn().mockResolvedValue({
+      error: null,
+    });
+  });
+
+  it('deletes user successfully (200)', async () => {
+    mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
+
+    const request = new NextRequest('http://localhost/api/admin/users/test-user-id', {
+      method: 'DELETE',
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: testUserId }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.data).toHaveProperty('message');
+  });
+
+  it('prevents self-deletion (403)', async () => {
+    mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
+
+    const request = new NextRequest('http://localhost/api/admin/users/' + currentUserId, {
+      method: 'DELETE',
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: currentUserId }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.error).toHaveProperty('code', 'FORBIDDEN');
+    expect(data.error.message).toContain('Cannot delete your own account');
+  });
+
+  it('prevents deleting last HR admin (403)', async () => {
+    mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
+    
+    // Mock to return HR admin user
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mockSupabaseClient.from as any).mockImplementation((table: string) => {
+      if (table === 'users') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn(() => Promise.resolve({
+                data: {
+                  id: testUserId,
+                  auth_user_id: 'auth-user-id',
+                  email: 'admin@example.com',
+                  role: UserRole.HR_ADMIN,
+                  is_active: true,
+                },
+                error: null,
+              })),
+              head: vi.fn(() => Promise.resolve({
+                count: 1,
+                error: null,
+              })),
+            })),
+          })),
+        };
+      }
+      return {
+        select: vi.fn(),
+      };
+    });
+
+    const request = new NextRequest('http://localhost/api/admin/users/test-user-id', {
+      method: 'DELETE',
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: testUserId }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.error).toHaveProperty('code', 'FORBIDDEN');
+    expect(data.error.message).toContain('Cannot delete the last active HR Admin');
+  });
+
+  it('returns 404 for non-existent user', async () => {
+    mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
+    
+    // Override mock to return user not found
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mockSupabaseClient.from as any).mockReturnValue({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: vi.fn(() => Promise.resolve({
+            data: null,
+            error: { message: 'Not found' },
+          })),
+        })),
+      })),
+    });
+
+    const request = new NextRequest('http://localhost/api/admin/users/00000000-0000-0000-0000-000000000000', {
+      method: 'DELETE',
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: '00000000-0000-0000-0000-000000000000' }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(data.error).toHaveProperty('code', 'NOT_FOUND');
+  });
+
+  it('returns 403 for non-admin roles', async () => {
+    mockRequireHRAdminAPI.mockRejectedValue(new Error('Insufficient permissions'));
+
+    const request = new NextRequest('http://localhost/api/admin/users/test-user-id', {
+      method: 'DELETE',
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: testUserId }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.error).toHaveProperty('code', 'FORBIDDEN');
   });
 });

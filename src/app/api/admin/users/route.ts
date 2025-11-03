@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { createUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
@@ -91,8 +91,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create app user record
-    const { data: appUser, error: appError } = await supabase
+    // Create app user record using service role client to bypass RLS
+    const supabaseServiceRole = createServiceRoleClient();
+    const { data: appUser, error: appError } = await supabaseServiceRole
       .from("users")
       .insert({
         auth_user_id: authData.user.id,
