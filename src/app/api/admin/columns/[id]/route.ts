@@ -29,6 +29,19 @@ export async function PATCH(
     // Validate request body
     const validated = updateColumnPermissionsSchema.parse(body);
 
+    // Validate HR Admin View permission is always true
+    if (validated.role_permissions.hr_admin && !validated.role_permissions.hr_admin.view) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "HR Admin View permission cannot be removed",
+          },
+        },
+        { status: 400 }
+      );
+    }
+
     // Validate edit→view constraint for each role
     for (const [role, perms] of Object.entries(validated.role_permissions)) {
       if (perms.edit && !perms.view) {

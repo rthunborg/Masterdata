@@ -85,8 +85,10 @@ export class ColumnConfigRepository {
   }
 
   /**
-   * Create a new custom column for an external party
+   * Create a new custom column
    * Only creates custom columns (is_masterdata = false)
+   * - HR Admin: Creates with HR Admin having full access, other roles no access by default
+   * - External parties: Creates with creating role having full access
    */
   async createCustomColumn(input: {
     column_name: string;
@@ -96,25 +98,39 @@ export class ColumnConfigRepository {
   }): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
-    // Check for duplicate column name for this role
-    const existingColumns = await this.findByRole(input.role);
-    const duplicate = existingColumns.find(
+    // Check for duplicate column name
+    const allColumns = await this.findAll();
+    const duplicate = allColumns.find(
       (col) => col.column_name.toLowerCase() === input.column_name.toLowerCase()
     );
 
     if (duplicate) {
-      throw new Error(`Column "${input.column_name}" already exists for this role`);
+      throw new Error(`Column "${input.column_name}" already exists`);
     }
 
-    // Create column config with single-role permissions
+    // Create default role permissions
+    // HR Admin always has view permission (required), edit can be modified later
+    // Other roles default to no access
+    const rolePermissions: Record<string, { view: boolean; edit: boolean }> = {
+      hr_admin: { view: true, edit: true },
+      omc: { view: false, edit: false },
+      payroll: { view: false, edit: false },
+      sodexo: { view: false, edit: false },
+      toplux: { view: false, edit: false },
+    };
+
+    // If created by external party, give them full access
+    if (input.role !== 'hr_admin') {
+      rolePermissions[input.role] = { view: true, edit: true };
+    }
+
+    // Create column config
     const columnData = {
       column_name: input.column_name,
       column_type: input.column_type,
       is_masterdata: false,
       category: input.category || null,
-      role_permissions: {
-        [input.role]: { view: true, edit: true },
-      },
+      role_permissions: rolePermissions,
     };
 
     const { data, error } = await supabase

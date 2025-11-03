@@ -3,7 +3,6 @@ import { columnConfigRepository } from "@/lib/server/repositories/column-config-
 import {
   requireAuthAPI,
   createErrorResponse,
-  createForbiddenResponse,
 } from "@/lib/server/auth";
 import { createCustomColumnSchema } from "@/lib/validation/column-validation";
 import { z } from "zod";
@@ -35,21 +34,15 @@ export async function GET() {
 
 /**
  * POST /api/columns
- * Create a new custom column for current user's role
- * Authorization: External party users only (sodexo, omc, payroll, toplux)
- * HR Admin cannot create custom columns (403)
+ * Create a new custom column
+ * Authorization: All authenticated users (HR Admin and external parties)
+ * - HR Admin can create custom columns for any role
+ * - External parties create columns for their own role
  */
 export async function POST(request: NextRequest) {
   try {
     // Verify authentication and get user
     const user = await requireAuthAPI();
-
-    // Verify user is NOT hr_admin (only external parties can create custom columns)
-    if (user.role === "hr_admin") {
-      return createForbiddenResponse(
-        "HR Admin cannot create custom columns"
-      );
-    }
 
     // Parse and validate request body
     const body = await request.json();

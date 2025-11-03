@@ -330,7 +330,8 @@
     "visibility": "Synlighet",
     "actions": "Åtgärder",
     "masterdata": "Stamdata",
-    "custom": "Anpassad"
+    "custom": "Anpassad",
+    "createNewColumn": "Skapa ny kolumn"
   },
   "errors": {
     "loadFailed": "Kunde inte ladda data",

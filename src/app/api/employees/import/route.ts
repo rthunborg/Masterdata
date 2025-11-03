@@ -190,6 +190,19 @@ export async function POST(request: NextRequest) {
           is_archived: false,
           termination_date: null,
           termination_reason: null,
+          // Masterdata columns (Story 7.1) - default to null for CSV imports
+          one: null,
+          isps: null,
+          photo: null,
+          origo: null,
+          loneiva: null,
+          mail_lon: null,
+          bankuppgifter: null,
+          li: null,
+          passport: null,
+          kvitto_c17_18: null,
+          c17: null,
+          crewing_done: null,
         };
 
         validEmployees.push(employeeData);

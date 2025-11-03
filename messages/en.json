@@ -330,7 +330,8 @@
     "visibility": "Visibility",
     "actions": "Actions",
     "masterdata": "Masterdata",
-    "custom": "Custom"
+    "custom": "Custom",
+    "createNewColumn": "Create New Column"
   },
   "errors": {
     "loadFailed": "Failed to load data",

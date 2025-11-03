@@ -56,7 +56,6 @@ function DraggableRow({
   updatingColumnId,
   isPermissionDisabled,
   handlePermissionChange,
-  handleToggleVisibility,
   handleDeleteClick,
   isMobile,
   onMoveUp,
@@ -69,14 +68,13 @@ function DraggableRow({
   column: ColumnConfig;
   allRoles: UserRole[];
   updatingColumnId: string | null;
-  isPermissionDisabled: (column: ColumnConfig, role: UserRole) => boolean;
+  isPermissionDisabled: (column: ColumnConfig, role: UserRole, permissionType: "view" | "edit") => boolean;
   handlePermissionChange: (
     column: ColumnConfig,
     role: UserRole,
     permissionType: "view" | "edit",
     newValue: boolean
   ) => Promise<void>;
-  handleToggleVisibility: (column: ColumnConfig) => Promise<void>;
   handleDeleteClick: (column: ColumnConfig) => void;
   isMobile: boolean;
   onMoveUp?: () => void;
@@ -170,7 +168,8 @@ function DraggableRow({
           view: false,
           edit: false,
         };
-        const disabled = isPermissionDisabled(column, role);
+        const viewDisabled = isPermissionDisabled(column, role, "view");
+        const editDisabled = isPermissionDisabled(column, role, "edit");
 
         return (
           <TableCell key={role} className="text-center">
@@ -179,13 +178,13 @@ function DraggableRow({
                 role={role}
                 permissionType="view"
                 value={permissions.view}
-                disabled={disabled || isUpdating}
+                disabled={viewDisabled || isUpdating}
                 onChange={(value: boolean) =>
                   handlePermissionChange(column, role, "view", value)
                 }
                 tooltip={
-                  disabled
-                    ? "HR Admin always has full access to masterdata"
+                  viewDisabled && role === UserRole.HR_ADMIN
+                    ? "HR Admin View permission is always required"
                     : undefined
                 }
               />
@@ -194,15 +193,11 @@ function DraggableRow({
                 role={role}
                 permissionType="edit"
                 value={permissions.edit}
-                disabled={disabled || isUpdating}
+                disabled={editDisabled || isUpdating}
                 onChange={(value: boolean) =>
                   handlePermissionChange(column, role, "edit", value)
                 }
-                tooltip={
-                  disabled
-                    ? "HR Admin always has full access to masterdata"
-                    : undefined
-                }
+                tooltip={undefined}
               />
             </div>
           </TableCell>
@@ -212,27 +207,6 @@ function DraggableRow({
       {/* Actions */}
       <TableCell className="text-center">
         <div className="flex items-center justify-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleToggleVisibility(column)}
-                disabled={isUpdating || column.is_masterdata}
-              >
-                {column.is_visible ? tAdmin("hide") : tAdmin("show")}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {column.is_masterdata
-                  ? "Cannot hide masterdata columns"
-                  : column.is_visible
-                  ? t("hideColumn")
-                  : t("showColumn")}
-              </p>
-            </TooltipContent>
-          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -442,8 +416,13 @@ export function ColumnSettingsTable({
     }
   };
 
-  const isPermissionDisabled = (column: ColumnConfig, role: UserRole): boolean => {
-    return column.is_masterdata && role === UserRole.HR_ADMIN;
+  const isPermissionDisabled = (column: ColumnConfig, role: UserRole, permissionType: "view" | "edit"): boolean => {
+    // HR Admin View permission is always locked (cannot be unchecked)
+    if (role === UserRole.HR_ADMIN && permissionType === "view") {
+      return true;
+    }
+    // HR Admin Edit permission can be modified
+    return false;
   };
 
   const handleDeleteClick = (column: ColumnConfig) => {
@@ -453,25 +432,6 @@ export function ColumnSettingsTable({
 
   const handleDeleteConfirm = () => {
     onPermissionsUpdated();
-  };
-
-  const handleToggleVisibility = async (column: ColumnConfig) => {
-    try {
-      setUpdatingColumnId(column.id);
-      await columnService.toggleVisibility(column.id, !column.is_visible);
-      toast.success(
-        `Column "${column.column_name}" ${
-          column.is_visible ? "hidden" : "shown"
-        } successfully`
-      );
-      onPermissionsUpdated();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to toggle visibility"
-      );
-    } finally {
-      setUpdatingColumnId(null);
-    }
   };
 
   return (
@@ -521,7 +481,6 @@ export function ColumnSettingsTable({
                       updatingColumnId={updatingColumnId}
                       isPermissionDisabled={isPermissionDisabled}
                       handlePermissionChange={handlePermissionChange}
-                      handleToggleVisibility={handleToggleVisibility}
                       handleDeleteClick={handleDeleteClick}
                       isMobile={isMobile}
                       onMoveUp={() => handleMoveUp(index)}

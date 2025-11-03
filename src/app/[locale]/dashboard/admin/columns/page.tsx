@@ -7,12 +7,16 @@ import { ColumnConfig } from "@/lib/types/column-config";
 import { ColumnSettingsTable } from "@/components/admin/column-settings-table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useUIStore } from "@/lib/store/ui-store";
+import { AddColumnModal } from "@/components/dashboard/add-column-modal";
+import { Plus } from "lucide-react";
 
 type FilterMode = "all" | "masterdata" | "custom";
 
 export default function ColumnSettingsPage() {
   const t = useTranslations('admin');
   const tErrors = useTranslations('errors');
+  const { openModal } = useUIStore();
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
   const [filteredColumns, setFilteredColumns] = useState<ColumnConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,6 +73,10 @@ export default function ColumnSettingsPage() {
             {t('configureRolesDescription')}
           </p>
         </div>
+        <Button onClick={() => openModal("addColumn")}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t('createNewColumn')}
+        </Button>
       </div>
 
       {/* Filter toolbar */}
@@ -107,6 +115,8 @@ export default function ColumnSettingsPage() {
           onPermissionsUpdated={handlePermissionsUpdated}
         />
       )}
+      
+      <AddColumnModal />
     </div>
   );
 }
