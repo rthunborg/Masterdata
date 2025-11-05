@@ -11,6 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ImportantDatesTable } from "@/components/dashboard/important-dates-table";
+import { ImportantDateCardList } from "@/components/dashboard/important-date-card-list";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
 import { ImportImportantDatesModal } from "@/components/dashboard/import-important-dates-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
@@ -21,6 +23,7 @@ import { Link } from "@/lib/navigation";
 
 export default function ImportantDatesPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const isMobile = useMediaQuery('(max-width: 1023px)');
   const t = useTranslations('dates');
   const tErrors = useTranslations('errors');
   const tNavigation = useTranslations('navigation');
@@ -138,13 +141,22 @@ export default function ImportantDatesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ImportantDatesTable
-              dates={dates}
-              isLoading={isLoadingDates}
-              userRole={user.role}
-              onDateUpdated={handleDateUpdated}
-              onDateDeleted={handleDateDeleted}
-            />
+            {isMobile ? (
+              <ImportantDateCardList
+                dates={dates}
+                isLoading={isLoadingDates}
+                isHRAdmin={user.role === 'hr_admin'}
+                onDateDeleted={handleDateDeleted}
+              />
+            ) : (
+              <ImportantDatesTable
+                dates={dates}
+                isLoading={isLoadingDates}
+                userRole={user.role}
+                onDateUpdated={handleDateUpdated}
+                onDateDeleted={handleDateDeleted}
+              />
+            )}
           </CardContent>
         </Card>
       )}

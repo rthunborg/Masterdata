@@ -205,7 +205,7 @@ export function AddEmployeeModal({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* First Name */}
               <FormField
                 control={form.control}
@@ -216,7 +216,7 @@ export function AddEmployeeModal({
                       {t('firstName')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="John" {...field} />
+                      <Input placeholder="John" {...field} className="h-12 md:h-10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -233,7 +233,7 @@ export function AddEmployeeModal({
                       {t('surname')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" {...field} />
+                      <Input placeholder="Doe" {...field} className="h-12 md:h-10" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -250,7 +250,12 @@ export function AddEmployeeModal({
                       {t('ssn')} <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="19850315-1234" {...field} />
+                      <Input 
+                        placeholder="19850315-1234" 
+                        {...field} 
+                        className="h-12 md:h-10"
+                        inputMode="numeric"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -273,6 +278,7 @@ export function AddEmployeeModal({
                         onChange={(e) =>
                           field.onChange(e.target.value || null)
                         }
+                        className="h-12 md:h-10"
                       />
                     </FormControl>
                     <FormMessage />
@@ -289,12 +295,14 @@ export function AddEmployeeModal({
                     <FormLabel>{t('mobile')}</FormLabel>
                     <FormControl>
                       <Input
+                        type="tel"
                         placeholder="+46701234567"
                         {...field}
                         value={field.value ?? ""}
                         onChange={(e) =>
                           field.onChange(e.target.value || null)
                         }
+                        className="h-12 md:h-10"
                       />
                     </FormControl>
                     <FormMessage />

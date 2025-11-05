@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { adminService } from "@/lib/services/admin-service";
 import { User } from "@/lib/types/user";
-import { UserManagementTable } from "@/components/admin/user-management-table";
+import { ResponsiveUserView } from "@/components/admin/responsive-user-view";
 import { AddUserModal } from "@/components/admin/add-user-modal";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -60,7 +60,7 @@ export default function UserManagementPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
       ) : (
-        <UserManagementTable
+        <ResponsiveUserView
           users={users}
           onUserStatusChanged={handleUserStatusChanged}
         />

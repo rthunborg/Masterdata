@@ -8,10 +8,11 @@
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
-2. [HR Admin Workflows](#hr-admin-workflows)
-3. [External Party Workflows](#external-party-workflows)
-4. [FAQ](#faq)
-5. [Troubleshooting](#troubleshooting)
+2. [Mobile Access](#mobile-access)
+3. [HR Admin Workflows](#hr-admin-workflows)
+4. [External Party Workflows](#external-party-workflows)
+5. [FAQ](#faq)
+6. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -57,6 +58,137 @@
 
 - View your **profile information**
 - **Log out** of the application
+
+---
+
+## Mobile Access
+
+### Using the Application on Mobile Devices
+
+The HR Masterdata Management System is **fully optimized for mobile devices** including phones and tablets. Access the system on-the-go with all core features available.
+
+### Supported Devices & Browsers
+
+**iOS Devices:**
+
+- iPhone (iOS 14+): Safari, Chrome
+- iPad (iPadOS 14+): Safari, Chrome
+
+**Android Devices:**
+
+- Android phones (Android 8+): Chrome, Firefox
+- Android tablets: Chrome, Firefox
+
+### Mobile Features
+
+**🏠 Dashboard**
+
+- View employee data in easy-to-read cards
+- Tap to expand cards for full details
+- Search employees by name, email, or phone
+- Archive, restore, or terminate employees (HR Admin)
+
+**📅 Important Dates**
+
+- Browse birthdays, anniversaries, and milestones
+- Filter by category
+- Add, edit, or delete dates (HR Admin)
+
+**👥 User Management** (HR Admin)
+
+- Manage user accounts
+- Activate/deactivate users
+- View user activity
+
+### Mobile Navigation
+
+**Hamburger Menu (Mobile & Tablets):**
+
+- Tap the **☰ menu icon** in the top left corner
+- Slide-out drawer shows all navigation options
+- Tap any item to navigate
+- Tap outside or use back button to close
+
+**Desktop Navigation (Laptops & Desktops):**
+
+- Horizontal navigation bar below the header
+- All menu items visible at once
+
+### Touch-Friendly Interface
+
+**Optimized for Touch:**
+
+- Large touch targets (minimum 44x44 pixels)
+- No accidental taps
+- Tap feedback shows you've activated a button
+- Smooth scrolling
+
+**Mobile Keyboards:**
+
+- Email fields show email keyboard
+- Phone fields show numeric keyboard
+- Automatic input type optimization
+
+### Mobile Tips
+
+**✅ Best Practices:**
+
+- **Portrait mode recommended** for phones (easier card view)
+- **Landscape mode works too** with optimized compact layout
+- **Pinch to zoom** if needed (accessibility)
+- **Tap phone numbers** to call directly
+- **Tap email addresses** to compose email
+
+**📱 Screen Sizes Supported:**
+
+- Small phones (320px+): iPhone SE, older Android
+- Standard phones (375px+): iPhone 12/13/14, Pixel
+- Tablets (768px+): iPad, Android tablets
+- Large tablets (1024px+): iPad Pro (uses desktop layout)
+
+**⚡ Performance:**
+
+- Fast loading with skeleton screens
+- Optimized images for mobile data
+- Works on 4G/5G networks
+- Responsive even on 3G
+
+### Orientation Support
+
+**Portrait (Vertical):**
+
+- Default and recommended orientation
+- Full card views with all details
+- Single-column forms
+
+**Landscape (Horizontal):**
+
+- Optimized for wider screens
+- More compact layout
+- Maximizes horizontal space
+
+### Mobile Limitations
+
+Some advanced features work best on desktop:
+
+- **Column Settings**: Drag-and-drop column reordering (desktop only)
+- **CSV Import**: Larger screens recommended for data validation
+- **Bulk Editing**: Easier on desktop with keyboard
+
+**Recommendation**: For complex administrative tasks, use a laptop or desktop for the best experience.
+
+### Accessibility on Mobile
+
+**Screen Reader Support:**
+
+- Compatible with VoiceOver (iOS)
+- Compatible with TalkBack (Android)
+- All buttons and links properly labeled
+
+**Text Scaling:**
+
+- Zoom up to 200% without losing functionality
+- Large text mode supported
 
 ---
 

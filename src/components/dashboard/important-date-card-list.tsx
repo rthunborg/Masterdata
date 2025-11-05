@@ -1,0 +1,183 @@
+'use client';
+
+import { useState } from 'react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Trash2, Calendar } from 'lucide-react';
+import type { ImportantDate } from '@/lib/types/important-date';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { importantDateService } from '@/lib/services/important-date-service';
+import { toast } from 'sonner';
+
+interface ImportantDateCardListProps {
+  dates: ImportantDate[];
+  isLoading: boolean;
+  isHRAdmin: boolean;
+  onDateDeleted?: () => void;
+}
+
+export function ImportantDateCardList({
+  dates,
+  isLoading,
+  isHRAdmin,
+  onDateDeleted,
+}: ImportantDateCardListProps) {
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<ImportantDate | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const uniqueCategories = Array.from(new Set(dates.map((d) => d.category)));
+
+  const filteredDates =
+    categoryFilter === 'All'
+      ? dates
+      : dates.filter((d) => d.category === categoryFilter);
+
+  // Sort by year and week
+  const sortedDates = [...filteredDates].sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    const aWeek = a.week_number ?? 0;
+    const bWeek = b.week_number ?? 0;
+    return aWeek - bWeek;
+  });
+
+  const handleDelete = (date: ImportantDate) => {
+    setSelectedDate(date);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedDate) return;
+
+    try {
+      setIsDeleting(true);
+      await importantDateService.delete(selectedDate.id);
+      toast.success('Important date deleted successfully');
+      setDeleteDialogOpen(false);
+      onDateDeleted?.();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to delete date';
+      toast.error(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 p-4">
+      {/* Category Filter */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">Category:</span>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[200px] h-12">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All</SelectItem>
+            {uniqueCategories.map((cat) => (
+              <SelectItem key={cat} value={cat}>
+                {cat}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Date Cards */}
+      {sortedDates.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">No dates found</div>
+      ) : (
+        <div className="space-y-3">
+          {sortedDates.map((date) => (
+            <Card key={date.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">{date.date_description}</h3>
+                    <Badge variant="secondary" className="mt-1">
+                      {date.category}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    {date.week_number ? `Week ${date.week_number}, ` : ''}{date.year}
+                  </span>
+                </div>
+                {date.date_value && (
+                  <div className="flex justify-between pt-2 border-t">
+                    <span className="text-muted-foreground">Date:</span>
+                    <span className="font-medium">{date.date_value}</span>
+                  </div>
+                )}
+                {date.notes && (
+                  <div className="pt-2 border-t">
+                    <span className="text-muted-foreground">Notes:</span>
+                    <p className="mt-1 text-sm">{date.notes}</p>
+                  </div>
+                )}
+              </CardContent>
+
+              {isHRAdmin && (
+                <CardFooter className="pt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(date)}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Important Date</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &ldquo;{selectedDate?.date_description}&rdquo;? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} disabled={isDeleting}>
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

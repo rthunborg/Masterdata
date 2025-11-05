@@ -16,7 +16,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { EmployeeTable } from "@/components/dashboard/employee-table";
+import { ResponsiveEmployeeView } from "@/components/dashboard/responsive-employee-view";
 import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
 import { AddColumnModal } from "@/components/dashboard/add-column-modal";
 import { EditColumnModal } from "@/components/dashboard/edit-column-modal";
@@ -206,9 +206,10 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <EmployeeTable
+            <ResponsiveEmployeeView
               employees={employees}
               isLoading={isLoadingEmployees}
+              isHRAdmin={user?.role === "hr_admin"}
               onEmployeeUpdated={refetch}
               includeArchived={includeArchived}
               onIncludeArchivedChange={setIncludeArchived}

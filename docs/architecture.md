@@ -13,15 +13,16 @@ This unified approach combines what would traditionally be separate backend and 
 This is a greenfield project built on the **Next.js App Router** framework with **Supabase** backend. We'll leverage Next.js as both a fullstack framework (frontend + API routes) rather than using a pre-built starter template, as the PRD has specific requirements that benefit from custom implementation.
 
 **Framework Choices:**
+
 - **Next.js 14+** with App Router for unified frontend/backend development
 - **Supabase** for database, authentication, real-time subscriptions, and storage
 - **Vercel** for deployment (zero-cost tier)
 
 ### Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2025-10-26 | 1.0 | Initial fullstack architecture document | Winston (Architect) |
+| Date       | Version | Description                             | Author              |
+| ---------- | ------- | --------------------------------------- | ------------------- |
+| 2025-10-26 | 1.0     | Initial fullstack architecture document | Winston (Architect) |
 
 ---
 
@@ -35,6 +36,7 @@ The HR Masterdata Management System employs a **serverless monolith architecture
 
 **Platform:** Vercel + Supabase  
 **Key Services:**
+
 - **Vercel**: Frontend hosting, serverless API routes, edge network CDN, automatic deployments
 - **Supabase**: PostgreSQL database, authentication (email/password), real-time subscriptions, row-level security, storage
 - **Vercel Analytics** (optional): Performance monitoring
@@ -43,6 +45,7 @@ The HR Masterdata Management System employs a **serverless monolith architecture
 **Deployment Host and Regions:** Vercel Edge Network (global), Supabase hosted in closest available region (suggest US East or EU West based on user location)
 
 **Rationale:**
+
 1. **Cost**: Both platforms offer generous free tiers that meet PRD requirements (zero monthly operational cost)
 2. **Developer Experience**: Seamless integration between Next.js and Supabase with excellent TypeScript support
 3. **Real-time Capability**: Supabase provides built-in real-time subscriptions (critical for FR11: <2s sync latency)
@@ -51,6 +54,7 @@ The HR Masterdata Management System employs a **serverless monolith architecture
 6. **Time-to-Market**: Integrated auth, database, and API layer accelerates MVP delivery
 
 **Alternative Considered:**
+
 - **AWS Full Stack** (Amplify/AppSync + Lambda + Cognito + RDS): More complex setup, higher operational overhead, costs exceed free tier quickly
 - **Firebase**: Limited SQL querying capabilities, less suitable for complex relational data
 
@@ -60,8 +64,7 @@ The HR Masterdata Management System employs a **serverless monolith architecture
 **Monorepo Tool:** Next.js built-in monorepo support (no additional tooling needed for MVP)  
 **Package Organization:**
 
-`
-hr-masterdata/
+`hr-masterdata/
  src/
     app/              # Next.js App Router pages and API routes
     components/       # Shared React components
@@ -69,15 +72,14 @@ hr-masterdata/
     middleware.ts     # Auth and routing middleware
  public/               # Static assets
  supabase/             # Database migrations and seed data
- tests/                # Test files
-`
+ tests/                # Test files`
 
 **Rationale:**
+
 - Next.js App Router natively supports collocated frontend and backend code
 - For MVP scope (5 epics, ~1,000 employees), a simple structure is sufficient
 - Shared TypeScript types between frontend/backend naturally reside in src/lib/types/
 - **Future Enhancement**: If project grows significantly, consider splitting into packages (packages/web, packages/api, packages/shared) using Turborepo or nx
-
 
 ### High Level Architecture Diagram
 
@@ -104,11 +106,11 @@ graph TB
     Browser -->|HTTPS| NextJS
     NextJS -->|API Calls| API
     NextJS -->|WebSocket| Realtime
-    
+
     API -->|SQL + RLS| DB
     API -->|Validate Session| Auth
     API -->|Upload Files| Storage
-    
+
     Realtime -->|Database Changes| DB
     Auth -->|User Sessions| DB
 
@@ -120,11 +122,11 @@ graph TB
 
 **Key Architecture Flows:**
 
-1. **Initial Page Load**: Browser  CDN (static assets) + Next.js SSR (server-side rendering)
-2. **Authentication**: Login form  API Route  Supabase Auth  Session Cookie
-3. **Data Fetch**: React Component  API Route  PostgreSQL (with RLS enforcement)
-4. **Real-time Updates**: PostgreSQL Change  Supabase Realtime  WebSocket  React Component Update
-5. **CSV Import**: File Upload  API Route  Parse CSV  Batch Insert  PostgreSQL
+1. **Initial Page Load**: Browser CDN (static assets) + Next.js SSR (server-side rendering)
+2. **Authentication**: Login form API Route Supabase Auth Session Cookie
+3. **Data Fetch**: React Component API Route PostgreSQL (with RLS enforcement)
+4. **Real-time Updates**: PostgreSQL Change Supabase Realtime WebSocket React Component Update
+5. **CSV Import**: File Upload API Route Parse CSV Batch Insert PostgreSQL
 
 ### Architectural Patterns
 
@@ -142,43 +144,42 @@ graph TB
 
 - **Shared Type Definitions:** Single source of truth for TypeScript interfaces shared between frontend and backend in src/lib/types/. _Rationale:_ Type safety across full stack, prevents API contract mismatches, excellent DX for AI agents.
 
-- **JSONB for Dynamic Columns:** Custom columns for external parties stored as JSONB in party-specific tables (sodexo_data, omc_data, etc.). _Rationale:_ Flexible schema evolution without migrations, efficient indexing with PostgreSQL GIN indexes, native JSON querying support.
+- **JSONB for Dynamic Columns:** Custom columns for external parties stored as JSONB in party-specific tables (sodexo*data, omc_data, etc.). \_Rationale:* Flexible schema evolution without migrations, efficient indexing with PostgreSQL GIN indexes, native JSON querying support.
 
 ---
 
 ## Tech Stack
 
-| Category | Technology | Version | Purpose | Rationale |
-|----------|-----------|---------|---------|-----------|
-| **Frontend Language** | TypeScript | 5.3+ | Type-safe frontend development | Catches errors at compile-time, excellent IDE support, required by PRD (NFR14) |
-| **Frontend Framework** | React | 18.2+ | UI component library | Industry standard, excellent ecosystem, Next.js integration |
-| **Meta Framework** | Next.js | 14.1+ | Fullstack React framework | App Router for unified frontend/backend, built-in API routes, SSR/SSG, image optimization, Vercel integration |
-| **UI Component Library** | shadcn/ui + Radix UI | Latest | Accessible component primitives | Copy-paste components, full customization, WCAG AA compliant, no runtime overhead |
-| **CSS Framework** | Tailwind CSS | 3.4+ | Utility-first styling | Rapid UI development, consistent design system, small bundle size, excellent shadcn/ui integration |
-| **Table Library** | TanStack Table | 8.11+ | Spreadsheet-like data grid | Headless design, virtual scrolling, sorting/filtering, 1,000+ row performance |
-| **State Management** | React Hooks + Zustand | 4.4+ | Client-side state | Hooks for local state, Zustand for global state (auth, user context), avoids Redux complexity |
-| **Backend Language** | TypeScript | 5.3+ | Type-safe backend development | Shared types with frontend, same as frontend for consistency |
-| **Backend Framework** | Next.js API Routes | 14.1+ | Serverless API endpoints | Integrated with frontend, automatic deployment, serverless execution |
-| **API Style** | REST | - | HTTP JSON APIs | Simple, well-understood, meets PRD requirements without GraphQL complexity |
-| **Database** | PostgreSQL (Supabase) | 15+ | Relational database | ACID compliance, JSONB for flexible schemas, excellent full-text search, RLS support |
-| **Real-time** | Supabase Realtime | Latest | WebSocket subscriptions | Built-in real-time updates, <2s latency (FR11), based on PostgreSQL logical replication |
-| **Cache** | Vercel Edge Cache | - | CDN and API caching | Automatic static asset caching, optional API route caching |
-| **File Storage** | Supabase Storage | Latest | CSV file uploads | S3-compatible object storage, integrates with RLS, free tier sufficient |
-| **Authentication** | Supabase Auth | Latest | User auth and session mgmt | Email/password provider, JWT sessions, 8-hour timeout, secure password hashing (NFR8) |
-| **Frontend Testing** | Vitest + React Testing Library | Vitest 1.1+, RTL 14+ | Component and unit tests | Fast execution, Jest-compatible, React-specific testing utilities |
-| **Backend Testing** | Vitest | 1.1+ | API route and service tests | Same test runner as frontend, TypeScript support, fast |
-| **E2E Testing** | Playwright | 1.40+ (post-MVP) | End-to-end browser tests | Reliable, cross-browser, excellent debugging |
-| **Build Tool** | Next.js built-in | 14.1+ | Webpack/Turbopack bundling | Zero config, optimized for Next.js |
-| **Bundler** | Turbopack | Latest (Next.js 14+) | Fast development bundling | 10x faster than Webpack in dev mode |
-| **Package Manager** | pnpm | 8.14+ | Dependency management | Faster than npm, efficient disk usage, strict dependency resolution |
-| **IaC Tool** | Supabase CLI + Vercel CLI | Latest | Infrastructure as code | Database migrations via Supabase CLI, deployment via Vercel CLI |
-| **CI/CD** | GitHub Actions + Vercel | - | Automated testing and deployment | Free for open source, integrates with Vercel, automated preview deploys |
-| **Monitoring** | Vercel Analytics (post-MVP) | - | Performance monitoring | Core Web Vitals, edge function metrics |
-| **Error Tracking** | Console.error (MVP), Sentry (post-MVP) | - | Error logging | Basic logging for MVP, Sentry integration later |
-| **Linting** | ESLint | 8.56+ | Code quality | Next.js config, TypeScript support |
-| **Formatting** | Prettier | 3.1+ | Code formatting | Consistent code style |
-| **Type Checking** | TypeScript Compiler | 5.3+ | Static type checking | Strict mode enabled per PRD |
-
+| Category                 | Technology                             | Version              | Purpose                          | Rationale                                                                                                     |
+| ------------------------ | -------------------------------------- | -------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Frontend Language**    | TypeScript                             | 5.3+                 | Type-safe frontend development   | Catches errors at compile-time, excellent IDE support, required by PRD (NFR14)                                |
+| **Frontend Framework**   | React                                  | 18.2+                | UI component library             | Industry standard, excellent ecosystem, Next.js integration                                                   |
+| **Meta Framework**       | Next.js                                | 14.1+                | Fullstack React framework        | App Router for unified frontend/backend, built-in API routes, SSR/SSG, image optimization, Vercel integration |
+| **UI Component Library** | shadcn/ui + Radix UI                   | Latest               | Accessible component primitives  | Copy-paste components, full customization, WCAG AA compliant, no runtime overhead                             |
+| **CSS Framework**        | Tailwind CSS                           | 3.4+                 | Utility-first styling            | Rapid UI development, consistent design system, small bundle size, excellent shadcn/ui integration            |
+| **Table Library**        | TanStack Table                         | 8.11+                | Spreadsheet-like data grid       | Headless design, virtual scrolling, sorting/filtering, 1,000+ row performance                                 |
+| **State Management**     | React Hooks + Zustand                  | 4.4+                 | Client-side state                | Hooks for local state, Zustand for global state (auth, user context), avoids Redux complexity                 |
+| **Backend Language**     | TypeScript                             | 5.3+                 | Type-safe backend development    | Shared types with frontend, same as frontend for consistency                                                  |
+| **Backend Framework**    | Next.js API Routes                     | 14.1+                | Serverless API endpoints         | Integrated with frontend, automatic deployment, serverless execution                                          |
+| **API Style**            | REST                                   | -                    | HTTP JSON APIs                   | Simple, well-understood, meets PRD requirements without GraphQL complexity                                    |
+| **Database**             | PostgreSQL (Supabase)                  | 15+                  | Relational database              | ACID compliance, JSONB for flexible schemas, excellent full-text search, RLS support                          |
+| **Real-time**            | Supabase Realtime                      | Latest               | WebSocket subscriptions          | Built-in real-time updates, <2s latency (FR11), based on PostgreSQL logical replication                       |
+| **Cache**                | Vercel Edge Cache                      | -                    | CDN and API caching              | Automatic static asset caching, optional API route caching                                                    |
+| **File Storage**         | Supabase Storage                       | Latest               | CSV file uploads                 | S3-compatible object storage, integrates with RLS, free tier sufficient                                       |
+| **Authentication**       | Supabase Auth                          | Latest               | User auth and session mgmt       | Email/password provider, JWT sessions, 8-hour timeout, secure password hashing (NFR8)                         |
+| **Frontend Testing**     | Vitest + React Testing Library         | Vitest 1.1+, RTL 14+ | Component and unit tests         | Fast execution, Jest-compatible, React-specific testing utilities                                             |
+| **Backend Testing**      | Vitest                                 | 1.1+                 | API route and service tests      | Same test runner as frontend, TypeScript support, fast                                                        |
+| **E2E Testing**          | Playwright                             | 1.40+ (post-MVP)     | End-to-end browser tests         | Reliable, cross-browser, excellent debugging                                                                  |
+| **Build Tool**           | Next.js built-in                       | 14.1+                | Webpack/Turbopack bundling       | Zero config, optimized for Next.js                                                                            |
+| **Bundler**              | Turbopack                              | Latest (Next.js 14+) | Fast development bundling        | 10x faster than Webpack in dev mode                                                                           |
+| **Package Manager**      | pnpm                                   | 8.14+                | Dependency management            | Faster than npm, efficient disk usage, strict dependency resolution                                           |
+| **IaC Tool**             | Supabase CLI + Vercel CLI              | Latest               | Infrastructure as code           | Database migrations via Supabase CLI, deployment via Vercel CLI                                               |
+| **CI/CD**                | GitHub Actions + Vercel                | -                    | Automated testing and deployment | Free for open source, integrates with Vercel, automated preview deploys                                       |
+| **Monitoring**           | Vercel Analytics (post-MVP)            | -                    | Performance monitoring           | Core Web Vitals, edge function metrics                                                                        |
+| **Error Tracking**       | Console.error (MVP), Sentry (post-MVP) | -                    | Error logging                    | Basic logging for MVP, Sentry integration later                                                               |
+| **Linting**              | ESLint                                 | 8.56+                | Code quality                     | Next.js config, TypeScript support                                                                            |
+| **Formatting**           | Prettier                               | 3.1+                 | Code formatting                  | Consistent code style                                                                                         |
+| **Type Checking**        | TypeScript Compiler                    | 5.3+                 | Static type checking             | Strict mode enabled per PRD                                                                                   |
 
 ---
 
@@ -191,13 +192,15 @@ The system revolves around four core entities: **Users** (authentication and rol
 **Purpose:** Manages authentication credentials and role-based access control for all system users (HR Admin and external parties).
 
 **Key Attributes:**
+
 - id: UUID (Primary Key) - Unique identifier for user
 - email: Text (Unique) - User's email address (login username)
-- ole: Enum - One of: hr_admin, sodexo, omc, payroll, 	oplux
+- ole: Enum - One of: hr_admin, sodexo, omc, payroll, oplux
 - is_active: Boolean - Whether user can log in
 - created_at: Timestamp - Account creation date
 
 **Relationships:**
+
 - Links to Supabase Auth uth.users table via user ID
 - No direct foreign key to employees (users manage employees, not own them)
 
@@ -209,7 +212,7 @@ export enum UserRole {
   SODEXO = 'sodexo',
   OMC = 'omc',
   PAYROLL = 'payroll',
-  TOPLUX = 'toplux'
+  TOPLUX = 'toplux',
 }
 
 export interface User {
@@ -231,18 +234,19 @@ export interface SessionUser extends User {
 **Purpose:** Core masterdata entity representing employees or candidates, managed exclusively by HR Admin. Contains all HR-controlled fields referenced by external parties.
 
 **Key Attributes:**
+
 - id: UUID (Primary Key) - Unique employee identifier
-- irst_name: Text - Employee first name (required)
+- irst_name: Text - Employee first name (required)
 - surname: Text - Employee surname (required)
 - ssn: Text (Unique) - Social Security Number (required, sensitive)
 - email: Text - Employee email address (optional)
 - mobile: Text - Mobile phone number (optional)
-- ank: Text - Job rank/position (e.g., "SEV", "CHEF")
+- ank: Text - Job rank/position (e.g., "SEV", "CHEF")
 - gender: Text - Gender (e.g., "Male", "Female", "Other", "Prefer not to say")
-- 	own_district: Text - Employee's town or district
+-     own_district: Text - Employee's town or district
 - hire_date: Date - Date employee was hired (required)
-- 	ermination_date: Date (Nullable) - Date employee was terminated
-- 	ermination_reason: Text (Nullable) - Reason for termination
+-     ermination_date: Date (Nullable) - Date employee was terminated
+-     ermination_reason: Text (Nullable) - Reason for termination
 - is_terminated: Boolean - Whether employee is marked as terminated
 - is_archived: Boolean - Whether employee is soft-deleted/archived
 - comments: Text (Nullable) - HR internal comments
@@ -250,7 +254,8 @@ export interface SessionUser extends User {
 - updated_at: Timestamp - Last modification date
 
 **Relationships:**
-- Referenced by sodexo_data, omc_data, payroll_data, 	oplux_data (one-to-many)
+
+- Referenced by sodexo_data, omc_data, payroll_data, oplux_data (one-to-many)
 
 #### TypeScript Interface
 
@@ -276,7 +281,10 @@ export interface Employee {
 }
 
 // Form data for creating/updating employees
-export type EmployeeFormData = Omit<Employee, 'id' | 'created_at' | 'updated_at'>;
+export type EmployeeFormData = Omit<
+  Employee,
+  'id' | 'created_at' | 'updated_at'
+>;
 
 // List view employee (subset of fields)
 export interface EmployeeListItem {
@@ -297,16 +305,18 @@ export interface EmployeeListItem {
 **Purpose:** Defines available columns (both masterdata and custom) and their role-based view/edit permissions. Enables dynamic column management by HR Admin and external parties.
 
 **Key Attributes:**
+
 - id: UUID (Primary Key) - Unique column identifier
 - column_name: Text - Display name of column (e.g., "First Name", "Sodexo Team")
-- column_type: Text - Data type: 	ext, 
-umber, date, oolean
-- ole_permissions: JSONB - Permissions object with structure: { role: { view: boolean, edit: boolean } }
+- column_type: Text - Data type: ext,
+  umber, date, oolean
+- ole_permissions: JSONB - Permissions object with structure: { role: { view: boolean, edit: boolean } }
 - is_masterdata: Boolean - True for HR-controlled masterdata columns, false for custom columns
 - category: Text (Nullable) - Category for organizing columns (e.g., "Recruitment Team")
 - created_at: Timestamp - Column creation date
 
 **Relationships:**
+
 - Referenced when rendering table columns and enforcing permissions
 - Custom columns (is_masterdata = false) map to JSONB keys in party-specific data tables
 
@@ -342,18 +352,19 @@ export interface ColumnPermission {
 **Purpose:** Shared reference calendar of operational dates (Stena dates, ÖMC dates by week) visible to all users, editable only by HR Admin.
 
 **Key Attributes:**
+
 - id: UUID (Primary Key) - Unique date entry identifier
 - week_number: Integer (Nullable) - ISO week number (1-53)
 - year: Integer - Year of the date
 - category: Text - Category grouping (e.g., "Stena Dates", "ÖMC Dates")
 - date_description: Text - Human-readable description (e.g., "Fredag 14/2")
 - date_value: Text - Flexible date value (e.g., "15-16/2" for ranges)
-- 
-otes: Text (Nullable) - Additional notes
+- otes: Text (Nullable) - Additional notes
 - created_at: Timestamp - Record creation date
 - updated_at: Timestamp - Last modification date
 
 **Relationships:**
+
 - No foreign keys, standalone reference data
 
 #### TypeScript Interface
@@ -372,7 +383,10 @@ export interface ImportantDate {
 }
 
 // Form data for creating dates
-export type ImportantDateFormData = Omit<ImportantDate, 'id' | 'created_at' | 'updated_at'>;
+export type ImportantDateFormData = Omit<
+  ImportantDate,
+  'id' | 'created_at' | 'updated_at'
+>;
 ```
 
 ### External Party Data (Sodexo, ÖMC, Payroll, Toplux)
@@ -380,6 +394,7 @@ export type ImportantDateFormData = Omit<ImportantDate, 'id' | 'created_at' | 'u
 **Purpose:** Stores custom column data for each external party using JSONB for schema flexibility.
 
 **Key Attributes:**
+
 - id: UUID (Primary Key)
 - employee_id: UUID (Foreign Key to employees.id)
 - data: JSONB - Key-value pairs where keys are column names and values are data
@@ -387,6 +402,7 @@ export type ImportantDateFormData = Omit<ImportantDate, 'id' | 'created_at' | 'u
 - updated_at: Timestamp
 
 **Relationships:**
+
 - Many-to-one with Employee (employee_id foreign key)
 - CASCADE DELETE on employee removal
 
@@ -418,10 +434,12 @@ The system uses a RESTful API architecture with Next.js API Routes deployed as s
 ### Authentication
 
 **All API routes (except health check) require:**
+
 - Valid session cookie (set by Supabase Auth on login)
 - User must have is_active = true in users table
 
 **Authorization:**
+
 - HR Admin role: Full access to all endpoints
 - External Party roles: Limited access to employee viewing and their own custom column management
 
@@ -433,9 +451,12 @@ The system uses a RESTful API architecture with Next.js API Routes deployed as s
 ### Common Response Structures
 
 **Success Response:**
+
 ```json
 {
-  "data": { /* resource object */ },
+  "data": {
+    /* resource object */
+  },
   "meta": {
     "timestamp": "2025-10-26T19:30:00Z",
     "requestId": "req_abc123"
@@ -444,6 +465,7 @@ The system uses a RESTful API architecture with Next.js API Routes deployed as s
 ```
 
 **Error Response:**
+
 ```json
 {
   "error": {
@@ -463,15 +485,14 @@ The system uses a RESTful API architecture with Next.js API Routes deployed as s
 
 #### Health Check
 
-`
-GET /api/health
-`
+`GET /api/health`
 
 **Purpose:** System health check (public endpoint)
 
 **Authentication:** None required
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -482,13 +503,12 @@ GET /api/health
 
 #### Authentication
 
-`
-POST /api/auth/login
-`
+`POST /api/auth/login`
 
 **Purpose:** Authenticate user and create session
 
 **Body:**
+
 ```json
 {
   "email": "admin@company.com",
@@ -497,6 +517,7 @@ POST /api/auth/login
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -514,13 +535,12 @@ POST /api/auth/login
 }
 ```
 
-`
-POST /api/auth/logout
-`
+`POST /api/auth/logout`
 
 **Purpose:** Clear user session
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -531,22 +551,23 @@ POST /api/auth/logout
 
 #### Employees
 
-`
-GET /api/employees
-`
+`GET /api/employees`
 
 **Purpose:** List all employees (filtered by role permissions and status filters)
 
 **Query Parameters:**
+
 - includeArchived (boolean, default: false)
 - includeTerminated (boolean, default: false)
 - search (string, optional) - Filter by name, email, SSN
 
 **Authorization:**
+
 - HR Admin: All employees
 - External parties: All active employees (cannot see SSN or sensitive fields based on column config)
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -569,36 +590,34 @@ GET /api/employees
 }
 ```
 
-`
-GET /api/employees/[id]
-`
+`GET /api/employees/[id]`
 
 **Purpose:** Get single employee details
 
 **Authorization:** HR Admin only (external parties use GET /employees list with filtered fields)
 
 **Response:**
+
 ```json
 {
   "data": {
     "id": "uuid",
     "first_name": "John",
     "surname": "Doe",
-    "ssn": "123456-7890",
+    "ssn": "123456-7890"
     /* ... all fields */
   }
 }
 ```
 
-`
-POST /api/employees
-`
+`POST /api/employees`
 
 **Purpose:** Create new employee
 
 **Authorization:** HR Admin only
 
 **Body:**
+
 ```json
 {
   "first_name": "Jane",
@@ -612,24 +631,24 @@ POST /api/employees
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
-    "id": "new_uuid",
+    "id": "new_uuid"
     /* ... created employee object */
   }
 }
 ```
 
-`
-PATCH /api/employees/[id]
-`
+`PATCH /api/employees/[id]`
 
 **Purpose:** Update employee fields
 
 **Authorization:** HR Admin only
 
 **Body:** (partial update)
+
 ```json
 {
   "email": "newemail@example.com",
@@ -638,24 +657,24 @@ PATCH /api/employees/[id]
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
-    "id": "uuid",
+    "id": "uuid"
     /* ... updated employee object */
   }
 }
 ```
 
-`
-POST /api/employees/[id]/archive
-`
+`POST /api/employees/[id]/archive`
 
 **Purpose:** Archive employee (soft delete)
 
 **Authorization:** HR Admin only
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -665,23 +684,20 @@ POST /api/employees/[id]/archive
 }
 ```
 
-`
-POST /api/employees/[id]/unarchive
-`
+`POST /api/employees/[id]/unarchive`
 
 **Purpose:** Restore archived employee
 
 **Authorization:** HR Admin only
 
-`
-POST /api/employees/[id]/terminate
-`
+`POST /api/employees/[id]/terminate`
 
 **Purpose:** Mark employee as terminated
 
 **Authorization:** HR Admin only
 
 **Body:**
+
 ```json
 {
   "termination_date": "2025-10-26",
@@ -690,6 +706,7 @@ POST /api/employees/[id]/terminate
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -701,9 +718,7 @@ POST /api/employees/[id]/terminate
 }
 ```
 
-`
-POST /api/employees/import
-`
+`POST /api/employees/import`
 
 **Purpose:** Bulk import employees from CSV
 
@@ -712,9 +727,11 @@ POST /api/employees/import
 **Content-Type:** multipart/form-data
 
 **Body:**
-- ile: CSV file with columns matching employee fields
+
+- ile: CSV file with columns matching employee fields
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -732,13 +749,12 @@ POST /api/employees/import
 
 #### Custom Columns
 
-`
-GET /api/columns
-`
+`GET /api/columns`
 
 **Purpose:** Get all column configurations visible to current user role
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -757,15 +773,14 @@ GET /api/columns
 }
 ```
 
-`
-POST /api/columns
-`
+`POST /api/columns`
 
 **Purpose:** Create new custom column (external parties only)
 
 **Authorization:** External party roles only (cannot create masterdata columns)
 
 **Body:**
+
 ```json
 {
   "column_name": "Sodexo Team Assignment",
@@ -775,6 +790,7 @@ POST /api/columns
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -789,17 +805,17 @@ POST /api/columns
 }
 ```
 
-`
-PATCH /api/columns/[id]
-`
+`PATCH /api/columns/[id]`
 
 **Purpose:** Update column configuration
 
-**Authorization:** 
+**Authorization:**
+
 - HR Admin: Can update any column's permissions
 - External parties: Can update their own custom columns (name, category only)
 
 **Body:**
+
 ```json
 {
   "role_permissions": {
@@ -809,9 +825,7 @@ PATCH /api/columns/[id]
 }
 ```
 
-`
-DELETE /api/columns/[id]
-`
+`DELETE /api/columns/[id]`
 
 **Purpose:** Delete custom column
 
@@ -819,13 +833,12 @@ DELETE /api/columns/[id]
 
 #### Custom Data
 
-`
-GET /api/employees/[id]/custom-data
-`
+`GET /api/employees/[id]/custom-data`
 
 **Purpose:** Get custom column data for specific employee and current user role
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -838,15 +851,14 @@ GET /api/employees/[id]/custom-data
 }
 ```
 
-`
-PATCH /api/employees/[id]/custom-data
-`
+`PATCH /api/employees/[id]/custom-data`
 
 **Purpose:** Update custom column values for employee
 
 **Authorization:** External party can only update their own columns
 
 **Body:**
+
 ```json
 {
   "Sodexo Team Assignment": "Team B"
@@ -854,6 +866,7 @@ PATCH /api/employees/[id]/custom-data
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -865,16 +878,16 @@ PATCH /api/employees/[id]/custom-data
 
 #### Important Dates
 
-`
-GET /api/important-dates
-`
+`GET /api/important-dates`
 
 **Purpose:** Get all important dates (all users can view)
 
 **Query Parameters:**
+
 - category (string, optional) - Filter by category
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -891,15 +904,14 @@ GET /api/important-dates
 }
 ```
 
-`
-POST /api/important-dates
-`
+`POST /api/important-dates`
 
 **Purpose:** Create important date entry
 
 **Authorization:** HR Admin only
 
 **Body:**
+
 ```json
 {
   "week_number": 10,
@@ -910,17 +922,13 @@ POST /api/important-dates
 }
 ```
 
-`
-PATCH /api/important-dates/[id]
-`
+`PATCH /api/important-dates/[id]`
 
 **Purpose:** Update important date
 
 **Authorization:** HR Admin only
 
-`
-DELETE /api/important-dates/[id]
-`
+`DELETE /api/important-dates/[id]`
 
 **Purpose:** Delete important date
 
@@ -928,15 +936,14 @@ DELETE /api/important-dates/[id]
 
 #### Admin - User Management
 
-`
-GET /api/admin/users
-`
+`GET /api/admin/users`
 
 **Purpose:** List all users
 
 **Authorization:** HR Admin only
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -951,15 +958,14 @@ GET /api/admin/users
 }
 ```
 
-`
-POST /api/admin/users
-`
+`POST /api/admin/users`
 
 **Purpose:** Create new user account
 
 **Authorization:** HR Admin only
 
 **Body:**
+
 ```json
 {
   "email": "newuser@example.com",
@@ -970,6 +976,7 @@ POST /api/admin/users
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -981,15 +988,14 @@ POST /api/admin/users
 }
 ```
 
-`
-PATCH /api/admin/users/[id]
-`
+`PATCH /api/admin/users/[id]`
 
 **Purpose:** Update user (activate/deactivate, change role)
 
 **Authorization:** HR Admin only (cannot deactivate own account)
 
 **Body:**
+
 ```json
 {
   "is_active": false
@@ -1009,17 +1015,20 @@ The system is organized into distinct architectural layers: **Presentation Layer
 **Responsibility:** Display employee data in spreadsheet-like interface with role-based column visibility, inline editing, sorting, and search. Core component for all user roles.
 
 **Key Interfaces:**
+
 - Props: { columns: ColumnConfig[], data: Employee[], onEdit: (id, field, value) => void, onSort: (field) => void }
 - Uses TanStack Table hooks for table state management
 - Subscribes to Supabase real-time channel for live updates
 
 **Dependencies:**
+
 - TanStack Table library
 - Column configuration from /api/columns
 - Employee data from /api/employees
 - Supabase real-time client
 
 **Technology Stack:**
+
 - React 18 functional component with hooks
 - TypeScript strict mode
 - TanStack Table v8 for table logic
@@ -1031,16 +1040,19 @@ The system is organized into distinct architectural layers: **Presentation Layer
 **Responsibility:** Reusable modal dialogs for forms (Add Employee, Import CSV, Terminate Employee, Add Column, etc.)
 
 **Key Interfaces:**
+
 - Props: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode }
 - Keyboard navigation (Esc to close, Tab trap)
 - Backdrop click to close (with dirty form warning)
 
 **Dependencies:**
+
 - Radix UI Dialog primitive
 - React Hook Form for form state
 - Zod for validation
 
 **Technology Stack:**
+
 - shadcn/ui Dialog component
 - React Hook Form + Zod validation
 - Tailwind CSS
@@ -1050,13 +1062,16 @@ The system is organized into distinct architectural layers: **Presentation Layer
 **Responsibility:** Visual indicator when HR Admin is in "View As" mode, displaying which role they're previewing
 
 **Key Interfaces:**
+
 - Props: { previewRole: UserRole | null, onExitPreview: () => void }
 - Sticky positioning (remains visible while scrolling)
 
 **Dependencies:**
+
 - Global state (Zustand store for preview mode)
 
 **Technology Stack:**
+
 - React component with Zustand state
 
 ### Backend Services
@@ -1066,18 +1081,21 @@ The system is organized into distinct architectural layers: **Presentation Layer
 **Responsibility:** Business logic for employee CRUD operations, validation, and CSV import processing
 
 **Key Interfaces:**
+
 - createEmployee(data: EmployeeFormData): Promise<Employee>
 - updateEmployee(id: string, data: Partial<Employee>): Promise<Employee>
 - rchiveEmployee(id: string): Promise<void>
-- 	erminateEmployee(id: string, date: string, reason: string): Promise<void>
+-     erminateEmployee(id: string, date: string, reason: string): Promise<void>
 - importFromCSV(file: File): Promise<ImportResult>
 
 **Dependencies:**
+
 - Employee Repository
 - Column Config Repository (for validation)
 - CSV Parser (papaparse)
 
 **Technology Stack:**
+
 - TypeScript service class
 - Zod for validation
 - papaparse for CSV parsing
@@ -1087,15 +1105,18 @@ The system is organized into distinct architectural layers: **Presentation Layer
 **Responsibility:** Manage column configurations and permissions
 
 **Key Interfaces:**
+
 - getVisibleColumns(role: UserRole): Promise<ColumnConfig[]>
 - createCustomColumn(role: UserRole, data: ColumnFormData): Promise<ColumnConfig>
 - updatePermissions(id: string, permissions: RolePermissions): Promise<void>
 - deleteColumn(id: string): Promise<void>
 
 **Dependencies:**
+
 - Column Config Repository
 
 **Technology Stack:**
+
 - TypeScript service class
 
 #### Auth Middleware
@@ -1103,14 +1124,17 @@ The system is organized into distinct architectural layers: **Presentation Layer
 **Responsibility:** Validate authentication on all protected routes, attach user context to request
 
 **Key Interfaces:**
+
 - uthenticateUser(req: NextRequest): Promise<SessionUser | null>
-- equireRole(allowedRoles: UserRole[]): Middleware
+- equireRole(allowedRoles: UserRole[]): Middleware
 
 **Dependencies:**
+
 - Supabase Auth client
 - User Repository
 
 **Technology Stack:**
+
 - Next.js middleware
 - Supabase Auth helpers for Next.js
 
@@ -1121,16 +1145,19 @@ The system is organized into distinct architectural layers: **Presentation Layer
 **Responsibility:** Abstract database operations for employees table
 
 **Key Interfaces:**
-- indAll(filters?: EmployeeFilters): Promise<Employee[]>
-- indById(id: string): Promise<Employee | null>
+
+- indAll(filters?: EmployeeFilters): Promise<Employee[]>
+- indById(id: string): Promise<Employee | null>
 - create(data: EmployeeFormData): Promise<Employee>
 - update(id: string, data: Partial<Employee>): Promise<Employee>
 - delete(id: string): Promise<void>
 
 **Dependencies:**
+
 - Supabase PostgreSQL client
 
 **Technology Stack:**
+
 - TypeScript class
 - Supabase JS client with typed queries
 
@@ -1139,14 +1166,17 @@ The system is organized into distinct architectural layers: **Presentation Layer
 **Responsibility:** Manage JSONB custom column data in party-specific tables
 
 **Key Interfaces:**
+
 - getCustomData(employeeId: string, role: UserRole): Promise<Record<string, any>>
 - updateCustomData(employeeId: string, role: UserRole, data: Record<string, any>): Promise<void>
 
 **Dependencies:**
+
 - Supabase PostgreSQL client
 - Column Config Repository (for validation)
 
 **Technology Stack:**
+
 - TypeScript class
 - PostgreSQL JSONB operations
 
@@ -1233,6 +1263,7 @@ graph TD
 The system relies entirely on Supabase platform APIs (database, auth, real-time, storage) which are accessed via Supabase JavaScript client library. All Supabase services are documented at https://supabase.com/docs.
 
 **Post-MVP Considerations:**
+
 - **Email Service** (SendGrid, Resend): For password reset emails and notifications
 - **Analytics** (PostHog, Plausible): For usage analytics
 - **Error Tracking** (Sentry): For production error monitoring
@@ -1258,7 +1289,7 @@ sequenceDiagram
     Browser->>API: POST /api/auth/login
     API->>SupaAuth: signInWithPassword(email, password)
     SupaAuth->>SupaAuth: Verify credentials
-    
+
     alt Authentication Success
         SupaAuth-->>API: { user, session }
         API->>DB: SELECT * FROM users WHERE id = user.id
@@ -1291,7 +1322,7 @@ sequenceDiagram
     Table->>Modal: Open modal
     HRAdmin->>Modal: Fill form and submit
     Modal->>Modal: Validate form (Zod schema)
-    
+
     alt Validation Success
         Modal->>API: POST /api/employees
         API->>API: Verify user is hr_admin
@@ -1305,12 +1336,12 @@ sequenceDiagram
         API-->>Modal: 201 Created
         Modal->>Modal: Close modal
         Modal->>Table: Trigger refresh
-        
+
         Note over DB,Realtime: Database change triggers real-time event
         DB->>Realtime: New employee inserted
         Realtime->>Table: Broadcast change event
         Table->>Table: Add new row with highlight
-        
+
     else Validation Failed
         Modal->>HRAdmin: Display validation errors
     end
@@ -1332,18 +1363,18 @@ sequenceDiagram
     Sodexo->>Table: Type new value
     Sodexo->>Table: Press Enter or blur
     Table->>Table: Optimistic update (instant feedback)
-    
+
     Table->>API: PATCH /api/employees/{id}/custom-data
     API->>API: Verify user role is sodexo
     API->>Service: updateCustomData(employeeId, role, data)
     Service->>Repo: updateCustomData(employeeId, 'sodexo', {columnName: value})
-    
+
     Repo->>DB: UPDATE sodexo_data SET data = jsonb_set(...)
     DB-->>Repo: Updated record
     Repo-->>Service: Success
     Service-->>API: Success
     API-->>Table: 200 OK
-    
+
     alt Update Failed
         API-->>Table: 400 Bad Request
         Table->>Table: Revert optimistic update
@@ -1375,16 +1406,16 @@ sequenceDiagram
     DB->>Realtime: employees:UPDATE event
     Realtime->>HRTable: Broadcast update
     Realtime->>SodexoTable: Broadcast update
-    
+
     HRTable->>HRTable: Confirm update (already displayed)
     SodexoTable->>SodexoTable: Check if column visible
-    
+
     alt Column visible to Sodexo
         SodexoTable->>SodexoTable: Update cell with pulse animation
     else Column not visible
         SodexoTable->>SodexoTable: Ignore update
     end
-    
+
     Note over HRTable,SodexoTable: Update visible within <2 seconds
 ```
 
@@ -1406,15 +1437,15 @@ sequenceDiagram
     Modal->>Modal: Validate file type (.csv)
     HRAdmin->>Modal: Map columns to fields
     HRAdmin->>Modal: Click "Import"
-    
+
     Modal->>API: POST /api/employees/import (multipart/form-data)
     API->>Service: importFromCSV(file, columnMapping)
     Service->>Parser: Parse CSV file
     Parser-->>Service: Array of row objects
-    
+
     loop For each row
         Service->>Service: Validate row data
-        
+
         alt Row Valid
             Service->>Repo: create(rowData)
             Repo->>DB: INSERT INTO employees
@@ -1424,17 +1455,16 @@ sequenceDiagram
             Service->>Service: Add to error list
             Service->>Service: Increment skip count
         end
-        
+
         Service->>Modal: Update progress (via streaming or polling)
     end
-    
+
     Service-->>API: {imported: 243, skipped: 4, errors: [...]}
     API-->>Modal: Import complete
     Modal->>HRAdmin: Show summary with error report
     HRAdmin->>Modal: Download error report (optional)
     Modal->>Modal: Close and refresh table
 ```
-
 
 ## Database Schema
 
@@ -1489,10 +1519,10 @@ CREATE INDEX idx_employees_hire_date ON public.employees(hire_date);
 CREATE INDEX idx_employees_is_archived ON public.employees(is_archived);
 CREATE INDEX idx_employees_is_terminated ON public.employees(is_terminated);
 CREATE INDEX idx_employees_full_text ON public.employees USING GIN(
-  to_tsvector('english', 
-    COALESCE(first_name, '') || ' ' || 
-    COALESCE(surname, '') || ' ' || 
-    COALESCE(email, '') || ' ' || 
+  to_tsvector('english',
+    COALESCE(first_name, '') || ' ' ||
+    COALESCE(surname, '') || ' ' ||
+    COALESCE(email, '') || ' ' ||
     COALESCE(mobile, '')
   )
 );
@@ -1655,7 +1685,7 @@ CREATE POLICY "HR Admin can do anything with employees" ON public.employees
 
 CREATE POLICY "External parties can view active employees" ON public.employees
   FOR SELECT USING (
-    is_archived = false AND 
+    is_archived = false AND
     (get_user_role() IN ('sodexo', 'omc', 'payroll', 'toplux'))
   );
 
@@ -1840,20 +1870,29 @@ src/
        dialog.tsx
        input.tsx
        table.tsx
+       sheet.tsx             # Mobile drawer component
+       skeleton.tsx          # Loading skeleton
        ...                   # Other shadcn components
     dashboard/
-       employee-table.tsx    # Main table component
+       employee-table.tsx    # Main table component (desktop)
+       employee-card.tsx     # Mobile card view
+       employee-card-list.tsx # Mobile card list
+       responsive-employee-view.tsx # Table/card switcher
        table-toolbar.tsx     # Search, filters, actions
        add-employee-modal.tsx
        import-csv-modal.tsx
        terminate-modal.tsx
        role-preview-banner.tsx
+       important-date-card-list.tsx # Mobile dates view
     admin/
        user-management-table.tsx
+       user-card.tsx         # Mobile user card
+       responsive-user-view.tsx # User table/card switcher
        column-settings-table.tsx
        add-user-modal.tsx
     layout/
         header.tsx
+        mobile-nav.tsx        # Mobile hamburger navigation
         nav.tsx
         footer.tsx
 
@@ -1873,6 +1912,7 @@ src/
        use-employees.ts      # Employee data hook with real-time
        use-columns.ts        # Column config hook
        use-realtime.ts       # Supabase realtime hook
+       use-media-query.ts    # Responsive breakpoint detection
     utils/                    # Utility functions
        cn.ts                 # Tailwind class merger
        validation.ts         # Zod schemas
@@ -1928,6 +1968,7 @@ interface UIStore {
 ```
 
 **State Management Patterns:**
+
 - **Local component state (useState):** For form inputs, UI toggles, temporary state
 - **Global auth state (Zustand):** User session, authentication status
 - **Global UI state (Zustand):** Modal visibility, preview mode, global UI flags
@@ -1940,22 +1981,22 @@ interface UIStore {
 
 `
 / (public)
- /login  Login page (unauthenticated only)
- /health  Health check (public API)
+/login Login page (unauthenticated only)
+/health Health check (public API)
 
 /dashboard (protected - all authenticated users)
- /  Employee table (role-based column visibility)
- /important-dates  Important dates calendar
- /admin (protected - HR Admin only)
-    /users  User management
-    /columns  Column settings
+/ Employee table (role-based column visibility)
+/important-dates Important dates calendar
+/admin (protected - HR Admin only)
+/users User management
+/columns Column settings
 
 /api (serverless functions)
- /api/auth/*
- /api/employees/*
- /api/columns/*
- /api/important-dates/*
- /api/admin/*
+/api/auth/_
+/api/employees/_
+/api/columns/_
+/api/important-dates/_
+/api/admin/\*
 `
 
 **Protected Route Pattern:**
@@ -2152,7 +2193,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('GET /api/employees error:', error);
     return NextResponse.json(
-      { error: { code: 'INTERNAL_ERROR', message: 'Failed to fetch employees' } },
+      {
+        error: { code: 'INTERNAL_ERROR', message: 'Failed to fetch employees' },
+      },
       { status: 500 }
     );
   }
@@ -2294,7 +2337,7 @@ sequenceDiagram
 
     Client->>Middleware: Request with session cookie
     Middleware->>SupaAuth: Validate session
-    
+
     alt Valid Session
         SupaAuth-->>Middleware: User auth data
         Middleware->>DB: Get user role
@@ -2302,7 +2345,7 @@ sequenceDiagram
         Middleware->>Middleware: Attach user to request context
         Middleware->>API: Forward request with user
         API->>API: Check role permissions
-        
+
         alt Authorized
             API->>API: Execute logic
             API-->>Client: Response
@@ -2364,7 +2407,6 @@ export function requireRole(allowedRoles: UserRole[]) {
 // const user = requireRole(['hr_admin'])(await getUserFromSession(supabase));
 ```
 
-
 ---
 
 ## Unified Project Structure
@@ -2401,13 +2443,13 @@ hr-masterdata/
        layout.tsx
        globals.css
        not-found.tsx
-   
+
     components/               # React components
        ui/                   # shadcn/ui base components
        dashboard/            # Dashboard-specific components
        admin/                # Admin panel components
        layout/               # Layout components
-   
+
     lib/                      # Shared libraries
        types/                # TypeScript type definitions
        services/             # Frontend API services
@@ -2419,7 +2461,7 @@ hr-masterdata/
        utils/                # Utility functions
        supabase/             # Supabase clients
        validation/           # Zod schemas
-   
+
     middleware.ts             # Next.js middleware for auth
 
  public/                       # Static assets
@@ -2588,6 +2630,7 @@ NODE_ENV=development                        # Environment
 ### Deployment Strategy
 
 **Frontend Deployment:**
+
 - **Platform:** Vercel
 - **Build Command:** pnpm build
 - **Output Directory:** .next
@@ -2595,11 +2638,13 @@ NODE_ENV=development                        # Environment
 - **Deployment Trigger:** Push to main branch (automatic via Vercel GitHub integration)
 
 **Backend Deployment:**
-- **Platform:** Vercel (serverless functions from /app/api/* routes)
+
+- **Platform:** Vercel (serverless functions from /app/api/\* routes)
 - **Build Command:** Same as frontend (unified build)
 - **Deployment Method:** Automatic with frontend
 
 **Database Deployment:**
+
 - **Platform:** Supabase hosted PostgreSQL
 - **Migration Method:** Manual via Supabase CLI or Supabase Studio
 - **Backup Strategy:** Supabase automatic daily backups (free tier)
@@ -2650,11 +2695,11 @@ jobs:
 
 ### Environments
 
-| Environment | Frontend URL | Backend URL | Purpose |
-|-------------|--------------|-------------|---------|
-| **Development** | http://localhost:3000 | http://localhost:3000/api | Local development |
-| **Staging** | https://hr-masterdata-staging.vercel.app | https://hr-masterdata-staging.vercel.app/api | Pre-production testing (optional) |
-| **Production** | https://hr-masterdata.vercel.app | https://hr-masterdata.vercel.app/api | Live environment |
+| Environment     | Frontend URL                             | Backend URL                                  | Purpose                           |
+| --------------- | ---------------------------------------- | -------------------------------------------- | --------------------------------- |
+| **Development** | http://localhost:3000                    | http://localhost:3000/api                    | Local development                 |
+| **Staging**     | https://hr-masterdata-staging.vercel.app | https://hr-masterdata-staging.vercel.app/api | Pre-production testing (optional) |
+| **Production**  | https://hr-masterdata.vercel.app         | https://hr-masterdata.vercel.app/api         | Live environment                  |
 
 **Deployment Process:**
 
@@ -2681,15 +2726,94 @@ supabase db push  # Push migrations to production
 
 ---
 
+## Responsive Design Architecture
+
+### Mobile-First Strategy
+
+**Breakpoint System:**
+
+- **Mobile:** <1024px (Tailwind `lg` breakpoint)
+- **Desktop:** ≥1024px
+- **Strategy:** Single breakpoint for simplicity, mobile-first CSS, progressive enhancement
+
+**Core Components:**
+
+1. **useMediaQuery Hook** (`src/hooks/use-media-query.ts`)
+   - Purpose: Detect screen size and respond to viewport changes
+   - Query: `(max-width: 1023px)` for mobile detection
+   - Features: SSR-safe, React state updates, cleanup on unmount
+   - Usage: Enables conditional rendering in responsive wrappers
+
+2. **Mobile Navigation** (`src/components/layout/mobile-nav.tsx`)
+   - Component: Sheet-based drawer navigation (shadcn/ui)
+   - Trigger: Hamburger menu icon (visible only on mobile)
+   - Touch Targets: 48px minimum (min-h-12 buttons)
+   - Content: Role-based navigation, company logo, user info
+   - Behavior: Replaces desktop horizontal nav on mobile
+
+3. **Responsive View Wrappers**
+   - `ResponsiveEmployeeView`: Toggles EmployeeTable ↔ EmployeeCardList
+   - `ResponsiveUserView`: Toggles UserTable ↔ UserCardList
+   - Pattern: Single component determines layout based on screen size
+   - Mobile Features: Card-based layouts, full-screen dialogs for actions
+
+4. **Card Components**
+   - `EmployeeCard`, `UserCard`: Touch-optimized employee/user info cards
+   - `EmployeeCardList`, `UserCardList`: Scrollable card grids (gap-4)
+   - `ImportantDateCardList`: Compact date cards with badges
+   - Design: 44px button touch targets, truncated text, responsive spacing
+
+**Touch Optimization:**
+
+- **Button Sizing:** 44px minimum (size="default"), responsive (h-11 mobile, h-9 desktop)
+- **Touch Actions:** `touch-action: manipulation` globally to prevent zoom delays
+- **Active States:** Custom active: styles for immediate touch feedback
+- **Hover Prevention:** `@media (hover: none)` to disable hover effects on touch devices
+
+**Layout Adaptations:**
+
+- **Navigation:** Desktop horizontal nav → Mobile hamburger drawer
+- **Tables:** Desktop TanStack Table → Mobile scrollable card lists
+- **Forms:** Desktop multi-column forms → Mobile single-column stacked forms
+- **Modals:** Desktop centered dialogs → Mobile full-screen Sheet drawers
+- **Header:** Desktop full nav → Mobile hamburger + logo + user menu
+
+**Performance Optimizations:**
+
+- **Code Splitting:** Route-level loading.tsx files with skeleton states
+- **Image Optimization:** WebP format, responsive sizes, 7-day cache
+- **Bundle Analysis:** @next/bundle-analyzer configured (npm run build:analyze)
+- **CSS:** Tailwind purge removes unused styles, minimal runtime CSS-in-JS
+- **Responsive Loading:** Different skeletons for mobile (cards) vs desktop (table rows)
+
+**Edge Cases Handled:**
+
+- **Orientation:** Landscape-specific styles for small screens (height-based layout)
+- **Small Phones:** ≤374px width handling (iPhone SE, Galaxy Fold)
+- **Large Tablets:** 1024-1280px breakpoint for tablet-specific optimizations
+- **Text Overflow:** Truncate classes on all dynamic text (names, emails, companies)
+- **Safe Areas:** Responsive padding (p-4 mobile, p-6 desktop) for notches/cutouts
+
+**Testing Strategy:**
+
+- **Device Coverage:** iOS (Safari), Android (Chrome), tablets, desktop browsers
+- **Test Matrix:** Documented in `MOBILE_TESTING_GUIDE.md`
+- **Breakpoints:** Documented in `RESPONSIVE_BREAKPOINTS.md`
+- **Manual Testing:** Touch interactions, gestures, orientation changes, accessibility
+- **Automated Testing:** useMediaQuery hook unit tests (5/5 passing)
+
+---
+
 ## Security and Performance
 
 ### Security Requirements
 
 **Frontend Security:**
+
 - **CSP Headers:** Next.js default CSP + custom directives for Supabase
   ```javascript
   // next.config.js
-  const cspHeader = 
+  const cspHeader =
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
@@ -2703,6 +2827,7 @@ supabase db push  # Push migrations to production
 - **Secure Storage:** Session tokens in HTTP-only cookies (Supabase Auth default), never in localStorage
 
 **Backend Security:**
+
 - **Input Validation:** Zod schemas for all API inputs
   ```typescript
   const employeeSchema = z.object({
@@ -2718,6 +2843,7 @@ supabase db push  # Push migrations to production
 - **SQL Injection Prevention:** Supabase client uses parameterized queries (automatic)
 
 **Authentication Security:**
+
 - **Token Storage:** JWT in HTTP-only, Secure, SameSite=Lax cookies
 - **Session Management:** 8-hour session timeout (configurable in Supabase)
 - **Password Policy:** Minimum 8 characters (enforced by Supabase Auth)
@@ -2726,8 +2852,9 @@ supabase db push  # Push migrations to production
 ### Performance Optimization
 
 **Frontend Performance:**
+
 - **Bundle Size Target:** <250KB initial JS load (achievable with Next.js tree-shaking)
-- **Loading Strategy:** 
+- **Loading Strategy:**
   - Server-side rendering (SSR) for initial page load
   - Client-side navigation for subsequent pages
   - React Suspense for code splitting
@@ -2737,6 +2864,7 @@ supabase db push  # Push migrations to production
   - Column config: cached in client (invalidate on updates)
 
 **Backend Performance:**
+
 - **Response Time Target:** <500ms for API requests (P95)
 - **Database Optimization:**
   - Indexes on frequently queried columns (surname, ssn, hire_date)
@@ -2748,6 +2876,7 @@ supabase db push  # Push migrations to production
   - No caching for employee data (real-time requirement)
 
 **Realtime Performance:**
+
 - **Subscription Management:** Single subscription per table per client
 - **Message Filtering:** Client-side filtering for role-based updates
 - **Reconnection Strategy:** Automatic reconnect with exponential backoff
@@ -2767,6 +2896,7 @@ supabase db push  # Push migrations to production
 ```
 
 **Test Coverage Goals:**
+
 - Overall: 70%+
 - Business logic: 90%+
 - UI components: 60%+
@@ -2877,7 +3007,10 @@ describe('GET /api/employees', () => {
 
   beforeAll(async () => {
     // Setup test database and authenticate
-    supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
+    supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_KEY!
+    );
     const { data } = await supabase.auth.signInWithPassword({
       email: 'test-hr@example.com',
       password: 'testpassword',
@@ -2893,7 +3026,7 @@ describe('GET /api/employees', () => {
   it('returns employee list for HR Admin', async () => {
     const response = await fetch('http://localhost:3000/api/employees', {
       headers: {
-        Authorization: Bearer ,
+        Authorization: Bearer,
       },
     });
 
@@ -2940,7 +3073,9 @@ test('HR Admin can create and edit employee', async ({ page }) => {
   await page.click('text=Save Employee');
 
   // Verify toast notification
-  await expect(page.locator('text=Employee Test Employee created successfully')).toBeVisible();
+  await expect(
+    page.locator('text=Employee Test Employee created successfully')
+  ).toBeVisible();
 
   // Verify employee appears in table
   await expect(page.locator('text=Test Employee')).toBeVisible();
@@ -2955,9 +3090,10 @@ test('HR Admin can create and edit employee', async ({ page }) => {
 
 - **Type Sharing:** Always define shared types in src/lib/types/ and import from there. Never duplicate types between frontend and backend.
 
-- **API Calls:** Never make direct HTTP calls from components - always use the service layer (src/lib/services/*). This ensures consistency, error handling, and testability.
+- **API Calls:** Never make direct HTTP calls from components - always use the service layer (src/lib/services/\*). This ensures consistency, error handling, and testability.
 
 - **Environment Variables:** Access only through typed config objects, never process.env directly in application code.
+
   ```typescript
   // lib/config.ts
   export const config = {
@@ -2981,18 +3117,18 @@ test('HR Admin can create and edit employee', async ({ page }) => {
 
 ### Naming Conventions
 
-| Element | Frontend | Backend | Example |
-|---------|----------|---------|---------|
-| **Components** | PascalCase | - | EmployeeTable.tsx, AddEmployeeModal.tsx |
-| **Hooks** | camelCase with 'use' | - | useAuth.ts, useEmployees.ts |
-| **Services** | camelCase with 'Service' | camelCase with 'Service' | employeeService.ts |
-| **Repositories** | - | PascalCase with 'Repository' | EmployeeRepository |
-| **API Routes** | kebab-case | kebab-case | /api/employees, /api/important-dates |
-| **Database Tables** | snake_case | snake_case | employees, column_config, sodexo_data |
-| **Database Columns** | snake_case | snake_case | irst_name, hire_date, is_archived |
-| **TypeScript Interfaces** | PascalCase | PascalCase | Employee, SessionUser, ColumnConfig |
-| **Enums** | PascalCase | PascalCase | UserRole |
-| **Constants** | UPPER_SNAKE_CASE | UPPER_SNAKE_CASE | MAX_FILE_SIZE, SESSION_TIMEOUT |
+| Element                   | Frontend                 | Backend                      | Example                                 |
+| ------------------------- | ------------------------ | ---------------------------- | --------------------------------------- |
+| **Components**            | PascalCase               | -                            | EmployeeTable.tsx, AddEmployeeModal.tsx |
+| **Hooks**                 | camelCase with 'use'     | -                            | useAuth.ts, useEmployees.ts             |
+| **Services**              | camelCase with 'Service' | camelCase with 'Service'     | employeeService.ts                      |
+| **Repositories**          | -                        | PascalCase with 'Repository' | EmployeeRepository                      |
+| **API Routes**            | kebab-case               | kebab-case                   | /api/employees, /api/important-dates    |
+| **Database Tables**       | snake_case               | snake_case                   | employees, column_config, sodexo_data   |
+| **Database Columns**      | snake_case               | snake_case                   | irst_name, hire_date, is_archived       |
+| **TypeScript Interfaces** | PascalCase               | PascalCase                   | Employee, SessionUser, ColumnConfig     |
+| **Enums**                 | PascalCase               | PascalCase                   | UserRole                                |
+| **Constants**             | UPPER_SNAKE_CASE         | UPPER_SNAKE_CASE             | MAX_FILE_SIZE, SESSION_TIMEOUT          |
 
 ---
 
@@ -3010,14 +3146,14 @@ sequenceDiagram
     Component->>Service: Call API function
     Service->>API: HTTP request
     API->>API: Validate input (Zod)
-    
+
     alt Validation Failed
         API-->>Service: 400 + ApiError
         Service-->>Component: Throw error
         Component->>Component: Display error toast
     else Validation Passed
         API->>DB: Query database
-        
+
         alt DB Error
             DB-->>API: Database error
             API->>API: Map to ApiError
@@ -3117,10 +3253,9 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
     const validated = employeeSchema.parse(data);
-    
+
     const employee = await employeeService.create(validated);
     return NextResponse.json({ data: employee }, { status: 201 });
-    
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
@@ -3180,6 +3315,7 @@ export async function POST(request: Request) {
 ### Key Metrics
 
 **Frontend Metrics:**
+
 - **Core Web Vitals:**
   - LCP (Largest Contentful Paint): <2.5s
   - FID (First Input Delay): <100ms
@@ -3189,12 +3325,14 @@ export async function POST(request: Request) {
 - **User Interactions:** Track key actions (login, create employee, edit cell)
 
 **Backend Metrics:**
+
 - **Request Rate:** Requests per second per endpoint
 - **Error Rate:** Percentage of 4xx and 5xx responses
 - **Response Time:** P50, P95, P99 latencies
 - **Database Query Performance:** Slow query identification (>1s)
 
 **Database Metrics (via Supabase Dashboard):**
+
 - **Connection count:** Monitor connection pool usage
 - **Query performance:** Identify slow queries
 - **Database size:** Track growth over time
@@ -3206,20 +3344,36 @@ export async function POST(request: Request) {
 // lib/server/logger.ts
 export const logger = {
   info: (message: string, meta?: Record<string, any>) => {
-    console.log(JSON.stringify({ level: 'info', message, ...meta, timestamp: new Date().toISOString() }));
+    console.log(
+      JSON.stringify({
+        level: 'info',
+        message,
+        ...meta,
+        timestamp: new Date().toISOString(),
+      })
+    );
   },
   error: (message: string, error?: Error, meta?: Record<string, any>) => {
-    console.error(JSON.stringify({
-      level: 'error',
-      message,
-      error: error?.message,
-      stack: error?.stack,
-      ...meta,
-      timestamp: new Date().toISOString(),
-    }));
+    console.error(
+      JSON.stringify({
+        level: 'error',
+        message,
+        error: error?.message,
+        stack: error?.stack,
+        ...meta,
+        timestamp: new Date().toISOString(),
+      })
+    );
   },
   warn: (message: string, meta?: Record<string, any>) => {
-    console.warn(JSON.stringify({ level: 'warn', message, ...meta, timestamp: new Date().toISOString() }));
+    console.warn(
+      JSON.stringify({
+        level: 'warn',
+        message,
+        ...meta,
+        timestamp: new Date().toISOString(),
+      })
+    );
   },
 };
 
@@ -3234,25 +3388,25 @@ export const logger = {
 ### Executive Summary
 
 **Architecture Completeness:** 100%  
-**Technical Stack Finalized:**  Yes  
-**Ready for Development:**  Ready
+**Technical Stack Finalized:** Yes  
+**Ready for Development:** Ready
 
 This fullstack architecture document provides comprehensive technical guidance for AI-driven development of the HR Masterdata Management System. The architecture leverages Next.js 14+ with App Router as a unified fullstack framework, Supabase for database/auth/real-time capabilities, and Vercel for zero-cost serverless deployment. All technical decisions align with PRD requirements (NFR1: zero operational cost, NFR4: <2s real-time sync, NFR10: RLS security, NFR11: Excel-like usability).
 
 ### Validation Results
 
-| Category | Status | Notes |
-|----------|--------|-------|
-| Platform Selection |  PASS | Vercel + Supabase free-tier meets all NFRs |
-| Database Design |  PASS | Scalable to 10,000+ employees with proper indexing |
-| API Specification |  PASS | Complete REST API documented with OpenAPI examples |
-| Security Architecture |  PASS | RLS-first security, middleware auth, input validation |
-| Real-time Sync |  PASS | Supabase realtime subscriptions achieve <2s latency |
-| Type Safety |  PASS | Shared TypeScript types across frontend/backend |
-| Testing Strategy |  PASS | 70%+ coverage goal with unit/integration/e2e tiers |
-| Deployment Pipeline |  PASS | Automated CI/CD with Vercel + GitHub Actions |
-| Performance Optimization |  PASS | Indexed queries, CDN caching, optimistic UI |
-| Monitoring Plan |  PASS | Vercel Analytics + logging for MVP |
+| Category                 | Status | Notes                                                 |
+| ------------------------ | ------ | ----------------------------------------------------- |
+| Platform Selection       | PASS   | Vercel + Supabase free-tier meets all NFRs            |
+| Database Design          | PASS   | Scalable to 10,000+ employees with proper indexing    |
+| API Specification        | PASS   | Complete REST API documented with OpenAPI examples    |
+| Security Architecture    | PASS   | RLS-first security, middleware auth, input validation |
+| Real-time Sync           | PASS   | Supabase realtime subscriptions achieve <2s latency   |
+| Type Safety              | PASS   | Shared TypeScript types across frontend/backend       |
+| Testing Strategy         | PASS   | 70%+ coverage goal with unit/integration/e2e tiers    |
+| Deployment Pipeline      | PASS   | Automated CI/CD with Vercel + GitHub Actions          |
+| Performance Optimization | PASS   | Indexed queries, CDN caching, optimistic UI           |
+| Monitoring Plan          | PASS   | Vercel Analytics + logging for MVP                    |
 
 ### Key Architectural Decisions
 
@@ -3273,6 +3427,7 @@ This fullstack architecture document provides comprehensive technical guidance f
 ** READY FOR EPIC 1: Foundation & Authentication Infrastructure**
 
 The architecture provides:
+
 - Complete database schema with migration scripts
 - Authentication flow with Supabase Auth integration
 - Middleware pattern for route protection
@@ -3297,4 +3452,3 @@ The architecture provides:
 **Last Updated:** 2025-10-26  
 **Maintained By:** Winston (Architect)  
 **Status:** Complete and Ready for Development
-
