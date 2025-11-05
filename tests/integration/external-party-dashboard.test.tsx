@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { UserRole, type SessionUser } from "@/lib/types/user";
-import DashboardPage from "@/app/[locale]/dashboard/page";
+import DashboardPage from "@/app/dashboard/page";
 
 // Mock the auth hook
 vi.mock("@/lib/hooks/use-auth", () => ({

@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import DashboardPage from '@/app/[locale]/dashboard/page';
+import DashboardPage from '@/app/dashboard/page';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useEmployees } from '@/lib/hooks/use-employees';
 import { UserRole } from '@/lib/types/user';

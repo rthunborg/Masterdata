@@ -11,7 +11,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Link } from '@/lib/navigation';
-import { useTranslations } from 'next-intl';
+import { t } from '@/lib/i18n';
 import type { SessionUser } from '@/lib/types/user';
 
 interface MobileNavProps {
@@ -21,31 +21,29 @@ interface MobileNavProps {
 
 export function MobileNav({ user, className }: MobileNavProps) {
   const [open, setOpen] = useState(false);
-  const t = useTranslations('navigation');
-  const tAdmin = useTranslations('admin');
 
   const navigationItems = [
     {
       href: '/dashboard',
-      label: t('employees'),
+      label: t.navigation.employees,
       icon: Home,
       show: true,
     },
     {
       href: '/dashboard/important-dates',
-      label: t('importantDates'),
+      label: t.navigation.importantDates,
       icon: Calendar,
       show: user.role === 'hr_admin',
     },
     {
       href: '/dashboard/admin/users',
-      label: tAdmin('userManagement'),
+      label: t.admin.userManagement,
       icon: Users,
       show: user.role === 'hr_admin',
     },
     {
       href: '/dashboard/admin/columns',
-      label: tAdmin('columnSettings'),
+      label: t.admin.columnSettings,
       icon: Settings,
       show: user.role === 'hr_admin',
     },

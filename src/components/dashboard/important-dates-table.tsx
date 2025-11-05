@@ -47,7 +47,7 @@ import { Trash2 } from "lucide-react";
 import { EditableCell } from "./editable-cell";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 
 interface ImportantDatesTableProps {
   dates: ImportantDate[];

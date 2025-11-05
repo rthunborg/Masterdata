@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { NextIntlClientProvider } from "next-intl";
 import {
   Tooltip,
   TooltipContent,
@@ -10,26 +9,18 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 
-// Mock translations
-const messages = {
-  tooltips: {
-    testTooltip: "This is a test tooltip",
-    archiveEmployee: "Archive employee",
-    restoreEmployee: "Restore employee",
-  },
-};
+// No need for mock translations or provider - Swedish-only app
+// Tests validate tooltip functionality without i18n complexity
 
 describe("Tooltip Component", () => {
-  const renderWithIntl = (component: React.ReactNode) => {
+  const renderWithProvider = (component: React.ReactNode) => {
     return render(
-      <NextIntlClientProvider locale="en" messages={messages}>
-        <TooltipProvider>{component}</TooltipProvider>
-      </NextIntlClientProvider>
+      <TooltipProvider>{component}</TooltipProvider>
     );
   };
 
   it("should render tooltip trigger button", () => {
-    renderWithIntl(
+    renderWithProvider(
       <Tooltip>
         <TooltipTrigger asChild>
           <Button>Hover me</Button>
@@ -46,7 +37,7 @@ describe("Tooltip Component", () => {
   it("should show tooltip on hover", async () => {
     const user = userEvent.setup();
     
-    renderWithIntl(
+    renderWithProvider(
       <Tooltip>
         <TooltipTrigger asChild>
           <Button>Hover me</Button>
@@ -72,7 +63,7 @@ describe("Tooltip Component", () => {
   it("should show tooltip on hover and hide when element loses focus", async () => {
     const user = userEvent.setup();
     
-    renderWithIntl(
+    renderWithProvider(
       <div>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -106,7 +97,7 @@ describe("Tooltip Component", () => {
   it("should show tooltip on keyboard focus", async () => {
     const user = userEvent.setup();
     
-    renderWithIntl(
+    renderWithProvider(
       <Tooltip>
         <TooltipTrigger asChild>
           <Button>Focus me</Button>
@@ -135,7 +126,7 @@ describe("Tooltip Component", () => {
     const user = userEvent.setup();
     const handleClick = vi.fn();
     
-    renderWithIntl(
+    renderWithProvider(
       <Tooltip>
         <TooltipTrigger asChild>
           <Button onClick={handleClick}>Click me</Button>
@@ -155,7 +146,7 @@ describe("Tooltip Component", () => {
   it("should work with disabled buttons", async () => {
     const user = userEvent.setup();
     
-    renderWithIntl(
+    renderWithProvider(
       <Tooltip>
         <TooltipTrigger asChild>
           <Button disabled>Disabled button</Button>
@@ -213,7 +204,7 @@ describe("Tooltip Component", () => {
   });
 
   it("should be accessible to screen readers", () => {
-    renderWithIntl(
+    renderWithProvider(
       <Tooltip>
         <TooltipTrigger asChild>
           <Button aria-label="Archive employee">Archive</Button>

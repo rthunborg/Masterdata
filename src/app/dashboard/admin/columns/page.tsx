@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 import { columnService } from "@/lib/services/column-service";
 import { ColumnConfig } from "@/lib/types/column-config";
 import { ColumnSettingsTable } from "@/components/admin/column-settings-table";

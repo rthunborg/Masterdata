@@ -19,7 +19,7 @@ import { Settings, Edit } from "lucide-react";
 import { useColumns } from "@/lib/hooks/use-columns";
 import { useUIStore } from "@/lib/store/ui-store";
 import { groupColumnsByCategory } from "@/lib/utils/column-grouping";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 /**
  * Manage Columns Dialog Component
  * Shows list of custom columns grouped by category

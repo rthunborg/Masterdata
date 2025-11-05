@@ -53,7 +53,7 @@ import { useColumns } from "@/lib/hooks/use-columns";
 import { getEmployeeFieldValue } from "@/lib/utils/column-mapping";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/lib/store/ui-store";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 
 interface EmployeeTableProps {
   employees: Employee[];

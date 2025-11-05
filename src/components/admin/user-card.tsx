@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Mail, UserCheck, UserX, Trash2 } from 'lucide-react';
 import type { User } from '@/lib/types/user';
 import { getRoleDisplayName } from '@/lib/types/user';
-import { useFormatter } from 'next-intl';
+import { useFormatter } from '@/lib/i18n';
 
 interface UserCardProps {
   user: User;

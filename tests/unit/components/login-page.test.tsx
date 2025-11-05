@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
-import LoginForm from '@/app/[locale]/(auth)/login/login-form';
+import LoginForm from '@/app/(auth)/login/login-form';
 
 // Mock next/navigation
 const mockPush = vi.fn();

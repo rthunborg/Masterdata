@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useEmployees } from "@/lib/hooks/use-employees";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import {
   Card,

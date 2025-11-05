@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -62,7 +62,7 @@ export function AddColumnModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   
-  const t = useTranslations('modals.addColumn');
+  const t = useTranslations('modals');
   const tCommon = useTranslations('common');
   const tForms = useTranslations('forms');
 

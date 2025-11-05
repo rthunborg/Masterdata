@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 import { adminService } from "@/lib/services/admin-service";
 import { User } from "@/lib/types/user";
 import { ResponsiveUserView } from "@/components/admin/responsive-user-view";

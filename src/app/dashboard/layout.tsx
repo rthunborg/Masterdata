@@ -2,25 +2,19 @@ import { getUserFromSession } from "@/lib/server/auth";
 import { Link, redirect } from "@/lib/navigation";
 import { Toaster } from "sonner";
 import { Header } from "@/components/layout/header";
-import { getTranslations } from "next-intl/server";
+import { t } from "@/lib/i18n";
 
 export default async function DashboardLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
   const user = await getUserFromSession();
 
   if (!user) {
-    redirect({ href: "/login", locale });
+    redirect("/login");
     return null; // TypeScript guard - this line is never reached due to redirect
   }
-
-  const t = await getTranslations({ locale: locale, namespace: 'navigation' });
-  const tAdmin = await getTranslations({ locale: locale, namespace: 'admin' });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -34,14 +28,14 @@ export default async function DashboardLayout({
               href="/dashboard"
               className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
             >
-              {t('employees')}
+              {t.navigation.employees}
             </Link>
             {user.role === "hr_admin" && (
               <Link
                 href="/dashboard/important-dates"
                 className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
               >
-                {t('importantDates')}
+                {t.navigation.importantDates}
               </Link>
             )}
             {user.role === "hr_admin" && (
@@ -49,7 +43,7 @@ export default async function DashboardLayout({
                 href="/dashboard/admin/users"
                 className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
               >
-                {tAdmin('userManagement')}
+                {t.admin.userManagement}
               </Link>
             )}
             {user.role === "hr_admin" && (
@@ -57,7 +51,7 @@ export default async function DashboardLayout({
                 href="/dashboard/admin/columns"
                 className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
               >
-                {tAdmin('columnSettings')}
+                {t.admin.columnSettings}
               </Link>
             )}
           </div>

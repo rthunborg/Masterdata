@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { UserRole, getRoleDisplayName } from "@/lib/types/user";
 import { Eye } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 
 /**
  * Role Selector Dropdown Component

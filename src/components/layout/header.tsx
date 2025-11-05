@@ -2,19 +2,17 @@
 
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useRouter } from '@/lib/navigation';
-import { useTranslations } from 'next-intl';
+import { t } from '@/lib/i18n';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LogOut } from 'lucide-react';
 import { getRoleDisplayName } from '@/lib/types/user';
-import { LanguageToggle } from './language-toggle';
 import { MobileNav } from './mobile-nav';
 
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const t = useTranslations('common');
 
   const handleLogout = async () => {
     try {
@@ -45,7 +43,7 @@ export function Header() {
             priority
           />
           <h1 className="text-sm sm:text-base md:text-lg font-semibold hidden sm:block truncate">
-            {t('appName')}
+            {t.common.appName}
           </h1>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0">
@@ -55,10 +53,9 @@ export function Header() {
           <Badge variant="secondary" className="hidden sm:inline-flex">
             {getRoleDisplayName(user.role)}
           </Badge>
-          <LanguageToggle />
           <Button onClick={handleLogout} variant="outline" size="sm">
             <LogOut className="h-4 w-4 md:mr-2" />
-            <span className="hidden sm:inline">{t('signOut')}</span>
+            <span className="hidden sm:inline">{t.common.signOut}</span>
           </Button>
         </div>
       </div>

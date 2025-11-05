@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -40,7 +40,7 @@ export function TerminateEmployeeModal({
   onOpenChange,
   onSuccess,
 }: TerminateEmployeeModalProps) {
-  const t = useTranslations('modals.terminateEmployee');
+  const t = useTranslations('modals');
   const tCommon = useTranslations('common');
   
   const {

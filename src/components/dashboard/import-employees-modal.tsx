@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -45,7 +45,7 @@ export function ImportEmployeesModal({
   onOpenChange,
   onSuccess,
 }: ImportEmployeesModalProps) {
-  const t = useTranslations('modals.importEmployees');
+  const t = useTranslations('modals');
   const tCommon = useTranslations('common');
   
   const [file, setFile] = useState<File | null>(null);

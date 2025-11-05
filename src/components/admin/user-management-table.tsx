@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { User, getRoleDisplayName } from "@/lib/types/user";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { adminService } from "@/lib/services/admin-service";
-import { useTranslations, useFormatter } from "next-intl";
+import { useTranslations, useFormatter } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -167,8 +167,7 @@ export function UserManagementTable({
     
     try {
       const date = new Date(timestamp);
-      const now = new Date();
-      return format.relativeTime(date, now);
+      return format.relativeTime(date);
     } catch {
       return t('lastActiveNever');
     }

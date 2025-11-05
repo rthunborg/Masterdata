@@ -1,19 +1,10 @@
 ﻿import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import createMiddleware from 'next-intl/middleware';
-import { locales } from './src/i18n';
 import { shouldUpdateActivity } from './src/lib/server/utils/activity-tracker';
 
 // Routes that don't require authentication (excluding /login which needs special handling)
 const PUBLIC_ROUTES = ['/api/auth/login', '/api/health'];
-
-// Create next-intl middleware with Swedish as default
-const intlMiddleware = createMiddleware({
-  locales,
-  defaultLocale: 'sv', // Default to Swedish
-  localePrefix: 'always',
-});
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -25,7 +16,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Skip locale handling for static files and API routes
+  // Skip middleware for static files and API routes
   if (
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
@@ -33,19 +24,6 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-
-  // Extract locale from pathname to check if valid
-  const pathSegments = pathname.split('/').filter(Boolean);
-  const firstSegment = pathSegments[0];
-  const isValidLocale = locales.includes(firstSegment as (typeof locales)[number]);
-  
-  // If no valid locale, let intl middleware handle it (it will redirect)
-  if (!isValidLocale) {
-    return intlMiddleware(request);
-  }
-
-  const locale = firstSegment;
-  const pathWithoutLocale = pathname.slice(locale.length + 1) || '/';
 
   try {
     // Create a response that will be returned
@@ -87,11 +65,11 @@ export async function middleware(request: NextRequest) {
 
     // Protect admin-only routes
     const adminRoutes = ['/dashboard/important-dates', '/dashboard/admin/users', '/dashboard/admin/columns'];
-    const isAdminRoute = adminRoutes.some(route => pathWithoutLocale.startsWith(route));
+    const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
     
     if (isAdminRoute && userRole !== 'hr_admin') {
-      console.log('[Middleware] Access denied to admin route:', pathWithoutLocale, 'User role:', userRole);
-      const redirectUrl = new URL(`/${locale}/dashboard`, request.url);
+      console.log('[Middleware] Access denied to admin route:', pathname, 'User role:', userRole);
+      const redirectUrl = new URL('/dashboard', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -140,24 +118,24 @@ export async function middleware(request: NextRequest) {
     }
 
     // Redirect to login if not authenticated (except on login page itself)
-    if (!user && !pathWithoutLocale.startsWith('/login') && pathWithoutLocale !== '/') {
-      const redirectUrl = new URL(`/${locale}/login`, request.url);
+    if (!user && !pathname.startsWith('/login') && pathname !== '/') {
+      const redirectUrl = new URL('/login', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
     // Redirect authenticated users from root to dashboard
-    if (user && pathWithoutLocale === '/') {
-      const redirectUrl = new URL(`/${locale}/dashboard`, request.url);
+    if (user && pathname === '/') {
+      const redirectUrl = new URL('/dashboard', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
     // Redirect to dashboard if authenticated user tries to access login
-    if (user && pathWithoutLocale.startsWith('/login')) {
-      const redirectUrl = new URL(`/${locale}/dashboard`, request.url);
+    if (user && pathname.startsWith('/login')) {
+      const redirectUrl = new URL('/dashboard', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
-    // Return intl response with any cookies set by Supabase
+    // Return response with any cookies set by Supabase
     return response;
   } catch (error) {
     console.error('Middleware error:', error);

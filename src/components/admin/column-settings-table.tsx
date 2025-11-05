@@ -24,7 +24,7 @@ import { DeleteColumnModal } from "./delete-column-modal";
 import { VisibilityBadge } from "@/components/ui/visibility-badge";
 import { toast } from "sonner";
 import { Trash2, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/lib/i18n";
 import {
   DndContext,
   closestCenter,
