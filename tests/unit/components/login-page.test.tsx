@@ -34,17 +34,17 @@ describe('LoginForm', () => {
   it('renders login form elements', () => {
     renderWithI18n(<LoginForm />);
     
-    expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Email')).toBeInTheDocument();
-    expect(screen.getByLabelText('Password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Logga in' })).toBeInTheDocument();
+    expect(screen.getByLabelText('E-post')).toBeInTheDocument();
+    expect(screen.getByLabelText('Lösenord')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Logga in/i })).toBeInTheDocument();
   });
 
   it('shows validation errors for invalid email', async () => {
     renderWithI18n(<LoginForm />);
     
-    const emailInput = screen.getByLabelText('Email');
-    const passwordInput = screen.getByLabelText('Password');
+    const emailInput = screen.getByLabelText('E-post');
+    const passwordInput = screen.getByLabelText('Lösenord');
     
     fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
     fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
@@ -60,9 +60,9 @@ describe('LoginForm', () => {
   it('shows validation errors for short password', async () => {
     renderWithI18n(<LoginForm />);
     
-    const emailInput = screen.getByLabelText('Email');
-    const passwordInput = screen.getByLabelText('Password');
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    const emailInput = screen.getByLabelText('E-post');
+    const passwordInput = screen.getByLabelText('Lösenord');
+    const submitButton = screen.getByRole('button', { name: /Logga in/i });
     
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: '123' } });
@@ -78,9 +78,9 @@ describe('LoginForm', () => {
     
     renderWithI18n(<LoginForm />);
     
-    const emailInput = screen.getByLabelText('Email');
-    const passwordInput = screen.getByLabelText('Password');
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    const emailInput = screen.getByLabelText('E-post');
+    const passwordInput = screen.getByLabelText('Lösenord');
+    const submitButton = screen.getByRole('button', { name: /Logga in/i });
     
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
@@ -99,9 +99,9 @@ describe('LoginForm', () => {
     
     renderWithI18n(<LoginForm />);
     
-    const emailInput = screen.getByLabelText('Email');
-    const passwordInput = screen.getByLabelText('Password');
-    const submitButton = screen.getByRole('button', { name: /sign in/i });
+    const emailInput = screen.getByLabelText('E-post');
+    const passwordInput = screen.getByLabelText('Lösenord');
+    const submitButton = screen.getByRole('button', { name: /Logga in/i });
     
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });

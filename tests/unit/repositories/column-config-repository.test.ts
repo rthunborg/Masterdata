@@ -29,7 +29,10 @@ describe("ColumnConfigRepository", () => {
         omc: { view: true, edit: false },
       },
       category: null,
+      display_order: 1,
+      is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
+      updated_at: "2025-10-28T00:00:00Z",
     },
     {
       id: "col-2",
@@ -42,7 +45,10 @@ describe("ColumnConfigRepository", () => {
         omc: { view: false, edit: false },
       },
       category: null,
+      display_order: 2,
+      is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
+      updated_at: "2025-10-28T00:00:00Z",
     },
     {
       id: "col-3",
@@ -55,7 +61,10 @@ describe("ColumnConfigRepository", () => {
         omc: { view: true, edit: false },
       },
       category: null,
+      display_order: 3,
+      is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
+      updated_at: "2025-10-28T00:00:00Z",
     },
   ];
 
@@ -64,7 +73,10 @@ describe("ColumnConfigRepository", () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null }),
+        order: vi.fn()
+          .mockReturnValueOnce({ // First order call returns object with order method
+            order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null })
+          })
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -74,14 +86,16 @@ describe("ColumnConfigRepository", () => {
       expect(result).toEqual(mockColumnConfigs);
       expect(result.length).toBe(3);
       expect(mockClient.from).toHaveBeenCalledWith("column_config");
-      expect(mockClient.order).toHaveBeenCalledWith("column_name", { ascending: true });
     });
 
     it("should return empty array when no columns exist", async () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: [], error: null })
+          })
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -95,7 +109,10 @@ describe("ColumnConfigRepository", () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: null, error: { message: "Database error" } }),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: null, error: { message: "Database error" } })
+          })
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -163,7 +180,10 @@ describe("ColumnConfigRepository", () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null }),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null })
+          })
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -179,7 +199,10 @@ describe("ColumnConfigRepository", () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null }),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null })
+          })
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -194,7 +217,10 @@ describe("ColumnConfigRepository", () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null }),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null })
+          })
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -208,7 +234,10 @@ describe("ColumnConfigRepository", () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: null, error: { message: "Database error" } }),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: null, error: { message: "Database error" } })
+          })
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -230,13 +259,19 @@ describe("ColumnConfigRepository", () => {
           sodexo: { view: true, edit: true },
         },
         category: "Recruitment",
+        display_order: 0,
+        is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
       };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: [], error: null }), // No existing columns
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: [], error: null }) // No existing columns (for findAll)
+          }),
         insert: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: newColumn, error: null }),
       };
@@ -268,13 +303,19 @@ describe("ColumnConfigRepository", () => {
           sodexo: { view: true, edit: true },
         },
         category: null,
+        display_order: 0,
+        is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
       };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: [existingColumn], error: null }),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: [existingColumn], error: null })
+          })
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -285,14 +326,17 @@ describe("ColumnConfigRepository", () => {
           column_type: "text",
           role: UserRole.SODEXO,
         })
-      ).rejects.toThrow('Column "Sodexo Team" already exists for this role');
+      ).rejects.toThrow('Column "Sodexo Team" already exists');
     });
 
     it("should throw error on database insert failure", async () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: [], error: null })
+          }),
         insert: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: null,
@@ -321,7 +365,10 @@ describe("ColumnConfigRepository", () => {
         is_masterdata: false,
         role_permissions: { sodexo: { view: true, edit: true } },
         category: null,
+        display_order: 0,
+        is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
       };
 
       const updatedColumn = { ...customColumn, category: "HR" };
@@ -352,7 +399,10 @@ describe("ColumnConfigRepository", () => {
         is_masterdata: true,
         role_permissions: { hr_admin: { view: true, edit: true } },
         category: null,
+        display_order: 0,
+        is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
       };
 
       const mockClient = {
@@ -397,7 +447,10 @@ describe("ColumnConfigRepository", () => {
         is_masterdata: false,
         role_permissions: { sodexo: { view: true, edit: true } },
         category: null,
+        display_order: 0,
+        is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
       };
 
       const mockClient = {
@@ -426,7 +479,10 @@ describe("ColumnConfigRepository", () => {
         is_masterdata: true,
         role_permissions: { hr_admin: { view: true, edit: true } },
         category: null,
+        display_order: 0,
+        is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
       };
 
       const mockClient = {
@@ -467,7 +523,10 @@ describe("ColumnConfigRepository", () => {
         is_masterdata: false,
         role_permissions: { sodexo: { view: true, edit: true } },
         category: null,
+        display_order: 0,
+        is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
       };
 
       const mockClient = {

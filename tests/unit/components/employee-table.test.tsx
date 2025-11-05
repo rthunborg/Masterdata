@@ -212,6 +212,11 @@ vi.mock("@/lib/store/ui-store", () => ({
   useUIStore: vi.fn(() => ({
     previewRole: null,
     isPreviewMode: false,
+    columnVisibility: {},
+    initColumnVisibility: vi.fn(),
+    toggleColumnVisibility: vi.fn(),
+    resetColumnVisibility: vi.fn(),
+    getVisibleColumns: vi.fn((cols) => cols),
   })),
 }));
 

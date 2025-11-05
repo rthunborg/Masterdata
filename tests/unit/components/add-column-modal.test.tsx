@@ -53,11 +53,11 @@ describe("AddColumnModal", () => {
   it("renders form fields correctly when modal is open", () => {
     renderWithI18n(<AddColumnModal />);
 
-    expect(screen.getByLabelText(/column name/i)).toBeInTheDocument();
-    expect(screen.getByText(/column type/i)).toBeInTheDocument();
-    expect(screen.getByText(/category \(optional\)/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /create column/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Kolumnnamn/i)).toBeInTheDocument();
+    expect(screen.getByText(/Kolumntyp/i)).toBeInTheDocument();
+    expect(screen.getByText(/Kategori \(Valfritt\)/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Skapa kolumn/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Avbryt/i })).toBeInTheDocument();
   });
 
   it("does not render when modal is closed", () => {
@@ -68,13 +68,13 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    expect(screen.queryByLabelText(/column name/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Kolumnnamn/i)).not.toBeInTheDocument();
   });
 
   it("validates required column name field", async () => {
     renderWithI18n(<AddColumnModal />);
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -87,10 +87,10 @@ describe("AddColumnModal", () => {
   it("validates duplicate column name", async () => {
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
     fireEvent.change(nameInput, { target: { value: "Existing Column" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -105,10 +105,10 @@ describe("AddColumnModal", () => {
   it("validates column name format", async () => {
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
     fireEvent.change(nameInput, { target: { value: "Invalid@Name!" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -135,10 +135,10 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -165,10 +165,10 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -189,10 +189,10 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -209,35 +209,35 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /creating/i })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /Skapar/i })).toBeDisabled();
     });
   });
 
   it("allows selecting column type", async () => {
     renderWithI18n(<AddColumnModal />);
 
-    const typeSelect = screen.getByRole("combobox", { name: /column type/i });
+    const typeSelect = screen.getByRole("combobox", { name: /Kolumntyp/i });
     fireEvent.click(typeSelect);
 
     await waitFor(() => {
-      expect(screen.getByRole("option", { name: /text/i })).toBeInTheDocument();
-      expect(screen.getByRole("option", { name: /number/i })).toBeInTheDocument();
-      expect(screen.getByRole("option", { name: /date/i })).toBeInTheDocument();
-      expect(screen.getByRole("option", { name: /boolean/i })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: /Text/i })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: /Nummer/i })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: /Datum/i })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: /Boolesk/i })).toBeInTheDocument();
     });
   });
 
   it("shows existing categories in category combobox", async () => {
     renderWithI18n(<AddColumnModal />);
 
-    const categoryButton = screen.getByRole("combobox", { name: /category/i });
+    const categoryButton = screen.getByRole("combobox", { name: /Kategori/i });
     fireEvent.click(categoryButton);
 
     await waitFor(() => {
@@ -260,16 +260,16 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
-    const categoryButton = screen.getByRole("combobox", { name: /category/i });
+    const categoryButton = screen.getByRole("combobox", { name: /Kategori/i });
     fireEvent.click(categoryButton);
 
-    const categoryInput = screen.getByPlaceholderText(/search or type/i);
+    const categoryInput = screen.getByPlaceholderText(/Sök eller skriv/i);
     fireEvent.change(categoryInput, { target: { value: "Custom Category" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {

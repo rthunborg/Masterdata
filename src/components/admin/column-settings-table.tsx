@@ -104,7 +104,7 @@ function DraggableRow({
   return (
     <TableRow ref={setNodeRef} style={style}>
       {/* Drag Handle / Move Buttons */}
-      <TableCell className="w-16">
+      <TableCell className="w-12">
         {isMobile ? (
           <div className="flex flex-col gap-1">
             <Button
@@ -112,25 +112,25 @@ function DraggableRow({
               size="sm"
               onClick={onMoveUp}
               disabled={isFirst || isUpdating}
-              className="h-6 px-2"
+              className="h-6 px-1"
             >
-              <ChevronUp className="h-4 w-4" />
+              <ChevronUp className="h-3 w-3" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={onMoveDown}
               disabled={isLast || isUpdating}
-              className="h-6 px-2"
+              className="h-6 px-1"
             >
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-3 w-3" />
             </Button>
           </div>
         ) : (
           <button
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-100 rounded"
+            className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
             aria-label="Reorder column"
           >
             <GripVertical className="h-4 w-4 text-gray-400" />
@@ -142,12 +142,12 @@ function DraggableRow({
       <TableCell className="font-medium">{column.column_name}</TableCell>
 
       {/* Type */}
-      <TableCell className="text-gray-600">{column.column_type}</TableCell>
+      <TableCell className="text-gray-600 w-16">{column.column_type}</TableCell>
 
       {/* Category */}
-      <TableCell>
+      <TableCell className="w-28">
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
             column.is_masterdata
               ? "bg-blue-100 text-blue-800"
               : "bg-purple-100 text-purple-800"
@@ -158,7 +158,7 @@ function DraggableRow({
       </TableCell>
 
       {/* Visibility Badge */}
-      <TableCell>
+      <TableCell className="w-24">
         <VisibilityBadge isVisible={column.is_visible} />
       </TableCell>
 
@@ -172,8 +172,8 @@ function DraggableRow({
         const editDisabled = isPermissionDisabled(column, role, "edit");
 
         return (
-          <TableCell key={role} className="text-center">
-            <div className="flex items-center justify-center gap-2">
+          <TableCell key={role} className="text-center w-20">
+            <div className="flex items-center justify-center gap-1">
               <PermissionToggle
                 role={role}
                 permissionType="view"
@@ -188,7 +188,7 @@ function DraggableRow({
                     : undefined
                 }
               />
-              <span className="text-gray-400">/</span>
+              <span className="text-gray-400 text-xs">/</span>
               <PermissionToggle
                 role={role}
                 permissionType="edit"
@@ -205,8 +205,8 @@ function DraggableRow({
       })}
 
       {/* Actions */}
-      <TableCell className="text-center">
-        <div className="flex items-center justify-center gap-2">
+      <TableCell className="text-center w-16">
+        <div className="flex items-center justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -214,6 +214,7 @@ function DraggableRow({
                 size="sm"
                 onClick={() => handleDeleteClick(column)}
                 disabled={isUpdating}
+                className="h-8 w-8 p-0"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -437,17 +438,17 @@ export function ColumnSettingsTable({
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className="rounded-md border w-full">
+        <div className="rounded-md border w-full overflow-x-auto">
           <Table className="table-auto w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-16"></TableHead>
+                <TableHead className="w-12"></TableHead>
                 <TableHead className="min-w-[150px]">{tForms("columnNameLabel")}</TableHead>
-                <TableHead className="w-20">{tAdmin("type")}</TableHead>
+                <TableHead className="w-16">{tAdmin("type")}</TableHead>
                 <TableHead className="w-28">{tAdmin("category")}</TableHead>
                 <TableHead className="w-24">{tAdmin("visibility")}</TableHead>
                 {allRoles.map((role) => (
-                  <TableHead key={role} className="text-center w-24">
+                  <TableHead key={role} className="text-center w-20">
                     <div className="whitespace-normal">
                       {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
                     </div>
@@ -456,7 +457,7 @@ export function ColumnSettingsTable({
                     </div>
                   </TableHead>
                 ))}
-                <TableHead className="w-20 text-center">{tAdmin("actions")}</TableHead>
+                <TableHead className="w-16 text-center">{tAdmin("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

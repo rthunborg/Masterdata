@@ -13,13 +13,13 @@ describe("Landing Page", () => {
   it("displays description", () => {
     render(<LandingPage />);
     expect(
-      screen.getByText(/Hantera anställningsdata/i)
+      screen.getByText(/Centraliserad plattform för hantering av personaldata/i)
     ).toBeInTheDocument();
   });
 
   it("displays login button with correct link", () => {
     render(<LandingPage />);
-    const loginButton = screen.getByText(/Logga in till systemet/i);
+    const loginButton = screen.getByText(/Logga in/i);
     expect(loginButton).toBeInTheDocument();
     expect(loginButton.closest("a")).toHaveAttribute("href", "/login");
   });
@@ -31,6 +31,7 @@ describe("Landing Page", () => {
 
   it("displays version number", () => {
     render(<LandingPage />);
-    expect(screen.getByText(/Version 1\.00/i)).toBeInTheDocument();
+    // Version number is no longer displayed on landing page
+    expect(screen.queryByText(/Version 1\.00/i)).not.toBeInTheDocument();
   });
 });

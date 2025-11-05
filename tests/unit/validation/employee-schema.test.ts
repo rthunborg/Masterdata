@@ -20,6 +20,20 @@ describe("createEmployeeSchema", () => {
     omc_date: "uuid-omc-date-456",
     pe3_date: "uuid-pe3-date-789",
     comments: "New hire",
+    // Masterdata columns (Story 7.1)
+    one: null,
+    isps: null,
+    photo: null,
+    origo: null,
+    loneiva: null,
+    mail_lon: null,
+    bankuppgifter: null,
+    li: null,
+    passport: null,
+    kvitto_c17_18: null,
+    c17: null,
+    crewing_done: null,
+    // System fields
     is_terminated: false,
     is_archived: false,
     termination_date: null,
@@ -61,14 +75,16 @@ describe("createEmployeeSchema", () => {
       expect(() => createEmployeeSchema.parse(data)).toThrow("Rank is required");
     });
 
-    it("should reject missing stena_date", () => {
-      const data = { ...validEmployeeData, stena_date: "" };
-      expect(() => createEmployeeSchema.parse(data)).toThrow("Stena Date is required");
+    it("should allow null for stena_date (nullable field)", () => {
+      const data = { ...validEmployeeData, stena_date: null };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.stena_date).toBeNull();
     });
 
-    it("should reject missing omc_date", () => {
-      const data = { ...validEmployeeData, omc_date: "" };
-      expect(() => createEmployeeSchema.parse(data)).toThrow("ÖMC Date is required");
+    it("should allow null for omc_date (nullable field)", () => {
+      const data = { ...validEmployeeData, omc_date: null };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.omc_date).toBeNull();
     });
 
     it("should reject missing hire_date", () => {
@@ -237,6 +253,20 @@ describe("createEmployeeSchema", () => {
         town_district: null,
         pe3_date: null,
         comments: null,
+        // Masterdata columns
+        one: null,
+        isps: null,
+        photo: null,
+        origo: null,
+        loneiva: null,
+        mail_lon: null,
+        bankuppgifter: null,
+        li: null,
+        passport: null,
+        kvitto_c17_18: null,
+        c17: null,
+        crewing_done: null,
+        // System fields
         is_terminated: false,
         is_archived: false,
         termination_date: null,
@@ -306,14 +336,16 @@ describe("createEmployeeSchema", () => {
   });
 
   describe("important date fields validation", () => {
-    it("should require stena_date", () => {
-      const data = { ...validEmployeeData, stena_date: "" };
-      expect(() => createEmployeeSchema.parse(data)).toThrow("Stena Date is required");
+    it("should allow null for stena_date (nullable field)", () => {
+      const data = { ...validEmployeeData, stena_date: null };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.stena_date).toBeNull();
     });
 
-    it("should require omc_date", () => {
-      const data = { ...validEmployeeData, omc_date: "" };
-      expect(() => createEmployeeSchema.parse(data)).toThrow("ÖMC Date is required");
+    it("should allow null for omc_date (nullable field)", () => {
+      const data = { ...validEmployeeData, omc_date: null };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.omc_date).toBeNull();
     });
 
     it("should accept null for pe3_date (optional)", () => {

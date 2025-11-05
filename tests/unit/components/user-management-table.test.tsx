@@ -104,7 +104,7 @@ describe('UserManagementTable', () => {
     );
 
     // Should have deactivate buttons for active users
-    expect(screen.getAllByText('Deactivate').length).toBe(2); // Sodexo and HR Admin rows
+    expect(screen.getAllByText('Inaktivera').length).toBe(2); // Sodexo and HR Admin rows
   });
 
   it('displays "Activate" button for inactive users', () => {
@@ -115,7 +115,7 @@ describe('UserManagementTable', () => {
       />
     );
 
-    expect(screen.getByText('Activate')).toBeInTheDocument();
+    expect(screen.getByText('Aktivera')).toBeInTheDocument();
   });
 
   it('disables deactivate button for current user', () => {
@@ -153,7 +153,7 @@ describe('UserManagementTable', () => {
 
     // Check that confirmation dialog appears
     await waitFor(() => {
-      expect(screen.getByText(/Are you sure you want to deactivate/i)).toBeInTheDocument();
+      expect(screen.getByText(/Är du säker på att du vill inaktivera/i)).toBeInTheDocument();
     });
   });
 
@@ -184,7 +184,7 @@ describe('UserManagementTable', () => {
 
     // Confirm in dialog
     await waitFor(() => {
-      const confirmButton = screen.getByText('Confirm');
+      const confirmButton = screen.getByText('Bekräfta');
       fireEvent.click(confirmButton);
     });
 
@@ -216,12 +216,12 @@ describe('UserManagementTable', () => {
     );
 
     // Click activate on inactive user
-    const activateButton = screen.getByText('Activate');
+    const activateButton = screen.getByText('Aktivera');
     fireEvent.click(activateButton);
 
     // Confirm in dialog
     await waitFor(() => {
-      const confirmButton = screen.getByText('Confirm');
+      const confirmButton = screen.getByText('Bekräfta');
       fireEvent.click(confirmButton);
     });
 
@@ -256,7 +256,7 @@ describe('UserManagementTable', () => {
 
     // Confirm in dialog
     await waitFor(() => {
-      const confirmButton = screen.getByText('Confirm');
+      const confirmButton = screen.getByText('Bekräfta');
       fireEvent.click(confirmButton);
     });
 

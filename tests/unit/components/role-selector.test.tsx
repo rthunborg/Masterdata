@@ -57,7 +57,7 @@ describe("RoleSelector", () => {
 
     renderWithI18n(<RoleSelector />);
 
-    expect(screen.getByLabelText(/View As:/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Visa som/i)).toBeInTheDocument();
   });
 
   it("does not render for non-HR Admin users", () => {

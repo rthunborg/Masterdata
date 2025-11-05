@@ -94,7 +94,7 @@ describe('DashboardPage', () => {
 
     renderWithI18n(<DashboardPage />);
 
-    expect(screen.getByRole('button', { name: /Add Employee/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Import Employees/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Lägg till anställd/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Importera anställda/i })).toBeInTheDocument();
   });
 });

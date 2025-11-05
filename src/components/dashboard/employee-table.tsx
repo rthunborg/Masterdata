@@ -291,7 +291,18 @@ export function EmployeeTable({
     
     // Then apply visibility preferences (for HR Admin only)
     const visibleColumns = isHRAdmin 
-      ? roleFilteredColumns.filter((config) => columnVisibility[config.id] !== false)
+      ? roleFilteredColumns.filter((config) => {
+          const isVisible = columnVisibility[config.id] !== false;
+          
+          // Debug logging in development
+          if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+            if (columnVisibility[config.id] === false) {
+              console.log("[Column Filter] Hiding column:", config.column_name, "ID:", config.id);
+            }
+          }
+          
+          return isVisible;
+        })
       : roleFilteredColumns;
     
     const dataColumns: ColumnDef<Employee>[] = visibleColumns.map((config) => {

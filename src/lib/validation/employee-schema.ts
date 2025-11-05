@@ -94,8 +94,8 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
         today.setUTCHours(0, 0, 0, 0);
         return parsed <= today;
       }, msg('hireDateFuture')),
-    stena_date: z.string().min(1, msg('stenaDateRequired')),
-    omc_date: z.string().min(1, msg('omcDateRequired')),
+    stena_date: z.string().nullable().default(null),
+    omc_date: z.string().nullable().default(null),
     pe3_date: z.string().nullable().default(null),
     comments: z.string().nullable().default(null),
     // New masterdata columns (Story 7.1) - all optional/nullable
@@ -167,8 +167,8 @@ export const createEmployeeSchema = z.object({
       today.setUTCHours(0, 0, 0, 0);
       return parsed <= today;
     }, "Hire date cannot be in the future"),
-  stena_date: z.string().min(1, "Stena Date is required"),
-  omc_date: z.string().min(1, "ÖMC Date is required"),
+  stena_date: z.string().nullable().default(null),
+  omc_date: z.string().nullable().default(null),
   pe3_date: z.string().nullable().default(null),
   comments: z.string().nullable().default(null),
   // New masterdata columns (Story 7.1) - all optional/nullable
