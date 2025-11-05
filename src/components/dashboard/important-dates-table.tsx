@@ -296,6 +296,7 @@ export function ImportantDatesTable({
             <SelectItem value="All">{tDates('allCategories')}</SelectItem>
             <SelectItem value="Stena Dates">Stena Dates</SelectItem>
             <SelectItem value="ÖMC Dates">ÖMC Dates</SelectItem>
+            <SelectItem value="PE3 Dates">PE3 Dates</SelectItem>
             <SelectItem value="Other">Other</SelectItem>
           </SelectContent>
         </Select>

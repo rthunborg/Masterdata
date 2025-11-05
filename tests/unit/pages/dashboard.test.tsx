@@ -24,6 +24,11 @@ vi.mock('@/lib/store/ui-store', () => ({
       addColumn: false,
       editColumn: null,
     },
+    columnVisibility: {},
+    initColumnVisibility: vi.fn(),
+    toggleColumnVisibility: vi.fn(),
+    resetColumnVisibility: vi.fn(),
+    getVisibleColumns: vi.fn((columns) => columns),
   })),
 }));
 
@@ -35,6 +40,7 @@ describe('DashboardPage', () => {
     is_active: true,
     created_at: '2025-01-01',
     auth_id: 'auth-1',
+    last_active_at: null,
   };
 
   beforeEach(() => {

@@ -1,4 +1,6 @@
 import type { Employee } from "@/lib/types/employee";
+import type { ImportantDate } from "@/lib/types/important-date";
+import { resolveImportantDateId } from "./important-date-resolver";
 
 /**
  * Map of human-readable column names to Employee object field names
@@ -17,6 +19,9 @@ const COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "Termination Reason": "termination_reason",
   "Status": "_computed_status", // Special case: computed from is_archived/is_terminated
   "Comments": "comments",
+  "Stena Date": "stena_date",
+  "ÖMC Date": "omc_date",
+  "PE3 Date": "pe3_date",
 };
 
 /**
@@ -37,12 +42,14 @@ export function mapColumnToEmployeeField(columnName: string): string {
  * @param employee - The Employee object
  * @param columnName - The human-readable column name
  * @param isMasterdata - Whether this is a masterdata column (vs custom column)
+ * @param allImportantDates - Optional array of all important dates for resolving date UUIDs
  * @returns The field value
  */
 export function getEmployeeFieldValue(
   employee: Employee,
   columnName: string,
-  isMasterdata = true
+  isMasterdata = true,
+  allImportantDates?: ImportantDate[]
 ): string | number | boolean | null {
   // Handle custom columns from party-specific tables
   if (!isMasterdata && employee.customData) {
@@ -58,5 +65,16 @@ export function getEmployeeFieldValue(
     return "Active";
   }
 
-  return employee[fieldName as keyof Employee] as string | number | boolean | null;
+  // Get the raw value from the employee object
+  const rawValue = employee[fieldName as keyof Employee] as string | number | boolean | null;
+  
+  // Check if this is an Important Date field (Stena Date, ÖMC Date, PE3 Date)
+  const isDateField = ["Stena Date", "ÖMC Date", "PE3 Date"].includes(columnName);
+  
+  // If it's a date field and we have Important Dates available, resolve the UUID to description
+  if (isDateField && allImportantDates && typeof rawValue === "string") {
+    return resolveImportantDateId(rawValue, allImportantDates);
+  }
+
+  return rawValue;
 }

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { UserRole } from "@/lib/types/user";
+import type { ColumnConfig } from "@/lib/types/column-config";
 
 /**
  * UI Store for managing application UI state
@@ -24,13 +25,22 @@ interface UIStore {
   // Edit column modal state
   editColumnId: string | null;
   
+  // Column visibility preferences (for HR Admin)
+  columnVisibility: Record<string, boolean>; // columnId -> visible boolean
+  
   openModal: (modal: keyof UIStore["modals"]) => void;
   closeModal: (modal: keyof UIStore["modals"]) => void;
   openEditColumnModal: (columnId: string) => void;
   closeEditColumnModal: () => void;
+  
+  // Column visibility actions
+  toggleColumnVisibility: (columnId: string) => void;
+  resetColumnVisibility: () => void;
+  initColumnVisibility: (userId: string) => void;
+  getVisibleColumns: (allColumns: ColumnConfig[]) => ColumnConfig[];
 }
 
-export const useUIStore = create<UIStore>((set) => ({
+export const useUIStore = create<UIStore>((set, get) => ({
   // Preview mode state
   previewRole: null,
   isPreviewMode: false,
@@ -48,6 +58,9 @@ export const useUIStore = create<UIStore>((set) => ({
   
   // Edit column modal state
   editColumnId: null,
+  
+  // Column visibility state
+  columnVisibility: {},
   
   openModal: (modal) => 
     set((state) => ({ 
@@ -77,4 +90,64 @@ export const useUIStore = create<UIStore>((set) => ({
       modals: { ...state.modals, editColumn: false },
       editColumnId: null,
     })),
+  
+  // Column visibility actions
+  toggleColumnVisibility: (columnId) => {
+    const { columnVisibility } = get();
+    const currentValue = columnVisibility[columnId] ?? true; // default to visible
+    const newVisibility = {
+      ...columnVisibility,
+      [columnId]: !currentValue,
+    };
+    set({ columnVisibility: newVisibility });
+    
+    // Persist to localStorage
+    if (typeof window !== "undefined") {
+      const userId = localStorage.getItem("currentUserId");
+      if (userId) {
+        localStorage.setItem(
+          `hr_masterdata_column_visibility_${userId}`,
+          JSON.stringify(newVisibility)
+        );
+      }
+    }
+  },
+  
+  resetColumnVisibility: () => {
+    set({ columnVisibility: {} });
+    
+    // Clear from localStorage
+    if (typeof window !== "undefined") {
+      const userId = localStorage.getItem("currentUserId");
+      if (userId) {
+        localStorage.removeItem(`hr_masterdata_column_visibility_${userId}`);
+      }
+    }
+  },
+  
+  initColumnVisibility: (userId: string) => {
+    if (typeof window === "undefined") return;
+    
+    // Store userId for persistence operations
+    localStorage.setItem("currentUserId", userId);
+    
+    // Load from localStorage
+    const stored = localStorage.getItem(`hr_masterdata_column_visibility_${userId}`);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        set({ columnVisibility: parsed });
+      } catch (error) {
+        console.error("Failed to parse column visibility preferences:", error);
+      }
+    }
+  },
+  
+  getVisibleColumns: (allColumns) => {
+    const { columnVisibility } = get();
+    return allColumns.filter((column) => {
+      // Default to visible if not explicitly set to false
+      return columnVisibility[column.id] !== false;
+    });
+  },
 }));

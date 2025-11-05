@@ -58,7 +58,11 @@
     "viewAs": "Visa som",
     "noEmployeesFound": "Inga anställda hittades",
     "noEmployeesMatchSearch": "Inga anställda matchar din sökning. Prova att justera dina söktermer.",
-    "noEmployeesToDisplay": "Inga anställda att visa."
+    "noEmployeesToDisplay": "Inga anställda att visa.",
+    "columnVisibility": "Kolumnsynlighet",
+    "showHiddenColumns": "Visa dolda kolumner",
+    "columnVisibilityDescription": "Klicka på ögonikonen för att dölja eller visa kolumner",
+    "resetColumnVisibility": "Återställ till standard"
   },
   "forms": {
     "firstName": "Förnamn",

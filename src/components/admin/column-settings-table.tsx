@@ -104,7 +104,7 @@ function DraggableRow({
   return (
     <TableRow ref={setNodeRef} style={style}>
       {/* Drag Handle / Move Buttons */}
-      <TableCell className="w-[60px]">
+      <TableCell className="w-16">
         {isMobile ? (
           <div className="flex flex-col gap-1">
             <Button
@@ -437,24 +437,26 @@ export function ColumnSettingsTable({
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className="rounded-md border">
-          <Table>
+        <div className="rounded-md border w-full">
+          <Table className="table-auto w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[60px]"></TableHead>
-                <TableHead className="w-[200px]">{tForms("columnNameLabel")}</TableHead>
-                <TableHead className="w-[100px]">{tAdmin("type")}</TableHead>
-                <TableHead className="w-[120px]">{tAdmin("category")}</TableHead>
-                <TableHead className="w-[100px]">{tAdmin("visibility")}</TableHead>
+                <TableHead className="w-16"></TableHead>
+                <TableHead className="min-w-[150px]">{tForms("columnNameLabel")}</TableHead>
+                <TableHead className="w-20">{tAdmin("type")}</TableHead>
+                <TableHead className="w-28">{tAdmin("category")}</TableHead>
+                <TableHead className="w-24">{tAdmin("visibility")}</TableHead>
                 {allRoles.map((role) => (
-                  <TableHead key={role} className="text-center">
-                    {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
-                    <div className="text-xs font-normal text-gray-500">
-                      View / Edit
+                  <TableHead key={role} className="text-center w-24">
+                    <div className="whitespace-normal">
+                      {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
+                    </div>
+                    <div className="text-xs font-normal text-gray-500 whitespace-nowrap">
+                      V / E
                     </div>
                   </TableHead>
                 ))}
-                <TableHead className="w-[150px] text-center">{tAdmin("actions")}</TableHead>
+                <TableHead className="w-20 text-center">{tAdmin("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

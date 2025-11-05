@@ -42,14 +42,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Eye, EyeOff } from "lucide-react";
 import { EditableCell } from "./editable-cell";
+import { EditableDateCell } from "./editable-date-cell";
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
 import { employeeService } from "@/lib/services/employee-service";
 import { customDataService } from "@/lib/services/custom-data-service";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useColumns } from "@/lib/hooks/use-columns";
+import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { getEmployeeFieldValue } from "@/lib/utils/column-mapping";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/lib/store/ui-store";
@@ -104,14 +111,24 @@ export function EmployeeTable({
   const tModals = useTranslations("modals");
   const tAdmin = useTranslations("admin");
   
-  // Get preview mode state
-  const { previewRole, isPreviewMode } = useUIStore();
+  // Get preview mode state and column visibility
+  const { previewRole, isPreviewMode, initColumnVisibility, columnVisibility, toggleColumnVisibility, resetColumnVisibility } = useUIStore();
+  
+  // Initialize column visibility preferences on mount
+  React.useEffect(() => {
+    if (user?.id) {
+      initColumnVisibility(user.id);
+    }
+  }, [user?.id, initColumnVisibility]);
   
   // Determine effective role for column filtering
   const effectiveRole = previewRole || user?.role;
   
   // Fetch column configurations based on effective role (for preview mode)
   const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns(effectiveRole);
+  
+  // Fetch all Important Dates for resolving date field UUIDs
+  const { dates: allImportantDates } = useImportantDates();
   
   const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = React.useState(false);
@@ -269,7 +286,15 @@ export function EmployeeTable({
 
   // Build dynamic columns from column configs
   const columns: ColumnDef<Employee>[] = React.useMemo(() => {
-    const dataColumns: ColumnDef<Employee>[] = columnConfigs.map((config) => {
+    // First filter by role permissions
+    const roleFilteredColumns = columnConfigs;
+    
+    // Then apply visibility preferences (for HR Admin only)
+    const visibleColumns = isHRAdmin 
+      ? roleFilteredColumns.filter((config) => columnVisibility[config.id] !== false)
+      : roleFilteredColumns;
+    
+    const dataColumns: ColumnDef<Employee>[] = visibleColumns.map((config) => {
       // Determine if user can edit this column based on role permissions
       // In preview mode, all editing is disabled
       const userRole = effectiveRole || "";
@@ -294,8 +319,42 @@ export function EmployeeTable({
         const fieldKey = config.column_name.toLowerCase().replace(/ /g, "_");
 
         const DataCell = ({ row }: { row: Row<Employee> }) => {
-          const value = getEmployeeFieldValue(row.original, config.column_name, config.is_masterdata);
+          const value = getEmployeeFieldValue(row.original, config.column_name, config.is_masterdata, allImportantDates);
           
+          // Special handling for Important Date columns (Stena Date, ÖMC Date, PE3 Date)
+          if (["Stena Date", "ÖMC Date", "PE3 Date"].includes(config.column_name)) {
+            const dateFieldMap: Record<string, keyof Employee> = {
+              "Stena Date": "stena_date",
+              "ÖMC Date": "omc_date",
+              "PE3 Date": "pe3_date"
+            };
+            
+            const dateCategoryMap: Record<string, string> = {
+              "Stena Date": "Stena Dates",
+              "ÖMC Date": "ÖMC Dates",
+              "PE3 Date": "PE3 Dates"
+            };
+            
+            const dateField = dateFieldMap[config.column_name];
+            const dateCategory = dateCategoryMap[config.column_name];
+            const dateValue = row.original[dateField] as string | null;
+            
+            return (
+              <EditableDateCell
+                value={dateValue}
+                displayValue={value as string}
+                employeeId={row.original.id}
+                field={dateField}
+                dateCategory={dateCategory}
+                allDates={allImportantDates}
+                canEdit={canEdit}
+                onSave={handleMasterdataUpdate}
+                onError={(error) => toast.error(error)}
+              />
+            );
+          }
+          
+          // Standard cell rendering for other columns
           // Determine EditableCell type based on column_type
           let cellType: "text" | "date" | "select" | "number" | "boolean" = "text";
           let options: string[] | undefined;
@@ -402,8 +461,8 @@ export function EmployeeTable({
         enableSorting: true,
         ...(config.column_type === "date" && {
           sortingFn: (rowA, rowB) => {
-            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.column_name) as string).getTime();
-            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.column_name) as string).getTime();
+            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.column_name, config.is_masterdata, allImportantDates) as string).getTime();
+            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.column_name, config.is_masterdata, allImportantDates) as string).getTime();
             return dateA - dateB;
           },
         }),
@@ -494,7 +553,7 @@ export function EmployeeTable({
     }
 
     return dataColumns;
-  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin]);
+  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, columnVisibility, allImportantDates]);
 
   const table = useReactTable({
     data: employees,
@@ -599,7 +658,7 @@ export function EmployeeTable({
         </div>
       )}
 
-      {/* Search Input */}
+      {/* Search Input and Column Visibility */}
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -619,6 +678,61 @@ export function EmployeeTable({
             </button>
           )}
         </div>
+        
+        {/* Column Visibility Controls for HR Admin */}
+        {isHRAdmin && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">
+                <EyeOff className="h-4 w-4 mr-2" />
+                {tDashboard("columnVisibility")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80" align="end">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">{tDashboard("showHiddenColumns")}</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {tDashboard("columnVisibilityDescription")}
+                  </p>
+                </div>
+                
+                {/* List of hideable columns */}
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {columnConfigs.map((config) => {
+                    const isVisible = columnVisibility[config.id] !== false;
+                    return (
+                      <div key={config.id} className="flex items-center justify-between">
+                        <span className="text-sm">{config.column_name}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleColumnVisibility(config.id)}
+                        >
+                          {isVisible ? (
+                            <Eye className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* Reset button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={resetColumnVisibility}
+                >
+                  {tDashboard("resetColumnVisibility")}
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
 
       <div className="rounded-md border">
