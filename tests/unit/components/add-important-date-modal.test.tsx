@@ -93,26 +93,30 @@ describe("AddImportantDateModal", () => {
         />
       );
 
+      // Clear the date value field to trigger validation error
+      const dateValueInput = screen.getByLabelText(/date value/i) as HTMLInputElement;
+      await user.clear(dateValueInput);
+      
       const saveButton = screen.getByRole("button", { name: /create/i });
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/date description is required/i)).toBeInTheDocument();
+        // Only date value is required now, date description is optional
         expect(screen.getByText(/date value is required/i)).toBeInTheDocument();
       });
 
       expect(importantDateService.create).not.toHaveBeenCalled();
     });
 
-    it("should accept null week_number", async () => {
+    it("should auto-calculate week_number from date_value", async () => {
       const user = userEvent.setup();
       vi.mocked(importantDateService.create).mockResolvedValue({
         id: "new-date",
-        week_number: null,
+        week_number: 15,
         year: 2025,
         category: "Stena Dates",
         date_description: "Test Date",
-        date_value: "10/4",
+        date_value: "2025-04-10",
         notes: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
@@ -126,12 +130,19 @@ describe("AddImportantDateModal", () => {
         />
       );
 
-      // Leave week number empty
+      // Leave week number empty initially
       const dateDescriptionInput = screen.getByLabelText(/date description/i);
       await user.type(dateDescriptionInput, "Test Date");
 
-      const dateValueInput = screen.getByLabelText(/date value/i);
-      await user.type(dateValueInput, "10/4");
+      const dateValueInput = screen.getByLabelText(/date value/i) as HTMLInputElement;
+      // For date input type, we need to set the value directly
+      await user.type(dateValueInput, "2025-04-10");
+
+      // Week number should auto-calculate to 15 for April 10, 2025
+      const weekInput = screen.getByLabelText(/week number/i) as HTMLInputElement;
+      await waitFor(() => {
+        expect(weekInput.value).toBe("15");
+      });
 
       const saveButton = screen.getByRole("button", { name: /create/i });
       await user.click(saveButton);
@@ -139,9 +150,9 @@ describe("AddImportantDateModal", () => {
       await waitFor(() => {
         expect(importantDateService.create).toHaveBeenCalledWith(
           expect.objectContaining({
-            week_number: null,
+            week_number: 15,
             date_description: "Test Date",
-            date_value: "10/4",
+            date_value: "2025-04-10",
           })
         );
       });
@@ -157,7 +168,7 @@ describe("AddImportantDateModal", () => {
         year: 2025,
         category: "Stena Dates",
         date_description: "Fredag 14/2",
-        date_value: "15-16/2",
+        date_value: "2025-02-14",
         notes: "Test notes",
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
@@ -181,8 +192,8 @@ describe("AddImportantDateModal", () => {
       const dateDescriptionInput = screen.getByLabelText(/date description/i);
       await user.type(dateDescriptionInput, "Fredag 14/2");
 
-      const dateValueInput = screen.getByLabelText(/date value/i);
-      await user.type(dateValueInput, "15-16/2");
+      const dateValueInput = screen.getByLabelText(/date value/i) as HTMLInputElement;
+      await user.type(dateValueInput, "2025-02-14");
 
       const notesInput = screen.getByLabelText(/notes/i);
       await user.type(notesInput, "Test notes");
@@ -197,7 +208,7 @@ describe("AddImportantDateModal", () => {
             year: 2025,
             category: "Stena Dates",
             date_description: "Fredag 14/2",
-            date_value: "15-16/2",
+            date_value: "2025-02-14",
             notes: "Test notes",
           })
         );
@@ -227,8 +238,8 @@ describe("AddImportantDateModal", () => {
       const dateDescriptionInput = screen.getByLabelText(/date description/i);
       await user.type(dateDescriptionInput, "Test Date");
 
-      const dateValueInput = screen.getByLabelText(/date value/i);
-      await user.type(dateValueInput, "10/4");
+      const dateValueInput = screen.getByLabelText(/date value/i) as HTMLInputElement;
+      await user.type(dateValueInput, "2025-04-10");
 
       const saveButton = screen.getByRole("button", { name: /create/i });
       await user.click(saveButton);
@@ -321,14 +332,16 @@ describe("AddImportantDateModal", () => {
       const dateDescriptionInput = screen.getByLabelText(/date description/i);
       await user.type(dateDescriptionInput, "Test Date");
 
-      const dateValueInput = screen.getByLabelText(/date value/i);
-      await user.type(dateValueInput, "10/4");
+      const dateValueInput = screen.getByLabelText(/date value/i) as HTMLInputElement;
+      await user.type(dateValueInput, "2025-04-10");
 
       const saveButton = screen.getByRole("button", { name: /create/i });
       await user.click(saveButton);
 
-      // Button should be disabled during submission
-      expect(saveButton).toBeDisabled();
+      // Wait for button state to update
+      await waitFor(() => {
+        expect(saveButton).toBeDisabled();
+      });
 
       // Resolve the promise
       resolveCreate!({
@@ -337,7 +350,7 @@ describe("AddImportantDateModal", () => {
         year: 2025,
         category: "Stena Dates",
         date_description: "Test Date",
-        date_value: "10/4",
+        date_value: "2025-04-10",
         notes: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",

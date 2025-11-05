@@ -41,6 +41,7 @@ export function UserManagementTable({
 }: UserManagementTableProps) {
   const { user: currentUser } = useAuth();
   const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const format = useFormatter();
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -267,8 +268,9 @@ export function UserManagementTable({
                             variant="outline"
                             size="sm"
                             onClick={() => openConfirmDialog(user, "activate")}
+                            title={t('activateButton')}
                           >
-                            Activate
+                            {t('activateButton')}
                           </Button>
                         )}
                         <Button
@@ -279,10 +281,10 @@ export function UserManagementTable({
                           title={
                             isCurrentUser
                               ? "Cannot delete your own account"
-                              : "Delete user permanently"
+                              : tCommon('delete')
                           }
                         >
-                          Delete
+                          {tCommon('delete')}
                         </Button>
                       </div>
                     </TableCell>
@@ -303,42 +305,30 @@ export function UserManagementTable({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmDialog.action === "activate" && "Activate User"}
-              {confirmDialog.action === "deactivate" && "Deactivate User"}
-              {confirmDialog.action === "delete" && "Delete User"}
+              {confirmDialog.action === "activate" && t('activateUserTitle')}
+              {confirmDialog.action === "deactivate" && t('deactivateUserTitle')}
+              {confirmDialog.action === "delete" && t('deleteUserTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmDialog.action === "activate" && (
-                <>
-                  Are you sure you want to activate{" "}
-                  <strong>{confirmDialog.user?.email}</strong>? They will be
-                  able to log in again.
-                </>
-              )}
-              {confirmDialog.action === "deactivate" && (
-                <>
-                  Are you sure you want to deactivate{" "}
-                  <strong>{confirmDialog.user?.email}</strong>? They will be
-                  logged out and unable to access the system.
-                </>
-              )}
-              {confirmDialog.action === "delete" && (
-                <>
-                  Are you sure you want to permanently delete{" "}
-                  <strong>{confirmDialog.user?.email}</strong>? This action cannot be
-                  undone. The user will be completely removed from the system.
-                </>
-              )}
+              {confirmDialog.action === "activate" && 
+                t('activateUserMessage', { email: confirmDialog.user?.email || '' })
+              }
+              {confirmDialog.action === "deactivate" &&
+                t('deactivateUserMessage', { email: confirmDialog.user?.email || '' })
+              }
+              {confirmDialog.action === "delete" &&
+                t('deleteUserMessage', { email: confirmDialog.user?.email || '' })
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isUpdating}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isUpdating}>{t('cancelButton')}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleStatusChange} 
               disabled={isUpdating}
               className={confirmDialog.action === "delete" ? "bg-red-600 hover:bg-red-700" : ""}
             >
-              {isUpdating ? "Processing..." : "Confirm"}
+              {isUpdating ? t('processingButton') : t('confirmButton')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

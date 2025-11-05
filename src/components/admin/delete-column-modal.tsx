@@ -66,14 +66,25 @@ export function DeleteColumnModal({
             Delete Column &quot;{column.column_name}&quot;?
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
-            <span className="block">
-              Are you sure you want to delete this column? This action cannot
-              be undone.
-            </span>
-            <span className="block font-semibold text-destructive">
-              All data in this column will be permanently removed from all
-              employees.
-            </span>
+            {column.is_masterdata ? (
+              <>
+                <span className="block font-semibold text-destructive">
+                  This is a masterdata column. Deleting it will remove it from all employee records. This cannot be undone.
+                </span>
+                <span className="block">
+                  All data in this column will be permanently removed from all employees.
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="block">
+                  Are you sure you want to delete this column? This action cannot be undone.
+                </span>
+                <span className="block font-semibold text-destructive">
+                  All data in this column will be permanently removed from all employees.
+                </span>
+              </>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

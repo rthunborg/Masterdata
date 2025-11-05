@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { createImportantDateSchema } from "@/lib/validation/important-date-schema";
 import { importantDateService } from "@/lib/services/important-date-service";
+import { getWeekNumberFromDateString } from "@/lib/utils/date-utils";
 import { z } from "zod";
 
 type CreateImportantDateInput = z.infer<typeof createImportantDateSchema>;
@@ -150,27 +151,31 @@ export function AddImportantDateModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              {/* Week Number */}
+              {/* Category */}
               <FormField
                 control={form.control}
-                name="week_number"
+                name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('weekNumberLabel')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="53"
-                        placeholder={t('weekNumberPlaceholder')}
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(value === "" ? null : parseInt(value, 10));
-                        }}
-                      />
-                    </FormControl>
+                    <FormLabel>
+                      {t('categoryLabel')} <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Stena Dates">{t('categoryStenaDates')}</SelectItem>
+                        <SelectItem value="ÖMC Dates">{t('categoryOmcDates')}</SelectItem>
+                        <SelectItem value="PE3 Dates">{t('categoryPe3Dates')}</SelectItem>
+                        <SelectItem value="Other">{t('categoryOther')}</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -199,43 +204,68 @@ export function AddImportantDateModal({
                 )}
               />
 
-              {/* Category */}
+              {/* Date Value - with date picker */}
               <FormField
                 control={form.control}
-                name="category"
+                name="date_value"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t('categoryLabel')} <span className="text-red-500">*</span>
+                      {t('dateValueLabel')} <span className="text-red-500">*</span>
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Stena Dates">{t('categoryStenaDates')}</SelectItem>
-                        <SelectItem value="ÖMC Dates">{t('categoryOmcDates')}</SelectItem>
-                        <SelectItem value="Other">{t('categoryOther')}</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input 
+                        type="date"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.value);
+                          // Auto-calculate week number when date is selected
+                          const weekNum = getWeekNumberFromDateString(e.target.value);
+                          if (weekNum !== null && !form.getValues('week_number')) {
+                            form.setValue('week_number', weekNum);
+                          }
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Date Description */}
+              {/* Week Number */}
+              <FormField
+                control={form.control}
+                name="week_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('weekNumberLabel')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="53"
+                        placeholder={t('weekNumberPlaceholder')}
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? null : parseInt(value, 10));
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Date Description - now optional */}
               <FormField
                 control={form.control}
                 name="date_description"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="col-span-2">
                     <FormLabel>
-                      {t('dateDescriptionLabel')} <span className="text-red-500">*</span>
+                      {t('dateDescriptionLabel')}
                     </FormLabel>
                     <FormControl>
                       <Input placeholder={t('dateDescriptionPlaceholder')} {...field} />
@@ -245,23 +275,6 @@ export function AddImportantDateModal({
                 )}
               />
             </div>
-
-            {/* Date Value */}
-            <FormField
-              control={form.control}
-              name="date_value"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t('dateValueLabel')} <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder={t('dateValuePlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             {/* Notes */}
             <FormField

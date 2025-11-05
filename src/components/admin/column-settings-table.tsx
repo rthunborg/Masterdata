@@ -213,17 +213,13 @@ function DraggableRow({
                 variant="destructive"
                 size="sm"
                 onClick={() => handleDeleteClick(column)}
-                disabled={isUpdating || column.is_masterdata}
+                disabled={isUpdating}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>
-                {column.is_masterdata
-                  ? "Masterdata columns cannot be deleted"
-                  : t("deleteColumn")}
-              </p>
+              <p>{t("deleteColumn")}</p>
             </TooltipContent>
           </Tooltip>
         </div>

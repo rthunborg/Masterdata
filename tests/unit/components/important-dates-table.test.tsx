@@ -120,7 +120,7 @@ describe("ImportantDatesTable", () => {
       expect(screen.getByText("Year")).toBeInTheDocument();
       expect(screen.getByText("Category")).toBeInTheDocument();
       expect(screen.getByText("Date Description")).toBeInTheDocument();
-      expect(screen.getByText("Date Value")).toBeInTheDocument();
+      expect(screen.getByText("Date")).toBeInTheDocument();
       expect(screen.getByText("Notes")).toBeInTheDocument();
       expect(screen.getByText("Actions")).toBeInTheDocument();
     });

@@ -161,7 +161,7 @@ export function ImportantDatesTable({
               employeeId={row.original.id}
               field="category"
               type="select"
-              options={["Stena Dates", "ÖMC Dates", "Other"]}
+              options={["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]}
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />
