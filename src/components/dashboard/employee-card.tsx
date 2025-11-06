@@ -1,31 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronUp, Archive, ArchiveRestore, UserX, Mail, Phone } from 'lucide-react';
 import type { Employee } from '@/lib/types/employee';
+import type { ColumnConfig } from '@/lib/types/column-config';
 import { cn } from '@/lib/utils';
+import { EditableCell } from './editable-cell';
+import { employeeService } from '@/lib/services/employee-service';
+import { customDataService } from '@/lib/services/custom-data-service';
+import { toast } from 'sonner';
+import { getEmployeeFieldValue } from '@/lib/utils/column-mapping';
+import { useImportantDates } from '@/lib/hooks/use-important-dates';
 
 interface EmployeeCardProps {
   employee: Employee;
   isHRAdmin: boolean;
+  columnConfigs?: ColumnConfig[];
   onArchive?: (employee: Employee) => void;
   onUnarchive?: (employee: Employee) => void;
   onTerminate?: (employee: Employee) => void;
+  onEmployeeUpdated?: () => void;
   className?: string;
 }
 
 export function EmployeeCard({
   employee,
   isHRAdmin,
+  columnConfigs = [],
   onArchive,
   onUnarchive,
   onTerminate,
+  onEmployeeUpdated,
   className,
 }: EmployeeCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const { dates: allImportantDates } = useImportantDates();
 
   const getStatusBadge = () => {
     if (employee.is_terminated) {
@@ -35,6 +47,55 @@ export function EmployeeCard({
       return <Badge variant="secondary">Archived</Badge>;
     }
     return <Badge variant="default">Active</Badge>;
+  };
+
+  // Handler for masterdata column updates
+  const handleMasterdataUpdate = useCallback(async (
+    id: string,
+    field: string,
+    value: string | number | boolean | null
+  ) => {
+    try {
+      await employeeService.update(id, { [field]: value });
+      toast.success("Field updated successfully");
+      onEmployeeUpdated?.();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to update field";
+      throw new Error(message);
+    }
+  }, [onEmployeeUpdated]);
+
+  // Handler for custom data column updates (party tables)
+  const handleCustomDataUpdate = useCallback(async (
+    id: string,
+    columnName: string,
+    value: string | number | boolean | null
+  ) => {
+    try {
+      await customDataService.updateCustomData(id, { [columnName]: value });
+      toast.success("Field updated successfully");
+      onEmployeeUpdated?.();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to update field";
+      throw new Error(message);
+    }
+  }, [onEmployeeUpdated]);
+
+  // Group columns by category
+  const groupedColumns = columnConfigs.reduce((acc, col) => {
+    if (!col.is_visible) return acc;
+    
+    const category = col.category || 'General';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(col);
+    return acc;
+  }, {} as Record<string, ColumnConfig[]>);
+
+  // Get formatted label for column
+  const getColumnLabel = (col: ColumnConfig) => {
+    return col.column_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   return (
@@ -74,43 +135,52 @@ export function EmployeeCard({
           )}
         </div>
 
-        {/* Additional details - shown when expanded */}
+        {/* All fields from column config - shown when expanded */}
         {expanded && (
-          <div className="mt-4 pt-4 border-t space-y-2 text-sm">
-            {employee.ssn && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">SSN:</span>
-                <span className="font-medium">{employee.ssn}</span>
+          <div className="mt-4 pt-4 border-t space-y-4">
+            {Object.entries(groupedColumns).map(([category, columns]) => (
+              <div key={category} className="space-y-2">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  {category}
+                </h4>
+                <div className="space-y-3">
+                  {columns.map((col) => {
+                    const value = getEmployeeFieldValue(
+                      employee, 
+                      col.column_name, 
+                      col.is_masterdata,
+                      allImportantDates
+                    );
+                    const canEdit = col.role_permissions && 
+                      Object.values(col.role_permissions).some(p => p.edit);
+
+                    // Determine select options based on column
+                    let selectOptions: string[] | undefined;
+                    if (col.column_name === 'gender') {
+                      selectOptions = ['Male', 'Female', 'Other'];
+                    }
+
+                    return (
+                      <div key={col.id} className="space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">
+                          {getColumnLabel(col)}
+                        </label>
+                        <EditableCell
+                          value={value}
+                          employeeId={employee.id}
+                          field={col.is_masterdata ? col.column_name : col.column_name}
+                          type={col.column_type as "text" | "date" | "select" | "number" | "boolean"}
+                          options={selectOptions}
+                          canEdit={canEdit}
+                          onSave={col.is_masterdata ? handleMasterdataUpdate : handleCustomDataUpdate}
+                          onError={(error) => toast.error(error)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            )}
-            {employee.hire_date && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Hire Date:</span>
-                <span className="font-medium">
-                  {new Date(employee.hire_date).toLocaleDateString()}
-                </span>
-              </div>
-            )}
-            {employee.gender && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Gender:</span>
-                <span className="font-medium">{employee.gender}</span>
-              </div>
-            )}
-            {employee.town_district && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Location:</span>
-                <span className="font-medium">{employee.town_district}</span>
-              </div>
-            )}
-            {employee.termination_date && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Termination Date:</span>
-                <span className="font-medium">
-                  {new Date(employee.termination_date).toLocaleDateString()}
-                </span>
-              </div>
-            )}
+            ))}
           </div>
         )}
       </CardContent>

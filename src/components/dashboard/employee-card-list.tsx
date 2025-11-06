@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import type { Employee } from '@/lib/types/employee';
+import type { ColumnConfig } from '@/lib/types/column-config';
 
 interface EmployeeCardListProps {
   employees: Employee[];
@@ -15,6 +16,8 @@ interface EmployeeCardListProps {
   onArchive?: (employee: Employee) => void;
   onUnarchive?: (employee: Employee) => void;
   onTerminate?: (employee: Employee) => void;
+  columnConfigs?: ColumnConfig[];
+  onEmployeeUpdated?: () => void;
 }
 
 export function EmployeeCardList({
@@ -26,6 +29,8 @@ export function EmployeeCardList({
   onArchive,
   onUnarchive,
   onTerminate,
+  columnConfigs = [],
+  onEmployeeUpdated,
 }: EmployeeCardListProps) {
   if (isLoading) {
     return (
@@ -66,6 +71,8 @@ export function EmployeeCardList({
               onArchive={onArchive}
               onUnarchive={onUnarchive}
               onTerminate={onTerminate}
+              columnConfigs={columnConfigs}
+              onEmployeeUpdated={onEmployeeUpdated}
             />
           ))}
         </div>

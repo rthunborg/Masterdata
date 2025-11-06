@@ -18,6 +18,9 @@ import {
 import { TerminateEmployeeModal } from './terminate-employee-modal';
 import { employeeService } from '@/lib/services/employee-service';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { useColumns } from '@/lib/hooks/use-columns';
+import { useUIStore } from '@/lib/store/ui-store';
 
 interface ResponsiveEmployeeViewProps {
   employees: Employee[];
@@ -46,6 +49,14 @@ export function ResponsiveEmployeeView({
 }: ResponsiveEmployeeViewProps) {
   // Detect if we're on mobile (less than 1024px - lg breakpoint)
   const isMobile = useMediaQuery('(max-width: 1023px)');
+  
+  // Get user and preview role for column filtering
+  const { user } = useAuth();
+  const { previewRole } = useUIStore();
+  const effectiveRole = previewRole || user?.role;
+  
+  // Fetch column configurations for mobile view
+  const { columns: columnConfigs } = useColumns(effectiveRole);
   
   // State for mobile card view dialogs
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
@@ -144,6 +155,8 @@ export function ResponsiveEmployeeView({
           onArchive={handleArchive}
           onUnarchive={handleUnarchive}
           onTerminate={handleTerminate}
+          columnConfigs={columnConfigs}
+          onEmployeeUpdated={onEmployeeUpdated}
         />
       ) : (
         <EmployeeTable

@@ -121,14 +121,14 @@ export default function DashboardPage() {
       {/* Role Preview Banner - Shows at top when in preview mode */}
       <RolePreviewBanner />
       
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">{t('title')}</h2>
           <p className="mt-2 text-gray-600">
             {t('viewDetails')}
           </p>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-wrap gap-2 items-center">
           {/* Role Selector - Only visible to HR Admin */}
           {user?.role === "hr_admin" && (
             <RoleSelector />
@@ -140,6 +140,7 @@ export default function DashboardPage() {
                   <Button 
                     onClick={() => setIsAddModalOpen(true)}
                     disabled={isPreviewMode}
+                    className="w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     {t('addEmployee')}
@@ -155,6 +156,7 @@ export default function DashboardPage() {
                     onClick={() => setIsImportModalOpen(true)} 
                     variant="outline"
                     disabled={isPreviewMode}
+                    className="w-full sm:w-auto"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     {t('importEmployees')}
@@ -170,7 +172,7 @@ export default function DashboardPage() {
             <>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button onClick={() => openModal("addColumn")} variant="outline">
+                  <Button onClick={() => openModal("addColumn")} variant="outline" className="w-full sm:w-auto">
                     <Columns className="h-4 w-4 mr-2" />
                     {tCommon('add')} {tCommon('filter')}
                   </Button>
