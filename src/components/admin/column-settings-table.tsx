@@ -68,7 +68,7 @@ function DraggableRow({
   column: ColumnConfig;
   allRoles: UserRole[];
   updatingColumnId: string | null;
-  isPermissionDisabled: (column: ColumnConfig, role: UserRole, permissionType: "view" | "edit") => boolean;
+  isPermissionDisabled: () => boolean;
   handlePermissionChange: (
     column: ColumnConfig,
     role: UserRole,
@@ -168,8 +168,8 @@ function DraggableRow({
           view: false,
           edit: false,
         };
-        const viewDisabled = isPermissionDisabled(column, role, "view");
-        const editDisabled = isPermissionDisabled(column, role, "edit");
+        const viewDisabled = isPermissionDisabled();
+        const editDisabled = isPermissionDisabled();
 
         return (
           <TableCell key={role} className="text-center w-20">
@@ -182,11 +182,7 @@ function DraggableRow({
                 onChange={(value: boolean) =>
                   handlePermissionChange(column, role, "view", value)
                 }
-                tooltip={
-                  viewDisabled && role === UserRole.HR_ADMIN
-                    ? "HR Admin View permission is always required"
-                    : undefined
-                }
+                tooltip={undefined}
               />
               <span className="text-gray-400 text-xs">/</span>
               <PermissionToggle
@@ -413,12 +409,8 @@ export function ColumnSettingsTable({
     }
   };
 
-  const isPermissionDisabled = (column: ColumnConfig, role: UserRole, permissionType: "view" | "edit"): boolean => {
-    // HR Admin View permission is always locked (cannot be unchecked)
-    if (role === UserRole.HR_ADMIN && permissionType === "view") {
-      return true;
-    }
-    // HR Admin Edit permission can be modified
+  const isPermissionDisabled = (): boolean => {
+    // No permissions are locked - HR Admin can modify both view and edit permissions
     return false;
   };
 
