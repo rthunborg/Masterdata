@@ -51,6 +51,18 @@ export function useColumns(effectiveRole?: UserRole) {
     fetchColumns();
   }, [fetchColumns]);
 
+  // Refetch when window regains focus (user returns from column settings)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchColumns();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchColumns]);
+
   // Expose refetch function for triggering manual updates
   const refetch = useCallback(() => {
     fetchColumns();
