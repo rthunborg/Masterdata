@@ -41,7 +41,7 @@ export function EditableDateCell({
   onError,
 }: EditableDateCellProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState<string>(value || "");
+  const [editValue, setEditValue] = useState<string>(value || "__NONE__");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -83,7 +83,7 @@ export function EditableDateCell({
     function handleClickOutside(event: MouseEvent) {
       if (cellRef.current && !cellRef.current.contains(event.target as Node)) {
         // Cancel editing
-        setEditValue(value || "");
+        setEditValue(value || "__NONE__");
         setError(null);
         setIsEditing(false);
       }
@@ -196,7 +196,9 @@ export function EditableDateCell({
           setTimeout(() => {
             setIsLoading(true);
             setError(null);
-            onSave(employeeId, field, newValue || null)
+            // Convert "__NONE__" placeholder to null for clearing the date
+            const valueToSave = newValue === "__NONE__" ? null : newValue || null;
+            onSave(employeeId, field, valueToSave)
               .then(() => {
                 setIsEditing(false);
               })
@@ -216,7 +218,7 @@ export function EditableDateCell({
           <SelectValue placeholder="Select a date..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">(None)</SelectItem>
+          <SelectItem value="__NONE__">(None)</SelectItem>
           {filteredDates.map((date) => (
             <SelectItem key={date.id} value={date.id}>
               {date.date_description} (Week {date.week_number}, {date.year})
