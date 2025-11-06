@@ -170,38 +170,12 @@ export function AddImportantDateModal({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Stena Dates">{t('categoryStenaDates')}</SelectItem>
-                        <SelectItem value="ÖMC Dates">{t('categoryOmcDates')}</SelectItem>
-                        <SelectItem value="PE3 Dates">{t('categoryPe3Dates')}</SelectItem>
-                        <SelectItem value="Other">{t('categoryOther')}</SelectItem>
+                        <SelectItem value="Stena Dates">Stena Dates</SelectItem>
+                        <SelectItem value="ÖMC Dates">ÖMC Dates</SelectItem>
+                        <SelectItem value="PE3 Dates">PE3 Dates</SelectItem>
+                        <SelectItem value="Other">Övrigt</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Week Number */}
-              <FormField
-                control={form.control}
-                name="week_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Veckonummer</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="53"
-                        placeholder="t.ex., 7"
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(value === "" ? null : parseInt(value, 10));
-                        }}
-                      />
-                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -237,6 +211,32 @@ export function AddImportantDateModal({
                             const description = `${weekday} ${day}/${month}`;
                             form.setValue('date_description', description);
                           }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Week Number */}
+              <FormField
+                control={form.control}
+                name="week_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Veckonummer</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="53"
+                        placeholder="t.ex., 7"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? null : parseInt(value, 10));
                         }}
                       />
                     </FormControl>
