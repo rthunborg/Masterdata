@@ -64,7 +64,6 @@ export function AddColumnModal() {
   
   const t = useTranslations('modals');
   const tCommon = useTranslations('common');
-  const tForms = useTranslations('forms');
 
   // Extract existing categories from columns
   const existingCategories = Array.from(
@@ -139,9 +138,9 @@ export function AddColumnModal() {
     >
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogTitle>Lägg till anpassad kolumn</DialogTitle>
           <DialogDescription>
-            {t('description')}
+            Skapa en ny anpassad kolumn för att spåra ytterligare personaldata specifik för din avdelnings behov.
           </DialogDescription>
         </DialogHeader>
 
@@ -153,10 +152,10 @@ export function AddColumnModal() {
               name="column_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tForms('columnName')} *</FormLabel>
+                  <FormLabel>Kolumnnamn *</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder={t('columnNamePlaceholder')}
+                      placeholder="t.ex., Rekryteringsteam"
                       {...field}
                       disabled={isSubmitting}
                     />
@@ -172,7 +171,7 @@ export function AddColumnModal() {
               name="column_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tForms('columnType')} *</FormLabel>
+                  <FormLabel>Kolumntyp *</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -180,14 +179,14 @@ export function AddColumnModal() {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={t('columnTypeLabel')} />
+                        <SelectValue placeholder="Välj kolumntyp" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="text">{t('typeText')}</SelectItem>
-                      <SelectItem value="number">{t('typeNumber')}</SelectItem>
-                      <SelectItem value="date">{t('typeDate')}</SelectItem>
-                      <SelectItem value="boolean">{t('typeBoolean')}</SelectItem>
+                      <SelectItem value="text">Text</SelectItem>
+                      <SelectItem value="number">Nummer</SelectItem>
+                      <SelectItem value="date">Datum</SelectItem>
+                      <SelectItem value="boolean">Boolesk</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -201,7 +200,7 @@ export function AddColumnModal() {
               name="category"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>{t('categoryLabel')}</FormLabel>
+                  <FormLabel>Kategori (Valfritt)</FormLabel>
                   <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -215,7 +214,7 @@ export function AddColumnModal() {
                           )}
                           disabled={isSubmitting}
                         >
-                          {field.value || t('categoryPlaceholder')}
+                          {field.value || "Välj eller skriv en kategori"}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
@@ -223,15 +222,15 @@ export function AddColumnModal() {
                     <PopoverContent className="w-[400px] p-0">
                       <Command>
                         <CommandInput
-                          placeholder={t('categorySearch')}
+                          placeholder="Sök eller skriv ny kategori..."
                           value={field.value}
                           onValueChange={field.onChange}
                         />
                         <CommandEmpty>
-                          {t('createCategory', { value: field.value || '' })}
+                          Tryck Enter för att skapa &ldquo;{field.value || ''}&rdquo;
                         </CommandEmpty>
                         {existingCategories.length > 0 && (
-                          <CommandGroup heading={t('existingCategories')}>
+                          <CommandGroup heading="Befintliga kategorier">
                             {existingCategories.map((category) => (
                               <CommandItem
                                 key={category}
@@ -272,7 +271,7 @@ export function AddColumnModal() {
                 {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t('creating') : t('createButton')}
+                {isSubmitting ? 'Skapar...' : 'Skapa kolumn'}
               </Button>
             </DialogFooter>
           </form>
