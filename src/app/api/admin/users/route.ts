@@ -46,14 +46,16 @@ export async function POST(request: NextRequest) {
     // Enforce HR Admin role
     await requireHRAdminAPI();
 
-    const supabase = await createClient();
     const body = await request.json();
 
     // Validate request body
     const validated = createUserSchema.parse(body);
 
+    // Use service role client for all admin operations
+    const supabaseServiceRole = createServiceRoleClient();
+
     // Check if user with this email already exists
-    const { data: existingUser } = await supabase
+    const { data: existingUser } = await supabaseServiceRole
       .from("users")
       .select("id")
       .eq("email", validated.email)
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create auth user using admin API
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    const { data: authData, error: authError } = await supabaseServiceRole.auth.admin.createUser({
       email: validated.email,
       password: validated.password,
       email_confirm: true, // Auto-confirm for MVP
@@ -92,7 +94,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Create app user record using service role client to bypass RLS
-    const supabaseServiceRole = createServiceRoleClient();
     const { data: appUser, error: appError } = await supabaseServiceRole
       .from("users")
       .insert({
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
       console.error("App user creation failed:", appError);
       
       // Attempt to clean up auth user
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      await supabaseServiceRole.auth.admin.deleteUser(authData.user.id);
 
       return NextResponse.json(
         {

@@ -128,10 +128,11 @@ export async function PATCH(
       );
     }
 
-    // If deactivating, revoke auth sessions
+    // If deactivating, revoke auth sessions using service role client
     if (validated.is_active === false && userToUpdate.auth_user_id) {
       try {
-        await supabase.auth.admin.signOut(userToUpdate.auth_user_id);
+        const supabaseServiceRole = createServiceRoleClient();
+        await supabaseServiceRole.auth.admin.signOut(userToUpdate.auth_user_id);
       } catch (signOutError) {
         console.error("Failed to sign out user:", signOutError);
         // Continue - user is deactivated even if sign out fails
@@ -215,8 +216,10 @@ export async function DELETE(
       );
     }
 
-    // Delete app user record first using service role to bypass RLS
+    // Use service role client for all admin operations
     const supabaseServiceRole = createServiceRoleClient();
+
+    // Delete app user record first using service role to bypass RLS
     const { error: deleteError } = await supabaseServiceRole
       .from("users")
       .delete()
@@ -235,10 +238,10 @@ export async function DELETE(
       );
     }
 
-    // Delete auth user
+    // Delete auth user using service role client
     if (userToDelete.auth_user_id) {
       try {
-        const { error: authDeleteError } = await supabase.auth.admin.deleteUser(
+        const { error: authDeleteError } = await supabaseServiceRole.auth.admin.deleteUser(
           userToDelete.auth_user_id
         );
         
