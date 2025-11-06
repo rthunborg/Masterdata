@@ -6,6 +6,7 @@ import type { ColumnConfig } from "@/lib/types/column-config";
 const createColumnConfig = (overrides: Partial<ColumnConfig>): ColumnConfig => ({
   id: "test-id",
   column_name: "Test Column",
+  db_column_name: "test_column",
   column_type: "text",
   is_masterdata: false,
   category: null,
@@ -21,42 +22,29 @@ const createColumnConfig = (overrides: Partial<ColumnConfig>): ColumnConfig => (
 describe("groupColumnsByCategory", () => {
   it("groups columns by category correctly", () => {
     const columns: ColumnConfig[] = [
-      {
+      createColumnConfig({
         id: "1",
         column_name: "First Name",
-        column_type: "text",
+        db_column_name: "first_name",
         is_masterdata: true,
-        category: null,
-        role_permissions: {},
-        created_at: "2025-01-01T00:00:00Z",
-      },
-      {
+      }),
+      createColumnConfig({
         id: "2",
         column_name: "Team",
-        column_type: "text",
-        is_masterdata: false,
+        db_column_name: "team",
         category: "Recruitment Team",
-        role_permissions: {},
-        created_at: "2025-01-01T00:00:00Z",
-      },
-      {
+      }),
+      createColumnConfig({
         id: "3",
         column_name: "Location",
-        column_type: "text",
-        is_masterdata: false,
+        db_column_name: "location",
         category: "Warehouse Team",
-        role_permissions: {},
-        created_at: "2025-01-01T00:00:00Z",
-      },
-      {
+      }),
+      createColumnConfig({
         id: "4",
         column_name: "Notes",
-        column_type: "text",
-        is_masterdata: false,
-        category: null,
-        role_permissions: {},
-        created_at: "2025-01-01T00:00:00Z",
-      },
+        db_column_name: "notes",
+      }),
     ];
 
     const grouped = groupColumnsByCategory(columns);
@@ -73,7 +61,7 @@ describe("groupColumnsByCategory", () => {
 
   it("handles null category as Uncategorized", () => {
     const columns: ColumnConfig[] = [
-      {
+      createColumnConfig({
         id: "1",
         column_name: "Notes",
         column_type: "text",
@@ -81,7 +69,7 @@ describe("groupColumnsByCategory", () => {
         category: null,
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      },
+      }),
     ];
 
     const grouped = groupColumnsByCategory(columns);
@@ -92,7 +80,7 @@ describe("groupColumnsByCategory", () => {
 
   it("groups multiple columns with same category", () => {
     const columns: ColumnConfig[] = [
-      {
+      createColumnConfig({
         id: "1",
         column_name: "Team A",
         column_type: "text",
@@ -100,8 +88,8 @@ describe("groupColumnsByCategory", () => {
         category: "Recruitment",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      },
-      {
+      }),
+      createColumnConfig({
         id: "2",
         column_name: "Team B",
         column_type: "text",
@@ -109,8 +97,8 @@ describe("groupColumnsByCategory", () => {
         category: "Recruitment",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      },
-      {
+      }),
+      createColumnConfig({
         id: "3",
         column_name: "Team C",
         column_type: "text",
@@ -118,7 +106,7 @@ describe("groupColumnsByCategory", () => {
         category: "Recruitment",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      },
+      }),
     ];
 
     const grouped = groupColumnsByCategory(columns);
@@ -131,7 +119,7 @@ describe("groupColumnsByCategory", () => {
 
   it("separates masterdata from custom columns", () => {
     const columns: ColumnConfig[] = [
-      {
+      createColumnConfig({
         id: "1",
         column_name: "First Name",
         column_type: "text",
@@ -139,8 +127,8 @@ describe("groupColumnsByCategory", () => {
         category: null,
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      },
-      {
+      }),
+      createColumnConfig({
         id: "2",
         column_name: "Email",
         column_type: "text",
@@ -148,8 +136,8 @@ describe("groupColumnsByCategory", () => {
         category: null,
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      },
-      {
+      }),
+      createColumnConfig({
         id: "3",
         column_name: "Custom Field",
         column_type: "text",
@@ -157,7 +145,7 @@ describe("groupColumnsByCategory", () => {
         category: "Custom",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      },
+      }),
     ];
 
     const grouped = groupColumnsByCategory(columns);
@@ -179,7 +167,7 @@ describe("groupColumnsByCategory", () => {
 
   it("handles columns with empty string category as Uncategorized", () => {
     const columns: ColumnConfig[] = [
-      {
+      createColumnConfig({
         id: "1",
         column_name: "Empty Category",
         column_type: "text",
@@ -187,7 +175,7 @@ describe("groupColumnsByCategory", () => {
         category: "",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      },
+      }),
     ];
 
     const grouped = groupColumnsByCategory(columns);

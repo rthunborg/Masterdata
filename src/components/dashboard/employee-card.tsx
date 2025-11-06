@@ -147,16 +147,16 @@ export function EmployeeCard({
                   {columns.map((col) => {
                     const value = getEmployeeFieldValue(
                       employee, 
-                      col.column_name, 
+                      col.db_column_name, 
                       col.is_masterdata,
                       allImportantDates
                     );
                     const canEdit = col.role_permissions && 
                       Object.values(col.role_permissions).some(p => p.edit);
 
-                    // Determine select options based on column
+                    // Determine select options based on column_name (display name for special columns)
                     let selectOptions: string[] | undefined;
-                    if (col.column_name === 'gender') {
+                    if (col.column_name === 'Gender') {
                       selectOptions = ['Male', 'Female', 'Other'];
                     }
 
@@ -168,7 +168,7 @@ export function EmployeeCard({
                         <EditableCell
                           value={value}
                           employeeId={employee.id}
-                          field={col.is_masterdata ? col.column_name : col.column_name}
+                          field={col.db_column_name}
                           type={col.column_type as "text" | "date" | "select" | "number" | "boolean"}
                           options={selectOptions}
                           canEdit={canEdit}

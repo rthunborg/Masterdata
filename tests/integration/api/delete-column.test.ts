@@ -64,10 +64,12 @@ describe.skip("DELETE /api/admin/columns/[id]", () => {
 
   beforeEach(async () => {
     // Create a fresh test custom column before each test
+    const timestamp = Date.now();
     const { data: customColumn } = await supabase
       .from("column_config")
       .insert({
-        column_name: `Test Custom Column ${Date.now()}`,
+        column_name: `Test Custom Column ${timestamp}`,
+        db_column_name: `test_custom_column_${timestamp}`,
         column_type: "text",
         is_masterdata: false,
         role_permissions: {
@@ -154,68 +156,15 @@ describe.skip("DELETE /api/admin/columns/[id]", () => {
     expect(json.error.code).toBe("NOT_FOUND");
   });
 
-  it("removes JSONB keys from party data tables", async () => {
-    // Create test column with specific name
-    const testColumnName = `JSONB Test Column ${Date.now()}`;
-    const { data: testColumn } = await supabase
-      .from("column_config")
-      .insert({
-        column_name: testColumnName,
-        column_type: "text",
-        is_masterdata: false,
-        role_permissions: {
-          sodexo: { view: true, edit: true },
-        },
-      })
-      .select()
-      .single();
-
-    // Add data to employees.custom_data
-    await supabase
-      .from("employees")
-      .update({
-        custom_data: { [testColumnName]: "test value" },
-      })
-      .eq("id", testEmployeeId);
-
-    // Verify data exists
-    const { data: beforeDelete } = await supabase
-      .from("employees")
-      .select("custom_data")
-      .eq("id", testEmployeeId)
-      .single();
-
-    expect(beforeDelete).not.toBeNull();
-    expect(beforeDelete!.custom_data).toHaveProperty(testColumnName);
-
-    // Delete column
-    const response = await fetch(
-      `http://localhost:3000/api/admin/columns/${testColumn.id}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${adminToken}` },
-      }
-    );
-
-    expect(response.status).toBe(200);
-
-    // Verify JSONB key removed
-    const { data: afterDelete } = await supabase
-      .from("employees")
-      .select("custom_data")
-      .eq("id", testEmployeeId)
-      .single();
-
-    expect(afterDelete).not.toBeNull();
-    expect(afterDelete!.custom_data).not.toHaveProperty(testColumnName);
-  });
-
+ 
   it("returns affected records count", async () => {
-    const testColumnName = `Count Test Column ${Date.now()}`;
+    const timestamp = Date.now();
+    const testColumnName = `Count Test Column ${timestamp}`;
     const { data: testColumn } = await supabase
       .from("column_config")
       .insert({
         column_name: testColumnName,
+        db_column_name: `count_test_column_${timestamp}`,
         column_type: "text",
         is_masterdata: false,
         role_permissions: {
@@ -232,15 +181,6 @@ describe.skip("DELETE /api/admin/columns/[id]", () => {
       .limit(3);
 
     expect(employees).not.toBeNull();
-
-    for (const employee of employees!) {
-      await supabase
-        .from("employees")
-        .update({
-          custom_data: { [testColumnName]: "test" },
-        })
-        .eq("id", employee.id);
-    }
 
     const response = await fetch(
       `http://localhost:3000/api/admin/columns/${testColumn.id}`,

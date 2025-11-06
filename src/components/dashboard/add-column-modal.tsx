@@ -79,6 +79,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
     resolver: zodResolver(createCustomColumnSchema),
     defaultValues: {
       column_name: "",
+      db_column_name: "",
       column_type: "text",
       category: "",
       category_color: null,
@@ -93,14 +94,14 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
   }, [modals.addColumn, form]);
 
   const onSubmit = async (data: CreateCustomColumnInput) => {
-    // Client-side duplicate check
-    const existingColumnNames = columns.map((col) =>
-      col.column_name.toLowerCase()
+    // Client-side duplicate check on db_column_name
+    const existingDbColumnNames = columns.map((col) =>
+      col.db_column_name.toLowerCase()
     );
-    if (existingColumnNames.includes(data.column_name.toLowerCase())) {
-      form.setError("column_name", {
+    if (existingDbColumnNames.includes(data.db_column_name.toLowerCase())) {
+      form.setError("db_column_name", {
         type: "manual",
-        message: t('duplicateName'),
+        message: "A column with this database name already exists",
       });
       return;
     }
@@ -150,20 +151,42 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
           <DialogDescription>
             Skapa en ny anpassad kolumn för att spåra ytterligare personaldata specifik för din avdelnings behov.
             <br /><br />
-            <strong>Viktigt:</strong> Kolumnen kommer att vara tillgänglig efter nästa deployment. 
-            Kontakta en utvecklare för att generera nödvändig databasmigration.
+            <strong>Viktigt:</strong> Efter att kolumnen har skapats måste en databasmigration köras för att lägga till den fysiska kolumnen i databasen. 
+            Kolumnen kommer att vara synlig i gränssnittet omedelbart, men kan inte redigeras förrän migrationen har körts.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Column Name */}
+            {/* Display Name (column_name) */}
             <FormField
               control={form.control}
               name="column_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kolumnnamn (Database Column Name) *</FormLabel>
+                  <FormLabel>Kolumnnamn (Visningsnamn) *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="t.ex., Meal Plan, Training Status, Room Number"
+                      {...field}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Detta namn visas i tabellhuvudet och i gränssnittet. Kan innehålla mellanslag och specialtecken.
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Database Column Name (db_column_name) */}
+            <FormField
+              control={form.control}
+              name="db_column_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Databaskolumnnamn *</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="t.ex., meal_plan, training_status, room_number"
@@ -172,8 +195,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                     />
                   </FormControl>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Använd <strong>snake_case</strong>: endast små bokstäver, siffror och understreck (_). 
-                    Exempel: &ldquo;meal_plan&rdquo;, &ldquo;omc_training_status&rdquo;
+                    Tekniskt namn för databaskolumnen. Använd <strong>snake_case</strong>: endast små bokstäver, siffror och understreck (_).
                   </p>
                   <FormMessage />
                 </FormItem>

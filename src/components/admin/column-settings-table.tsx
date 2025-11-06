@@ -34,10 +34,9 @@ import {
 } from "@/components/ui/command";
 import { PermissionToggle } from "./permission-toggle";
 import { DeleteColumnModal } from "./delete-column-modal";
-import { VisibilityBadge } from "@/components/ui/visibility-badge";
 import { ColorIndicator, ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
-import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, ChevronsUpDown, X } from "lucide-react";
+import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, ChevronsUpDown, X, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DndContext,
@@ -234,6 +233,7 @@ function DraggableRow({
   handleCategoryUpdate,
   handleCategoryColorUpdate,
   handleDeleteClick,
+  handleToggleVisibility,
   isMobile,
   onMoveUp,
   onMoveDown,
@@ -255,6 +255,7 @@ function DraggableRow({
   handleCategoryUpdate: (columnId: string, newCategory: string) => Promise<void>;
   handleCategoryColorUpdate: (categoryName: string, color: string | null) => Promise<void>;
   handleDeleteClick: (column: ColumnConfig) => void;
+  handleToggleVisibility: (column: ColumnConfig) => Promise<void>;
   isMobile: boolean;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
@@ -280,7 +281,11 @@ function DraggableRow({
   const isUpdating = updatingColumnId === column.id;
 
   return (
-    <TableRow ref={setNodeRef} style={style}>
+    <TableRow 
+      ref={setNodeRef} 
+      style={style}
+      className={cn(!column.is_visible && "bg-gray-100 opacity-60")}
+    >
       {/* Drag Handle / Move Buttons */}
       <TableCell className="w-12 lg:w-auto">
         {isMobile ? (
@@ -343,11 +348,6 @@ function DraggableRow({
         />
       </TableCell>
 
-      {/* Visibility Badge */}
-      <TableCell className="w-24 lg:w-auto">
-        <VisibilityBadge isVisible={column.is_visible} />
-      </TableCell>
-
       {/* Role Permissions */}
       {allRoles.map((role) => {
         const permissions = column.role_permissions[role] || {
@@ -388,7 +388,30 @@ function DraggableRow({
 
       {/* Actions */}
       <TableCell className="text-center w-16 lg:w-auto">
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center gap-1">
+          {/* Toggle Visibility Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleToggleVisibility(column)}
+                disabled={isUpdating}
+                className="h-8 w-8 p-0"
+              >
+                {column.is_visible ? (
+                  <Eye className="h-4 w-4 text-green-600" />
+                ) : (
+                  <EyeOff className="h-4 w-4 text-gray-400" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{column.is_visible ? "Deactivate column" : "Activate column"}</p>
+            </TooltipContent>
+          </Tooltip>
+          
+          {/* Delete Button */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -637,6 +660,25 @@ export function ColumnSettingsTable({
     setDeleteModalOpen(true);
   };
 
+  const handleToggleVisibility = async (column: ColumnConfig) => {
+    try {
+      setUpdatingColumnId(column.id);
+      await columnService.toggleVisibility(column.id, !column.is_visible);
+      toast.success(
+        column.is_visible 
+          ? "Column deactivated successfully" 
+          : "Column activated successfully"
+      );
+      onPermissionsUpdated();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to toggle column visibility"
+      );
+    } finally {
+      setUpdatingColumnId(null);
+    }
+  };
+
   const handleDeleteConfirm = () => {
     onPermissionsUpdated();
   };
@@ -658,9 +700,8 @@ export function ColumnSettingsTable({
               <col style={{ width: '6%' }} />
               <col style={{ width: '6%' }} />
               <col style={{ width: '14%' }} />
-              <col style={{ width: '8%' }} />
               {allRoles.map((role, index) => (
-                <col key={`role-${role}-${index}`} style={{ width: `${43 / allRoles.length}%` }} />
+                <col key={`role-${role}-${index}`} style={{ width: `${51 / allRoles.length}%` }} />
               ))}
               <col style={{ width: '6%' }} />
             </colgroup>
@@ -671,7 +712,6 @@ export function ColumnSettingsTable({
                 <TableHead className="w-16 lg:w-auto">{tAdmin("type")}</TableHead>
                 <TableHead className="w-24 lg:w-auto text-center">Masterdata</TableHead>
                 <TableHead className="w-40 lg:w-auto">{tAdmin("category")}</TableHead>
-                <TableHead className="w-24 lg:w-auto">{tAdmin("visibility")}</TableHead>
                 {allRoles.map((role) => (
                   <TableHead key={role} className="text-center w-20 lg:w-auto">
                     <div className="whitespace-normal">
@@ -690,7 +730,7 @@ export function ColumnSettingsTable({
                 {items.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7 + allRoles.length}
+                      colSpan={6 + allRoles.length}
                       className="text-center text-gray-500"
                     >
                       No columns found
@@ -709,6 +749,7 @@ export function ColumnSettingsTable({
                       handleCategoryUpdate={handleCategoryUpdate}
                       handleCategoryColorUpdate={handleCategoryColorUpdate}
                       handleDeleteClick={handleDeleteClick}
+                      handleToggleVisibility={handleToggleVisibility}
                       isMobile={isMobile}
                       onMoveUp={() => handleMoveUp(index)}
                       onMoveDown={() => handleMoveDown(index)}

@@ -23,7 +23,8 @@ export type ColumnType = 'text' | 'number' | 'date' | 'boolean';
  */
 export interface ColumnConfig {
   id: string;
-  column_name: string;
+  column_name: string; // Display name (user-friendly)
+  db_column_name: string; // Database column name (snake_case)
   column_type: ColumnType;
   role_permissions: RolePermissions;
   is_masterdata: boolean;
@@ -47,7 +48,8 @@ export interface ColumnPermission {
  * Input type for creating a custom column
  */
 export interface CreateCustomColumnInput {
-  column_name: string;
+  column_name: string; // Display name
+  db_column_name: string; // Database column name
   column_type: ColumnType;
   category?: string;
   category_color?: string | null; // Hex color code for the category

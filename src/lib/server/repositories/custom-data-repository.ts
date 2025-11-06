@@ -36,7 +36,7 @@ export class CustomDataRepository {
    * 
    * @param employeeId - Employee UUID
    * @param visibleColumns - Optional array of columns visible to the user (for role-based filtering)
-   * @returns Object containing custom column data (column_name -> value)
+   * @returns Object containing custom column data (db_column_name -> value)
    */
   async getCustomData(
     employeeId: string,
@@ -49,8 +49,8 @@ export class CustomDataRepository {
       return {}; // No custom columns defined
     }
 
-    // Build SELECT query with all custom column names
-    const columnNames = columns.map((col) => col.column_name);
+    // Build SELECT query with all custom db_column_names
+    const columnNames = columns.map((col) => col.db_column_name);
     const selectQuery = `id, ${columnNames.join(", ")}`;
 
     const { data, error } = await this.supabase
@@ -81,8 +81,10 @@ export class CustomDataRepository {
    * Update custom column data for a specific employee
    * Updates real table columns directly (no JSONB merging needed)
    * 
+   * Handles cases where column may not exist in database yet (pending migration)
+   * 
    * @param employeeId - Employee UUID
-   * @param updates - Object containing column name-value pairs to update
+   * @param updates - Object containing db_column_name-value pairs to update
    *                  Column names must match real database column names
    */
   async updateCustomData(
@@ -91,7 +93,7 @@ export class CustomDataRepository {
   ): Promise<void> {
     // Verify that all column names being updated are valid custom columns
     const customColumns = await this.getCustomColumnDefinitions();
-    const validColumnNames = new Set(customColumns.map((col) => col.column_name));
+    const validColumnNames = new Set(customColumns.map((col) => col.db_column_name));
 
     const invalidColumns = Object.keys(updates).filter(
       (col) => !validColumnNames.has(col)
@@ -114,6 +116,17 @@ export class CustomDataRepository {
       .eq("id", employeeId);
 
     if (error) {
+      // Check if error is due to column not existing in database
+      if (error.message.includes('column') && error.message.includes('does not exist')) {
+        const missingColumns = Object.keys(updates).filter(col => 
+          error.message.includes(col)
+        );
+        throw new Error(
+          `Column(s) ${missingColumns.join(', ')} not yet created in database. ` +
+          `A database migration must be run to add these columns. ` +
+          `Please contact a developer to run the migration.`
+        );
+      }
       throw new Error(`Failed to update custom data: ${error.message}`);
     }
   }
@@ -125,7 +138,7 @@ export class CustomDataRepository {
    * Note: To permanently remove a column from the database, use a migration.
    * 
    * @param employeeId - Employee UUID
-   * @param columnNames - Array of column names to clear (set to NULL)
+   * @param columnNames - Array of db_column_names to clear (set to NULL)
    */
   async deleteCustomColumns(
     employeeId: string,
@@ -133,7 +146,7 @@ export class CustomDataRepository {
   ): Promise<void> {
     // Verify columns exist
     const customColumns = await this.getCustomColumnDefinitions();
-    const validColumnNames = new Set(customColumns.map((col) => col.column_name));
+    const validColumnNames = new Set(customColumns.map((col) => col.db_column_name));
 
     const invalidColumns = columnNames.filter(
       (col) => !validColumnNames.has(col)
@@ -183,7 +196,7 @@ export class CustomDataRepository {
       return [];
     }
 
-    const columnNames = columns.map((col) => col.column_name);
+    const columnNames = columns.map((col) => col.db_column_name);
     const selectQuery = `id, ${columnNames.join(", ")}`;
 
     const { data, error } = await this.supabase

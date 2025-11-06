@@ -91,7 +91,8 @@ export class ColumnConfigRepository {
    * - External parties: Creates with creating role having full access
    */
   async createCustomColumn(input: {
-    column_name: string;
+    column_name: string; // Display name
+    db_column_name: string; // Database column name
     column_type: "text" | "number" | "date" | "boolean";
     role: UserRole;
     category?: string;
@@ -99,14 +100,14 @@ export class ColumnConfigRepository {
   }): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
-    // Check for duplicate column name
+    // Check for duplicate db_column_name
     const allColumns = await this.findAll();
     const duplicate = allColumns.find(
-      (col) => col.column_name.toLowerCase() === input.column_name.toLowerCase()
+      (col) => col.db_column_name.toLowerCase() === input.db_column_name.toLowerCase()
     );
 
     if (duplicate) {
-      throw new Error(`Column "${input.column_name}" already exists`);
+      throw new Error(`Column with database name "${input.db_column_name}" already exists`);
     }
 
     // Create default role permissions
@@ -128,6 +129,7 @@ export class ColumnConfigRepository {
     // Create column config
     const columnData = {
       column_name: input.column_name,
+      db_column_name: input.db_column_name,
       column_type: input.column_type,
       is_masterdata: false,
       category: input.category || null,

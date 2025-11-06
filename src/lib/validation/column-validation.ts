@@ -31,16 +31,21 @@ const dbColumnNameRegex = /^[a-z][a-z0-9_]*[a-z0-9]$/;
 
 /**
  * Schema for creating a new custom column
- * Note: column_name is now enforced as snake_case for database compatibility
+ * column_name is the display name (user-friendly)
+ * db_column_name is the database column name (snake_case, strict rules)
  */
 export const createCustomColumnSchema = z.object({
   column_name: z
     .string()
-    .min(1, "Column name is required")
-    .max(63, "Column name must be less than 63 characters (PostgreSQL limit)")
+    .min(1, "Display name is required")
+    .max(100, "Display name must be less than 100 characters"),
+  db_column_name: z
+    .string()
+    .min(1, "Database column name is required")
+    .max(63, "Database column name must be less than 63 characters (PostgreSQL limit)")
     .regex(
       dbColumnNameRegex,
-      "Column name must be lowercase snake_case (e.g., 'meal_plan', 'training_status'). Only letters, numbers, and underscores allowed."
+      "Database column name must be lowercase snake_case (e.g., 'meal_plan', 'training_status'). Only letters, numbers, and underscores allowed."
     )
     .refine(
       (name) => {
@@ -48,7 +53,7 @@ export const createCustomColumnSchema = z.object({
         const reservedWords = ['user', 'group', 'order', 'table', 'column', 'select', 'insert', 'update', 'delete', 'where', 'from'];
         return !reservedWords.includes(name.toLowerCase());
       },
-      "Column name cannot be a SQL reserved word"
+      "Database column name cannot be a SQL reserved word"
     ),
   column_type: z.enum(["text", "number", "date", "boolean"], {
     errorMap: () => ({ message: "Invalid column type" }),

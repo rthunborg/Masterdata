@@ -56,7 +56,6 @@ export interface Database {
           is_terminated: boolean;
           is_archived: boolean;
           comments: string | null;
-          custom_data: Json;
           created_at: string;
           updated_at: string;
         };
@@ -76,7 +75,6 @@ export interface Database {
           is_terminated?: boolean;
           is_archived?: boolean;
           comments?: string | null;
-          custom_data?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -96,7 +94,6 @@ export interface Database {
           is_terminated?: boolean;
           is_archived?: boolean;
           comments?: string | null;
-          custom_data?: Json;
           created_at?: string;
           updated_at?: string;
         };

@@ -371,10 +371,10 @@ export function EmployeeTable({
         }
 
         // Get the field key for the employee object
-        const fieldKey = config.column_name.toLowerCase().replace(/ /g, "_");
+        const fieldKey = config.db_column_name.toLowerCase().replace(/ /g, "_");
 
         const DataCell = ({ row }: { row: Row<Employee> }) => {
-          const value = getEmployeeFieldValue(row.original, config.column_name, config.is_masterdata, allImportantDates);
+          const value = getEmployeeFieldValue(row.original, config.db_column_name, config.is_masterdata, allImportantDates);
           
           // Special handling for Important Date columns (Stena Date, ÖMC Date, PE3 Date)
           if (["Stena Date", "ÖMC Date", "PE3 Date"].includes(config.column_name)) {
@@ -434,7 +434,7 @@ export function EmployeeTable({
             <EditableCell
               value={value}
               employeeId={row.original.id}
-              field={config.is_masterdata ? fieldKey : config.column_name}
+              field={config.is_masterdata ? fieldKey : config.db_column_name}
               type={cellType}
               options={options}
               canEdit={canEdit} // Pass permission flag
@@ -443,17 +443,20 @@ export function EmployeeTable({
             />
           );
         };
-        DataCell.displayName = `${config.column_name}Cell`;
+        DataCell.displayName = `${config.db_column_name}Cell`;
         return DataCell;
       };
 
       return {
-        accessorKey: config.column_name.toLowerCase().replace(/ /g, "_"),
+        accessorKey: config.db_column_name.toLowerCase().replace(/ /g, "_"),
         header: ({ column }) => {
           // Determine category for visual grouping
           const category = config.is_masterdata 
             ? "Employee Information" 
             : (config.category || "Uncategorized");
+          
+          // Use column_name for header display (this is now the display name)
+          const displayName = config.column_name;
           
           // Add lock icon for read-only columns
           return (
@@ -475,14 +478,14 @@ export function EmployeeTable({
               }}
               aria-label={
                 column.getCanSort()
-                  ? `Sort by ${config.column_name}${
+                  ? `Sort by ${displayName}${
                       column.getIsSorted() === "asc"
                         ? ", currently sorted ascending"
                         : column.getIsSorted() === "desc"
                         ? ", currently sorted descending"
                         : ""
                     }${!canEdit ? " (read-only)" : ""}`
-                  : !canEdit ? `${config.column_name} (read-only)` : config.column_name
+                  : !canEdit ? `${displayName} (read-only)` : displayName
               }
             >
               {/* Category label (only show for custom columns) */}
@@ -493,7 +496,7 @@ export function EmployeeTable({
               )}
               
               <div className="flex items-center gap-2">
-                <span>{config.column_name}</span>
+                <span>{displayName}</span>
                 {!canEdit && (
                   <Lock className="h-4 w-4 text-gray-400" aria-hidden="true" />
                 )}
@@ -516,8 +519,8 @@ export function EmployeeTable({
         enableSorting: true,
         ...(config.column_type === "date" && {
           sortingFn: (rowA, rowB) => {
-            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.column_name, config.is_masterdata, allImportantDates) as string).getTime();
-            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.column_name, config.is_masterdata, allImportantDates) as string).getTime();
+            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates) as string).getTime();
+            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates) as string).getTime();
             return dateA - dateB;
           },
         }),
@@ -776,9 +779,10 @@ export function EmployeeTable({
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {columnConfigs.map((config) => {
                       const isVisible = columnVisibility[config.id] !== false;
+                      const displayName = config.column_name;
                       return (
                         <div key={config.id} className="flex items-center justify-between">
-                          <span className="text-sm">{config.column_name}</span>
+                          <span className="text-sm">{displayName}</span>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -844,7 +848,7 @@ export function EmployeeTable({
                       }}
                     >
                       {/* Header content with category label (Story 9.4 - AC 1) */}
-                      <div className="flex flex-col items-center gap-1">
+                      <div className="flex flex-col items-center gap-0.5">
                         {/* Primary header text */}
                         <div className="text-sm font-semibold">
                           {categoryColor && categoryName ? (
