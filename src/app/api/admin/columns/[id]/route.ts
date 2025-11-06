@@ -164,35 +164,32 @@ export async function DELETE(
       );
     }
 
-    // Remove JSONB keys from all party data tables
+    // Remove JSONB key from employees.custom_data column
     const columnName = column.column_name;
-    const partyTables = ["sodexo_data", "omc_data", "payroll_data", "toplux_data"];
 
-    let totalAffectedRows = 0;
-
-    // Use service role client for RPC calls (function no longer grants execute to authenticated)
+    // Use service role client for RPC calls
     const serviceClient = createServiceRoleClient();
 
-    for (const table of partyTables) {
-      try {
-        const { data: affectedRows, error: removeError } = await serviceClient.rpc(
-          "remove_jsonb_key",
-          {
-            table_name: table,
-            key_name: columnName,
-          }
-        );
+    let affectedRows = 0;
 
-        if (removeError) {
-          console.error(`Failed to remove key from ${table}:`, removeError);
-          // Continue anyway - data inconsistency is acceptable for MVP
-        } else {
-          totalAffectedRows += affectedRows || 0;
+    try {
+      const { data: removedCount, error: removeError } = await serviceClient.rpc(
+        "remove_jsonb_key",
+        {
+          table_name: "employees",
+          key_name: columnName,
         }
-      } catch (rpcError) {
-        console.error(`RPC error for ${table}:`, rpcError);
-        // Continue with deletion even if JSONB cleanup fails
+      );
+
+      if (removeError) {
+        console.error(`Failed to remove key from employees.custom_data:`, removeError);
+        // Continue anyway - data inconsistency is acceptable for MVP
+      } else {
+        affectedRows = removedCount || 0;
       }
+    } catch (rpcError) {
+      console.error(`RPC error for employees table:`, rpcError);
+      // Continue with deletion even if JSONB cleanup fails
     }
 
     // Delete column from column_config
@@ -220,14 +217,14 @@ export async function DELETE(
       user_id: user.id,
       column_id: columnId,
       column_name: columnName,
-      affected_records: totalAffectedRows,
+      affected_records: affectedRows,
     });
 
     return NextResponse.json({
       data: {
         id: columnId,
         message: "Column deleted successfully",
-        affected_records: totalAffectedRows,
+        affected_records: affectedRows,
       },
     });
   } catch (error) {

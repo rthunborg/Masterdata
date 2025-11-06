@@ -170,21 +170,23 @@ describe.skip("DELETE /api/admin/columns/[id]", () => {
       .select()
       .single();
 
-    // Add data to sodexo_data table
-    await supabase.from("sodexo_data").upsert({
-      employee_id: testEmployeeId,
-      data: { [testColumnName]: "test value" },
-    });
+    // Add data to employees.custom_data
+    await supabase
+      .from("employees")
+      .update({
+        custom_data: { [testColumnName]: "test value" },
+      })
+      .eq("id", testEmployeeId);
 
     // Verify data exists
     const { data: beforeDelete } = await supabase
-      .from("sodexo_data")
-      .select("data")
-      .eq("employee_id", testEmployeeId)
+      .from("employees")
+      .select("custom_data")
+      .eq("id", testEmployeeId)
       .single();
 
     expect(beforeDelete).not.toBeNull();
-    expect(beforeDelete!.data).toHaveProperty(testColumnName);
+    expect(beforeDelete!.custom_data).toHaveProperty(testColumnName);
 
     // Delete column
     const response = await fetch(
@@ -199,13 +201,13 @@ describe.skip("DELETE /api/admin/columns/[id]", () => {
 
     // Verify JSONB key removed
     const { data: afterDelete } = await supabase
-      .from("sodexo_data")
-      .select("data")
-      .eq("employee_id", testEmployeeId)
+      .from("employees")
+      .select("custom_data")
+      .eq("id", testEmployeeId)
       .single();
 
     expect(afterDelete).not.toBeNull();
-    expect(afterDelete!.data).not.toHaveProperty(testColumnName);
+    expect(afterDelete!.custom_data).not.toHaveProperty(testColumnName);
   });
 
   it("returns affected records count", async () => {
@@ -232,10 +234,12 @@ describe.skip("DELETE /api/admin/columns/[id]", () => {
     expect(employees).not.toBeNull();
 
     for (const employee of employees!) {
-      await supabase.from("sodexo_data").upsert({
-        employee_id: employee.id,
-        data: { [testColumnName]: "test" },
-      });
+      await supabase
+        .from("employees")
+        .update({
+          custom_data: { [testColumnName]: "test" },
+        })
+        .eq("id", employee.id);
     }
 
     const response = await fetch(

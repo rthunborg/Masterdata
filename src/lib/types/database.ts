@@ -56,6 +56,7 @@ export interface Database {
           is_terminated: boolean;
           is_archived: boolean;
           comments: string | null;
+          custom_data: Json;
           created_at: string;
           updated_at: string;
         };
@@ -75,6 +76,7 @@ export interface Database {
           is_terminated?: boolean;
           is_archived?: boolean;
           comments?: string | null;
+          custom_data?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -94,6 +96,7 @@ export interface Database {
           is_terminated?: boolean;
           is_archived?: boolean;
           comments?: string | null;
+          custom_data?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -158,98 +161,6 @@ export interface Database {
           date_description?: string;
           date_value?: string;
           notes?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      sodexo_data: {
-        Row: {
-          id: string;
-          employee_id: string;
-          data: Json;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          employee_id: string;
-          data?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          employee_id?: string;
-          data?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      omc_data: {
-        Row: {
-          id: string;
-          employee_id: string;
-          data: Json;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          employee_id: string;
-          data?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          employee_id?: string;
-          data?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      payroll_data: {
-        Row: {
-          id: string;
-          employee_id: string;
-          data: Json;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          employee_id: string;
-          data?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          employee_id?: string;
-          data?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      toplux_data: {
-        Row: {
-          id: string;
-          employee_id: string;
-          data: Json;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          employee_id: string;
-          data?: Json;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          employee_id?: string;
-          data?: Json;
           created_at?: string;
           updated_at?: string;
         };
