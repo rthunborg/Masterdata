@@ -142,9 +142,9 @@ export function AddImportantDateModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogTitle>Lägg till viktigt datum</DialogTitle>
           <DialogDescription>
-            {t('description')}
+            Skapa en ny viktig datumpost för operativ planering.
           </DialogDescription>
         </DialogHeader>
 
@@ -158,7 +158,7 @@ export function AddImportantDateModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t('categoryLabel')} <span className="text-red-500">*</span>
+                      Kategori <span className="text-red-500">*</span>
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -166,7 +166,7 @@ export function AddImportantDateModal({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
+                          <SelectValue placeholder="Välj kategori" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -181,6 +181,70 @@ export function AddImportantDateModal({
                 )}
               />
 
+              {/* Week Number */}
+              <FormField
+                control={form.control}
+                name="week_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Veckonummer</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="53"
+                        placeholder="t.ex., 7"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? null : parseInt(value, 10));
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Date Value - with date picker */}
+              <FormField
+                control={form.control}
+                name="date_value"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Datumvärde <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="date"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.value);
+                          // Auto-calculate week number when date is selected
+                          const weekNum = getWeekNumberFromDateString(e.target.value);
+                          if (weekNum !== null && !form.getValues('week_number')) {
+                            form.setValue('week_number', weekNum);
+                          }
+                          // Auto-populate date description with weekday and day/month
+                          if (e.target.value) {
+                            const date = new Date(e.target.value + 'T00:00:00');
+                            const weekdays = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
+                            const weekday = weekdays[date.getDay()];
+                            const day = date.getDate();
+                            const month = date.getMonth() + 1;
+                            const description = `${weekday} ${day}/${month}`;
+                            form.setValue('date_description', description);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Year */}
               <FormField
                 control={form.control}
@@ -188,7 +252,7 @@ export function AddImportantDateModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {t('yearLabel')} <span className="text-red-500">*</span>
+                      År <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -204,71 +268,17 @@ export function AddImportantDateModal({
                 )}
               />
 
-              {/* Date Value - with date picker */}
-              <FormField
-                control={form.control}
-                name="date_value"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t('dateValueLabel')} <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="date"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e.target.value);
-                          // Auto-calculate week number when date is selected
-                          const weekNum = getWeekNumberFromDateString(e.target.value);
-                          if (weekNum !== null && !form.getValues('week_number')) {
-                            form.setValue('week_number', weekNum);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Week Number */}
-              <FormField
-                control={form.control}
-                name="week_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('weekNumberLabel')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="53"
-                        placeholder={t('weekNumberPlaceholder')}
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(value === "" ? null : parseInt(value, 10));
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Date Description - now optional */}
+              {/* Date Description - now optional and auto-populated */}
               <FormField
                 control={form.control}
                 name="date_description"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
                     <FormLabel>
-                      {t('dateDescriptionLabel')}
+                      Datumbeskrivning
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder={t('dateDescriptionPlaceholder')} {...field} />
+                      <Input placeholder="t.ex., Fredag 14/2" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -282,10 +292,10 @@ export function AddImportantDateModal({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('notesLabel')}</FormLabel>
+                  <FormLabel>Anteckningar (Valfritt)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder={t('notesPlaceholder')}
+                      placeholder="Ytterligare anteckningar eller detaljer..."
                       {...field}
                       value={field.value ?? ""}
                       onChange={(e) => {
@@ -309,7 +319,7 @@ export function AddImportantDateModal({
                 {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t('creating') : t('createButton')}
+                {isSubmitting ? 'Skapar...' : 'Skapa'}
               </Button>
             </DialogFooter>
           </form>
