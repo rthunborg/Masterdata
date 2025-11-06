@@ -96,6 +96,10 @@ export default function DashboardPage() {
     refetch();
   };
 
+  const handleColumnCreated = () => {
+    refetch(); // Refetch employees which will also refetch column configs
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -234,7 +238,7 @@ export default function DashboardPage() {
         onSuccess={handleEmployeesImported}
       />
 
-      <AddColumnModal />
+      <AddColumnModal onColumnCreated={handleColumnCreated} />
       
       <EditColumnModal />
     </div>
