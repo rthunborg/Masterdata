@@ -2,6 +2,19 @@
 -- Description: Populates column_config table with masterdata column definitions and initial role permissions
 -- Created: 2025-10-28
 
+-- Create unique constraint first to enable idempotent inserts
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'column_config_masterdata_unique'
+  ) THEN
+    ALTER TABLE public.column_config 
+    ADD CONSTRAINT column_config_masterdata_unique 
+    UNIQUE (column_name, is_masterdata);
+  END IF;
+END $$;
+
 -- Insert masterdata column configurations with role-based permissions
 -- This script is idempotent - can be run multiple times without creating duplicates
 
@@ -120,20 +133,5 @@ INSERT INTO public.column_config (column_name, column_type, is_masterdata, role_
     "payroll": {"view": false, "edit": false},
     "toplux": {"view": false, "edit": false}
   }')
-ON CONFLICT (column_name) 
-WHERE is_masterdata = true 
-DO NOTHING;
+ON CONFLICT (column_name, is_masterdata) DO NOTHING;
 
--- Create unique constraint to enforce idempotency
--- This ensures we can safely re-run this migration without duplicates
-DO $$ 
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint 
-    WHERE conname = 'column_config_masterdata_unique'
-  ) THEN
-    ALTER TABLE public.column_config 
-    ADD CONSTRAINT column_config_masterdata_unique 
-    UNIQUE (column_name, is_masterdata);
-  END IF;
-END $$;

@@ -10,7 +10,9 @@ export const runtime = 'nodejs';
 
 /**
  * GET /api/employees/[id]/custom-data
- * Get custom column data for a specific employee from employees.custom_data JSONB
+ * Get custom column data for a specific employee from real table columns
+ * Updated for Story 9.3: Real table columns architecture
+ * 
  * Permission filtering is handled by column_config.role_permissions in the application layer
  */
 export async function GET(
@@ -49,7 +51,9 @@ export async function GET(
 
 /**
  * PATCH /api/employees/[id]/custom-data
- * Update custom column values for a specific employee in employees.custom_data JSONB
+ * Update custom column values for a specific employee (real table columns)
+ * Updated for Story 9.3: Real table columns architecture
+ * 
  * Permission filtering is handled by column_config.role_permissions in the application layer
  */
 export async function PATCH(

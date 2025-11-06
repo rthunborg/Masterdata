@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { updateColumnConfigSchema } from "@/lib/validation/column-validation";
 import { ZodError } from "zod";
@@ -113,11 +113,14 @@ export async function PATCH(
 
 /**
  * DELETE /api/admin/columns/[id]
- * Delete a custom column
+ * Delete a custom column definition
+ * Updated for Story 9.3: Real table columns architecture
+ * 
  * Authorization: HR Admin only
  * - Validates column exists and is not masterdata
- * - Removes JSONB keys from all party data tables
- * - Deletes column from column_config
+ * - Deletes column definition from column_config
+ * - Note: Database column itself requires migration to drop
+ * - Column will remain in database until migration is deployed
  */
 export async function DELETE(
   request: NextRequest,
@@ -164,35 +167,11 @@ export async function DELETE(
       );
     }
 
-    // Remove JSONB key from employees.custom_data column
     const columnName = column.column_name;
 
-    // Use service role client for RPC calls
-    const serviceClient = createServiceRoleClient();
-
-    let affectedRows = 0;
-
-    try {
-      const { data: removedCount, error: removeError } = await serviceClient.rpc(
-        "remove_jsonb_key",
-        {
-          table_name: "employees",
-          key_name: columnName,
-        }
-      );
-
-      if (removeError) {
-        console.error(`Failed to remove key from employees.custom_data:`, removeError);
-        // Continue anyway - data inconsistency is acceptable for MVP
-      } else {
-        affectedRows = removedCount || 0;
-      }
-    } catch (rpcError) {
-      console.error(`RPC error for employees table:`, rpcError);
-      // Continue with deletion even if JSONB cleanup fails
-    }
-
-    // Delete column from column_config
+    // Delete column definition from column_config
+    // Note: This only removes the UI/config definition
+    // The actual database column remains until a migration drops it
     const { error: deleteError } = await supabase
       .from("column_config")
       .delete()
@@ -204,7 +183,7 @@ export async function DELETE(
         {
           error: {
             code: "INTERNAL_ERROR",
-            message: "Failed to delete column",
+            message: "Failed to delete column definition",
           },
         },
         { status: 500 }
@@ -212,19 +191,19 @@ export async function DELETE(
     }
 
     // Audit log
-    console.log("[AUDIT] Column deleted:", {
+    console.log("[AUDIT] Column definition deleted:", {
       timestamp: new Date().toISOString(),
       user_id: user.id,
       column_id: columnId,
       column_name: columnName,
-      affected_records: affectedRows,
+      note: "Database column requires migration to drop",
     });
 
     return NextResponse.json({
       data: {
         id: columnId,
-        message: "Column deleted successfully",
-        affected_records: affectedRows,
+        message: "Column definition deleted successfully",
+        note: "Database column will be dropped after next deployment (requires migration)",
       },
     });
   } catch (error) {

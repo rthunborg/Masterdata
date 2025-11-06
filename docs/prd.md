@@ -22,11 +22,12 @@ The HR Masterdata Management System will provide a unified spreadsheet-like web 
 
 ### Change Log
 
-| Date       | Version | Description                                                                  | Author  |
-| ---------- | ------- | ---------------------------------------------------------------------------- | ------- |
-| 2025-10-26 | 0.1     | Initial PRD draft                                                            | PM John |
-| 2025-10-26 | 0.2     | Added termination tracking and CSV import; updated field names to match data | PM John |
-| 2025-10-26 | 0.3     | Added important dates reference calendar for operational scheduling          | PM John |
+| Date       | Version | Description                                                                                                                    | Author         |
+| ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------- |
+| 2025-10-26 | 0.1     | Initial PRD draft                                                                                                              | PM John        |
+| 2025-10-26 | 0.2     | Added termination tracking and CSV import; updated field names to match data                                                   | PM John        |
+| 2025-10-26 | 0.3     | Added important dates reference calendar for operational scheduling                                                            | PM John        |
+| 2025-11-06 | 0.4     | Clarified custom columns are HR Admin-managed, not external party self-service; Updated to real table columns instead of JSONB | James (Dev AI) |
 
 ---
 
@@ -56,9 +57,9 @@ The HR Masterdata Management System will provide a unified spreadsheet-like web 
 
 **FR8:** External party users (Sodexo, ÖMC, Payroll, Toplux) must be able to view specific masterdata fields (determined by HR configuration) as read-only reference data.
 
-**FR9:** External party users must be able to create, edit, and manage their own custom data columns linked to employee records without affecting masterdata or other parties' data.
+**FR9:** HR Admin must be able to create and manage custom data columns for external parties (Sodexo, ÖMC, Payroll, Toplux) through the Column Settings interface, with each column assigned to specific roles and linked to employee records.
 
-**FR10:** External party users must be able to organize their custom columns into logical categories (e.g., "Recruitment Team", "Warehouse Team") for better workflow organization.
+**FR10:** HR Admin must be able to organize custom columns into logical categories (e.g., "Recruitment Team", "Warehouse Team") for better workflow organization.
 
 **FR11:** Changes to masterdata fields by HR Admin must automatically propagate to all external party views in real-time (visible within 2 seconds) without requiring page refresh.
 
@@ -266,7 +267,7 @@ Enable HR Admin to create, read, update, and archive employee masterdata records
 Implement dynamic column permissions, role-based table views, and enable external parties to view their assigned masterdata columns in read-only mode.
 
 **Epic 4: External Party Custom Columns & Real-Time Sync**  
-Enable external parties to create and edit their own custom columns with category organization, and implement real-time data synchronization across all user views.
+Enable HR Admin to create and manage custom columns for external parties with category organization, allow external parties to edit their assigned custom column data, and implement real-time data synchronization across all user views.
 
 **Epic 5: Admin Configuration & Role Preview**  
 Provide HR Admin with comprehensive column permission management, user account management, and "View As" role preview capabilities.
@@ -618,44 +619,45 @@ so that **I can view current employee masterdata relevant to my work**.
 
 ## Epic 4: External Party Custom Columns & Real-Time Sync
 
-**Epic Goal**: Enable external parties to create and manage their own custom data columns with category organization, ensuring complete data isolation between parties. Implement real-time synchronization so that masterdata changes by HR Admin instantly propagate to all external party views. This epic delivers the core value proposition of autonomous data management with live updates.
+**Epic Goal**: Enable HR Admin to create and manage custom data columns for external parties with category organization, ensuring complete data isolation between parties. External parties can edit data in their assigned custom columns. Implement real-time synchronization so that masterdata changes by HR Admin instantly propagate to all external party views. This epic delivers the core value proposition of controlled custom column management with live updates.
+
+**Note**: Custom column creation is controlled by HR Admin through the Column Settings interface (Story 5.2), not self-service by external parties. Story 4.2's original AC about external parties creating columns is superseded by the HR Admin-managed approach.
 
 ### Story 4.1: Custom Column Definition and Storage Schema
 
 As a **developer**,  
-I want **database tables to store custom column data separately per external party with flexible schema**,  
-so that **each party can define their own columns without affecting others**.
+I want **database columns to store custom column data directly on the employees table**,  
+so that **each party can have their own columns defined by HR Admin without complex JSONB structures**.
 
 #### Acceptance Criteria
 
-1. Database tables created for each external party: sodexo_data, omc_data, payroll_data, oplux_data with columns: id (UUID), employee_id (UUID, foreign key to employees.id), data (JSONB), created_at, updated_at
-2. RLS policies created on each party-specific table: only users with matching role can read/write their own table (e.g., sodexo role can only access sodexo_data)
-3. column_config table supports entries for custom columns with is_masterdata = false and party-specific role permissions
-4. Foreign key constraint ensures employee_id references valid employee in employees table with CASCADE delete
-5. JSONB data field stores custom column values as key-value pairs (column_name: value)
+1. Custom columns are implemented as real database columns on the employees table (e.g., `sodexo_meal_plan TEXT`, `omc_training_completed BOOLEAN`)
+2. column_config table tracks all columns (both masterdata and custom) with is_masterdata = false for custom columns and party-specific role permissions
+3. When HR Admin creates a custom column via Column Settings, a database migration is generated to add the column to employees table
+4. Column types in column_config (text, number, date, boolean) map to PostgreSQL types (TEXT, NUMERIC, DATE, BOOLEAN)
+5. Custom columns follow naming convention: lowercase snake_case (e.g., `sodexo_meal_plan`, `omc_training_date`)
 6. Database migration files version controlled and documented
-7. API route /api/custom-columns (GET) returns list of custom columns for current user's role from column_config
-8. API route /api/custom-columns (POST) allows creating new custom column definition (role validation enforces only appropriate roles can create columns for their party)
+7. API route /api/admin/columns (GET) returns list of all columns for HR Admin from column_config
+8. API route /api/admin/columns (POST) allows HR Admin to create new custom column definition with role-specific permissions
 
-### Story 4.2: Create Custom Column for External Party
+### Story 4.2: Create Custom Column for External Party (HR Admin-Managed)
 
-As an **external party user**,  
-I want **to create a new custom column specific to my role with a name, type, and optional category**,  
-so that **I can track data relevant to my department's needs**.
+As an **HR Admin**,  
+I want **to create a new custom column for a specific external party with a name, type, and optional category through the Column Settings interface**,  
+so that **external parties can track data relevant to their department's needs**.
 
 #### Acceptance Criteria
 
-1. External party dashboard includes "Add Column" button (visible only to external party roles, not HR Admin)
-2. Clicking "Add Column" opens modal with form fields: Column Name (required, text input), Column Type (dropdown: Text, Number, Date, Boolean), Category (optional, text input or dropdown with existing categories)
-3. Form validation ensures column name is unique for the role (cannot create duplicate column names)
-4. Submitting form calls /api/custom-columns (POST) creating entry in column_config with is_masterdata = false,
-   ole_permissions set for only current user's role
-5. New column appears in the table as a new column header immediately after creation
-6. New column cells are empty for all employees initially (null values in JSONB data field)
-7. Success message displayed: "Column '[Column Name]' created successfully"
-8. External party user can create multiple custom columns (no limit for MVP)
-9. Column creation is isolated: Sodexo creating a column does not affect ÖMC, Payroll, or Toplux views
-10. API endpoint testable via CLI with appropriate role authentication
+1. HR Admin accesses Column Settings page (/admin/columns) - only accessible to HR Admin role
+2. "Add Column" button opens modal with form fields: Column Name (required, text input), Column Type (dropdown: Text, Number, Date, Boolean), Category (optional, text input or dropdown with existing categories), Assigned Roles (checkboxes: Sodexo, ÖMC, Payroll, Toplux), Permissions (View/Edit toggles per role)
+3. Form validation ensures column name is unique globally (cannot create duplicate column names)
+4. Submitting form calls /api/admin/columns (POST) creating entry in column_config with is_masterdata = false and role_permissions set per form input
+5. System displays message: "Column '[Column Name]' created. Will be available after next deployment (database migration required)."
+6. Developer creates database migration to add column to employees table (e.g., `ALTER TABLE employees ADD COLUMN sodexo_meal_plan TEXT`)
+7. After migration deployed, new column appears in table for roles with view permissions
+8. New column cells are empty for all employees initially (NULL values)
+9. Column creation affects only specified roles: Sodexo column does not affect ÖMC, Payroll, or Toplux views unless permissions granted
+10. API endpoint testable via CLI with hr_admin role authentication
 
 ### Story 4.3: Edit Custom Column Data
 
@@ -668,14 +670,13 @@ so that **I can populate and maintain my department-specific data**.
 1. Custom column cells (columns where current user role has edit: true permission and is_masterdata = false) are visually indicated as editable
 2. Clicking a custom column cell enters edit mode with appropriate input type based on column type (text input, number input, date picker, checkbox for boolean)
 3. User can enter/modify value and save by pressing Enter or clicking outside cell
-4. Save triggers API call to /api/employees/[id]/custom-data (PATCH) updating the JSONB data field in the appropriate party-specific table (e.g., sodexo_data)
-5. If no record exists in party-specific table for this employee_id, insert new record with employee_id and data JSONB
-6. If record exists, update the specific column key-value in JSONB data field
-7. RLS policies enforce that only the matching role can update their party-specific table
-8. Successful save updates the displayed value in the table cell
-9. Validation errors (e.g., invalid number format, invalid date) display inline and prevent save
-10. Other external parties cannot see or edit this custom column data (verified through manual testing with multiple role accounts)
-11. API endpoint testable via CLI
+4. Save triggers API call to /api/employees/[id]/custom-data (PATCH) updating the column value directly on the employees table (e.g., `UPDATE employees SET sodexo_meal_plan = 'Premium' WHERE id = ?`)
+5. Database UPDATE operation modifies the specific custom column on the employees table
+6. Successful save updates the displayed value in the table cell
+7. Validation errors (e.g., invalid number format, invalid date) display inline and prevent save
+8. Other external parties cannot see or edit custom columns they don't have permissions for (verified through column_config.role_permissions filtering in application layer)
+9. API endpoint testable via CLI
+10. Changes are immediately visible to all users with view permissions via real-time sync
 
 ### Story 4.4: Organize Custom Columns by Category
 

@@ -1,20 +1,54 @@
 /**
  * Validation schemas for column configuration operations
+ * Updated for Story 9.3: Real table columns architecture
  */
 
 import { z } from "zod";
 
 /**
+ * Helper function to convert display name to database column name
+ * Converts to lowercase snake_case suitable for PostgreSQL column names
+ * 
+ * Examples:
+ *   "Meal Plan" -> "meal_plan"
+ *   "OMC Training Status" -> "omc_training_status"
+ *   "Room Number (Shared)" -> "room_number_shared"
+ */
+export function toSnakeCase(str: string): string {
+  return str
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '') // Remove special characters
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/_+/g, '_') // Remove duplicate underscores
+    .replace(/^_|_$/g, ''); // Trim leading/trailing underscores
+}
+
+/**
+ * Validates that a string is a valid PostgreSQL column name (snake_case)
+ */
+const dbColumnNameRegex = /^[a-z][a-z0-9_]*[a-z0-9]$/;
+
+/**
  * Schema for creating a new custom column
+ * Note: column_name is now enforced as snake_case for database compatibility
  */
 export const createCustomColumnSchema = z.object({
   column_name: z
     .string()
     .min(1, "Column name is required")
-    .max(100, "Column name must be less than 100 characters")
+    .max(63, "Column name must be less than 63 characters (PostgreSQL limit)")
     .regex(
-      /^[a-zA-Z0-9\s\-_]+$/,
-      "Column name can only contain letters, numbers, spaces, hyphens, and underscores"
+      dbColumnNameRegex,
+      "Column name must be lowercase snake_case (e.g., 'meal_plan', 'training_status'). Only letters, numbers, and underscores allowed."
+    )
+    .refine(
+      (name) => {
+        // Reserved PostgreSQL keywords that should not be used as column names
+        const reservedWords = ['user', 'group', 'order', 'table', 'column', 'select', 'insert', 'update', 'delete', 'where', 'from'];
+        return !reservedWords.includes(name.toLowerCase());
+      },
+      "Column name cannot be a SQL reserved word"
     ),
   column_type: z.enum(["text", "number", "date", "boolean"], {
     errorMap: () => ({ message: "Invalid column type" }),
@@ -29,15 +63,16 @@ export type CreateCustomColumnInput = z.infer<typeof createCustomColumnSchema>;
 
 /**
  * Schema for updating a column configuration
+ * Note: Column renaming requires database migration, so this is rarely used
  */
 export const updateColumnSchema = z.object({
   column_name: z
     .string()
     .min(1, "Column name is required")
-    .max(100, "Column name must be less than 100 characters")
+    .max(63, "Column name must be less than 63 characters (PostgreSQL limit)")
     .regex(
-      /^[a-zA-Z0-9\s\-_]+$/,
-      "Column name can only contain letters, numbers, spaces, hyphens, and underscores"
+      dbColumnNameRegex,
+      "Column name must be lowercase snake_case. Only letters, numbers, and underscores allowed."
     )
     .optional(),
   column_type: z.enum(["text", "number", "date", "boolean"]).optional(),

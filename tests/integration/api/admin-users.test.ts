@@ -69,8 +69,65 @@ const mockSupabaseClient = {
   })),
 };
 
+// Create service role mock client (needs both auth and from for user management operations)
+const mockServiceRoleClient = {
+  auth: {
+    admin: {
+      createUser: vi.fn(),
+      updateUserById: vi.fn(),
+      deleteUser: vi.fn(),
+      signOut: vi.fn(),
+    },
+  },
+  from: vi.fn(() => ({
+    select: vi.fn(() => ({
+      order: vi.fn(() => ({
+        data: [],
+        error: null,
+      })),
+      eq: vi.fn(() => ({
+        single: vi.fn(() => ({
+          data: null,
+          error: null,
+        })),
+        eq: vi.fn(() => ({
+          single: vi.fn(() => ({
+            data: null,
+            error: null,
+          })),
+        })),
+      })),
+    })),
+    insert: vi.fn(() => ({
+      select: vi.fn(() => ({
+        single: vi.fn(() => ({
+          data: null,
+          error: null,
+        })),
+      })),
+    })),
+    update: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        select: vi.fn(() => ({
+          single: vi.fn(() => ({
+            data: null,
+            error: null,
+          })),
+        })),
+      })),
+    })),
+    delete: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        data: null,
+        error: null,
+      })),
+    })),
+  })),
+};
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() => mockSupabaseClient),
+  createServiceRoleClient: vi.fn(() => mockServiceRoleClient),
 }));
 
 // Mock the auth helpers
@@ -209,9 +266,9 @@ describe('POST /api/admin/users', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Setup Supabase mocks for POST operations
+    // Setup Service Role client mocks for POST operations (used by admin routes)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockImplementation((table: string) => {
+    (mockServiceRoleClient.from as any).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
           select: vi.fn(() => ({
@@ -245,7 +302,7 @@ describe('POST /api/admin/users', () => {
     });
     
     // Mock auth.admin.createUser to return successful auth user creation
-    mockSupabaseClient.auth.admin.createUser.mockResolvedValue({
+    mockServiceRoleClient.auth.admin.createUser.mockResolvedValue({
       data: {
         user: {
           id: 'auth-user-id',
@@ -332,9 +389,9 @@ describe('POST /api/admin/users', () => {
   it('prevents duplicate emails (409)', async () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
     
-    // Override mock to return existing user
+    // Override mock to return existing user (use mockServiceRoleClient)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockReturnValue({
+    (mockServiceRoleClient.from as any).mockReturnValue({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
           single: vi.fn(() => Promise.resolve({
@@ -655,7 +712,7 @@ describe('DELETE /api/admin/users/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Setup Supabase mocks for DELETE operations
+    // Setup regular Supabase client mocks for SELECT operations (checking user)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockSupabaseClient.from as any).mockImplementation((table: string) => {
       if (table === 'users') {
@@ -674,6 +731,18 @@ describe('DELETE /api/admin/users/[id]', () => {
               })),
             })),
           })),
+        };
+      }
+      return {
+        select: vi.fn(),
+      };
+    });
+    
+    // Setup Service Role client mocks for DELETE operations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mockServiceRoleClient.from as any).mockImplementation((table: string) => {
+      if (table === 'users') {
+        return {
           delete: vi.fn(() => ({
             eq: vi.fn(() => Promise.resolve({
               error: null,
@@ -682,13 +751,12 @@ describe('DELETE /api/admin/users/[id]', () => {
         };
       }
       return {
-        select: vi.fn(),
         delete: vi.fn(),
       };
     });
     
-    // Mock auth.admin.deleteUser
-    mockSupabaseClient.auth.admin.deleteUser = vi.fn().mockResolvedValue({
+    // Mock auth.admin.deleteUser on service role client
+    mockServiceRoleClient.auth.admin.deleteUser = vi.fn().mockResolvedValue({
       error: null,
     });
   });
@@ -725,29 +793,39 @@ describe('DELETE /api/admin/users/[id]', () => {
   it('prevents deleting last HR admin (403)', async () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
     
-    // Mock to return HR admin user
+    // Mock to return HR admin user with proper chaining for count query
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockSupabaseClient.from as any).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              single: vi.fn(() => Promise.resolve({
-                data: {
-                  id: testUserId,
-                  auth_user_id: 'auth-user-id',
-                  email: 'admin@example.com',
-                  role: UserRole.HR_ADMIN,
-                  is_active: true,
-                },
-                error: null,
+          select: vi.fn((columns: string, options?: { count?: string; head?: boolean }) => {
+            // For count queries (.select("*", { count: "exact", head: true }))
+            if (options?.count === 'exact' && options?.head === true) {
+              return {
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => Promise.resolve({
+                    count: 1, // Only 1 active HR Admin
+                    error: null,
+                  })),
+                })),
+              };
+            }
+            // For regular queries (.select("role, is_active"))
+            return {
+              eq: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({
+                  data: {
+                    id: testUserId,
+                    auth_user_id: 'auth-user-id',
+                    email: 'admin@example.com',
+                    role: UserRole.HR_ADMIN,
+                    is_active: true,
+                  },
+                  error: null,
+                })),
               })),
-              head: vi.fn(() => Promise.resolve({
-                count: 1,
-                error: null,
-              })),
-            })),
-          })),
+            };
+          }),
         };
       }
       return {

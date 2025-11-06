@@ -146,6 +146,9 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
           <DialogTitle>Lägg till anpassad kolumn</DialogTitle>
           <DialogDescription>
             Skapa en ny anpassad kolumn för att spåra ytterligare personaldata specifik för din avdelnings behov.
+            <br /><br />
+            <strong>Viktigt:</strong> Kolumnen kommer att vara tillgänglig efter nästa deployment. 
+            Kontakta en utvecklare för att generera nödvändig databasmigration.
           </DialogDescription>
         </DialogHeader>
 
@@ -157,14 +160,18 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
               name="column_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kolumnnamn *</FormLabel>
+                  <FormLabel>Kolumnnamn (Database Column Name) *</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="t.ex., Rekryteringsteam"
+                      placeholder="t.ex., meal_plan, training_status, room_number"
                       {...field}
                       disabled={isSubmitting}
                     />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Använd <strong>snake_case</strong>: endast små bokstäver, siffror och understreck (_). 
+                    Exempel: &ldquo;meal_plan&rdquo;, &ldquo;omc_training_status&rdquo;
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

@@ -134,7 +134,11 @@ DROP TABLE IF EXISTS public.omc_data CASCADE;
 DROP TABLE IF EXISTS public.payroll_data CASCADE;
 DROP TABLE IF EXISTS public.toplux_data CASCADE;
 
-RAISE NOTICE 'Migration complete: Custom data consolidated into employees.custom_data';
-RAISE NOTICE 'Party-specific tables (sodexo_data, omc_data, payroll_data, toplux_data) dropped';
+-- Final verification
+DO $$
+BEGIN
+  RAISE NOTICE 'Migration complete: Custom data consolidated into employees.custom_data';
+  RAISE NOTICE 'Party-specific tables (sodexo_data, omc_data, payroll_data, toplux_data) dropped';
+END $$;
 
 COMMIT;
