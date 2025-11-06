@@ -22,26 +22,27 @@ export async function GET(
     // Verify authentication and get user
     const user = await requireAuthAPI();
 
-    // Only external parties can access custom data
-    if (user.role === UserRole.HR_ADMIN) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "FORBIDDEN",
-            message: "HR Admin cannot access custom data directly",
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 403 }
-      );
-    }
-
     // Await params (Next.js 15+ requirement)
     const { id: employeeId } = await params;
 
     // Create repository instance
     const supabase = await createClient();
     const repository = new CustomDataRepository(supabase);
+
+    // For HR Admin, fetch and merge data from all party tables
+    if (user.role === UserRole.HR_ADMIN) {
+      const allCustomData = await repository.getAllCustomDataForEmployee(employeeId);
+      return NextResponse.json({
+        data: {
+          employee_id: employeeId,
+          columns: allCustomData,
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Date.now()}`,
+        },
+      });
+    }
 
     // Get custom data for this employee and role
     const customData = await repository.getCustomData(employeeId, user.role);
@@ -75,22 +76,8 @@ export async function PATCH(
     // Verify authentication and get user
     const user = await requireAuthAPI();
 
-    // Only external parties can update custom data
-    if (user.role === UserRole.HR_ADMIN) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "FORBIDDEN",
-            message: "HR Admin cannot update custom data",
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 403 }
-      );
-    }
-
     // Await params (Next.js 15+ requirement)
-    const { id: employeeId } = await params;
+    const { id: employeeId} = await params;
 
     // Parse and validate request body
     const body = await request.json();
@@ -124,8 +111,13 @@ export async function PATCH(
     const supabase = await createClient();
     const repository = new CustomDataRepository(supabase);
 
-    // Update custom data
-    await repository.updateCustomData(employeeId, user.role, validatedData);
+    // For HR Admin, update data in all relevant party tables
+    if (user.role === UserRole.HR_ADMIN) {
+      await repository.updateCustomDataForAllParties(employeeId, validatedData);
+    } else {
+      // For external parties, update their own table
+      await repository.updateCustomData(employeeId, user.role, validatedData);
+    }
 
     // Return successful response
     return NextResponse.json({
