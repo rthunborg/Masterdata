@@ -35,7 +35,7 @@ import { PermissionToggle } from "./permission-toggle";
 import { DeleteColumnModal } from "./delete-column-modal";
 import { VisibilityBadge } from "@/components/ui/visibility-badge";
 import { toast } from "sonner";
-import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, ChevronsUpDown } from "lucide-react";
+import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, ChevronsUpDown, X } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -261,8 +261,17 @@ function DraggableRow({
       {/* Type */}
       <TableCell className="text-gray-600 w-16">{column.column_type}</TableCell>
 
+      {/* Masterdata indicator */}
+      <TableCell className="w-24 text-center">
+        {column.is_masterdata ? (
+          <Check className="h-5 w-5 text-green-600 inline-block" />
+        ) : (
+          <X className="h-5 w-5 text-gray-400 inline-block" />
+        )}
+      </TableCell>
+
       {/* Category */}
-      <TableCell className="w-48">
+      <TableCell className="w-40">
         <EditableCategoryCell
           value={column.category || ""}
           columnId={column.id}
@@ -569,7 +578,8 @@ export function ColumnSettingsTable({
                 <TableHead className="w-12"></TableHead>
                 <TableHead className="min-w-[150px]">{tForms("columnNameLabel")}</TableHead>
                 <TableHead className="w-16">{tAdmin("type")}</TableHead>
-                <TableHead className="w-28">{tAdmin("category")}</TableHead>
+                <TableHead className="w-24 text-center">Masterdata</TableHead>
+                <TableHead className="w-40">{tAdmin("category")}</TableHead>
                 <TableHead className="w-24">{tAdmin("visibility")}</TableHead>
                 {allRoles.map((role) => (
                   <TableHead key={role} className="text-center w-20">
@@ -589,7 +599,7 @@ export function ColumnSettingsTable({
                 {items.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6 + allRoles.length}
+                      colSpan={7 + allRoles.length}
                       className="text-center text-gray-500"
                     >
                       No columns found
