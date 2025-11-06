@@ -56,7 +56,7 @@ import { cn } from "@/lib/utils";
  * Add Column Modal Component
  * Allows external party users to create custom columns
  */
-export function AddColumnModal() {
+export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => void }) {
   const { modals, closeModal } = useUIStore();
   const { columns, refetch } = useColumns();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -114,10 +114,15 @@ export function AddColumnModal() {
 
       const newColumn = await columnConfigService.createCustomColumn(submitData);
 
-      toast.success(t('columnCreated', { name: newColumn.column_name }));
+      toast.success(`Kolumn "${newColumn.column_name}" skapad`);
 
       // Refetch columns to update the table
       refetch();
+
+      // Notify parent component if callback provided
+      if (onColumnCreated) {
+        onColumnCreated();
+      }
 
       // Close modal and reset form
       closeModal("addColumn");

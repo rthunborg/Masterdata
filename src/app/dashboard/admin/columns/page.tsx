@@ -116,7 +116,7 @@ export default function ColumnSettingsPage() {
         />
       )}
       
-      <AddColumnModal />
+      <AddColumnModal onColumnCreated={loadColumns} />
     </div>
   );
 }
