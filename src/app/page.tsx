@@ -16,11 +16,11 @@ export default function Home() {
         <Card className="p-8 md:p-12 shadow-lg bg-white">
           <div className="space-y-6">
             <div className="space-y-3">
-              <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
-                <center>{t.landing.title}</center>
+              <h1 className="text-4xl font-bold tracking-tight text-zinc-900 text-center">
+                {t.landing.title}
               </h1>
-              <p className="text-lg text-zinc-600">
-                <center>{t.landing.description}</center>
+              <p className="text-lg text-zinc-600 text-center">
+                {t.landing.description}
               </p>
             </div>
 

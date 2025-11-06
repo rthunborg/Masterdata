@@ -221,7 +221,7 @@ function DraggableRow({
   return (
     <TableRow ref={setNodeRef} style={style}>
       {/* Drag Handle / Move Buttons */}
-      <TableCell className="w-12">
+      <TableCell className="w-12 lg:w-auto">
         {isMobile ? (
           <div className="flex flex-col gap-1">
             <Button
@@ -256,13 +256,13 @@ function DraggableRow({
       </TableCell>
 
       {/* Column Name */}
-      <TableCell className="font-medium">{column.column_name}</TableCell>
+      <TableCell className="font-medium lg:truncate">{column.column_name}</TableCell>
 
       {/* Type */}
-      <TableCell className="text-gray-600 w-16">{column.column_type}</TableCell>
+      <TableCell className="text-gray-600 w-16 lg:w-auto lg:truncate">{column.column_type}</TableCell>
 
       {/* Masterdata indicator */}
-      <TableCell className="w-24 text-center">
+      <TableCell className="w-24 lg:w-auto text-center">
         {column.is_masterdata ? (
           <Check className="h-5 w-5 text-green-600 inline-block" />
         ) : (
@@ -271,7 +271,7 @@ function DraggableRow({
       </TableCell>
 
       {/* Category */}
-      <TableCell className="w-40">
+      <TableCell className="w-40 lg:w-auto">
         <EditableCategoryCell
           value={column.category || ""}
           columnId={column.id}
@@ -282,7 +282,7 @@ function DraggableRow({
       </TableCell>
 
       {/* Visibility Badge */}
-      <TableCell className="w-24">
+      <TableCell className="w-24 lg:w-auto">
         <VisibilityBadge isVisible={column.is_visible} />
       </TableCell>
 
@@ -296,7 +296,7 @@ function DraggableRow({
         const editDisabled = isPermissionDisabled();
 
         return (
-          <TableCell key={role} className="text-center w-20">
+          <TableCell key={role} className="text-center w-20 lg:w-auto">
             <div className="flex items-center justify-center gap-1">
               <PermissionToggle
                 role={role}
@@ -325,7 +325,7 @@ function DraggableRow({
       })}
 
       {/* Actions */}
-      <TableCell className="text-center w-16">
+      <TableCell className="text-center w-16 lg:w-auto">
         <div className="flex items-center justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -571,18 +571,30 @@ export function ColumnSettingsTable({
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className="rounded-md border w-full overflow-x-auto">
-          <Table className="table-auto w-full">
+        <div className="rounded-md border w-full overflow-x-auto lg:overflow-x-visible">
+          <Table className="w-full lg:table-fixed table-auto">
+            <colgroup className="hidden lg:table-column-group">
+              <col style={{ width: '3%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '6%' }} />
+              <col style={{ width: '6%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '8%' }} />
+              {allRoles.map((role, index) => (
+                <col key={`role-${role}-${index}`} style={{ width: `${43 / allRoles.length}%` }} />
+              ))}
+              <col style={{ width: '6%' }} />
+            </colgroup>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12"></TableHead>
-                <TableHead className="min-w-[150px]">{tForms("columnNameLabel")}</TableHead>
-                <TableHead className="w-16">{tAdmin("type")}</TableHead>
-                <TableHead className="w-24 text-center">Masterdata</TableHead>
-                <TableHead className="w-40">{tAdmin("category")}</TableHead>
-                <TableHead className="w-24">{tAdmin("visibility")}</TableHead>
+                <TableHead className="w-12 lg:w-auto"></TableHead>
+                <TableHead className="min-w-[150px] lg:min-w-0">{tForms("columnNameLabel")}</TableHead>
+                <TableHead className="w-16 lg:w-auto">{tAdmin("type")}</TableHead>
+                <TableHead className="w-24 lg:w-auto text-center">Masterdata</TableHead>
+                <TableHead className="w-40 lg:w-auto">{tAdmin("category")}</TableHead>
+                <TableHead className="w-24 lg:w-auto">{tAdmin("visibility")}</TableHead>
                 {allRoles.map((role) => (
-                  <TableHead key={role} className="text-center w-20">
+                  <TableHead key={role} className="text-center w-20 lg:w-auto">
                     <div className="whitespace-normal">
                       {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
                     </div>
@@ -591,7 +603,7 @@ export function ColumnSettingsTable({
                     </div>
                   </TableHead>
                 ))}
-                <TableHead className="w-16 text-center">{tAdmin("actions")}</TableHead>
+                <TableHead className="w-16 lg:w-auto text-center">{tAdmin("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
