@@ -49,7 +49,7 @@ export function UserCard({
 
       <CardContent className="space-y-3 text-sm">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Mail className="h-4 w-4" />
+          <Mail className="hidden md:block h-4 w-4" />
           <a href={`mailto:${user.email}`} className="text-blue-600 hover:underline">
             {user.email}
           </a>

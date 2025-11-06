@@ -102,12 +102,12 @@ export default function ImportantDatesPage() {
             </p>
           </div>
           {user?.role === "hr_admin" && (
-            <div className="flex gap-2">
-              <Button onClick={() => setIsImportModalOpen(true)} variant="outline">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button onClick={() => setIsImportModalOpen(true)} variant="outline" className="w-full sm:w-auto min-h-11">
                 <Upload className="h-4 w-4 mr-2" />
                 {t('importDates')}
               </Button>
-              <Button onClick={() => setIsAddModalOpen(true)}>
+              <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto min-h-11">
                 <Plus className="h-4 w-4 mr-2" />
                 {t('addDate')}
               </Button>

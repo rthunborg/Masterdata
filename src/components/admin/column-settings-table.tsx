@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ColumnConfig, RolePermissions } from "@/lib/types/column-config";
 import { UserRole, EXTERNAL_PARTY_ROLES } from "@/lib/types/user";
 import { columnService } from "@/lib/services/column-service";
+import { useTranslations } from "@/lib/i18n";
 import {
   Table,
   TableBody,
@@ -37,7 +38,6 @@ import { VisibilityBadge } from "@/components/ui/visibility-badge";
 import { ColorIndicator, ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
 import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, ChevronsUpDown, X } from "lucide-react";
-import { useTranslations } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
   DndContext,
@@ -427,6 +427,9 @@ export function ColumnSettingsTable({
   // Detect mobile
   const [isMobile, setIsMobile] = useState(false);
   
+  // Note: Column resizing for this table requires TanStack Table refactor
+  // due to complex drag-and-drop implementation. Placeholder for future enhancement.
+  
   // Initialize mobile state on mount
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -640,6 +643,8 @@ export function ColumnSettingsTable({
 
   return (
     <TooltipProvider>
+      {/* Note: Reset Column Widths button placeholder for future TanStack Table refactor */}
+      
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

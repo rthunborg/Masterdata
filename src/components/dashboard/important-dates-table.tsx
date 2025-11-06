@@ -8,6 +8,7 @@ import {
   getSortedRowModel,
   type ColumnDef,
   type SortingState,
+  type ColumnSizingState,
   flexRender,
 } from "@tanstack/react-table";
 import type { ImportantDate } from "@/lib/types/important-date";
@@ -48,6 +49,13 @@ import { EditableCell } from "./editable-cell";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
 import { useTranslations } from "@/lib/i18n";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { cn } from "@/lib/utils";
+import { 
+  loadColumnWidths, 
+  saveColumnWidths, 
+  clearColumnWidths 
+} from "@/lib/utils/column-width-storage";
 
 interface ImportantDatesTableProps {
   dates: ImportantDate[];
@@ -64,9 +72,11 @@ export function ImportantDatesTable({
   onDateUpdated,
   onDateDeleted,
 }: ImportantDatesTableProps) {
+  const { user } = useAuth();
   const isHRAdmin = userRole === "hr_admin";
   const t = useTranslations("tooltips");
   const tDates = useTranslations("dates");
+  const tDashboard = useTranslations("dashboard");
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<ImportantDate | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -77,6 +87,42 @@ export function ImportantDatesTable({
     { id: "week_number", desc: false },
     { id: "year", desc: false },
   ]);
+  
+  // Column resizing state (Story 9.4b)
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {
+    // Load saved widths from localStorage on mount
+    if (user?.id) {
+      return loadColumnWidths('importantDates', user.id) || {};
+    }
+    return {};
+  });
+  
+  // Debounced save for column widths (Story 9.4b)
+  const saveDebounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const handleColumnSizingChange = React.useCallback((updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)) => {
+    const newSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
+    setColumnSizing(newSizing);
+    
+    // Debounce save to localStorage (300ms delay)
+    if (saveDebounceTimerRef.current) {
+      clearTimeout(saveDebounceTimerRef.current);
+    }
+    
+    saveDebounceTimerRef.current = setTimeout(() => {
+      if (user?.id) {
+        saveColumnWidths('importantDates', user.id, newSizing);
+      }
+    }, 300);
+  }, [columnSizing, user?.id]);
+  
+  // Reset column widths handler (Story 9.4b)
+  const handleResetColumnWidths = React.useCallback(() => {
+    if (user?.id) {
+      clearColumnWidths('importantDates', user.id);
+      setColumnSizing({});
+      toast.success(tDashboard('columnWidthsReset'));
+    }
+  }, [user?.id, tDashboard]);
 
   const handleCellUpdate = React.useCallback(async (
     id: string, 
@@ -266,11 +312,20 @@ export function ImportantDatesTable({
     columns,
     state: {
       sorting,
+      columnSizing,
     },
     onSortingChange: setSorting,
+    onColumnSizingChange: handleColumnSizingChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    // Column resizing configuration (Story 9.4b)
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
+    defaultColumn: {
+      minSize: 80,
+      maxSize: 500,
+    },
   });
 
   if (isLoading) {
@@ -300,6 +355,15 @@ export function ImportantDatesTable({
             <SelectItem value="Other">Other</SelectItem>
           </SelectContent>
         </Select>
+        
+        {/* Reset Column Widths Button (Story 9.4b) */}
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleResetColumnWidths}
+        >
+          {tDashboard("resetColumnWidths")}
+        </Button>
       </div>
 
       {/* Table */}
@@ -309,13 +373,32 @@ export function ImportantDatesTable({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead 
+                    key={header.id}
+                    className="relative"
+                    style={{
+                      width: header.getSize(),
+                    }}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                    
+                    {/* Resize handle (Story 9.4b) */}
+                    {header.column.getCanResize() && (
+                      <div
+                        onMouseDown={header.getResizeHandler()}
+                        onTouchStart={header.getResizeHandler()}
+                        className={cn(
+                          "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none",
+                          "hover:bg-blue-500 bg-gray-300 opacity-0 hover:opacity-100 transition-opacity",
+                          header.column.getIsResizing() && "bg-blue-500 opacity-100"
+                        )}
+                      />
+                    )}
                   </TableHead>
                 ))}
               </TableRow>

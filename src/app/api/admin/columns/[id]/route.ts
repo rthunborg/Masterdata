@@ -58,6 +58,10 @@ export async function PATCH(
     }
     if (validated.category !== undefined) {
       updateData.category = validated.category;
+      // AC 2: When category is set to null, automatically remove category_color
+      if (validated.category === null) {
+        updateData.category_color = null;
+      }
     }
     if (validated.category_color !== undefined) {
       updateData.category_color = validated.category_color;

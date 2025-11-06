@@ -1,10 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { User, getRoleDisplayName } from "@/lib/types/user";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { adminService } from "@/lib/services/admin-service";
 import { useTranslations, useFormatter } from "@/lib/i18n";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  type ColumnDef,
+  type SortingState,
+  type ColumnSizingState,
+  flexRender,
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -26,9 +35,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-
-type SortColumn = "email" | "role" | "created_at" | "last_active_at";
-type SortDirection = "asc" | "desc";
+import { cn } from "@/lib/utils";
+import { 
+  loadColumnWidths, 
+  saveColumnWidths, 
+  clearColumnWidths 
+} from "@/lib/utils/column-width-storage";
 
 interface UserManagementTableProps {
   users: User[];
@@ -42,6 +54,7 @@ export function UserManagementTable({
   const { user: currentUser } = useAuth();
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
+  const tDashboard = useTranslations("dashboard");
   const format = useFormatter();
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -53,70 +66,254 @@ export function UserManagementTable({
     action: "deactivate",
   });
   const [isUpdating, setIsUpdating] = useState(false);
-  const [sortColumn, setSortColumn] = useState<SortColumn>("last_active_at");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-
-  const sortedUsers = useMemo(() => {
-    const sorted = [...users].sort((a, b) => {
-      let aValue: string | number | null;
-      let bValue: string | number | null;
-
-      switch (sortColumn) {
-        case "email":
-          aValue = a.email;
-          bValue = b.email;
-          break;
-        case "role":
-          aValue = a.role;
-          bValue = b.role;
-          break;
-        case "created_at":
-          aValue = new Date(a.created_at).getTime();
-          bValue = new Date(b.created_at).getTime();
-          break;
-        case "last_active_at":
-          // Handle null values - push them to the end
-          if (!a.last_active_at && !b.last_active_at) return 0;
-          if (!a.last_active_at) return 1;
-          if (!b.last_active_at) return -1;
-          aValue = new Date(a.last_active_at).getTime();
-          bValue = new Date(b.last_active_at).getTime();
-          break;
-        default:
-          return 0;
+  
+  // Sorting state for TanStack Table
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "last_active_at", desc: true }
+  ]);
+  
+  // Column resizing state (Story 9.4b)
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() => {
+    // Load saved widths from localStorage on mount
+    if (currentUser?.id) {
+      return loadColumnWidths('userSettings', currentUser.id) || {};
+    }
+    return {};
+  });
+  
+  // Debounced save for column widths (Story 9.4b)
+  const saveDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const handleColumnSizingChange = useCallback((updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)) => {
+    const newSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
+    setColumnSizing(newSizing);
+    
+    // Debounce save to localStorage (300ms delay)
+    if (saveDebounceTimerRef.current) {
+      clearTimeout(saveDebounceTimerRef.current);
+    }
+    
+    saveDebounceTimerRef.current = setTimeout(() => {
+      if (currentUser?.id) {
+        saveColumnWidths('userSettings', currentUser.id, newSizing);
       }
+    }, 300);
+  }, [columnSizing, currentUser?.id]);
+  
+  // Reset column widths handler (Story 9.4b)
+  const handleResetColumnWidths = useCallback(() => {
+    if (currentUser?.id) {
+      clearColumnWidths('userSettings', currentUser.id);
+      setColumnSizing({});
+      toast.success(tDashboard('columnWidthsReset'));
+    }
+  }, [currentUser?.id, tDashboard]);
 
-      if (aValue === null && bValue === null) return 0;
-      if (aValue === null) return 1;
-      if (bValue === null) return -1;
-
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-      return 0;
+  const formatDate = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
+  }, []);
 
-    return sorted;
-  }, [users, sortColumn, sortDirection]);
-
-  const handleSort = (column: SortColumn) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection(column === "last_active_at" || column === "created_at" ? "desc" : "asc");
+  const formatRelativeTime = useCallback((timestamp: string | null): string => {
+    if (!timestamp) {
+      return t('lastActiveNever');
     }
-  };
-
-  const getSortIcon = (column: SortColumn) => {
-    if (sortColumn !== column) {
-      return <ArrowUpDown className="ml-2 h-4 w-4 inline opacity-50" />;
+    
+    try {
+      const date = new Date(timestamp);
+      return format.relativeTime(date);
+    } catch {
+      return t('lastActiveNever');
     }
-    return sortDirection === "asc" ? (
-      <ArrowUp className="ml-2 h-4 w-4 inline" />
-    ) : (
-      <ArrowDown className="ml-2 h-4 w-4 inline" />
-    );
-  };
+  }, [t, format]);
+  
+  const openConfirmDialog = useCallback((user: User, action: "activate" | "deactivate" | "delete") => {
+    setConfirmDialog({ open: true, user, action });
+  }, []);
+  
+  // Define columns for TanStack Table
+  const columns = useMemo<ColumnDef<User>[]>(() => [
+    {
+      accessorKey: "email",
+      id: "email",
+      header: ({ column }) => (
+        <button
+          onClick={() => column.toggleSorting()}
+          className="flex items-center hover:text-gray-900 cursor-pointer"
+        >
+          Email
+          {column.getIsSorted() === "asc" ? (
+            <ArrowUp className="ml-2 h-4 w-4 inline" />
+          ) : column.getIsSorted() === "desc" ? (
+            <ArrowDown className="ml-2 h-4 w-4 inline" />
+          ) : (
+            <ArrowUpDown className="ml-2 h-4 w-4 inline opacity-50" />
+          )}
+        </button>
+      ),
+      cell: ({ row }) => <span className="font-medium">{row.original.email}</span>,
+    },
+    {
+      accessorKey: "role",
+      id: "role",
+      header: ({ column }) => (
+        <button
+          onClick={() => column.toggleSorting()}
+          className="flex items-center hover:text-gray-900 cursor-pointer"
+        >
+          {t('roleColumn')}
+          {column.getIsSorted() === "asc" ? (
+            <ArrowUp className="ml-2 h-4 w-4 inline" />
+          ) : column.getIsSorted() === "desc" ? (
+            <ArrowDown className="ml-2 h-4 w-4 inline" />
+          ) : (
+            <ArrowUpDown className="ml-2 h-4 w-4 inline opacity-50" />
+          )}
+        </button>
+      ),
+      cell: ({ row }) => getRoleDisplayName(row.original.role),
+    },
+    {
+      accessorKey: "is_active",
+      id: "status",
+      header: "Status",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            row.original.is_active
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {row.original.is_active ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "last_active_at",
+      id: "last_active_at",
+      header: ({ column }) => (
+        <button
+          onClick={() => column.toggleSorting()}
+          className="flex items-center hover:text-gray-900 cursor-pointer"
+        >
+          {t('lastActive')}
+          {column.getIsSorted() === "asc" ? (
+            <ArrowUp className="ml-2 h-4 w-4 inline" />
+          ) : column.getIsSorted() === "desc" ? (
+            <ArrowDown className="ml-2 h-4 w-4 inline" />
+          ) : (
+            <ArrowUpDown className="ml-2 h-4 w-4 inline opacity-50" />
+          )}
+        </button>
+      ),
+      cell: ({ row }) => formatRelativeTime(row.original.last_active_at),
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.last_active_at;
+        const b = rowB.original.last_active_at;
+        if (!a && !b) return 0;
+        if (!a) return 1;
+        if (!b) return -1;
+        return new Date(a).getTime() - new Date(b).getTime();
+      },
+    },
+    {
+      accessorKey: "created_at",
+      id: "created_at",
+      header: ({ column }) => (
+        <button
+          onClick={() => column.toggleSorting()}
+          className="flex items-center hover:text-gray-900 cursor-pointer"
+        >
+          {t('createdColumn')}
+          {column.getIsSorted() === "asc" ? (
+            <ArrowUp className="ml-2 h-4 w-4 inline" />
+          ) : column.getIsSorted() === "desc" ? (
+            <ArrowDown className="ml-2 h-4 w-4 inline" />
+          ) : (
+            <ArrowUpDown className="ml-2 h-4 w-4 inline opacity-50" />
+          )}
+        </button>
+      ),
+      cell: ({ row }) => formatDate(row.original.created_at),
+      sortingFn: (rowA, rowB) => {
+        return new Date(rowA.original.created_at).getTime() - new Date(rowB.original.created_at).getTime();
+      },
+    },
+    {
+      id: "actions",
+      header: () => <div className="text-right">{t('actionsColumn')}</div>,
+      cell: ({ row }) => {
+        const user = row.original;
+        const isCurrentUser = currentUser?.id === user.id;
+        return (
+          <div className="flex justify-end gap-2">
+            {user.is_active ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openConfirmDialog(user, "deactivate")}
+                disabled={isCurrentUser}
+                title={
+                  isCurrentUser
+                    ? "Cannot deactivate your own account"
+                    : "Deactivate user"
+                }
+              >
+                {t('deactivateButton')}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openConfirmDialog(user, "activate")}
+                title={t('activateButton')}
+              >
+                {t('activateButton')}
+              </Button>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => openConfirmDialog(user, "delete")}
+              disabled={isCurrentUser}
+              title={
+                isCurrentUser
+                  ? "Cannot delete your own account"
+                  : tCommon('delete')
+              }
+            >
+              {tCommon('delete')}
+            </Button>
+          </div>
+        );
+      },
+    },
+  ], [t, tCommon, currentUser?.id, formatDate, formatRelativeTime, openConfirmDialog]);
+  
+  // Create table instance
+  const table = useReactTable({
+    data: users,
+    columns,
+    state: {
+      sorting,
+      columnSizing,
+    },
+    onSortingChange: setSorting,
+    onColumnSizingChange: handleColumnSizingChange,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    // Column resizing configuration (Story 9.4b)
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
+    defaultColumn: {
+      minSize: 80,
+      maxSize: 500,
+    },
+  });
 
   const handleStatusChange = async () => {
     if (!confirmDialog.user) return;
@@ -148,148 +345,74 @@ export function UserManagementTable({
     }
   };
 
-  const openConfirmDialog = (user: User, action: "activate" | "deactivate" | "delete") => {
-    setConfirmDialog({ open: true, user, action });
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatRelativeTime = (timestamp: string | null): string => {
-    if (!timestamp) {
-      return t('lastActiveNever');
-    }
-    
-    try {
-      const date = new Date(timestamp);
-      return format.relativeTime(date);
-    } catch {
-      return t('lastActiveNever');
-    }
-  };
 
   return (
     <>
+      {/* Reset Column Widths Button (Story 9.4b) */}
+      <div className="mb-4">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleResetColumnWidths}
+        >
+          {tDashboard("resetColumnWidths")}
+        </Button>
+      </div>
+      
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>
-                <button
-                  onClick={() => handleSort("email")}
-                  className="flex items-center hover:text-gray-900 cursor-pointer"
-                >
-                  Email
-                  {getSortIcon("email")}
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  onClick={() => handleSort("role")}
-                  className="flex items-center hover:text-gray-900 cursor-pointer"
-                >
-                  {t('roleColumn')}
-                  {getSortIcon("role")}
-                </button>
-              </TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>
-                <button
-                  onClick={() => handleSort("last_active_at")}
-                  className="flex items-center hover:text-gray-900 cursor-pointer"
-                >
-                  {t('lastActive')}
-                  {getSortIcon("last_active_at")}
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  onClick={() => handleSort("created_at")}
-                  className="flex items-center hover:text-gray-900 cursor-pointer"
-                >
-                  {t('createdColumn')}
-                  {getSortIcon("created_at")}
-                </button>
-              </TableHead>
-              <TableHead className="text-right">{t('actionsColumn')}</TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead 
+                    key={header.id}
+                    className="relative"
+                    style={{
+                      width: header.getSize(),
+                    }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                    
+                    {/* Resize handle (Story 9.4b) */}
+                    {header.column.getCanResize() && (
+                      <div
+                        onMouseDown={header.getResizeHandler()}
+                        onTouchStart={header.getResizeHandler()}
+                        className={cn(
+                          "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none",
+                          "hover:bg-blue-500 bg-gray-300 opacity-0 hover:opacity-100 transition-opacity",
+                          header.column.getIsResizing() && "bg-blue-500 opacity-100"
+                        )}
+                      />
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
-            {sortedUsers.length === 0 ? (
+            {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-500">
+                <TableCell colSpan={columns.length} className="text-center text-gray-500">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
-              sortedUsers.map((user) => {
-                const isCurrentUser = currentUser?.id === user.id;
-                return (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell>{getRoleDisplayName(user.role)}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.is_active
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {user.is_active ? "Active" : "Inactive"}
-                      </span>
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
-                    <TableCell>{formatRelativeTime(user.last_active_at)}</TableCell>
-                    <TableCell>{formatDate(user.created_at)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {user.is_active ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openConfirmDialog(user, "deactivate")}
-                            disabled={isCurrentUser}
-                            title={
-                              isCurrentUser
-                                ? "Cannot deactivate your own account"
-                                : "Deactivate user"
-                            }
-                          >
-                            {t('deactivateButton')}
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openConfirmDialog(user, "activate")}
-                            title={t('activateButton')}
-                          >
-                            {t('activateButton')}
-                          </Button>
-                        )}
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => openConfirmDialog(user, "delete")}
-                          disabled={isCurrentUser}
-                          title={
-                            isCurrentUser
-                              ? "Cannot delete your own account"
-                              : tCommon('delete')
-                          }
-                        >
-                          {tCommon('delete')}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+                  ))}
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>

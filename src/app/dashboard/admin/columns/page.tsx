@@ -64,7 +64,7 @@ export default function ColumnSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             {t('columnSettings')}
@@ -73,18 +73,19 @@ export default function ColumnSettingsPage() {
             {t('configureRolesDescription')}
           </p>
         </div>
-        <Button onClick={() => openModal("addColumn")}>
+        <Button onClick={() => openModal("addColumn")} className="w-full sm:w-auto min-h-11">
           <Plus className="h-4 w-4 mr-2" />
           {t('createNewColumn')}
         </Button>
       </div>
 
       {/* Filter toolbar */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Button
           variant={filterMode === "all" ? "default" : "outline"}
           onClick={() => setFilterMode("all")}
           size="sm"
+          className="w-full sm:w-auto"
         >
           {t('allColumns')}
         </Button>
@@ -92,6 +93,7 @@ export default function ColumnSettingsPage() {
           variant={filterMode === "masterdata" ? "default" : "outline"}
           onClick={() => setFilterMode("masterdata")}
           size="sm"
+          className="w-full sm:w-auto"
         >
           {t('masterdataOnly')}
         </Button>
@@ -99,6 +101,7 @@ export default function ColumnSettingsPage() {
           variant={filterMode === "custom" ? "default" : "outline"}
           onClick={() => setFilterMode("custom")}
           size="sm"
+          className="w-full sm:w-auto"
         >
           {t('customOnly')}
         </Button>

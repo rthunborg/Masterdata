@@ -9,6 +9,7 @@ import {
   getSortedRowModel,
   type ColumnDef,
   type SortingState,
+  type ColumnSizingState,
   type Row,
   flexRender,
 } from "@tanstack/react-table";
@@ -63,6 +64,11 @@ import { getEmployeeFieldValue } from "@/lib/utils/column-mapping";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/lib/store/ui-store";
 import { useTranslations } from "@/lib/i18n";
+import { 
+  loadColumnWidths, 
+  saveColumnWidths, 
+  clearColumnWidths 
+} from "@/lib/utils/column-width-storage";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -143,6 +149,42 @@ export function EmployeeTable({
   // Search and sort state
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  
+  // Column resizing state (Story 9.4)
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {
+    // Load saved widths from localStorage on mount
+    if (user?.id) {
+      return loadColumnWidths('dashboard', user.id) || {};
+    }
+    return {};
+  });
+  
+  // Debounced save for column widths (Story 9.4)
+  const saveDebounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const handleColumnSizingChange = React.useCallback((updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)) => {
+    const newSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
+    setColumnSizing(newSizing);
+    
+    // Debounce save to localStorage (300ms delay)
+    if (saveDebounceTimerRef.current) {
+      clearTimeout(saveDebounceTimerRef.current);
+    }
+    
+    saveDebounceTimerRef.current = setTimeout(() => {
+      if (user?.id) {
+        saveColumnWidths('dashboard', user.id, newSizing);
+      }
+    }, 300);
+  }, [columnSizing, user?.id]);
+  
+  // Reset column widths handler (Story 9.4)
+  const handleResetColumnWidths = React.useCallback(() => {
+    if (user?.id) {
+      clearColumnWidths('dashboard', user.id);
+      setColumnSizing({});
+      toast.success(tDashboard('columnWidthsReset'));
+    }
+  }, [user?.id, tDashboard]);
   
   // Row refs for scrolling
   const rowRefs = React.useRef<Map<string, HTMLTableRowElement>>(new Map());
@@ -574,13 +616,22 @@ export function EmployeeTable({
     state: {
       globalFilter,
       sorting,
+      columnSizing,
     },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
+    onColumnSizingChange: handleColumnSizingChange,
     globalFilterFn: globalFilterFn,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    // Column resizing configuration (Story 9.4)
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
+    defaultColumn: {
+      minSize: 80,
+      maxSize: 500,
+    },
   });
 
   // Loading state for columns
@@ -672,8 +723,8 @@ export function EmployeeTable({
       )}
 
       {/* Search Input and Column Visibility */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
+        <div className="relative flex-1 max-w-sm w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={tDashboard("searchPlaceholder")}
@@ -692,60 +743,72 @@ export function EmployeeTable({
           )}
         </div>
         
-        {/* Column Visibility Controls for HR Admin */}
-        {isHRAdmin && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <EyeOff className="h-4 w-4 mr-2" />
-                {tDashboard("columnVisibility")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">{tDashboard("showHiddenColumns")}</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {tDashboard("columnVisibilityDescription")}
-                  </p>
-                </div>
-                
-                {/* List of hideable columns */}
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {columnConfigs.map((config) => {
-                    const isVisible = columnVisibility[config.id] !== false;
-                    return (
-                      <div key={config.id} className="flex items-center justify-between">
-                        <span className="text-sm">{config.column_name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleColumnVisibility(config.id)}
-                        >
-                          {isVisible ? (
-                            <Eye className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Reset button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={resetColumnVisibility}
-                >
-                  {tDashboard("resetColumnVisibility")}
+        <div className="flex gap-2 w-full sm:w-auto">
+          {/* Reset Column Widths Button (Story 9.4 - AC 5) */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleResetColumnWidths}
+            className="flex-1 sm:flex-none"
+          >
+            {tDashboard("resetColumnWidths")}
+          </Button>
+          
+          {/* Column Visibility Controls for HR Admin */}
+          {isHRAdmin && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                  <EyeOff className="h-4 w-4 mr-2" />
+                  {tDashboard("columnVisibility")}
                 </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">{tDashboard("showHiddenColumns")}</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {tDashboard("columnVisibilityDescription")}
+                    </p>
+                  </div>
+                  
+                  {/* List of hideable columns */}
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {columnConfigs.map((config) => {
+                      const isVisible = columnVisibility[config.id] !== false;
+                      return (
+                        <div key={config.id} className="flex items-center justify-between">
+                          <span className="text-sm">{config.column_name}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleColumnVisibility(config.id)}
+                          >
+                            {isVisible ? (
+                              <Eye className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Reset button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={resetColumnVisibility}
+                  >
+                    {tDashboard("resetColumnVisibility")}
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
       </div>
 
       <div className="rounded-md border">
@@ -773,23 +836,57 @@ export function EmployeeTable({
                   return (
                     <TableHead 
                       key={header.id}
+                      className="relative"
                       style={{
+                        width: header.getSize(),
                         backgroundColor: categoryColor || undefined,
                         color: textColor === 'white' ? '#ffffff' : textColor === 'black' ? '#000000' : undefined,
                       }}
                     >
-                      {categoryColor && categoryName ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div>{headerContent}</div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Kategori: {categoryName}</p>
-                            <p className="text-xs font-mono">{categoryColor}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        headerContent
+                      {/* Header content with category label (Story 9.4 - AC 1) */}
+                      <div className="flex flex-col items-center gap-1">
+                        {/* Primary header text */}
+                        <div className="text-sm font-semibold">
+                          {categoryColor && categoryName ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>{headerContent}</div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Kategori: {categoryName}</p>
+                                <p className="text-xs font-mono">{categoryColor}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            headerContent
+                          )}
+                        </div>
+                        
+                        {/* Category label (Story 9.4 - AC 1) */}
+                        {categoryName && (
+                          <div 
+                            className="text-xs px-2 py-0.5 rounded"
+                            style={{
+                              backgroundColor: categoryColor || '#f3f4f6',
+                              color: categoryColor ? (textColor === 'white' ? '#ffffff' : '#000000') : '#6b7280',
+                            }}
+                          >
+                            {categoryName}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Resize handle (Story 9.4 - AC 3) */}
+                      {header.column.getCanResize() && (
+                        <div
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          className={cn(
+                            "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none",
+                            "hover:bg-blue-500 bg-gray-300 opacity-0 hover:opacity-100 transition-opacity",
+                            header.column.getIsResizing() && "bg-blue-500 opacity-100"
+                          )}
+                        />
                       )}
                     </TableHead>
                   );

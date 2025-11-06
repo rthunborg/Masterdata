@@ -137,7 +137,7 @@ export function EmployeeCard({
 
         {/* All fields from column config - shown when expanded */}
         {expanded && (
-          <div className="mt-4 pt-4 border-t space-y-4">
+          <div className="mt-4 pt-4 border-t space-y-4 max-h-[70vh] overflow-y-auto">
             {Object.entries(groupedColumns).map(([category, columns]) => (
               <div key={category} className="space-y-2">
                 <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">

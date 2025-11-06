@@ -128,7 +128,7 @@ export default function DashboardPage() {
             {t('viewDetails')}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 items-stretch sm:items-center">
           {/* Role Selector - Only visible to HR Admin */}
           {user?.role === "hr_admin" && (
             <RoleSelector />
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                   <Button 
                     onClick={() => setIsAddModalOpen(true)}
                     disabled={isPreviewMode}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto min-h-11"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     {t('addEmployee')}
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                     onClick={() => setIsImportModalOpen(true)} 
                     variant="outline"
                     disabled={isPreviewMode}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto min-h-11"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     {t('importEmployees')}

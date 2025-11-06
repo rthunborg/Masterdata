@@ -43,14 +43,14 @@ export default function UserManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{t('userManagement')}</h1>
           <p className="mt-2 text-sm text-gray-700">
             {t('userManagementDescription')}
           </p>
         </div>
-        <Button onClick={() => setIsAddModalOpen(true)}>
+        <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto min-h-11">
           {t('addUser')}
         </Button>
       </div>

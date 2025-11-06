@@ -347,6 +347,83 @@ Archiving (soft delete) removes employees from the main table view while preserv
 2. **Click again** to sort descending
 3. **Shift+Click** to sort by multiple columns
 
+### Customizing Column Widths
+
+**Available in:** Dashboard, Important Dates, User Management
+
+You can resize table columns to fit your preferred view. Column width preferences are saved automatically and persist across browser sessions.
+
+#### How to Resize Columns
+
+1. **Hover over the column border** in the table header (between two columns)
+2. **Your cursor will change** to a resize cursor (↔)
+3. **Click and drag** the border left or right to adjust the column width
+4. **Release the mouse** when you're satisfied with the width
+5. **Your preference is saved automatically** (after a brief delay)
+
+**Width Constraints:**
+
+- Minimum width: 80 pixels (prevents columns from becoming too narrow)
+- Maximum width: 500 pixels (prevents columns from taking too much space)
+
+#### Resetting Column Widths
+
+If you want to return to the default column widths:
+
+1. **Look for the "Reset Column Widths" button** above the table (next to filters)
+2. **Click the button**
+3. All columns will return to their default widths
+4. You'll see a confirmation message
+
+**Note:** Column width preferences are stored per-table and per-user. This means:
+
+- Your Dashboard column widths are separate from Important Dates column widths
+- Each user has their own column width preferences
+- Preferences persist even if you log out and log back in
+
+**Device Compatibility:**
+
+- **Desktop:** Full column resizing available
+- **Tablet/Mobile:** Column resizing is currently optimized for desktop use
+
+### Understanding Column Categories
+
+**Available in:** Dashboard (Employee Table)
+
+Columns in the employee table are organized into **categories** to help you understand what type of data each column contains.
+
+#### What are Column Categories?
+
+Categories are labels that group related columns together. For example:
+
+- **Employee Information**: Basic employee data (name, email, phone)
+- **Employment Details**: Job-related information (rank, hire date)
+- **Custom Fields**: Data added by external parties (Sodexo, ÖMC, Payroll)
+
+#### Visual Category Indicators
+
+Categories are displayed in two ways:
+
+1. **Category Label**: Small label below the column header name
+2. **Color Coding**: Background color of the column header (if configured by HR Admin)
+
+**Example:**
+
+```
+┌─────────────────────┐
+│   First Name        │  ← Column Name
+│ Employee Information│  ← Category Label (may have background color)
+└─────────────────────┘
+```
+
+#### Benefits of Category Organization
+
+- **Easier Navigation**: Quickly identify which columns belong together
+- **Visual Grouping**: Color-coded headers make it easy to see related data
+- **Better Understanding**: Know at a glance what type of data you're viewing
+
+**Note:** HR Admins can customize category names and colors in the Column Settings panel.
+
 ### Managing User Accounts
 
 Access: **Admin Panel > Users**
