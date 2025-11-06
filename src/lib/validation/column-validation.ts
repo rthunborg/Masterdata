@@ -90,6 +90,21 @@ export type UpdateColumnPermissionsInput = z.infer<
 >;
 
 /**
+ * Schema for updating column configuration (permissions and/or category)
+ */
+export const updateColumnConfigSchema = z.object({
+  role_permissions: z.record(z.string(), rolePermissionSchema).optional(),
+  category: z.string().max(100).nullable().optional(),
+});
+
+/**
+ * Type inference for update column config
+ */
+export type UpdateColumnConfigInput = z.infer<
+  typeof updateColumnConfigSchema
+>;
+
+/**
  * Schema for bulk permission updates
  */
 export const bulkUpdatePermissionsSchema = z.object({

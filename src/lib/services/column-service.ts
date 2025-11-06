@@ -1,6 +1,7 @@
 import type {
   ColumnConfig,
   UpdateColumnPermissionsRequest,
+  UpdateColumnConfigRequest,
   BulkUpdatePermissionsRequest,
   RolePermissions,
 } from "@/lib/types/column-config";
@@ -38,7 +39,7 @@ export const columnService = {
    */
   async updateColumnPermissions(
     id: string,
-    permissions: UpdateColumnPermissionsRequest
+    permissions: UpdateColumnPermissionsRequest | UpdateColumnConfigRequest
   ): Promise<ColumnConfig> {
     const response = await fetch(`/api/admin/columns/${id}`, {
       method: "PATCH",

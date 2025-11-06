@@ -79,6 +79,14 @@ export interface UpdateColumnPermissionsRequest {
 }
 
 /**
+ * Request type for updating column configuration (permissions and/or category)
+ */
+export interface UpdateColumnConfigRequest {
+  role_permissions?: RolePermissions;
+  category?: string | null;
+}
+
+/**
  * Request type for bulk updating permissions across multiple columns/roles
  */
 export interface BulkUpdatePermissionsRequest {

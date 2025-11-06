@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
-import { updateColumnPermissionsSchema } from "@/lib/validation/column-validation";
+import { updateColumnConfigSchema } from "@/lib/validation/column-validation";
 import { ZodError } from "zod";
 
 // Force Node.js runtime for cookies() support
@@ -27,40 +27,52 @@ export async function PATCH(
     const body = await request.json();
 
     // Validate request body
-    const validated = updateColumnPermissionsSchema.parse(body);
+    const validated = updateColumnConfigSchema.parse(body);
 
-    // Validate HR Admin View permission is always true
-    if (validated.role_permissions.hr_admin && !validated.role_permissions.hr_admin.view) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "HR Admin View permission cannot be removed",
-          },
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validate edit→view constraint for each role
-    for (const [role, perms] of Object.entries(validated.role_permissions)) {
-      if (perms.edit && !perms.view) {
+    // If updating permissions, validate constraints
+    if (validated.role_permissions) {
+      // Validate HR Admin View permission is always true
+      if (validated.role_permissions.hr_admin && !validated.role_permissions.hr_admin.view) {
         return NextResponse.json(
           {
             error: {
               code: "VALIDATION_ERROR",
-              message: `Role ${role}: Edit permission requires View permission`,
+              message: "HR Admin View permission cannot be removed",
             },
           },
           { status: 400 }
         );
       }
+
+      // Validate edit→view constraint for each role
+      for (const [role, perms] of Object.entries(validated.role_permissions)) {
+        if (perms.edit && !perms.view) {
+          return NextResponse.json(
+            {
+              error: {
+                code: "VALIDATION_ERROR",
+                message: `Role ${role}: Edit permission requires View permission`,
+              },
+            },
+            { status: 400 }
+          );
+        }
+      }
     }
 
-    // Update column permissions
+    // Build update object dynamically
+    const updateData: { role_permissions?: Record<string, { view: boolean; edit: boolean }>; category?: string | null } = {};
+    if (validated.role_permissions) {
+      updateData.role_permissions = validated.role_permissions;
+    }
+    if (validated.category !== undefined) {
+      updateData.category = validated.category;
+    }
+
+    // Update column
     const { data: updatedColumn, error } = await supabase
       .from("column_config")
-      .update({ role_permissions: validated.role_permissions })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();

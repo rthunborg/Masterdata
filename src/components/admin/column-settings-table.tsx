@@ -19,12 +19,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import { PermissionToggle } from "./permission-toggle";
 import { DeleteColumnModal } from "./delete-column-modal";
 import { VisibilityBadge } from "@/components/ui/visibility-badge";
 import { toast } from "sonner";
-import { Trash2, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
+import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, ChevronsUpDown } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import {
   DndContext,
   closestCenter,
@@ -49,13 +62,117 @@ interface ColumnSettingsTableProps {
   onPermissionsUpdated: () => void;
 }
 
+// Editable Category Cell Component
+function EditableCategoryCell({
+  value,
+  columnId,
+  allColumns,
+  onUpdate,
+  isUpdating,
+}: {
+  value: string;
+  columnId: string;
+  allColumns: ColumnConfig[];
+  onUpdate: (columnId: string, newCategory: string) => Promise<void>;
+  isUpdating: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState(value);
+
+  // Get existing categories from all columns
+  const existingCategories = Array.from(
+    new Set(
+      allColumns
+        .map((col) => col.category)
+        .filter((cat): cat is string => cat !== null && cat !== "")
+    )
+  ).sort();
+
+  const handleSelect = async (newCategory: string) => {
+    setInputValue(newCategory);
+    setIsOpen(false);
+    if (newCategory !== value) {
+      await onUpdate(columnId, newCategory);
+    }
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          role="combobox"
+          aria-expanded={isOpen}
+          className={cn(
+            "w-full justify-between font-normal h-8 px-2",
+            !value && "text-muted-foreground"
+          )}
+          disabled={isUpdating}
+        >
+          <span className="truncate">{value || "Ingen kategori"}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] p-0" align="start">
+        <Command>
+          <CommandInput
+            placeholder="Sök eller skriv ny kategori..."
+            value={inputValue}
+            onValueChange={setInputValue}
+          />
+          <CommandEmpty>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-sm"
+              onClick={() => handleSelect(inputValue)}
+            >
+              Skapa &ldquo;{inputValue}&rdquo;
+            </Button>
+          </CommandEmpty>
+          <CommandGroup>
+            <CommandItem
+              value=""
+              onSelect={() => handleSelect("")}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  value === "" ? "opacity-100" : "opacity-0"
+                )}
+              />
+              <span className="text-muted-foreground italic">Ingen kategori</span>
+            </CommandItem>
+            {existingCategories.map((category) => (
+              <CommandItem
+                key={category}
+                value={category}
+                onSelect={() => handleSelect(category)}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    value === category ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {category}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // Draggable row component
 function DraggableRow({
   column,
   allRoles,
+  allColumns,
   updatingColumnId,
   isPermissionDisabled,
   handlePermissionChange,
+  handleCategoryUpdate,
   handleDeleteClick,
   isMobile,
   onMoveUp,
@@ -63,10 +180,10 @@ function DraggableRow({
   isFirst,
   isLast,
   t,
-  tAdmin,
 }: {
   column: ColumnConfig;
   allRoles: UserRole[];
+  allColumns: ColumnConfig[];
   updatingColumnId: string | null;
   isPermissionDisabled: () => boolean;
   handlePermissionChange: (
@@ -75,6 +192,7 @@ function DraggableRow({
     permissionType: "view" | "edit",
     newValue: boolean
   ) => Promise<void>;
+  handleCategoryUpdate: (columnId: string, newCategory: string) => Promise<void>;
   handleDeleteClick: (column: ColumnConfig) => void;
   isMobile: boolean;
   onMoveUp?: () => void;
@@ -82,7 +200,6 @@ function DraggableRow({
   isFirst?: boolean;
   isLast?: boolean;
   t: ReturnType<typeof useTranslations>;
-  tAdmin: ReturnType<typeof useTranslations>;
 }) {
   const {
     attributes,
@@ -145,16 +262,14 @@ function DraggableRow({
       <TableCell className="text-gray-600 w-16">{column.column_type}</TableCell>
 
       {/* Category */}
-      <TableCell className="w-28">
-        <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-            column.is_masterdata
-              ? "bg-blue-100 text-blue-800"
-              : "bg-purple-100 text-purple-800"
-          }`}
-        >
-          {column.is_masterdata ? tAdmin("masterdata") : tAdmin("custom")}
-        </span>
+      <TableCell className="w-48">
+        <EditableCategoryCell
+          value={column.category || ""}
+          columnId={column.id}
+          allColumns={allColumns}
+          onUpdate={handleCategoryUpdate}
+          isUpdating={isUpdating}
+        />
       </TableCell>
 
       {/* Visibility Badge */}
@@ -414,6 +529,23 @@ export function ColumnSettingsTable({
     return false;
   };
 
+  const handleCategoryUpdate = async (columnId: string, newCategory: string) => {
+    try {
+      setUpdatingColumnId(columnId);
+      await columnService.updateColumnPermissions(columnId, {
+        category: newCategory || null,
+      });
+      toast.success("Category updated successfully");
+      onPermissionsUpdated();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update category"
+      );
+    } finally {
+      setUpdatingColumnId(null);
+    }
+  };
+
   const handleDeleteClick = (column: ColumnConfig) => {
     setColumnToDelete(column);
     setDeleteModalOpen(true);
@@ -469,9 +601,11 @@ export function ColumnSettingsTable({
                       key={column.id}
                       column={column}
                       allRoles={allRoles}
+                      allColumns={allColumns}
                       updatingColumnId={updatingColumnId}
                       isPermissionDisabled={isPermissionDisabled}
                       handlePermissionChange={handlePermissionChange}
+                      handleCategoryUpdate={handleCategoryUpdate}
                       handleDeleteClick={handleDeleteClick}
                       isMobile={isMobile}
                       onMoveUp={() => handleMoveUp(index)}
@@ -479,7 +613,6 @@ export function ColumnSettingsTable({
                       isFirst={index === 0}
                       isLast={index === items.length - 1}
                       t={t}
-                      tAdmin={tAdmin}
                     />
                   ))
                 )}
