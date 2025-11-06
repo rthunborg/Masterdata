@@ -709,6 +709,48 @@ Categories help organize custom columns for easier navigation.
 - Group related columns together
 - Easier to find columns in large tables
 - Visual organization in table view (columns grouped by category)
+- Color-coded headers for quick visual identification
+
+#### Category Color Coding (New Feature)
+
+Categories can have assigned colors that appear as background colors in table column headers. This makes it easier to visually distinguish between different category groups.
+
+**Assigning Colors to Categories:**
+
+1. **When creating a new column**, select or enter a category name
+2. **Below the category field**, a color picker will appear
+3. **Choose a color** from the predefined palette or enter a custom hex code:
+   - **Predefined Colors**: 10 carefully selected colors optimized for readability
+   - **Custom Colors**: Enter any hex code (e.g., #3B82F6) for brand-specific colors
+4. **Preview** shows how your selected color will look with text
+5. **Click "Add Column"** to apply
+
+**Tips for Choosing Colors:**
+
+- Use the **predefined palette** - these colors are pre-validated for accessibility
+- Avoid very **light colors** (like bright yellow) as they may have poor text contrast
+- If you see a **warning message** about contrast, consider choosing a different shade
+- Use **consistent colors** across related categories (e.g., all HR categories in blue)
+
+**What You'll See:**
+
+- Column headers with assigned category colors show **colored backgrounds**
+- Text color (black or white) is automatically chosen for readability
+- **Hover over a colored header** to see the category name and color code
+- Columns without colors display with standard header styling
+
+**Example Color Scheme:**
+
+- **Benefits** → Blue (#3B82F6)
+- **Payroll** → Green (#10B981)
+- **Scheduling** → Purple (#8B5CF6)
+- **Facilities** → Teal (#14B8A6)
+
+**Accessibility:**
+
+- All predefined colors meet WCAG AA standards for text contrast (≥4.5:1 ratio)
+- System automatically adjusts text color (black/white) based on background
+- Color is supplementary - category names are always visible in headers
 
 ### Searching and Filtering
 

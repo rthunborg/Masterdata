@@ -28,6 +28,7 @@ export interface ColumnConfig {
   role_permissions: RolePermissions;
   is_masterdata: boolean;
   category: string | null;
+  category_color: string | null; // Hex color code (e.g., '#3B82F6') or null for no color
   display_order: number;
   is_visible: boolean;
   created_at: string;
@@ -49,6 +50,7 @@ export interface CreateCustomColumnInput {
   column_name: string;
   column_type: ColumnType;
   category?: string;
+  category_color?: string | null; // Hex color code for the category
 }
 
 /**
@@ -84,6 +86,7 @@ export interface UpdateColumnPermissionsRequest {
 export interface UpdateColumnConfigRequest {
   role_permissions?: RolePermissions;
   category?: string | null;
+  category_color?: string | null; // Update category color
 }
 
 /**

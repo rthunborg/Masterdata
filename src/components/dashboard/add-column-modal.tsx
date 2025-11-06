@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ColorPicker, ColorIndicator } from "@/components/ui/color-picker";
 import {
   createCustomColumnSchema,
   type CreateCustomColumnInput,
@@ -65,14 +66,14 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
   const t = useTranslations('modals');
   const tCommon = useTranslations('common');
 
-  // Extract existing categories from columns
+  // Extract existing categories from columns with their colors
   const existingCategories = Array.from(
-    new Set(
+    new Map(
       columns
-        .map((col) => col.category)
-        .filter((cat): cat is string => cat !== null && cat !== "")
-    )
-  ).sort();
+        .filter((col) => col.category !== null && col.category !== "")
+        .map((col) => [col.category!, { name: col.category!, color: col.category_color }])
+    ).values()
+  ).sort((a, b) => a.name.localeCompare(b.name));
 
   const form = useForm<CreateCustomColumnInput>({
     resolver: zodResolver(createCustomColumnSchema),
@@ -80,6 +81,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
       column_name: "",
       column_type: "text",
       category: "",
+      category_color: null,
     },
   });
 
@@ -110,6 +112,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
       const submitData = {
         ...data,
         category: data.category && data.category.trim() ? data.category : undefined,
+        category_color: data.category_color || undefined,
       };
 
       const newColumn = await columnConfigService.createCustomColumn(submitData);
@@ -245,22 +248,31 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                           <CommandGroup heading="Befintliga kategorier">
                             {existingCategories.map((category) => (
                               <CommandItem
-                                key={category}
-                                value={category}
+                                key={category.name}
+                                value={category.name}
                                 onSelect={() => {
-                                  field.onChange(category);
+                                  field.onChange(category.name);
+                                  // Auto-populate category color when selecting existing category
+                                  if (category.color) {
+                                    form.setValue('category_color', category.color);
+                                  }
                                   setCategoryOpen(false);
                                 }}
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    field.value === category
+                                    field.value === category.name
                                       ? "opacity-100"
                                       : "opacity-0"
                                   )}
                                 />
-                                {category}
+                                <div className="flex items-center gap-2">
+                                  {category.color && (
+                                    <ColorIndicator color={category.color} size="sm" />
+                                  )}
+                                  <span>{category.name}</span>
+                                </div>
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -268,6 +280,28 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                       </Command>
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Category Color (shown when category is entered or new) */}
+            <FormField
+              control={form.control}
+              name="category_color"
+              render={({ field }) => (
+                <FormItem>
+                  <ColorPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting || !form.watch('category')}
+                    label="Kategori färg (Valfritt)"
+                    placeholder="Välj eller ange färg"
+                    allowClear={true}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Färgen kommer att visas i tabellhuvudet för alla kolumner i denna kategori.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

@@ -54,6 +54,11 @@ export const createCustomColumnSchema = z.object({
     errorMap: () => ({ message: "Invalid column type" }),
   }),
   category: z.string().max(100).optional(),
+  category_color: z
+    .string()
+    .regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, "Invalid hex color format (use #RGB or #RRGGBB)")
+    .nullable()
+    .optional(),
 });
 
 /**
@@ -130,6 +135,11 @@ export type UpdateColumnPermissionsInput = z.infer<
 export const updateColumnConfigSchema = z.object({
   role_permissions: z.record(z.string(), rolePermissionSchema).optional(),
   category: z.string().max(100).nullable().optional(),
+  category_color: z
+    .string()
+    .regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, "Invalid hex color format (use #RGB or #RRGGBB)")
+    .nullable()
+    .optional(),
 });
 
 /**

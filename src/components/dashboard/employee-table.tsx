@@ -13,6 +13,7 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import type { Employee } from "@/lib/types/employee";
+import type { ColumnConfig } from "@/lib/types/column-config";
 import {
   Table,
   TableBody,
@@ -49,6 +50,7 @@ import {
 } from "@/components/ui/popover";
 import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Eye, EyeOff } from "lucide-react";
 import { EditableCell } from "./editable-cell";
+import { getReadableTextColor } from "@/lib/utils/color-contrast";
 import { EditableDateCell } from "./editable-date-cell";
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
 import { employeeService } from "@/lib/services/employee-service";
@@ -751,14 +753,47 @@ export function EmployeeTable({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  // Get column config for category color styling
+                  const columnId = header.column.id;
+                  const columnConfig = columnConfigs.find((c: ColumnConfig) => c.id === columnId);
+                  const categoryColor = columnConfig?.category_color;
+                  const categoryName = columnConfig?.category;
+                  
+                  // Calculate text color for accessibility
+                  const textColor = categoryColor 
+                    ? getReadableTextColor(categoryColor)
+                    : undefined;
+                  
+                  const headerContent = header.isPlaceholder ? null : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  );
+                  
+                  return (
+                    <TableHead 
+                      key={header.id}
+                      style={{
+                        backgroundColor: categoryColor || undefined,
+                        color: textColor === 'white' ? '#ffffff' : textColor === 'black' ? '#000000' : undefined,
+                      }}
+                    >
+                      {categoryColor && categoryName ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div>{headerContent}</div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Kategori: {categoryName}</p>
+                            <p className="text-xs font-mono">{categoryColor}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        headerContent
+                      )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>

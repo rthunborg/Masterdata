@@ -197,7 +197,15 @@
       "createButton": "Skapa kolumn",
       "columnCreated": "Kolumnen '{name}' skapades",
       "createFailed": "Kunde inte skapa kolumn",
-      "duplicateName": "Kolumnnamnet finns redan. Välj ett annat namn."
+      "duplicateName": "Kolumnnamnet finns redan. Välj ett annat namn.",
+      "categoryColorLabel": "Kategori färg (Valfritt)",
+      "categoryColorDescription": "Färgen kommer att visas i tabellhuvudet för alla kolumner i denna kategori.",
+      "colorPickerPlaceholder": "Välj eller ange färg",
+      "customColorLabel": "Anpassad färg",
+      "colorPreviewLabel": "Förhandsgranskning",
+      "predefinedColors": "Fördefinierade färger",
+      "clearColor": "Rensa",
+      "done": "Klar"
     },
     "editColumn": {
       "title": "Redigera kolumn",
@@ -379,7 +387,9 @@
       "terminationDateInvalid": "Ogiltigt datumformat",
       "terminationReasonRequired": "Uppsägningsorsak krävs",
       "terminationReasonMaxLength": "Uppsägningsorsak måste vara 500 tecken eller mindre",
-      "updateFieldRequired": "Minst ett fält måste anges för uppdatering"
+      "updateFieldRequired": "Minst ett fält måste anges för uppdatering",
+      "invalidColorFormat": "Ogiltigt färgformat. Använd hex-kod (t.ex. #3B82F6)",
+      "poorColorContrast": "Vald färg har dålig kontrast. Välj en mörkare eller ljusare färg."
     }
   },
   "roles": {

@@ -48,12 +48,19 @@ export async function PATCH(
     }
 
     // Build update object dynamically
-    const updateData: { role_permissions?: Record<string, { view: boolean; edit: boolean }>; category?: string | null } = {};
+    const updateData: { 
+      role_permissions?: Record<string, { view: boolean; edit: boolean }>; 
+      category?: string | null;
+      category_color?: string | null;
+    } = {};
     if (validated.role_permissions) {
       updateData.role_permissions = validated.role_permissions;
     }
     if (validated.category !== undefined) {
       updateData.category = validated.category;
+    }
+    if (validated.category_color !== undefined) {
+      updateData.category_color = validated.category_color;
     }
 
     // Update column

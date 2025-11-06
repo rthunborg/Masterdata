@@ -95,6 +95,7 @@ export class ColumnConfigRepository {
     column_type: "text" | "number" | "date" | "boolean";
     role: UserRole;
     category?: string;
+    category_color?: string | null;
   }): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
@@ -130,6 +131,7 @@ export class ColumnConfigRepository {
       column_type: input.column_type,
       is_masterdata: false,
       category: input.category || null,
+      category_color: input.category_color || null,
       role_permissions: rolePermissions,
     };
 
@@ -158,7 +160,7 @@ export class ColumnConfigRepository {
    * @param id - Column ID to update
    * @param userId - User ID attempting the update
    * @param userRole - Role of the user attempting the update
-   * @param updates - Partial column updates (column_name, category, etc.)
+   * @param updates - Partial column updates (column_name, category, category_color, etc.)
    * @returns Updated column configuration
    * @throws Error if user lacks permission or column not found
    */
@@ -166,7 +168,7 @@ export class ColumnConfigRepository {
     id: string,
     userId: string,
     userRole: UserRole,
-    updates: Partial<Pick<ColumnConfig, "column_name" | "category">>
+    updates: Partial<Pick<ColumnConfig, "column_name" | "category" | "category_color">>
   ): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
@@ -193,6 +195,9 @@ export class ColumnConfigRepository {
     }
     if (updates.category !== undefined) {
       safeUpdates.category = updates.category;
+    }
+    if (updates.category_color !== undefined) {
+      safeUpdates.category_color = updates.category_color;
     }
 
     const { data, error } = await supabase

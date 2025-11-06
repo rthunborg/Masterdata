@@ -1,6 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { groupColumnsByCategory } from "@/lib/utils/column-grouping";
+import { groupColumnsByCategory, extractCategoryMetadata } from "@/lib/utils/column-grouping";
 import type { ColumnConfig } from "@/lib/types/column-config";
+
+// Helper to create test column configs with required fields
+const createColumnConfig = (overrides: Partial<ColumnConfig>): ColumnConfig => ({
+  id: "test-id",
+  column_name: "Test Column",
+  column_type: "text",
+  is_masterdata: false,
+  category: null,
+  category_color: null,
+  role_permissions: {},
+  display_order: 0,
+  is_visible: true,
+  created_at: "2025-01-01T00:00:00Z",
+  updated_at: "2025-01-01T00:00:00Z",
+  ...overrides,
+});
 
 describe("groupColumnsByCategory", () => {
   it("groups columns by category correctly", () => {
@@ -180,5 +196,153 @@ describe("groupColumnsByCategory", () => {
     // But in our implementation, we use `col.category || "Uncategorized"`
     // which treats empty string as falsy
     expect(grouped["Uncategorized"]).toBeDefined();
+  });
+});
+
+describe("extractCategoryMetadata", () => {
+  it("extracts category names, colors, and counts", () => {
+    const columns: ColumnConfig[] = [
+      createColumnConfig({
+        id: "1",
+        column_name: "Team Field",
+        category: "Recruitment",
+        category_color: "#3B82F6",
+      }),
+      createColumnConfig({
+        id: "2",
+        column_name: "Team Size",
+        category: "Recruitment",
+        category_color: "#3B82F6",
+      }),
+      createColumnConfig({
+        id: "3",
+        column_name: "Location",
+        category: "Warehouse",
+        category_color: "#10B981",
+      }),
+    ];
+
+    const metadata = extractCategoryMetadata(columns);
+
+    expect(metadata).toHaveLength(2);
+    
+    const recruitment = metadata.find((m) => m.name === "Recruitment");
+    expect(recruitment).toBeDefined();
+    expect(recruitment?.color).toBe("#3B82F6");
+    expect(recruitment?.columnCount).toBe(2);
+
+    const warehouse = metadata.find((m) => m.name === "Warehouse");
+    expect(warehouse).toBeDefined();
+    expect(warehouse?.color).toBe("#10B981");
+    expect(warehouse?.columnCount).toBe(1);
+  });
+
+  it("ignores masterdata columns", () => {
+    const columns: ColumnConfig[] = [
+      createColumnConfig({
+        id: "1",
+        column_name: "First Name",
+        is_masterdata: true,
+        category: null,
+      }),
+      createColumnConfig({
+        id: "2",
+        column_name: "Team",
+        category: "Recruitment",
+        category_color: "#3B82F6",
+      }),
+    ];
+
+    const metadata = extractCategoryMetadata(columns);
+
+    expect(metadata).toHaveLength(1);
+    expect(metadata[0].name).toBe("Recruitment");
+  });
+
+  it("handles columns without colors", () => {
+    const columns: ColumnConfig[] = [
+      createColumnConfig({
+        id: "1",
+        column_name: "Team",
+        category: "Recruitment",
+        category_color: null,
+      }),
+    ];
+
+    const metadata = extractCategoryMetadata(columns);
+
+    expect(metadata).toHaveLength(1);
+    expect(metadata[0].name).toBe("Recruitment");
+    expect(metadata[0].color).toBeNull();
+    expect(metadata[0].columnCount).toBe(1);
+  });
+
+  it("uses first non-null color when columns have different colors", () => {
+    const columns: ColumnConfig[] = [
+      createColumnConfig({
+        id: "1",
+        column_name: "Team A",
+        category: "Recruitment",
+        category_color: null,
+      }),
+      createColumnConfig({
+        id: "2",
+        column_name: "Team B",
+        category: "Recruitment",
+        category_color: "#3B82F6",
+      }),
+      createColumnConfig({
+        id: "3",
+        column_name: "Team C",
+        category: "Recruitment",
+        category_color: "#EF4444",
+      }),
+    ];
+
+    const metadata = extractCategoryMetadata(columns);
+
+    expect(metadata).toHaveLength(1);
+    expect(metadata[0].color).toBe("#3B82F6"); // First non-null color
+    expect(metadata[0].columnCount).toBe(3);
+  });
+
+  it("ignores columns without category", () => {
+    const columns: ColumnConfig[] = [
+      createColumnConfig({
+        id: "1",
+        column_name: "Notes",
+        category: null,
+      }),
+      createColumnConfig({
+        id: "2",
+        column_name: "Team",
+        category: "Recruitment",
+        category_color: "#3B82F6",
+      }),
+    ];
+
+    const metadata = extractCategoryMetadata(columns);
+
+    expect(metadata).toHaveLength(1);
+    expect(metadata[0].name).toBe("Recruitment");
+  });
+
+  it("returns empty array when no custom columns with categories exist", () => {
+    const columns: ColumnConfig[] = [
+      createColumnConfig({
+        id: "1",
+        column_name: "First Name",
+        is_masterdata: true,
+      }),
+      createColumnConfig({
+        id: "2",
+        column_name: "Notes",
+        category: null,
+      }),
+    ];
+
+    const metadata = extractCategoryMetadata(columns);
+
+    expect(metadata).toHaveLength(0);
   });
 });

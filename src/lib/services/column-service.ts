@@ -204,4 +204,31 @@ export const columnService = {
     const json: ColumnResponse = await response.json();
     return json.data;
   },
+
+  /**
+   * Update category color for all columns in a category
+   * @param categoryName - Name of the category to update
+   * @param color - Hex color code (e.g., "#3B82F6") or null to remove color
+   * @returns Response with affected column IDs
+   */
+  async updateCategoryColor(
+    categoryName: string,
+    color: string | null
+  ): Promise<{ category: string; color: string | null; affected_columns: string[]; updated_count: number }> {
+    const response = await fetch(`/api/admin/categories/${encodeURIComponent(categoryName)}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ color }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to update category color");
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
 };

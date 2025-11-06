@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { columnConfigService } from "@/lib/services/column-config-service";
 import { useAuth } from "@/lib/hooks/use-auth";
+import { useRealtime } from "@/lib/hooks/use-realtime";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { UserRole } from "@/lib/types/user";
 
@@ -50,6 +51,18 @@ export function useColumns(effectiveRole?: UserRole) {
   useEffect(() => {
     fetchColumns();
   }, [fetchColumns]);
+
+  // Subscribe to real-time column_config changes for automatic updates
+  useRealtime({
+    table: "column_config",
+    schema: "public",
+    event: "*", // Listen to all events (INSERT, UPDATE, DELETE)
+    enabled: !!roleToUse,
+    onEvent: () => {
+      // Refetch columns when any change occurs to column_config
+      fetchColumns();
+    },
+  });
 
   // Refetch when window regains focus (user returns from column settings)
   useEffect(() => {

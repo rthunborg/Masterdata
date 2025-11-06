@@ -34,6 +34,7 @@ import {
 import { PermissionToggle } from "./permission-toggle";
 import { DeleteColumnModal } from "./delete-column-modal";
 import { VisibilityBadge } from "@/components/ui/visibility-badge";
+import { ColorIndicator, ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
 import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, ChevronsUpDown, X } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
@@ -68,25 +69,31 @@ function EditableCategoryCell({
   columnId,
   allColumns,
   onUpdate,
+  onColorUpdate,
   isUpdating,
 }: {
   value: string;
   columnId: string;
   allColumns: ColumnConfig[];
   onUpdate: (columnId: string, newCategory: string) => Promise<void>;
+  onColorUpdate: (categoryName: string, color: string | null) => Promise<void>;
   isUpdating: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
-  // Get existing categories from all columns
+  // Get existing categories from all columns with their colors
   const existingCategories = Array.from(
-    new Set(
+    new Map(
       allColumns
-        .map((col) => col.category)
-        .filter((cat): cat is string => cat !== null && cat !== "")
-    )
-  ).sort();
+        .filter((col) => col.category !== null && col.category !== "")
+        .map((col) => [col.category!, { name: col.category!, color: col.category_color }])
+    ).values()
+  ).sort((a, b) => a.name.localeCompare(b.name));
+
+  // Get current category color
+  const currentColor = allColumns.find((col) => col.id === columnId)?.category_color;
 
   const handleSelect = async (newCategory: string) => {
     setInputValue(newCategory);
@@ -96,71 +103,123 @@ function EditableCategoryCell({
     }
   };
 
+  const handleColorChange = async (color: string | null) => {
+    if (value) {
+      await onColorUpdate(value, color);
+    }
+    setIsColorPickerOpen(false);
+  };
+
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          role="combobox"
-          aria-expanded={isOpen}
-          className={cn(
-            "w-full justify-between font-normal h-8 px-2",
-            !value && "text-muted-foreground"
-          )}
-          disabled={isUpdating}
-        >
-          <span className="truncate">{value || "Ingen kategori"}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0" align="start">
-        <Command>
-          <CommandInput
-            placeholder="Sök eller skriv ny kategori..."
-            value={inputValue}
-            onValueChange={setInputValue}
-          />
-          <CommandEmpty>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sm"
-              onClick={() => handleSelect(inputValue)}
-            >
-              Skapa &ldquo;{inputValue}&rdquo;
-            </Button>
-          </CommandEmpty>
-          <CommandGroup>
-            <CommandItem
-              value=""
-              onSelect={() => handleSelect("")}
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  value === "" ? "opacity-100" : "opacity-0"
-                )}
-              />
-              <span className="text-muted-foreground italic">Ingen kategori</span>
-            </CommandItem>
-            {existingCategories.map((category) => (
+    <div className="flex items-center gap-1">
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            role="combobox"
+            aria-expanded={isOpen}
+            className={cn(
+              "flex-1 justify-between font-normal h-8 px-2",
+              !value && "text-muted-foreground"
+            )}
+            disabled={isUpdating}
+          >
+            <div className="flex items-center gap-2 truncate">
+              {currentColor && <ColorIndicator color={currentColor} size="sm" />}
+              <span className="truncate">{value || "Ingen kategori"}</span>
+            </div>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[300px] p-0" align="start">
+          <Command>
+            <CommandInput
+              placeholder="Sök eller skriv ny kategori..."
+              value={inputValue}
+              onValueChange={setInputValue}
+            />
+            <CommandEmpty>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-sm"
+                onClick={() => handleSelect(inputValue)}
+              >
+                Skapa &ldquo;{inputValue}&rdquo;
+              </Button>
+            </CommandEmpty>
+            <CommandGroup>
               <CommandItem
-                key={category}
-                value={category}
-                onSelect={() => handleSelect(category)}
+                value=""
+                onSelect={() => handleSelect("")}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    value === category ? "opacity-100" : "opacity-0"
+                    value === "" ? "opacity-100" : "opacity-0"
                   )}
                 />
-                {category}
+                <span className="text-muted-foreground italic">Ingen kategori</span>
               </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              {existingCategories.map((category) => (
+                <CommandItem
+                  key={category.name}
+                  value={category.name}
+                  onSelect={() => handleSelect(category.name)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === category.name ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <div className="flex items-center gap-2">
+                    {category.color && <ColorIndicator color={category.color} size="sm" />}
+                    <span>{category.name}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      
+      {/* Color edit button - only show when category is selected */}
+      {value && (
+        <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              disabled={isUpdating}
+              title="Edit category color"
+            >
+              {currentColor ? (
+                <ColorIndicator color={currentColor} size="sm" />
+              ) : (
+                <div className="h-4 w-4 rounded border-2 border-dashed border-gray-400" />
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64" align="end">
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium">Category Color</label>
+                <p className="text-xs text-muted-foreground">
+                  This color applies to all columns in this category
+                </p>
+              </div>
+              <ColorPicker
+                value={currentColor}
+                onChange={handleColorChange}
+                allowClear={true}
+                placeholder="Select color"
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
   );
 }
 
@@ -173,6 +232,7 @@ function DraggableRow({
   isPermissionDisabled,
   handlePermissionChange,
   handleCategoryUpdate,
+  handleCategoryColorUpdate,
   handleDeleteClick,
   isMobile,
   onMoveUp,
@@ -193,6 +253,7 @@ function DraggableRow({
     newValue: boolean
   ) => Promise<void>;
   handleCategoryUpdate: (columnId: string, newCategory: string) => Promise<void>;
+  handleCategoryColorUpdate: (categoryName: string, color: string | null) => Promise<void>;
   handleDeleteClick: (column: ColumnConfig) => void;
   isMobile: boolean;
   onMoveUp?: () => void;
@@ -277,6 +338,7 @@ function DraggableRow({
           columnId={column.id}
           allColumns={allColumns}
           onUpdate={handleCategoryUpdate}
+          onColorUpdate={handleCategoryColorUpdate}
           isUpdating={isUpdating}
         />
       </TableCell>
@@ -555,6 +617,18 @@ export function ColumnSettingsTable({
     }
   };
 
+  const handleCategoryColorUpdate = async (categoryName: string, color: string | null) => {
+    try {
+      await columnService.updateCategoryColor(categoryName, color);
+      toast.success("Category color updated for all columns");
+      onPermissionsUpdated();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update category color"
+      );
+    }
+  };
+
   const handleDeleteClick = (column: ColumnConfig) => {
     setColumnToDelete(column);
     setDeleteModalOpen(true);
@@ -628,6 +702,7 @@ export function ColumnSettingsTable({
                       isPermissionDisabled={isPermissionDisabled}
                       handlePermissionChange={handlePermissionChange}
                       handleCategoryUpdate={handleCategoryUpdate}
+                      handleCategoryColorUpdate={handleCategoryColorUpdate}
                       handleDeleteClick={handleDeleteClick}
                       isMobile={isMobile}
                       onMoveUp={() => handleMoveUp(index)}
