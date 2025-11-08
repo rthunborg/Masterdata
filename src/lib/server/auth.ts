@@ -7,20 +7,22 @@ export async function getUserFromSession(): Promise<SessionUser | null> {
   try {
     const supabase = await createClient();
     
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // Use getUser() instead of getSession() for better security
+    // getUser() validates the JWT token with the Supabase Auth server
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return null;
     }
 
     // Get user record from users table
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: dbError } = await supabase
       .from("users")
       .select("id, email, role, is_active, created_at, last_active_at")
-      .eq("auth_user_id", session.user.id)
+      .eq("auth_user_id", user.id)
       .single();
 
-    if (userError || !userData) {
+    if (dbError || !userData) {
       return null;
     }
 
@@ -30,7 +32,7 @@ export async function getUserFromSession(): Promise<SessionUser | null> {
 
     return {
       ...userData,
-      auth_id: session.user.id,
+      auth_id: user.id,
     };
   } catch {
     return null;
@@ -108,13 +110,28 @@ export function createForbiddenResponse(message: string = "Insufficient permissi
 }
 
 export function createErrorResponse(error: unknown) {
+  // Log the full error for debugging
+  console.error("API Error:", error);
+  
   if (error instanceof Error) {
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    
     if (error.message === "Authentication required") {
       return createUnauthorizedResponse();
     }
     if (error.message === "Insufficient permissions") {
       return createForbiddenResponse();
     }
+    
+    // Return the actual error message in development
+    return NextResponse.json({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: error.message || "An unexpected error occurred",
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      }
+    }, { status: 500 });
   }
   
   return NextResponse.json({

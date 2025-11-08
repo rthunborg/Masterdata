@@ -189,7 +189,7 @@ describe("EditableDateCell", () => {
       renderWithI18n(
         <EditableDateCell
           value="invalid-id"
-          displayValue="(Date not found)"
+          displayValue="(Datum hittades inte)" // Swedish translation of dateDeleted from dashboard namespace
           employeeId="emp-1"
           field="stena_date"
           dateCategory="Stena Dates"
@@ -201,7 +201,7 @@ describe("EditableDateCell", () => {
 
       const cell = screen.getByRole("gridcell");
       expect(cell).toHaveClass("text-amber-600");
-      expect(cell).toHaveTextContent("(Date not found)");
+      expect(cell).toHaveTextContent("(Datum hittades inte)");
     });
   });
 
@@ -371,8 +371,8 @@ describe("EditableDateCell", () => {
         />
       );
 
-      // Verify hook was called with current PE3 date ID
-      expect(useAvailablePE3Dates).toHaveBeenCalledWith(mockPE3Date.id);
+      // Verify hook was called with current PE3 date ID and false (not editing initially)
+      expect(useAvailablePE3Dates).toHaveBeenCalledWith(mockPE3Date.id, false);
     });
 
     it("disables select while PE3 dates are loading", () => {

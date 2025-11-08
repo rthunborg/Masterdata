@@ -36,12 +36,12 @@ export function DeleteColumnModal({
     setIsDeleting(true);
     try {
       await columnService.deleteColumn(column.id);
-      toast.success(`Column "${column.column_name}" deleted successfully`);
+      toast.success(`Kolumn "${column.column_name}" borttagen`);
       onDeleted();
       onClose();
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to delete column";
+        error instanceof Error ? error.message : "Kunde inte ta bort kolumnen";
       toast.error(errorMessage);
       // Don't close modal on error - user might want to retry or cancel manually
     } finally {
@@ -63,38 +63,38 @@ export function DeleteColumnModal({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Delete Column &quot;{column.column_name}&quot;?
+            Ta bort kolumn &quot;{column.column_name}&quot;?
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
             {column.is_masterdata ? (
               <>
                 <span className="block font-semibold text-destructive">
-                  This is a masterdata column. Deleting it will remove it from all employee records. This cannot be undone.
+                  Detta är en masterdata-kolumn. Om du tar bort den kommer den att försvinna från alla medarbetare. Detta kan inte ångras.
                 </span>
                 <span className="block">
-                  All data in this column will be permanently removed from all employees.
+                  All data i denna kolumn kommer att tas bort permanent från alla medarbetare.
                 </span>
               </>
             ) : (
               <>
                 <span className="block">
-                  Are you sure you want to delete this column? This action cannot be undone.
+                  Är du säker på att du vill ta bort denna kolumn? Denna åtgärd kan inte ångras.
                 </span>
                 <span className="block font-semibold text-destructive">
-                  All data in this column will be permanently removed from all employees.
+                  All data i denna kolumn kommer att tas bort permanent från alla medarbetare.
                 </span>
               </>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>Avbryt</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeleting}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting ? "Deleting..." : "Delete Column"}
+            {isDeleting ? "Tar bort..." : "Ta bort kolumn"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

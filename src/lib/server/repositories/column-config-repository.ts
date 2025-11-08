@@ -86,14 +86,17 @@ export class ColumnConfigRepository {
 
   /**
    * Create a new custom column
-   * Only creates custom columns (is_masterdata = false)
+   * Can create custom columns (is_masterdata = false) or masterdata columns (is_masterdata = true)
    * - HR Admin: Creates with HR Admin having full access, other roles no access by default
    * - External parties: Creates with creating role having full access
+   * 
+   * Automatically creates the actual database column in the employees table
    */
   async createCustomColumn(input: {
     column_name: string; // Display name
     db_column_name: string; // Database column name
     column_type: "text" | "number" | "date" | "boolean";
+    is_masterdata: boolean; // Whether this is a masterdata column
     role: UserRole;
     category?: string;
     category_color?: string | null;
@@ -110,7 +113,28 @@ export class ColumnConfigRepository {
       throw new Error(`Column with database name "${input.db_column_name}" already exists`);
     }
 
-    // Create default role permissions
+    // Map column type to SQL type
+    const sqlTypeMap: Record<string, string> = {
+      text: "TEXT",
+      number: "NUMERIC(20,2)",
+      date: "DATE",
+      boolean: "BOOLEAN",
+    };
+    const sqlType = sqlTypeMap[input.column_type];
+
+    // Step 1: Create the actual database column in the employees table
+    // Use the add_custom_column_to_employees database function
+    const { error: alterError } = await supabase.rpc('add_custom_column_to_employees', { 
+      column_name_param: input.db_column_name,
+      column_type_param: sqlType
+    });
+
+    if (alterError) {
+      console.error("Error creating database column:", alterError);
+      throw new Error(`Failed to create database column: ${alterError.message}`);
+    }
+
+    // Step 2: Create default role permissions
     // HR Admin always has view permission (required), edit can be modified later
     // Other roles default to no access
     const rolePermissions: Record<string, { view: boolean; edit: boolean }> = {
@@ -126,12 +150,12 @@ export class ColumnConfigRepository {
       rolePermissions[input.role] = { view: true, edit: true };
     }
 
-    // Create column config
+    // Step 3: Create column config entry
     const columnData = {
       column_name: input.column_name,
       db_column_name: input.db_column_name,
       column_type: input.column_type,
-      is_masterdata: false,
+      is_masterdata: input.is_masterdata,
       category: input.category || null,
       category_color: input.category_color || null,
       role_permissions: rolePermissions,
@@ -144,8 +168,8 @@ export class ColumnConfigRepository {
       .single();
 
     if (error) {
-      console.error("Error creating custom column:", error);
-      throw new Error(`Failed to create column: ${error.message}`);
+      console.error("Error creating custom column config:", error);
+      throw new Error(`Failed to create column config: ${error.message}`);
     }
 
     if (!data) {
@@ -280,9 +304,25 @@ export class ColumnConfigRepository {
   async toggleVisibility(id: string, isVisible: boolean): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
+    // If setting column as inactive, clear all permissions
+    const updateData: { is_visible: boolean; role_permissions?: Record<string, { view: boolean; edit: boolean }> } = {
+      is_visible: isVisible
+    };
+
+    if (!isVisible) {
+      // When deactivating, set all permissions to false
+      updateData.role_permissions = {
+        hr_admin: { view: false, edit: false },
+        sodexo: { view: false, edit: false },
+        omc: { view: false, edit: false },
+        payroll: { view: false, edit: false },
+        toplux: { view: false, edit: false }
+      };
+    }
+
     const { data, error } = await supabase
       .from("column_config")
-      .update({ is_visible: isVisible })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();

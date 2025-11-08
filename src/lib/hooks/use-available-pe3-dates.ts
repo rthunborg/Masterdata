@@ -9,18 +9,24 @@ import type { ImportantDate } from "@/lib/types/important-date";
  * Provides inventory management for PE3 dates - shows only unassigned dates
  * 
  * @param currentPE3DateId - Optional current PE3 date ID (for edit mode) to keep in list
+ * @param enabled - Whether to fetch data (default: true). Set to false to skip fetching.
  * @returns { availableDates, totalAvailable, isLoading, error }
  */
-export function useAvailablePE3Dates(currentPE3DateId?: string | null) {
+export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: boolean = true) {
   const [availableDates, setAvailableDates] = useState<ImportantDate[]>([]);
   const [totalAvailable, setTotalAvailable] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState<Error | null>(null);
 
   // Ref for debounce timer
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchAvailableDates = useCallback(async () => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setError(null);
       
@@ -69,7 +75,7 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null) {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPE3DateId]);
+  }, [currentPE3DateId, enabled]);
 
   // Debounced refetch function
   const debouncedRefetch = useCallback(() => {
@@ -85,6 +91,10 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null) {
   }, [fetchAvailableDates]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const supabase = createClient();
 
     // Initial fetch
@@ -165,7 +175,7 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null) {
       }
       supabase.removeChannel(channel);
     };
-  }, [fetchAvailableDates, debouncedRefetch]);
+  }, [fetchAvailableDates, debouncedRefetch, enabled]);
 
   return { availableDates, totalAvailable, isLoading, error };
 }

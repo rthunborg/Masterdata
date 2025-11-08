@@ -114,6 +114,12 @@ export async function PATCH(
       },
     });
   } catch (error) {
+    // Log the actual error for debugging
+    console.error("Error updating custom data:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     return createErrorResponse(error);
   }
 }

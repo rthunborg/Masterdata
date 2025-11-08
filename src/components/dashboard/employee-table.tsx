@@ -230,6 +230,7 @@ export function EmployeeTable({
       toast.success("Employee updated successfully");
       onEmployeeUpdated?.();
     } catch (error: unknown) {
+      console.error("[EmployeeTable] Update failed:", error);
       const message = error instanceof Error ? error.message : "Failed to update employee";
       throw new Error(message);
     }
@@ -338,13 +339,6 @@ export function EmployeeTable({
       ? roleFilteredColumns.filter((config) => {
           const isVisible = columnVisibility[config.id] !== false;
           
-          // Debug logging in development
-          if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-            if (columnVisibility[config.id] === false) {
-              console.log("[Column Filter] Hiding column:", config.column_name, "ID:", config.id);
-            }
-          }
-          
           return isVisible;
         })
       : roleFilteredColumns;
@@ -374,7 +368,10 @@ export function EmployeeTable({
         const fieldKey = config.db_column_name.toLowerCase().replace(/ /g, "_");
 
         const DataCell = ({ row }: { row: Row<Employee> }) => {
-          const value = getEmployeeFieldValue(row.original, config.db_column_name, config.is_masterdata, allImportantDates);
+          // For masterdata columns, use column_name (display name like "ÖMC Date")
+          // For custom columns, use db_column_name (the actual database column name)
+          const columnIdentifier = config.is_masterdata ? config.column_name : config.db_column_name;
+          const value = getEmployeeFieldValue(row.original, columnIdentifier, config.is_masterdata, allImportantDates, tDashboard("dateDeleted"));
           
           // Special handling for Important Date columns (Stena Date, ÖMC Date, PE3 Date)
           if (["Stena Date", "ÖMC Date", "PE3 Date"].includes(config.column_name)) {
@@ -450,11 +447,6 @@ export function EmployeeTable({
       return {
         accessorKey: config.db_column_name.toLowerCase().replace(/ /g, "_"),
         header: ({ column }) => {
-          // Determine category for visual grouping
-          const category = config.is_masterdata 
-            ? "Employee Information" 
-            : (config.category || "Uncategorized");
-          
           // Use column_name for header display (this is now the display name)
           const displayName = config.column_name;
           
@@ -463,8 +455,8 @@ export function EmployeeTable({
             <div
               className={cn(
                 column.getCanSort()
-                  ? "flex flex-col items-start gap-1 cursor-pointer select-none hover:text-foreground"
-                  : "flex flex-col items-start gap-1",
+                  ? "flex items-center gap-2 cursor-pointer select-none hover:text-foreground"
+                  : "flex items-center gap-2",
                 column.getIsSorted() && "font-semibold"
               )}
               onClick={column.getCanSort() ? column.getToggleSortingHandler() : undefined}
@@ -488,30 +480,21 @@ export function EmployeeTable({
                   : !canEdit ? `${displayName} (read-only)` : displayName
               }
             >
-              {/* Category label (only show for custom columns) */}
-              {!config.is_masterdata && (
-                <span className="text-xs text-muted-foreground font-normal">
-                  {category}
+              <span>{displayName}</span>
+              {!canEdit && (
+                <Lock className="h-4 w-4 text-gray-400" aria-hidden="true" />
+              )}
+              {column.getCanSort() && (
+                <span className="ml-auto" aria-hidden="true">
+                  {column.getIsSorted() === "asc" ? (
+                    <ArrowUp className="h-4 w-4" />
+                  ) : column.getIsSorted() === "desc" ? (
+                    <ArrowDown className="h-4 w-4" />
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4 opacity-50" />
+                  )}
                 </span>
               )}
-              
-              <div className="flex items-center gap-2">
-                <span>{displayName}</span>
-                {!canEdit && (
-                  <Lock className="h-4 w-4 text-gray-400" aria-hidden="true" />
-                )}
-                {column.getCanSort() && (
-                  <span className="ml-auto" aria-hidden="true">
-                    {column.getIsSorted() === "asc" ? (
-                      <ArrowUp className="h-4 w-4" />
-                    ) : column.getIsSorted() === "desc" ? (
-                      <ArrowDown className="h-4 w-4" />
-                    ) : (
-                      <ArrowUpDown className="h-4 w-4 opacity-50" />
-                    )}
-                  </span>
-                )}
-              </div>
             </div>
           );
         },
@@ -519,8 +502,8 @@ export function EmployeeTable({
         enableSorting: true,
         ...(config.column_type === "date" && {
           sortingFn: (rowA, rowB) => {
-            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates) as string).getTime();
-            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates) as string).getTime();
+            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string).getTime();
+            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string).getTime();
             return dateA - dateB;
           },
         }),
@@ -611,7 +594,7 @@ export function EmployeeTable({
     }
 
     return dataColumns;
-  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, columnVisibility, allImportantDates]);
+  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates]);
 
   const table = useReactTable({
     data: employees,
@@ -747,16 +730,6 @@ export function EmployeeTable({
         </div>
         
         <div className="flex gap-2 w-full sm:w-auto">
-          {/* Reset Column Widths Button (Story 9.4 - AC 5) */}
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleResetColumnWidths}
-            className="flex-1 sm:flex-none"
-          >
-            {tDashboard("resetColumnWidths")}
-          </Button>
-          
           {/* Column Visibility Controls for HR Admin */}
           {isHRAdmin && (
             <Popover>
@@ -847,34 +820,16 @@ export function EmployeeTable({
                         color: textColor === 'white' ? '#ffffff' : textColor === 'black' ? '#000000' : undefined,
                       }}
                     >
-                      {/* Header content with category label (Story 9.4 - AC 1) */}
-                      <div className="flex flex-col items-center gap-0.5">
+                      {/* Header content with category label */}
+                      <div className="flex flex-col items-center justify-center leading-none pb-4">
                         {/* Primary header text */}
-                        <div className="text-sm font-semibold">
-                          {categoryColor && categoryName ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div>{headerContent}</div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Kategori: {categoryName}</p>
-                                <p className="text-xs font-mono">{categoryColor}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            headerContent
-                          )}
+                        <div className="text-sm font-semibold leading-none">
+                          {headerContent}
                         </div>
                         
-                        {/* Category label (Story 9.4 - AC 1) */}
+                        {/* Category name as subtitle */}
                         {categoryName && (
-                          <div 
-                            className="text-xs px-2 py-0.5 rounded"
-                            style={{
-                              backgroundColor: categoryColor || '#f3f4f6',
-                              color: categoryColor ? (textColor === 'white' ? '#ffffff' : '#000000') : '#6b7280',
-                            }}
-                          >
+                          <div className="text-xs text-gray-600 font-normal leading-none">
                             {categoryName}
                           </div>
                         )}

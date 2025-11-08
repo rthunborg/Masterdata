@@ -58,6 +58,7 @@ export const createCustomColumnSchema = z.object({
   column_type: z.enum(["text", "number", "date", "boolean"], {
     errorMap: () => ({ message: "Invalid column type" }),
   }),
+  is_masterdata: z.boolean().default(false),
   category: z.string().max(100).optional(),
   category_color: z
     .string()
@@ -144,6 +145,11 @@ export const updateColumnConfigSchema = z.object({
     .string()
     .regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, "Invalid hex color format (use #RGB or #RRGGBB)")
     .nullable()
+    .optional(),
+  column_name: z
+    .string()
+    .min(1, "Display name is required")
+    .max(100, "Display name must be less than 100 characters")
     .optional(),
 });
 

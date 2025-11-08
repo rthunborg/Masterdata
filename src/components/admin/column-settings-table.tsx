@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ColumnConfig, RolePermissions } from "@/lib/types/column-config";
 import { UserRole, EXTERNAL_PARTY_ROLES } from "@/lib/types/user";
 import { columnService } from "@/lib/services/column-service";
@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -36,7 +37,7 @@ import { PermissionToggle } from "./permission-toggle";
 import { DeleteColumnModal } from "./delete-column-modal";
 import { ColorIndicator, ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
-import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, ChevronsUpDown, X, Eye, EyeOff } from "lucide-react";
+import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, X, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DndContext,
@@ -62,6 +63,90 @@ interface ColumnSettingsTableProps {
   onPermissionsUpdated: () => void;
 }
 
+// Editable Column Name Cell Component
+function EditableColumnNameCell({
+  value,
+  columnId,
+  onUpdate,
+  isUpdating,
+}: {
+  value: string;
+  columnId: string;
+  onUpdate: (columnId: string, newName: string) => Promise<void>;
+  isUpdating: boolean;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleSave = async () => {
+    const trimmedValue = inputValue.trim();
+    if (!trimmedValue) {
+      setInputValue(value);
+      setIsEditing(false);
+      return;
+    }
+    
+    if (trimmedValue !== value) {
+      await onUpdate(columnId, trimmedValue);
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setInputValue(value);
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleCancel();
+    }
+  };
+
+  if (!isEditing) {
+    return (
+      <div
+        onClick={() => !isUpdating && setIsEditing(true)}
+        className={cn(
+          "cursor-pointer px-2 py-1 rounded hover:bg-blue-50 transition-colors",
+          "min-h-8 flex items-center font-medium",
+          isUpdating && "cursor-not-allowed opacity-50"
+        )}
+        title="Click to edit display name"
+      >
+        {value}
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <Input
+        ref={inputRef}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={handleKeyDown}
+        disabled={isUpdating}
+        className="h-8"
+        maxLength={100}
+      />
+    </div>
+  );
+}
+
 // Editable Category Cell Component
 function EditableCategoryCell({
   value,
@@ -79,7 +164,7 @@ function EditableCategoryCell({
   isUpdating: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
+  const [inputValue, setInputValue] = useState("");
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
   // Get existing categories from all columns with their colors
@@ -95,8 +180,8 @@ function EditableCategoryCell({
   const currentColor = allColumns.find((col) => col.id === columnId)?.category_color;
 
   const handleSelect = async (newCategory: string) => {
-    setInputValue(newCategory);
     setIsOpen(false);
+    setInputValue(""); // Reset input for next open
     if (newCategory !== value) {
       await onUpdate(columnId, newCategory);
     }
@@ -109,25 +194,28 @@ function EditableCategoryCell({
     setIsColorPickerOpen(false);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setInputValue(""); // Reset input when closing
+    }
+  };
+
   return (
-    <div className="flex items-center gap-1">
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <div className="flex items-center gap-0.5">
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
             role="combobox"
             aria-expanded={isOpen}
             className={cn(
-              "flex-1 justify-between font-normal h-8 px-2",
+              "flex-1 justify-start font-normal h-8 px-2",
               !value && "text-muted-foreground"
             )}
             disabled={isUpdating}
           >
-            <div className="flex items-center gap-2 truncate">
-              {currentColor && <ColorIndicator color={currentColor} size="sm" />}
-              <span className="truncate">{value || "Ingen kategori"}</span>
-            </div>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <span className="truncate flex-1">{value || "Ingen kategori"}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="start">
@@ -232,6 +320,7 @@ function DraggableRow({
   handlePermissionChange,
   handleCategoryUpdate,
   handleCategoryColorUpdate,
+  handleColumnNameUpdate,
   handleDeleteClick,
   handleToggleVisibility,
   isMobile,
@@ -254,6 +343,7 @@ function DraggableRow({
   ) => Promise<void>;
   handleCategoryUpdate: (columnId: string, newCategory: string) => Promise<void>;
   handleCategoryColorUpdate: (categoryName: string, color: string | null) => Promise<void>;
+  handleColumnNameUpdate: (columnId: string, newName: string) => Promise<void>;
   handleDeleteClick: (column: ColumnConfig) => void;
   handleToggleVisibility: (column: ColumnConfig) => Promise<void>;
   isMobile: boolean;
@@ -284,10 +374,10 @@ function DraggableRow({
     <TableRow 
       ref={setNodeRef} 
       style={style}
-      className={cn(!column.is_visible && "bg-gray-100 opacity-60")}
+      className={cn(!column.is_visible && "bg-gray-200 opacity-75")}
     >
       {/* Drag Handle / Move Buttons */}
-      <TableCell className="w-12 lg:w-auto">
+      <TableCell className="w-12 lg:w-auto lg:p-2">
         {isMobile ? (
           <div className="flex flex-col gap-1">
             <Button
@@ -321,14 +411,26 @@ function DraggableRow({
         )}
       </TableCell>
 
-      {/* Column Name */}
-      <TableCell className="font-medium lg:truncate">{column.column_name}</TableCell>
+      {/* Column Name (Display Name - Editable) */}
+      <TableCell className="lg:p-2">
+        <EditableColumnNameCell
+          value={column.column_name}
+          columnId={column.id}
+          onUpdate={handleColumnNameUpdate}
+          isUpdating={isUpdating}
+        />
+      </TableCell>
+
+      {/* Database Column Name (Read-only) */}
+      <TableCell className="text-gray-600 lg:truncate lg:p-2">
+        <span className="font-mono text-sm">{column.db_column_name}</span>
+      </TableCell>
 
       {/* Type */}
-      <TableCell className="text-gray-600 w-16 lg:w-auto lg:truncate">{column.column_type}</TableCell>
+      <TableCell className="text-gray-600 w-16 lg:w-auto lg:truncate lg:p-2">{column.column_type}</TableCell>
 
       {/* Masterdata indicator */}
-      <TableCell className="w-24 lg:w-auto text-center">
+      <TableCell className="w-24 lg:w-auto lg:p-2">
         {column.is_masterdata ? (
           <Check className="h-5 w-5 text-green-600 inline-block" />
         ) : (
@@ -337,7 +439,7 @@ function DraggableRow({
       </TableCell>
 
       {/* Category */}
-      <TableCell className="w-40 lg:w-auto">
+      <TableCell className="w-40 lg:w-auto lg:p-2">
         <EditableCategoryCell
           value={column.category || ""}
           columnId={column.id}
@@ -358,8 +460,8 @@ function DraggableRow({
         const editDisabled = isPermissionDisabled();
 
         return (
-          <TableCell key={role} className="text-center w-20 lg:w-auto">
-            <div className="flex items-center justify-center gap-1">
+          <TableCell key={role} className="w-20 lg:w-auto lg:p-2">
+            <div className="flex gap-2">
               <PermissionToggle
                 role={role}
                 permissionType="view"
@@ -370,7 +472,6 @@ function DraggableRow({
                 }
                 tooltip={undefined}
               />
-              <span className="text-gray-400 text-xs">/</span>
               <PermissionToggle
                 role={role}
                 permissionType="edit"
@@ -387,8 +488,8 @@ function DraggableRow({
       })}
 
       {/* Actions */}
-      <TableCell className="text-center w-16 lg:w-auto">
-        <div className="flex items-center justify-center gap-1">
+      <TableCell className="text-left w-20 lg:w-auto lg:pl-4 lg:pr-2">
+        <div className="flex items-center justify-start gap-2">
           {/* Toggle Visibility Button */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -397,12 +498,12 @@ function DraggableRow({
                 size="sm"
                 onClick={() => handleToggleVisibility(column)}
                 disabled={isUpdating}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 bg-gray-500 hover:bg-gray-600 border border-gray-400 rounded"
               >
                 {column.is_visible ? (
-                  <Eye className="h-4 w-4 text-green-600" />
+                  <Eye className="h-4 w-4 text-white" />
                 ) : (
-                  <EyeOff className="h-4 w-4 text-gray-400" />
+                  <EyeOff className="h-4 w-4 text-white" />
                 )}
               </Button>
             </TooltipTrigger>
@@ -444,7 +545,6 @@ export function ColumnSettingsTable({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [columnToDelete, setColumnToDelete] = useState<ColumnConfig | null>(null);
   const t = useTranslations("tooltips");
-  const tForms = useTranslations("forms");
   const tAdmin = useTranslations("admin");
 
   // Detect mobile
@@ -655,6 +755,23 @@ export function ColumnSettingsTable({
     }
   };
 
+  const handleColumnNameUpdate = async (columnId: string, newName: string) => {
+    try {
+      setUpdatingColumnId(columnId);
+      await columnService.updateColumnPermissions(columnId, {
+        column_name: newName,
+      });
+      toast.success("Column name updated successfully");
+      onPermissionsUpdated();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update column name"
+      );
+    } finally {
+      setUpdatingColumnId(null);
+    }
+  };
+
   const handleDeleteClick = (column: ColumnConfig) => {
     setColumnToDelete(column);
     setDeleteModalOpen(true);
@@ -666,13 +783,13 @@ export function ColumnSettingsTable({
       await columnService.toggleVisibility(column.id, !column.is_visible);
       toast.success(
         column.is_visible 
-          ? "Column deactivated successfully" 
-          : "Column activated successfully"
+          ? "Kolumn inaktiverad - alla behörigheter har tagits bort" 
+          : "Kolumn aktiverad"
       );
       onPermissionsUpdated();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to toggle column visibility"
+        error instanceof Error ? error.message : "Kunde inte ändra kolumnens synlighet"
       );
     } finally {
       setUpdatingColumnId(null);
@@ -692,37 +809,34 @@ export function ColumnSettingsTable({
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className="rounded-md border w-full overflow-x-auto lg:overflow-x-visible">
-          <Table className="w-full lg:table-fixed table-auto">
+        <div className="rounded-md border w-full overflow-x-auto lg:overflow-hidden">
+          <Table className="w-full table-auto lg:table-fixed">
             <colgroup className="hidden lg:table-column-group">
-              <col style={{ width: '3%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '6%' }} />
-              <col style={{ width: '6%' }} />
-              <col style={{ width: '14%' }} />
+              <col style={{ width: '2.5%' }} />
+              <col style={{ width: '11%' }} />
+              <col style={{ width: '11%' }} />
+              <col style={{ width: '5%' }} />
+              <col style={{ width: '5%' }} />
+              <col style={{ width: '11%' }} />
               {allRoles.map((role, index) => (
-                <col key={`role-${role}-${index}`} style={{ width: `${51 / allRoles.length}%` }} />
+                <col key={`role-${role}-${index}`} style={{ width: `${44.5 / allRoles.length}%` }} />
               ))}
-              <col style={{ width: '6%' }} />
+              <col style={{ width: '10%' }} />
             </colgroup>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12 lg:w-auto"></TableHead>
-                <TableHead className="min-w-[150px] lg:min-w-0">{tForms("columnNameLabel")}</TableHead>
-                <TableHead className="w-16 lg:w-auto">{tAdmin("type")}</TableHead>
-                <TableHead className="w-24 lg:w-auto text-center">Masterdata</TableHead>
-                <TableHead className="w-40 lg:w-auto">{tAdmin("category")}</TableHead>
+                <TableHead className="w-12 lg:w-auto lg:p-2"></TableHead>
+                <TableHead className="min-w-[150px] lg:min-w-0 lg:p-2">Visningsnamn</TableHead>
+                <TableHead className="min-w-[150px] lg:min-w-0 lg:p-2">Databasnamn</TableHead>
+                <TableHead className="w-16 lg:w-auto lg:p-2">{tAdmin("type")}</TableHead>
+                <TableHead className="w-24 lg:w-auto lg:p-2">Masterdata</TableHead>
+                <TableHead className="w-40 lg:w-auto lg:p-2">{tAdmin("category")}</TableHead>
                 {allRoles.map((role) => (
-                  <TableHead key={role} className="text-center w-20 lg:w-auto">
-                    <div className="whitespace-normal">
+                  <TableHead key={role} className="w-40 lg:w-auto lg:p-2">
                       {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
-                    </div>
-                    <div className="text-xs font-normal text-gray-500 whitespace-nowrap">
-                      V / E
-                    </div>
                   </TableHead>
                 ))}
-                <TableHead className="w-16 lg:w-auto text-center">{tAdmin("actions")}</TableHead>
+                <TableHead className="w-40 lg:w-auto text-left lg:pl-4 lg:pr-2">{tAdmin("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -730,7 +844,7 @@ export function ColumnSettingsTable({
                 {items.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6 + allRoles.length}
+                      colSpan={7 + allRoles.length}
                       className="text-center text-gray-500"
                     >
                       No columns found
@@ -748,6 +862,7 @@ export function ColumnSettingsTable({
                       handlePermissionChange={handlePermissionChange}
                       handleCategoryUpdate={handleCategoryUpdate}
                       handleCategoryColorUpdate={handleCategoryColorUpdate}
+                      handleColumnNameUpdate={handleColumnNameUpdate}
                       handleDeleteClick={handleDeleteClick}
                       handleToggleVisibility={handleToggleVisibility}
                       isMobile={isMobile}

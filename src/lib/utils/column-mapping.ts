@@ -43,19 +43,23 @@ export function mapColumnToEmployeeField(columnName: string): string {
  * @param columnName - The human-readable column name
  * @param isMasterdata - Whether this is a masterdata column (vs custom column)
  * @param allImportantDates - Optional array of all important dates for resolving date UUIDs
+ * @param dateDeletedText - Optional translated text for deleted dates (default: "Datum borttaget")
  * @returns The field value
  */
 export function getEmployeeFieldValue(
   employee: Employee,
   columnName: string,
   isMasterdata = true,
-  allImportantDates?: ImportantDate[]
+  allImportantDates?: ImportantDate[],
+  dateDeletedText: string = "Datum borttaget"
 ): string | number | boolean | null {
   // Handle custom columns from party-specific tables
+  // For custom columns, columnName is expected to be the db_column_name (not the display name)
   if (!isMasterdata && employee.customData) {
     return employee.customData[columnName] ?? null;
   }
 
+  // For masterdata columns, columnName is the display name (e.g., "First Name")
   const fieldName = mapColumnToEmployeeField(columnName);
 
   // Special case: Status is computed from is_archived and is_terminated
@@ -68,12 +72,12 @@ export function getEmployeeFieldValue(
   // Get the raw value from the employee object
   const rawValue = employee[fieldName as keyof Employee] as string | number | boolean | null;
   
-  // Check if this is an Important Date field (Stena Date, ÖMC Date, PE3 Date)
-  const isDateField = ["Stena Date", "ÖMC Date", "PE3 Date"].includes(columnName);
+  // Check if this is an Important Date field (by checking the actual field names)
+  const isDateField = ["stena_date", "omc_date", "pe3_date"].includes(fieldName);
   
   // If it's a date field and we have Important Dates available, resolve the UUID to description
   if (isDateField && allImportantDates && typeof rawValue === "string") {
-    return resolveImportantDateId(rawValue, allImportantDates);
+    return resolveImportantDateId(rawValue, allImportantDates, dateDeletedText);
   }
 
   return rawValue;

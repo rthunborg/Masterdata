@@ -1,7 +1,8 @@
 "use client";
 
 import { UserRole } from "@/lib/types/user";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff, Edit, Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -25,19 +26,66 @@ export function PermissionToggle({
   onChange,
   tooltip,
 }: PermissionToggleProps) {
-  const handleChange = (checked: boolean | "indeterminate") => {
-    if (checked === "indeterminate") return;
-    onChange(checked);
+  const handleClick = () => {
+    if (!disabled) {
+      onChange(!value);
+    }
   };
 
-  const checkbox = (
-    <Checkbox
-      checked={value}
+  // Determine icon and styling based on permission type and value
+  const getIconAndStyle = () => {
+    if (permissionType === "view") {
+      if (value) {
+        // Has view permission: blue background with white eye
+        return {
+          icon: <Eye className="h-3.5 w-3.5 text-white" />,
+          bgColor: "bg-blue-500",
+          borderColor: "border-blue-600",
+        };
+      } else {
+        // No view permission: unfilled with black eye-off
+        return {
+          icon: <EyeOff className="h-3.5 w-3.5 text-black" />,
+          bgColor: "bg-transparent",
+          borderColor: "border-gray-300",
+        };
+      }
+    } else {
+      // edit permission
+      if (value) {
+        // Has edit permission: blue background with white edit icon
+        return {
+          icon: <Edit className="h-3.5 w-3.5 text-white" />,
+          bgColor: "bg-blue-500",
+          borderColor: "border-blue-600",
+        };
+      } else {
+        // No edit permission: unfilled with black minus/dash
+        return {
+          icon: <Minus className="h-3.5 w-3.5 text-black" />,
+          bgColor: "bg-transparent",
+          borderColor: "border-gray-300",
+        };
+      }
+    }
+  };
+
+  const { icon, bgColor, borderColor } = getIconAndStyle();
+
+  const toggleButton = (
+    <button
+      onClick={handleClick}
       disabled={disabled}
-      onCheckedChange={handleChange}
       aria-label={`${permissionType} permission`}
-      className={disabled ? "opacity-50 cursor-not-allowed" : ""}
-    />
+      className={cn(
+        "h-4.5 w-4.5 rounded border flex items-center justify-center transition-colors",
+        bgColor,
+        borderColor,
+        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:opacity-80"
+      )}
+    >
+      {icon}
+    </button>
   );
 
   if (tooltip && disabled) {
@@ -45,7 +93,7 @@ export function PermissionToggle({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div>{checkbox}</div>
+            <div>{toggleButton}</div>
           </TooltipTrigger>
           <TooltipContent>
             <p>{tooltip}</p>
@@ -55,5 +103,5 @@ export function PermissionToggle({
     );
   }
 
-  return checkbox;
+  return toggleButton;
 }

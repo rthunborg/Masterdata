@@ -8,7 +8,6 @@ import { useTranslations } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -20,6 +19,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -31,6 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ColorPicker, ColorIndicator } from "@/components/ui/color-picker";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   createCustomColumnSchema,
   type CreateCustomColumnInput,
@@ -81,6 +82,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
       column_name: "",
       db_column_name: "",
       column_type: "text",
+      is_masterdata: false, // Default to External column
       category: "",
       category_color: null,
     },
@@ -147,13 +149,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
     >
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Lägg till anpassad kolumn</DialogTitle>
-          <DialogDescription>
-            Skapa en ny anpassad kolumn för att spåra ytterligare personaldata specifik för din avdelnings behov.
-            <br /><br />
-            <strong>Viktigt:</strong> Efter att kolumnen har skapats måste en databasmigration köras för att lägga till den fysiska kolumnen i databasen. 
-            Kolumnen kommer att vara synlig i gränssnittet omedelbart, men kan inte redigeras förrän migrationen har körts.
-          </DialogDescription>
+          <DialogTitle>Lägg till ny kolumn</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -197,6 +193,46 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                   <p className="text-xs text-muted-foreground mt-1">
                     Tekniskt namn för databaskolumnen. Använd <strong>snake_case</strong>: endast små bokstäver, siffror och understreck (_).
                   </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Column Category Selection (is_masterdata) */}
+            <FormField
+              control={form.control}
+              name="is_masterdata"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>{t('columnTypeSelectionLabel')}</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(value) => field.onChange(value === "true")}
+                      value={field.value ? "true" : "false"}
+                      className="flex flex-col space-y-1"
+                      disabled={isSubmitting}
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="false" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          {t('columnTypeExternal')}
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="true" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          {t('columnTypeMasterdata')}
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    {t('columnTypeSelectionDescription')}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -321,9 +357,6 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                     placeholder="Välj eller ange färg"
                     allowClear={true}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Färgen kommer att visas i tabellhuvudet för alla kolumner i denna kategori.
-                  </p>
                   <FormMessage />
                 </FormItem>
               )}

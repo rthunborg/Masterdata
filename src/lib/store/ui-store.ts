@@ -101,17 +101,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
       ...columnVisibility,
       [columnId]: newValue,
     };
-    
-    // Debug logging (can be removed after verification)
-    if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-      console.log("[Column Visibility] Toggling column:", {
-        columnId,
-        before: currentValue,
-        after: newValue,
-        allVisibility: newVisibility,
-      });
-    }
-    
+
     set({ columnVisibility: newVisibility });
     
     // Persist to localStorage
@@ -120,24 +110,11 @@ export const useUIStore = create<UIStore>((set, get) => ({
       if (userId) {
         const storageKey = `hr_masterdata_column_visibility_${userId}`;
         localStorage.setItem(storageKey, JSON.stringify(newVisibility));
-        
-        // Debug logging
-        if (window.location.hostname === "localhost") {
-          console.log("[Column Visibility] Saved to localStorage:", {
-            key: storageKey,
-            value: newVisibility,
-          });
-        }
       }
     }
   },
   
   resetColumnVisibility: () => {
-    // Debug logging
-    if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-      console.log("[Column Visibility] Resetting all column visibility preferences");
-    }
-    
     set({ columnVisibility: {} });
     
     // Clear from localStorage
@@ -146,11 +123,6 @@ export const useUIStore = create<UIStore>((set, get) => ({
       if (userId) {
         const storageKey = `hr_masterdata_column_visibility_${userId}`;
         localStorage.removeItem(storageKey);
-        
-        // Debug logging
-        if (window.location.hostname === "localhost") {
-          console.log("[Column Visibility] Cleared localStorage:", storageKey);
-        }
       }
     }
   },
@@ -169,14 +141,6 @@ export const useUIStore = create<UIStore>((set, get) => ({
       try {
         const parsed = JSON.parse(stored);
         set({ columnVisibility: parsed });
-        
-        // Debug logging
-        if (window.location.hostname === "localhost") {
-          console.log("[Column Visibility] Loaded preferences from localStorage:", {
-            key: storageKey,
-            preferences: parsed,
-          });
-        }
       } catch (error) {
         console.error("Failed to parse column visibility preferences:", error);
         // Reset to empty on parse error
@@ -185,11 +149,6 @@ export const useUIStore = create<UIStore>((set, get) => ({
     } else {
       // No stored preferences, initialize with empty
       set({ columnVisibility: {} });
-      
-      // Debug logging
-      if (window.location.hostname === "localhost") {
-        console.log("[Column Visibility] No stored preferences found, initialized empty");
-      }
     }
   },
   

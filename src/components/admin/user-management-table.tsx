@@ -98,16 +98,6 @@ export function UserManagementTable({
       }
     }, 300);
   }, [columnSizing, currentUser?.id]);
-  
-  // Reset column widths handler (Story 9.4b)
-  const handleResetColumnWidths = useCallback(() => {
-    if (currentUser?.id) {
-      clearColumnWidths('userSettings', currentUser.id);
-      setColumnSizing({});
-      toast.success(tDashboard('columnWidthsReset'));
-    }
-  }, [currentUser?.id, tDashboard]);
-
   const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -348,17 +338,6 @@ export function UserManagementTable({
 
   return (
     <>
-      {/* Reset Column Widths Button (Story 9.4b) */}
-      <div className="mb-4">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleResetColumnWidths}
-        >
-          {tDashboard("resetColumnWidths")}
-        </Button>
-      </div>
-      
       <div className="rounded-md border">
         <Table>
           <TableHeader>

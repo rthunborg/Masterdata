@@ -8,9 +8,6 @@ const PUBLIC_ROUTES = ['/api/auth/login', '/api/health'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  console.log('[Middleware] Processing:', pathname);
-
   // Allow public API routes that don't need auth checks
   if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
     return NextResponse.next();
@@ -68,32 +65,21 @@ export async function middleware(request: NextRequest) {
     const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
     
     if (isAdminRoute && userRole !== 'hr_admin') {
-      console.log('[Middleware] Access denied to admin route:', pathname, 'User role:', userRole);
       const redirectUrl = new URL('/dashboard', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
     // Track user activity if authenticated
     if (user) {
-      console.log('[Middleware] Authenticated user detected:', user.id);
-      
       // Fetch application user record to get last_active_at
       const { data: appUser, error: fetchError } = await supabase
         .from('users')
         .select('id, last_active_at')
         .eq('auth_user_id', user.id)
         .single();
-      
-      console.log('[Middleware] App user fetch result:', { 
-        appUser, 
-        fetchError,
-        shouldUpdate: appUser ? shouldUpdateActivity(appUser.last_active_at) : false 
-      });
-      
+
       // Update activity asynchronously (fire-and-forget pattern)
       if (appUser && shouldUpdateActivity(appUser.last_active_at)) {
-        console.log('[Middleware] Updating last_active_at for user:', appUser.id);
-        
         // Don't await - let it run in background (non-blocking)
         void (async () => {
           try {
@@ -104,16 +90,12 @@ export async function middleware(request: NextRequest) {
             
             if (updateError) {
               console.error('[Middleware] Update error:', updateError);
-            } else {
-              console.log('[Middleware] ✓ Successfully updated last_active_at');
             }
           } catch (error) {
             // Silently fail - activity tracking shouldn't break requests
             console.error('[Middleware] Failed to update user activity:', error);
           }
         })();
-      } else {
-        console.log('[Middleware] Skipping update - no user or within throttle window');
       }
     }
 

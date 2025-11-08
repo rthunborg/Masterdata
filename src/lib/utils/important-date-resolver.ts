@@ -12,17 +12,22 @@ import type { ImportantDate } from "@/lib/types/important-date";
  * 
  * @param dateId - The UUID of the important date, or null
  * @param allDates - Array of all important dates
- * @returns The date description string, "(Date not found)" if ID exists but date is missing, or empty string if dateId is null
+ * @param dateDeletedText - Optional translated text for deleted dates (default: "Datum borttaget")
+ * @returns The date description string, dateDeletedText if ID exists but date is missing, or empty string if dateId is null
  */
 export function resolveImportantDateId(
   dateId: string | null,
-  allDates: ImportantDate[]
+  allDates: ImportantDate[],
+  dateDeletedText: string = "Datum borttaget"
 ): string {
   if (!dateId) return "";
   
+  // If no dates are loaded yet, return empty to avoid showing dateDeletedText prematurely
+  if (allDates.length === 0) return "";
+  
   const date = allDates.find((d) => d.id === dateId);
   
-  if (!date) return "(Date not found)";
+  if (!date) return dateDeletedText;
   
   return date.date_description;
 }
@@ -32,17 +37,19 @@ export function resolveImportantDateId(
  * 
  * @param dateId - The UUID of the important date, or null
  * @param allDates - Array of all important dates
+ * @param dateDeletedText - Optional translated text for deleted dates (default: "Datum borttaget")
  * @returns Formatted tooltip string with week number, year, category, and date value, or null if dateId is null
  */
 export function resolveImportantDateTooltip(
   dateId: string | null,
-  allDates: ImportantDate[]
+  allDates: ImportantDate[],
+  dateDeletedText: string = "Datum borttaget"
 ): string | null {
   if (!dateId) return null;
   
   const date = allDates.find((d) => d.id === dateId);
   
-  if (!date) return "(Date not found)";
+  if (!date) return dateDeletedText;
   
   const parts: string[] = [];
   
@@ -96,13 +103,15 @@ export function createDateResolutionCache(
  * 
  * @param dateId - The UUID of the important date, or null
  * @param cache - Map of date ID to date description
- * @returns The date description string, "(Date not found)" if ID exists but date is missing, or empty string if dateId is null
+ * @param dateDeletedText - Optional translated text for deleted dates (default: "Datum borttaget")
+ * @returns The date description string, dateDeletedText if ID exists but date is missing, or empty string if dateId is null
  */
 export function resolveImportantDateIdFromCache(
   dateId: string | null,
-  cache: Map<string, string>
+  cache: Map<string, string>,
+  dateDeletedText: string = "Datum borttaget"
 ): string {
   if (!dateId) return "";
   
-  return cache.get(dateId) || "(Date not found)";
+  return cache.get(dateId) || dateDeletedText;
 }

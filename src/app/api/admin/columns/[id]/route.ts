@@ -52,6 +52,7 @@ export async function PATCH(
       role_permissions?: Record<string, { view: boolean; edit: boolean }>; 
       category?: string | null;
       category_color?: string | null;
+      column_name?: string;
     } = {};
     if (validated.role_permissions) {
       updateData.role_permissions = validated.role_permissions;
@@ -65,6 +66,9 @@ export async function PATCH(
     }
     if (validated.category_color !== undefined) {
       updateData.category_color = validated.category_color;
+    }
+    if (validated.column_name !== undefined) {
+      updateData.column_name = validated.column_name.trim();
     }
 
     // Update column
@@ -200,15 +204,6 @@ export async function DELETE(
         { status: 500 }
       );
     }
-
-    // Audit log
-    console.log("[AUDIT] Column definition deleted:", {
-      timestamp: new Date().toISOString(),
-      user_id: user.id,
-      column_id: columnId,
-      column_name: columnName,
-      note: "Database column requires migration to drop",
-    });
 
     return NextResponse.json({
       data: {

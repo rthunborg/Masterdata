@@ -1,0 +1,72 @@
+[
+  {
+    "column_name": "Rotation 1 or 2",
+    "db_column_name": "rotation",
+    "data_type": "integer"
+  },
+  {
+    "column_name": "Hotel Required?",
+    "db_column_name": "hotel_required",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "Room Number (Shared)",
+    "db_column_name": "room_number_shared",
+    "data_type": "integer"
+  },
+  {
+    "column_name": "Dietary Requirement?",
+    "db_column_name": "dietary_requirement",
+    "data_type": "text"
+  },
+  {
+    "column_name": "Joining Instructions sent",
+    "db_column_name": "joining_instructions_sent",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "Candidate Confirmed",
+    "db_column_name": "candidate_confirmed",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "Seably",
+    "db_column_name": "seably_status",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "Receipt C-17",
+    "db_column_name": "receipt_c17",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "C-17 Certificate",
+    "db_column_name": "certificate_c17",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "Receipt C-18",
+    "db_column_name": "receipt_c18",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "C-18 Certificate",
+    "db_column_name": "certificate_c18",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "ÖMC Certificate",
+    "db_column_name": "omc_certificate",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "Uploaded in CrewSF",
+    "db_column_name": "uploaded_in_crewsf",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "Completed",
+    "db_column_name": "completed",
+    "data_type": "boolean"
+  }
+]

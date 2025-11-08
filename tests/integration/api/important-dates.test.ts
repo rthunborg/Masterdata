@@ -30,6 +30,7 @@ describe("GET /api/important-dates", () => {
       date_description: "Fredag 14/2",
       date_value: "15-16/2",
       notes: null,
+      is_active: true,
       created_at: "2025-01-01T00:00:00Z",
       updated_at: "2025-01-01T00:00:00Z",
     },
@@ -41,6 +42,7 @@ describe("GET /api/important-dates", () => {
       date_description: "Fredag 7/3",
       date_value: "8-9/3",
       notes: "Important deadline",
+      is_active: true,
       created_at: "2025-01-01T00:00:00Z",
       updated_at: "2025-01-01T00:00:00Z",
     },
@@ -177,6 +179,7 @@ describe("POST /api/important-dates", () => {
   const mockCreatedDate: ImportantDate = {
     id: "date-new",
     ...validFormData,
+    is_active: true,
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",
   };
@@ -314,6 +317,7 @@ describe("PATCH /api/important-dates/[id]", () => {
     date_description: "Updated Description",
     date_value: "15-16/2",
     notes: "Updated notes",
+    is_active: true,
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-02T00:00:00Z",
   };

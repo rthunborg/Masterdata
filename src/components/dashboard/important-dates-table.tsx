@@ -44,7 +44,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Trash2 } from "lucide-react";
+import { Trash2, Archive, ArchiveRestore } from "lucide-react";
 import { EditableCell } from "./editable-cell";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
@@ -80,6 +80,7 @@ export function ImportantDatesTable({
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<ImportantDate | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [isArchiving, setIsArchiving] = React.useState(false);
   
   // Category filter and sort state
   const [categoryFilter, setCategoryFilter] = React.useState<string>("All");
@@ -170,14 +171,43 @@ export function ImportantDatesTable({
     }
   };
 
+  const handleArchiveClick = React.useCallback(async (date: ImportantDate) => {
+    try {
+      setIsArchiving(true);
+      await importantDateService.archive(date.id);
+      toast.success("Important date archived successfully");
+      onDateUpdated?.();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to archive important date";
+      toast.error(message);
+    } finally {
+      setIsArchiving(false);
+    }
+  }, [onDateUpdated]);
+
+  const handleRestoreClick = React.useCallback(async (date: ImportantDate) => {
+    try {
+      setIsArchiving(true);
+      await importantDateService.restore(date.id);
+      toast.success("Important date restored successfully");
+      onDateUpdated?.();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to restore important date";
+      toast.error(message);
+    } finally {
+      setIsArchiving(false);
+    }
+  }, [onDateUpdated]);
+
   const columns: ColumnDef<ImportantDate>[] = React.useMemo(() => {
     const cols: ColumnDef<ImportantDate>[] = [
       {
         accessorKey: "week_number",
         header: tDates("weekNumber"),
         enableSorting: true,
-        cell: ({ row }) =>
-          isHRAdmin ? (
+        cell: ({ row }) => {
+          const isArchived = !row.original.is_active;
+          return isHRAdmin && !isArchived ? (
             <EditableCell
               value={row.original.week_number?.toString() || null}
               employeeId={row.original.id}
@@ -188,7 +218,8 @@ export function ImportantDatesTable({
             />
           ) : (
             row.original.week_number ?? "—"
-          ),
+          );
+        },
       },
       {
         accessorKey: "year",
@@ -200,8 +231,9 @@ export function ImportantDatesTable({
         accessorKey: "category",
         header: tDates("category"),
         enableSorting: true,
-        cell: ({ row }) =>
-          isHRAdmin ? (
+        cell: ({ row }) => {
+          const isArchived = !row.original.is_active;
+          return isHRAdmin && !isArchived ? (
             <EditableCell
               value={row.original.category}
               employeeId={row.original.id}
@@ -213,14 +245,16 @@ export function ImportantDatesTable({
             />
           ) : (
             row.original.category
-          ),
+          );
+        },
       },
       {
         accessorKey: "date_description",
         header: tDates("dateDescription"),
         enableSorting: true,
-        cell: ({ row }) =>
-          isHRAdmin ? (
+        cell: ({ row }) => {
+          const isArchived = !row.original.is_active;
+          return isHRAdmin && !isArchived ? (
             <EditableCell
               value={row.original.date_description}
               employeeId={row.original.id}
@@ -231,14 +265,16 @@ export function ImportantDatesTable({
             />
           ) : (
             row.original.date_description
-          ),
+          );
+        },
       },
       {
         accessorKey: "date_value",
         header: tDates("dateValue"),
         enableSorting: true,
-        cell: ({ row }) =>
-          isHRAdmin ? (
+        cell: ({ row }) => {
+          const isArchived = !row.original.is_active;
+          return isHRAdmin && !isArchived ? (
             <EditableCell
               value={row.original.date_value}
               employeeId={row.original.id}
@@ -249,14 +285,16 @@ export function ImportantDatesTable({
             />
           ) : (
             row.original.date_value
-          ),
+          );
+        },
       },
       {
         accessorKey: "notes",
         header: tDates("notes"),
         enableSorting: true,
-        cell: ({ row }) =>
-          isHRAdmin ? (
+        cell: ({ row }) => {
+          const isArchived = !row.original.is_active;
+          return isHRAdmin && !isArchived ? (
             <EditableCell
               value={row.original.notes}
               employeeId={row.original.id}
@@ -267,7 +305,8 @@ export function ImportantDatesTable({
             />
           ) : (
             row.original.notes || "—"
-          ),
+          );
+        },
       },
     ];
 
@@ -276,35 +315,89 @@ export function ImportantDatesTable({
       cols.push({
         id: "actions",
         header: tDates("actions"),
-        cell: ({ row }) => (
-          <div className="flex gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteClick(row.original)}
-                  aria-label="Delete important date"
-                >
-                  <Trash2 className="h-4 w-4 text-red-600" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{t("deleteDate")}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const isArchived = !row.original.is_active;
+          return (
+            <div className="flex gap-2">
+              {!isArchived ? (
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleArchiveClick(row.original)}
+                        disabled={isArchiving}
+                        aria-label="Archive important date"
+                      >
+                        <Archive className="h-4 w-4 text-amber-600" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("archiveDate")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClick(row.original)}
+                        aria-label="Delete important date"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("deleteDate")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRestoreClick(row.original)}
+                      disabled={isArchiving}
+                      aria-label="Restore important date"
+                    >
+                      <ArchiveRestore className="h-4 w-4 text-green-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("restoreDate")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          );
+        },
       });
     }
 
     return cols;
-  }, [isHRAdmin, handleCellUpdate, t, tDates]);
+  }, [isHRAdmin, handleCellUpdate, handleArchiveClick, handleRestoreClick, isArchiving, t, tDates]);
 
-  // Filter dates by category
+  // Filter dates by category and sort with archived dates at the bottom
   const filteredDates = React.useMemo(() => {
-    if (categoryFilter === "All") return dates;
-    return dates.filter(date => date.category === categoryFilter);
+    let filtered = dates;
+    
+    // Filter by category if not "All"
+    if (categoryFilter !== "All") {
+      filtered = dates.filter(date => date.category === categoryFilter);
+    }
+    
+    // Sort: active dates first (by current sorting), then archived dates at the bottom
+    return filtered.sort((a, b) => {
+      // Archived dates always go to the bottom
+      if (a.is_active !== b.is_active) {
+        return a.is_active ? -1 : 1;
+      }
+      // For dates with same active status, maintain natural order (will be sorted by table)
+      return 0;
+    });
   }, [dates, categoryFilter]);
 
   const table = useReactTable({
@@ -406,15 +499,24 @@ export function ImportantDatesTable({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const isArchived = !row.original.is_active;
+                return (
+                  <TableRow 
+                    key={row.id}
+                    className={cn(isArchived && "bg-gray-50 opacity-60")}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell 
+                        key={cell.id}
+                        className={cn(isArchived && "text-gray-500")}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
@@ -433,12 +535,12 @@ export function ImportantDatesTable({
             <AlertDialogTitle>Delete Important Date</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete this date entry? This action cannot be undone.
-              {selectedDate && (
-                <div className="mt-2 font-medium">
-                  {selectedDate.date_description} - {selectedDate.date_value}
-                </div>
-              )}
             </AlertDialogDescription>
+            {selectedDate && (
+              <div className="mt-2 font-medium text-sm">
+                {selectedDate.date_description} - {selectedDate.date_value}
+              </div>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>

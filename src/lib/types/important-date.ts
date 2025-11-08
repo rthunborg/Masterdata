@@ -6,11 +6,12 @@ export interface ImportantDate {
   date_description: string;
   date_value: string;
   notes: string | null;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export type ImportantDateFormData = Omit<
   ImportantDate,
-  "id" | "created_at" | "updated_at"
+  "id" | "created_at" | "updated_at" | "is_active"
 >;

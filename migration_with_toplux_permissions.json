@@ -1,0 +1,47 @@
+[
+  {
+    "column_name": "Stena ID- Origo nummer",
+    "db_column_name": "stena_id_origo_nummer",
+    "data_type": "text"
+  },
+  {
+    "column_name": "Beställning gjord",
+    "db_column_name": "bestallning_gjord",
+    "data_type": "date"
+  },
+  {
+    "column_name": "Fartyg",
+    "db_column_name": "fartyg",
+    "data_type": "text"
+  },
+  {
+    "column_name": "Skickat beställning till Fartyg/Warehouse",
+    "db_column_name": "skickat_bestallning_till_fartyg_warehouse",
+    "data_type": "date"
+  },
+  {
+    "column_name": "Mottaget",
+    "db_column_name": "mottaget",
+    "data_type": "date"
+  },
+  {
+    "column_name": "Kontaktat medarbetare",
+    "db_column_name": "kontaktat_medarbetare",
+    "data_type": "text"
+  },
+  {
+    "column_name": "Uthämtat",
+    "db_column_name": "uthamtat",
+    "data_type": "date"
+  },
+  {
+    "column_name": "Mottagit kort",
+    "db_column_name": "mottagit_kort",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "Skickat kort till fartyg",
+    "db_column_name": "skickat_kort_till_fartyg",
+    "data_type": "boolean"
+  }
+]

@@ -107,6 +107,64 @@ export const importantDateService = {
     }
   },
 
+  async archive(id: string): Promise<ImportantDate> {
+    const response = await fetch(`/api/important-dates/${id}/archive`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      
+      // Handle not found error
+      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
+        throw new Error(error.error.message);
+      }
+
+      // Handle forbidden error
+      if (response.status === 403) {
+        throw new Error("You do not have permission to archive important dates");
+      }
+
+      // Generic error
+      throw new Error(error.error?.message || "Failed to archive important date");
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
+
+  async restore(id: string): Promise<ImportantDate> {
+    const response = await fetch(`/api/important-dates/${id}/restore`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      
+      // Handle not found error
+      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
+        throw new Error(error.error.message);
+      }
+
+      // Handle forbidden error
+      if (response.status === 403) {
+        throw new Error("You do not have permission to restore important dates");
+      }
+
+      // Generic error
+      throw new Error(error.error?.message || "Failed to restore important date");
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
+
   async importCSV(
     file: File,
     columnMapping: Record<string, string>

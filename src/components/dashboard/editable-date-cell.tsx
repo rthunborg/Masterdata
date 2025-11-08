@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
+import { useTranslations } from "@/lib/i18n";
 
 interface EditableDateCellProps {
   value: string | null; // UUID of the selected Important Date
@@ -40,26 +41,31 @@ export function EditableDateCell({
   onSave,
   onError,
 }: EditableDateCellProps) {
+  const t = useTranslations("dashboard");
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>(value || "__NONE__");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const cellRef = useRef<HTMLDivElement>(null);
 
-  // For PE3 dates, use the hook to get only available dates
+  // For PE3 dates, use the hook to get only available dates - only when editing
+  // Pass enabled flag to prevent fetching when not in edit mode
+  const isPE3Date = dateCategory === "PE3 Dates";
   const { availableDates: pe3AvailableDates, isLoading: pe3Loading } = useAvailablePE3Dates(
-    dateCategory === "PE3 Dates" ? value : null
+    isPE3Date ? value : null,
+    isPE3Date && isEditing // Only fetch when it's a PE3 date AND we're editing
   );
 
   // Filter dates by category and future dates
-  const filteredDates = (() => {
+  const filteredDates = useMemo(() => {
     if (dateCategory === "PE3 Dates") {
       // Use available PE3 dates from the hook (handles uniqueness)
       return pe3AvailableDates;
     }
 
-    // For Stena and ÖMC dates, filter by category and future dates
+    // For Stena and ÖMC dates, filter by category, future dates, and active status
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -67,12 +73,26 @@ export function EditableDateCell({
       // Filter by category
       if (date.category !== dateCategory) return false;
 
+      // Filter out archived dates
+      if (!date.is_active) return false;
+
       // Filter out past dates
       const dateValue = new Date(date.date_value);
       dateValue.setHours(0, 0, 0, 0);
       return dateValue >= today;
     });
-  })();
+  }, [dateCategory, pe3AvailableDates, allDates]);
+
+  // Auto-open dropdown when entering edit mode
+  useEffect(() => {
+    if (isEditing && !dropdownOpen) {
+      // Small delay to ensure the Select is rendered
+      const timer = setTimeout(() => {
+        setDropdownOpen(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isEditing, dropdownOpen]);
 
   // Handle click outside to cancel
   useEffect(() => {
@@ -81,12 +101,27 @@ export function EditableDateCell({
     }
 
     function handleClickOutside(event: MouseEvent) {
-      if (cellRef.current && !cellRef.current.contains(event.target as Node)) {
-        // Cancel editing
-        setEditValue(value || "__NONE__");
-        setError(null);
-        setIsEditing(false);
+      const target = event.target as Node;
+      
+      // Check if click is inside the cell
+      if (cellRef.current && cellRef.current.contains(target)) {
+        return;
       }
+      
+      // Check if click is inside a Select portal (SelectContent is rendered in a portal)
+      // The portal has a data-radix-popper-content-wrapper attribute
+      const isInsideSelectPortal = (target as Element).closest?.('[role="listbox"]') || 
+                                    (target as Element).closest?.('[data-radix-popper-content-wrapper]');
+      
+      if (isInsideSelectPortal) {
+        return; // Don't cancel if clicking in the dropdown
+      }
+      
+      // Cancel editing
+      setEditValue(value || "__NONE__");
+      setError(null);
+      setIsEditing(false);
+      setDropdownOpen(false);
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -98,7 +133,7 @@ export function EditableDateCell({
     if (!value) return null;
 
     const date = allDates.find((d) => d.id === value);
-    if (!date) return "(Date not found)";
+    if (!date) return t("dateDeleted");
 
     const parts: string[] = [];
 
@@ -131,7 +166,7 @@ export function EditableDateCell({
               className={cn(
                 "px-3 py-2 rounded min-h-10 flex items-center select-text cursor-default bg-gray-50",
                 "focus:outline-none focus:ring-2 focus:ring-ring",
-                displayValue === "(Date not found)" && "text-amber-600"
+                displayValue === t("dateDeleted") && "text-amber-600"
               )}
               tabIndex={0}
               role="gridcell"
@@ -156,16 +191,20 @@ export function EditableDateCell({
         <TooltipTrigger asChild>
           <div
             ref={cellRef}
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              setEditValue(value || "__NONE__"); // Sync before editing
+              setIsEditing(true);
+            }}
             className={cn(
               "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
               "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center bg-white",
-              displayValue === "(Date not found)" && "text-amber-600"
+              displayValue === t("dateDeleted") && "text-amber-600"
             )}
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
+                setEditValue(value || "__NONE__"); // Sync before editing
                 setIsEditing(true);
               }
             }}
@@ -190,8 +229,19 @@ export function EditableDateCell({
     <div ref={cellRef} className="relative">
       <Select
         value={editValue}
+        open={dropdownOpen}
+        onOpenChange={(open) => {
+          setDropdownOpen(open);
+          // If dropdown closes without changing value, exit edit mode
+          if (!open) {
+            setTimeout(() => {
+              setIsEditing(false);
+            }, 100);
+          }
+        }}
         onValueChange={(newValue) => {
           setEditValue(newValue);
+          setDropdownOpen(false);
           // Auto-save on select
           setTimeout(() => {
             setIsLoading(true);
@@ -203,6 +253,7 @@ export function EditableDateCell({
                 setIsEditing(false);
               })
               .catch((err) => {
+                console.error("[EditableDateCell] Save failed:", err);
                 const message = err instanceof Error ? err.message : "Failed to update date";
                 setError(message);
                 onError?.(message);

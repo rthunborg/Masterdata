@@ -89,6 +89,7 @@ export interface UpdateColumnConfigRequest {
   role_permissions?: RolePermissions;
   category?: string | null;
   category_color?: string | null; // Update category color
+  column_name?: string; // Update display name
 }
 
 /**

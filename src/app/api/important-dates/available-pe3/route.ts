@@ -23,6 +23,7 @@ export async function GET() {
       `
       )
       .eq("category", "PE3 Dates")
+      .eq("is_active", true) // Only active (non-archived) dates
       .gte("date_value", new Date().toISOString().split("T")[0]) // Future dates only
       .order("date_value", { ascending: true });
 
