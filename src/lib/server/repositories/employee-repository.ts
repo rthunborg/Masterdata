@@ -230,12 +230,32 @@ export class EmployeeRepository {
   ): Promise<Employee> {
     const supabase = await this.getSupabaseClient();
 
+    // First, get the current employee data to check for date assignments
+    const { data: currentEmployee, error: fetchError } = await supabase
+      .from("employees")
+      .select("omc_date, stena_date, pe3_date")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === "PGRST116") {
+        throw new Error(`Employee with ID ${id} not found`);
+      }
+      console.error("Error fetching employee:", fetchError);
+      throw new Error("Failed to fetch employee");
+    }
+
+    // Update employee termination status and clear date assignments
     const { data: employee, error } = await supabase
       .from("employees")
       .update({
         is_terminated: true,
         termination_date: terminationDate,
         termination_reason: terminationReason,
+        // Story 8.7: Clear date assignments on termination
+        omc_date: null,
+        stena_date: null,
+        pe3_date: null,
       })
       .eq("id", id)
       .select()
@@ -253,6 +273,23 @@ export class EmployeeRepository {
 
     if (!employee) {
       throw new Error(`Employee with ID ${id} not found`);
+    }
+
+    // Story 8.7: Release date capacity for any assigned dates
+    const datesToRelease = [
+      currentEmployee.omc_date,
+      currentEmployee.stena_date,
+      currentEmployee.pe3_date,
+    ].filter((dateId): dateId is string => dateId !== null);
+
+    // Release capacity for each assigned date
+    for (const dateId of datesToRelease) {
+      try {
+        await supabase.rpc("release_date_capacity", { date_id: dateId });
+      } catch (releaseError) {
+        console.error(`Error releasing capacity for date ${dateId}:`, releaseError);
+        // Don't fail termination if capacity release fails - log for manual correction
+      }
     }
 
     return employee;

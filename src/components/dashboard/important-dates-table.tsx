@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Trash2, Archive, ArchiveRestore } from "lucide-react";
 import { EditableCell } from "./editable-cell";
+import { CapacityBadge } from "./capacity-badge";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
 import { useTranslations } from "@/lib/i18n";
@@ -305,6 +306,48 @@ export function ImportantDatesTable({
             />
           ) : (
             row.original.notes || "—"
+          );
+        },
+      },
+      // Story 8.7: Capacity management columns
+      {
+        accessorKey: "max_spots",
+        header: "Max Capacity",
+        enableSorting: true,
+        cell: ({ row }) => {
+          const isArchived = !row.original.is_active;
+          return isHRAdmin && !isArchived ? (
+            <EditableCell
+              value={row.original.max_spots?.toString() || "99"}
+              employeeId={row.original.id}
+              field="max_spots"
+              type="text"
+              onSave={handleCellUpdate}
+              onError={(error) => toast.error(error)}
+            />
+          ) : (
+            row.original.max_spots || "—"
+          );
+        },
+      },
+      {
+        accessorKey: "remaining_spots",
+        header: "Available Spots",
+        enableSorting: true,
+        cell: ({ row }) => {
+          const remainingSpots = row.original.remaining_spots ?? 0;
+          const maxSpots = row.original.max_spots ?? 99;
+          
+          return (
+            <div className="flex items-center gap-2">
+              <span className="font-medium">
+                {remainingSpots} / {maxSpots}
+              </span>
+              <CapacityBadge
+                remainingSpots={remainingSpots}
+                maxSpots={maxSpots}
+              />
+            </div>
           );
         },
       },

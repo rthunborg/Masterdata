@@ -8,6 +8,7 @@ import { updateEmployeeSchema } from "@/lib/validation/employee-schema";
 import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
+import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { z } from "zod";
 import type { Employee } from "@/lib/types/employee";
 
@@ -169,7 +170,132 @@ export async function PATCH(
       }
     }
 
-    // Update employee via repository
+    // Story 8.7: Handle date assignment changes with capacity management
+    // Check if any date fields are being updated
+    const dateFieldUpdates: Array<{
+      field: 'omc_date' | 'stena_date' | 'pe3_date';
+      newValue: string | null;
+      oldValue: string | null;
+    }> = [];
+
+    // Collect date field changes
+    if ('omc_date' in validatedData) {
+      // Fetch current employee if not already fetched
+      const currentEmployee = await employeeRepository.findById(id);
+      if (!currentEmployee) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "NOT_FOUND",
+              message: `Employee with ID ${id} not found`,
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 404 }
+        );
+      }
+      
+      const newValue = validatedData.omc_date || null;
+      const oldValue = currentEmployee.omc_date || null;
+      
+      if (newValue !== oldValue) {
+        dateFieldUpdates.push({ 
+          field: 'omc_date', 
+          newValue, 
+          oldValue 
+        });
+      }
+    }
+
+    if ('stena_date' in validatedData) {
+      // Fetch current employee if not already fetched
+      const currentEmployee = await employeeRepository.findById(id);
+      if (!currentEmployee) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "NOT_FOUND",
+              message: `Employee with ID ${id} not found`,
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 404 }
+        );
+      }
+      
+      const newValue = validatedData.stena_date || null;
+      const oldValue = currentEmployee.stena_date || null;
+      
+      if (newValue !== oldValue) {
+        dateFieldUpdates.push({ 
+          field: 'stena_date', 
+          newValue, 
+          oldValue 
+        });
+      }
+    }
+
+    if ('pe3_date' in validatedData) {
+      // Fetch current employee if not already fetched
+      const currentEmployee = await employeeRepository.findById(id);
+      if (!currentEmployee) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "NOT_FOUND",
+              message: `Employee with ID ${id} not found`,
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 404 }
+        );
+      }
+      
+      const newValue = validatedData.pe3_date || null;
+      const oldValue = currentEmployee.pe3_date || null;
+      
+      if (newValue !== oldValue) {
+        dateFieldUpdates.push({ 
+          field: 'pe3_date', 
+          newValue, 
+          oldValue 
+        });
+      }
+    }
+
+    // Process date field updates using atomic transactions
+    for (const dateUpdate of dateFieldUpdates) {
+      // Only use transaction service if assigning to a new date (not clearing)
+      if (dateUpdate.newValue) {
+        try {
+          await assignEmployeeToDate(
+            id,
+            dateUpdate.newValue,
+            dateUpdate.oldValue,
+            dateUpdate.field
+          );
+        } catch (capacityError) {
+          // Return capacity error to client
+          return NextResponse.json(
+            {
+              error: {
+                code: "DATE_CAPACITY_EXCEEDED",
+                message: capacityError instanceof Error 
+                  ? capacityError.message 
+                  : `Cannot assign employee to ${dateUpdate.field} - date is fully booked`,
+                timestamp: new Date().toISOString(),
+              },
+            },
+            { status: 400 }
+          );
+        }
+        
+        // Remove the date field from updates since it was handled by the transaction
+        delete updates[dateUpdate.field];
+      }
+    }
+
+    // Update employee via repository (excluding date fields handled by transactions)
     const employee = await employeeRepository.update(id, updates);
 
     // Return successful response

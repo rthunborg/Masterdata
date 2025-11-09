@@ -39,6 +39,8 @@ import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { formatImportantDateOption } from "@/lib/utils/format";
 import { UnsavedChangesDialog } from "@/components/dashboard/unsaved-changes-dialog";
+import { CapacityBadge } from "@/components/dashboard/capacity-badge";
+import { cn } from "@/lib/utils";
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
@@ -426,11 +428,39 @@ export function AddEmployeeModal({
                       <SelectContent>
                         {stenaDates
                           .filter((d) => new Date(d.date_value) >= new Date())
-                          .map((date) => (
-                            <SelectItem key={date.id} value={date.id}>
-                              {formatImportantDateOption(date)}
-                            </SelectItem>
-                          ))}
+                          .map((date) => {
+                            const remainingSpots = date.remaining_spots ?? 0;
+                            const maxSpots = date.max_spots ?? 99;
+                            const isFull = remainingSpots === 0;
+                            const isAlmostFull = remainingSpots < 5 && remainingSpots > 0;
+                            
+                            return (
+                              <SelectItem 
+                                key={date.id} 
+                                value={date.id}
+                                disabled={isFull}
+                                className={cn(isFull && "opacity-50 cursor-not-allowed")}
+                              >
+                                <div className="flex items-center justify-between gap-2 w-full">
+                                  <span className={cn(isFull && "text-muted-foreground")}>
+                                    {formatImportantDateOption(date)}
+                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={cn(
+                                      "text-xs font-medium",
+                                      isFull ? "text-red-600" : isAlmostFull ? "text-yellow-600" : "text-muted-foreground"
+                                    )}>
+                                      {remainingSpots} left
+                                    </span>
+                                    <CapacityBadge
+                                      remainingSpots={remainingSpots}
+                                      maxSpots={maxSpots}
+                                    />
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -460,11 +490,39 @@ export function AddEmployeeModal({
                       <SelectContent>
                         {omcDates
                           .filter((d) => new Date(d.date_value) >= new Date())
-                          .map((date) => (
-                            <SelectItem key={date.id} value={date.id}>
-                              {formatImportantDateOption(date)}
-                            </SelectItem>
-                          ))}
+                          .map((date) => {
+                            const remainingSpots = date.remaining_spots ?? 0;
+                            const maxSpots = date.max_spots ?? 99;
+                            const isFull = remainingSpots === 0;
+                            const isAlmostFull = remainingSpots < 5 && remainingSpots > 0;
+                            
+                            return (
+                              <SelectItem 
+                                key={date.id} 
+                                value={date.id}
+                                disabled={isFull}
+                                className={cn(isFull && "opacity-50 cursor-not-allowed")}
+                              >
+                                <div className="flex items-center justify-between gap-2 w-full">
+                                  <span className={cn(isFull && "text-muted-foreground")}>
+                                    {formatImportantDateOption(date)}
+                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={cn(
+                                      "text-xs font-medium",
+                                      isFull ? "text-red-600" : isAlmostFull ? "text-yellow-600" : "text-muted-foreground"
+                                    )}>
+                                      {remainingSpots} left
+                                    </span>
+                                    <CapacityBadge
+                                      remainingSpots={remainingSpots}
+                                      maxSpots={maxSpots}
+                                    />
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -498,11 +556,38 @@ export function AddEmployeeModal({
                           )}
                           {pe3Dates
                             .filter((d) => new Date(d.date_value) >= new Date())
-                            .map((date) => (
-                              <SelectItem key={date.id} value={date.id}>
-                                {formatImportantDateOption(date)}
-                              </SelectItem>
-                            ))}
+                            .map((date) => {
+                              const remainingSpots = date.remaining_spots ?? 0;
+                              const maxSpots = date.max_spots ?? 1;
+                              const isFull = remainingSpots === 0;
+                              
+                              return (
+                                <SelectItem 
+                                  key={date.id} 
+                                  value={date.id}
+                                  disabled={isFull}
+                                  className={cn(isFull && "opacity-50 cursor-not-allowed")}
+                                >
+                                  <div className="flex items-center justify-between gap-2 w-full">
+                                    <span className={cn(isFull && "text-muted-foreground")}>
+                                      {formatImportantDateOption(date)}
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                      {isFull ? (
+                                        <CapacityBadge
+                                          remainingSpots={remainingSpots}
+                                          maxSpots={maxSpots}
+                                        />
+                                      ) : (
+                                        <span className="text-xs font-medium text-muted-foreground">
+                                          Available
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
                         </SelectContent>
                       </Select>
                       {field.value && (

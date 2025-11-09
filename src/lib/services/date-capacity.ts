@@ -1,0 +1,180 @@
+/**
+ * Date Capacity Management Service
+ * 
+ * This service handles capacity tracking and validation for important dates.
+ * It ensures that dates are not overbooked and provides atomic transaction support
+ * for concurrent employee assignments.
+ * 
+ * Story: 8.7 - Important Dates Capacity Management
+ */
+
+import { createClient } from '@/lib/supabase/client';
+
+/**
+ * Validate if an employee can be assigned to a date based on remaining capacity.
+ * 
+ * This is a read-only check that should be used for UI validation before attempting
+ * to assign an employee. The actual assignment uses the update_date_spots RPC function
+ * which performs the definitive validation with row-level locking.
+ *
+ * @param dateId - UUID of the important date record
+ * @param dateType - Type of date field being assigned ('omc_date' | 'stena_date' | 'pe3_date')
+ * @returns true if spots available (remaining_spots > 0), false if fully booked
+ */
+export async function canAssignEmployeeToDate(
+  dateId: string
+): Promise<boolean> {
+  const supabase = createClient();
+  
+  const { data: date, error } = await supabase
+    .from('important_dates')
+    .select('remaining_spots')
+    .eq('id', dateId)
+    .single();
+
+  if (error) {
+    console.error('Error checking date capacity:', error);
+    return false;
+  }
+
+  return date ? date.remaining_spots > 0 : false;
+}
+
+/**
+ * Atomically assign an employee to a date with capacity management.
+ * 
+ * Uses database transaction (via RPC function) to ensure concurrency safety and prevent overbooking.
+ * The RPC function uses SELECT FOR UPDATE to lock date rows during the transaction.
+ *
+ * Transaction steps:
+ * 1. Lock old and new date rows (SELECT FOR UPDATE)
+ * 2. If old date exists, increment remaining_spots by 1
+ * 3. Decrement new date remaining_spots by 1
+ * 4. Check constraint (remaining_spots >= 0)
+ * 5. Update employee date field
+ * 6. Commit or rollback on constraint violation
+ *
+ * @param employeeId - UUID of employee being assigned
+ * @param newDateId - UUID of date to assign employee to
+ * @param oldDateId - UUID of previous date (null if new assignment)
+ * @param dateType - Type of date field ('omc_date', 'stena_date', 'pe3_date')
+ * @returns Success object with message
+ * @throws Error if date is fully booked or transaction fails
+ */
+export async function assignEmployeeToDate(
+  employeeId: string,
+  newDateId: string,
+  oldDateId: string | null,
+  dateType: 'omc_date' | 'stena_date' | 'pe3_date'
+): Promise<{ success: boolean; message: string }> {
+  const supabase = createClient();
+
+  // Use Supabase RPC function for atomic transaction with row-level locking
+  const { error } = await supabase.rpc('update_date_spots', {
+    employee_id: employeeId,
+    new_date_id: newDateId,
+    old_date_id: oldDateId,
+    date_type: dateType,
+  });
+
+  if (error) {
+    // Check for capacity-specific errors
+    if (error.message.includes('No remaining spots')) {
+      throw new Error(
+        `Cannot assign employee - date is fully booked (0 spots remaining)`
+      );
+    }
+    
+    // Check for constraint violations
+    if (error.message.includes('remaining_spots_check')) {
+      throw new Error(
+        'Cannot assign employee - date capacity would be exceeded'
+      );
+    }
+    
+    // Generic error
+    console.error('Error assigning employee to date:', error);
+    throw new Error(`Failed to assign employee to date: ${error.message}`);
+  }
+
+  return { 
+    success: true, 
+    message: 'Employee assigned successfully' 
+  };
+}
+
+/**
+ * Release date capacity when employee is terminated or date assignment is cleared.
+ * 
+ * Increments remaining_spots for the specified date. This should be called when:
+ * - An employee is terminated and has assigned dates
+ * - An employee's date field is being cleared (set to null)
+ * 
+ * Note: For changing date assignments, use assignEmployeeToDate which handles both
+ * incrementing the old date and decrementing the new date atomically.
+ *
+ * @param dateId - UUID of date to release capacity for
+ * @returns Promise that resolves when capacity is released
+ */
+export async function releaseDateCapacity(dateId: string): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase.rpc('release_date_capacity', {
+    date_id: dateId,
+  });
+
+  if (error) {
+    console.error('Error releasing date capacity:', error);
+    throw new Error(`Failed to release date capacity: ${error.message}`);
+  }
+}
+
+/**
+ * Get capacity status for a date (for UI display purposes).
+ * 
+ * Returns a status indicator based on remaining spots:
+ * - 'full': remaining_spots === 0 (red badge)
+ * - 'almost-full': remaining_spots < 5 (yellow badge)
+ * - 'available': remaining_spots >= 5 (no badge or green)
+ * 
+ * @param remainingSpots - Current remaining spots for the date
+ * @param maxSpots - Maximum capacity for the date
+ * @returns Status string for UI rendering
+ */
+export function getCapacityStatus(
+  remainingSpots: number
+): 'full' | 'almost-full' | 'available' {
+  if (remainingSpots === 0) return 'full';
+  if (remainingSpots < 5) return 'almost-full';
+  return 'available';
+}
+
+/**
+ * Validate if a date has sufficient capacity for bulk operations.
+ * 
+ * Used by CSV import and bulk assignment operations to check if a date
+ * can accommodate multiple employee assignments before processing.
+ * 
+ * @param dateId - UUID of the important date
+ * @param requiredSpots - Number of spots needed
+ * @returns true if date has sufficient capacity
+ */
+export async function hasCapacityForBulkAssignment(
+  dateId: string,
+  requiredSpots: number
+): Promise<boolean> {
+  const supabase = createClient();
+  
+  const { data: date, error } = await supabase
+    .from('important_dates')
+    .select('remaining_spots')
+    .eq('id', dateId)
+    .single();
+
+  if (error) {
+    console.error('Error checking bulk capacity:', error);
+    return false;
+  }
+
+  return date ? date.remaining_spots >= requiredSpots : false;
+}

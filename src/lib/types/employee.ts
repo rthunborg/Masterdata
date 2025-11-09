@@ -9,8 +9,11 @@ export interface Employee {
   gender: 'Man' | 'Woman' | null;
   town_district: string | null;
   hire_date: string;
+  /** UUID reference to Stena Dates (important_dates.id) */
   stena_date: string | null;
+  /** UUID reference to ÖMC Dates (important_dates.id) */
   omc_date: string | null;
+  /** UUID reference to PE3 Dates (important_dates.id) */
   pe3_date: string | null;
   termination_date: string | null;
   termination_reason: string | null;

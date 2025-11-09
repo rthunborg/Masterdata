@@ -133,6 +133,45 @@ export class ImportantDateRepository {
     try {
       const supabase = await this.getSupabaseClient();
 
+      // Story 8.7: Before deleting date, clear any employee assignments
+      // Check how many employees are assigned to this date
+      const { data: assignedEmployees, error: checkError } = await supabase
+        .from("employees")
+        .select("id")
+        .or(`omc_date.eq.${id},stena_date.eq.${id},pe3_date.eq.${id}`);
+
+      if (checkError) {
+        console.error("Error checking employee assignments:", checkError);
+        throw new Error("Failed to check employee assignments for date");
+      }
+
+      const assignmentCount = assignedEmployees?.length || 0;
+
+      // Clear employee assignments before deletion
+      // Update all employees that reference this date (set date fields to NULL)
+      if (assignmentCount > 0) {
+        // Clear omc_date assignments
+        await supabase
+          .from("employees")
+          .update({ omc_date: null })
+          .eq("omc_date", id);
+
+        // Clear stena_date assignments
+        await supabase
+          .from("employees")
+          .update({ stena_date: null })
+          .eq("stena_date", id);
+
+        // Clear pe3_date assignments
+        await supabase
+          .from("employees")
+          .update({ pe3_date: null })
+          .eq("pe3_date", id);
+
+        console.log(`Cleared ${assignmentCount} employee assignments for date ${id}`);
+      }
+
+      // Now delete the date
       const { error } = await supabase
         .from("important_dates")
         .delete()

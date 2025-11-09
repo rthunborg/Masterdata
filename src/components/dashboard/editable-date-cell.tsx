@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { useTranslations } from "@/lib/i18n";
+import { CapacityBadge } from "./capacity-badge";
 
 interface EditableDateCellProps {
   value: string | null; // UUID of the selected Important Date
@@ -270,11 +271,41 @@ export function EditableDateCell({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="__NONE__">(None)</SelectItem>
-          {filteredDates.map((date) => (
-            <SelectItem key={date.id} value={date.id}>
-              {date.date_description} (Week {date.week_number}, {date.year})
-            </SelectItem>
-          ))}
+          {filteredDates.map((date) => {
+            const remainingSpots = date.remaining_spots ?? 0;
+            const maxSpots = date.max_spots ?? 99;
+            const isFull = remainingSpots === 0;
+            const isAlmostFull = remainingSpots < 5 && remainingSpots > 0;
+            
+            return (
+              <SelectItem 
+                key={date.id} 
+                value={date.id}
+                disabled={isFull}
+                className={cn(
+                  isFull && "opacity-50 cursor-not-allowed",
+                )}
+              >
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className={cn(isFull && "text-muted-foreground")}>
+                    {date.date_description} (Week {date.week_number}, {date.year})
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn(
+                      "text-xs font-medium",
+                      isFull ? "text-red-600" : isAlmostFull ? "text-yellow-600" : "text-muted-foreground"
+                    )}>
+                      {remainingSpots} left
+                    </span>
+                    <CapacityBadge
+                      remainingSpots={remainingSpots}
+                      maxSpots={maxSpots}
+                    />
+                  </div>
+                </div>
+              </SelectItem>
+            );
+          })}
           {filteredDates.length === 0 && (
             <div className="px-2 py-1.5 text-sm text-muted-foreground">
               No available dates

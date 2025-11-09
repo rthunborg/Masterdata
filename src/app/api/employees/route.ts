@@ -8,6 +8,7 @@ import { createEmployeeSchema } from "@/lib/validation/employee-schema";
 import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
+import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { z } from "zod";
 import type { EmployeeFormData } from "@/lib/types/employee";
 
@@ -129,6 +130,67 @@ export async function POST(request: NextRequest) {
 
     // Create employee via repository
     const employee = await employeeRepository.create(normalizedData);
+
+    // Story 8.7: Handle date assignments with capacity management
+    // Process date field assignments using atomic transactions
+    const dateAssignments: Array<{
+      field: 'omc_date' | 'stena_date' | 'pe3_date';
+      dateId: string;
+    }> = [];
+
+    if (validatedData.omc_date) {
+      dateAssignments.push({ field: 'omc_date', dateId: validatedData.omc_date });
+    }
+    if (validatedData.stena_date) {
+      dateAssignments.push({ field: 'stena_date', dateId: validatedData.stena_date });
+    }
+    if (validatedData.pe3_date) {
+      dateAssignments.push({ field: 'pe3_date', dateId: validatedData.pe3_date });
+    }
+
+    // Assign employee to dates with capacity tracking
+    // NOTE: Current implementation creates employee before checking date capacity.
+    // If capacity assignment fails, employee record remains orphaned without dates.
+    // FUTURE ENHANCEMENT: Wrap employee creation and date assignments in database
+    // transaction to ensure atomic operation and enable rollback on capacity failure.
+    // See QA Review 8.7 - RELIABILITY-001 for details.
+    for (const assignment of dateAssignments) {
+      try {
+        await assignEmployeeToDate(
+          employee.id,
+          assignment.dateId,
+          null, // No old date for new employee
+          assignment.field
+        );
+      } catch (capacityError) {
+        // Capacity assignment failed - employee was created but date not assigned
+        // Manual cleanup may be required if this occurs frequently in production
+        console.error('Date capacity assignment failed after employee creation:', {
+          employeeId: employee.id,
+          dateField: assignment.field,
+          dateId: assignment.dateId,
+          error: capacityError instanceof Error ? capacityError.message : 'Unknown error'
+        });
+        
+        return NextResponse.json(
+          {
+            error: {
+              code: "DATE_CAPACITY_EXCEEDED",
+              message: capacityError instanceof Error 
+                ? capacityError.message 
+                : `Cannot assign employee to ${assignment.field} - date is fully booked`,
+              details: {
+                employeeCreated: true,
+                employeeId: employee.id,
+                note: 'Employee record was created but date assignment failed due to capacity constraint'
+              },
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Return successful response
     return NextResponse.json(

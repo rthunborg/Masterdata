@@ -7,6 +7,8 @@ export interface ImportantDate {
   date_value: string;
   notes: string | null;
   is_active: boolean;
+  max_spots: number; // Maximum capacity for this date
+  remaining_spots: number; // Remaining available spots
   created_at: string;
   updated_at: string;
 }
