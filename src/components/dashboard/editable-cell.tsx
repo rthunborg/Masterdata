@@ -76,6 +76,9 @@ export function EditableCell({
   // Determine if this is the Crewing/Done field (Story 8.5)
   const isCrewingField = field.toLowerCase() === 'crewing_done';
 
+  // Determine if this is the Lönenivå field (Story 8.6)
+  const isLoneivaField = field.toLowerCase() === 'loneiva' || field.toLowerCase() === 'lönenivå';
+
   // Calculate conditional editability for Talmundo field (Story 8.4)
   // Talmundo can only be edited when One field is green (>= 24 hours elapsed)
   let effectiveCanEdit = canEdit;
@@ -186,22 +189,23 @@ export function EditableCell({
         ? String(value)
         : null;
 
-      // Calculate One field status for visual indicator (Story 8.3)
-      let badgeStatus: 'green' | 'yellow' | null = null;
-      let badgeTooltip: string | null = null;
-      
-      if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
-        badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
-        if (badgeStatus === 'yellow' && oneMarkedAt) {
-          badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
-        } else if (badgeStatus === 'green') {
-          badgeTooltip = 'Complete - 24-hour waiting period elapsed';
-        }
-      } else if (type === "boolean" && value === true) {
-        badgeStatus = 'green';
+    // Calculate One field status for visual indicator (Story 8.3)
+    let badgeStatus: 'green' | 'yellow' | null = null;
+    let badgeTooltip: string | null = null;
+    
+    if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
+      badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
+      if (badgeStatus === 'yellow' && oneMarkedAt) {
+        badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
+      } else if (badgeStatus === 'green') {
+        badgeTooltip = 'Complete - 24-hour waiting period elapsed';
       }
-
-      // Use the calculated tooltipMessage or fallback to default (Story 8.4, 8.5)
+    } else if (type === "boolean" && value === true) {
+      badgeStatus = 'green';
+    } else if (isLoneivaField && value !== null && value !== undefined) {
+      // Story 8.6: Show green badge for Lönenivå when value is set (0-7)
+      badgeStatus = 'green';
+    }      // Use the calculated tooltipMessage or fallback to default (Story 8.4, 8.5)
       const disabledTooltip = tooltipMessage || "This field is read-only. Contact HR to update.";
 
       return (
@@ -258,6 +262,7 @@ export function EditableCell({
     // Calculate One field status for visual indicator (Story 8.3)
     // Show green badge for Talmundo when true and enabled (Story 8.4)
     // Show green badge for Crewing/Done when true and enabled (Story 8.5)
+    // Show green badge for Lönenivå when value is set (Story 8.6)
     let badgeStatus: 'green' | 'yellow' | null = null;
     let badgeTooltip: string | null = null;
     
@@ -271,6 +276,9 @@ export function EditableCell({
     } else if (type === "boolean" && value === true && effectiveCanEdit) {
       // Story 8.4: Show green badge for Talmundo when true and enabled
       // Story 8.5: Show green badge for Crewing/Done when true and enabled
+      badgeStatus = 'green';
+    } else if (isLoneivaField && value !== null && value !== undefined) {
+      // Story 8.6: Show green badge for Lönenivå when value is set (0-7)
       badgeStatus = 'green';
     }
 
@@ -314,7 +322,40 @@ export function EditableCell({
 
   return (
     <div ref={cellRef} className="relative">
-      {type === "text" && (
+      {isLoneivaField && (
+        <Select
+          value={editValue !== null && editValue !== undefined ? String(editValue) : ""}
+          onValueChange={(value) => {
+            const parsedValue = value === "" ? null : parseInt(value, 10);
+            setEditValue(parsedValue ?? "");
+            // Auto-save on select
+            setTimeout(() => {
+              onSave(employeeId, field, parsedValue).then(() => {
+                setIsEditing(false);
+              }).catch((err) => {
+                const message = err instanceof Error ? err.message : "Failed to update";
+                setError(message);
+                onError?.(message);
+              });
+            }, 0);
+          }}
+          disabled={isLoading}
+        >
+          <SelectTrigger className={error ? "border-destructive" : ""}>
+            <SelectValue placeholder={tDashboard('selectSalaryLevel') || 'Select salary level'} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">{tDashboard('notSet') || 'Not Set'}</SelectItem>
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((level) => (
+              <SelectItem key={level} value={level.toString()}>
+                {level}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      
+      {!isLoneivaField && type === "text" && (
         <>
           <Input
             ref={inputRef}
@@ -334,7 +375,7 @@ export function EditableCell({
         </>
       )}
 
-      {type === "number" && (
+      {!isLoneivaField && type === "number" && (
         <>
           <Input
             ref={inputRef}

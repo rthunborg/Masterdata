@@ -603,6 +603,21 @@ export function EmployeeTable({
             return dateA - dateB;
           },
         }),
+        ...((config.db_column_name.toLowerCase() === 'loneiva' || config.db_column_name.toLowerCase() === 'lönenivå') && {
+          sortingFn: (rowA, rowB) => {
+            // Story 8.6: Numeric sorting with NULL values at end
+            const a = getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as number | null;
+            const b = getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as number | null;
+            
+            // NULL values always sort to the end
+            if (a === null && b === null) return 0;
+            if (a === null) return 1; // a after b
+            if (b === null) return -1; // b after a
+            
+            // Normal numeric comparison
+            return a - b;
+          },
+        }),
         cell: getCellRenderer(),
       };
     });

@@ -24,7 +24,8 @@ export interface Employee {
   isps: boolean | null;
   photo: boolean | null;
   origo: boolean | null;
-  loneiva: boolean | null;
+  /** Salary level (0-7 inclusive, or null if not set) */
+  loneiva: number | null;
   mail_lon: boolean | null;
   bankuppgifter: boolean | null;
   li: boolean | null;

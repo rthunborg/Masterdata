@@ -62,7 +62,7 @@ export async function POST() {
       "Photo": emp.photo ? "Yes" : "No",
       "Origo": emp.origo ? "Yes" : "No",
       "Mail": emp.mail_lon ? "Yes" : "No",
-      "lön": emp.loneiva ? "Yes" : "No",
+      "Salary Level": emp.loneiva !== null && emp.loneiva !== undefined ? emp.loneiva.toString() : "Not Set",
       "Bankuppgifter": emp.bankuppgifter ? "Yes" : "No",
       "LI": emp.li ? "Yes" : "No",
       "Passport": emp.passport ? "Yes" : "No",

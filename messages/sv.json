@@ -71,7 +71,9 @@
     "exportCrewReadyTooltipDisabled": "Inga anställda med alla förhandskrav uppfyllda finns tillgängliga för export",
     "exportCrewReadyTooltip": "Exportera {count} anställd med alla förhandskrav uppfyllda och markera dem som besättningsklara",
     "exportCrewReadyTooltipPlural": "Exportera {count} anställda med alla förhandskrav uppfyllda och markera dem som besättningsklara",
-    "missingPrerequisites": "Saknade förhandskrav: {fields}"
+    "missingPrerequisites": "Saknade förhandskrav: {fields}",
+    "selectSalaryLevel": "Välj lönenivå",
+    "notSet": "Ej angiven"
   },
   "forms": {
     "firstName": "Förnamn",

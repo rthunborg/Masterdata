@@ -6,6 +6,8 @@ This document outlines the complete fullstack architecture for the HR Masterdata
 
 This unified approach combines what would traditionally be separate backend and frontend architecture documents, streamlining the development process for modern fullstack applications where these concerns are increasingly intertwined.
 
+> **Important:** This application is **Swedish-only**. All user-facing text is in Swedish (`messages/sv.json`). References to English translations (`messages/en.json`) in older documentation are historical only - the application was refactored to Swedish-only in November 2025. See [SPRINT_CHANGE_PROPOSAL_LOCALE_REMOVAL.md](../SPRINT_CHANGE_PROPOSAL_LOCALE_REMOVAL.md) for details.
+
 ### Starter Template or Existing Project
 
 **N/A - Greenfield Project**

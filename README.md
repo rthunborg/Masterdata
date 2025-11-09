@@ -2,6 +2,8 @@
 
 A modern, real-time HR masterdata management platform built with Next.js, TypeScript, and Supabase. This system enables HR administrators to manage employee information with role-based access control and custom column configurations for external parties.
 
+> **Note:** This application is **Swedish-only**. All user-facing text is in Swedish. Historical references to English translations in older documentation are for context only - the application was refactored to Swedish-only in November 2025 per [SPRINT_CHANGE_PROPOSAL_LOCALE_REMOVAL.md](docs/SPRINT_CHANGE_PROPOSAL_LOCALE_REMOVAL.md).
+
 ## Problem Statement
 
 The HR team was managing employee masterdata through an Excel spreadsheet distributed weekly to six external parties (Sodexo, ÖMC, Payroll, Toplux, and others). Each party needed to view specific employee data and maintain their own custom columns. This workflow created significant challenges:

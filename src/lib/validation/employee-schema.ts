@@ -111,7 +111,13 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     isps: z.boolean().nullable().default(null),
     photo: z.boolean().nullable().default(null),
     origo: z.boolean().nullable().default(null),
-    loneiva: z.boolean().nullable().default(null),
+    loneiva: z
+      .number()
+      .int('Lönenivå must be a whole number')
+      .min(0, 'Lönenivå must be at least 0')
+      .max(7, 'Lönenivå must be at most 7')
+      .nullable()
+      .default(null),
     mail_lon: z.boolean().nullable().default(null),
     bankuppgifter: z.boolean().nullable().default(null),
     li: z.boolean().nullable().default(null),
@@ -190,7 +196,13 @@ const baseEmployeeSchema = z.object({
   isps: z.boolean().nullable().default(null),
   photo: z.boolean().nullable().default(null),
   origo: z.boolean().nullable().default(null),
-  loneiva: z.boolean().nullable().default(null),
+  loneiva: z
+    .number()
+    .int('Lönenivå must be a whole number')
+    .min(0, 'Lönenivå must be at least 0')
+    .max(7, 'Lönenivå must be at most 7')
+    .nullable()
+    .default(null),
   mail_lon: z.boolean().nullable().default(null),
   bankuppgifter: z.boolean().nullable().default(null),
   li: z.boolean().nullable().default(null),
@@ -408,7 +420,7 @@ export const csvImportEmployeeSchema = z.object({
   isps: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   photo: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   origo: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
-  loneiva: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
+  loneiva: z.union([z.number().int().min(0).max(7), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   mail_lon: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   bankuppgifter: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   li: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
