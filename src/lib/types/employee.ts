@@ -5,8 +5,8 @@ export interface Employee {
   ssn: string;
   email: string | null;
   mobile: string | null;
-  rank: string | null;
-  gender: string | null;
+  rank: 'SEV' | 'CHEF';
+  gender: 'Man' | 'Woman' | null;
   town_district: string | null;
   hire_date: string;
   stena_date: string | null;
@@ -46,7 +46,7 @@ export interface EmployeeListItem {
   surname: string;
   email: string | null;
   mobile: string | null;
-  rank: string | null;
+  rank: 'SEV' | 'CHEF';
   hire_date: string;
   is_terminated: boolean;
   is_archived: boolean;

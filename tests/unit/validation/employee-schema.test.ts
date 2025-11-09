@@ -13,7 +13,7 @@ describe("createEmployeeSchema", () => {
     email: "john.doe@example.com",
     mobile: "+46701234567",
     rank: "CHEF",
-    gender: "Male",
+    gender: "Man",
     town_district: "Stockholm",
     hire_date: "2024-01-15",
     stena_date: "uuid-stena-date-123",
@@ -72,7 +72,7 @@ describe("createEmployeeSchema", () => {
 
     it("should reject missing rank", () => {
       const data = { ...validEmployeeData, rank: "" };
-      expect(() => createEmployeeSchema.parse(data)).toThrow("Rank is required");
+      expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
 
     it("should allow null for stena_date (nullable field)", () => {
@@ -215,7 +215,7 @@ describe("createEmployeeSchema", () => {
 
   describe("gender validation", () => {
     it("should accept valid gender values", () => {
-      const validGenders = ["Male", "Female", "Other", "Prefer not to say"];
+      const validGenders = ["Man", "Woman"];
 
       validGenders.forEach((gender) => {
         const data = { ...validEmployeeData, gender };
@@ -232,7 +232,7 @@ describe("createEmployeeSchema", () => {
 
     it("should reject invalid gender values", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = { ...validEmployeeData, gender: "InvalidGender" as any };
+      const data = { ...validEmployeeData, gender: "Male" as any };
       expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
   });
@@ -365,13 +365,25 @@ describe("createEmployeeSchema", () => {
   describe("rank field validation", () => {
     it("should require rank", () => {
       const data = { ...validEmployeeData, rank: "" };
-      expect(() => createEmployeeSchema.parse(data)).toThrow("Rank is required");
+      expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
 
-    it("should accept valid rank value", () => {
-      const data = { ...validEmployeeData, rank: "CAPTAIN" };
+    it("should accept valid rank values - SEV", () => {
+      const data = { ...validEmployeeData, rank: "SEV" };
       const result = createEmployeeSchema.parse(data);
-      expect(result.rank).toBe("CAPTAIN");
+      expect(result.rank).toBe("SEV");
+    });
+
+    it("should accept valid rank values - CHEF", () => {
+      const data = { ...validEmployeeData, rank: "CHEF" };
+      const result = createEmployeeSchema.parse(data);
+      expect(result.rank).toBe("CHEF");
+    });
+
+    it("should reject invalid rank values", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = { ...validEmployeeData, rank: "CAPTAIN" as any };
+      expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
   });
 });
@@ -438,11 +450,11 @@ describe("updateEmployeeSchema", () => {
 
   it("should validate gender enum for updates", () => {
     const validUpdate = {
-      gender: "Female" as const,
+      gender: "Woman" as const,
     };
 
     const result = updateEmployeeSchema.parse(validUpdate);
-    expect(result.gender).toBe("Female");
+    expect(result.gender).toBe("Woman");
   });
 
   it("should allow all fields to be optional", () => {

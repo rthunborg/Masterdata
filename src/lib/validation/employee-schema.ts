@@ -30,6 +30,8 @@ export const validationMessages = {
   emailRequired: "errors.validation.emailRequired",
   emailInvalid: "errors.validation.emailInvalid",
   rankRequired: "errors.validation.rankRequired",
+  rankInvalid: "errors.validation.rankInvalid",
+  genderInvalid: "errors.validation.genderInvalid",
   hireDateRequired: "errors.validation.hireDateRequired",
   hireDateInvalid: "errors.validation.hireDateInvalid",
   hireDateFuture: "errors.validation.hireDateFuture",
@@ -70,11 +72,15 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
       .nullable()
       .or(z.literal("")),
     mobile: z.string().nullable().default(null),
-    rank: z.string().min(1, msg('rankRequired')),
+    rank: z.enum(["SEV", "CHEF"], {
+      errorMap: () => ({ message: msg('rankInvalid') })
+    }),
     gender: z
-      .enum(["Male", "Female", "Other", "Prefer not to say"])
+      .enum(["Man", "Woman"], {
+        errorMap: () => ({ message: msg('genderInvalid') })
+      })
       .nullable()
-      .default(null),
+      .optional(),
     town_district: z.string().nullable().default(null),
     hire_date: z
       .string()
@@ -143,11 +149,15 @@ export const createEmployeeSchema = z.object({
     .nullable()
     .or(z.literal("")),
   mobile: z.string().nullable().default(null),
-  rank: z.string().min(1, "Rank is required"),
+  rank: z.enum(["SEV", "CHEF"], {
+    errorMap: () => ({ message: "Rank must be SEV or CHEF" })
+  }),
   gender: z
-    .enum(["Male", "Female", "Other", "Prefer not to say"])
+    .enum(["Man", "Woman"], {
+      errorMap: () => ({ message: "Gender must be Man or Woman" })
+    })
     .nullable()
-    .default(null),
+    .optional(),
   town_district: z.string().nullable().default(null),
   hire_date: z
     .string()
@@ -298,9 +308,13 @@ export const csvImportEmployeeSchema = z.object({
     .optional()
     .nullable(),
   mobile: z.string().nullable().optional().or(z.literal("")),
-  rank: z.string().min(1, "Rank is required"),
+  rank: z.enum(["SEV", "CHEF"], {
+    errorMap: () => ({ message: "Rank must be SEV or CHEF" })
+  }),
   gender: z
-    .enum(["Male", "Female", "Other", "Prefer not to say"])
+    .enum(["Man", "Woman"], {
+      errorMap: () => ({ message: "Gender must be Man or Woman" })
+    })
     .nullable()
     .optional()
     .or(z.literal("")),

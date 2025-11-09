@@ -21,4 +21,10 @@ Apply user feedback-driven enhancements and Stena Line branding including UX imp
 **Epic 6: Employee Form & Data Management Enhancements**  
 Address UAT-discovered usability gaps in employee form validation, data loss prevention, important dates CSV import, column management UX, and user activity tracking to ensure production-ready HR workflows.
 
+**Epic 7: Initial Setup & Production Readiness**  
+Configure comprehensive masterdata column structure with correct external party permissions, complete translation coverage, and missing admin UX features to achieve production-ready state.
+
+**Epic 8: Enhanced Employee Management Features**  
+Implement advanced operational features including gender/rank enum restrictions, visual status indicators for boolean fields, conditional field logic (Talmundo, Crewing/Done), important dates capacity management with spot tracking, ÖMC two-day dates, PE3 time selection, automatic deadline calculation for PE3 imports, terminated employee repayment tracking, and automated ÖMC room number assignment algorithm.
+
 ---

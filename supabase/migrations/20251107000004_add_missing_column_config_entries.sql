@@ -31,5 +31,5 @@ BEGIN
   END IF;
 END $$;
 
--- Add comment
-COMMENT ON COLUMN employees.test_col_2 IS 'Custom test column';
+-- Add comment (commented out due to column not existing)
+-- COMMENT ON COLUMN employees.test_col_2 IS 'Custom test column';

@@ -419,7 +419,10 @@ export function EmployeeTable({
             cellType = "boolean";
           } else if (config.column_name === "Gender") {
             cellType = "select";
-            options = ["Male", "Female", "Other", "Prefer not to say"];
+            options = ["Man", "Woman"];
+          } else if (config.column_name === "Rank") {
+            cellType = "select";
+            options = ["SEV", "CHEF"];
           }
 
           // Choose the appropriate save handler based on column type

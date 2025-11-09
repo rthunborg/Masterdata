@@ -157,7 +157,9 @@ export function EmployeeCard({
                     // Determine select options based on column_name (display name for special columns)
                     let selectOptions: string[] | undefined;
                     if (col.column_name === 'Gender') {
-                      selectOptions = ['Male', 'Female', 'Other'];
+                      selectOptions = ['Man', 'Woman'];
+                    } else if (col.column_name === 'Rank') {
+                      selectOptions = ['SEV', 'CHEF'];
                     }
 
                     return (

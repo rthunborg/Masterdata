@@ -83,7 +83,7 @@ export function AddEmployeeModal({
       ssn: "",
       email: null,
       mobile: null,
-      rank: "",
+      rank: "SEV",
       gender: null,
       town_district: null,
       hire_date: new Date().toISOString().split("T")[0],
@@ -105,10 +105,11 @@ export function AddEmployeeModal({
     try {
       setIsSubmitting(true);
       
-      // Normalize email field: convert undefined to null
+      // Normalize email and gender fields: convert undefined to null
       const normalizedData = {
         ...data,
         email: data.email ?? null,
+        gender: data.gender ?? null,
       };
       
       await employeeService.create(normalizedData);
@@ -319,9 +320,20 @@ export function AddEmployeeModal({
                     <FormLabel>
                       {t('rank')} <span className="text-red-500">*</span>
                     </FormLabel>
-                    <FormControl>
-                      <Input placeholder="CHEF" {...field} />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('selectRank')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="SEV">{t('rankSEV')}</SelectItem>
+                        <SelectItem value="CHEF">{t('rankCHEF')}</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -366,12 +378,8 @@ export function AddEmployeeModal({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Male">{t('genderMale')}</SelectItem>
-                        <SelectItem value="Female">{t('genderFemale')}</SelectItem>
-                        <SelectItem value="Other">{t('genderOther')}</SelectItem>
-                        <SelectItem value="Prefer not to say">
-                          {t('genderPreferNotToSay')}
-                        </SelectItem>
+                        <SelectItem value="Man">{t('genderMan')}</SelectItem>
+                        <SelectItem value="Woman">{t('genderWoman')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
