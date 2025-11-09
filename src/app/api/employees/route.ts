@@ -6,7 +6,10 @@ import {
 } from "@/lib/server/auth";
 import { createEmployeeSchema } from "@/lib/validation/employee-schema";
 import { normalizeSSN } from "@/lib/utils/ssn-formatter";
+import { canEditTalmundo } from "@/lib/services/talmundo-validation";
+import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { z } from "zod";
+import type { EmployeeFormData } from "@/lib/types/employee";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -74,11 +77,55 @@ export async function POST(request: NextRequest) {
     }
 
     // Normalize SSN to standard format (YYMMDD-XXXX) and email (convert undefined to null)
-    const normalizedData = {
+    const normalizedData: EmployeeFormData = {
       ...validatedData,
       ssn: normalizeSSN(validatedData.ssn),
       email: validatedData.email ?? null,
+      gender: validatedData.gender ?? null,
+      // Handle One field timestamp logic (Story 8.3)
+      // If One field is set to true during creation, record the timestamp
+      one_marked_at: validatedData.one === true ? new Date().toISOString() : null,
     };
+
+    // Story 8.4: Validate Talmundo on creation
+    if (validatedData.talmundo === true) {
+      const canEdit = canEditTalmundo(
+        validatedData.one ?? false,
+        validatedData.one_marked_at ?? null
+      );
+
+      if (!canEdit) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "TALMUNDO_EDIT_NOT_ALLOWED",
+              message: "Cannot set Talmundo to true - One field must be completed for 24 hours first",
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Story 8.5: Validate Crewing/Done on creation
+    if (validatedData.crewing_done === true) {
+      // Check if all prerequisites are met
+      if (!canEditCrewingDone(validatedData)) {
+        const incomplete = getIncompleteFields(validatedData);
+        return NextResponse.json(
+          {
+            error: {
+              code: "CREWING_DONE_PREREQUISITES_NOT_MET",
+              message: `Cannot set Crewing/Done to true - prerequisites not met: ${incomplete.join(', ')}`,
+              details: { incompleteFields: incomplete },
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Create employee via repository
     const employee = await employeeRepository.create(normalizedData);

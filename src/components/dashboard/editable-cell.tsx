@@ -25,6 +25,11 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./status-badge";
+import { getOneFieldStatus, getRemainingTime } from "@/lib/services/one-field-status";
+import { canEditTalmundo } from "@/lib/services/talmundo-validation";
+import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
+import { useTranslations } from "@/lib/i18n";
+import type { Employee } from "@/lib/types/employee";
 
 interface EditableCellProps {
   value: string | number | boolean | null;
@@ -33,6 +38,9 @@ interface EditableCellProps {
   type: "text" | "date" | "select" | "number" | "boolean";
   options?: string[]; // For select dropdowns (e.g., Gender)
   canEdit?: boolean; // Permission flag for edit access
+  oneMarkedAt?: string | null; // Timestamp for One field (Story 8.3)
+  oneValue?: boolean | null; // One field value for Talmundo conditional editability (Story 8.4)
+  employeeData?: Partial<Employee>; // For Crewing/Done field conditional editability (Story 8.5)
   onSave: (id: string, field: string, value: string | number | boolean | null) => Promise<void>;
   onError?: (error: string) => void;
 }
@@ -44,9 +52,13 @@ export function EditableCell({
   type,
   options,
   canEdit = true, // Default to true for backward compatibility
+  oneMarkedAt, // Timestamp for One field (Story 8.3)
+  oneValue, // One field value for Talmundo conditional editability (Story 8.4)
+  employeeData, // Employee data for Crewing/Done conditional editability (Story 8.5)
   onSave,
   onError,
 }: EditableCellProps) {
+  const tDashboard = useTranslations("dashboard");
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string | number | boolean>(
     value ?? (type === "boolean" ? false : type === "number" ? 0 : "")
@@ -57,6 +69,31 @@ export function EditableCell({
   const inputRef = useRef<HTMLInputElement>(null);
   const cellRef = useRef<HTMLDivElement>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Determine if this is the Talmundo field (Story 8.4)
+  const isTalmundoField = field.toLowerCase() === 'talmundo';
+
+  // Determine if this is the Crewing/Done field (Story 8.5)
+  const isCrewingField = field.toLowerCase() === 'crewing_done';
+
+  // Calculate conditional editability for Talmundo field (Story 8.4)
+  // Talmundo can only be edited when One field is green (>= 24 hours elapsed)
+  let effectiveCanEdit = canEdit;
+  let tooltipMessage = '';
+
+  if (isTalmundoField) {
+    effectiveCanEdit = canEditTalmundo(oneValue ?? false, oneMarkedAt ?? null);
+    if (!effectiveCanEdit) {
+      tooltipMessage = "Can only be edited after One field completes 24-hour sync to Talmundo system";
+    }
+  } else if (isCrewingField && employeeData) {
+    // Calculate conditional editability for Crewing/Done field (Story 8.5)
+    effectiveCanEdit = canEditCrewingDone(employeeData);
+    if (!effectiveCanEdit) {
+      const incomplete = getIncompleteFields(employeeData);
+      tooltipMessage = tDashboard("missingPrerequisites", { fields: incomplete.join(', ') });
+    }
+  }
 
   // Focus input when entering edit mode
   useEffect(() => {
@@ -142,12 +179,30 @@ export function EditableCell({
 
   if (!isEditing) {
     // Read-only cell - show tooltip on click
-    if (!canEdit) {
+    if (!effectiveCanEdit) {
       const displayValue = type === "boolean" 
         ? (value ? "Yes" : "No")
         : value !== null && value !== undefined
         ? String(value)
         : null;
+
+      // Calculate One field status for visual indicator (Story 8.3)
+      let badgeStatus: 'green' | 'yellow' | null = null;
+      let badgeTooltip: string | null = null;
+      
+      if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
+        badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
+        if (badgeStatus === 'yellow' && oneMarkedAt) {
+          badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
+        } else if (badgeStatus === 'green') {
+          badgeTooltip = 'Complete - 24-hour waiting period elapsed';
+        }
+      } else if (type === "boolean" && value === true) {
+        badgeStatus = 'green';
+      }
+
+      // Use the calculated tooltipMessage or fallback to default (Story 8.4, 8.5)
+      const disabledTooltip = tooltipMessage || "This field is read-only. Contact HR to update.";
 
       return (
         <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
@@ -159,20 +214,35 @@ export function EditableCell({
                 setTimeout(() => setShowTooltip(false), 2000);
               }}
               className={cn(
-                "px-3 py-2 rounded min-h-10 flex items-center gap-2 select-text cursor-default bg-gray-50",
-                "focus:outline-none focus:ring-2 focus:ring-ring"
+                "px-3 py-2 rounded min-h-10 flex items-center gap-2 select-text",
+                "focus:outline-none focus:ring-2 focus:ring-ring",
+                (isTalmundoField || isCrewingField) ? "cursor-not-allowed opacity-50 bg-gray-100" : "cursor-default bg-gray-50"
               )}
               tabIndex={0}
               role="gridcell"
               aria-readonly="true"
               aria-label={`${field} (read-only)`}
+              aria-disabled={(isTalmundoField || isCrewingField) ? "true" : undefined}
             >
               {displayValue || <span className="text-muted-foreground">—</span>}
-              {type === "boolean" && value === true && <StatusBadge status="green" />}
+              {badgeStatus && (
+                badgeTooltip ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span><StatusBadge status={badgeStatus} /></span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{badgeTooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <StatusBadge status={badgeStatus} />
+                )
+              )}
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>This field is read-only. Contact HR to update.</p>
+            <p>{disabledTooltip}</p>
           </TooltipContent>
         </Tooltip>
       );
@@ -184,6 +254,25 @@ export function EditableCell({
       : value !== null && value !== undefined
       ? String(value)
       : null;
+
+    // Calculate One field status for visual indicator (Story 8.3)
+    // Show green badge for Talmundo when true and enabled (Story 8.4)
+    // Show green badge for Crewing/Done when true and enabled (Story 8.5)
+    let badgeStatus: 'green' | 'yellow' | null = null;
+    let badgeTooltip: string | null = null;
+    
+    if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
+      badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
+      if (badgeStatus === 'yellow' && oneMarkedAt) {
+        badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
+      } else if (badgeStatus === 'green') {
+        badgeTooltip = 'Complete - 24-hour waiting period elapsed';
+      }
+    } else if (type === "boolean" && value === true && effectiveCanEdit) {
+      // Story 8.4: Show green badge for Talmundo when true and enabled
+      // Story 8.5: Show green badge for Crewing/Done when true and enabled
+      badgeStatus = 'green';
+    }
 
     return (
       <div
@@ -205,7 +294,20 @@ export function EditableCell({
         aria-label={`Edit ${field}`}
       >
         {displayValue || <span className="text-muted-foreground">—</span>}
-        {type === "boolean" && value === true && <StatusBadge status="green" />}
+        {badgeStatus && (
+          badgeTooltip ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span><StatusBadge status={badgeStatus} /></span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{badgeTooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <StatusBadge status={badgeStatus} />
+          )
+        )}
       </div>
     );
   }

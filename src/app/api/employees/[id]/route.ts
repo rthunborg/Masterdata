@@ -6,7 +6,10 @@ import {
 } from "@/lib/server/auth";
 import { updateEmployeeSchema } from "@/lib/validation/employee-schema";
 import { normalizeSSN } from "@/lib/utils/ssn-formatter";
+import { canEditTalmundo } from "@/lib/services/talmundo-validation";
+import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { z } from "zod";
+import type { Employee } from "@/lib/types/employee";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -55,8 +58,119 @@ export async function PATCH(
       ? { ...validatedData, ssn: normalizeSSN(validatedData.ssn) }
       : validatedData;
 
+    // Handle One field timestamp logic (Story 8.3)
+    const updates: Partial<Employee> = { ...normalizedData };
+    
+    if ('one' in validatedData) {
+      // Fetch current employee to check previous One field value
+      const currentEmployee = await employeeRepository.findById(id);
+      
+      if (!currentEmployee) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "NOT_FOUND",
+              message: `Employee with ID ${id} not found`,
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 404 }
+        );
+      }
+      
+      // If One is being set to true for the first time or after being false/null
+      if (validatedData.one === true && currentEmployee.one !== true) {
+        updates.one_marked_at = new Date().toISOString();
+      } 
+      // If One is being set to false, clear the timestamp
+      else if (validatedData.one === false || validatedData.one === null) {
+        updates.one_marked_at = null;
+      }
+      // If One is already true and staying true, don't change the timestamp
+    }
+
+    // Story 8.4: Validate Talmundo field updates
+    if ('talmundo' in validatedData) {
+      // Fetch current employee if not already fetched
+      let currentEmployee;
+      if ('one' in validatedData) {
+        // Already fetched above for One field logic
+        currentEmployee = await employeeRepository.findById(id);
+      } else {
+        currentEmployee = await employeeRepository.findById(id);
+      }
+      
+      if (!currentEmployee) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "NOT_FOUND",
+              message: `Employee with ID ${id} not found`,
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 404 }
+        );
+      }
+
+      // Check if Talmundo can be edited
+      if (!canEditTalmundo(currentEmployee.one, currentEmployee.one_marked_at)) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "TALMUNDO_EDIT_NOT_ALLOWED",
+              message: "Cannot edit Talmundo field - One field must be completed for 24 hours first",
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Story 8.5: Validate Crewing/Done field updates
+    if ('crewing_done' in validatedData) {
+      // Fetch current employee if not already fetched
+      let currentEmployee;
+      if ('one' in validatedData || 'talmundo' in validatedData) {
+        // Already fetched above
+        currentEmployee = await employeeRepository.findById(id);
+      } else {
+        currentEmployee = await employeeRepository.findById(id);
+      }
+      
+      if (!currentEmployee) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "NOT_FOUND",
+              message: `Employee with ID ${id} not found`,
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 404 }
+        );
+      }
+
+      // Check if Crewing/Done can be edited (all 10 prerequisites must be true)
+      if (!canEditCrewingDone(currentEmployee)) {
+        const incomplete = getIncompleteFields(currentEmployee);
+        return NextResponse.json(
+          {
+            error: {
+              code: "CREWING_DONE_PREREQUISITES_NOT_MET",
+              message: `Cannot edit Crewing/Done - prerequisites not met: ${incomplete.join(', ')}`,
+              details: { incompleteFields: incomplete },
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Update employee via repository
-    const employee = await employeeRepository.update(id, normalizedData);
+    const employee = await employeeRepository.update(id, updates);
 
     // Return successful response
     return NextResponse.json({

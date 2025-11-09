@@ -40,6 +40,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -56,6 +63,7 @@ import { EditableDateCell } from "./editable-date-cell";
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
 import { employeeService } from "@/lib/services/employee-service";
 import { customDataService } from "@/lib/services/custom-data-service";
+import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useColumns } from "@/lib/hooks/use-columns";
@@ -149,6 +157,29 @@ export function EmployeeTable({
   // Search and sort state
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  
+  // Story 8.5: Crew-ready filter state
+  const [crewReadyFilter, setCrewReadyFilter] = React.useState<'all' | 'ready' | 'not-ready'>('all');
+  
+  // Story 8.5: Calculate count of eligible employees for crew-ready export
+  const eligibleCrewReadyCount = React.useMemo(() => {
+    return employees.filter((emp) => {
+      return canEditCrewingDone(emp) && emp.crewing_done !== true;
+    }).length;
+  }, [employees]);
+  
+  // Polling state for One field status updates (Story 8.3)
+  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
+  
+  // Poll every 60 seconds to update One field badge statuses (Story 8.3)
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      // Force table re-render to recalculate One field status badges
+      setRefreshTrigger((prev) => prev + 1);
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, []);
   
   // Column resizing state (Story 9.4)
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {
@@ -329,6 +360,47 @@ export function EmployeeTable({
     }
   };
 
+  // Story 8.5: Export crew-ready employees (with all prerequisites met but not yet marked)
+  const handleExportCrewReady = async () => {
+    try {
+      const response = await fetch('/api/employees/export-crew-ready', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 404) {
+          toast.info('No employees found with all prerequisites met but not yet marked as crew-ready');
+          return;
+        }
+        throw new Error(errorData.error?.message || 'Failed to export crew-ready employees');
+      }
+
+      // Get the count from headers
+      const count = response.headers.get('X-Employees-Exported');
+      
+      // Download the CSV file
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `crew_ready_employees_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Exported ${count} employees and marked them as crew-ready`);
+      
+      // Refresh the table to show updated crewing_done values
+      onEmployeeUpdated?.();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to export crew-ready employees';
+      toast.error(message);
+    }
+  };
+
   // Build dynamic columns from column configs
   const columns: ColumnDef<Employee>[] = React.useMemo(() => {
     // First filter by role permissions
@@ -430,6 +502,24 @@ export function EmployeeTable({
             ? handleMasterdataUpdate 
             : handleCustomDataUpdate;
 
+          // Pass oneMarkedAt prop for One field (Story 8.3)
+          const oneMarkedAtProp = (config.column_name === "One" || fieldKey === "one") 
+            ? { oneMarkedAt: row.original.one_marked_at }
+            : {};
+
+          // Story 8.4: Pass oneValue and oneMarkedAt for Talmundo field conditional editability
+          const talmundoConditionalProps = (config.column_name === "Talmundo" || fieldKey === "talmundo")
+            ? { 
+                oneValue: row.original.one,
+                oneMarkedAt: row.original.one_marked_at 
+              }
+            : {};
+
+          // Story 8.5: Pass full employee data for Crewing/Done field conditional editability
+          const crewingDoneConditionalProps = (config.column_name === "Crewing/Done" || fieldKey === "crewing_done")
+            ? { employeeData: row.original }
+            : {};
+
           return (
             <EditableCell
               value={value}
@@ -438,6 +528,9 @@ export function EmployeeTable({
               type={cellType}
               options={options}
               canEdit={canEdit} // Pass permission flag
+              {...oneMarkedAtProp} // Conditionally pass oneMarkedAt for One field
+              {...talmundoConditionalProps} // Conditionally pass One field data for Talmundo
+              {...crewingDoneConditionalProps} // Conditionally pass employee data for Crewing/Done
               onSave={handleSave}
               onError={(error) => toast.error(error)}
             />
@@ -599,8 +692,18 @@ export function EmployeeTable({
     return dataColumns;
   }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates]);
 
+  // Story 8.5: Apply crew-ready filter to employees
+  const filteredEmployees = React.useMemo(() => {
+    if (crewReadyFilter === 'ready') {
+      return employees.filter(emp => emp.crewing_done === true);
+    } else if (crewReadyFilter === 'not-ready') {
+      return employees.filter(emp => emp.crewing_done !== true);
+    }
+    return employees; // 'all'
+  }, [employees, crewReadyFilter]);
+
   const table = useReactTable({
-    data: employees,
+    data: filteredEmployees,
     columns,
     state: {
       globalFilter,
@@ -731,6 +834,52 @@ export function EmployeeTable({
             </button>
           )}
         </div>
+        
+        {/* Story 8.5: Crew-Ready Filter */}
+        <Select 
+          value={crewReadyFilter} 
+          onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Crew Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Employees</SelectItem>
+            <SelectItem value="ready">Crew Ready</SelectItem>
+            <SelectItem value="not-ready">Not Crew Ready</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Story 8.5: Export Crew-Ready Employees (HR Admin only) */}
+        {isHRAdmin && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCrewReady}
+                disabled={eligibleCrewReadyCount === 0}
+                className="whitespace-nowrap"
+              >
+                {tDashboard("exportCrewReady")}
+                {eligibleCrewReadyCount > 0 && ` (${eligibleCrewReadyCount})`}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {eligibleCrewReadyCount === 0 
+                  ? tDashboard("exportCrewReadyTooltipDisabled")
+                  : tDashboard(
+                      eligibleCrewReadyCount === 1 
+                        ? "exportCrewReadyTooltip" 
+                        : "exportCrewReadyTooltipPlural",
+                      { count: eligibleCrewReadyCount }
+                    )
+                }
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
         
         <div className="flex gap-2 w-full sm:w-auto">
           {/* Column Visibility Controls for HR Admin */}
@@ -871,6 +1020,8 @@ export function EmployeeTable({
             ) : (
               table.getRowModel().rows.map((row) => {
                 const isUpdatedRow = updatedEmployeeId === row.original.id;
+                // Story 8.5: Visual indicator for crew-ready status
+                const isCrewReady = row.original.crewing_done === true;
                 
                 return (
                   <TableRow 
@@ -885,6 +1036,7 @@ export function EmployeeTable({
                     className={cn(
                       row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
                       row.original.is_terminated && !row.original.is_archived && "bg-red-50 text-red-800",
+                      isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20",
                       isUpdatedRow && "animate-pulse bg-blue-50 border-l-4 border-l-blue-400 transition-all duration-2000"
                     )}
                     data-testid={`employee-row-${row.original.id}`}

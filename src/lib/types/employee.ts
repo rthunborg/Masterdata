@@ -19,6 +19,8 @@ export interface Employee {
   comments: string | null;
   // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
   one: boolean | null;
+  one_marked_at: string | null; // Timestamp when One field was set to true (ISO 8601 format) - Story 8.3
+  talmundo: boolean | null; // Talmundo completion (editable only when One is green) - Story 8.4
   isps: boolean | null;
   photo: boolean | null;
   origo: boolean | null;

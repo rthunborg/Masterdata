@@ -106,6 +106,8 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     comments: z.string().nullable().default(null),
     // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
     one: z.boolean().nullable().default(null),
+    one_marked_at: z.string().datetime().nullable().default(null), // Story 8.3: Timestamp when One field was set to true
+    talmundo: z.boolean().nullable().default(null), // Story 8.4: Talmundo completion (editable only when One is green)
     isps: z.boolean().nullable().default(null),
     photo: z.boolean().nullable().default(null),
     origo: z.boolean().nullable().default(null),
@@ -129,7 +131,7 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
  * Default validation schema with English error messages
  * For backwards compatibility
  */
-export const createEmployeeSchema = z.object({
+const baseEmployeeSchema = z.object({
   first_name: z
     .string()
     .min(1, "First name is required")
@@ -183,6 +185,8 @@ export const createEmployeeSchema = z.object({
   comments: z.string().nullable().default(null),
   // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
   one: z.boolean().nullable().default(null),
+  one_marked_at: z.string().datetime().nullable().default(null), // Story 8.3: Timestamp when One field was set to true
+  talmundo: z.boolean().nullable().default(null), // Story 8.4: Talmundo completion (editable only when One is green)
   isps: z.boolean().nullable().default(null),
   photo: z.boolean().nullable().default(null),
   origo: z.boolean().nullable().default(null),
@@ -201,6 +205,51 @@ export const createEmployeeSchema = z.object({
   termination_reason: z.string().nullable().default(null),
 });
 
+/**
+ * Story 8.4: Talmundo validation helper function
+ * Validates that Talmundo can only be true if One field is green (>= 24 hours)
+ */
+function validateTalmundoField(data: { 
+  talmundo?: boolean | null; 
+  one?: boolean | null; 
+  one_marked_at?: string | null;
+}): boolean {
+  // If talmundo is not true, no validation needed
+  if (data.talmundo !== true) {
+    return true;
+  }
+  
+  // Check if One field is true
+  if (!data.one) {
+    return false;
+  }
+  
+  // Check if one_marked_at timestamp exists and is >= 24 hours ago
+  if (!data.one_marked_at) {
+    return false;
+  }
+  
+  try {
+    const markedAt = new Date(data.one_marked_at);
+    const now = new Date();
+    const elapsed = now.getTime() - markedAt.getTime();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    
+    // Talmundo can only be true if One field has been true for >= 24 hours
+    return elapsed >= twentyFourHours;
+  } catch {
+    return false;
+  }
+}
+
+export const createEmployeeSchema = baseEmployeeSchema.refine(
+  validateTalmundoField,
+  {
+    message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
+    path: ['talmundo'],
+  }
+);
+
 export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>;
 
 /**
@@ -208,11 +257,21 @@ export type CreateEmployeeInput = z.infer<typeof createEmployeeSchema>;
  * All fields are optional to support partial updates
  * At least one field must be provided for the update
  */
-export const updateEmployeeSchema = createEmployeeSchema
+export const updateEmployeeSchema = baseEmployeeSchema
   .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
-  });
+  .refine(
+    (data: Partial<z.infer<typeof baseEmployeeSchema>>) => Object.keys(data).length > 0,
+    {
+      message: "At least one field must be provided for update",
+    }
+  )
+  .refine(
+    validateTalmundoField,
+    {
+      message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
+      path: ['talmundo'],
+    }
+  );
 
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 
@@ -344,6 +403,8 @@ export const csvImportEmployeeSchema = z.object({
   // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
   // CSV import accepts string values and converts them to boolean
   one: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
+  one_marked_at: z.string().datetime().nullable().optional().or(z.literal("")), // Story 8.3: Timestamp when One field was set to true
+  talmundo: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")), // Story 8.4: Talmundo completion
   isps: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   photo: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   origo: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),

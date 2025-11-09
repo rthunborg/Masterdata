@@ -66,7 +66,12 @@
     "resetColumnVisibility": "Återställ till standard",
     "resetColumnWidths": "Återställ kolumnbredder",
     "columnWidthsReset": "Kolumnbredder har återställts till standard",
-    "dragToResize": "Dra för att ändra storlek"
+    "dragToResize": "Dra för att ändra storlek",
+    "exportCrewReady": "Exportera & markera besättningsklar",
+    "exportCrewReadyTooltipDisabled": "Inga anställda med alla förhandskrav uppfyllda finns tillgängliga för export",
+    "exportCrewReadyTooltip": "Exportera {count} anställd med alla förhandskrav uppfyllda och markera dem som besättningsklara",
+    "exportCrewReadyTooltipPlural": "Exportera {count} anställda med alla förhandskrav uppfyllda och markera dem som besättningsklara",
+    "missingPrerequisites": "Saknade förhandskrav: {fields}"
   },
   "forms": {
     "firstName": "Förnamn",

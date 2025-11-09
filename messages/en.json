@@ -59,7 +59,12 @@
     "noEmployeesFound": "No employees found",
     "noEmployeesMatchSearch": "No employees match your search. Try adjusting your search terms.",
     "noEmployeesToDisplay": "No employees to display.",
-    "dateDeleted": "(Date not found)"
+    "dateDeleted": "(Date not found)",
+    "exportCrewReady": "Export & Mark Crew Ready",
+    "exportCrewReadyTooltipDisabled": "No employees with all prerequisites met are available to export",
+    "exportCrewReadyTooltip": "Export {count} employee with all prerequisites met and mark them as crew-ready",
+    "exportCrewReadyTooltipPlural": "Export {count} employees with all prerequisites met and mark them as crew-ready",
+    "missingPrerequisites": "Missing prerequisites: {fields}"
   },
   "forms": {
     "firstName": "First Name",
