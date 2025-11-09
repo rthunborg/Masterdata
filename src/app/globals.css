@@ -294,3 +294,23 @@
     font-size: 0.9375rem; /* 15px */
   }
 }
+
+/* Print-friendly styles for status badges */
+@media print {
+  .status-badge {
+    background: none !important;
+    border: 1px solid #000 !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Ensure badges are visible in print */
+  .status-badge::before {
+    content: '[';
+  }
+  
+  .status-badge::after {
+    content: ']';
+  }
+}

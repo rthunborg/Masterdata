@@ -83,8 +83,8 @@ describe('csvImportEmployeeSchema - Rank Validation', () => {
     if (!result.success) {
       const rankError = result.error.errors.find((e) => e.path.includes('rank'));
       expect(rankError).toBeDefined();
-      // When field is missing entirely, Zod returns "Required"
-      expect(rankError?.message).toBe('Required');
+      // Zod enum returns custom error message even when field is missing
+      expect(rankError?.message).toBe('Rank must be SEV or CHEF');
     }
   });
 
@@ -97,14 +97,14 @@ describe('csvImportEmployeeSchema - Rank Validation', () => {
     const result = csvImportEmployeeSchema.safeParse(data);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe('Rank is required');
+      expect(result.error.errors[0].message).toBe('Rank must be SEV or CHEF');
     }
   });
 
   it('accepts valid rank', () => {
     const data = {
       ...validBaseData,
-      rank: 'Senior Engineer',
+      rank: 'SEV',
     };
 
     const result = csvImportEmployeeSchema.safeParse(data);
@@ -223,8 +223,8 @@ describe('csvImportEmployeeSchema - Complete Validation', () => {
       ssn: '19900101-1234',
       email: 'john.doe@stenaline.com',
       mobile: '+46701234567',
-      rank: 'Senior Engineer',
-      gender: 'Male',
+      rank: 'CHEF',
+      gender: 'Man',
       town_district: 'Gothenburg',
       hire_date: '2025-01-15',
       stena_date: '2025-01-01',
@@ -242,7 +242,7 @@ describe('csvImportEmployeeSchema - Complete Validation', () => {
       first_name: 'Jane',
       surname: 'Smith',
       ssn: '19850315-5678',
-      rank: 'Manager',
+      rank: 'SEV',
       hire_date: '2024-06-01',
       email: '', // Empty
       mobile: '+46709876543', // Populated

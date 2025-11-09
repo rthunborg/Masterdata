@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { StatusBadge } from "./status-badge";
 
 interface EditableCellProps {
   value: string | number | boolean | null;
@@ -158,7 +159,7 @@ export function EditableCell({
                 setTimeout(() => setShowTooltip(false), 2000);
               }}
               className={cn(
-                "px-3 py-2 rounded min-h-10 flex items-center select-text cursor-default bg-gray-50",
+                "px-3 py-2 rounded min-h-10 flex items-center gap-2 select-text cursor-default bg-gray-50",
                 "focus:outline-none focus:ring-2 focus:ring-ring"
               )}
               tabIndex={0}
@@ -167,6 +168,7 @@ export function EditableCell({
               aria-label={`${field} (read-only)`}
             >
               {displayValue || <span className="text-muted-foreground">—</span>}
+              {type === "boolean" && value === true && <StatusBadge status="green" />}
             </div>
           </TooltipTrigger>
           <TooltipContent>
@@ -189,7 +191,7 @@ export function EditableCell({
         onClick={() => setIsEditing(true)}
         className={cn(
           "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
-          "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center bg-white"
+          "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center gap-2 bg-white"
         )}
         tabIndex={0}
         onKeyDown={(e) => {
@@ -203,6 +205,7 @@ export function EditableCell({
         aria-label={`Edit ${field}`}
       >
         {displayValue || <span className="text-muted-foreground">—</span>}
+        {type === "boolean" && value === true && <StatusBadge status="green" />}
       </div>
     );
   }

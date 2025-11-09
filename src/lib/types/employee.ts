@@ -17,19 +17,19 @@ export interface Employee {
   is_terminated: boolean;
   is_archived: boolean;
   comments: string | null;
-  // New masterdata columns (Story 7.1)
-  one: string | null;
-  isps: string | null;
-  photo: string | null;
-  origo: string | null;
-  loneiva: string | null;
-  mail_lon: string | null;
-  bankuppgifter: string | null;
-  li: string | null;
-  passport: string | null;
-  kvitto_c17_18: string | null;
-  c17: string | null;
-  crewing_done: string | null;
+  // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
+  one: boolean | null;
+  isps: boolean | null;
+  photo: boolean | null;
+  origo: boolean | null;
+  loneiva: boolean | null;
+  mail_lon: boolean | null;
+  bankuppgifter: boolean | null;
+  li: boolean | null;
+  passport: boolean | null;
+  kvitto_c17_18: boolean | null;
+  c17: boolean | null;
+  crewing_done: boolean | null;
   created_at: string;
   updated_at: string;
   customData?: Record<string, string | number | boolean | null>; // Custom column data from party tables
