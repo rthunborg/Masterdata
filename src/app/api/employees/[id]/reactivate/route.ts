@@ -19,12 +19,13 @@ export async function POST(
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
 
-    // Reactivate employee via repository
-    const employee = await employeeRepository.reactivate(id);
+    // Story 8.13: Reactivate employee via repository (now returns warnings)
+    const { employee, warnings } = await employeeRepository.reactivate(id);
 
-    // Return successful response
+    // Return successful response with warnings if any
     return NextResponse.json({
       data: employee,
+      warnings,
       meta: {
         timestamp: new Date().toISOString(),
         requestId: `req_${Date.now()}`,

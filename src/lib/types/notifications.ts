@@ -14,6 +14,7 @@ export interface ViewState {
 export interface FilterState {
   includeArchived?: boolean;
   includeTerminated?: boolean;
+  needsRepayment?: boolean; // Story 8.13 AC 9
   globalFilter?: string;
   // Add other filter fields as needed
 }

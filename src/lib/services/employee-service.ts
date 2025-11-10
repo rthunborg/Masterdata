@@ -3,6 +3,7 @@ import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 export interface EmployeeFilters {
   includeArchived?: boolean;
   includeTerminated?: boolean;
+  needsRepayment?: boolean; // Story 8.13 AC 9
 }
 
 export interface EmployeeListResponse {
@@ -23,6 +24,11 @@ export const employeeService = {
     
     if (filters?.includeTerminated) {
       params.append("includeTerminated", "true");
+    }
+    
+    // Story 8.13 AC 9: Add needsRepayment filter
+    if (filters?.needsRepayment) {
+      params.append("needsRepayment", "true");
     }
 
     const url = `/api/employees${params.toString() ? `?${params.toString()}` : ""}`;
@@ -216,7 +222,7 @@ export const employeeService = {
     }
   },
 
-  async reactivate(id: string): Promise<void> {
+  async reactivate(id: string): Promise<{ warnings: string[] }> {
     const response = await fetch(`/api/employees/${id}/reactivate`, {
       method: "POST",
       headers: {
@@ -240,6 +246,10 @@ export const employeeService = {
       // Generic error
       throw new Error(error.error?.message || "Failed to reactivate employee");
     }
+    
+    // Story 8.13 AC 7: Return warnings from reactivation
+    const result = await response.json();
+    return { warnings: result.warnings || [] };
   },
 
   async importCSV(file: File): Promise<{

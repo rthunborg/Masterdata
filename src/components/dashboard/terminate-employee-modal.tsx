@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslations } from "@/lib/i18n";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { employeeService } from "@/lib/services/employee-service";
 import { toast } from "sonner";
 import type { Employee } from "@/lib/types/employee";
+import { createClient } from "@/lib/supabase/client";
 
 const terminateSchema = z.object({
   termination_date: z.string().min(1, "Termination date is required"),
@@ -43,6 +45,10 @@ export function TerminateEmployeeModal({
   const t = useTranslations('modals');
   const tCommon = useTranslations('common');
   
+  // Story 8.13: Track repayment dates for preview
+  const [omcDateInfo, setOmcDateInfo] = useState<{ description: string; value: string } | null>(null);
+  const [pe3DateInfo, setPe3DateInfo] = useState<{ description: string; value: string } | null>(null);
+  
   const {
     register,
     handleSubmit,
@@ -51,6 +57,57 @@ export function TerminateEmployeeModal({
   } = useForm<TerminateFormData>({
     resolver: zodResolver(terminateSchema),
   });
+  
+  // Story 8.13: Fetch date information when employee changes
+  useEffect(() => {
+    async function fetchDateInfo() {
+      if (!employee) {
+        setOmcDateInfo(null);
+        setPe3DateInfo(null);
+        return;
+      }
+      
+      const supabase = createClient();
+      
+      // Fetch ÖMC date info if assigned
+      if (employee.omc_date) {
+        const { data: omcDate } = await supabase
+          .from('important_dates')
+          .select('date_description, date_value')
+          .eq('id', employee.omc_date)
+          .single();
+          
+        if (omcDate) {
+          setOmcDateInfo({
+            description: omcDate.date_description,
+            value: omcDate.date_value,
+          });
+        }
+      } else {
+        setOmcDateInfo(null);
+      }
+      
+      // Fetch PE3 date info if assigned
+      if (employee.pe3_date) {
+        const { data: pe3Date } = await supabase
+          .from('important_dates')
+          .select('date_description, date_value')
+          .eq('id', employee.pe3_date)
+          .single();
+          
+        if (pe3Date) {
+          setPe3DateInfo({
+            description: pe3Date.date_description,
+            value: pe3Date.date_value,
+          });
+        }
+      } else {
+        setPe3DateInfo(null);
+      }
+    }
+    
+    fetchDateInfo();
+  }, [employee]);
 
   const onSubmit = async (data: TerminateFormData) => {
     if (!employee) return;
@@ -62,13 +119,13 @@ export function TerminateEmployeeModal({
         data.termination_reason
       );
       toast.success(
-        t('employeeTerminated', { name: `${employee.first_name} ${employee.surname}` })
+        t('terminateEmployee.employeeTerminated', { name: `${employee.first_name} ${employee.surname}` })
       );
       onSuccess();
       onOpenChange(false);
       reset();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : t('terminateFailed');
+      const errorMessage = error instanceof Error ? error.message : t('terminateEmployee.terminateFailed');
       toast.error(errorMessage);
     }
   };
@@ -77,41 +134,77 @@ export function TerminateEmployeeModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogTitle>{t('terminateEmployee.title')}</DialogTitle>
           <DialogDescription>
-            {t('description')}
+            {t('terminateEmployee.description')}
           </DialogDescription>
         </DialogHeader>
 
         {employee && (
-          <div className="my-4 rounded-lg border p-4">
-            <h4 className="font-medium mb-2">{t('employeeDetails')}</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">{t('name')}</span>
-                <span className="ml-2">
-                  {employee.first_name} {employee.surname}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">{t('ssn')}</span>
-                <span className="ml-2">{employee.ssn}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">{t('rank')}</span>
-                <span className="ml-2">{employee.rank || t('notAvailable')}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">{t('gender')}</span>
-                <span className="ml-2">{employee.gender || t('notAvailable')}</span>
+          <>
+            <div className="my-4 rounded-lg border p-4">
+              <h4 className="font-medium mb-2">{t('terminateEmployee.employeeDetails')}</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">{t('terminateEmployee.name')}</span>
+                  <span className="ml-2">
+                    {employee.first_name} {employee.surname}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t('terminateEmployee.ssn')}</span>
+                  <span className="ml-2">{employee.ssn}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t('terminateEmployee.rank')}</span>
+                  <span className="ml-2">{employee.rank || t('terminateEmployee.notAvailable')}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t('terminateEmployee.gender')}</span>
+                  <span className="ml-2">{employee.gender || t('terminateEmployee.notAvailable')}</span>
+                </div>
               </div>
             </div>
-          </div>
+            
+            {/* Story 8.13: Repayment Preview */}
+            {(omcDateInfo || pe3DateInfo) && (
+              <div className="my-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4">
+                <h4 className="font-medium mb-2 text-yellow-900">
+                  {t('terminateEmployee.repaymentPreviewTitle')}
+                </h4>
+                <p className="text-sm text-yellow-800 mb-2">
+                  {t('terminateEmployee.repaymentPreviewDescription')}
+                </p>
+                <ul className="text-sm space-y-1 text-yellow-900">
+                  {omcDateInfo && (
+                    <li>
+                      <span className="font-medium">{t('terminateEmployee.omcDate')}</span>{' '}
+                      {omcDateInfo.description} ({omcDateInfo.value})
+                    </li>
+                  )}
+                  {pe3DateInfo && (
+                    <li>
+                      <span className="font-medium">{t('terminateEmployee.pe3Date')}</span>{' '}
+                      {pe3DateInfo.description} ({pe3DateInfo.value})
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+            
+            {!omcDateInfo && !pe3DateInfo && (
+              <div className="my-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <p className="text-sm text-gray-600">
+                  {t('terminateEmployee.noRepaymentNeeded')}
+                </p>
+              </div>
+            )}
+          </>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="termination_date">{t('terminationDateLabel')} *</Label>
+            <Label htmlFor="termination_date">{t('terminateEmployee.terminationDateLabel')} *</Label>
             <Input
               id="termination_date"
               type="date"
@@ -125,10 +218,10 @@ export function TerminateEmployeeModal({
           </div>
 
           <div>
-            <Label htmlFor="termination_reason">{t('terminationReasonLabel')} *</Label>
+            <Label htmlFor="termination_reason">{t('terminateEmployee.terminationReasonLabel')} *</Label>
             <Textarea
               id="termination_reason"
-              placeholder={t('terminationReasonPlaceholder')}
+              placeholder={t('terminateEmployee.terminationReasonPlaceholder')}
               rows={4}
               {...register("termination_reason")}
             />
@@ -149,7 +242,7 @@ export function TerminateEmployeeModal({
               {tCommon('cancel')}
             </Button>
             <Button type="submit" variant="destructive" disabled={isSubmitting}>
-              {t('confirmButton')}
+              {t('terminateEmployee.confirmButton')}
             </Button>
           </DialogFooter>
         </form>

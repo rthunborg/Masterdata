@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
+import { captureRepaymentDates, applyRepaymentCapture, restoreRepaymentDates } from "@/lib/services/termination-workflow";
 
 export interface EmployeeFilters {
   includeArchived?: boolean;
   includeTerminated?: boolean;
+  needsRepayment?: boolean; // Story 8.13 AC 9
 }
 
 export class EmployeeRepository {
@@ -29,6 +31,11 @@ export class EmployeeRepository {
       // Filter by termination status (default: exclude terminated)
       if (!filters?.includeTerminated) {
         query = query.eq("is_terminated", false);
+      }
+      
+      // Story 8.13 AC 9: Filter by repayment needed
+      if (filters?.needsRepayment) {
+        query = query.or("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
       }
 
       const { data, error } = await query;
@@ -245,6 +252,10 @@ export class EmployeeRepository {
       throw new Error("Failed to fetch employee");
     }
 
+    // Story 8.13: Capture repayment dates BEFORE clearing
+    const repaymentDates = await captureRepaymentDates(id);
+    await applyRepaymentCapture(id, repaymentDates);
+
     // Update employee termination status and clear date assignments
     const { data: employee, error } = await supabase
       .from("employees")
@@ -285,7 +296,7 @@ export class EmployeeRepository {
     // Release capacity for each assigned date
     for (const dateId of datesToRelease) {
       try {
-        await supabase.rpc("release_date_capacity", { date_id: dateId });
+        await supabase.rpc("release_date_capacity", { date_id: dateId, employee_id: id });
       } catch (releaseError) {
         console.error(`Error releasing capacity for date ${dateId}:`, releaseError);
         // Don't fail termination if capacity release fails - log for manual correction
@@ -295,8 +306,16 @@ export class EmployeeRepository {
     return employee;
   }
 
-  async reactivate(id: string): Promise<Employee> {
+  async reactivate(id: string): Promise<{ employee: Employee; warnings: string[] }> {
     const supabase = await this.getSupabaseClient();
+
+    // Story 8.13: Restore repayment dates if spots available
+    const { restored, warnings } = await restoreRepaymentDates(id);
+    
+    // Log restoration results
+    if (restored.omc || restored.pe3) {
+      console.log(`[Reactivation] Restored dates for employee ${id}: ÖMC=${restored.omc}, PE3=${restored.pe3}`);
+    }
 
     const { data: employee, error } = await supabase
       .from("employees")
@@ -323,7 +342,7 @@ export class EmployeeRepository {
       throw new Error(`Employee with ID ${id} not found`);
     }
 
-    return employee;
+    return { employee, warnings };
   }
 
   /**

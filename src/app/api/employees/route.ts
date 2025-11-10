@@ -24,11 +24,13 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const includeArchived = searchParams.get("includeArchived") === "true";
     const includeTerminated = searchParams.get("includeTerminated") === "true";
+    const needsRepayment = searchParams.get("needsRepayment") === "true"; // Story 8.13 AC 9
 
     // Fetch employees
     const employees = await employeeRepository.findAll({
       includeArchived,
       includeTerminated,
+      needsRepayment, // Story 8.13 AC 9
     });
 
     // Return response with data and metadata

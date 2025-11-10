@@ -130,6 +130,10 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     is_archived: z.boolean().default(false),
     termination_date: z.string().nullable().default(null),
     termination_reason: z.string().nullable().default(null),
+    
+    // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
+    repayment_needed_omc: z.string().nullable().default(null),
+    repayment_needed_pe3: z.string().nullable().default(null),
   });
 }
 
@@ -215,6 +219,10 @@ const baseEmployeeSchema = z.object({
   is_archived: z.boolean().default(false),
   termination_date: z.string().nullable().default(null),
   termination_reason: z.string().nullable().default(null),
+  
+  // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
+  repayment_needed_omc: z.string().nullable().default(null),
+  repayment_needed_pe3: z.string().nullable().default(null),
 });
 
 /**
@@ -433,6 +441,10 @@ export const csvImportEmployeeSchema = z.object({
   is_archived: z.boolean().default(false).optional(),
   termination_date: z.string().nullable().default(null).optional(),
   termination_reason: z.string().nullable().default(null).optional(),
+  
+  // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
+  repayment_needed_omc: z.string().nullable().default(null).optional(),
+  repayment_needed_pe3: z.string().nullable().default(null).optional(),
 });
 
 export type CSVImportEmployeeInput = z.infer<typeof csvImportEmployeeSchema>;

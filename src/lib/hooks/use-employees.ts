@@ -62,6 +62,7 @@ export function useEmployees({
     activeFilters: {
       includeArchived: filters?.includeArchived,
       includeTerminated: filters?.includeTerminated,
+      needsRepayment: filters?.needsRepayment, // Story 8.13 AC 9
       globalFilter,
     },
     activeSortColumn: null,
@@ -75,6 +76,7 @@ export function useEmployees({
       activeFilters: {
         includeArchived: filters?.includeArchived,
         includeTerminated: filters?.includeTerminated,
+        needsRepayment: filters?.needsRepayment, // Story 8.13 AC 9
         globalFilter,
       },
       activeSortColumn: null,

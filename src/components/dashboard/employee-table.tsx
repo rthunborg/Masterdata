@@ -86,6 +86,8 @@ interface EmployeeTableProps {
   onIncludeArchivedChange?: (value: boolean) => void;
   includeTerminated?: boolean;
   onIncludeTerminatedChange?: (value: boolean) => void;
+  needsRepayment?: boolean; // Story 8.13 AC 9
+  onNeedsRepaymentChange?: (value: boolean) => void; // Story 8.13 AC 9
   updatedEmployeeId?: string | null;
   onGlobalFilterChange?: (value: string) => void;
 }
@@ -109,14 +111,16 @@ const globalFilterFn = (row: Row<Employee>, columnId: string, filterValue: strin
   );
 };
 
-export function EmployeeTable({ 
-  employees, 
-  isLoading, 
+export function EmployeeTable({
+  employees,
+  isLoading,
   onEmployeeUpdated,
   includeArchived = false,
   onIncludeArchivedChange,
   includeTerminated = false,
   onIncludeTerminatedChange,
+  needsRepayment = false, // Story 8.13 AC 9
+  onNeedsRepaymentChange, // Story 8.13 AC 9
   updatedEmployeeId = null,
   onGlobalFilterChange,
 }: EmployeeTableProps) {
@@ -346,10 +350,21 @@ export function EmployeeTable({
 
     try {
       setIsReactivating(true);
-      await employeeService.reactivate(selectedEmployee.id);
+      // Story 8.13 AC 7: Handle warnings from reactivation
+      const { warnings } = await employeeService.reactivate(selectedEmployee.id);
+      
+      // Display success message
       toast.success(
         `${selectedEmployee.first_name} ${selectedEmployee.surname} has been reactivated.`
       );
+      
+      // Display warnings if any dates couldn't be restored
+      if (warnings && warnings.length > 0) {
+        warnings.forEach((warning) => {
+          toast.warning(warning, { duration: 8000 });
+        });
+      }
+      
       setReactivateDialogOpen(false);
       onEmployeeUpdated?.();
     } catch (error: unknown) {
@@ -406,14 +421,20 @@ export function EmployeeTable({
     // First filter by role permissions
     const roleFilteredColumns = columnConfigs;
     
+    // Story 8.13 AC 3: Filter repayment columns - only show when viewing terminated employees
+    const repaymentColumns = ['Återbetalningsskyldig OMC', 'Återbetalningsskyldig PE3'];
+    const terminatedFilteredColumns = includeTerminated 
+      ? roleFilteredColumns 
+      : roleFilteredColumns.filter((config) => !repaymentColumns.includes(config.column_name));
+    
     // Then apply visibility preferences (for HR Admin only)
     const visibleColumns = isHRAdmin 
-      ? roleFilteredColumns.filter((config) => {
+      ? terminatedFilteredColumns.filter((config) => {
           const isVisible = columnVisibility[config.id] !== false;
           
           return isVisible;
         })
-      : roleFilteredColumns;
+      : terminatedFilteredColumns;
     
     const dataColumns: ColumnDef<Employee>[] = visibleColumns.map((config) => {
       // Determine if user can edit this column based on role permissions
@@ -705,7 +726,7 @@ export function EmployeeTable({
     }
 
     return dataColumns;
-  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates]);
+  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates, includeTerminated]);
 
   // Story 8.5: Apply crew-ready filter to employees
   const filteredEmployees = React.useMemo(() => {
@@ -799,7 +820,7 @@ export function EmployeeTable({
 
   return (
     <>
-      {isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange) && (
+      {isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
         <div className="flex items-center space-x-4 mb-4">
           {onIncludeArchivedChange && (
             <div className="flex items-center space-x-2">
@@ -823,6 +844,20 @@ export function EmployeeTable({
               />
               <Label htmlFor="show-terminated" className="cursor-pointer">
                 {tDashboard("showTerminated")}
+              </Label>
+            </div>
+          )}
+          
+          {/* Story 8.13 AC 9: Needs Repayment filter */}
+          {onNeedsRepaymentChange && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="needs-repayment"
+                checked={needsRepayment}
+                onCheckedChange={onNeedsRepaymentChange}
+              />
+              <Label htmlFor="needs-repayment" className="cursor-pointer">
+                {tDashboard("needsRepayment")}
               </Label>
             </div>
           )}
@@ -920,9 +955,25 @@ export function EmployeeTable({
                     {columnConfigs.map((config) => {
                       const isVisible = columnVisibility[config.id] !== false;
                       const displayName = config.column_name;
+                      
+                      // Story 8.13 AC 4: Tooltip for repayment columns
+                      const isRepaymentColumn = ['Återbetalningsskyldig OMC', 'Återbetalningsskyldig PE3'].includes(config.column_name);
+                      
                       return (
                         <div key={config.id} className="flex items-center justify-between">
-                          <span className="text-sm">{displayName}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{displayName}</span>
+                            {isRepaymentColumn && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-xs text-muted-foreground cursor-help">ⓘ</span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">{tDashboard("repaymentColumnTooltip")}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"

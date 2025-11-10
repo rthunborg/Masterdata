@@ -31,6 +31,8 @@ interface ResponsiveEmployeeViewProps {
   onIncludeArchivedChange?: (value: boolean) => void;
   includeTerminated?: boolean;
   onIncludeTerminatedChange?: (value: boolean) => void;
+  needsRepayment?: boolean; // Story 8.13 AC 9
+  onNeedsRepaymentChange?: (value: boolean) => void; // Story 8.13 AC 9
   updatedEmployeeId?: string | null;
   onGlobalFilterChange?: (value: string) => void;
 }
@@ -44,6 +46,8 @@ export function ResponsiveEmployeeView({
   onIncludeArchivedChange,
   includeTerminated = false,
   onIncludeTerminatedChange,
+  needsRepayment = false, // Story 8.13 AC 9
+  onNeedsRepaymentChange, // Story 8.13 AC 9
   updatedEmployeeId = null,
   onGlobalFilterChange,
 }: ResponsiveEmployeeViewProps) {
@@ -167,6 +171,8 @@ export function ResponsiveEmployeeView({
           onIncludeArchivedChange={onIncludeArchivedChange}
           includeTerminated={includeTerminated}
           onIncludeTerminatedChange={onIncludeTerminatedChange}
+          needsRepayment={needsRepayment}
+          onNeedsRepaymentChange={onNeedsRepaymentChange}
           updatedEmployeeId={updatedEmployeeId}
           onGlobalFilterChange={onGlobalFilterChange}
         />

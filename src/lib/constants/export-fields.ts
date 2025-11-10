@@ -27,6 +27,8 @@ export const EXPORTABLE_EMPLOYEE_FIELDS: ExportField[] = [
   { key: 'hire_date', label: 'Hire Date', type: 'date' },
   { key: 'termination_date', label: 'Termination Date', type: 'date' },
   { key: 'termination_reason', label: 'Termination Reason', type: 'text' },
+  { key: 'repayment_needed_omc', label: 'Repayment Needed (ÖMC)', type: 'date' }, // Story 8.13
+  { key: 'repayment_needed_pe3', label: 'Repayment Needed (PE3)', type: 'date' }, // Story 8.13
   { key: 'comments', label: 'Comments', type: 'text' },
   { key: 'loneiva', label: 'Lönenivå', type: 'number' },
 ];

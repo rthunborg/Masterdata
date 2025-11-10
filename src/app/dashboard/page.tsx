@@ -61,6 +61,18 @@ export default function DashboardPage() {
     return false;
   });
   
+  // Story 8.13 AC 9: Add needsRepayment filter
+  const [needsRepayment, setNeedsRepayment] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('employeeFilters');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.needsRepayment ?? false;
+      }
+    }
+    return false;
+  });
+  
   const [globalFilter, setGlobalFilter] = useState("");
 
   // Save filter state to session storage
@@ -68,10 +80,11 @@ export default function DashboardPage() {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('employeeFilters', JSON.stringify({
         includeArchived,
-        includeTerminated
+        includeTerminated,
+        needsRepayment, // Story 8.13 AC 9
       }));
     }
-  }, [includeArchived, includeTerminated]);
+  }, [includeArchived, includeTerminated, needsRepayment]);
 
   // Use the new real-time enabled hook with notifications
   const { 
@@ -81,7 +94,7 @@ export default function DashboardPage() {
     refetch,
     updatedEmployeeId
   } = useEmployees({
-    filters: { includeArchived, includeTerminated },
+    filters: { includeArchived, includeTerminated, needsRepayment }, // Story 8.13 AC 9
     enableRealtime: true,
     userRole: user?.role,
     enableNotifications: user?.role !== "hr_admin", // Only enable for external parties
@@ -221,6 +234,8 @@ export default function DashboardPage() {
               onIncludeArchivedChange={setIncludeArchived}
               includeTerminated={includeTerminated}
               onIncludeTerminatedChange={setIncludeTerminated}
+              needsRepayment={needsRepayment}
+              onNeedsRepaymentChange={setNeedsRepayment}
               updatedEmployeeId={updatedEmployeeId}
               onGlobalFilterChange={setGlobalFilter}
             />
