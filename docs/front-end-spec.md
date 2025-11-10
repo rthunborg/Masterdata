@@ -4,6 +4,30 @@
 
 This document defines the user experience goals, information architecture, user flows, and visual design specifications for HR Masterdata Management System's user interface. It serves as the foundation for visual design and frontend development, ensuring a cohesive and user-centered experience.
 
+## CRITICAL LOCALIZATION REQUIREMENT
+
+> **⚠️ MANDATORY: All user-facing text in this application MUST be in Swedish only.**
+>
+> **This applies to ALL UI elements designed in this specification:**
+>
+> - Button labels ("Spara", "Avbryt", not "Save", "Cancel")
+> - Form fields ("E-post", "Telefon", not "Email", "Phone")
+> - Error messages ("Ogiltigt format", not "Invalid format")
+> - Navigation ("Instrumentpanel", not "Dashboard")
+> - Status indicators ("Aktiv", "Avslutad", not "Active", "Terminated")
+> - Placeholders and help text
+> - Modal titles and dialog content
+> - Toast notifications
+>
+> **Design Implementation:**
+>
+> - Wireframes and mockups must show Swedish text
+> - Component specs must include Swedish labels
+> - User flows must reference Swedish UI text
+> - Design handoff must include Swedish copy for all elements
+>
+> **Translation Source:** `messages/sv.json` (maintained by development team)
+
 ### Overall UX Goals & Principles
 
 #### Target User Personas

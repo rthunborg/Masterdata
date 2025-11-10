@@ -31,6 +31,25 @@ The HR Masterdata Management System will provide a unified spreadsheet-like web 
 
 ---
 
+## Localization Requirement
+
+**CRITICAL:** All user-facing text in the application MUST be in Swedish only. This includes:
+
+- UI labels, buttons, navigation menus
+- Form field labels and placeholders
+- Error messages and validation messages
+- Toast notifications and success messages
+- Table headers and column names
+- Modal titles and dialog content
+- Help text and tooltips
+- Email notifications (if implemented)
+
+**Implementation:** Use Swedish translation file at `messages/sv.json`. No English or other language support required.
+
+**Rationale:** The system serves Swedish-speaking HR staff and external partners exclusively. Maintaining a single language reduces complexity and prevents localization errors.
+
+---
+
 ## Requirements
 
 ### Functional

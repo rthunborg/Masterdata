@@ -192,6 +192,8 @@ export async function POST(request: NextRequest) {
           termination_reason: null,
           // Masterdata columns (Story 7.1) - default to null for CSV imports
           one: null,
+          one_marked_at: null, // Story 8.3
+          talmundo: null, // Story 8.4
           isps: null,
           photo: null,
           origo: null,

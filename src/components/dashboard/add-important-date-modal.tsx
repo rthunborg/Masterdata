@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { createImportantDateSchema } from "@/lib/validation/important-date-schema";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { getWeekNumberFromDateString } from "@/lib/utils/date-utils";
+import { OMCDatePicker } from "./omc-date-picker";
 import { z } from "zod";
 
 type CreateImportantDateInput = z.infer<typeof createImportantDateSchema>;
@@ -181,42 +182,61 @@ export function AddImportantDateModal({
                 )}
               />
 
-              {/* Date Value - with date picker */}
+              {/* Date Value - conditional rendering based on category */}
               <FormField
                 control={form.control}
                 name="date_value"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Datumvärde <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="date"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e.target.value);
-                          // Auto-calculate week number when date is selected
-                          const weekNum = getWeekNumberFromDateString(e.target.value);
-                          if (weekNum !== null && !form.getValues('week_number')) {
-                            form.setValue('week_number', weekNum);
-                          }
-                          // Auto-populate date description with weekday and day/month
-                          if (e.target.value) {
-                            const date = new Date(e.target.value + 'T00:00:00');
-                            const weekdays = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
-                            const weekday = weekdays[date.getDay()];
-                            const day = date.getDate();
-                            const month = date.getMonth() + 1;
-                            const description = `${weekday} ${day}/${month}`;
-                            form.setValue('date_description', description);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const category = form.watch('category');
+                  const isOMC = category === 'ÖMC Dates';
+                  
+                  return (
+                    <FormItem className={isOMC ? "col-span-2" : ""}>
+                      <FormLabel>
+                        Datumvärde <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        {isOMC ? (
+                          <OMCDatePicker
+                            value={field.value}
+                            onChange={(value) => {
+                              field.onChange(value);
+                              // Auto-calculate week number when date is selected
+                              const weekNum = getWeekNumberFromDateString(value);
+                              if (weekNum !== null && !form.getValues('week_number')) {
+                                form.setValue('week_number', weekNum);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <Input 
+                            type="date"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              // Auto-calculate week number when date is selected
+                              const weekNum = getWeekNumberFromDateString(e.target.value);
+                              if (weekNum !== null && !form.getValues('week_number')) {
+                                form.setValue('week_number', weekNum);
+                              }
+                              // Auto-populate date description with weekday and day/month
+                              if (e.target.value) {
+                                const date = new Date(e.target.value + 'T00:00:00');
+                                const weekdays = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
+                                const weekday = weekdays[date.getDay()];
+                                const day = date.getDate();
+                                const month = date.getMonth() + 1;
+                                const description = `${weekday} ${day}/${month}`;
+                                form.setValue('date_description', description);
+                              }
+                            }}
+                          />
+                        )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               {/* Week Number */}

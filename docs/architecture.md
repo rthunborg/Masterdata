@@ -6,7 +6,20 @@ This document outlines the complete fullstack architecture for the HR Masterdata
 
 This unified approach combines what would traditionally be separate backend and frontend architecture documents, streamlining the development process for modern fullstack applications where these concerns are increasingly intertwined.
 
-> **Important:** This application is **Swedish-only**. All user-facing text is in Swedish (`messages/sv.json`). References to English translations (`messages/en.json`) in older documentation are historical only - the application was refactored to Swedish-only in November 2025. See [SPRINT_CHANGE_PROPOSAL_LOCALE_REMOVAL.md](../SPRINT_CHANGE_PROPOSAL_LOCALE_REMOVAL.md) for details.
+## CRITICAL LOCALIZATION REQUIREMENT
+
+> **⚠️ MANDATORY: This application is Swedish-only. ALL user-facing text MUST be in Swedish.**
+>
+> **Implementation Rules:**
+>
+> - Use translation keys from `messages/sv.json` for ALL user-visible text
+> - UI components, forms, buttons, labels, error messages, notifications must be Swedish
+> - No English or other language fallbacks
+> - When adding new UI text, add corresponding Swedish translations to `messages/sv.json`
+> - Code comments and technical documentation may be in English
+> - Database content (employee names, comments) can be any language entered by users
+>
+> **References to English translations (`messages/en.json`) in older documentation are historical only** - the application was refactored to Swedish-only in November 2025. See [SPRINT_CHANGE_PROPOSAL_LOCALE_REMOVAL.md](../SPRINT_CHANGE_PROPOSAL_LOCALE_REMOVAL.md) for details.
 
 ### Starter Template or Existing Project
 

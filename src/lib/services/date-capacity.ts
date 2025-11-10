@@ -48,8 +48,8 @@ export async function canAssignEmployeeToDate(
  *
  * Transaction steps:
  * 1. Lock old and new date rows (SELECT FOR UPDATE)
- * 2. If old date exists, increment remaining_spots by 1
- * 3. Decrement new date remaining_spots by 1
+ * 2. If old date exists, increment remaining_spots by 1 and remove from assigned_employees
+ * 3. Decrement new date remaining_spots by 1 and add to assigned_employees
  * 4. Check constraint (remaining_spots >= 0)
  * 5. Update employee date field
  * 6. Commit or rollback on constraint violation
@@ -69,12 +69,34 @@ export async function assignEmployeeToDate(
 ): Promise<{ success: boolean; message: string }> {
   const supabase = createClient();
 
+  // Query employee details for assigned_employees array
+  const { data: employee, error: employeeError } = await supabase
+    .from('employees')
+    .select('id, first_name, surname, email')
+    .eq('id', employeeId)
+    .single();
+
+  if (employeeError || !employee) {
+    throw new Error('Employee not found');
+  }
+
+  // Build employee data object for JSONB array
+  // Note: room_number is set to null since room_number_shared column doesn't exist yet
+  const employeeData = {
+    id: employee.id,
+    name: `${employee.first_name} ${employee.surname}`,
+    email: employee.email,
+    room_number: null,
+  };
+
   // Use Supabase RPC function for atomic transaction with row-level locking
+  // This function now handles both capacity AND assigned_employees array
   const { error } = await supabase.rpc('update_date_spots', {
     employee_id: employeeId,
     new_date_id: newDateId,
     old_date_id: oldDateId,
     date_type: dateType,
+    employee_data: employeeData,
   });
 
   if (error) {
@@ -106,7 +128,8 @@ export async function assignEmployeeToDate(
 /**
  * Release date capacity when employee is terminated or date assignment is cleared.
  * 
- * Increments remaining_spots for the specified date. This should be called when:
+ * Increments remaining_spots for the specified date and removes employee from assigned_employees array.
+ * This should be called when:
  * - An employee is terminated and has assigned dates
  * - An employee's date field is being cleared (set to null)
  * 
@@ -114,13 +137,18 @@ export async function assignEmployeeToDate(
  * incrementing the old date and decrementing the new date atomically.
  *
  * @param dateId - UUID of date to release capacity for
+ * @param employeeId - UUID of employee being removed from date
  * @returns Promise that resolves when capacity is released
  */
-export async function releaseDateCapacity(dateId: string): Promise<void> {
+export async function releaseDateCapacity(
+  dateId: string,
+  employeeId: string
+): Promise<void> {
   const supabase = createClient();
 
   const { error } = await supabase.rpc('release_date_capacity', {
     date_id: dateId,
+    employee_id: employeeId,
   });
 
   if (error) {

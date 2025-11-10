@@ -20,3 +20,14 @@ devLoadAlwaysFiles:
 devDebugLog: .ai/debug-log.md
 devStoryLocation: docs/stories
 slashPrefix: BMad
+localization:
+  # CRITICAL: This project is Swedish-only
+  defaultLanguage: sv-SE
+  supportedLanguages:
+    - sv-SE
+  translationFile: messages/sv.json
+  userFacingTextRequirement: >
+    ALL user-facing text MUST be in Swedish. This includes UI labels, buttons,
+    forms, error messages, notifications, table headers, modal content, and any
+    text visible to end users. Use translation keys from messages/sv.json.
+    No English or other language support required.

@@ -15,10 +15,12 @@ import { ImportantDateCardList } from "@/components/dashboard/important-date-car
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
 import { ImportImportantDatesModal } from "@/components/dashboard/import-important-dates-modal";
+import { CategoryExportModal } from "@/components/dashboard/category-export-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
+import { exportImportantDates } from "@/lib/services/export-service";
 import { useEffect, useState, useCallback } from "react";
 import type { ImportantDate } from "@/lib/types/important-date";
-import { Plus, ArrowLeft, Upload } from "lucide-react";
+import { Plus, ArrowLeft, Upload, Download, FileDown } from "lucide-react";
 import { Link } from "@/lib/navigation";
 
 export default function ImportantDatesPage() {
@@ -32,6 +34,7 @@ export default function ImportantDatesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isCategoryExportModalOpen, setIsCategoryExportModalOpen] = useState(false);
 
   const fetchDates = useCallback(async () => {
     try {
@@ -65,6 +68,13 @@ export default function ImportantDatesPage() {
 
   const handleDateDeleted = () => {
     fetchDates();
+  };
+
+  const handleExportAll = () => {
+    if (dates.length === 0) {
+      return;
+    }
+    exportImportantDates(dates);
   };
 
   if (authLoading) {
@@ -103,6 +113,14 @@ export default function ImportantDatesPage() {
           </div>
           {user?.role === "hr_admin" && (
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button onClick={() => setIsCategoryExportModalOpen(true)} variant="outline" className="w-full sm:w-auto min-h-11">
+                <FileDown className="h-4 w-4 mr-2" />
+                Export by Category
+              </Button>
+              <Button onClick={handleExportAll} variant="outline" className="w-full sm:w-auto min-h-11" disabled={dates.length === 0}>
+                <Download className="h-4 w-4 mr-2" />
+                Export All Dates
+              </Button>
               <Button onClick={() => setIsImportModalOpen(true)} variant="outline" className="w-full sm:w-auto min-h-11">
                 <Upload className="h-4 w-4 mr-2" />
                 {t('importDates')}
@@ -171,6 +189,11 @@ export default function ImportantDatesPage() {
         open={isImportModalOpen}
         onOpenChange={setIsImportModalOpen}
         onImportComplete={fetchDates}
+      />
+
+      <CategoryExportModal
+        isOpen={isCategoryExportModalOpen}
+        onClose={() => setIsCategoryExportModalOpen(false)}
       />
     </div>
   );

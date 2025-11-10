@@ -47,11 +47,14 @@ import {
 import { Trash2, Archive, ArchiveRestore } from "lucide-react";
 import { EditableCell } from "./editable-cell";
 import { CapacityBadge } from "./capacity-badge";
+import { AssignedEmployeesBadge } from "./assigned-employees-badge";
+import { AssignedEmployeesModal } from "./assigned-employees-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
 import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
 import { 
   loadColumnWidths, 
   saveColumnWidths, 
@@ -80,6 +83,7 @@ export function ImportantDatesTable({
   const tDashboard = useTranslations("dashboard");
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<ImportantDate | null>(null);
+  const [selectedDateForEmployees, setSelectedDateForEmployees] = React.useState<ImportantDate | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isArchiving, setIsArchiving] = React.useState(false);
   
@@ -275,17 +279,23 @@ export function ImportantDatesTable({
         enableSorting: true,
         cell: ({ row }) => {
           const isArchived = !row.original.is_active;
+          const isOmc = isOMCDate(row.original.category);
+          const displayValue = isOmc 
+            ? formatOMCDate(row.original.date_value, 'sv-SE')
+            : row.original.date_value;
+          
           return isHRAdmin && !isArchived ? (
             <EditableCell
               value={row.original.date_value}
               employeeId={row.original.id}
               field="date_value"
               type="text"
+              category={row.original.category}
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />
           ) : (
-            row.original.date_value
+            displayValue
           );
         },
       },
@@ -349,6 +359,26 @@ export function ImportantDatesTable({
               />
             </div>
           );
+        },
+      },
+      // Story 8.8: Assigned Employees column
+      {
+        accessorKey: "assigned_employees",
+        header: "Assigned Employees",
+        enableSorting: true,
+        cell: ({ row }) => {
+          const count = row.original.assigned_employees?.length || 0;
+          return (
+            <AssignedEmployeesBadge
+              count={count}
+              onOpenModal={() => setSelectedDateForEmployees(row.original)}
+            />
+          );
+        },
+        sortingFn: (rowA, rowB) => {
+          const countA = rowA.original.assigned_employees?.length || 0;
+          const countB = rowB.original.assigned_employees?.length || 0;
+          return countA - countB;
         },
       },
     ];
@@ -597,6 +627,12 @@ export function ImportantDatesTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assigned Employees Modal (Story 8.8) */}
+      <AssignedEmployeesModal
+        date={selectedDateForEmployees}
+        onClose={() => setSelectedDateForEmployees(null)}
+      />
     </div>
   );
 }

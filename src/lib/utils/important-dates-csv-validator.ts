@@ -1,4 +1,6 @@
 import type { ImportantDateFormData } from "@/lib/types/important-date";
+import { parseOMCDateInput, isOMCDate } from "./omc-date-formatter";
+import { format } from "date-fns";
 
 export interface ValidationResult {
   valid: boolean;
@@ -61,8 +63,23 @@ export function validateImportantDateRow(
   }
 
   // Validate date_value (required, non-empty text)
+  // Story 8.9: For ÖMC dates, validate and parse two-day format
   if (!row.date_value || String(row.date_value).trim() === "") {
     errors.push({ field: "date_value", message: "Date value is required" });
+  } else {
+    const category = String(row.category || "").trim();
+    const dateValue = String(row.date_value).trim();
+    
+    // Story 8.9: Validate ÖMC date format if category is ÖMC Dates
+    if (isOMCDate(category)) {
+      const parsed = parseOMCDateInput(dateValue);
+      if (!parsed) {
+        errors.push({
+          field: "date_value",
+          message: 'ÖMC-datum måste vara giltiga två på varandra följande dagar (t.ex. "8-9/3", "8-9 mars 2025")',
+        });
+      }
+    }
   }
 
   // Notes is optional, no validation needed
@@ -122,6 +139,18 @@ export function validateImportantDatesCSV(rows: Record<string, unknown>[]): {
 
     if (result.valid) {
       // Transform to ImportantDateFormData
+      const category = String(row.category).trim();
+      let dateValue = String(row.date_value).trim();
+      
+      // Story 8.9: Parse ÖMC dates to ISO format (start date only)
+      if (isOMCDate(category)) {
+        const parsed = parseOMCDateInput(dateValue);
+        if (parsed) {
+          // Convert start date to ISO string (YYYY-MM-DD)
+          dateValue = format(parsed.startDate, 'yyyy-MM-dd');
+        }
+      }
+      
       const formData: ImportantDateFormData = {
         week_number:
           row.week_number !== null &&
@@ -130,13 +159,16 @@ export function validateImportantDatesCSV(rows: Record<string, unknown>[]): {
             ? Number(row.week_number)
             : null,
         year: Number(row.year),
-        category: String(row.category).trim(),
+        category,
         date_description: String(row.date_description).trim(),
-        date_value: String(row.date_value).trim(),
+        date_value: dateValue,
         notes:
           row.notes && String(row.notes).trim() !== ""
             ? String(row.notes).trim()
             : null,
+        // Story 8.7: Default capacity values for CSV imports
+        max_spots: 99,
+        remaining_spots: 99,
       };
 
       potentiallyValid.push({ data: formData, rowNumber });

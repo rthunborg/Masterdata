@@ -30,6 +30,7 @@ import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { useTranslations } from "@/lib/i18n";
 import type { Employee } from "@/lib/types/employee";
+import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
 
 interface EditableCellProps {
   value: string | number | boolean | null;
@@ -41,6 +42,7 @@ interface EditableCellProps {
   oneMarkedAt?: string | null; // Timestamp for One field (Story 8.3)
   oneValue?: boolean | null; // One field value for Talmundo conditional editability (Story 8.4)
   employeeData?: Partial<Employee>; // For Crewing/Done field conditional editability (Story 8.5)
+  category?: string; // For formatting ÖMC dates (Story 8.9)
   onSave: (id: string, field: string, value: string | number | boolean | null) => Promise<void>;
   onError?: (error: string) => void;
 }
@@ -55,6 +57,7 @@ export function EditableCell({
   oneMarkedAt, // Timestamp for One field (Story 8.3)
   oneValue, // One field value for Talmundo conditional editability (Story 8.4)
   employeeData, // Employee data for Crewing/Done conditional editability (Story 8.5)
+  category, // Category for formatting ÖMC dates (Story 8.9)
   onSave,
   onError,
 }: EditableCellProps) {
@@ -183,8 +186,11 @@ export function EditableCell({
   if (!isEditing) {
     // Read-only cell - show tooltip on click
     if (!effectiveCanEdit) {
+      // Story 8.9: Format ÖMC dates as two-day range in display mode
       const displayValue = type === "boolean" 
         ? (value ? "Yes" : "No")
+        : field === "date_value" && category && isOMCDate(category) && value
+        ? formatOMCDate(String(value), 'sv-SE')
         : value !== null && value !== undefined
         ? String(value)
         : null;
@@ -253,8 +259,11 @@ export function EditableCell({
     }
 
     // Editable cell - can click to edit
+    // Story 8.9: Format ÖMC dates as two-day range in display mode
     const displayValue = type === "boolean" 
       ? (value ? "Yes" : "No")
+      : field === "date_value" && category && isOMCDate(category) && value
+      ? formatOMCDate(String(value), 'sv-SE')
       : value !== null && value !== undefined
       ? String(value)
       : null;
