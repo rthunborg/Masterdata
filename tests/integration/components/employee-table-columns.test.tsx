@@ -112,11 +112,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
         is_active: true,
         auth_id: "auth1",
         created_at: "2025-01-01T00:00:00Z",
-        db_column_name: 'test_column',
-        category_color: '#FFFFFF',
-        display_order: 0,
-        is_visible: true,
-        updated_at: new Date().toISOString(),
+        last_active_at: new Date().toISOString(),
       },
       isAuthenticated: true,
       isLoading: false,
@@ -131,6 +127,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       columns: hrAdminColumns,
       isLoading: false,
       error: null,
+      refetch: vi.fn(),
     });
 
     renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
@@ -200,11 +197,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
         is_active: true,
         auth_id: "auth2",
         created_at: "2025-01-01T00:00:00Z",
-        db_column_name: 'test_column',
-        category_color: '#FFFFFF',
-        display_order: 0,
-        is_visible: true,
-        updated_at: new Date().toISOString(),
+        last_active_at: new Date().toISOString(),
       },
       isAuthenticated: true,
       isLoading: false,
@@ -219,6 +212,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       columns: sodexoColumns,
       isLoading: false,
       error: null,
+      refetch: vi.fn(),
     });
 
     renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
@@ -276,11 +270,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
         is_active: true,
         auth_id: "auth3",
         created_at: "2025-01-01T00:00:00Z",
-        db_column_name: 'test_column',
-        category_color: '#FFFFFF',
-        display_order: 0,
-        is_visible: true,
-        updated_at: new Date().toISOString(),
+        last_active_at: new Date().toISOString(),
       },
       isAuthenticated: true,
       isLoading: false,
@@ -295,6 +285,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       columns: payrollColumns,
       isLoading: false,
       error: null,
+      refetch: vi.fn(),
     });
 
     renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
@@ -315,11 +306,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
         is_active: true,
         auth_id: "auth4",
         created_at: "2025-01-01T00:00:00Z",
-        db_column_name: 'test_column',
-        category_color: '#FFFFFF',
-        display_order: 0,
-        is_visible: true,
-        updated_at: new Date().toISOString(),
+        last_active_at: new Date().toISOString(),
       },
       isAuthenticated: true,
       isLoading: false,
@@ -334,6 +321,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       columns: [],
       isLoading: false,
       error: null,
+      refetch: vi.fn(),
     });
 
     renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
@@ -353,11 +341,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
         is_active: true,
         auth_id: "auth1",
         created_at: "2025-01-01T00:00:00Z",
-        db_column_name: 'test_column',
-        category_color: '#FFFFFF',
-        display_order: 0,
-        is_visible: true,
-        updated_at: new Date().toISOString(),
+        last_active_at: new Date().toISOString(),
       },
       isAuthenticated: true,
       isLoading: false,
@@ -372,6 +356,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       columns: [],
       isLoading: true,
       error: null,
+      refetch: vi.fn(),
     });
 
     const { container } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
@@ -390,11 +375,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
         is_active: true,
         auth_id: "auth1",
         created_at: "2025-01-01T00:00:00Z",
-        db_column_name: 'test_column',
-        category_color: '#FFFFFF',
-        display_order: 0,
-        is_visible: true,
-        updated_at: new Date().toISOString(),
+        last_active_at: new Date().toISOString(),
       },
       isAuthenticated: true,
       isLoading: false,
@@ -409,6 +390,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       columns: [],
       isLoading: false,
       error: new Error("Failed to load columns"),
+      refetch: vi.fn(),
     });
 
     renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
