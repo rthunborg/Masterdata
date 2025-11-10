@@ -1,0 +1,76 @@
+﻿
+> hr-masterdata@0.1.0 lint D:\Masterdata\hr-masterdata
+> eslint
+
+
+D:\Masterdata\hr-masterdata\apply-policy-now.js
+   1:26  error    A `require()` style import is forbidden    @typescript-eslint/no-require-imports
+   2:1   error    A `require()` style import is forbidden    @typescript-eslint/no-require-imports
+  24:11  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\check-policy.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+D:\Masterdata\hr-masterdata\check-users.ts
+  5:9  warning  'authResult' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\middleware.ts
+  75:37  warning  'fetchError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\scripts\apply-activity-update-policy.ts
+  46:13  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\scripts\apply-employee-date-migration.ts
+  36:13  warning  'data' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  43:21  warning  'existingColumns' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  68:19  warning  'testData' is assigned a value but never used         @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\src\app\api\admin\columns\[id]\route.ts
+  146:11  warning  'user' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  185:11  warning  'columnName' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\src\components\admin\user-management-table.tsx
+  42:3  warning  'clearColumnWidths' is defined but never used    @typescript-eslint/no-unused-vars
+  57:9  warning  'tDashboard' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\src\components\dashboard\assigned-employees-modal.tsx
+  22:30  warning  'AssignedEmployee' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  48:43  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `date`, but the source dependencies were [date?.assigned_employees, searchQuery]. Inferred less specific property than source.
+
+D:\Masterdata\hr-masterdata\src\components\dashboard\assigned-employees-modal.tsx:48:43
+  46 |
+  47 |   // Filter employees based on search query
+> 48 |   const filteredEmployees = React.useMemo(() => {
+     |                                           ^^^^^^^
+> 49 |     if (!date?.assigned_employees) return [];
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 50 |     
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 57 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 58 |   }, [date?.assigned_employees, searchQuery]);
+     | ^^^^ Could not preserve existing manual memoization
+  59 |
+  60 |   // Paginate filtered employees
+  61 |   const paginatedEmployees = React.useMemo(() => {  react-hooks/preserve-manual-memoization
+  97:10  warning  'payload' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\src\components\dashboard\employee-table.tsx
+  176:10  warning  'refreshTrigger' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  216:9   warning  'handleResetColumnWidths' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\tests\integration\api\delete-column.test.ts
+  10:7  warning  'testEmployeeId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Masterdata\hr-masterdata\tests\integration\date-capacity-concurrency.test.ts
+  163:13  warning  'responses' is assigned a value but never used                                                        @typescript-eslint/no-unused-vars
+  314:7   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-unused-vars')
+
+Γ£û 23 problems (5 errors, 18 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

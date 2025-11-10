@@ -65,7 +65,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Create important date via repository
-    const importantDate = await importantDateRepository.create(validatedData);
+    // Ensure undefined values are converted to null for database compatibility
+    const dateData: typeof validatedData & { time_value: string | null; deadline_submit: string | null; deadline_cancel: string | null } = {
+      ...validatedData,
+      time_value: validatedData.time_value ?? null,
+      deadline_submit: validatedData.deadline_submit ?? null,
+      deadline_cancel: validatedData.deadline_cancel ?? null,
+    };
+    
+    const importantDate = await importantDateRepository.create(dateData);
 
     // Return successful response
     return NextResponse.json(

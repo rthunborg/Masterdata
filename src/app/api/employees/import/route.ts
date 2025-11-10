@@ -190,6 +190,9 @@ export async function POST(request: NextRequest) {
           is_archived: false,
           termination_date: null,
           termination_reason: null,
+          // Repayment tracking fields (Story 8.13)
+          repayment_needed_omc: null,
+          repayment_needed_pe3: null,
           // Masterdata columns (Story 7.1) - default to null for CSV imports
           one: null,
           one_marked_at: null, // Story 8.3
