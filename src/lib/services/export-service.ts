@@ -3,6 +3,7 @@
  * Story: 8.8 - Important Dates Assigned Employees List
  * Story: 8.9 - ÖMC Two-Day Date Format
  * Story: 8.10 - PE3 Date Time Selection
+ * Story: 8.11 - Important Dates Deadline Columns
  * 
  * Handles CSV export functionality for important dates and employees.
  */
@@ -23,6 +24,7 @@ import { createClient } from '@/lib/supabase/client';
  * Export important dates with assigned employees (AC 7)
  * Story 8.9: ÖMC dates exported with two-day format (e.g., "8-9 mars 2025")
  * Story 8.10: PE3 dates exported with time column (e.g., "14:30")
+ * Story 8.11: Deadline columns exported
  */
 export function exportImportantDates(dates: ImportantDate[]): void {
   const headers = [
@@ -32,6 +34,8 @@ export function exportImportantDates(dates: ImportantDate[]): void {
     'Description',
     'Date Value',
     'Time',
+    'Deadline Submit',
+    'Deadline Cancel',
     'Max Capacity',
     'Remaining Spots',
     'Assigned Employees',
@@ -54,6 +58,8 @@ export function exportImportantDates(dates: ImportantDate[]): void {
       date.date_description,
       dateValue,
       timeValue,
+      date.deadline_submit ?? '',
+      date.deadline_cancel ?? '',
       date.max_spots ?? 99,
       date.remaining_spots ?? 99,
       formatAssignedEmployeesForCSV(date.assigned_employees || []),

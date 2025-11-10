@@ -31,6 +31,19 @@ export interface ImportantDate {
    * - Optional, null if no specific time required
    */
   time_value: string | null;
+  /**
+   * Deadline for submitting new employee assignments.
+   * After this date, no new employees can be assigned to this date.
+   * Optional - null if no submission deadline.
+   */
+  deadline_submit: string | null;
+  /**
+   * Deadline for canceling employee assignments.
+   * After this date, employees cannot be unassigned from this date.
+   * Optional - null if no cancellation deadline.
+   * Business rule: deadline_submit <= deadline_cancel
+   */
+  deadline_cancel: string | null;
   notes: string | null;
   is_active: boolean;
   max_spots: number; // Maximum capacity for this date

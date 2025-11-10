@@ -6,9 +6,11 @@
  * for concurrent employee assignments.
  * 
  * Story: 8.7 - Important Dates Capacity Management
+ * Story: 8.11 - Important Dates Deadline Columns (added deadline validation)
  */
 
 import { createClient } from '@/lib/supabase/client';
+import { isSubmissionOpen, isCancellationOpen } from '@/lib/utils/deadline-validator';
 
 /**
  * Validate if an employee can be assigned to a date based on remaining capacity.
@@ -68,6 +70,46 @@ export async function assignEmployeeToDate(
   dateType: 'omc_date' | 'stena_date' | 'pe3_date'
 ): Promise<{ success: boolean; message: string }> {
   const supabase = createClient();
+
+  // Story 8.11: Check deadline constraints before assignment
+  if (newDateId) {
+    const { data: newDate, error: dateError } = await supabase
+      .from('important_dates')
+      .select('deadline_submit, deadline_cancel')
+      .eq('id', newDateId)
+      .single();
+
+    if (dateError) {
+      throw new Error('Failed to fetch date information');
+    }
+
+    // Check if submission deadline has passed (new assignment not allowed)
+    if (newDate && !isSubmissionOpen(newDate.deadline_submit)) {
+      throw new Error(
+        'Inlämningsdeadline har passerat för detta datum. Kan inte tilldela medarbetare.'
+      );
+    }
+  }
+
+  // Story 8.11: Check if cancellation deadline has passed when clearing assignment
+  if (oldDateId && !newDateId) {
+    const { data: oldDate, error: oldDateError } = await supabase
+      .from('important_dates')
+      .select('deadline_cancel')
+      .eq('id', oldDateId)
+      .single();
+
+    if (oldDateError) {
+      throw new Error('Failed to fetch previous date information');
+    }
+
+    // Check if cancellation deadline has passed (unassignment not allowed)
+    if (oldDate && !isCancellationOpen(oldDate.deadline_cancel)) {
+      throw new Error(
+        'Avbokningsdeadline har passerat. Kan inte ta bort tilldelning.'
+      );
+    }
+  }
 
   // Query employee details for assigned_employees array
   const { data: employee, error: employeeError } = await supabase

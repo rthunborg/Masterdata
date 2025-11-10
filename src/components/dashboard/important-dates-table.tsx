@@ -63,6 +63,8 @@ import {
   saveColumnWidths, 
   clearColumnWidths 
 } from "@/lib/utils/column-width-storage";
+import { getDeadlineStatus } from "@/lib/utils/deadline-validator";
+import { Badge } from "@/components/ui/badge";
 
 interface ImportantDatesTableProps {
   dates: ImportantDate[];
@@ -317,6 +319,67 @@ export function ImportantDatesTable({
           ) : (
             displayValue
           );
+        },
+      },
+      // Story 8.11: Deadline columns
+      {
+        accessorKey: "deadline_submit",
+        header: "Inlämningsdeadline",
+        enableSorting: true,
+        cell: ({ row }) => {
+          const deadlineSubmit = row.original.deadline_submit;
+          if (!deadlineSubmit) return "—";
+          
+          try {
+            const date = new Date(deadlineSubmit + 'T00:00:00');
+            const formattedDate = format(date, 'd MMM yyyy', { locale: sv });
+            
+            // Check deadline status
+            const status = getDeadlineStatus(deadlineSubmit, row.original.deadline_cancel);
+            
+            return (
+              <div className="flex items-center gap-2">
+                <span>{formattedDate}</span>
+                {status === 'submit_closed' && (
+                  <Badge variant="destructive" className="text-xs">
+                    Stängd
+                  </Badge>
+                )}
+              </div>
+            );
+          } catch {
+            return deadlineSubmit;
+          }
+        },
+      },
+      {
+        accessorKey: "deadline_cancel",
+        header: "Avbokningsdeadline",
+        enableSorting: true,
+        cell: ({ row }) => {
+          const deadlineCancel = row.original.deadline_cancel;
+          if (!deadlineCancel) return "—";
+          
+          try {
+            const date = new Date(deadlineCancel + 'T00:00:00');
+            const formattedDate = format(date, 'd MMM yyyy', { locale: sv });
+            
+            // Check deadline status
+            const status = getDeadlineStatus(row.original.deadline_submit, deadlineCancel);
+            
+            return (
+              <div className="flex items-center gap-2">
+                <span>{formattedDate}</span>
+                {status === 'cancel_closed' && (
+                  <Badge variant="destructive" className="text-xs">
+                    Stängd
+                  </Badge>
+                )}
+              </div>
+            );
+          } catch {
+            return deadlineCancel;
+          }
         },
       },
       {

@@ -136,6 +136,8 @@ export interface Database {
           date_description: string;
           date_value: string;
           time_value: string | null;
+          deadline_submit: string | null;
+          deadline_cancel: string | null;
           notes: string | null;
           created_at: string;
           updated_at: string;
@@ -148,6 +150,8 @@ export interface Database {
           date_description: string;
           date_value: string;
           time_value?: string | null;
+          deadline_submit?: string | null;
+          deadline_cancel?: string | null;
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -160,6 +164,8 @@ export interface Database {
           date_description?: string;
           date_value?: string;
           time_value?: string | null;
+          deadline_submit?: string | null;
+          deadline_cancel?: string | null;
           notes?: string | null;
           created_at?: string;
           updated_at?: string;

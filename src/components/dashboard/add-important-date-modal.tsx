@@ -66,6 +66,8 @@ export function AddImportantDateModal({
       date_description: "",
       date_value: "",
       time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
       notes: null,
     },
   });
@@ -79,6 +81,9 @@ export function AddImportantDateModal({
         category: "Stena Dates",
         date_description: "",
         date_value: "",
+        time_value: null,
+        deadline_submit: null,
+        deadline_cancel: null,
         notes: null,
       });
     }
@@ -89,7 +94,16 @@ export function AddImportantDateModal({
   const onSubmit = async (data: CreateImportantDateInput) => {
     try {
       setIsSubmitting(true);
-      const newDate = await importantDateService.create(data);
+      
+      // Normalize optional fields to ensure null instead of undefined
+      const normalizedData = {
+        ...data,
+        time_value: data.time_value ?? null,
+        deadline_submit: data.deadline_submit ?? null,
+        deadline_cancel: data.deadline_cancel ?? null,
+      };
+      
+      const newDate = await importantDateService.create(normalizedData);
       
       toast.success(t('dateCreated', { description: newDate.date_description }));
       
@@ -136,6 +150,8 @@ export function AddImportantDateModal({
         date_description: "",
         date_value: "",
         time_value: null,
+        deadline_submit: null,
+        deadline_cancel: null,
         notes: null,
       });
       onClose();
@@ -316,6 +332,62 @@ export function AddImportantDateModal({
                   )}
                 />
               )}
+
+              {/* Deadline Submit */}
+              <FormField
+                control={form.control}
+                name="deadline_submit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Inlämningsdeadline (Valfritt)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? null : value);
+                        }}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Efter detta datum kan inga nya medarbetare tilldelas
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Deadline Cancel */}
+              <FormField
+                control={form.control}
+                name="deadline_cancel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Avbokningsdeadline (Valfritt)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? null : value);
+                        }}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Efter detta datum kan tilldelningar inte avbokas
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Date Description - now optional and auto-populated */}
               <FormField

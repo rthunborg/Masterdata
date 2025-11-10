@@ -19,6 +19,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { importantDateService } from '@/lib/services/important-date-service';
 import { toast } from 'sonner';
+import { getDeadlineStatus } from '@/lib/utils/deadline-validator';
+import { format } from 'date-fns';
+import { sv } from 'date-fns/locale';
 
 interface ImportantDateCardListProps {
   dates: ImportantDate[];
@@ -132,6 +135,33 @@ export function ImportantDateCardList({
                   <div className="flex justify-between pt-2 border-t">
                     <span className="text-muted-foreground">Date:</span>
                     <span className="font-medium">{date.date_value}</span>
+                  </div>
+                )}
+                {/* Story 8.11: Deadline display */}
+                {date.deadline_submit && (
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-muted-foreground">Inlämningsdeadline:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {format(new Date(date.deadline_submit + 'T00:00:00'), 'd MMM yyyy', { locale: sv })}
+                      </span>
+                      {getDeadlineStatus(date.deadline_submit, date.deadline_cancel) === 'submit_closed' && (
+                        <Badge variant="destructive" className="text-xs">Stängd</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {date.deadline_cancel && (
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-muted-foreground">Avbokningsdeadline:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {format(new Date(date.deadline_cancel + 'T00:00:00'), 'd MMM yyyy', { locale: sv })}
+                      </span>
+                      {getDeadlineStatus(date.deadline_submit, date.deadline_cancel) === 'cancel_closed' && (
+                        <Badge variant="destructive" className="text-xs">Stängd</Badge>
+                      )}
+                    </div>
                   </div>
                 )}
                 {date.notes && (

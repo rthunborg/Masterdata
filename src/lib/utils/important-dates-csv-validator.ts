@@ -1,6 +1,7 @@
 import type { ImportantDateFormData } from "@/lib/types/important-date";
 import { parseOMCDateInput, isOMCDate } from "./omc-date-formatter";
 import { parseTimeInput } from "./time-formatter";
+import { validateDeadlines } from "./deadline-validator";
 import { format } from "date-fns";
 
 export interface ValidationResult {
@@ -95,6 +96,21 @@ export function validateImportantDateRow(
     }
   }
 
+  // Story 8.11: Validate deadline fields (optional, must be valid dates if provided)
+  const deadlineSubmit = row.deadline_submit ? String(row.deadline_submit).trim() : null;
+  const deadlineCancel = row.deadline_cancel ? String(row.deadline_cancel).trim() : null;
+  const dateValue = row.date_value ? String(row.date_value).trim() : "";
+
+  if (deadlineSubmit || deadlineCancel) {
+    const result = validateDeadlines(deadlineSubmit, deadlineCancel, dateValue);
+    if (!result.valid) {
+      errors.push({
+        field: "deadline_submit",
+        message: result.error || "Ogiltiga deadlines",
+      });
+    }
+  }
+
   // Notes is optional, no validation needed
 
   return {
@@ -173,6 +189,14 @@ export function validateImportantDatesCSV(rows: Record<string, unknown>[]): {
         }
       }
       
+      // Story 8.11: Parse deadline fields if provided
+      const deadlineSubmit = row.deadline_submit && String(row.deadline_submit).trim() !== "" 
+        ? String(row.deadline_submit).trim() 
+        : null;
+      const deadlineCancel = row.deadline_cancel && String(row.deadline_cancel).trim() !== "" 
+        ? String(row.deadline_cancel).trim() 
+        : null;
+      
       const formData: ImportantDateFormData = {
         week_number:
           row.week_number !== null &&
@@ -185,6 +209,8 @@ export function validateImportantDatesCSV(rows: Record<string, unknown>[]): {
         date_description: String(row.date_description).trim(),
         date_value: dateValue,
         time_value: timeValue,
+        deadline_submit: deadlineSubmit,
+        deadline_cancel: deadlineCancel,
         notes:
           row.notes && String(row.notes).trim() !== ""
             ? String(row.notes).trim()
