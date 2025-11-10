@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { parseOMCDateInput } from "@/lib/utils/omc-date-formatter";
+import { validateTimeFormat } from "@/lib/utils/time-formatter";
 
 export const createImportantDateSchema = z.object({
   week_number: z.number().int().min(1).max(53).nullable().default(null),
@@ -7,6 +8,7 @@ export const createImportantDateSchema = z.object({
   category: z.enum(["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]),
   date_description: z.string().optional().default(""),
   date_value: z.string().min(1, "Date value is required"),
+  time_value: z.string().nullable().optional(),
   notes: z.string().nullable().default(null),
   // Story 8.7: Capacity management fields
   max_spots: z.number().int().min(1).default(99),
@@ -25,6 +27,20 @@ export const createImportantDateSchema = z.object({
     message: 'ÖMC-datum måste vara giltiga två på varandra följande dagar (t.ex. "8-9/3", "8-9 mars")',
     path: ['date_value'],
   }
+)
+.refine(
+  (data) => {
+    // Validate time format if provided
+    if (data.time_value && data.time_value.trim() !== '') {
+      const result = validateTimeFormat(data.time_value);
+      return result.valid;
+    }
+    return true;
+  },
+  {
+    message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+    path: ['time_value'],
+  }
 );
 
 export const updateImportantDateSchema = z.object({
@@ -33,6 +49,7 @@ export const updateImportantDateSchema = z.object({
   category: z.enum(["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]).optional(),
   date_description: z.string().optional(),
   date_value: z.string().min(1, "Date value is required").optional(),
+  time_value: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   // Story 8.7: Capacity management fields
   max_spots: z.number().int().min(1).optional(),
@@ -50,6 +67,20 @@ export const updateImportantDateSchema = z.object({
   {
     message: 'ÖMC-datum måste vara giltiga två på varandra följande dagar (t.ex. "8-9/3", "8-9 mars")',
     path: ['date_value'],
+  }
+)
+.refine(
+  (data) => {
+    // Validate time format if provided
+    if (data.time_value && data.time_value.trim() !== '') {
+      const result = validateTimeFormat(data.time_value);
+      return result.valid;
+    }
+    return true;
+  },
+  {
+    message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+    path: ['time_value'],
   }
 );
 

@@ -25,6 +25,12 @@ export interface ImportantDate {
    * - For other categories: Standard single-date value
    */
   date_value: string;
+  /**
+   * Time value for PE3 appointments (HH:MM format, 24-hour clock).
+   * - Only used for PE3 category dates
+   * - Optional, null if no specific time required
+   */
+  time_value: string | null;
   notes: string | null;
   is_active: boolean;
   max_spots: number; // Maximum capacity for this date

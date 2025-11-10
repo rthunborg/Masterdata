@@ -1,5 +1,6 @@
 import type { ImportantDateFormData } from "@/lib/types/important-date";
 import { parseOMCDateInput, isOMCDate } from "./omc-date-formatter";
+import { parseTimeInput } from "./time-formatter";
 import { format } from "date-fns";
 
 export interface ValidationResult {
@@ -82,6 +83,18 @@ export function validateImportantDateRow(
     }
   }
 
+  // Story 8.10: Validate time_value (optional, must be valid time format if provided)
+  if (row.time_value !== null && row.time_value !== undefined && String(row.time_value).trim() !== "") {
+    const timeValue = String(row.time_value).trim();
+    const parsed = parseTimeInput(timeValue);
+    if (!parsed) {
+      errors.push({
+        field: "time_value",
+        message: 'Tid måste vara i format HH:MM (t.ex. "14:30")',
+      });
+    }
+  }
+
   // Notes is optional, no validation needed
 
   return {
@@ -151,6 +164,15 @@ export function validateImportantDatesCSV(rows: Record<string, unknown>[]): {
         }
       }
       
+      // Story 8.10: Parse time_value if provided
+      let timeValue: string | null = null;
+      if (row.time_value !== null && row.time_value !== undefined && String(row.time_value).trim() !== "") {
+        const parsed = parseTimeInput(String(row.time_value).trim());
+        if (parsed) {
+          timeValue = parsed;
+        }
+      }
+      
       const formData: ImportantDateFormData = {
         week_number:
           row.week_number !== null &&
@@ -162,6 +184,7 @@ export function validateImportantDatesCSV(rows: Record<string, unknown>[]): {
         category,
         date_description: String(row.date_description).trim(),
         date_value: dateValue,
+        time_value: timeValue,
         notes:
           row.notes && String(row.notes).trim() !== ""
             ? String(row.notes).trim()

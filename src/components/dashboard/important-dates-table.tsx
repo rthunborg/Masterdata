@@ -55,6 +55,9 @@ import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
+import { formatTimeDisplay } from "@/lib/utils/time-formatter";
+import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 import { 
   loadColumnWidths, 
   saveColumnWidths, 
@@ -280,9 +283,26 @@ export function ImportantDatesTable({
         cell: ({ row }) => {
           const isArchived = !row.original.is_active;
           const isOmc = isOMCDate(row.original.category);
-          const displayValue = isOmc 
-            ? formatOMCDate(row.original.date_value, 'sv-SE')
-            : row.original.date_value;
+          const isPE3 = row.original.category === 'PE3 Dates';
+          
+          let displayValue = row.original.date_value;
+          
+          // Format ÖMC dates as two-day ranges
+          if (isOmc) {
+            displayValue = formatOMCDate(row.original.date_value, 'sv-SE');
+          }
+          // Format PE3 dates with time if available
+          else if (isPE3 && row.original.time_value) {
+            try {
+              const date = new Date(row.original.date_value + 'T00:00:00');
+              const formattedDate = format(date, 'd MMMM yyyy', { locale: sv });
+              const formattedTime = formatTimeDisplay(row.original.time_value);
+              displayValue = `${formattedDate} ${formattedTime}`;
+            } catch {
+              // Fall back to date only if parsing fails
+              displayValue = row.original.date_value;
+            }
+          }
           
           return isHRAdmin && !isArchived ? (
             <EditableCell

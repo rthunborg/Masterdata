@@ -1,0 +1,306 @@
+/**
+ * TimePicker Component Unit Tests
+ * Story: 8.10 PE3 Date Time Selection
+ */
+
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { TimePicker } from "@/components/dashboard/time-picker";
+
+// Helper to get time input
+const getTimeInput = (container: HTMLElement) => container.querySelector('input[type="time"]') as HTMLInputElement;
+
+describe("TimePicker Component", () => {
+  describe("Rendering", () => {
+    it("renders with null value and shows placeholder", () => {
+      const onChange = vi.fn();
+      const { container } = render(
+        <TimePicker
+          value={null}
+          onChange={onChange}
+          placeholder="HH:MM (t.ex. 14:30)"
+        />
+      );
+
+      const input = getTimeInput(container);
+      expect(input).toBeInTheDocument();
+      expect(input.value).toBe("");
+      expect(input).toHaveAttribute("placeholder", "HH:MM (t.ex. 14:30)");
+    });
+
+    it("renders with valid time value", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input.value).toBe("14:30");
+    });
+
+    it("renders clear button when value is present", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const clearButton = screen.getByRole("button", { name: /rensa tid/i });
+      expect(clearButton).toBeInTheDocument();
+    });
+
+    it("does not render clear button when value is null", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value={null} onChange={onChange} />);
+
+      const clearButton = screen.queryByRole("button", { name: /rensa tid/i });
+      expect(clearButton).not.toBeInTheDocument();
+    });
+
+    it("renders in disabled state", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} disabled />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input).toBeDisabled();
+    });
+
+    it("does not show clear button when disabled", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} disabled />);
+
+      const clearButton = screen.queryByRole("button", { name: /rensa tid/i });
+      expect(clearButton).not.toBeInTheDocument();
+    });
+
+    it("displays error message when error prop is provided", () => {
+      const onChange = vi.fn();
+      render(
+        <TimePicker
+          value="14:30"
+          onChange={onChange}
+          error="Tid måste vara i format HH:MM"
+        />
+      );
+
+      expect(screen.getByText("Tid måste vara i format HH:MM")).toBeInTheDocument();
+    });
+
+    it("applies error styling when error is present", () => {
+      const onChange = vi.fn();
+      render(
+        <TimePicker
+          value="14:30"
+          onChange={onChange}
+          error="Invalid time"
+        />
+      );
+
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveClass("border-destructive");
+    });
+  });
+
+  describe("User Interactions", () => {
+    it("calls onChange with formatted time on valid input", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value={null} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      fireEvent.change(input, { target: { value: "14:30" } });
+      fireEvent.blur(input);
+
+      expect(onChange).toHaveBeenCalledWith("14:30");
+    });
+
+    it("normalizes single-digit hours with leading zero", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value={null} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      fireEvent.change(input, { target: { value: "9:05" } });
+      fireEvent.blur(input);
+
+      expect(onChange).toHaveBeenCalledWith("09:05");
+    });
+
+    it("strips seconds from HH:MM:SS format", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value={null} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      fireEvent.change(input, { target: { value: "14:30:00" } });
+      fireEvent.blur(input);
+
+      expect(onChange).toHaveBeenCalledWith("14:30");
+    });
+
+    it("clears time when clear button is clicked", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const clearButton = screen.getByRole("button", { name: /rensa tid/i });
+      fireEvent.click(clearButton);
+
+      expect(onChange).toHaveBeenCalledWith(null);
+    });
+
+    it("calls onChange with null when empty string is entered", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      fireEvent.change(input, { target: { value: "" } });
+      fireEvent.blur(input);
+
+      expect(onChange).toHaveBeenCalledWith(null);
+    });
+
+    it("reverts to previous value on invalid input", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      
+      // Try to enter invalid time
+      fireEvent.change(input, { target: { value: "25:00" } });
+      fireEvent.blur(input);
+
+      // Should NOT call onChange with invalid value
+      expect(onChange).not.toHaveBeenCalledWith("25:00");
+      
+      // Input should revert to previous valid value
+      expect(input.value).toBe("14:30");
+    });
+
+    it("does not trigger onChange when typing (only on blur)", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value={null} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      fireEvent.change(input, { target: { value: "14" } });
+
+      // Should not call onChange until blur
+      expect(onChange).not.toHaveBeenCalled();
+
+      fireEvent.change(input, { target: { value: "14:30" } });
+      expect(onChange).not.toHaveBeenCalled();
+
+      // Only on blur
+      fireEvent.blur(input);
+      expect(onChange).toHaveBeenCalledWith("14:30");
+    });
+  });
+
+  describe("Value Synchronization", () => {
+    it("updates local value when prop value changes", () => {
+      const onChange = vi.fn();
+      const { rerender } = render(<TimePicker value="14:30" onChange={onChange} />);
+
+      let input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input.value).toBe("14:30");
+
+      // Change prop value
+      rerender(<TimePicker value="09:00" onChange={onChange} />);
+
+      input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input.value).toBe("09:00");
+    });
+
+    it("clears input when prop value changes to null", () => {
+      const onChange = vi.fn();
+      const { rerender } = render(<TimePicker value="14:30" onChange={onChange} />);
+
+      let input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input.value).toBe("14:30");
+
+      // Change to null
+      rerender(<TimePicker value={null} onChange={onChange} />);
+
+      input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input.value).toBe("");
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("handles midnight (00:00) correctly", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value={null} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      fireEvent.change(input, { target: { value: "00:00" } });
+      fireEvent.blur(input);
+
+      expect(onChange).toHaveBeenCalledWith("00:00");
+    });
+
+    it("handles end of day (23:59) correctly", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value={null} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      fireEvent.change(input, { target: { value: "23:59" } });
+      fireEvent.blur(input);
+
+      expect(onChange).toHaveBeenCalledWith("23:59");
+    });
+
+    it("rejects hours > 23", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "24:00" } });
+      fireEvent.blur(input);
+
+      // Should revert to previous value
+      expect(input.value).toBe("14:30");
+      expect(onChange).not.toHaveBeenCalledWith("24:00");
+    });
+
+    it("rejects minutes > 59", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "14:60" } });
+      fireEvent.blur(input);
+
+      // Should revert to previous value
+      expect(input.value).toBe("14:30");
+      expect(onChange).not.toHaveBeenCalledWith("14:60");
+    });
+
+    it("handles whitespace in input", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value={null} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      fireEvent.change(input, { target: { value: "  14:30  " } });
+      fireEvent.blur(input);
+
+      expect(onChange).toHaveBeenCalledWith("14:30");
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("has proper ARIA attributes", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const input = screen.getByRole("textbox");
+      expect(input).toBeInTheDocument();
+    });
+
+    it("clear button has screen reader text", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const clearButton = screen.getByRole("button", { name: /rensa tid/i });
+      expect(clearButton).toHaveAccessibleName("Rensa tid");
+    });
+
+    it("clear button has negative tabindex to prevent focus", () => {
+      const onChange = vi.fn();
+      render(<TimePicker value="14:30" onChange={onChange} />);
+
+      const clearButton = screen.getByRole("button", { name: /rensa tid/i });
+      expect(clearButton).toHaveAttribute("tabindex", "-1");
+    });
+  });
+});

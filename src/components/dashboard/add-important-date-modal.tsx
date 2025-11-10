@@ -35,6 +35,7 @@ import { createImportantDateSchema } from "@/lib/validation/important-date-schem
 import { importantDateService } from "@/lib/services/important-date-service";
 import { getWeekNumberFromDateString } from "@/lib/utils/date-utils";
 import { OMCDatePicker } from "./omc-date-picker";
+import { TimePicker } from "./time-picker";
 import { z } from "zod";
 
 type CreateImportantDateInput = z.infer<typeof createImportantDateSchema>;
@@ -64,6 +65,7 @@ export function AddImportantDateModal({
       category: "Stena Dates",
       date_description: "",
       date_value: "",
+      time_value: null,
       notes: null,
     },
   });
@@ -133,6 +135,7 @@ export function AddImportantDateModal({
         category: "Stena Dates",
         date_description: "",
         date_value: "",
+        time_value: null,
         notes: null,
       });
       onClose();
@@ -287,6 +290,32 @@ export function AddImportantDateModal({
                   </FormItem>
                 )}
               />
+
+              {/* Time Value - only for PE3 Dates */}
+              {form.watch('category') === 'PE3 Dates' && (
+                <FormField
+                  control={form.control}
+                  name="time_value"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>
+                        Tid (Valfritt)
+                      </FormLabel>
+                      <FormControl>
+                        <TimePicker
+                          value={field.value ?? null}
+                          onChange={(value) => field.onChange(value)}
+                          placeholder="HH:MM (t.ex. 14:30)"
+                        />
+                      </FormControl>
+                      <p className="text-sm text-muted-foreground">
+                        Tid är valfri för PE3-datum
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {/* Date Description - now optional and auto-populated */}
               <FormField

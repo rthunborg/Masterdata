@@ -2,6 +2,7 @@
  * Export Service
  * Story: 8.8 - Important Dates Assigned Employees List
  * Story: 8.9 - ÖMC Two-Day Date Format
+ * Story: 8.10 - PE3 Date Time Selection
  * 
  * Handles CSV export functionality for important dates and employees.
  */
@@ -15,11 +16,13 @@ import {
   formatAssignedEmployeesForCSV 
 } from '@/lib/utils/csv-export';
 import { formatOMCDate, isOMCDate } from '@/lib/utils/omc-date-formatter';
+import { formatTimeDisplay } from '@/lib/utils/time-formatter';
 import { createClient } from '@/lib/supabase/client';
 
 /**
  * Export important dates with assigned employees (AC 7)
  * Story 8.9: ÖMC dates exported with two-day format (e.g., "8-9 mars 2025")
+ * Story 8.10: PE3 dates exported with time column (e.g., "14:30")
  */
 export function exportImportantDates(dates: ImportantDate[]): void {
   const headers = [
@@ -28,6 +31,7 @@ export function exportImportantDates(dates: ImportantDate[]): void {
     'Category',
     'Description',
     'Date Value',
+    'Time',
     'Max Capacity',
     'Remaining Spots',
     'Assigned Employees',
@@ -40,12 +44,16 @@ export function exportImportantDates(dates: ImportantDate[]): void {
       ? formatOMCDate(date.date_value, 'sv-SE')
       : date.date_value;
     
+    // Story 8.10: Format time for PE3 dates
+    const timeValue = formatTimeDisplay(date.time_value);
+    
     return [
       date.week_number ?? '',
       date.year,
       date.category,
       date.date_description,
       dateValue,
+      timeValue,
       date.max_spots ?? 99,
       date.remaining_spots ?? 99,
       formatAssignedEmployeesForCSV(date.assigned_employees || []),
