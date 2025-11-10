@@ -15,7 +15,7 @@ describe("useViewStateTracker", () => {
     ssn: "123456-7890",
     email: "john@example.com",
     mobile: null,
-    rank: null,
+    rank: 'SEV',
     gender: null,
     town_district: null,
     hire_date: "2025-01-01",

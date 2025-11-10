@@ -14,7 +14,7 @@ describe('canEditCrewingDone', () => {
     photo: true,
     origo: true,
     mail_lon: true,
-    loneiva: true,
+    loneiva: 1,
     bankuppgifter: true,
     li: true,
     passport: true,
@@ -59,7 +59,7 @@ describe('canEditCrewingDone', () => {
     });
 
     it('returns false when loneiva is false', () => {
-      const result = canEditCrewingDone({ ...completeEmployee, loneiva: false });
+      const result = canEditCrewingDone({ ...completeEmployee, loneiva: 0 });
       expect(result).toBe(false);
     });
 
@@ -149,7 +149,7 @@ describe('canEditCrewingDone', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: false,
+        loneiva: 0,
       });
       expect(result).toBe(false);
     });
@@ -168,7 +168,7 @@ describe('canEditCrewingDone', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: false,
+        loneiva: 0,
         bankuppgifter: false,
         li: false,
         passport: false,
@@ -216,7 +216,7 @@ describe('getIncompleteFields', () => {
     photo: true,
     origo: true,
     mail_lon: true,
-    loneiva: true,
+    loneiva: 1,
     bankuppgifter: true,
     li: true,
     passport: true,
@@ -286,7 +286,7 @@ describe('getIncompleteFields', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: false,
+        loneiva: 0,
         bankuppgifter: false,
         li: false,
         passport: false,

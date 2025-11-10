@@ -38,7 +38,7 @@ describe("AddEmployeeModal", () => {
     email: "jane.smith@example.com",
     mobile: "+46701234567",
     rank: "CHEF",
-    gender: "Female",
+    gender: 'Woman',
     town_district: "Gothenburg",
     hire_date: "2025-01-01",
     termination_date: null,
