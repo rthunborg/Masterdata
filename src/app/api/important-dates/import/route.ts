@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const columnMappingStr = formData.get("columnMapping") as string;
+    const deadlineSubmit = formData.get("deadlineSubmit") as string | null;
+    const deadlineCancel = formData.get("deadlineCancel") as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -94,8 +96,40 @@ export async function POST(request: NextRequest) {
         }
       });
 
+      // Hardcode category to "PE3 Dates"
+      mappedRow.category = "PE3 Dates";
+
+      // Apply batch deadlines if provided
+      if (deadlineSubmit) {
+        mappedRow.deadline_submit = deadlineSubmit;
+      }
+      if (deadlineCancel) {
+        mappedRow.deadline_cancel = deadlineCancel;
+      }
+
       return mappedRow;
     });
+
+    // Validate that all rows are PE3 Dates (redundant check since we hardcode it, but good for safety)
+    const nonPE3Rows = mappedRows.filter((row) => row.category !== "PE3 Dates");
+    if (nonPE3Rows.length > 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Only PE3 dates can be imported via this feature",
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Log import metadata for auditing
+    const userOverride = !!((deadlineSubmit && formData.get("deadlineSubmitOverride")) || (deadlineCancel && formData.get("deadlineCancelOverride")));
+    console.log(
+      `[PE3 Import] Importing ${mappedRows.length} dates | Deadline Submit: ${deadlineSubmit || "N/A"} | Deadline Cancel: ${deadlineCancel || "N/A"} | User Override: ${userOverride ? "Yes" : "No"}`
+    );
 
     // Validate rows
     const { valid, invalid } = validateImportantDatesCSV(mappedRows);

@@ -167,7 +167,9 @@ export const importantDateService = {
 
   async importCSV(
     file: File,
-    columnMapping: Record<string, string>
+    columnMapping: Record<string, string>,
+    deadlineSubmit?: string,
+    deadlineCancel?: string
   ): Promise<{
     imported: number;
     skipped: number;
@@ -176,6 +178,13 @@ export const importantDateService = {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("columnMapping", JSON.stringify(columnMapping));
+    
+    if (deadlineSubmit) {
+      formData.append("deadlineSubmit", deadlineSubmit);
+    }
+    if (deadlineCancel) {
+      formData.append("deadlineCancel", deadlineCancel);
+    }
 
     const response = await fetch("/api/important-dates/import", {
       method: "POST",

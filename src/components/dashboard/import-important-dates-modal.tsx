@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { importantDateService } from "@/lib/services/important-date-service";
+import { calculatePE3Deadlines, type PE3DeadlineCalculation } from "@/lib/services/pe3-deadline-calculator";
 import { toast } from "sonner";
 import Papa from "papaparse";
 
@@ -55,14 +56,14 @@ interface ImportResult {
 const DATABASE_FIELDS = [
   { value: "week_number", label: "Week Number" },
   { value: "year", label: "Year" },
-  { value: "category", label: "Category" },
   { value: "date_description", label: "Date Description" },
   { value: "date_value", label: "Date Value" },
+  { value: "time_value", label: "Time" },
   { value: "notes", label: "Notes" },
   { value: "ignore", label: "(Ignore)" },
 ];
 
-const REQUIRED_FIELDS = ["year", "category", "date_description", "date_value"];
+const REQUIRED_FIELDS = ["year", "date_description", "date_value"];
 
 export function ImportImportantDatesModal({
   open,
@@ -70,11 +71,15 @@ export function ImportImportantDatesModal({
   onImportComplete,
 }: ImportImportantDatesModalProps) {
   const tCommon = useTranslations("common");
+  const tDates = useTranslations("dates");
 
   const [file, setFile] = useState<File | null>(null);
   const [csvData, setCSVData] = useState<CSVRow[]>([]);
   const [csvHeaders, setCSVHeaders] = useState<string[]>([]);
   const [columnMapping, setColumnMapping] = useState<ColumnMapping>({});
+  const [calculatedDeadlines, setCalculatedDeadlines] = useState<PE3DeadlineCalculation | null>(null);
+  const [overrideDeadlineSubmit, setOverrideDeadlineSubmit] = useState<string>("");
+  const [overrideDeadlineCancel, setOverrideDeadlineCancel] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [mappingError, setMappingError] = useState<string>("");
@@ -93,8 +98,6 @@ export function ImportImportantDatesModal({
         mapping[header] = "week_number";
       } else if (lowerHeader === "year") {
         mapping[header] = "year";
-      } else if (lowerHeader === "category") {
-        mapping[header] = "category";
       } else if (
         lowerHeader === "date description" ||
         lowerHeader === "description"
@@ -102,6 +105,8 @@ export function ImportImportantDatesModal({
         mapping[header] = "date_description";
       } else if (lowerHeader === "date value" || lowerHeader === "date") {
         mapping[header] = "date_value";
+      } else if (lowerHeader === "time value" || lowerHeader === "time") {
+        mapping[header] = "time_value";
       } else if (lowerHeader === "notes" || lowerHeader === "note") {
         mapping[header] = "notes";
       } else {
@@ -138,18 +143,46 @@ export function ImportImportantDatesModal({
     setFile(selectedFile);
     setImportResult(null);
     setMappingError("");
+    setCalculatedDeadlines(null);
+    setOverrideDeadlineSubmit("");
+    setOverrideDeadlineCancel("");
 
     Papa.parse(selectedFile, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
         const headers = results.meta.fields || [];
+        const allData = results.data as CSVRow[];
+        
         setCSVHeaders(headers);
-        setCSVData(results.data.slice(0, 5) as CSVRow[]); // Preview first 5 rows
+        setCSVData(allData.slice(0, 5)); // Preview first 5 rows
         
         // Auto-map columns
         const mapping = autoMapColumns(headers);
         setColumnMapping(mapping);
+
+        // Calculate PE3 deadlines from all dates
+        try {
+          // Find the date_value column in mapping
+          const dateColumn = Object.entries(mapping).find(
+            ([, dbField]) => dbField === "date_value"
+          )?.[0];
+
+          if (dateColumn && allData.length > 0) {
+            // Extract all date values
+            const dates = allData
+              .map((row) => row[dateColumn])
+              .filter((date) => date && date.trim() !== "");
+
+            if (dates.length > 0) {
+              const deadlines = calculatePE3Deadlines(dates);
+              setCalculatedDeadlines(deadlines);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to calculate deadlines:", error);
+          toast.error("Failed to calculate deadlines. Please check your dates.");
+        }
       },
       error: (error) => {
         toast.error(`Failed to parse CSV: ${error.message}`);
@@ -185,7 +218,16 @@ export function ImportImportantDatesModal({
 
     setIsImporting(true);
     try {
-      const result = await importantDateService.importCSV(file, columnMapping);
+      // Use override values if provided, otherwise use calculated values
+      const finalDeadlineSubmit = overrideDeadlineSubmit || calculatedDeadlines?.deadlineSubmit;
+      const finalDeadlineCancel = overrideDeadlineCancel || calculatedDeadlines?.deadlineCancel;
+
+      const result = await importantDateService.importCSV(
+        file,
+        columnMapping,
+        finalDeadlineSubmit,
+        finalDeadlineCancel
+      );
       setImportResult(result);
 
       if (result.imported > 0) {
@@ -204,21 +246,26 @@ export function ImportImportantDatesModal({
   };
 
   const handleDownloadTemplate = () => {
-    const template = `Week Number,Year,Category,Date Description,Date Value,Notes
-7,2025,Stena Dates,Fredag 14/2,15-16/2,Example note
-10,2025,ÖMC Dates,Fredag 7/3,8-9/3,
-,2025,Other,Special Date,2025-03-15,Week number optional`;
+    const template = `# PE3 Dates Import Template
+# Category is automatically set to "PE3 Dates"
+# Deadlines (Inlämningsdeadline and Avbokningsdeadline) will be calculated automatically
+# based on the earliest date in your import
+#
+Week Number,Year,Date Description,Date Value,Time,Notes
+10,2025,Måndag 10/3,2025-03-10,14:00,Example PE3 date
+11,2025,Onsdag 19/3,2025-03-19,09:30,
+12,2025,Fredag 28/3,2025-03-28,15:00,Another PE3 training`;
 
     const blob = new Blob([template], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "important-dates-template.csv";
+    a.download = "pe3-dates-template.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    toast.success("Template downloaded");
+    toast.success(tDates('downloadPE3Template'));
   };
 
   const handleDownloadErrorReport = () => {
@@ -248,6 +295,9 @@ export function ImportImportantDatesModal({
     setCSVData([]);
     setCSVHeaders([]);
     setColumnMapping({});
+    setCalculatedDeadlines(null);
+    setOverrideDeadlineSubmit("");
+    setOverrideDeadlineCancel("");
     setImportResult(null);
     setIsImporting(false);
     setMappingError("");
@@ -265,11 +315,10 @@ export function ImportImportantDatesModal({
       >
         <DialogHeader>
           <DialogTitle id="import-modal-title">
-            Import Important Dates
+            {tDates('importPE3Title')}
           </DialogTitle>
           <DialogDescription>
-            Upload a CSV file with columns: Week Number (optional), Year,
-            Category, Date Description, Date Value, Notes (optional)
+            {tDates('importPE3Description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -286,7 +335,7 @@ export function ImportImportantDatesModal({
               />
             </div>
             <Button variant="outline" onClick={handleDownloadTemplate}>
-              Download Template
+              {tDates('downloadPE3Template')}
             </Button>
           </div>
         )}
@@ -330,6 +379,44 @@ export function ImportImportantDatesModal({
                 <AlertDescription>{mappingError}</AlertDescription>
               </Alert>
             )}
+          </div>
+        )}
+
+        {/* Deadline Preview and Override Section */}
+        {file && calculatedDeadlines && !importResult && (
+          <div className="space-y-2 p-4 bg-blue-50 border border-blue-200 rounded">
+            <h4 className="font-semibold">{tDates('calculatedDeadlines')}</h4>
+            <p className="text-sm text-gray-600">
+              {tDates('basedOnFirstDate').replace('{date}', calculatedDeadlines.firstDate)}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+              <div>
+                <label htmlFor="deadline-submit" className="block text-sm font-medium mb-1">
+                  {tDates('deadlineSubmitLabel')}
+                </label>
+                <Input
+                  id="deadline-submit"
+                  type="date"
+                  value={overrideDeadlineSubmit || calculatedDeadlines.deadlineSubmit}
+                  onChange={(e) => setOverrideDeadlineSubmit(e.target.value)}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500 mt-1">{tDates('overrideOptional')}</p>
+              </div>
+              <div>
+                <label htmlFor="deadline-cancel" className="block text-sm font-medium mb-1">
+                  {tDates('deadlineCancelLabel')}
+                </label>
+                <Input
+                  id="deadline-cancel"
+                  type="date"
+                  value={overrideDeadlineCancel || calculatedDeadlines.deadlineCancel}
+                  onChange={(e) => setOverrideDeadlineCancel(e.target.value)}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500 mt-1">{tDates('overrideOptional')}</p>
+              </div>
+            </div>
           </div>
         )}
 

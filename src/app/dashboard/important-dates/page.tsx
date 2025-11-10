@@ -123,7 +123,7 @@ export default function ImportantDatesPage() {
               </Button>
               <Button onClick={() => setIsImportModalOpen(true)} variant="outline" className="w-full sm:w-auto min-h-11">
                 <Upload className="h-4 w-4 mr-2" />
-                {t('importDates')}
+                {t('importPE3Dates')}
               </Button>
               <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto min-h-11">
                 <Plus className="h-4 w-4 mr-2" />
