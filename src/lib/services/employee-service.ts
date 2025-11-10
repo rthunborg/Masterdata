@@ -187,7 +187,7 @@ export const employeeService = {
     id: string,
     terminationDate: string,
     terminationReason: string
-  ): Promise<void> {
+  ): Promise<{ clearedDates: string[]; releasedSpots: number }> {
     const response = await fetch(`/api/employees/${id}/terminate`, {
       method: "POST",
       headers: {
@@ -220,6 +220,13 @@ export const employeeService = {
       // Generic error
       throw new Error(error.error?.message || "Failed to terminate employee");
     }
+
+    // Story 8.14 AC 6: Return termination summary for toast display
+    const result = await response.json();
+    return {
+      clearedDates: result.data.clearedDates,
+      releasedSpots: result.data.releasedSpots,
+    };
   },
 
   async reactivate(id: string): Promise<{ warnings: string[] }> {

@@ -25,16 +25,20 @@ export async function POST(
     const body = await request.json();
     const validatedData = terminateEmployeeSchema.parse(body);
 
-    // Terminate employee via repository
-    const employee = await employeeRepository.terminate(
+    // Terminate employee via repository (Story 8.14 AC 6: returns termination summary)
+    const { employee, clearedDates, releasedSpots } = await employeeRepository.terminate(
       id,
       validatedData.termination_date,
       validatedData.termination_reason
     );
 
-    // Return successful response
+    // Return successful response with termination summary
     return NextResponse.json({
-      data: employee,
+      data: {
+        employee,
+        clearedDates,
+        releasedSpots,
+      },
       meta: {
         timestamp: new Date().toISOString(),
         requestId: `req_${Date.now()}`,

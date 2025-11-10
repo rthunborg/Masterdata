@@ -45,9 +45,10 @@ export function TerminateEmployeeModal({
   const t = useTranslations('modals');
   const tCommon = useTranslations('common');
   
-  // Story 8.13: Track repayment dates for preview
-  const [omcDateInfo, setOmcDateInfo] = useState<{ description: string; value: string } | null>(null);
-  const [pe3DateInfo, setPe3DateInfo] = useState<{ description: string; value: string } | null>(null);
+  // Story 8.13 & 8.14: Track date information for preview
+  const [stenaDateInfo, setStenaDateInfo] = useState<{ description: string; value: string; remainingSpots: number } | null>(null);
+  const [omcDateInfo, setOmcDateInfo] = useState<{ description: string; value: string; remainingSpots: number } | null>(null);
+  const [pe3DateInfo, setPe3DateInfo] = useState<{ description: string; value: string; remainingSpots: number } | null>(null);
   
   const {
     register,
@@ -58,10 +59,11 @@ export function TerminateEmployeeModal({
     resolver: zodResolver(terminateSchema),
   });
   
-  // Story 8.13: Fetch date information when employee changes
+  // Story 8.13 & 8.14: Fetch date information when employee changes
   useEffect(() => {
     async function fetchDateInfo() {
       if (!employee) {
+        setStenaDateInfo(null);
         setOmcDateInfo(null);
         setPe3DateInfo(null);
         return;
@@ -69,11 +71,30 @@ export function TerminateEmployeeModal({
       
       const supabase = createClient();
       
+      // Fetch Stena date info if assigned
+      if (employee.stena_date) {
+        const { data: stenaDate } = await supabase
+          .from('important_dates')
+          .select('date_description, date_value, remaining_spots')
+          .eq('id', employee.stena_date)
+          .single();
+          
+        if (stenaDate) {
+          setStenaDateInfo({
+            description: stenaDate.date_description,
+            value: stenaDate.date_value,
+            remainingSpots: stenaDate.remaining_spots,
+          });
+        }
+      } else {
+        setStenaDateInfo(null);
+      }
+      
       // Fetch ÖMC date info if assigned
       if (employee.omc_date) {
         const { data: omcDate } = await supabase
           .from('important_dates')
-          .select('date_description, date_value')
+          .select('date_description, date_value, remaining_spots')
           .eq('id', employee.omc_date)
           .single();
           
@@ -81,6 +102,7 @@ export function TerminateEmployeeModal({
           setOmcDateInfo({
             description: omcDate.date_description,
             value: omcDate.date_value,
+            remainingSpots: omcDate.remaining_spots,
           });
         }
       } else {
@@ -91,7 +113,7 @@ export function TerminateEmployeeModal({
       if (employee.pe3_date) {
         const { data: pe3Date } = await supabase
           .from('important_dates')
-          .select('date_description, date_value')
+          .select('date_description, date_value, remaining_spots')
           .eq('id', employee.pe3_date)
           .single();
           
@@ -99,6 +121,7 @@ export function TerminateEmployeeModal({
           setPe3DateInfo({
             description: pe3Date.date_description,
             value: pe3Date.date_value,
+            remainingSpots: pe3Date.remaining_spots,
           });
         }
       } else {
@@ -113,14 +136,31 @@ export function TerminateEmployeeModal({
     if (!employee) return;
 
     try {
-      await employeeService.terminate(
+      // Story 8.14 AC 6: Capture termination summary for toast display
+      const result = await employeeService.terminate(
         employee.id,
         data.termination_date,
         data.termination_reason
       );
-      toast.success(
-        t('terminateEmployee.employeeTerminated', { name: `${employee.first_name} ${employee.surname}` })
-      );
+
+      // Display success message with cleared dates count
+      if (result.releasedSpots > 0) {
+        toast.success(
+          t('terminateEmployee.employeeTerminatedWithDates', {
+            name: `${employee.first_name} ${employee.surname}`,
+            count: result.clearedDates.length,
+            spots: result.releasedSpots,
+          }),
+          { duration: 8000 }
+        );
+      } else {
+        toast.success(
+          t('terminateEmployee.employeeTerminated', {
+            name: `${employee.first_name} ${employee.surname}`,
+          })
+        );
+      }
+
       onSuccess();
       onOpenChange(false);
       reset();
@@ -166,6 +206,47 @@ export function TerminateEmployeeModal({
               </div>
             </div>
             
+            {/* Story 8.14: Date Clearing Preview */}
+            {(stenaDateInfo || omcDateInfo || pe3DateInfo) && (
+              <div className="my-4 rounded-lg border border-blue-300 bg-blue-50 p-4">
+                <h4 className="font-medium mb-2 text-blue-900">
+                  {t('terminateEmployee.dateClearingPreviewTitle')}
+                </h4>
+                <p className="text-sm text-blue-800 mb-2">
+                  {t('terminateEmployee.dateClearingPreviewDescription')}
+                </p>
+                <ul className="text-sm space-y-2 text-blue-900">
+                  {stenaDateInfo && (
+                    <li>
+                      <span className="font-medium">{t('terminateEmployee.stenaDate')}</span>{' '}
+                      {stenaDateInfo.description}
+                      <span className="text-green-600 ml-2">
+                        ({stenaDateInfo.remainingSpots} → {stenaDateInfo.remainingSpots + 1} {t('terminateEmployee.spots')})
+                      </span>
+                    </li>
+                  )}
+                  {omcDateInfo && (
+                    <li>
+                      <span className="font-medium">{t('terminateEmployee.omcDate')}</span>{' '}
+                      {omcDateInfo.description}
+                      <span className="text-green-600 ml-2">
+                        ({omcDateInfo.remainingSpots} → {omcDateInfo.remainingSpots + 1} {t('terminateEmployee.spots')})
+                      </span>
+                    </li>
+                  )}
+                  {pe3DateInfo && (
+                    <li>
+                      <span className="font-medium">{t('terminateEmployee.pe3Date')}</span>{' '}
+                      {pe3DateInfo.description}
+                      <span className="text-green-600 ml-2">
+                        ({pe3DateInfo.remainingSpots} → {pe3DateInfo.remainingSpots + 1} {t('terminateEmployee.spots')})
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+            
             {/* Story 8.13: Repayment Preview */}
             {(omcDateInfo || pe3DateInfo) && (
               <div className="my-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4">
@@ -192,10 +273,10 @@ export function TerminateEmployeeModal({
               </div>
             )}
             
-            {!omcDateInfo && !pe3DateInfo && (
+            {!stenaDateInfo && !omcDateInfo && !pe3DateInfo && (
               <div className="my-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
                 <p className="text-sm text-gray-600">
-                  {t('terminateEmployee.noRepaymentNeeded')}
+                  {t('terminateEmployee.noDateAssignments')}
                 </p>
               </div>
             )}

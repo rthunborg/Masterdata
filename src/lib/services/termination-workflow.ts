@@ -99,10 +99,96 @@ export async function applyRepaymentCapture(
 }
 
 /**
- * Restore repayment dates when reactivating employee.
+ * Clear all date assignments and release training spots.
+ *
+ * Called after repayment capture during termination workflow.
+ * Clears stena_date, omc_date, and pe3_date fields, increments remaining_spots
+ * on corresponding important_dates records, and removes employee from assigned_employees arrays.
+ *
+ * Story 8.14 AC 1, 2, 3
+ *
+ * @param employeeId - UUID of employee being terminated
+ * @returns Summary of cleared dates and released spots
+ */
+export async function clearEmployeeDatesAndReleaseSpots(
+  employeeId: string
+): Promise<{ clearedDates: string[]; releasedSpots: number }> {
+  const supabase = await createClient();
+
+  // Query current date assignments and employee name
+  const { data: employee, error: employeeError } = await supabase
+    .from('employees')
+    .select('id, first_name, surname, stena_date, omc_date, pe3_date')
+    .eq('id', employeeId)
+    .single();
+
+  if (employeeError) {
+    console.error('Error fetching employee for date clearing:', employeeError);
+    throw new Error('Failed to fetch employee date assignments');
+  }
+
+  const clearedDates: string[] = [];
+  const dateFields = [
+    { field: 'stena_date', value: employee.stena_date },
+    { field: 'omc_date', value: employee.omc_date },
+    { field: 'pe3_date', value: employee.pe3_date },
+  ];
+
+  // For each non-null date field, release spot and clear assignment
+  for (const { field, value } of dateFields) {
+    if (value) {
+      // Use the release_date_capacity RPC function which handles both
+      // incrementing remaining_spots and removing from assigned_employees
+      const { error: releaseError } = await supabase.rpc(
+        'release_date_capacity',
+        {
+          date_id: value,
+          employee_id: employeeId,
+        }
+      );
+
+      if (releaseError) {
+        console.error(`Error releasing spot for ${field}:`, releaseError);
+        throw new Error(`Failed to release spot for ${field}`);
+      }
+
+      clearedDates.push(value);
+    }
+  }
+
+  // Clear all date fields on employee record
+  const { error: clearError } = await supabase
+    .from('employees')
+    .update({
+      stena_date: null,
+      omc_date: null,
+      pe3_date: null,
+    })
+    .eq('id', employeeId);
+
+  if (clearError) {
+    console.error('Error clearing employee date fields:', clearError);
+    throw new Error('Failed to clear employee date assignments');
+  }
+
+  console.log(
+    `[Date Clearing] Employee ${employeeId}: Cleared ${clearedDates.length} dates, released ${clearedDates.length} spots`
+  );
+
+  return {
+    clearedDates,
+    releasedSpots: clearedDates.length,
+  };
+}
+
+/**
+ * Restore repayment dates when reactivating employee (UPDATED for Story 8.14).
  *
  * Attempts to restore omc_date and pe3_date from repayment fields if spots are available.
- * If spots unavailable, leaves repayment fields set and returns warnings.
+ * Decrements remaining_spots and adds employee back to assigned_employees array.
+ * Handles deleted dates gracefully (skip without error).
+ *
+ * Story 8.14 AC 8, 9, 11
  *
  * @param employeeId - UUID of employee being reactivated
  * @returns Result with restored dates and any warnings
@@ -117,7 +203,7 @@ export async function restoreRepaymentDates(
   // Query employee repayment fields
   const { data: employee, error } = await supabase
     .from('employees')
-    .select('id, repayment_needed_omc, repayment_needed_pe3')
+    .select('id, first_name, surname, repayment_needed_omc, repayment_needed_pe3')
     .eq('id', employeeId)
     .single();
 
@@ -130,15 +216,23 @@ export async function restoreRepaymentDates(
   if (employee.repayment_needed_omc) {
     try {
       // Find date ID by date_value
-      const { data: omcDate } = await supabase
+      const { data: omcDate, error: dateError } = await supabase
         .from('important_dates')
         .select('id, date_description, remaining_spots')
         .eq('date_value', employee.repayment_needed_omc)
         .eq('category', 'ÖMC Dates')
         .single();
 
-      if (omcDate && omcDate.remaining_spots > 0) {
-        // Restore date assignment
+      // Story 8.14 AC 11: Handle deleted dates gracefully
+      if (dateError && dateError.code === 'PGRST116') {
+        warnings.push(
+          `ÖMC Date ${employee.repayment_needed_omc} no longer exists, could not restore`
+        );
+        console.log(
+          `[Reactivation] ÖMC date deleted, skipping restoration for employee ${employeeId}`
+        );
+      } else if (omcDate && omcDate.remaining_spots > 0) {
+        // Restore date assignment (assignEmployeeToDate handles spot decrement and assigned_employees)
         await assignEmployeeToDate(employeeId, omcDate.id, null, 'omc_date');
 
         // Clear repayment field
@@ -151,9 +245,9 @@ export async function restoreRepaymentDates(
         console.log(
           `[Reactivation] Restored ÖMC date for employee ${employeeId}`
         );
-      } else {
+      } else if (omcDate) {
         warnings.push(
-          `Cannot restore ÖMC Date ${omcDate?.date_description ?? employee.repayment_needed_omc} - currently fully booked (0 spots remaining)`
+          `Cannot restore ÖMC Date ${omcDate.date_description} - currently fully booked (0 spots remaining)`
         );
       }
     } catch (error) {
@@ -162,18 +256,26 @@ export async function restoreRepaymentDates(
     }
   }
 
-  // Attempt to restore PE3 date
+  // Attempt to restore PE3 date (same logic as ÖMC)
   if (employee.repayment_needed_pe3) {
     try {
       // Find date ID by date_value
-      const { data: pe3Date } = await supabase
+      const { data: pe3Date, error: dateError } = await supabase
         .from('important_dates')
         .select('id, date_description, remaining_spots')
         .eq('date_value', employee.repayment_needed_pe3)
         .eq('category', 'PE3 Dates')
         .single();
 
-      if (pe3Date && pe3Date.remaining_spots > 0) {
+      // Story 8.14 AC 11: Handle deleted dates gracefully
+      if (dateError && dateError.code === 'PGRST116') {
+        warnings.push(
+          `PE3 Date ${employee.repayment_needed_pe3} no longer exists, could not restore`
+        );
+        console.log(
+          `[Reactivation] PE3 date deleted, skipping restoration for employee ${employeeId}`
+        );
+      } else if (pe3Date && pe3Date.remaining_spots > 0) {
         // Restore date assignment
         await assignEmployeeToDate(employeeId, pe3Date.id, null, 'pe3_date');
 
@@ -187,9 +289,9 @@ export async function restoreRepaymentDates(
         console.log(
           `[Reactivation] Restored PE3 date for employee ${employeeId}`
         );
-      } else {
+      } else if (pe3Date) {
         warnings.push(
-          `Cannot restore PE3 Date ${pe3Date?.date_description ?? employee.repayment_needed_pe3} - currently fully booked (0 spots remaining)`
+          `Cannot restore PE3 Date ${pe3Date.date_description} - currently fully booked (0 spots remaining)`
         );
       }
     } catch (error) {

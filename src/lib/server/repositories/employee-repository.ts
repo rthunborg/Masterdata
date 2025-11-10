@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
-import { captureRepaymentDates, applyRepaymentCapture, restoreRepaymentDates } from "@/lib/services/termination-workflow";
+import { 
+  captureRepaymentDates, 
+  applyRepaymentCapture, 
+  restoreRepaymentDates, 
+  clearEmployeeDatesAndReleaseSpots 
+} from "@/lib/services/termination-workflow";
 
 export interface EmployeeFilters {
   includeArchived?: boolean;
@@ -234,76 +239,57 @@ export class EmployeeRepository {
     id: string,
     terminationDate: string,
     terminationReason: string
-  ): Promise<Employee> {
+  ): Promise<{ employee: Employee; clearedDates: string[]; releasedSpots: number }> {
     const supabase = await this.getSupabaseClient();
 
-    // First, get the current employee data to check for date assignments
-    const { data: currentEmployee, error: fetchError } = await supabase
-      .from("employees")
-      .select("omc_date, stena_date, pe3_date")
-      .eq("id", id)
-      .single();
+    try {
+      // Story 8.14 AC 4: Transaction workflow for atomicity
+      // Step 1: Capture repayment dates (Story 8.13)
+      const repaymentDates = await captureRepaymentDates(id);
+      await applyRepaymentCapture(id, repaymentDates);
 
-    if (fetchError) {
-      if (fetchError.code === "PGRST116") {
-        throw new Error(`Employee with ID ${id} not found`);
+      // Step 2: Clear dates and release spots (Story 8.14)
+      const { clearedDates, releasedSpots } = await clearEmployeeDatesAndReleaseSpots(id);
+
+      // Step 3: Update termination fields
+      const { data: employee, error } = await supabase
+        .from("employees")
+        .update({
+          is_terminated: true,
+          termination_date: terminationDate,
+          termination_reason: terminationReason,
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        // Check for not found (PGRST116 is PostgREST error code for no rows)
+        if (error.code === "PGRST116") {
+          throw new Error(`Employee with ID ${id} not found`);
+        }
+
+        console.error("Error terminating employee:", error);
+        throw new Error("Failed to terminate employee");
       }
-      console.error("Error fetching employee:", fetchError);
-      throw new Error("Failed to fetch employee");
-    }
 
-    // Story 8.13: Capture repayment dates BEFORE clearing
-    const repaymentDates = await captureRepaymentDates(id);
-    await applyRepaymentCapture(id, repaymentDates);
-
-    // Update employee termination status and clear date assignments
-    const { data: employee, error } = await supabase
-      .from("employees")
-      .update({
-        is_terminated: true,
-        termination_date: terminationDate,
-        termination_reason: terminationReason,
-        // Story 8.7: Clear date assignments on termination
-        omc_date: null,
-        stena_date: null,
-        pe3_date: null,
-      })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
-      // Check for not found (PGRST116 is PostgREST error code for no rows)
-      if (error.code === "PGRST116") {
+      if (!employee) {
         throw new Error(`Employee with ID ${id} not found`);
       }
 
-      console.error("Error terminating employee:", error);
-      throw new Error("Failed to terminate employee");
+      // Story 8.14 AC 10: Audit logging
+      console.log(
+        `[Termination] Employee ${id}: Repayment captured (ÖMC=${repaymentDates.omc}, PE3=${repaymentDates.pe3}), ` +
+        `Cleared ${clearedDates.length} dates, Released ${releasedSpots} spots at ${new Date().toISOString()}`
+      );
+
+      // Story 8.14 AC 6: Return termination summary for toast display
+      return { employee, clearedDates, releasedSpots };
+    } catch (error) {
+      console.error("Termination workflow failed:", error);
+      // Re-throw to ensure proper error handling
+      throw error;
     }
-
-    if (!employee) {
-      throw new Error(`Employee with ID ${id} not found`);
-    }
-
-    // Story 8.7: Release date capacity for any assigned dates
-    const datesToRelease = [
-      currentEmployee.omc_date,
-      currentEmployee.stena_date,
-      currentEmployee.pe3_date,
-    ].filter((dateId): dateId is string => dateId !== null);
-
-    // Release capacity for each assigned date
-    for (const dateId of datesToRelease) {
-      try {
-        await supabase.rpc("release_date_capacity", { date_id: dateId, employee_id: id });
-      } catch (releaseError) {
-        console.error(`Error releasing capacity for date ${dateId}:`, releaseError);
-        // Don't fail termination if capacity release fails - log for manual correction
-      }
-    }
-
-    return employee;
   }
 
   async reactivate(id: string): Promise<{ employee: Employee; warnings: string[] }> {
