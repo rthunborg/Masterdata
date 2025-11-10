@@ -55,8 +55,7 @@ describe("Date Capacity Concurrency Integration", () => {
     remaining_spots: 1, // Only 1 spot left
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   const mockEmployee1: Employee = {
     id: "emp-1",
@@ -76,24 +75,8 @@ describe("Date Capacity Concurrency Integration", () => {
     termination_reason: null,
     is_terminated: false,
     is_archived: false,
-    comments: null,
-    one: null,
-    one_marked_at: null,
-    talmundo: null,
-    isps: null,
-    photo: null,
-    origo: null,
-    loneiva: null,
-    mail_lon: null,
-    bankuppgifter: null,
-    li: null,
-    passport: null,
-    kvitto_c17_18: null,
-    c17: null,
-    crewing_done: null,
-    created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    comments: null,    created_at: "2025-01-01T00:00:00Z",
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   const mockEmployee2: Employee = {
     ...mockEmployee1,

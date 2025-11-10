@@ -28,6 +28,11 @@ describe("validateImportantDateRow", () => {
       date_description: "Fredag 14/2",
       date_value: "15-16/2",
       notes: "Test note",
+    time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
     };
 
     const result = validateImportantDateRow(row);
@@ -258,7 +263,12 @@ describe("detectDuplicates", () => {
         date_description: "Fredag 14/2",
         date_value: "15-16/2",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         week_number: 10,
         year: 2025,
@@ -266,7 +276,12 @@ describe("detectDuplicates", () => {
         date_description: "Fredag 7/3",
         date_value: "8-9/3",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         week_number: 7,
         year: 2025,
@@ -274,7 +289,12 @@ describe("detectDuplicates", () => {
         date_description: "Duplicate",
         date_value: "Duplicate",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
     ];
 
     const duplicates = detectDuplicates(rows);
@@ -291,7 +311,12 @@ describe("detectDuplicates", () => {
         date_description: "First",
         date_value: "First",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         week_number: 7,
         year: 2025,
@@ -299,7 +324,12 @@ describe("detectDuplicates", () => {
         date_description: "Second",
         date_value: "Second",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
     ];
 
     const duplicates = detectDuplicates(rows);
@@ -315,7 +345,12 @@ describe("detectDuplicates", () => {
         date_description: "First",
         date_value: "First",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         week_number: null,
         year: 2025,
@@ -323,7 +358,12 @@ describe("detectDuplicates", () => {
         date_description: "Second",
         date_value: "Second",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
     ];
 
     const duplicates = detectDuplicates(rows);
@@ -340,7 +380,12 @@ describe("detectDuplicates", () => {
         date_description: "Fredag 14/2",
         date_value: "15-16/2",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         week_number: 10,
         year: 2025,
@@ -348,7 +393,12 @@ describe("detectDuplicates", () => {
         date_description: "Fredag 7/3",
         date_value: "8-9/3",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
     ];
 
     const duplicates = detectDuplicates(rows);
@@ -366,7 +416,12 @@ describe("validateImportantDatesCSV", () => {
         date_description: "Fredag 14/2",
         date_value: "15-16/2",
         notes: "Note 1",
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         week_number: 10,
         year: 2025,
@@ -374,7 +429,12 @@ describe("validateImportantDatesCSV", () => {
         date_description: "Fredag 7/3",
         date_value: "8-9/3",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
     ];
 
     const result = validateImportantDatesCSV(rows);
@@ -391,7 +451,12 @@ describe("validateImportantDatesCSV", () => {
         date_description: "Fredag 14/2",
         date_value: "15-16/2",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         // Missing year
         week_number: 10,
@@ -406,7 +471,12 @@ describe("validateImportantDatesCSV", () => {
         date_description: "Valid",
         date_value: "Valid",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
     ];
 
     const result = validateImportantDatesCSV(rows);
@@ -425,7 +495,12 @@ describe("validateImportantDatesCSV", () => {
         date_description: "Fredag 14/2",
         date_value: "15-16/2",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         week_number: 7,
         year: 2025,
@@ -433,7 +508,12 @@ describe("validateImportantDatesCSV", () => {
         date_description: "Duplicate",
         date_value: "Duplicate",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
     ];
 
     const result = validateImportantDatesCSV(rows);
@@ -452,7 +532,12 @@ describe("validateImportantDatesCSV", () => {
         date_description: "Valid",
         date_value: "Valid",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
       {
         // Missing year
         week_number: 10,
@@ -467,7 +552,12 @@ describe("validateImportantDatesCSV", () => {
         date_description: "Duplicate",
         date_value: "Duplicate",
         notes: null,
-      },
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    },
     ];
 
     const result = validateImportantDatesCSV(rows);

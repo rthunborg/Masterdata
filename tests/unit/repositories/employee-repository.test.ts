@@ -69,8 +69,7 @@ describe("EmployeeRepository", () => {
           is_archived: false,
           comments: null,
           created_at: "2025-01-01T00:00:00Z",
-          updated_at: "2025-01-01T00:00:00Z",
-        },
+          updated_at: "2025-01-01T00:00:00Z",      },
       ];
 
       createMockSupabaseClient({ data: mockEmployees, error: null });
@@ -129,8 +128,7 @@ describe("EmployeeRepository", () => {
         is_archived: false,
         comments: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      };
+        updated_at: "2025-01-01T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
@@ -186,8 +184,7 @@ describe("EmployeeRepository", () => {
       id: "new-uuid-123",
       ...mockEmployeeFormData,
       created_at: "2025-10-27T12:00:00Z",
-      updated_at: "2025-10-27T12:00:00Z",
-    };
+      updated_at: "2025-10-27T12:00:00Z",      };
 
     it("should successfully create an employee", async () => {
       const mockClient = {
@@ -282,14 +279,12 @@ describe("EmployeeRepository", () => {
       is_archived: false,
       comments: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    };
+      updated_at: "2025-01-01T00:00:00Z",      };
 
     const mockUpdatedEmployee: Employee = {
       ...mockEmployee,
       email: "updated@example.com",
-      updated_at: "2025-10-27T15:30:00Z",
-    };
+      updated_at: "2025-10-27T15:30:00Z",      };
 
     it("should successfully update an employee", async () => {
       const mockClient = {
@@ -407,8 +402,7 @@ describe("EmployeeRepository", () => {
       const mockUpdated = {
         ...mockEmployee,
         ...updateData,
-        updated_at: "2025-10-27T15:30:00Z",
-      };
+        updated_at: "2025-10-27T15:30:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
@@ -447,8 +441,7 @@ describe("EmployeeRepository", () => {
         is_archived: true,
         comments: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-27T00:00:00Z",
-      };
+        updated_at: "2025-01-27T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnValue({
@@ -532,8 +525,7 @@ describe("EmployeeRepository", () => {
         is_archived: false,
         comments: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-27T00:00:00Z",
-      };
+        updated_at: "2025-01-27T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnValue({
@@ -617,8 +609,7 @@ describe("EmployeeRepository", () => {
         is_archived: false,
         comments: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-10-27T00:00:00Z",
-      };
+        updated_at: "2025-10-27T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnValue({
@@ -728,8 +719,7 @@ describe("EmployeeRepository", () => {
         is_archived: false,
         comments: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-10-27T00:00:00Z",
-      };
+        updated_at: "2025-10-27T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnValue({
@@ -858,14 +848,12 @@ describe("EmployeeRepository", () => {
           id: "emp-1",
           ...employees[0],
           created_at: "2025-01-01T00:00:00Z",
-          updated_at: "2025-01-01T00:00:00Z",
-        },
+          updated_at: "2025-01-01T00:00:00Z",      },
         {
           id: "emp-2",
           ...employees[1],
           created_at: "2025-01-01T00:00:00Z",
-          updated_at: "2025-01-01T00:00:00Z",
-        },
+          updated_at: "2025-01-01T00:00:00Z",      },
       ];
 
       const mockClient = {
@@ -930,8 +918,7 @@ describe("EmployeeRepository", () => {
         id: "emp-1",
         ...employees[0],
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      };
+        updated_at: "2025-01-01T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnValue({
@@ -1018,14 +1005,12 @@ describe("EmployeeRepository", () => {
           id: "emp-1",
           ...employees[0],
           created_at: "2025-01-01T00:00:00Z",
-          updated_at: "2025-01-01T00:00:00Z",
-        },
+          updated_at: "2025-01-01T00:00:00Z",      },
         {
           id: "emp-3",
           ...employees[2],
           created_at: "2025-01-01T00:00:00Z",
-          updated_at: "2025-01-01T00:00:00Z",
-        },
+          updated_at: "2025-01-01T00:00:00Z",      },
       ];
 
       const mockClient = {

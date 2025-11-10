@@ -53,8 +53,7 @@ describe("EmployeeTable Permission Rendering", () => {
       termination_reason: null,
       comments: null,
       created_at: "2020-01-01T00:00:00Z",
-      updated_at: "2020-01-01T00:00:00Z",
-    },
+      updated_at: "2020-01-01T00:00:00Z",      },
     {
       id: "emp-2",
       first_name: "Jane",
@@ -72,8 +71,7 @@ describe("EmployeeTable Permission Rendering", () => {
       termination_reason: null,
       comments: null,
       created_at: "2021-01-01T00:00:00Z",
-      updated_at: "2021-01-01T00:00:00Z",
-    },
+      updated_at: "2021-01-01T00:00:00Z",      },
   ];
 
   const mockColumnConfigs: ColumnConfig[] = [
@@ -90,6 +88,11 @@ describe("EmployeeTable Permission Rendering", () => {
       is_masterdata: true,
       category: "Personal",
       created_at: "2020-01-01T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     },
     {
       id: "col-2",
@@ -104,6 +107,11 @@ describe("EmployeeTable Permission Rendering", () => {
       is_masterdata: true,
       category: "Contact",
       created_at: "2020-01-01T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     },
     {
       id: "col-3",
@@ -118,6 +126,11 @@ describe("EmployeeTable Permission Rendering", () => {
       is_masterdata: true,
       category: "Employment",
       created_at: "2020-01-01T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     },
   ];
 

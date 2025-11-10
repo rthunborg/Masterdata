@@ -20,20 +20,7 @@ describe("createEmployeeSchema", () => {
     omc_date: "uuid-omc-date-456",
     pe3_date: "uuid-pe3-date-789",
     comments: "New hire",
-    // Masterdata columns (Story 7.1)
-    one: null,
-    isps: null,
-    photo: null,
-    origo: null,
-    loneiva: null,
-    mail_lon: null,
-    bankuppgifter: null,
-    li: null,
-    passport: null,
-    kvitto_c17_18: null,
-    c17: null,
-    crewing_done: null,
-    // System fields
+    // Masterdata columns (Story 7.1)    // System fields
     is_terminated: false,
     is_archived: false,
     termination_date: null,
@@ -253,20 +240,7 @@ describe("createEmployeeSchema", () => {
         town_district: null,
         pe3_date: null,
         comments: null,
-        // Masterdata columns
-        one: null,
-        isps: null,
-        photo: null,
-        origo: null,
-        loneiva: null,
-        mail_lon: null,
-        bankuppgifter: null,
-        li: null,
-        passport: null,
-        kvitto_c17_18: null,
-        c17: null,
-        crewing_done: null,
-        // System fields
+        // Masterdata columns        // System fields
         is_terminated: false,
         is_archived: false,
         termination_date: null,

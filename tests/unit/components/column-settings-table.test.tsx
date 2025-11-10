@@ -51,8 +51,7 @@ describe("ColumnSettingsTable", () => {
       display_order: 0,
       is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
-      updated_at: "2025-10-28T00:00:00Z",
-    },
+      updated_at: "2025-10-28T00:00:00Z",      },
     {
       id: "col-2",
       column_name: "Custom Field",
@@ -69,8 +68,7 @@ describe("ColumnSettingsTable", () => {
       display_order: 1,
       is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
-      updated_at: "2025-10-28T00:00:00Z",
-    },
+      updated_at: "2025-10-28T00:00:00Z",      },
   ];
 
   const mockOnPermissionsUpdated = vi.fn();

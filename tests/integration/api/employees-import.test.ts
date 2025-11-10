@@ -79,8 +79,7 @@ Jane,Smith,19900520-5678,jane@example.com,CHEF,2025-02-01`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      },
+        updated_at: "2025-01-01T00:00:00Z",      },
       {
         id: "emp-2",
         first_name: "Jane",
@@ -101,8 +100,7 @@ Jane,Smith,19900520-5678,jane@example.com,CHEF,2025-02-01`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      },
+        updated_at: "2025-01-01T00:00:00Z",      },
     ];
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
@@ -154,8 +152,7 @@ Jane,Smith,19850315-1234,jane@example.com,CHEF,2025-02-01`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      },
+        updated_at: "2025-01-01T00:00:00Z",      },
     ];
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
@@ -374,8 +371,7 @@ Bob,Johnson,invalid-ssn,bob@example.com,MATE,2025-03-01`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      },
+        updated_at: "2025-01-01T00:00:00Z",      },
       {
         id: "emp-2",
         first_name: "Jane",
@@ -396,8 +392,7 @@ Bob,Johnson,invalid-ssn,bob@example.com,MATE,2025-03-01`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      },
+        updated_at: "2025-01-01T00:00:00Z",      },
     ];
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);

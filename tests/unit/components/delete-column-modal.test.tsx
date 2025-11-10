@@ -20,7 +20,12 @@ describe("DeleteColumnModal", () => {
     },
     category: null,
     created_at: "2025-01-01T00:00:00.000Z",
-  };
+  db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    };
 
   const mockOnClose = vi.fn();
   const mockOnDeleted = vi.fn();

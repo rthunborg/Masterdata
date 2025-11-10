@@ -109,8 +109,7 @@ const mockColumns: ColumnConfig[] = [
     category: "Recruitment",
     category_color: "#3B82F6",
     created_at: "2025-11-06T00:00:00Z",
-    updated_at: "2025-11-06T00:00:00Z",
-  },
+    updated_at: "2025-11-06T00:00:00Z",      },
   {
     id: "col-2",
     column_name: "interview_status",
@@ -128,8 +127,7 @@ const mockColumns: ColumnConfig[] = [
     category: "Recruitment",
     category_color: "#3B82F6",
     created_at: "2025-11-06T00:00:00Z",
-    updated_at: "2025-11-06T00:00:00Z",
-  },
+    updated_at: "2025-11-06T00:00:00Z",      },
   {
     id: "col-3",
     column_name: "warehouse_location",
@@ -147,8 +145,7 @@ const mockColumns: ColumnConfig[] = [
     category: "Warehouse",
     category_color: "#10B981",
     created_at: "2025-11-06T00:00:00Z",
-    updated_at: "2025-11-06T00:00:00Z",
-  },
+    updated_at: "2025-11-06T00:00:00Z",      },
 ];
 
 describe("PATCH /api/admin/categories/[categoryName]", () => {

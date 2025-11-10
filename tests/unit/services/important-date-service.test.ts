@@ -16,8 +16,7 @@ describe("importantDateService", () => {
       date_value: "15-16/2",
       notes: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
     {
       id: "date-2",
       week_number: 10,
@@ -27,8 +26,7 @@ describe("importantDateService", () => {
       date_value: "8-9/3",
       notes: "Important planning meeting",
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
   ];
 
   beforeEach(() => {
@@ -100,6 +98,11 @@ describe("importantDateService", () => {
       date_description: "Test Date",
       date_value: "10/4",
       notes: null,
+    time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
     };
 
     it("should create a new important date", async () => {
@@ -107,8 +110,7 @@ describe("importantDateService", () => {
         id: "date-3",
         ...newDateData,
         created_at: "2025-01-15T00:00:00Z",
-        updated_at: "2025-01-15T00:00:00Z",
-      };
+        updated_at: "2025-01-15T00:00:00Z",      };
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,

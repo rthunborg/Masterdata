@@ -24,8 +24,7 @@ describe("employeeService", () => {
       is_archived: false,
       comments: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
   ];
 
   beforeEach(() => {
@@ -191,8 +190,7 @@ describe("employeeService", () => {
       id: "new-emp-123",
       ...mockEmployeeData,
       created_at: "2025-10-27T12:00:00Z",
-      updated_at: "2025-10-27T12:00:00Z",
-    };
+      updated_at: "2025-10-27T12:00:00Z",      };
 
     it("should create an employee", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -311,15 +309,13 @@ describe("employeeService", () => {
       is_archived: false,
       comments: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    };
+      updated_at: "2025-01-01T00:00:00Z",      };
 
     it("should update an employee", async () => {
       const updatedEmployee = {
         ...mockEmployee,
         email: "updated@example.com",
-        updated_at: "2025-10-27T15:30:00Z",
-      };
+        updated_at: "2025-10-27T15:30:00Z",      };
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
@@ -348,8 +344,7 @@ describe("employeeService", () => {
         email: "new@example.com",
         mobile: "+46709876543",
         rank: "SEV",
-        updated_at: "2025-10-27T15:30:00Z",
-      };
+        updated_at: "2025-10-27T15:30:00Z",      };
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
@@ -473,8 +468,7 @@ describe("employeeService", () => {
           data: {
             id: "employee-123",
             is_archived: true,
-            updated_at: "2025-10-27T15:30:00Z",
-          },
+            updated_at: "2025-10-27T15:30:00Z",      },
           meta: { timestamp: "2025-10-27T15:30:00Z", requestId: "req_123" },
         }),
       } as Response);
@@ -561,8 +555,7 @@ describe("employeeService", () => {
           data: {
             id: "employee-123",
             is_archived: false,
-            updated_at: "2025-10-27T15:30:00Z",
-          },
+            updated_at: "2025-10-27T15:30:00Z",      },
           meta: { timestamp: "2025-10-27T15:30:00Z", requestId: "req_124" },
         }),
       } as Response);
@@ -651,8 +644,7 @@ describe("employeeService", () => {
             is_terminated: true,
             termination_date: "2025-10-26",
             termination_reason: "Voluntary resignation",
-            updated_at: "2025-10-27T15:30:00Z",
-          },
+            updated_at: "2025-10-27T15:30:00Z",      },
           meta: { timestamp: "2025-10-27T15:30:00Z", requestId: "req_123" },
         }),
       } as Response);
@@ -764,8 +756,7 @@ describe("employeeService", () => {
             is_terminated: false,
             termination_date: null,
             termination_reason: null,
-            updated_at: "2025-10-27T15:30:00Z",
-          },
+            updated_at: "2025-10-27T15:30:00Z",      },
           meta: { timestamp: "2025-10-27T15:30:00Z", requestId: "req_123" },
         }),
       } as Response);

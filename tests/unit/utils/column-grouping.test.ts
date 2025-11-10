@@ -69,7 +69,12 @@ describe("groupColumnsByCategory", () => {
         category: null,
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      }),
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    }),
     ];
 
     const grouped = groupColumnsByCategory(columns);
@@ -88,7 +93,12 @@ describe("groupColumnsByCategory", () => {
         category: "Recruitment",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      }),
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    }),
       createColumnConfig({
         id: "2",
         column_name: "Team B",
@@ -97,7 +107,12 @@ describe("groupColumnsByCategory", () => {
         category: "Recruitment",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      }),
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    }),
       createColumnConfig({
         id: "3",
         column_name: "Team C",
@@ -106,7 +121,12 @@ describe("groupColumnsByCategory", () => {
         category: "Recruitment",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      }),
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    }),
     ];
 
     const grouped = groupColumnsByCategory(columns);
@@ -127,7 +147,12 @@ describe("groupColumnsByCategory", () => {
         category: null,
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      }),
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    }),
       createColumnConfig({
         id: "2",
         column_name: "Email",
@@ -136,7 +161,12 @@ describe("groupColumnsByCategory", () => {
         category: null,
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      }),
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    }),
       createColumnConfig({
         id: "3",
         column_name: "Custom Field",
@@ -145,7 +175,12 @@ describe("groupColumnsByCategory", () => {
         category: "Custom",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      }),
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    }),
     ];
 
     const grouped = groupColumnsByCategory(columns);
@@ -175,7 +210,12 @@ describe("groupColumnsByCategory", () => {
         category: "",
         role_permissions: {},
         created_at: "2025-01-01T00:00:00Z",
-      }),
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    }),
     ];
 
     const grouped = groupColumnsByCategory(columns);

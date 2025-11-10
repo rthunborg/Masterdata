@@ -92,7 +92,12 @@ describe("POST /api/important-dates/import - Empty Notes Field", () => {
         date_description: "Fredag 14/2",
         date_value: "15-16/2",
         notes: null,
-      }
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+    }
     ]);
   });
 

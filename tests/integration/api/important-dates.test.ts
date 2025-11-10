@@ -32,8 +32,7 @@ describe("GET /api/important-dates", () => {
       notes: null,
       is_active: true,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
     {
       id: "date-2",
       week_number: 10,
@@ -44,8 +43,7 @@ describe("GET /api/important-dates", () => {
       notes: "Important deadline",
       is_active: true,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
   ];
 
   beforeEach(() => {
@@ -181,8 +179,7 @@ describe("POST /api/important-dates", () => {
     ...validFormData,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -319,8 +316,7 @@ describe("PATCH /api/important-dates/[id]", () => {
     notes: "Updated notes",
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-02T00:00:00Z",
-  };
+    updated_at: "2025-01-02T00:00:00Z",      };
 
   beforeEach(() => {
     vi.clearAllMocks();

@@ -39,6 +39,11 @@ describe("GET /api/columns", () => {
       },
       category: null,
       created_at: "2025-10-28T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     },
     {
       id: "col-2",
@@ -52,6 +57,11 @@ describe("GET /api/columns", () => {
       },
       category: null,
       created_at: "2025-10-28T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     },
     {
       id: "col-3",
@@ -65,6 +75,11 @@ describe("GET /api/columns", () => {
       },
       category: null,
       created_at: "2025-10-28T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     },
   ];
 
@@ -207,6 +222,11 @@ describe("POST /api/columns", () => {
       },
       category: "Recruitment",
       created_at: "2025-10-28T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     };
 
     vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockSodexoUser);
@@ -388,6 +408,11 @@ describe("POST /api/columns", () => {
       },
       category: null,
       created_at: "2025-10-28T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     };
 
     vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockSodexoUser);
@@ -425,7 +450,12 @@ describe("POST /api/columns", () => {
         },
         category: null,
         created_at: "2025-10-28T00:00:00Z",
-      };
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    };
 
       vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockUser);
       vi.mocked(columnConfigRepository.createCustomColumn).mockResolvedValue(newColumn);

@@ -41,7 +41,12 @@ describe("AddColumnModal", () => {
           role_permissions: { sodexo: { view: true, edit: true } },
           category: "Test Category",
           created_at: "2025-10-28T10:00:00Z",
-        },
+        db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    },
       ],
       refetch: mockRefetch,
     });
@@ -129,6 +134,11 @@ describe("AddColumnModal", () => {
       role_permissions: { sodexo: { view: true, edit: true } },
       category: null,
       created_at: "2025-10-28T10:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     };
 
     mockCreateCustomColumn.mockResolvedValue(mockNewColumn);
@@ -159,6 +169,11 @@ describe("AddColumnModal", () => {
       role_permissions: { sodexo: { view: true, edit: true } },
       category: null,
       created_at: "2025-10-28T10:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     };
 
     mockCreateCustomColumn.mockResolvedValue(mockNewColumn);
@@ -254,6 +269,11 @@ describe("AddColumnModal", () => {
       role_permissions: { sodexo: { view: true, edit: true } },
       category: "Custom Category",
       created_at: "2025-10-28T10:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     };
 
     mockCreateCustomColumn.mockResolvedValue(mockNewColumn);

@@ -32,8 +32,7 @@ describe("ColumnConfigRepository", () => {
       display_order: 1,
       is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
-      updated_at: "2025-10-28T00:00:00Z",
-    },
+      updated_at: "2025-10-28T00:00:00Z",      },
     {
       id: "col-2",
       column_name: "SSN",
@@ -48,8 +47,7 @@ describe("ColumnConfigRepository", () => {
       display_order: 2,
       is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
-      updated_at: "2025-10-28T00:00:00Z",
-    },
+      updated_at: "2025-10-28T00:00:00Z",      },
     {
       id: "col-3",
       column_name: "Hire Date",
@@ -64,8 +62,7 @@ describe("ColumnConfigRepository", () => {
       display_order: 3,
       is_visible: true,
       created_at: "2025-10-28T00:00:00Z",
-      updated_at: "2025-10-28T00:00:00Z",
-    },
+      updated_at: "2025-10-28T00:00:00Z",      },
   ];
 
   describe("findAll", () => {
@@ -262,8 +259,7 @@ describe("ColumnConfigRepository", () => {
         display_order: 0,
         is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
-        updated_at: "2025-10-28T00:00:00Z",
-      };
+        updated_at: "2025-10-28T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
@@ -306,8 +302,7 @@ describe("ColumnConfigRepository", () => {
         display_order: 0,
         is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
-        updated_at: "2025-10-28T00:00:00Z",
-      };
+        updated_at: "2025-10-28T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
@@ -368,8 +363,7 @@ describe("ColumnConfigRepository", () => {
         display_order: 0,
         is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
-        updated_at: "2025-10-28T00:00:00Z",
-      };
+        updated_at: "2025-10-28T00:00:00Z",      };
 
       const updatedColumn = { ...customColumn, category: "HR" };
 
@@ -402,8 +396,7 @@ describe("ColumnConfigRepository", () => {
         display_order: 0,
         is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
-        updated_at: "2025-10-28T00:00:00Z",
-      };
+        updated_at: "2025-10-28T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
@@ -450,8 +443,7 @@ describe("ColumnConfigRepository", () => {
         display_order: 0,
         is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
-        updated_at: "2025-10-28T00:00:00Z",
-      };
+        updated_at: "2025-10-28T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
@@ -482,8 +474,7 @@ describe("ColumnConfigRepository", () => {
         display_order: 0,
         is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
-        updated_at: "2025-10-28T00:00:00Z",
-      };
+        updated_at: "2025-10-28T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),
@@ -526,8 +517,7 @@ describe("ColumnConfigRepository", () => {
         display_order: 0,
         is_visible: true,
         created_at: "2025-10-28T00:00:00Z",
-        updated_at: "2025-10-28T00:00:00Z",
-      };
+        updated_at: "2025-10-28T00:00:00Z",      };
 
       const mockClient = {
         from: vi.fn().mockReturnThis(),

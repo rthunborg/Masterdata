@@ -41,8 +41,7 @@ describe("GET /api/employees", () => {
       is_archived: false,
       comments: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
     {
       id: "emp-2",
       first_name: "Jane",
@@ -60,8 +59,7 @@ describe("GET /api/employees", () => {
       is_archived: false,
       comments: null,
       created_at: "2020-01-01T00:00:00Z",
-      updated_at: "2020-01-01T00:00:00Z",
-    },
+      updated_at: "2020-01-01T00:00:00Z",      },
   ];
 
   beforeEach(() => {
@@ -212,8 +210,7 @@ describe("POST /api/employees", () => {
     id: "new-emp-123",
     ...validEmployeeData,
     created_at: "2025-10-27T12:00:00Z",
-    updated_at: "2025-10-27T12:00:00Z",
-  };
+    updated_at: "2025-10-27T12:00:00Z",      };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -478,8 +475,7 @@ describe("PATCH /api/employees/[id]", () => {
     is_archived: false,
     comments: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -489,8 +485,7 @@ describe("PATCH /api/employees/[id]", () => {
     const updatedEmployee = {
       ...mockEmployee,
       email: "updated@example.com",
-      updated_at: "2025-10-27T15:30:00Z",
-    };
+      updated_at: "2025-10-27T15:30:00Z",      };
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
@@ -518,8 +513,7 @@ describe("PATCH /api/employees/[id]", () => {
       email: "new@example.com",
       mobile: "+46709876543",
       rank: "SEV",
-      updated_at: "2025-10-27T15:30:00Z",
-    };
+      updated_at: "2025-10-27T15:30:00Z",      };
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
@@ -689,8 +683,7 @@ describe("PATCH /api/employees/[id]", () => {
       ...mockEmployee,
       mobile: null,
       comments: null,
-      updated_at: "2025-10-27T15:30:00Z",
-    };
+      updated_at: "2025-10-27T15:30:00Z",      };
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
@@ -737,8 +730,7 @@ describe("POST /api/employees/[id]/terminate", () => {
     is_archived: false,
     comments: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-10-27T00:00:00Z",
-  };
+    updated_at: "2025-10-27T00:00:00Z",      };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -937,8 +929,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
     is_archived: false,
     comments: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-10-27T00:00:00Z",
-  };
+    updated_at: "2025-10-27T00:00:00Z",      };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -1077,8 +1068,7 @@ describe("SSN Normalization Tests", () => {
         ...employeeWithDashlessSSN,
         ssn: "850315-1234", // Normalized with dash
         created_at: "2025-10-27T12:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",
-      };
+        updated_at: "2025-10-27T12:00:00Z",      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
@@ -1125,8 +1115,7 @@ describe("SSN Normalization Tests", () => {
         id: "emp-124",
         ...employeeWithDashedSSN,
         created_at: "2025-10-27T12:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",
-      };
+        updated_at: "2025-10-27T12:00:00Z",      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
@@ -1174,8 +1163,7 @@ describe("SSN Normalization Tests", () => {
         ...employeeWith12DigitSSN,
         ssn: "850315-1234", // Normalized (century stripped)
         created_at: "2025-10-27T12:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",
-      };
+        updated_at: "2025-10-27T12:00:00Z",      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
@@ -1224,8 +1212,7 @@ describe("SSN Normalization Tests", () => {
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",
-      };
+        updated_at: "2025-10-27T12:00:00Z",      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
@@ -1273,8 +1260,7 @@ describe("SSN Normalization Tests", () => {
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",
-      };
+        updated_at: "2025-10-27T12:00:00Z",      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
@@ -1323,8 +1309,7 @@ describe("SSN Normalization Tests", () => {
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",
-      };
+        updated_at: "2025-10-27T12:00:00Z",      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);

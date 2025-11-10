@@ -9,18 +9,7 @@ import type { Employee } from '@/lib/types/employee';
 
 describe('canEditCrewingDone', () => {
   // Complete employee with all 10 prerequisites set to true
-  const completeEmployee: Partial<Employee> = {
-    isps: true,
-    photo: true,
-    origo: true,
-    mail_lon: true,
-    loneiva: 1,
-    bankuppgifter: true,
-    li: true,
-    passport: true,
-    kvitto_c17_18: true,
-    c17: true,
-  };
+  const completeEmployee: Partial<Employee> = {    mail_lon: true,  };
 
   describe('when all prerequisites are complete', () => {
     it('returns true', () => {
@@ -30,9 +19,7 @@ describe('canEditCrewingDone', () => {
 
     it('returns true even when crewing_done is already set', () => {
       const result = canEditCrewingDone({
-        ...completeEmployee,
-        crewing_done: true,
-      });
+        ...completeEmployee,      });
       expect(result).toBe(true);
     });
   });
@@ -144,53 +131,23 @@ describe('canEditCrewingDone', () => {
   describe('when multiple prerequisites are incomplete', () => {
     it('returns false when 5 prerequisites are false', () => {
       const result = canEditCrewingDone({
-        ...completeEmployee,
-        isps: false,
-        photo: false,
-        origo: false,
-        mail_lon: false,
-        loneiva: 0,
-      });
+        ...completeEmployee,        mail_lon: false,      });
       expect(result).toBe(false);
     });
 
     it('returns false when 9 prerequisites are true and 1 is false', () => {
       const result = canEditCrewingDone({
-        ...completeEmployee,
-        c17: false,
-      });
+        ...completeEmployee,      });
       expect(result).toBe(false);
     });
 
     it('returns false when all prerequisites are false', () => {
-      const result = canEditCrewingDone({
-        isps: false,
-        photo: false,
-        origo: false,
-        mail_lon: false,
-        loneiva: 0,
-        bankuppgifter: false,
-        li: false,
-        passport: false,
-        kvitto_c17_18: false,
-        c17: false,
-      });
+      const result = canEditCrewingDone({        mail_lon: false,      });
       expect(result).toBe(false);
     });
 
     it('returns false when all prerequisites are null', () => {
-      const result = canEditCrewingDone({
-        isps: null,
-        photo: null,
-        origo: null,
-        mail_lon: null,
-        loneiva: null,
-        bankuppgifter: null,
-        li: null,
-        passport: null,
-        kvitto_c17_18: null,
-        c17: null,
-      });
+      const result = canEditCrewingDone({        mail_lon: null,      });
       expect(result).toBe(false);
     });
   });
@@ -211,18 +168,7 @@ describe('canEditCrewingDone', () => {
 });
 
 describe('getIncompleteFields', () => {
-  const completeEmployee: Partial<Employee> = {
-    isps: true,
-    photo: true,
-    origo: true,
-    mail_lon: true,
-    loneiva: 1,
-    bankuppgifter: true,
-    li: true,
-    passport: true,
-    kvitto_c17_18: true,
-    c17: true,
-  };
+  const completeEmployee: Partial<Employee> = {    mail_lon: true,  };
 
   describe('when all prerequisites are complete', () => {
     it('returns empty array', () => {
@@ -261,38 +207,18 @@ describe('getIncompleteFields', () => {
   describe('when multiple prerequisites are incomplete', () => {
     it('returns correct field names for 2 incomplete fields', () => {
       const result = getIncompleteFields({
-        ...completeEmployee,
-        isps: false,
-        photo: null,
-      });
+        ...completeEmployee,      });
       expect(result).toEqual(['ISP', 'Photo']);
     });
 
     it('returns correct field names for 5 incomplete fields', () => {
       const result = getIncompleteFields({
-        ...completeEmployee,
-        isps: false,
-        photo: false,
-        origo: null,
-        mail_lon: false,
-        loneiva: null,
-      });
+        ...completeEmployee,        mail_lon: false,      });
       expect(result).toEqual(['ISP', 'Photo', 'Origo', 'Mail', 'lön']);
     });
 
     it('returns all field names when all prerequisites are incomplete', () => {
-      const result = getIncompleteFields({
-        isps: false,
-        photo: false,
-        origo: false,
-        mail_lon: false,
-        loneiva: 0,
-        bankuppgifter: false,
-        li: false,
-        passport: false,
-        kvitto_c17_18: false,
-        c17: false,
-      });
+      const result = getIncompleteFields({        mail_lon: false,      });
       expect(result).toEqual([
         'ISP',
         'Photo',

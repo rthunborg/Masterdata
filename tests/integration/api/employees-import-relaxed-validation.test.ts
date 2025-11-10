@@ -75,8 +75,7 @@ John,Doe,19850315-1234,,Manager,2025-01-15`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      }],
+        updated_at: "2025-01-01T00:00:00Z",      }],
       errors: [],
     });
 
@@ -154,8 +153,7 @@ John,Doe,19850315-1234,Manager,2025-01-15`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      }],
+        updated_at: "2025-01-01T00:00:00Z",      }],
       errors: [],
     });
 
@@ -197,8 +195,7 @@ Jane,Smith,19900520-5678,,+46709876543,,Stockholm,Manager,2024-06-01,`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      }],
+        updated_at: "2025-01-01T00:00:00Z",      }],
       errors: [],
     });
 
@@ -240,8 +237,7 @@ John,Doe,19850315-1234,john@example.com,Manager,2025-01-15,,,`;
         omc_date: null,
         pe3_date: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      }],
+        updated_at: "2025-01-01T00:00:00Z",      }],
       errors: [],
     });
 

@@ -49,6 +49,11 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
         sodexo: { view: true, edit: true },
       },
       created_at: "2025-01-01T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     }),
   },
 }));
@@ -104,6 +109,11 @@ describe("PATCH /api/columns/[id]", () => {
       role: UserRole.HR_ADMIN,
       is_active: true,
       created_at: "2025-01-01T00:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     });
 
     const mockRequest = new NextRequest(

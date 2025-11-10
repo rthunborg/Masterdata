@@ -55,7 +55,12 @@ describe("Column Creation Integration Flow", () => {
         role_permissions: { sodexo: { view: true, edit: false } },
         category: null,
         created_at: "2025-10-28T10:00:00Z",
-      },
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    },
     ];
 
     const newColumn = {
@@ -66,6 +71,11 @@ describe("Column Creation Integration Flow", () => {
       role_permissions: { sodexo: { view: true, edit: true } },
       category: "HR",
       created_at: "2025-10-28T11:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     };
 
     (useColumns as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -115,7 +125,12 @@ describe("Column Creation Integration Flow", () => {
         role_permissions: { sodexo: { view: true, edit: true } },
         category: null,
         created_at: "2025-10-28T10:00:00Z",
-      },
+      db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    },
     ];
 
     (useColumns as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -149,6 +164,11 @@ describe("Column Creation Integration Flow", () => {
       role_permissions: { sodexo: { view: true, edit: true } },
       category: null,
       created_at: "2025-10-28T10:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     };
 
     const column2 = {
@@ -159,6 +179,11 @@ describe("Column Creation Integration Flow", () => {
       role_permissions: { sodexo: { view: true, edit: true } },
       category: "Test",
       created_at: "2025-10-28T11:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     };
 
     (useColumns as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -250,6 +275,11 @@ describe("Column Creation Integration Flow", () => {
       role_permissions: { sodexo: { view: true, edit: true } },
       category: null,
       created_at: "2025-10-28T10:00:00Z",
+    db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
     });
 
     renderWithI18n(<AddColumnModal />);

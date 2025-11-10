@@ -83,8 +83,7 @@ describe("column-mapping", () => {
       is_archived: false,
       comments: "Test comment",
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    };
+      updated_at: "2025-01-01T00:00:00Z",      };
 
     it("should get first name value", () => {
       expect(getEmployeeFieldValue(mockEmployee, "First Name")).toBe("John");

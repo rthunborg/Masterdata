@@ -37,8 +37,7 @@ describe("ImportantDatesTable", () => {
       date_value: "15-16/2",
       notes: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
     {
       id: "date-2",
       week_number: 10,
@@ -48,8 +47,7 @@ describe("ImportantDatesTable", () => {
       date_value: "8-9/3",
       notes: "Important deadline",
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
     {
       id: "date-3",
       week_number: 15,
@@ -59,8 +57,7 @@ describe("ImportantDatesTable", () => {
       date_value: "10/4",
       notes: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    },
+      updated_at: "2025-01-01T00:00:00Z",      },
   ];
 
   describe("Rendering", () => {

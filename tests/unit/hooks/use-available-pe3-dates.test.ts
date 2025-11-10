@@ -47,8 +47,7 @@ describe("useAvailablePE3Dates", () => {
         date_value: "2025-03-07",
         notes: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      },
+        updated_at: "2025-01-01T00:00:00Z",      },
       {
         id: "date-2",
         week_number: 14,
@@ -58,8 +57,7 @@ describe("useAvailablePE3Dates", () => {
         date_value: "2025-04-04",
         notes: null,
         created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",
-      },
+        updated_at: "2025-01-01T00:00:00Z",      },
     ];
 
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -116,8 +114,7 @@ describe("useAvailablePE3Dates", () => {
               date_value: "2025-05-16",
               notes: null,
               created_at: "2025-01-01T00:00:00Z",
-              updated_at: "2025-01-01T00:00:00Z",
-            },
+              updated_at: "2025-01-01T00:00:00Z",      },
           ],
           meta: { total: 1, timestamp: new Date().toISOString() },
         }),
@@ -247,8 +244,7 @@ describe("useAvailablePE3Dates", () => {
       date_value: "2025-07-25",
       notes: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    };
+      updated_at: "2025-01-01T00:00:00Z",      };
 
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
@@ -263,8 +259,7 @@ describe("useAvailablePE3Dates", () => {
             date_value: "2025-03-07",
             notes: null,
             created_at: "2025-01-01T00:00:00Z",
-            updated_at: "2025-01-01T00:00:00Z",
-          },
+            updated_at: "2025-01-01T00:00:00Z",      },
         ],
         meta: { total: 1, timestamp: new Date().toISOString() },
       }),

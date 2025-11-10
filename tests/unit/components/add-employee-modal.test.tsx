@@ -47,8 +47,7 @@ describe("AddEmployeeModal", () => {
     is_archived: false,
     comments: "New employee",
     created_at: "2025-10-27T12:00:00Z",
-    updated_at: "2025-10-27T12:00:00Z",
-  };
+    updated_at: "2025-10-27T12:00:00Z",      };
 
   it("should render modal with all form fields", () => {
     renderWithI18n(

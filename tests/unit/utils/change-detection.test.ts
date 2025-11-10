@@ -370,8 +370,7 @@ describe("Performance", () => {
       is_archived: false,
       comments: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-    }));
+      updated_at: "2025-01-01T00:00:00Z",      }));
 
     const oldEmployee = employees[500];
     const newEmployee = { ...employees[500], email: "newemail@example.com" };

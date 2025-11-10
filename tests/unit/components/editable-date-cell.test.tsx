@@ -30,8 +30,7 @@ describe("EditableDateCell", () => {
     date_value: "2025-10-17",
     notes: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   const mockFutureStenaDate: ImportantDate = {
     id: "stena-date-future",
@@ -42,8 +41,7 @@ describe("EditableDateCell", () => {
     date_value: "2025-12-12",
     notes: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   const mockPastStenaDate: ImportantDate = {
     id: "stena-date-past",
@@ -54,8 +52,7 @@ describe("EditableDateCell", () => {
     date_value: "2025-01-03",
     notes: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   const mockOmcDate: ImportantDate = {
     id: "omc-date-1",
@@ -66,8 +63,7 @@ describe("EditableDateCell", () => {
     date_value: "2025-10-20",
     notes: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   const mockPE3Date: ImportantDate = {
     id: "pe3-date-1",
@@ -78,8 +74,7 @@ describe("EditableDateCell", () => {
     date_value: "2025-10-28",
     notes: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
-  };
+    updated_at: "2025-01-01T00:00:00Z",      };
 
   const mockAllDates: ImportantDate[] = [
     mockStenaDate,

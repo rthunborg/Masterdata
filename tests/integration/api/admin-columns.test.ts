@@ -37,7 +37,12 @@ const mockColumns: ColumnConfig[] = [
     },
     category: null,
     created_at: "2025-10-28T00:00:00Z",
-  },
+  db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    },
   {
     id: "col-2",
     column_name: "SSN",
@@ -52,7 +57,12 @@ const mockColumns: ColumnConfig[] = [
     },
     category: null,
     created_at: "2025-10-28T00:00:00Z",
-  },
+  db_column_name: 'test_column',
+      category_color: '#FFFFFF',
+      display_order: 0,
+      is_visible: true,
+      updated_at: new Date().toISOString(),
+    },
 ];
 
 // Mock Supabase client with chainable query builder

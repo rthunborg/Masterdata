@@ -78,8 +78,7 @@ const mockEmployees: Employee[] = [
     is_archived: false,
     comments: null,
     created_at: "2020-01-01T00:00:00Z",
-    updated_at: "2020-01-01T00:00:00Z",
-  },
+    updated_at: "2020-01-01T00:00:00Z",      },
   {
     id: "2",
     first_name: "Jane",
@@ -97,8 +96,7 @@ const mockEmployees: Employee[] = [
     is_archived: false,
     comments: null,
     created_at: "2021-06-15T00:00:00Z",
-    updated_at: "2021-06-15T00:00:00Z",
-  },
+    updated_at: "2021-06-15T00:00:00Z",      },
 ];
 
 describe("Real-time Employee Sync Integration", () => {

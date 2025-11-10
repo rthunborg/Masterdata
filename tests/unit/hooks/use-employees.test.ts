@@ -22,8 +22,7 @@ const mockEmployees: Employee[] = [
     is_archived: false,
     comments: null,
     created_at: "2020-01-01T00:00:00Z",
-    updated_at: "2020-01-01T00:00:00Z",
-  },
+    updated_at: "2020-01-01T00:00:00Z",      },
 ];
 
 vi.mock("@/lib/services/employee-service", () => ({
