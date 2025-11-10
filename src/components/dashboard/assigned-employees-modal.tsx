@@ -55,7 +55,7 @@ export function AssignedEmployeesModal({
       emp.name.toLowerCase().includes(query) ||
       emp.email?.toLowerCase().includes(query)
     );
-  }, [date?.assigned_employees, searchQuery]);
+  }, [date, searchQuery]); // Changed: Use full date object instead of date?.assigned_employees
 
   // Paginate filtered employees
   const paginatedEmployees = React.useMemo(() => {

@@ -1,5 +1,6 @@
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -21,7 +22,7 @@ CREATE POLICY "Users can update own last_active_at" ON public.users
 async function applyPolicy() {
   console.log('Applying RLS policy...');
 
-  const { data, error } = await supabase.from('users').select('id').limit(1);
+  const { error } = await supabase.from('users').select('id').limit(1);
 
   if (error) {
     console.error('Connection error:', error);
