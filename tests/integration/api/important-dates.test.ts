@@ -342,10 +342,6 @@ describe("PATCH /api/important-dates/[id]", () => {
     assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-02T00:00:00Z",
-    time_value: null,
-    deadline_submit: null,
-    deadline_cancel: null,
-    max_spots: 0,
   };
 
   beforeEach(() => {

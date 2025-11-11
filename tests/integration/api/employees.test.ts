@@ -97,6 +97,7 @@ describe("GET /api/employees", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
+        comments: null,
         created_at: "2020-01-01T00:00:00Z",
       updated_at: "2020-01-01T00:00:00Z",      },
   ];
@@ -1195,9 +1196,6 @@ describe("SSN Normalization Tests", () => {
         c17: null,
         crewing_done: null,
         comments: null,
-        stena_date: null,
-        omc_date: null,
-        pe3_date: null,
       };
 
       const mockCreatedEmployee: Employee = {
@@ -1262,9 +1260,7 @@ describe("SSN Normalization Tests", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        stena_date: null,
-        omc_date: null,
-        pe3_date: null,
+        comments: null,
       };
 
       const mockCreatedEmployee: Employee = {
@@ -1328,9 +1324,7 @@ describe("SSN Normalization Tests", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        stena_date: null,
-        omc_date: null,
-        pe3_date: null,
+        comments: null,
       };
 
       const mockCreatedEmployee: Employee = {
@@ -1402,9 +1396,7 @@ describe("SSN Normalization Tests", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        stena_date: null,
-        omc_date: null,
-        pe3_date: null,
+        comments: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",      };
 
@@ -1469,9 +1461,7 @@ describe("SSN Normalization Tests", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        stena_date: null,
-        omc_date: null,
-        pe3_date: null,
+        comments: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",      };
 
@@ -1537,9 +1527,7 @@ describe("SSN Normalization Tests", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        stena_date: null,
-        omc_date: null,
-        pe3_date: null,
+        comments: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",      };
 
