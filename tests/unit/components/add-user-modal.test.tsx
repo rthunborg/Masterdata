@@ -156,6 +156,7 @@ describe('AddUserModal', () => {
       is_active: true,
       created_at: '2025-01-20T00:00:00Z',
       temporary_password: 'testPass123',
+      last_active_at: new Date().toISOString(),
     });
 
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
@@ -188,6 +189,7 @@ describe('AddUserModal', () => {
       is_active: true,
       created_at: '2025-01-20T00:00:00Z',
       temporary_password: 'testPass123',
+      last_active_at: new Date().toISOString(),
     });
 
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
@@ -215,6 +217,7 @@ describe('AddUserModal', () => {
       is_active: true,
       created_at: '2025-01-20T00:00:00Z',
       temporary_password: 'testPass123',
+      last_active_at: new Date().toISOString(),
     });
 
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);

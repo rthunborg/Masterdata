@@ -179,7 +179,9 @@ describe("POST /api/important-dates", () => {
     ...validFormData,
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",      };
+    updated_at: "2025-01-01T00:00:00Z",
+    assigned_employees: [],
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -316,7 +318,14 @@ describe("PATCH /api/important-dates/[id]", () => {
     notes: "Updated notes",
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-02T00:00:00Z",      };
+    updated_at: "2025-01-02T00:00:00Z",
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
+    max_spots: 0,
+    remaining_spots: 0,
+    assigned_employees: [],
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();

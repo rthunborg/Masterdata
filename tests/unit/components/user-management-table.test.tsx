@@ -53,6 +53,7 @@ describe('UserManagementTable', () => {
       role: UserRole.SODEXO,
       is_active: true,
       created_at: '2025-01-10T00:00:00Z',
+      last_active_at: new Date().toISOString(),
     },
     {
       id: 'user-2',
@@ -60,6 +61,7 @@ describe('UserManagementTable', () => {
       role: UserRole.OMC,
       is_active: false,
       created_at: '2025-01-15T00:00:00Z',
+      last_active_at: new Date().toISOString(),
     },
     {
       id: 'current-user-id',
@@ -67,6 +69,7 @@ describe('UserManagementTable', () => {
       role: UserRole.HR_ADMIN,
       is_active: true,
       created_at: '2025-01-01T00:00:00Z',
+      last_active_at: new Date().toISOString(),
     },
   ];
 
@@ -165,6 +168,7 @@ describe('UserManagementTable', () => {
       role: UserRole.SODEXO,
       is_active: false,
       created_at: '2025-01-10T00:00:00Z',
+      last_active_at: new Date().toISOString(),
     });
 
     renderWithI18n(
@@ -206,6 +210,7 @@ describe('UserManagementTable', () => {
       role: UserRole.OMC,
       is_active: true,
       created_at: '2025-01-15T00:00:00Z',
+      last_active_at: new Date().toISOString(),
     });
 
     renderWithI18n(
