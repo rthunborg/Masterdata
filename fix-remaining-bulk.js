@@ -62,7 +62,11 @@ for (const file of filesToFix) {
   }
 
   // Fix 3: Add last_active_at to User/SessionUser after created_at
-  if (file.includes('users.test.ts') || file.includes('role-selector') || file.includes('user-management')) {
+  if (
+    file.includes('users.test.ts') ||
+    file.includes('role-selector') ||
+    file.includes('user-management')
+  ) {
     // For User/SessionUser objects
     const pattern3a = /(created_at: "[^"]+",)(\s+})/g;
     const replacement3a = `$1
@@ -86,7 +90,8 @@ for (const file of filesToFix) {
 
   // Fix 4: Add allColumns prop to ColumnSettingsTable
   if (file.includes('column-settings-table')) {
-    const pattern4 = /(<ColumnSettingsTable\s+columns=\{[^\}]+\}\s+onPermissionsUpdated=\{[^\}]+\})\s*\/>/g;
+    const pattern4 =
+      /(<ColumnSettingsTable\s+columns=\{[^\}]+\}\s+onPermissionsUpdated=\{[^\}]+\})\s*\/>/g;
     const replacement4 = `$1
         allColumns={columns}
       />`;

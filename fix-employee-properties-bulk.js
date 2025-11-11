@@ -21,7 +21,8 @@ const missingProps = `repayment_needed_omc: null,
         crewing_done: null,`;
 
 // Pattern: Find is_archived: false, followed by optional comments, then created_at (missing props in between)
-const pattern1 = /(is_archived:\s*false,)\s*(comments:\s*(?:null|"[^"]*"),)\s*(created_at:)/g;
+const pattern1 =
+  /(is_archived:\s*false,)\s*(comments:\s*(?:null|"[^"]*"),)\s*(created_at:)/g;
 const pattern2 = /(is_archived:\s*false,)\s*(created_at:)/g;
 
 const files = [
@@ -43,28 +44,35 @@ const files = [
 
 let totalFixed = 0;
 
-files.forEach(filePath => {
+files.forEach((filePath) => {
   const fullPath = path.join(__dirname, filePath);
-  
+
   if (!fs.existsSync(fullPath)) {
     console.log(`Skipping ${filePath} - file not found`);
     return;
   }
-  
+
   let content = fs.readFileSync(fullPath, 'utf-8');
   const originalContent = content;
-  
+
   // Count matches before replacement
   const matches1 = content.match(pattern1);
   const matches2 = content.match(pattern2);
-  const matchCount = (matches1 ? matches1.length : 0) + (matches2 ? matches2.length : 0);
-  
+  const matchCount =
+    (matches1 ? matches1.length : 0) + (matches2 ? matches2.length : 0);
+
   // Add missing properties - handle case with comments field
-  content = content.replace(pattern1, `$1\n        ${missingProps}\n        $2\n        $3`);
-  
+  content = content.replace(
+    pattern1,
+    `$1\n        ${missingProps}\n        $2\n        $3`
+  );
+
   // Add missing properties - handle case without comments field (add comments too)
-  content = content.replace(pattern2, `$1\n        ${missingProps}\n        $2`);
-  
+  content = content.replace(
+    pattern2,
+    `$1\n        ${missingProps}\n        $2`
+  );
+
   if (content !== originalContent) {
     fs.writeFileSync(fullPath, content, 'utf-8');
     totalFixed += matchCount;
@@ -74,4 +82,6 @@ files.forEach(filePath => {
   }
 });
 
-console.log(`\n✅ Done! Fixed ${totalFixed} Employee mock objects across ${files.length} files`);
+console.log(
+  `\n✅ Done! Fixed ${totalFixed} Employee mock objects across ${files.length} files`
+);

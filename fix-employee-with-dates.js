@@ -22,7 +22,8 @@ const missingAfterIsArchived = `repayment_needed_omc: null,
 
 // Pattern for objects with stena/omc/pe3 dates after comments
 // Match: is_archived: false, comments: null, stena_date: ..., omc_date: ..., pe3_date: ..., created_at:
-const patternWithDates = /(is_archived:\s*false,)\s*(comments:\s*null,)\s*(stena_date:\s*null,\s*omc_date:\s*null,\s*pe3_date:\s*null,)\s*(created_at:)/g;
+const patternWithDates =
+  /(is_archived:\s*false,)\s*(comments:\s*null,)\s*(stena_date:\s*null,\s*omc_date:\s*null,\s*pe3_date:\s*null,)\s*(created_at:)/g;
 
 const files = [
   'tests/integration/api/employees-import-relaxed-validation.test.ts',
@@ -34,24 +35,27 @@ const files = [
 
 let totalFixed = 0;
 
-files.forEach(filePath => {
+files.forEach((filePath) => {
   const fullPath = path.join(__dirname, filePath);
-  
+
   if (!fs.existsSync(fullPath)) {
     console.log(`Skipping ${filePath} - file not found`);
     return;
   }
-  
+
   let content = fs.readFileSync(fullPath, 'utf-8');
   const originalContent = content;
-  
+
   // Count matches
   const matches = content.match(patternWithDates);
   const matchCount = matches ? matches.length : 0;
-  
+
   // Replace: insert missing props after is_archived, keep comments and date fields
-  content = content.replace(patternWithDates, `$1\n        ${missingAfterIsArchived}\n        $3\n        $4`);
-  
+  content = content.replace(
+    patternWithDates,
+    `$1\n        ${missingAfterIsArchived}\n        $3\n        $4`
+  );
+
   if (content !== originalContent) {
     fs.writeFileSync(fullPath, content, 'utf-8');
     totalFixed += matchCount;

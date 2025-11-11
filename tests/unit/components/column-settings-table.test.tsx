@@ -82,7 +82,7 @@ describe("ColumnSettingsTable", () => {
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
-        allColumns={columns}
+        allColumns={mockColumns}
       />
     );
 
@@ -103,7 +103,7 @@ describe("ColumnSettingsTable", () => {
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
-        allColumns={columns}
+        allColumns={mockColumns}
       />
     );
 
@@ -129,7 +129,7 @@ describe("ColumnSettingsTable", () => {
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
-        allColumns={columns}
+        allColumns={mockColumns}
       />
     );
 
@@ -160,7 +160,7 @@ describe("ColumnSettingsTable", () => {
       <ColumnSettingsTable
         columns={[]}
         onPermissionsUpdated={mockOnPermissionsUpdated}
-        allColumns={columns}
+        allColumns={mockColumns}
       />
     );
 
@@ -177,7 +177,7 @@ describe("ColumnSettingsTable", () => {
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
-        allColumns={columns}
+        allColumns={mockColumns}
       />
     );
 

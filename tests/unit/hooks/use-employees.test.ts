@@ -16,6 +16,9 @@ const mockEmployees: Employee[] = [
     gender: 'Man',
     town_district: "District 1",
     hire_date: "2020-01-01",
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
     termination_date: null,
     termination_reason: null,
     is_terminated: false,
@@ -37,7 +40,6 @@ const mockEmployees: Employee[] = [
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: null,
         created_at: "2020-01-01T00:00:00Z",
     updated_at: "2020-01-01T00:00:00Z",      },
 ];

@@ -41,6 +41,9 @@ describe("AddEmployeeModal", () => {
     gender: 'Woman',
     town_district: "Gothenburg",
     hire_date: "2025-01-01",
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
     termination_date: null,
     termination_reason: null,
     is_terminated: false,
@@ -62,7 +65,6 @@ describe("AddEmployeeModal", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: "New employee",
         created_at: "2025-10-27T12:00:00Z",
     updated_at: "2025-10-27T12:00:00Z",      };
 

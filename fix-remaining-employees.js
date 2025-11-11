@@ -41,15 +41,22 @@ for (const file of filesToFix) {
   let fileFixCount = 0;
 
   // Pattern 1: Employee mocks ending with is_archived: false,\n comments: null,\n created_at:
-  const pattern1 = /(is_archived: false,\s+)(comments: null,\s+)(created_at: "[^"]+",\s+updated_at: "[^"]+",)/g;
+  const pattern1 =
+    /(is_archived: false,\s+)(comments: null,\s+)(created_at: "[^"]+",\s+updated_at: "[^"]+",)/g;
   const before1 = content;
   content = content.replace(pattern1, (match, p1, p2, p3) => {
-    return p1 + employeeTemplate + `
+    return (
+      p1 +
+      employeeTemplate +
+      `
         comments: null,
-        ` + p3 + `
+        ` +
+      p3 +
+      `
         stena_date: null,
         omc_date: null,
-        pe3_date: null,`;
+        pe3_date: null,`
+    );
   });
   if (content !== before1) {
     const count = (before1.match(pattern1) || []).length;
@@ -58,11 +65,17 @@ for (const file of filesToFix) {
   }
 
   // Pattern 2: EmployeeFormData ending with is_archived: false,\n comments:
-  const pattern2 = /(is_archived: false,\s+)(comments: (?:null|"[^"]+"),\s*$)/gm;
+  const pattern2 =
+    /(is_archived: false,\s+)(comments: (?:null|"[^"]+"),\s*$)/gm;
   const before2 = content;
   content = content.replace(pattern2, (match, p1, p2) => {
-    return p1 + employeeTemplate + `
-        ` + p2;
+    return (
+      p1 +
+      employeeTemplate +
+      `
+        ` +
+      p2
+    );
   });
   if (content !== before2) {
     const count = (before2.match(pattern2) || []).length;
@@ -72,11 +85,17 @@ for (const file of filesToFix) {
 
   // Pattern 3: Objects with stena_date/omc_date/pe3_date but missing 17 properties
   // Match is_archived: false, followed immediately by stena_date/omc_date/pe3_date
-  const pattern3 = /(is_archived: false,\s+)((?:stena_date|omc_date|pe3_date): null,)/g;
+  const pattern3 =
+    /(is_archived: false,\s+)((?:stena_date|omc_date|pe3_date): null,)/g;
   const before3 = content;
   content = content.replace(pattern3, (match, p1, p2) => {
-    return p1 + employeeTemplate + `
-        ` + p2;
+    return (
+      p1 +
+      employeeTemplate +
+      `
+        ` +
+      p2
+    );
   });
   if (content !== before3) {
     const count = (before3.match(pattern3) || []).length;

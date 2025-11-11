@@ -6,7 +6,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const filePath = path.join(__dirname, 'tests/unit/components/add-user-modal.test.tsx');
+const filePath = path.join(
+  __dirname,
+  'tests/unit/components/add-user-modal.test.tsx'
+);
 let content = fs.readFileSync(filePath, 'utf8');
 
 // Pattern: Find CreateUserResponse objects with temporary_password but missing last_active_at

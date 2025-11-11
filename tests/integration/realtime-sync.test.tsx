@@ -72,30 +72,33 @@ const mockEmployees: Employee[] = [
     gender: 'Man',
     town_district: "District 1",
     hire_date: "2020-01-01",
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
     termination_date: null,
     termination_reason: null,
     is_terminated: false,
     is_archived: false,
-        repayment_needed_omc: null,
-        repayment_needed_pe3: null,
-        comments: null,
-        one: null,
-        one_marked_at: null,
-        talmundo: null,
-        isps: null,
-        photo: null,
-        origo: null,
-        loneiva: null,
-        mail_lon: null,
-        bankuppgifter: null,
-        li: null,
-        passport: null,
-        kvitto_c17_18: null,
-        c17: null,
-        crewing_done: null,
-        comments: null,
-        created_at: "2020-01-01T00:00:00Z",
-    updated_at: "2020-01-01T00:00:00Z",      },
+    repayment_needed_omc: null,
+    repayment_needed_pe3: null,
+    one: null,
+    one_marked_at: null,
+    talmundo: null,
+    isps: null,
+    photo: null,
+    origo: null,
+    loneiva: null,
+    mail_lon: null,
+    bankuppgifter: null,
+    li: null,
+    passport: null,
+    kvitto_c17_18: null,
+    c17: null,
+    crewing_done: null,
+    comments: null,
+    created_at: "2020-01-01T00:00:00Z",
+    updated_at: "2020-01-01T00:00:00Z",
+  },
   {
     id: "2",
     first_name: "Jane",
@@ -107,30 +110,33 @@ const mockEmployees: Employee[] = [
     gender: 'Woman',
     town_district: "District 2",
     hire_date: "2021-06-15",
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
     termination_date: null,
     termination_reason: null,
     is_terminated: false,
     is_archived: false,
-        repayment_needed_omc: null,
-        repayment_needed_pe3: null,
-        comments: null,
-        one: null,
-        one_marked_at: null,
-        talmundo: null,
-        isps: null,
-        photo: null,
-        origo: null,
-        loneiva: null,
-        mail_lon: null,
-        bankuppgifter: null,
-        li: null,
-        passport: null,
-        kvitto_c17_18: null,
-        c17: null,
-        crewing_done: null,
-        comments: null,
-        created_at: "2021-06-15T00:00:00Z",
-    updated_at: "2021-06-15T00:00:00Z",      },
+    repayment_needed_omc: null,
+    repayment_needed_pe3: null,
+    one: null,
+    one_marked_at: null,
+    talmundo: null,
+    isps: null,
+    photo: null,
+    origo: null,
+    loneiva: null,
+    mail_lon: null,
+    bankuppgifter: null,
+    li: null,
+    passport: null,
+    kvitto_c17_18: null,
+    c17: null,
+    crewing_done: null,
+    comments: null,
+    created_at: "2021-06-15T00:00:00Z",
+    updated_at: "2021-06-15T00:00:00Z",
+  },
 ];
 
 describe("Real-time Employee Sync Integration", () => {
@@ -143,7 +149,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
-        isRealtimeConnected={true}
       />
     );
 
@@ -156,7 +161,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
-        isRealtimeConnected={false}
       />
     );
 
@@ -168,7 +172,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
-        isRealtimeConnected={true}
         updatedEmployeeId="1"
       />
     );
@@ -185,7 +188,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
-        isRealtimeConnected={true}
         updatedEmployeeId="1"
       />
     );
@@ -200,7 +202,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
-        isRealtimeConnected={true}
       />
     );
 
@@ -222,7 +223,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={archivedEmployees}
         isLoading={false}
-        isRealtimeConnected={true}
       />
     );
 
@@ -245,7 +245,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={terminatedEmployees}
         isLoading={false}
-        isRealtimeConnected={true}
       />
     );
 
@@ -259,7 +258,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={[]}
         isLoading={true}
-        isRealtimeConnected={false}
       />
     );
 
@@ -271,7 +269,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={[]}
         isLoading={false}
-        isRealtimeConnected={true}
       />
     );
 
@@ -285,7 +282,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
-        isRealtimeConnected={true}
       />
     );
 
@@ -305,7 +301,6 @@ describe("Real-time Employee Sync Integration", () => {
       <EmployeeTable
         employees={archivedEmployees}
         isLoading={false}
-        isRealtimeConnected={true}
         updatedEmployeeId="1"
       />
     );

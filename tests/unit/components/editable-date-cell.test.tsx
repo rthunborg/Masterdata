@@ -29,6 +29,13 @@ describe("EditableDateCell", () => {
     date_description: "Fredag 17/10",
     date_value: "2025-10-17",
     notes: null,
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
+    is_active: true,
+    max_spots: 0,
+    remaining_spots: 0,
+    assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",      };
 
@@ -40,6 +47,13 @@ describe("EditableDateCell", () => {
     date_description: "Fredag 12/12",
     date_value: "2025-12-12",
     notes: null,
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
+    is_active: true,
+    max_spots: 0,
+    remaining_spots: 0,
+    assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",      };
 
@@ -51,6 +65,13 @@ describe("EditableDateCell", () => {
     date_description: "Fredag 3/1",
     date_value: "2025-01-03",
     notes: null,
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
+    is_active: true,
+    max_spots: 0,
+    remaining_spots: 0,
+    assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",      };
 
@@ -62,6 +83,13 @@ describe("EditableDateCell", () => {
     date_description: "Måndag 20/10",
     date_value: "2025-10-20",
     notes: null,
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
+    is_active: true,
+    max_spots: 0,
+    remaining_spots: 0,
+    assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",      };
 
@@ -73,6 +101,13 @@ describe("EditableDateCell", () => {
     date_description: "Tisdag 28/10",
     date_value: "2025-10-28",
     notes: null,
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
+    is_active: true,
+    max_spots: 0,
+    remaining_spots: 0,
+    assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",      };
 

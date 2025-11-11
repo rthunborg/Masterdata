@@ -118,8 +118,14 @@ describe("AddImportantDateModal", () => {
         date_description: "Test Date",
         date_value: "2025-04-10",
         notes: null,
-        is_active: true,
-        created_at: "2025-01-01T00:00:00Z",
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
+    is_active: true,
+    max_spots: 0,
+    remaining_spots: 0,
+    assigned_employees: [],
+    created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",      });
 
       renderWithI18n(
@@ -170,8 +176,14 @@ describe("AddImportantDateModal", () => {
         date_description: "Fredag 14/2",
         date_value: "2025-02-14",
         notes: "Test notes",
-        is_active: true,
-        created_at: "2025-01-01T00:00:00Z",
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
+    is_active: true,
+    max_spots: 0,
+    remaining_spots: 0,
+    assigned_employees: [],
+    created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",      };
 
       vi.mocked(importantDateService.create).mockResolvedValue(mockCreatedDate);

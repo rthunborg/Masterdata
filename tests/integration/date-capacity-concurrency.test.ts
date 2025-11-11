@@ -92,7 +92,6 @@ describe("Date Capacity Concurrency Integration", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: null,
         created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",      };
 
