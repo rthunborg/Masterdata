@@ -51,11 +51,16 @@ describe("Date Capacity Concurrency Integration", () => {
     date_description: "ÖMC Training",
     date_value: "2025-03-10",
     notes: null,
+    time_value: null,
+    deadline_submit: null,
+    deadline_cancel: null,
     max_spots: 20,
     remaining_spots: 1, // Only 1 spot left
+    assigned_employees: [],
     is_active: true,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",      };
+    updated_at: "2025-01-01T00:00:00Z",
+  };
 
   const mockEmployee1: Employee = {
     id: "emp-1",
