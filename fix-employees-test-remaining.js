@@ -3,13 +3,19 @@ const fs = require('fs');
 const filePath = 'tests/integration/api/employees.test.ts';
 let content = fs.readFileSync(filePath, 'utf8');
 
-console.log('Fixing remaining issues in tests/integration/api/employees.test.ts...');
+console.log(
+  'Fixing remaining issues in tests/integration/api/employees.test.ts...'
+);
 
 // Fix 1: Add missing comments property to Employee mock at line 65
 const lines = content.split('\n');
 for (let i = 0; i < lines.length; i++) {
-  if (i === 64 && lines[i].includes('crewing_done: null,') && !lines[i+1].includes('comments')) {
-    lines.splice(i+1, 0, '      comments: null,');
+  if (
+    i === 64 &&
+    lines[i].includes('crewing_done: null,') &&
+    !lines[i + 1].includes('comments')
+  ) {
+    lines.splice(i + 1, 0, '      comments: null,');
     console.log('Added comments to Employee mock at line 65');
     break;
   }
@@ -32,7 +38,7 @@ content = content.replace(
 );
 console.log('Added missing comments to EmployeeFormData objects');
 
-// Fix 4: Fix line 597 - rank type error  
+// Fix 4: Fix line 597 - rank type error
 content = content.replace(
   /rank: mockUpdated\.rank,/,
   'rank: mockUpdated.rank as "SEV" | "CHEF",'

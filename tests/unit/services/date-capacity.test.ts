@@ -319,10 +319,11 @@ describe("date-capacity service", () => {
         error: null,
       });
 
-      await releaseDateCapacity("date-123");
+      await releaseDateCapacity("date-123", "employee-456");
 
       expect(mockSupabaseRpc).toHaveBeenCalledWith("release_date_capacity", {
         date_id: "date-123",
+        employee_id: "employee-456",
       });
     });
 
@@ -334,7 +335,7 @@ describe("date-capacity service", () => {
         error: { message: "Date not found" },
       });
 
-      await expect(releaseDateCapacity("invalid-date")).rejects.toThrow(
+      await expect(releaseDateCapacity("invalid-date", "employee-456")).rejects.toThrow(
         "Failed to release date capacity: Date not found"
       );
 
@@ -352,19 +353,22 @@ describe("date-capacity service", () => {
         error: null,
       });
 
-      await releaseDateCapacity("date-1");
-      await releaseDateCapacity("date-2");
-      await releaseDateCapacity("date-3");
+      await releaseDateCapacity("date-1", "employee-1");
+      await releaseDateCapacity("date-2", "employee-2");
+      await releaseDateCapacity("date-3", "employee-3");
 
       expect(mockSupabaseRpc).toHaveBeenCalledTimes(3);
       expect(mockSupabaseRpc).toHaveBeenNthCalledWith(1, "release_date_capacity", {
         date_id: "date-1",
+        employee_id: "employee-1",
       });
       expect(mockSupabaseRpc).toHaveBeenNthCalledWith(2, "release_date_capacity", {
         date_id: "date-2",
+        employee_id: "employee-2",
       });
       expect(mockSupabaseRpc).toHaveBeenNthCalledWith(3, "release_date_capacity", {
         date_id: "date-3",
+        employee_id: "employee-3",
       });
     });
   });

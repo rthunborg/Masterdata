@@ -17,17 +17,21 @@ let depth = 0;
 for (let i = 0; i < lines.length; i++) {
   const line = lines[i];
   const trimmedLine = line.trim();
-  
+
   // Track object depth
   if (trimmedLine.includes('{')) {
     depth++;
-    if (trimmedLine.match(/const mock\w+.*:\s*(Employee|EmployeeFormData)\s*=\s*{/)) {
+    if (
+      trimmedLine.match(
+        /const mock\w+.*:\s*(Employee|EmployeeFormData)\s*=\s*{/
+      )
+    ) {
       inObject = true;
       objectStartLine = i;
       hasCommentsProperty = false;
     }
   }
-  
+
   if (trimmedLine.includes('}')) {
     depth--;
     if (depth === 0 && inObject) {
@@ -35,7 +39,7 @@ for (let i = 0; i < lines.length; i++) {
       hasCommentsProperty = false;
     }
   }
-  
+
   // Check for duplicate comments property
   if (inObject && trimmedLine.startsWith('comments:')) {
     if (hasCommentsProperty) {
@@ -44,7 +48,7 @@ for (let i = 0; i < lines.length; i++) {
     }
     hasCommentsProperty = true;
   }
-  
+
   fixedLines.push(line);
 }
 
@@ -96,8 +100,13 @@ content = content.replace(
 content = content.replace(
   /(const mockEmployee: Employee = \{[\s\S]*?pe3_date: null,\n)([\s\S]*?created_at:)/g,
   (match, p1, p2) => {
-    if (!match.includes('termination_date') && !match.includes('repayment_needed_omc')) {
-      return p1 + `        termination_date: null,
+    if (
+      !match.includes('termination_date') &&
+      !match.includes('repayment_needed_omc')
+    ) {
+      return (
+        p1 +
+        `        termination_date: null,
         termination_reason: null,
         is_terminated: false,
         is_archived: false,
@@ -118,7 +127,9 @@ content = content.replace(
         c17: null,
         crewing_done: null,
         comments: null,
-        ` + p2;
+        ` +
+        p2
+      );
     }
     return match;
   }

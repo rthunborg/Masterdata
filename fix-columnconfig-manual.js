@@ -3,7 +3,9 @@ const fs = require('fs');
 const filePath = 'tests/unit/repositories/column-config-repository.test.ts';
 let content = fs.readFileSync(filePath, 'utf8');
 
-console.log('Fixing ColumnConfig in column-config-repository.test.ts with line-by-line approach...');
+console.log(
+  'Fixing ColumnConfig in column-config-repository.test.ts with line-by-line approach...'
+);
 
 // Fix 1: Add db_column_name and category_color to all ColumnConfig mocks
 // Pattern: Find is_visible: true, followed by created_at or updated_at

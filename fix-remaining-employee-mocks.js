@@ -41,22 +41,25 @@ function removeDuplicateComments(content) {
   let seenComments = new Set();
   let currentObjectStart = -1;
   let braceDepth = 0;
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
-    
+
     // Track brace depth
     const openBraces = (line.match(/\{/g) || []).length;
     const closeBraces = (line.match(/\}/g) || []).length;
-    
-    if (openBraces > 0 && (trimmed.includes('const mock') || trimmed.includes('Employee'))) {
+
+    if (
+      openBraces > 0 &&
+      (trimmed.includes('const mock') || trimmed.includes('Employee'))
+    ) {
       currentObjectStart = braceDepth;
       seenComments = new Set();
     }
-    
+
     braceDepth += openBraces - closeBraces;
-    
+
     // Check for comments property
     if (trimmed.startsWith('comments:')) {
       const key = `${currentObjectStart}-${braceDepth}`;
@@ -66,10 +69,10 @@ function removeDuplicateComments(content) {
       }
       seenComments.add(key);
     }
-    
+
     fixedLines.push(line);
   }
-  
+
   return fixedLines.join('\n');
 }
 
@@ -81,7 +84,10 @@ function addMissingPropertiesToEmployeeFormData(content) {
     (match, p1, p2) => {
       const indent = p2.match(/^(\s+)/)[1];
       // Check if properties already exist nearby
-      const contextBefore = content.substring(Math.max(0, content.indexOf(match) - 500), content.indexOf(match));
+      const contextBefore = content.substring(
+        Math.max(0, content.indexOf(match) - 500),
+        content.indexOf(match)
+      );
       if (contextBefore.includes('repayment_needed_omc')) {
         return match;
       }
@@ -96,11 +102,17 @@ function addMissingPropertiesToEmployee(content, filePath) {
     /(pe3_date: null,)\n([\s]+)(termination_date|created_at)/g,
     (match, p1, indent, nextProp) => {
       // Check if this Employee already has the properties
-      const contextBefore = content.substring(Math.max(0, content.indexOf(match) - 1000), content.indexOf(match));
-      if (contextBefore.includes('repayment_needed_omc') || contextBefore.includes('crewing_done')) {
+      const contextBefore = content.substring(
+        Math.max(0, content.indexOf(match) - 1000),
+        content.indexOf(match)
+      );
+      if (
+        contextBefore.includes('repayment_needed_omc') ||
+        contextBefore.includes('crewing_done')
+      ) {
         return match;
       }
-      
+
       if (nextProp === 'created_at') {
         // Need to add termination fields + all boolean fields
         return `${p1}\n${indent}termination_date: null,\n${indent}termination_reason: null,\n${indent}is_terminated: false,\n${indent}is_archived: false,\n${missingEmployeeProperties.replace(/        /g, indent)}\n${indent}comments: null,\n${indent}created_at`;
@@ -121,19 +133,19 @@ const files = [
   'tests/unit/utils/column-mapping.test.ts',
 ];
 
-files.forEach(file => {
+files.forEach((file) => {
   console.log(`\nFixing ${file}...`);
   let content = fs.readFileSync(file, 'utf8');
-  
+
   // Remove duplicate comments
   content = removeDuplicateComments(content);
-  
+
   // Add missing properties to EmployeeFormData
   content = addMissingPropertiesToEmployeeFormData(content);
-  
+
   // Add missing properties to Employee
   content = addMissingPropertiesToEmployee(content, file);
-  
+
   fs.writeFileSync(file, content, 'utf8');
   console.log(`✓ Fixed ${file}`);
 });

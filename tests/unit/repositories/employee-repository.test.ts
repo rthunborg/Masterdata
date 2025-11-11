@@ -87,9 +87,9 @@ describe("EmployeeRepository", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: null,
         created_at: "2025-01-01T00:00:00Z",
-          updated_at: "2025-01-01T00:00:00Z",      },
+        updated_at: "2025-01-01T00:00:00Z",
+      },
       ];
 
       createMockSupabaseClient({ data: mockEmployees, error: null });
@@ -219,6 +219,22 @@ describe("EmployeeRepository", () => {
       termination_reason: null,
       is_terminated: false,
       is_archived: false,
+      repayment_needed_omc: null,
+      repayment_needed_pe3: null,
+      one: null,
+      one_marked_at: null,
+      talmundo: null,
+      isps: null,
+      photo: null,
+      origo: null,
+      loneiva: null,
+      mail_lon: null,
+      bankuppgifter: null,
+      li: null,
+      passport: null,
+      kvitto_c17_18: null,
+      c17: null,
+      crewing_done: null,
       comments: "New employee",
     };
 

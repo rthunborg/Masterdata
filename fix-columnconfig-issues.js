@@ -9,32 +9,46 @@ function addColumnConfigProperties(content) {
     /(updated_at: ".*?",)\n(\s+)(};?\s*as ColumnConfig|};?$)/gm,
     (match, p1, indent, closing) => {
       // Check if properties already exist in the context
-      const contextBefore = content.substring(Math.max(0, content.indexOf(match) - 300), content.indexOf(match));
-      if (contextBefore.includes('db_column_name') && contextBefore.includes('category_color')) {
+      const contextBefore = content.substring(
+        Math.max(0, content.indexOf(match) - 300),
+        content.indexOf(match)
+      );
+      if (
+        contextBefore.includes('db_column_name') &&
+        contextBefore.includes('category_color')
+      ) {
         return match;
       }
       return `${p1}\n${indent}db_column_name: "test_column",\n${indent}category_color: null,\n${indent}${closing}`;
     }
   );
-  
+
   // Pattern 2: Add before created_at if that comes before updated_at
   content = content.replace(
     /(is_visible: true,)\n(\s+)(created_at:)/gm,
     (match, p1, indent, nextProp) => {
-      const contextBefore = content.substring(Math.max(0, content.indexOf(match) - 300), content.indexOf(match));
+      const contextBefore = content.substring(
+        Math.max(0, content.indexOf(match) - 300),
+        content.indexOf(match)
+      );
       if (contextBefore.includes('db_column_name')) {
         return match;
       }
       return `${p1}\n${indent}db_column_name: "test_column",\n${indent}category_color: null,\n${indent}${nextProp}`;
     }
   );
-  
+
   return content;
 }
 
 // Fix column-config-repository.test.ts
-console.log('Fixing tests/unit/repositories/column-config-repository.test.ts...');
-let content = fs.readFileSync('tests/unit/repositories/column-config-repository.test.ts', 'utf8');
+console.log(
+  'Fixing tests/unit/repositories/column-config-repository.test.ts...'
+);
+let content = fs.readFileSync(
+  'tests/unit/repositories/column-config-repository.test.ts',
+  'utf8'
+);
 
 // Add db_column_name and category_color to ColumnConfig mocks
 content = addColumnConfigProperties(content);
@@ -61,21 +75,41 @@ content = content.replace(
   }
 );
 
-fs.writeFileSync('tests/unit/repositories/column-config-repository.test.ts', content, 'utf8');
-console.log('✓ Fixed tests/unit/repositories/column-config-repository.test.ts\n');
+fs.writeFileSync(
+  'tests/unit/repositories/column-config-repository.test.ts',
+  content,
+  'utf8'
+);
+console.log(
+  '✓ Fixed tests/unit/repositories/column-config-repository.test.ts\n'
+);
 
 // Fix story-7.4-column-ux.test.ts
 console.log('Fixing tests/integration/story-7.4-column-ux.test.ts...');
-content = fs.readFileSync('tests/integration/story-7.4-column-ux.test.ts', 'utf8');
+content = fs.readFileSync(
+  'tests/integration/story-7.4-column-ux.test.ts',
+  'utf8'
+);
 content = addColumnConfigProperties(content);
-fs.writeFileSync('tests/integration/story-7.4-column-ux.test.ts', content, 'utf8');
+fs.writeFileSync(
+  'tests/integration/story-7.4-column-ux.test.ts',
+  content,
+  'utf8'
+);
 console.log('✓ Fixed tests/integration/story-7.4-column-ux.test.ts\n');
 
 // Fix column-settings-table.test.tsx
 console.log('Fixing tests/unit/components/column-settings-table.test.tsx...');
-content = fs.readFileSync('tests/unit/components/column-settings-table.test.tsx', 'utf8');
+content = fs.readFileSync(
+  'tests/unit/components/column-settings-table.test.tsx',
+  'utf8'
+);
 content = addColumnConfigProperties(content);
-fs.writeFileSync('tests/unit/components/column-settings-table.test.tsx', content, 'utf8');
+fs.writeFileSync(
+  'tests/unit/components/column-settings-table.test.tsx',
+  content,
+  'utf8'
+);
 console.log('✓ Fixed tests/unit/components/column-settings-table.test.tsx\n');
 
 console.log('All ColumnConfig fixes complete!');
