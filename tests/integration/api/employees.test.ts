@@ -591,7 +591,7 @@ describe("PATCH /api/employees/[id]", () => {
       ...mockEmployee,
       email: "new@example.com",
       mobile: "+46709876543",
-      rank: "SEV",
+      rank: "SEV" as const,
       updated_at: "2025-10-27T15:30:00Z",      };
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);

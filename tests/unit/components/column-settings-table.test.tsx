@@ -50,6 +50,8 @@ describe("ColumnSettingsTable", () => {
       category: null,
       display_order: 0,
       is_visible: true,
+      db_column_name: "first_name",
+      category_color: null,
       created_at: "2025-10-28T00:00:00Z",
       updated_at: "2025-10-28T00:00:00Z",      },
     {
@@ -67,6 +69,8 @@ describe("ColumnSettingsTable", () => {
       category: "Custom",
       display_order: 1,
       is_visible: true,
+      db_column_name: "custom_field_1",
+      category_color: null,
       created_at: "2025-10-28T00:00:00Z",
       updated_at: "2025-10-28T00:00:00Z",      },
   ];

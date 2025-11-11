@@ -1,7 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const filePath = path.join(__dirname, 'tests', 'integration', 'api', 'employees.test.ts');
+const filePath = path.join(
+  __dirname,
+  'tests',
+  'integration',
+  'api',
+  'employees.test.ts'
+);
 let content = fs.readFileSync(filePath, 'utf8');
 
 // Fix 1: Add missing comments property after crewing_done in second employee mock (around line 99)
@@ -16,7 +22,8 @@ content = content.replace(
 
 // Fix 2: Remove duplicate stena_date, omc_date, pe3_date properties
 // These appear multiple times - remove the ones after comments: null
-const duplicatePattern = /comments: null,\s+stena_date: null,\s+omc_date: null,\s+pe3_date: null,(\s+)\};/g;
+const duplicatePattern =
+  /comments: null,\s+stena_date: null,\s+omc_date: null,\s+pe3_date: null,(\s+)\};/g;
 content = content.replace(duplicatePattern, 'comments: null,$1};');
 
 // Fix 3: Add missing comments property to other EmployeeFormData/Employee mocks
@@ -25,13 +32,13 @@ const patterns = [
   // Pattern: crewing_done followed by created_at without comments
   {
     find: /crewing_done: null,(\s+)created_at:/g,
-    replace: 'crewing_done: null,\n        comments: null,$1created_at:'
+    replace: 'crewing_done: null,\n        comments: null,$1created_at:',
   },
   // Pattern: crewing_done followed by } without comments
   {
     find: /crewing_done: null,(\s+)\}/g,
-    replace: 'crewing_done: null,\n        comments: null,$1}'
-  }
+    replace: 'crewing_done: null,\n        comments: null,$1}',
+  },
 ];
 
 patterns.forEach(({ find, replace }) => {

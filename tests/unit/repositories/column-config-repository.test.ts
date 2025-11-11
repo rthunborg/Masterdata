@@ -49,6 +49,8 @@ describe("ColumnConfigRepository", () => {
       category: null,
       display_order: 2,
       is_visible: true,
+      db_column_name: "ssn",
+      category_color: null,
       created_at: "2025-10-28T00:00:00Z",
       updated_at: "2025-10-28T00:00:00Z",      },
     {

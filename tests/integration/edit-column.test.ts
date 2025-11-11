@@ -109,11 +109,7 @@ describe("PATCH /api/columns/[id]", () => {
       role: UserRole.HR_ADMIN,
       is_active: true,
       created_at: "2025-01-01T00:00:00Z",
-    db_column_name: 'test_column',
-      category_color: '#FFFFFF',
-      display_order: 0,
-      is_visible: true,
-      updated_at: new Date().toISOString(),
+      last_active_at: "2025-01-01T00:00:00Z",
     });
 
     const mockRequest = new NextRequest(
