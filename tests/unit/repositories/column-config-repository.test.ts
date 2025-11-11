@@ -66,6 +66,8 @@ describe("ColumnConfigRepository", () => {
       category: null,
       display_order: 3,
       is_visible: true,
+      db_column_name: "hire_date",
+      category_color: null,
       created_at: "2025-10-28T00:00:00Z",
       updated_at: "2025-10-28T00:00:00Z",      },
   ];
@@ -263,6 +265,8 @@ describe("ColumnConfigRepository", () => {
         category: "Recruitment",
         display_order: 0,
         is_visible: true,
+        db_column_name: "sodexo_team",
+        category_color: null,
         created_at: "2025-10-28T00:00:00Z",
         updated_at: "2025-10-28T00:00:00Z",      };
 
@@ -308,6 +312,8 @@ describe("ColumnConfigRepository", () => {
         category: null,
         display_order: 0,
         is_visible: true,
+        db_column_name: "sodexo_team",
+        category_color: null,
         created_at: "2025-10-28T00:00:00Z",
         updated_at: "2025-10-28T00:00:00Z",      };
 
@@ -325,7 +331,9 @@ describe("ColumnConfigRepository", () => {
       await expect(
         repository.createCustomColumn({
           column_name: "Sodexo Team",
+          db_column_name: "sodexo_team",
           column_type: "text",
+          is_masterdata: false,
           role: UserRole.SODEXO,
         })
       ).rejects.toThrow('Column "Sodexo Team" already exists');
@@ -351,7 +359,9 @@ describe("ColumnConfigRepository", () => {
       await expect(
         repository.createCustomColumn({
           column_name: "New Column",
+          db_column_name: "new_column",
           column_type: "text",
+          is_masterdata: false,
           role: UserRole.SODEXO,
         })
       ).rejects.toThrow("Failed to create column");
@@ -369,6 +379,8 @@ describe("ColumnConfigRepository", () => {
         category: null,
         display_order: 0,
         is_visible: true,
+        db_column_name: "team_assignment",
+        category_color: null,
         created_at: "2025-10-28T00:00:00Z",
         updated_at: "2025-10-28T00:00:00Z",      };
 
@@ -402,6 +414,8 @@ describe("ColumnConfigRepository", () => {
         category: null,
         display_order: 0,
         is_visible: true,
+        db_column_name: "first_name",
+        category_color: null,
         created_at: "2025-10-28T00:00:00Z",
         updated_at: "2025-10-28T00:00:00Z",      };
 
@@ -449,6 +463,8 @@ describe("ColumnConfigRepository", () => {
         category: null,
         display_order: 0,
         is_visible: true,
+        db_column_name: "team_assignment",
+        category_color: null,
         created_at: "2025-10-28T00:00:00Z",
         updated_at: "2025-10-28T00:00:00Z",      };
 
@@ -480,6 +496,8 @@ describe("ColumnConfigRepository", () => {
         category: null,
         display_order: 0,
         is_visible: true,
+        db_column_name: "first_name",
+        category_color: null,
         created_at: "2025-10-28T00:00:00Z",
         updated_at: "2025-10-28T00:00:00Z",      };
 
@@ -523,6 +541,8 @@ describe("ColumnConfigRepository", () => {
         category: null,
         display_order: 0,
         is_visible: true,
+        db_column_name: "team_assignment",
+        category_color: null,
         created_at: "2025-10-28T00:00:00Z",
         updated_at: "2025-10-28T00:00:00Z",      };
 

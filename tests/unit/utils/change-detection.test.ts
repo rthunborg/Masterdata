@@ -14,7 +14,7 @@ import type { Employee } from "@/lib/types/employee";
 import type { ViewState, NotificationMetadata } from "@/lib/types/notifications";
 
 describe("detectViewImpact", () => {
-  const createEmployee = (overrides: Partial<Employee>): Employee => ({
+  const createEmployee = (overrides: Partial<Employee> = {}): Employee => ({
     id: "1",
     first_name: "John",
     surname: "Doe",
@@ -25,10 +25,29 @@ describe("detectViewImpact", () => {
     gender: null,
     town_district: null,
     hire_date: "2025-01-01",
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
     termination_date: null,
     termination_reason: null,
     is_terminated: false,
     is_archived: false,
+    repayment_needed_omc: null,
+    repayment_needed_pe3: null,
+    one: null,
+    one_marked_at: null,
+    talmundo: null,
+    isps: null,
+    photo: null,
+    origo: null,
+    loneiva: null,
+    mail_lon: null,
+    bankuppgifter: null,
+    li: null,
+    passport: null,
+    kvitto_c17_18: null,
+    c17: null,
+    crewing_done: null,
     comments: null,
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",
@@ -106,7 +125,7 @@ describe("detectViewImpact", () => {
 });
 
 describe("employeeMatchesFilters", () => {
-  const createEmployee = (overrides: Partial<Employee>): Employee => ({
+  const createEmployee = (overrides: Partial<Employee> = {}): Employee => ({
     id: "1",
     first_name: "John",
     surname: "Doe",
@@ -124,6 +143,25 @@ describe("employeeMatchesFilters", () => {
     comments: null,
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
+    repayment_needed_omc: null,
+    repayment_needed_pe3: null,
+    one: null,
+    one_marked_at: null,
+    talmundo: null,
+    isps: null,
+    photo: null,
+    origo: null,
+    loneiva: null,
+    mail_lon: null,
+    bankuppgifter: null,
+    li: null,
+    passport: null,
+    kvitto_c17_18: null,
+    c17: null,
+    crewing_done: null,
     ...overrides,
   });
 
@@ -177,7 +215,7 @@ describe("employeeMatchesFilters", () => {
 });
 
 describe("getChangedField", () => {
-  const createEmployee = (overrides: Partial<Employee>): Employee => ({
+  const createEmployee = (overrides: Partial<Employee> = {}): Employee => ({
     id: "1",
     first_name: "John",
     surname: "Doe",
@@ -195,6 +233,25 @@ describe("getChangedField", () => {
     comments: null,
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
+    repayment_needed_omc: null,
+    repayment_needed_pe3: null,
+    one: null,
+    one_marked_at: null,
+    talmundo: null,
+    isps: null,
+    photo: null,
+    origo: null,
+    loneiva: null,
+    mail_lon: null,
+    bankuppgifter: null,
+    li: null,
+    passport: null,
+    kvitto_c17_18: null,
+    c17: null,
+    crewing_done: null,
     ...overrides,
   });
 
@@ -360,7 +417,7 @@ describe("Performance", () => {
       ssn: "123456-7890",
       email: `employee${i}@example.com`,
       mobile: null,
-      rank: 'SEV',
+      rank: 'SEV' as const,
       gender: null,
       town_district: null,
       hire_date: "2025-01-01",
@@ -370,7 +427,27 @@ describe("Performance", () => {
       is_archived: false,
       comments: null,
       created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",      }));
+      updated_at: "2025-01-01T00:00:00Z",
+      stena_date: null,
+      omc_date: null,
+      pe3_date: null,
+      repayment_needed_omc: null,
+      repayment_needed_pe3: null,
+      one: null,
+      one_marked_at: null,
+      talmundo: null,
+      isps: null,
+      photo: null,
+      origo: null,
+      loneiva: null,
+      mail_lon: null,
+      bankuppgifter: null,
+      li: null,
+      passport: null,
+      kvitto_c17_18: null,
+      c17: null,
+      crewing_done: null,
+    }));
 
     const oldEmployee = employees[500];
     const newEmployee = { ...employees[500], email: "newemail@example.com" };

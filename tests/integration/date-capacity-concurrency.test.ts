@@ -466,12 +466,12 @@ describe("Date Capacity Concurrency Integration", () => {
         }
       );
 
-      const response = await PATCH(request, { params: { id: "emp-1" } });
-      const json = await response.json();
+      const response = await PATCH(request, { params: Promise.resolve({ id: "emp-1" }) });
+      const json = await response.json() as { error?: { message: string } };
 
       expect(response.status).toBe(400);
       expect(json.error).toBeDefined();
-      expect(json.error.message).toContain("fully booked");
+      expect(json.error?.message).toContain("fully booked");
 
       // Verify employee update was not persisted
       // (In reality, the RPC function handles this atomically in the database)

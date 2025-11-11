@@ -123,6 +123,8 @@ describe("importantDateService", () => {
       const createdDate: ImportantDate = {
         id: "date-3",
         ...newDateData,
+        is_active: true,
+        assigned_employees: [],
         created_at: "2025-01-15T00:00:00Z",
         updated_at: "2025-01-15T00:00:00Z",      };
 
