@@ -166,7 +166,6 @@ describe("EmployeeRepository", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",      };
 
@@ -340,7 +339,6 @@ describe("EmployeeRepository", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: null,
         created_at: "2025-01-01T00:00:00Z",
       updated_at: "2025-01-01T00:00:00Z",      };
 
@@ -609,7 +607,6 @@ describe("EmployeeRepository", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-27T00:00:00Z",      };
 
@@ -713,7 +710,6 @@ describe("EmployeeRepository", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T00:00:00Z",      };
 
@@ -733,10 +729,10 @@ describe("EmployeeRepository", () => {
 
       const result = await repository.terminate("employee-123", "2025-10-26", "Voluntary resignation");
 
-      expect(result.is_terminated).toBe(true);
-      expect(result.termination_date).toBe("2025-10-26");
-      expect(result.termination_reason).toBe("Voluntary resignation");
-      expect(result.id).toBe("employee-123");
+      expect(result.employee.is_terminated).toBe(true);
+      expect(result.employee.termination_date).toBe("2025-10-26");
+      expect(result.employee.termination_reason).toBe("Voluntary resignation");
+      expect(result.employee.id).toBe("employee-123");
     });
 
     it("should throw error when employee not found", async () => {
@@ -843,7 +839,6 @@ describe("EmployeeRepository", () => {
         kvitto_c17_18: null,
         c17: null,
         crewing_done: null,
-        comments: null,
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T00:00:00Z",      };
 
@@ -863,10 +858,10 @@ describe("EmployeeRepository", () => {
 
       const result = await repository.reactivate("employee-123");
 
-      expect(result.is_terminated).toBe(false);
-      expect(result.termination_date).toBeNull();
-      expect(result.termination_reason).toBeNull();
-      expect(result.id).toBe("employee-123");
+      expect(result.employee.is_terminated).toBe(false);
+      expect(result.employee.termination_date).toBeNull();
+      expect(result.employee.termination_reason).toBeNull();
+      expect(result.employee.id).toBe("employee-123");
     });
 
     it("should throw error when employee not found", async () => {
@@ -1124,7 +1119,6 @@ describe("EmployeeRepository", () => {
           termination_reason: null,
           is_terminated: false,
           is_archived: false,
-          comments: null,
         },
         {
           first_name: "Bob",
@@ -1143,7 +1137,6 @@ describe("EmployeeRepository", () => {
           termination_reason: null,
           is_terminated: false,
           is_archived: false,
-          comments: null,
         },
       ];
 
@@ -1204,7 +1197,6 @@ describe("EmployeeRepository", () => {
           termination_reason: null,
           is_terminated: false,
           is_archived: false,
-          comments: null,
         },
       ];
 

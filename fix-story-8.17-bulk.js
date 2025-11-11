@@ -23,17 +23,20 @@ function fixImportantDateMocks(filePath) {
     // Pattern 1: Has date_value, notes but missing time_value, deadline_submit, etc.
     {
       find: /(date_value:\s*["'][^"']+["'],\s*\n\s*notes:\s*(?:null|["'][^"']*["']),\s*\n\s*)(created_at:)/g,
-      replace: '$1time_value: null,\n    deadline_submit: null,\n    deadline_cancel: null,\n    is_active: true,\n    max_spots: 0,\n    remaining_spots: 0,\n    assigned_employees: [],\n    $2',
+      replace:
+        '$1time_value: null,\n    deadline_submit: null,\n    deadline_cancel: null,\n    is_active: true,\n    max_spots: 0,\n    remaining_spots: 0,\n    assigned_employees: [],\n    $2',
     },
     // Pattern 2: Has notes, is_active but missing other properties
     {
       find: /(notes:\s*(?:null|["'][^"']*["']),\s*\n\s*is_active:\s*true,\s*\n\s*)(created_at:)/g,
-      replace: '$1time_value: null,\n    deadline_submit: null,\n    deadline_cancel: null,\n    max_spots: 0,\n    remaining_spots: 0,\n    assigned_employees: [],\n    $2',
+      replace:
+        '$1time_value: null,\n    deadline_submit: null,\n    deadline_cancel: null,\n    max_spots: 0,\n    remaining_spots: 0,\n    assigned_employees: [],\n    $2',
     },
     // Pattern 3: Has max_spots, remaining_spots but missing time_value, deadline_submit, deadline_cancel, assigned_employees
     {
       find: /(remaining_spots:\s*\d+,\s*\n\s*is_active:\s*true,\s*\n\s*)(created_at:)/g,
-      replace: '$1time_value: null,\n    deadline_submit: null,\n    deadline_cancel: null,\n    assigned_employees: [],\n    $2',
+      replace:
+        '$1time_value: null,\n    deadline_submit: null,\n    deadline_cancel: null,\n    assigned_employees: [],\n    $2',
     },
   ];
 
@@ -42,14 +45,16 @@ function fixImportantDateMocks(filePath) {
       content = content.replace(pattern.find, pattern.replace);
       modified = true;
       changes.importantDate++;
-      console.log(`  ✓ Applied ImportantDate pattern ${idx + 1} in ${path.basename(filePath)}`);
+      console.log(
+        `  ✓ Applied ImportantDate pattern ${idx + 1} in ${path.basename(filePath)}`
+      );
     }
   });
 
   if (modified) {
     fs.writeFileSync(filePath, content);
   }
-  
+
   return modified;
 }
 
@@ -60,27 +65,38 @@ function fixColumnConfigMocks(filePath) {
 
   // Pattern: ColumnConfig objects missing db_column_name and category_color
   const pattern = /(role_permissions:\s*\{[^}]+\},\s*\n\s*)(category:)/g;
-  
+
   if (pattern.test(content)) {
     const newContent = content.replace(pattern, (match, p1, p2) => {
       // Check if db_column_name already exists nearby
-      const contextBefore = content.substring(Math.max(0, content.indexOf(match) - 300), content.indexOf(match));
-      const contextAfter = content.substring(content.indexOf(match), Math.min(content.length, content.indexOf(match) + 300));
-      
-      if (!contextBefore.includes('db_column_name:') && !contextAfter.includes('db_column_name:')) {
+      const contextBefore = content.substring(
+        Math.max(0, content.indexOf(match) - 300),
+        content.indexOf(match)
+      );
+      const contextAfter = content.substring(
+        content.indexOf(match),
+        Math.min(content.length, content.indexOf(match) + 300)
+      );
+
+      if (
+        !contextBefore.includes('db_column_name:') &&
+        !contextAfter.includes('db_column_name:')
+      ) {
         changes.columnConfig++;
         return `${p1}db_column_name: null,\n    category_color: null,\n    ${p2}`;
       }
       return match;
     });
-    
+
     if (newContent !== content) {
       fs.writeFileSync(filePath, newContent);
-      console.log(`  ✓ Added db_column_name/category_color to ColumnConfig mocks in ${path.basename(filePath)}`);
+      console.log(
+        `  ✓ Added db_column_name/category_color to ColumnConfig mocks in ${path.basename(filePath)}`
+      );
       modified = true;
     }
   }
-  
+
   return modified;
 }
 
@@ -88,27 +104,35 @@ function fixColumnConfigMocks(filePath) {
 function fixEmployeeRepositoryMocks(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const original = content;
-  
+
   // Pattern: Employee mocks missing stena_date, omc_date, pe3_date
   // Looking for: hire_date followed directly by termination_date/is_terminated
-  const employeePattern = /(hire_date:\s*["'][^"']+["'],)\s*\n\s*(termination_date:)/g;
-  content = content.replace(employeePattern, '$1\n    stena_date: null,\n    omc_date: null,\n    pe3_date: null,\n    $2');
-  
+  const employeePattern =
+    /(hire_date:\s*["'][^"']+["'],)\s*\n\s*(termination_date:)/g;
+  content = content.replace(
+    employeePattern,
+    '$1\n    stena_date: null,\n    omc_date: null,\n    pe3_date: null,\n    $2'
+  );
+
   // Pattern: EmployeeFormData missing all 19 properties
-  const formDataPattern = /(hire_date:\s*["'][^"']+["'],)\s*\n\s*(is_terminated:)/g;
-  content = content.replace(formDataPattern, `$1
+  const formDataPattern =
+    /(hire_date:\s*["'][^"']+["'],)\s*\n\s*(is_terminated:)/g;
+  content = content.replace(
+    formDataPattern,
+    `$1
     stena_date: null,
     omc_date: null,
     pe3_date: null,
-    $2`);
-  
+    $2`
+  );
+
   if (content !== original) {
     fs.writeFileSync(filePath, content);
     changes.employee++;
     console.log(`  ✓ Fixed Employee mocks in ${path.basename(filePath)}`);
     return true;
   }
-  
+
   return false;
 }
 
@@ -146,10 +170,10 @@ const fixes = [
 ];
 
 console.log('🚀 Story 8.17: Bulk Type Error Fixes');
-console.log('=' .repeat(60));
+console.log('='.repeat(60));
 
 fixes.forEach(({ files, handler }) => {
-  files.forEach(file => {
+  files.forEach((file) => {
     const filePath = path.join(process.cwd(), file);
     if (fs.existsSync(filePath)) {
       console.log(`\n📝 Processing: ${file}`);

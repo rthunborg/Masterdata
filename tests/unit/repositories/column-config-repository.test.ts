@@ -31,8 +31,11 @@ describe("ColumnConfigRepository", () => {
       category: null,
       display_order: 1,
       is_visible: true,
+      db_column_name: "first_name",
+      category_color: null,
       created_at: "2025-10-28T00:00:00Z",
-      updated_at: "2025-10-28T00:00:00Z",      },
+      updated_at: "2025-10-28T00:00:00Z",
+    },
     {
       id: "col-2",
       column_name: "SSN",
@@ -278,6 +281,8 @@ describe("ColumnConfigRepository", () => {
         column_name: "Sodexo Team",
         column_type: "text",
         role: UserRole.SODEXO,
+        db_column_name: "test_column",
+        is_masterdata: false,
         category: "Recruitment",
       });
 

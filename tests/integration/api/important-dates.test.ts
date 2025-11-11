@@ -346,8 +346,6 @@ describe("PATCH /api/important-dates/[id]", () => {
     deadline_submit: null,
     deadline_cancel: null,
     max_spots: 0,
-    remaining_spots: 0,
-    assigned_employees: [],
   };
 
   beforeEach(() => {

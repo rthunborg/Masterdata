@@ -12,18 +12,18 @@ let totalFixes = 0;
 function removeDuplicateComments(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const original = content;
-  
+
   // Pattern: Find comments: appearing twice in same object
   const lines = content.split('\n');
   const fixedLines = [];
   const seenCommentsInObject = {};
   let objectDepth = 0;
   let objectStart = -1;
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
-    
+
     // Track object depth
     if (trimmed.includes('{') && !trimmed.includes('}')) objectDepth++;
     if (trimmed.includes('}') && !trimmed.includes('{')) {
@@ -32,11 +32,13 @@ function removeDuplicateComments(filePath) {
         seenCommentsInObject[objectStart] = false;
       }
     }
-    
+
     // Detect 'comments:' line
     if (trimmed.startsWith('comments:')) {
       if (seenCommentsInObject[objectStart]) {
-        console.log(`  ✓ Removed duplicate 'comments' at line ${i + 1} in ${path.basename(filePath)}`);
+        console.log(
+          `  ✓ Removed duplicate 'comments' at line ${i + 1} in ${path.basename(filePath)}`
+        );
         totalFixes++;
         continue; // Skip this line
       } else {
@@ -46,12 +48,12 @@ function removeDuplicateComments(filePath) {
         seenCommentsInObject[objectStart] = true;
       }
     }
-    
+
     fixedLines.push(line);
   }
-  
+
   content = fixedLines.join('\n');
-  
+
   if (content !== original) {
     fs.writeFileSync(filePath, content);
     return true;
@@ -63,11 +65,16 @@ function removeDuplicateComments(filePath) {
 function fixSpecificEmployeeMocks(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const original = content;
-  
-  if (filePath.includes('crewing-done-conditional') || filePath.includes('talmundo-conditional-edit')) {
+
+  if (
+    filePath.includes('crewing-done-conditional') ||
+    filePath.includes('talmundo-conditional-edit')
+  ) {
     // These files need the 15-19 remaining properties
     const pattern = /(pe3_date:\s*null,)\s*\n\s*(is_terminated:)/g;
-    content = content.replace(pattern, `$1
+    content = content.replace(
+      pattern,
+      `$1
     repayment_needed_omc: null,
     repayment_needed_pe3: null,
     one: null,
@@ -85,9 +92,10 @@ function fixSpecificEmployeeMocks(filePath) {
     c17: null,
     crewing_done: null,
     comments: null,
-    $2`);
+    $2`
+    );
   }
-  
+
   if (content !== original) {
     console.log(`  ✓ Fixed Employee mocks in ${path.basename(filePath)}`);
     totalFixes++;
@@ -101,19 +109,22 @@ function fixSpecificEmployeeMocks(filePath) {
 function fixColumnConfigMocks(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const original = content;
-  
+
   // Pattern: After role_permissions, add db_column_name and category_color
-  const pattern = /(role_permissions:\s*\{[^}]+\},)\s*\n\s*(category:|display_order:|is_visible:)/g;
-  
+  const pattern =
+    /(role_permissions:\s*\{[^}]+\},)\s*\n\s*(category:|display_order:|is_visible:)/g;
+
   content = content.replace(pattern, (match, p1, p2) => {
     if (!match.includes('db_column_name:')) {
       return `${p1}\n    db_column_name: null,\n    category_color: null,\n    ${p2}`;
     }
     return match;
   });
-  
+
   if (content !== original) {
-    console.log(`  ✓ Added db_column_name/category_color to ${path.basename(filePath)}`);
+    console.log(
+      `  ✓ Added db_column_name/category_color to ${path.basename(filePath)}`
+    );
     totalFixes++;
     fs.writeFileSync(filePath, content);
     return true;
@@ -125,25 +136,36 @@ function fixColumnConfigMocks(filePath) {
 function fixRemainingImportantDateMocks(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const original = content;
-  
+
   // Pattern 1: ImportantDateFormData missing properties
-  const formPattern = /(date_value:\s*["'][^"']+["'],)\s*\n\s*notes:\s*null,\s*\n\s*\}/g;
-  content = content.replace(formPattern, `$1
+  const formPattern =
+    /(date_value:\s*["'][^"']+["'],)\s*\n\s*notes:\s*null,\s*\n\s*\}/g;
+  content = content.replace(
+    formPattern,
+    `$1
     notes: null,
     time_value: null,
     deadline_submit: null,
     deadline_cancel: null,
     max_spots: 0,
     remaining_spots: 0,
-  }`);
-  
+  }`
+  );
+
   // Pattern 2: ImportantDate missing assigned_employees
-  const assignedPattern = /(remaining_spots:\s*\d+,)\s*\n\s*(is_active:\s*true,)\s*\n\s*(created_at:)/g;
-  content = content.replace(assignedPattern, `$1\n    $2\n    assigned_employees: [],\n    $3`);
-  
+  const assignedPattern =
+    /(remaining_spots:\s*\d+,)\s*\n\s*(is_active:\s*true,)\s*\n\s*(created_at:)/g;
+  content = content.replace(
+    assignedPattern,
+    `$1\n    $2\n    assigned_employees: [],\n    $3`
+  );
+
   // Pattern 3: Add all 7 properties for objects with only basic fields
-  const basicPattern = /(notes:\s*(?:null|["'][^"']*["']),)\s*\n\s*is_active:\s*true,\s*\n\s*(created_at:)/g;
-  content = content.replace(basicPattern, `$1
+  const basicPattern =
+    /(notes:\s*(?:null|["'][^"']*["']),)\s*\n\s*is_active:\s*true,\s*\n\s*(created_at:)/g;
+  content = content.replace(
+    basicPattern,
+    `$1
     time_value: null,
     deadline_submit: null,
     deadline_cancel: null,
@@ -151,8 +173,9 @@ function fixRemainingImportantDateMocks(filePath) {
     max_spots: 0,
     remaining_spots: 0,
     assigned_employees: [],
-    $2`);
-  
+    $2`
+  );
+
   if (content !== original) {
     console.log(`  ✓ Fixed ImportantDate mocks in ${path.basename(filePath)}`);
     totalFixes++;
@@ -164,15 +187,21 @@ function fixRemainingImportantDateMocks(filePath) {
 
 // Fix 5: Fix column-settings-table allColumns prop
 function fixColumnSettingsTable() {
-  const filePath = path.join(process.cwd(), 'tests/unit/components/column-settings-table.test.tsx');
+  const filePath = path.join(
+    process.cwd(),
+    'tests/unit/components/column-settings-table.test.tsx'
+  );
   if (!fs.existsSync(filePath)) return false;
-  
+
   let content = fs.readFileSync(filePath, 'utf8');
   const original = content;
-  
+
   // Replace allColumns={columns} with allColumns={mockColumns}
-  content = content.replace(/allColumns=\{columns\}/g, 'allColumns={mockColumns}');
-  
+  content = content.replace(
+    /allColumns=\{columns\}/g,
+    'allColumns={mockColumns}'
+  );
+
   if (content !== original) {
     console.log(`  ✓ Fixed allColumns props in column-settings-table.test.tsx`);
     totalFixes++;
@@ -201,7 +230,7 @@ const allTestFiles = [
 ];
 
 console.log('\n📝 Removing duplicate comments properties...');
-allTestFiles.forEach(file => {
+allTestFiles.forEach((file) => {
   const filePath = path.join(process.cwd(), file);
   if (fs.existsSync(filePath)) {
     removeDuplicateComments(filePath);
@@ -212,7 +241,7 @@ console.log('\n📝 Fixing specific Employee mocks...');
 [
   'tests/integration/crewing-done-conditional.test.ts',
   'tests/integration/talmundo-conditional-edit.test.ts',
-].forEach(file => {
+].forEach((file) => {
   const filePath = path.join(process.cwd(), file);
   if (fs.existsSync(filePath)) {
     fixSpecificEmployeeMocks(filePath);
@@ -224,7 +253,7 @@ console.log('\n📝 Fixing ColumnConfig mocks...');
   'tests/integration/story-7.4-column-ux.test.ts',
   'tests/unit/components/column-settings-table.test.tsx',
   'tests/unit/repositories/column-config-repository.test.ts',
-].forEach(file => {
+].forEach((file) => {
   const filePath = path.join(process.cwd(), file);
   if (fs.existsSync(filePath)) {
     fixColumnConfigMocks(filePath);
@@ -236,7 +265,7 @@ console.log('\n📝 Fixing remaining ImportantDate mocks...');
   'tests/integration/api/important-dates.test.ts',
   'tests/integration/date-capacity-concurrency.test.ts',
   'tests/unit/components/add-important-date-modal.test.tsx',
-].forEach(file => {
+].forEach((file) => {
   const filePath = path.join(process.cwd(), file);
   if (fs.existsSync(filePath)) {
     fixRemainingImportantDateMocks(filePath);

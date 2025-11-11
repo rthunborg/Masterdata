@@ -835,7 +835,7 @@ describe("POST /api/employees/[id]/terminate", () => {
 
   it("should terminate employee for HR Admin", async () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
-    vi.mocked(employeeRepository.terminate).mockResolvedValue(mockEmployee);
+    vi.mocked(employeeRepository.terminate).mockResolvedValue({ employee: mockEmployee, clearedDates: [], releasedSpots: 0 });
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123/terminate", {
       method: "POST",
@@ -1054,7 +1054,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
 
   it("should reactivate employee for HR Admin", async () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
-    vi.mocked(employeeRepository.reactivate).mockResolvedValue(mockEmployee);
+    vi.mocked(employeeRepository.reactivate).mockResolvedValue({ employee: mockEmployee, warnings: [] });
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123/reactivate", {
       method: "POST",
