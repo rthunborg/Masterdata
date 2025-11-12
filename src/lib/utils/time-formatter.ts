@@ -114,6 +114,7 @@ export function formatTimeDisplay(time: string | null): string {
  * - "14:30:00" (HH:MM:SS)
  * - "2:30" (H:MM) - pads hour
  * - "2:30 PM" / "2:30 AM" (12-hour format) - converts to 24-hour
+ * - Whitespace trimming
  * 
  * @param input - Time string to parse
  * @returns Normalized time in HH:MM format, or null if invalid
@@ -122,6 +123,7 @@ export function formatTimeDisplay(time: string | null): string {
  * parseTimeInput("14:30") // "14:30"
  * parseTimeInput("2:30 PM") // "14:30"
  * parseTimeInput("9:05") // "09:05"
+ * parseTimeInput("  14:30  ") // "14:30"
  * parseTimeInput("invalid") // null
  */
 export function parseTimeInput(input: string): string | null {
@@ -165,12 +167,31 @@ export function parseTimeInput(input: string): string | null {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
 
-  // Try standard 24-hour format validation
-  const validation = validateTimeFormat(trimmed);
-  if (!validation.valid) {
+  // Match HH:MM or H:MM or HH:MM:SS format (allowing single-digit hours)
+  const timeRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/;
+  const match = trimmed.match(timeRegex);
+
+  if (!match) {
     return null;
   }
 
-  // Format to HH:MM
-  return formatTimeDisplay(trimmed);
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const seconds = match[3] ? parseInt(match[3], 10) : 0;
+
+  // Validate ranges
+  if (hours < 0 || hours > 23) {
+    return null;
+  }
+
+  if (minutes < 0 || minutes > 59) {
+    return null;
+  }
+
+  if (seconds < 0 || seconds > 59) {
+    return null;
+  }
+
+  // Format to HH:MM with padded hours
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }

@@ -45,10 +45,15 @@ export const TimePicker = React.forwardRef<HTMLInputElement, TimePickerProps>(
     const [localValue, setLocalValue] = React.useState<string>(
       formatTimeDisplay(value) || ""
     );
+    
+    // Store previous valid value to revert on invalid input
+    const previousValueRef = React.useRef<string>(formatTimeDisplay(value) || "");
 
     // Sync local value when prop changes
     React.useEffect(() => {
-      setLocalValue(formatTimeDisplay(value) || "");
+      const formatted = formatTimeDisplay(value) || "";
+      setLocalValue(formatted);
+      previousValueRef.current = formatted;
     }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +66,7 @@ export const TimePicker = React.forwardRef<HTMLInputElement, TimePickerProps>(
       if (localValue.trim() === "") {
         onChange(null);
         setLocalValue("");
+        previousValueRef.current = "";
         return;
       }
 
@@ -68,9 +74,12 @@ export const TimePicker = React.forwardRef<HTMLInputElement, TimePickerProps>(
       if (parsed) {
         setLocalValue(parsed);
         onChange(parsed);
+        previousValueRef.current = parsed;
       } else {
         // Invalid input - revert to previous valid value
-        setLocalValue(formatTimeDisplay(value) || "");
+        const revertValue = previousValueRef.current;
+        setLocalValue(revertValue);
+        // Do NOT call onChange - keep previous value
       }
     };
 
@@ -84,7 +93,9 @@ export const TimePicker = React.forwardRef<HTMLInputElement, TimePickerProps>(
         <div className="relative">
           <Input
             ref={ref}
-            type="time"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]{1,2}:[0-9]{2}"
             value={localValue}
             onChange={handleChange}
             onBlur={handleBlur}

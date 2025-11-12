@@ -8,7 +8,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { TimePicker } from "@/components/dashboard/time-picker";
 
 // Helper to get time input
-const getTimeInput = (container: HTMLElement) => container.querySelector('input[type="time"]') as HTMLInputElement;
+const getTimeInput = (container: HTMLElement) => container.querySelector('input[type="text"]') as HTMLInputElement;
 
 describe("TimePicker Component", () => {
   describe("Rendering", () => {
