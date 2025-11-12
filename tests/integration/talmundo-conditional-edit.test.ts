@@ -118,6 +118,9 @@ describe('Talmundo Conditional Editability Integration', () => {
         stena_date: null,
         omc_date: null,
         pe3_date: null,
+        talmundo: true, // Invalid - One is false
+        one: false,
+        one_marked_at: null,
         is_archived: false,
         termination_date: null,
         termination_reason: null,
@@ -149,7 +152,10 @@ describe('Talmundo Conditional Editability Integration', () => {
         stena_date: null,
         omc_date: null,
         pe3_date: null,
-        talmundo: true, // Invalid - One is yellow (< 24 hours)        is_terminated: false,
+        talmundo: true, // Invalid - One is yellow (< 24 hours)
+        one: true,
+        one_marked_at: twelveHoursAgo,
+        is_terminated: false,
         is_archived: false,
         termination_date: null,
         termination_reason: null,
@@ -180,7 +186,10 @@ describe('Talmundo Conditional Editability Integration', () => {
         stena_date: null,
         omc_date: null,
         pe3_date: null,
-        talmundo: true, // Valid - One is green (>= 24 hours)        is_terminated: false,
+        talmundo: true, // Valid - One is green (>= 24 hours)
+        one: true,
+        one_marked_at: twentyFiveHoursAgo,
+        is_terminated: false,
         is_archived: false,
         termination_date: null,
         termination_reason: null,
