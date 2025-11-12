@@ -137,17 +137,41 @@ describe('canEditCrewingDone', () => {
 
     it('returns false when 9 prerequisites are true and 1 is false', () => {
       const result = canEditCrewingDone({
-        ...completeEmployee,      });
+        ...completeEmployee,
+        c17: false,
+      });
       expect(result).toBe(false);
     });
 
     it('returns false when all prerequisites are false', () => {
-      const result = canEditCrewingDone({        mail_lon: false,      });
+      const result = canEditCrewingDone({
+        isps: false,
+        photo: false,
+        origo: false,
+        mail_lon: false,
+        loneiva: 0,
+        bankuppgifter: false,
+        li: false,
+        passport: false,
+        kvitto_c17_18: false,
+        c17: false,
+      });
       expect(result).toBe(false);
     });
 
     it('returns false when all prerequisites are null', () => {
-      const result = canEditCrewingDone({        mail_lon: null,      });
+      const result = canEditCrewingDone({
+        isps: null,
+        photo: null,
+        origo: null,
+        mail_lon: null,
+        loneiva: null,
+        bankuppgifter: null,
+        li: null,
+        passport: null,
+        kvitto_c17_18: null,
+        c17: null,
+      });
       expect(result).toBe(false);
     });
   });
@@ -207,13 +231,22 @@ describe('getIncompleteFields', () => {
   describe('when multiple prerequisites are incomplete', () => {
     it('returns correct field names for 2 incomplete fields', () => {
       const result = getIncompleteFields({
-        ...completeEmployee,      });
+        ...completeEmployee,
+        isps: false,
+        photo: null,
+      });
       expect(result).toEqual(['ISP', 'Photo']);
     });
 
     it('returns correct field names for 5 incomplete fields', () => {
       const result = getIncompleteFields({
-        ...completeEmployee,        mail_lon: false,      });
+        ...completeEmployee,
+        isps: false,
+        photo: false,
+        origo: false,
+        mail_lon: false,
+        loneiva: 0,
+      });
       expect(result).toEqual(['ISP', 'Photo', 'Origo', 'Mail', 'lön']);
     });
 

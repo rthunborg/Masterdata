@@ -119,7 +119,15 @@ const FIELD_LABELS: Record<string, string> = {
  * canEditCrewingDone(nullEmployee) // Returns false
  */
 export function canEditCrewingDone(employee: Partial<Employee>): boolean {
-  return REQUIRED_FIELDS.every((field) => employee[field] === true);
+  return REQUIRED_FIELDS.every((field) => {
+    const value = employee[field];
+    // loneiva is a number field - truthy number means complete (non-zero, non-null)
+    if (field === 'loneiva') {
+      return typeof value === 'number' && value !== 0;
+    }
+    // All other fields are booleans - must be explicitly true
+    return value === true;
+  });
 }
 
 /**
@@ -165,6 +173,14 @@ export function canEditCrewingDone(employee: Partial<Employee>): boolean {
  */
 export function getIncompleteFields(employee: Partial<Employee>): string[] {
   return REQUIRED_FIELDS
-    .filter((field) => employee[field] !== true)
+    .filter((field) => {
+      const value = employee[field];
+      // loneiva is a number field - truthy number means complete
+      if (field === 'loneiva') {
+        return !(typeof value === 'number' && value !== 0);
+      }
+      // All other fields are booleans - must be explicitly true
+      return value !== true;
+    })
     .map((field) => FIELD_LABELS[field]);
 }
