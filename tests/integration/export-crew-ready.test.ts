@@ -19,7 +19,19 @@ describe('Export Crew-Ready Employees Integration', () => {
       id: 'test-1',
       first_name: 'John',
       surname: 'Doe',
-      ssn: '123456-7890',      mail_lon: true,    };
+      ssn: '123456-7890',
+      isps: true,
+      photo: true,
+      origo: true,
+      mail_lon: true,
+      loneiva: 1,
+      bankuppgifter: true,
+      li: true,
+      passport: true,
+      kvitto_c17_18: true,
+      c17: true,
+      crewing_done: false,
+    };
 
     it('should identify employee as eligible when all prerequisites met and crewing_done is false', () => {
       const isEligible = canEditCrewingDone(completeEmployee) && completeEmployee.crewing_done !== true;
@@ -46,7 +58,11 @@ describe('Export Crew-Ready Employees Integration', () => {
 
     it('should NOT identify employee as eligible when missing multiple prerequisites', () => {
       const employee = {
-        ...completeEmployee,      };
+        ...completeEmployee,
+        isps: false,
+        photo: false,
+        origo: false,
+      };
       const isEligible = canEditCrewingDone(employee) && employee.crewing_done !== true;
       expect(isEligible).toBe(false);
     });
@@ -109,16 +125,64 @@ describe('Export Crew-Ready Employees Integration', () => {
       const employees: Partial<Employee>[] = [
         // Eligible: all prerequisites met, crewing_done false
         {
-          id: '1',          mail_lon: true,        },
+          id: '1',
+          isps: true,
+          photo: true,
+          origo: true,
+          mail_lon: true,
+          loneiva: 1,
+          bankuppgifter: true,
+          li: true,
+          passport: true,
+          kvitto_c17_18: true,
+          c17: true,
+          crewing_done: false,
+        },
         // Not eligible: crewing_done already true
         {
-          id: '2',          mail_lon: true,        },
+          id: '2',
+          isps: true,
+          photo: true,
+          origo: true,
+          mail_lon: true,
+          loneiva: 1,
+          bankuppgifter: true,
+          li: true,
+          passport: true,
+          kvitto_c17_18: true,
+          c17: true,
+          crewing_done: true,
+        },
         // Not eligible: missing prerequisite (isps false)
         {
-          id: '3',          mail_lon: true,        },
+          id: '3',
+          isps: false,
+          photo: true,
+          origo: true,
+          mail_lon: true,
+          loneiva: 1,
+          bankuppgifter: true,
+          li: true,
+          passport: true,
+          kvitto_c17_18: true,
+          c17: true,
+          crewing_done: false,
+        },
         // Eligible: all prerequisites met, crewing_done null
         {
-          id: '4',          mail_lon: true,        },
+          id: '4',
+          isps: true,
+          photo: true,
+          origo: true,
+          mail_lon: true,
+          loneiva: 1,
+          bankuppgifter: true,
+          li: true,
+          passport: true,
+          kvitto_c17_18: true,
+          c17: true,
+          crewing_done: null,
+        },
       ];
 
       const eligible = employees.filter(
@@ -142,9 +206,33 @@ describe('Export Crew-Ready Employees Integration', () => {
     it('should handle all employees already crew-ready', () => {
       const employees: Partial<Employee>[] = [
         {
-          id: '1',          mail_lon: true,        },
+          id: '1',
+          isps: true,
+          photo: true,
+          origo: true,
+          mail_lon: true,
+          loneiva: 1,
+          bankuppgifter: true,
+          li: true,
+          passport: true,
+          kvitto_c17_18: true,
+          c17: true,
+          crewing_done: true,
+        },
         {
-          id: '2',          mail_lon: true,        },
+          id: '2',
+          isps: true,
+          photo: true,
+          origo: true,
+          mail_lon: true,
+          loneiva: 1,
+          bankuppgifter: true,
+          li: true,
+          passport: true,
+          kvitto_c17_18: true,
+          c17: true,
+          crewing_done: true,
+        },
       ];
 
       const eligible = employees.filter(
@@ -156,9 +244,15 @@ describe('Export Crew-Ready Employees Integration', () => {
     it('should handle all employees missing prerequisites', () => {
       const employees: Partial<Employee>[] = [
         {
-          id: '1',        },
+          id: '1',
+          isps: false,
+          crewing_done: false,
+        },
         {
-          id: '2',        },
+          id: '2',
+          photo: false,
+          crewing_done: false,
+        },
       ];
 
       const eligible = employees.filter(
