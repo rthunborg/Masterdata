@@ -88,11 +88,11 @@ describe("Column Creation Integration Flow", () => {
     renderWithI18n(<AddColumnModal />);
 
     // Fill form
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByPlaceholderText(/meal plan|training status|room number/i);
     fireEvent.change(nameInput, { target: { value: "Recruitment Team" } });
 
     // Submit form
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /skapa kolumn|create column/i });
     fireEvent.click(submitButton);
 
     // Verify API call
@@ -140,10 +140,10 @@ describe("Column Creation Integration Flow", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByPlaceholderText(/meal plan|training status|room number/i);
     fireEvent.change(nameInput, { target: { value: "Test Column" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /skapa kolumn|create column/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -198,10 +198,10 @@ describe("Column Creation Integration Flow", () => {
     const { rerender } = renderWithI18n(<AddColumnModal />);
 
     // Create first column
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByPlaceholderText(/meal plan|training status|room number/i);
     fireEvent.change(nameInput, { target: { value: "Column 1" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /skapa kolumn|create column/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -222,10 +222,10 @@ describe("Column Creation Integration Flow", () => {
 
     rerender(<AddColumnModal />);
 
-    const nameInput2 = screen.getByLabelText(/column name/i);
+    const nameInput2 = screen.getByPlaceholderText(/meal plan|training status|room number/i);
     fireEvent.change(nameInput2, { target: { value: "Column 2" } });
 
-    const submitButton2 = screen.getByRole("button", { name: /create column/i });
+    const submitButton2 = screen.getByRole("button", { name: /skapa kolumn|create column/i });
     fireEvent.click(submitButton2);
 
     await waitFor(() => {
@@ -246,10 +246,10 @@ describe("Column Creation Integration Flow", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByPlaceholderText(/meal plan|training status|room number/i);
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
-    const submitButton = screen.getByRole("button", { name: /create column/i });
+    const submitButton = screen.getByRole("button", { name: /skapa kolumn|create column/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -284,13 +284,13 @@ describe("Column Creation Integration Flow", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/column name/i);
+    const nameInput = screen.getByPlaceholderText(/meal plan|training status|room number/i);
     fireEvent.change(nameInput, {
       target: { value: "Text Column" },
     });
 
     const submitButton = screen.getByRole("button", {
-      name: /create column/i,
+      name: /skapa kolumn|create column/i,
     });
     fireEvent.click(submitButton);
 
