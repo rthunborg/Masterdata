@@ -9,7 +9,18 @@ import type { Employee } from '@/lib/types/employee';
 
 describe('canEditCrewingDone', () => {
   // Complete employee with all 10 prerequisites set to true
-  const completeEmployee: Partial<Employee> = {    mail_lon: true,  };
+  const completeEmployee: Partial<Employee> = {
+    isps: true,
+    photo: true,
+    origo: true,
+    mail_lon: true,
+    loneiva: 1, // Number field (any non-zero number counts as complete)
+    bankuppgifter: true,
+    li: true,
+    passport: true,
+    kvitto_c17_18: true,
+    c17: true,
+  };
 
   describe('when all prerequisites are complete', () => {
     it('returns true', () => {
@@ -19,7 +30,9 @@ describe('canEditCrewingDone', () => {
 
     it('returns true even when crewing_done is already set', () => {
       const result = canEditCrewingDone({
-        ...completeEmployee,      });
+        ...completeEmployee,
+        crewing_done: true,
+      });
       expect(result).toBe(true);
     });
   });
@@ -192,7 +205,18 @@ describe('canEditCrewingDone', () => {
 });
 
 describe('getIncompleteFields', () => {
-  const completeEmployee: Partial<Employee> = {    mail_lon: true,  };
+  const completeEmployee: Partial<Employee> = {
+    isps: true,
+    photo: true,
+    origo: true,
+    mail_lon: true,
+    loneiva: 1, // Number field (any non-zero number counts as complete)
+    bankuppgifter: true,
+    li: true,
+    passport: true,
+    kvitto_c17_18: true,
+    c17: true,
+  };
 
   describe('when all prerequisites are complete', () => {
     it('returns empty array', () => {
@@ -251,7 +275,18 @@ describe('getIncompleteFields', () => {
     });
 
     it('returns all field names when all prerequisites are incomplete', () => {
-      const result = getIncompleteFields({        mail_lon: false,      });
+      const result = getIncompleteFields({
+        isps: false,
+        photo: false,
+        origo: false,
+        mail_lon: false,
+        loneiva: 0,
+        bankuppgifter: false,
+        li: false,
+        passport: false,
+        kvitto_c17_18: false,
+        c17: false,
+      });
       expect(result).toEqual([
         'ISP',
         'Photo',
