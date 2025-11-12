@@ -11,8 +11,19 @@ import { canEditCrewingDone, getIncompleteFields } from '@/lib/services/crewing-
 import type { Employee } from '@/lib/types/employee';
 
 describe('Crewing/Done Conditional Editability Integration', () => {
-  // Complete employee with all prerequisites
-  const completeEmployee: Partial<Employee> = {    mail_lon: true,  };
+  // Complete employee with all 10 prerequisites set to true
+  const completeEmployee: Partial<Employee> = {
+    isps: true,
+    photo: true,
+    origo: true,
+    mail_lon: true,
+    loneiva: 1, // Number field (any non-zero number counts as complete)
+    bankuppgifter: true,
+    li: true,
+    passport: true,
+    kvitto_c17_18: true,
+    c17: true,
+  };
 
   describe('Business Logic Integration', () => {
     it('should allow Crewing/Done edit when all prerequisites are true', () => {
@@ -34,7 +45,11 @@ describe('Crewing/Done Conditional Editability Integration', () => {
 
     it('should return correct incomplete field names', () => {
       const incompleteEmployee = {
-        ...completeEmployee,      };
+        ...completeEmployee,
+        isps: false,
+        photo: null,
+        origo: false,
+      };
       const incomplete = getIncompleteFields(incompleteEmployee);
       expect(incomplete).toEqual(['ISP', 'Photo', 'Origo']);
     });
@@ -91,7 +106,18 @@ describe('Crewing/Done Conditional Editability Integration', () => {
     });
 
     it('should have all 10 prerequisite fields in Employee type', () => {
-      const mockEmployee: Partial<Employee> = {      };
+      const mockEmployee: Partial<Employee> = {
+        isps: true,
+        photo: true,
+        origo: true,
+        mail_lon: true,
+        loneiva: 1,
+        bankuppgifter: true,
+        li: true,
+        passport: true,
+        kvitto_c17_18: true,
+        c17: true,
+      };
 
       expect(mockEmployee.isps).toBeDefined();
       expect(mockEmployee.photo).toBeDefined();
@@ -205,7 +231,18 @@ describe('Crewing/Done Conditional Editability Integration', () => {
     });
 
     it('should reject edit when only 1 out of 10 prerequisites is true', () => {
-      const mostlyIncomplete = {      };
+      const mostlyIncomplete = {
+        isps: true, // Only this one is true
+        photo: false,
+        origo: false,
+        mail_lon: false,
+        loneiva: 0, // 0 counts as false for number fields
+        bankuppgifter: false,
+        li: false,
+        passport: false,
+        kvitto_c17_18: false,
+        c17: false,
+      };
       const result = canEditCrewingDone(mostlyIncomplete);
       expect(result).toBe(false);
 
@@ -223,7 +260,18 @@ describe('Crewing/Done Conditional Editability Integration', () => {
     });
 
     it('should reject edit when all prerequisites are false', () => {
-      const allIncomplete = {      };
+      const allIncomplete = {
+        isps: false,
+        photo: false,
+        origo: false,
+        mail_lon: false,
+        loneiva: 0,
+        bankuppgifter: false,
+        li: false,
+        passport: false,
+        kvitto_c17_18: false,
+        c17: false,
+      };
       const result = canEditCrewingDone(allIncomplete);
       expect(result).toBe(false);
 
@@ -258,7 +306,11 @@ describe('Crewing/Done Conditional Editability Integration', () => {
 
       // Set 3 fields to false
       const partiallyIncomplete = {
-        ...completeEmployee,      };
+        ...completeEmployee,
+        isps: false,
+        mail_lon: false,
+        passport: false,
+      };
       const incomplete = getIncompleteFields(partiallyIncomplete);
       expect(incomplete).toEqual(['ISP', 'Mail', 'Passport']);
     });
@@ -286,7 +338,9 @@ describe('Crewing/Done Conditional Editability Integration', () => {
 
     it('should handle crewing_done being already set', () => {
       const employeeWithCrewingDone = {
-        ...completeEmployee,      };
+        ...completeEmployee,
+        crewing_done: true,
+      };
       
       // Should still validate prerequisites
       const result = canEditCrewingDone(employeeWithCrewingDone);
