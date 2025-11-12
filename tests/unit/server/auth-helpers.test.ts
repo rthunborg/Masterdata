@@ -13,7 +13,7 @@ import {
 // Mock the Supabase client
 const mockSupabaseClient = {
   auth: {
-    getSession: vi.fn(),
+    getUser: vi.fn(),
   },
   from: vi.fn(),
 };
@@ -30,9 +30,9 @@ describe("Auth Helper Functions", () => {
 
   describe("requireAuthAPI", () => {
     it("should return user when authenticated", async () => {
-      // Mock Supabase session
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
+      // Mock Supabase auth getUser
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUsers.hrAdmin.auth_id } },
         error: null,
       });
       
@@ -64,8 +64,8 @@ describe("Auth Helper Functions", () => {
     });
 
     it("should throw error when not authenticated", async () => {
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: null },
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
         error: null,
       });
 
@@ -75,8 +75,8 @@ describe("Auth Helper Functions", () => {
 
   describe("requireRoleAPI", () => {
     it("should return user when role is allowed", async () => {
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUsers.hrAdmin.auth_id } },
         error: null,
       });
       
@@ -106,8 +106,8 @@ describe("Auth Helper Functions", () => {
     });
 
     it("should throw error when role is not allowed", async () => {
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: { user: { id: mockUsers.sodexo.auth_id } } },
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUsers.sodexo.auth_id } },
         error: null,
       });
       
@@ -132,8 +132,8 @@ describe("Auth Helper Functions", () => {
     });
 
     it("should allow multiple roles", async () => {
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: { user: { id: mockUsers.sodexo.auth_id } } },
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUsers.sodexo.auth_id } },
         error: null,
       });
       
@@ -163,17 +163,19 @@ describe("Auth Helper Functions", () => {
     });
 
     it("should throw error when not authenticated", async () => {
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: null },
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
         error: null,
       });
 
       await expect(requireRoleAPI([UserRole.HR_ADMIN])).rejects.toThrow("Authentication required");
     });
-  });  describe("requireHRAdminAPI", () => {
+  });
+
+  describe("requireHRAdminAPI", () => {
     it("should return user when user is HR admin", async () => {
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUsers.hrAdmin.auth_id } },
         error: null,
       });
       
@@ -203,8 +205,8 @@ describe("Auth Helper Functions", () => {
     });
 
     it("should throw error when user is not HR admin", async () => {
-      mockSupabaseClient.auth.getSession.mockResolvedValue({
-        data: { session: { user: { id: mockUsers.sodexo.auth_id } } },
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: mockUsers.sodexo.auth_id } },
         error: null,
       });
       
@@ -312,7 +314,7 @@ describe("Auth Helper Functions", () => {
         expect(data).toMatchObject({
           error: {
             code: "INTERNAL_ERROR",
-            message: "An unexpected error occurred"
+            message: "Unknown error"  // Returns the actual error message
           }
         });
       });

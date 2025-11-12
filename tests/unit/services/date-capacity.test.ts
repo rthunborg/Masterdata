@@ -31,9 +31,37 @@ describe("date-capacity service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Create mock Supabase methods
-    mockSupabaseFrom = vi.fn();
-    mockSupabaseRpc = vi.fn();
+    // Create a flexible chainable mock that returns different data based on the table
+    mockSupabaseFrom = vi.fn((table: string) => {
+      const chainMock = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn(),
+      };
+
+      if (table === 'employees') {
+        // Mock employee data fetch
+        chainMock.single.mockResolvedValue({
+          data: {
+            id: 'emp-123',
+            first_name: 'John',
+            surname: 'Doe',
+            email: 'john@example.com',
+          },
+          error: null,
+        });
+      } else {
+        // Default for important_dates and other tables
+        chainMock.single.mockResolvedValue({
+          data: { deadline_submit: null, deadline_cancel: null, remaining_spots: 10 },
+          error: null,
+        });
+      }
+
+      return chainMock;
+    });
+
+    mockSupabaseRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
     mockSupabaseClient = {
       from: mockSupabaseFrom,
@@ -181,6 +209,24 @@ describe("date-capacity service", () => {
 
   describe("assignEmployeeToDate", () => {
     it("should successfully assign employee to date with no old date", async () => {
+      // Mock the deadline check query (from().select().eq().single())
+      const mockSingle = vi.fn().mockResolvedValue({
+        data: { deadline_submit: null, deadline_cancel: null },
+        error: null,
+      });
+
+      const mockEq = vi.fn().mockReturnValue({
+        single: mockSingle,
+      });
+
+      const mockSelect = vi.fn().mockReturnValue({
+        eq: mockEq,
+      });
+
+      mockSupabaseFrom.mockReturnValue({
+        select: mockSelect,
+      });
+
       mockSupabaseRpc.mockResolvedValue({
         data: null,
         error: null,
@@ -193,12 +239,19 @@ describe("date-capacity service", () => {
         "omc_date"
       );
 
-      expect(mockSupabaseRpc).toHaveBeenCalledWith("update_date_spots", {
-        employee_id: "emp-123",
-        new_date_id: "date-456",
-        old_date_id: null,
-        date_type: "omc_date",
-      });
+      expect(mockSupabaseFrom).toHaveBeenCalledWith("important_dates");
+      expect(mockSupabaseFrom).toHaveBeenCalledWith("employees");
+      expect(mockSupabaseRpc).toHaveBeenCalledWith("update_date_spots",
+        expect.objectContaining({
+          employee_id: "emp-123",
+          new_date_id: "date-456",
+          old_date_id: null,
+          date_type: "omc_date",
+          employee_data: expect.objectContaining({
+            room_number: null,
+          }),
+        })
+      );
 
       expect(result).toEqual({
         success: true,
@@ -207,6 +260,24 @@ describe("date-capacity service", () => {
     });
 
     it("should successfully assign employee when changing dates", async () => {
+      // Mock the deadline check query
+      const mockSingle = vi.fn().mockResolvedValue({
+        data: { deadline_submit: null, deadline_cancel: null },
+        error: null,
+      });
+
+      const mockEq = vi.fn().mockReturnValue({
+        single: mockSingle,
+      });
+
+      const mockSelect = vi.fn().mockReturnValue({
+        eq: mockEq,
+      });
+
+      mockSupabaseFrom.mockReturnValue({
+        select: mockSelect,
+      });
+
       mockSupabaseRpc.mockResolvedValue({
         data: null,
         error: null,
@@ -219,12 +290,19 @@ describe("date-capacity service", () => {
         "stena_date"
       );
 
-      expect(mockSupabaseRpc).toHaveBeenCalledWith("update_date_spots", {
-        employee_id: "emp-123",
-        new_date_id: "date-new",
-        old_date_id: "date-old",
-        date_type: "stena_date",
-      });
+      expect(mockSupabaseFrom).toHaveBeenCalledWith("important_dates");
+      expect(mockSupabaseFrom).toHaveBeenCalledWith("employees");
+      expect(mockSupabaseRpc).toHaveBeenCalledWith("update_date_spots",
+        expect.objectContaining({
+          employee_id: "emp-123",
+          new_date_id: "date-new",
+          old_date_id: "date-old",
+          date_type: "stena_date",
+          employee_data: expect.objectContaining({
+            room_number: null,
+          }),
+        })
+      );
 
       expect(result.success).toBe(true);
     });
@@ -288,6 +366,12 @@ describe("date-capacity service", () => {
         new_date_id: "date-1",
         old_date_id: null,
         date_type: "omc_date",
+        employee_data: {
+          id: 'emp-123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          room_number: null,
+        },
       });
 
       // Test stena_date
@@ -297,6 +381,12 @@ describe("date-capacity service", () => {
         new_date_id: "date-2",
         old_date_id: null,
         date_type: "stena_date",
+        employee_data: {
+          id: 'emp-123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          room_number: null,
+        },
       });
 
       // Test pe3_date
@@ -306,6 +396,12 @@ describe("date-capacity service", () => {
         new_date_id: "date-3",
         old_date_id: null,
         date_type: "pe3_date",
+        employee_data: {
+          id: 'emp-123',
+          name: 'John Doe',
+          email: 'john@example.com',
+          room_number: null,
+        },
       });
 
       expect(mockSupabaseRpc).toHaveBeenCalledTimes(3);

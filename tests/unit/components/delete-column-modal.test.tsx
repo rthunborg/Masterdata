@@ -45,11 +45,11 @@ describe("DeleteColumnModal", () => {
     );
 
     expect(
-      screen.getByText(/Delete Column "Test Column"\?/i)
+      screen.getByText(/Ta bort kolumn "Test Column"\?/i)
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        /All data in this column will be permanently removed from all employees/i
+        /All data i denna kolumn kommer att tas bort permanent från alla medarbetare/i
       )
     ).toBeInTheDocument();
   });
@@ -81,7 +81,7 @@ describe("DeleteColumnModal", () => {
     );
 
     const deleteButton = screen.getByRole("button", {
-      name: /Delete Column/i,
+      name: /Ta bort kolumn/i,
     });
     fireEvent.click(deleteButton);
 
@@ -90,7 +90,7 @@ describe("DeleteColumnModal", () => {
       expect(mockOnDeleted).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith(
-        'Column "Test Column" deleted successfully'
+        'Kolumn "Test Column" borttagen'
       );
     });
   });
@@ -108,7 +108,7 @@ describe("DeleteColumnModal", () => {
       />
     );
 
-    const cancelButton = screen.getByRole("button", { name: /Cancel/i });
+    const cancelButton = screen.getByRole("button", { name: /Avbryt/i });
     fireEvent.click(cancelButton);
 
     expect(mockOnClose).toHaveBeenCalled();
@@ -132,7 +132,7 @@ describe("DeleteColumnModal", () => {
     );
 
     const deleteButton = screen.getByRole("button", {
-      name: /Delete Column/i,
+      name: /Ta bort kolumn/i,
     });
     fireEvent.click(deleteButton);
 
@@ -162,15 +162,15 @@ describe("DeleteColumnModal", () => {
     );
 
     const deleteButton = screen.getByRole("button", {
-      name: /Delete Column/i,
+      name: /Ta bort kolumn/i,
     });
     fireEvent.click(deleteButton);
 
     // Buttons should be disabled during deletion
     await waitFor(() => {
       expect(deleteButton).toBeDisabled();
-      expect(screen.getByRole("button", { name: /Cancel/i })).toBeDisabled();
-      expect(screen.getByText(/Deleting.../i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Avbryt/i })).toBeDisabled();
+      expect(screen.getByText(/Tar bort.../i)).toBeInTheDocument();
     });
   });
 
@@ -185,7 +185,7 @@ describe("DeleteColumnModal", () => {
     );
 
     expect(
-      screen.getByText(/This action cannot be undone/i)
+      screen.getByText(/Denna åtgärd kan inte ångras/i)
     ).toBeInTheDocument();
   });
 });

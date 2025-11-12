@@ -66,7 +66,7 @@ describe("External Party Dashboard Access", () => {
       await waitFor(() => {
         // Note: Role display is in server component layout, not tested here
         // This test verifies dashboard page renders without "Add Employee" button
-        expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/lägg till anställd/i)).not.toBeInTheDocument();
       });
     });
 
@@ -92,7 +92,7 @@ describe("External Party Dashboard Access", () => {
 
       renderWithI18n(<DashboardPage />);
       await waitFor(() => {
-        expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/lägg till anställd/i)).not.toBeInTheDocument();
       });
     });
 
@@ -118,7 +118,7 @@ describe("External Party Dashboard Access", () => {
 
       renderWithI18n(<DashboardPage />);
       await waitFor(() => {
-        expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/lägg till anställd/i)).not.toBeInTheDocument();
       });
     });
 
@@ -144,7 +144,7 @@ describe("External Party Dashboard Access", () => {
 
       renderWithI18n(<DashboardPage />);
       await waitFor(() => {
-        expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/lägg till anställd/i)).not.toBeInTheDocument();
       });
     });
   });
@@ -172,7 +172,7 @@ describe("External Party Dashboard Access", () => {
 
       renderWithI18n(<DashboardPage />);
       await waitFor(() => {
-        expect(screen.queryByText(/Add Employee/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/lägg till anställd/i)).not.toBeInTheDocument();
       });
     });
 
@@ -198,7 +198,7 @@ describe("External Party Dashboard Access", () => {
 
       renderWithI18n(<DashboardPage />);
       await waitFor(() => {
-        expect(screen.queryByText(/Import Employees/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/importera anställda/i)).not.toBeInTheDocument();
       });
     });
 
@@ -224,8 +224,8 @@ describe("External Party Dashboard Access", () => {
 
       renderWithI18n(<DashboardPage />);
       await waitFor(() => {
-        expect(screen.getByText(/Add Employee/i)).toBeInTheDocument();
-        expect(screen.getByText(/Import Employees/i)).toBeInTheDocument();
+        expect(screen.getByText(/lägg till anställd/i)).toBeInTheDocument();
+        expect(screen.getByText(/importera anställda/i)).toBeInTheDocument();
       });
     });
   });

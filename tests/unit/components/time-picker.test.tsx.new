@@ -30,7 +30,7 @@ describe("TimePicker Component", () => {
 
     it("renders with valid time value", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value="14:30" onChange={onChange} />);
+      const { container } = $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
       const input = getTimeInput(container);
       expect(input.value).toBe("14:30");
@@ -38,7 +38,7 @@ describe("TimePicker Component", () => {
 
     it("renders clear button when value is present", () => {
       const onChange = vi.fn();
-      render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
       const clearButton = screen.getByRole("button", { name: /rensa tid/i });
       expect(clearButton).toBeInTheDocument();
@@ -46,7 +46,7 @@ describe("TimePicker Component", () => {
 
     it("does not render clear button when value is null", () => {
       const onChange = vi.fn();
-      render(<TimePicker value={null} onChange={onChange} />);
+      $match = render(<TimePicker value={null} onChange={onChange} />);
 
       const clearButton = screen.queryByRole("button", { name: /rensa tid/i });
       expect(clearButton).not.toBeInTheDocument();
@@ -54,7 +54,7 @@ describe("TimePicker Component", () => {
 
     it("renders in disabled state", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value="14:30" onChange={onChange} disabled />);
+      const { container } = $match = render(<TimePicker value="14:30" onChange={onChange} disabled />);
 
       const input = getTimeInput(container);
       expect(input).toBeDisabled();
@@ -62,7 +62,7 @@ describe("TimePicker Component", () => {
 
     it("does not show clear button when disabled", () => {
       const onChange = vi.fn();
-      render(<TimePicker value="14:30" onChange={onChange} disabled />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} disabled />);
 
       const clearButton = screen.queryByRole("button", { name: /rensa tid/i });
       expect(clearButton).not.toBeInTheDocument();
@@ -99,9 +99,9 @@ describe("TimePicker Component", () => {
   describe("User Interactions", () => {
     it("calls onChange with formatted time on valid input", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value={null} onChange={onChange} />);
+      $match = render(<TimePicker value={null} onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       fireEvent.change(input, { target: { value: "14:30" } });
       fireEvent.blur(input);
 
@@ -110,9 +110,9 @@ describe("TimePicker Component", () => {
 
     it("normalizes single-digit hours with leading zero", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value={null} onChange={onChange} />);
+      $match = render(<TimePicker value={null} onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       fireEvent.change(input, { target: { value: "9:05" } });
       fireEvent.blur(input);
 
@@ -121,9 +121,9 @@ describe("TimePicker Component", () => {
 
     it("strips seconds from HH:MM:SS format", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value={null} onChange={onChange} />);
+      $match = render(<TimePicker value={null} onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       fireEvent.change(input, { target: { value: "14:30:00" } });
       fireEvent.blur(input);
 
@@ -132,7 +132,7 @@ describe("TimePicker Component", () => {
 
     it("clears time when clear button is clicked", () => {
       const onChange = vi.fn();
-      render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
       const clearButton = screen.getByRole("button", { name: /rensa tid/i });
       fireEvent.click(clearButton);
@@ -142,9 +142,9 @@ describe("TimePicker Component", () => {
 
     it("calls onChange with null when empty string is entered", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       fireEvent.change(input, { target: { value: "" } });
       fireEvent.blur(input);
 
@@ -153,9 +153,9 @@ describe("TimePicker Component", () => {
 
     it("reverts to previous value on invalid input", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox") as HTMLInputElement;
       
       // Try to enter invalid time
       fireEvent.change(input, { target: { value: "25:00" } });
@@ -170,9 +170,9 @@ describe("TimePicker Component", () => {
 
     it("does not trigger onChange when typing (only on blur)", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value={null} onChange={onChange} />);
+      $match = render(<TimePicker value={null} onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       fireEvent.change(input, { target: { value: "14" } });
 
       // Should not call onChange until blur
@@ -190,29 +190,29 @@ describe("TimePicker Component", () => {
   describe("Value Synchronization", () => {
     it("updates local value when prop value changes", () => {
       const onChange = vi.fn();
-      const { container, rerender } = render(<TimePicker value="14:30" onChange={onChange} />);
+      const { rerender } = $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
-      let input = getTimeInput(container);
+      let input = screen.getByRole("textbox") as HTMLInputElement;
       expect(input.value).toBe("14:30");
 
       // Change prop value
-      rerender(<TimePicker value="09:00" onChange={onChange} />);
+      re$match = render(<TimePicker value="09:00" onChange={onChange} />);
 
-      input = getTimeInput(container);
+      input = screen.getByRole("textbox") as HTMLInputElement;
       expect(input.value).toBe("09:00");
     });
 
     it("clears input when prop value changes to null", () => {
       const onChange = vi.fn();
-      const { container, rerender } = render(<TimePicker value="14:30" onChange={onChange} />);
+      const { rerender } = $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
-      let input = getTimeInput(container);
+      let input = screen.getByRole("textbox") as HTMLInputElement;
       expect(input.value).toBe("14:30");
 
       // Change to null
-      rerender(<TimePicker value={null} onChange={onChange} />);
+      re$match = render(<TimePicker value={null} onChange={onChange} />);
 
-      input = getTimeInput(container);
+      input = screen.getByRole("textbox") as HTMLInputElement;
       expect(input.value).toBe("");
     });
   });
@@ -220,9 +220,9 @@ describe("TimePicker Component", () => {
   describe("Edge Cases", () => {
     it("handles midnight (00:00) correctly", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value={null} onChange={onChange} />);
+      $match = render(<TimePicker value={null} onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       fireEvent.change(input, { target: { value: "00:00" } });
       fireEvent.blur(input);
 
@@ -231,9 +231,9 @@ describe("TimePicker Component", () => {
 
     it("handles end of day (23:59) correctly", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value={null} onChange={onChange} />);
+      $match = render(<TimePicker value={null} onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       fireEvent.change(input, { target: { value: "23:59" } });
       fireEvent.blur(input);
 
@@ -242,9 +242,9 @@ describe("TimePicker Component", () => {
 
     it("rejects hours > 23", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox") as HTMLInputElement;
       fireEvent.change(input, { target: { value: "24:00" } });
       fireEvent.blur(input);
 
@@ -255,9 +255,9 @@ describe("TimePicker Component", () => {
 
     it("rejects minutes > 59", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox") as HTMLInputElement;
       fireEvent.change(input, { target: { value: "14:60" } });
       fireEvent.blur(input);
 
@@ -268,9 +268,9 @@ describe("TimePicker Component", () => {
 
     it("handles whitespace in input", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value={null} onChange={onChange} />);
+      $match = render(<TimePicker value={null} onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       fireEvent.change(input, { target: { value: "  14:30  " } });
       fireEvent.blur(input);
 
@@ -281,15 +281,15 @@ describe("TimePicker Component", () => {
   describe("Accessibility", () => {
     it("has proper ARIA attributes", () => {
       const onChange = vi.fn();
-      const { container } = render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
-      const input = getTimeInput(container);
+      const input = screen.getByRole("textbox");
       expect(input).toBeInTheDocument();
     });
 
     it("clear button has screen reader text", () => {
       const onChange = vi.fn();
-      render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
       const clearButton = screen.getByRole("button", { name: /rensa tid/i });
       expect(clearButton).toHaveAccessibleName("Rensa tid");
@@ -297,7 +297,7 @@ describe("TimePicker Component", () => {
 
     it("clear button has negative tabindex to prevent focus", () => {
       const onChange = vi.fn();
-      render(<TimePicker value="14:30" onChange={onChange} />);
+      $match = render(<TimePicker value="14:30" onChange={onChange} />);
 
       const clearButton = screen.getByRole("button", { name: /rensa tid/i });
       expect(clearButton).toHaveAttribute("tabindex", "-1");

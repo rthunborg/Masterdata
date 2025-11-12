@@ -45,17 +45,17 @@ describe('AddUserModal', () => {
   it('renders modal when open', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
-    expect(screen.getByText('Add New User')).toBeInTheDocument();
-    expect(screen.getByLabelText('Email')).toBeInTheDocument();
-    expect(screen.getByLabelText('Password')).toBeInTheDocument();
-    expect(screen.getByLabelText('Role')).toBeInTheDocument();
-    expect(screen.getByLabelText('Active')).toBeInTheDocument();
+    expect(screen.getByText('Lägg till ny användare')).toBeInTheDocument();
+    expect(screen.getByLabelText('E-post')).toBeInTheDocument();
+    expect(screen.getByLabelText('Lösenord')).toBeInTheDocument();
+    expect(screen.getByLabelText('Roll')).toBeInTheDocument();
+    expect(screen.getByLabelText('Aktiv')).toBeInTheDocument();
   });
 
   it('does not render modal when closed', () => {
     renderWithI18n(<AddUserModal open={false} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
-    expect(screen.queryByText('Add New User')).not.toBeInTheDocument();
+    expect(screen.queryByText('Lägg till ny användare')).not.toBeInTheDocument();
   });
 
   it('validates email format and prevents submission', async () => {
@@ -64,15 +64,15 @@ describe('AddUserModal', () => {
     
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
-    const emailInput = screen.getByLabelText('Email');
-    const passwordInput = screen.getByLabelText('Password');
+    const emailInput = screen.getByLabelText('E-post');
+    const passwordInput = screen.getByLabelText('Lösenord');
     
     // Enter invalid email and valid password
     await user.type(emailInput, 'invalid-email');
     await user.type(passwordInput, 'testPassword123');
 
     // Try to submit the form
-    const submitButton = screen.getByRole('button', { name: /create user/i });
+    const submitButton = screen.getByRole('button', { name: /skapa användare/i });
     await user.click(submitButton);
 
     // Wait a bit for any potential submission
@@ -86,12 +86,12 @@ describe('AddUserModal', () => {
     const user = userEvent.setup();
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
-    const passwordInput = screen.getByLabelText('Password');
+    const passwordInput = screen.getByLabelText('Lösenord');
     
     await user.type(passwordInput, 'short');
     
     // Submit the form to trigger validation
-    const submitButton = screen.getByRole('button', { name: /create user/i });
+    const submitButton = screen.getByRole('button', { name: /skapa användare/i });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -103,7 +103,7 @@ describe('AddUserModal', () => {
     const user = userEvent.setup();
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
-    const emailInput = screen.getByLabelText('Email');
+    const emailInput = screen.getByLabelText('E-post');
     await user.type(emailInput, 'valid@example.com');
     await user.tab();
 
@@ -117,7 +117,7 @@ describe('AddUserModal', () => {
     const user = userEvent.setup();
     renderWithI18n(<AddUserModal open={true} onClose=  {mockOnClose} onSuccess={mockOnSuccess} />);
 
-    const passwordInput = screen.getByLabelText('Password');
+    const passwordInput = screen.getByLabelText('Lösenord');
     await user.type(passwordInput, 'validPassword123');
     await user.tab();
 
@@ -131,7 +131,7 @@ describe('AddUserModal', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Find the role select - verify it's present
-    const roleSelect = screen.getByRole('combobox', { name: /role/i });
+    const roleSelect = screen.getByRole('combobox', { name: /roll/i });
     expect(roleSelect).toBeInTheDocument();
     
     // Note: Due to JSDOM limitations with Radix UI Select's pointer events,
@@ -142,7 +142,7 @@ describe('AddUserModal', () => {
   it('active checkbox is checked by default', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
-    const activeCheckbox = screen.getByRole('checkbox', { name: /active/i });
+    const activeCheckbox = screen.getByRole('checkbox', { name: /aktiv/i });
     expect(activeCheckbox).toBeChecked();
   });
 
@@ -162,11 +162,11 @@ describe('AddUserModal', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill form
-    await user.type(screen.getByLabelText('Email'), 'newuser@test.com');
-    await user.type(screen.getByLabelText('Password'), 'testPass123');
+    await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
+    await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
 
     // Submit form
-    const submitButton = screen.getByRole('button', { name: /create user/i });
+    const submitButton = screen.getByRole('button', { name: /skapa användare/i });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -195,13 +195,13 @@ describe('AddUserModal', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
-    await user.type(screen.getByLabelText('Email'), 'newuser@test.com');
-    await user.type(screen.getByLabelText('Password'), 'testPass123');
-    await user.click(screen.getByRole('button', { name: /create user/i }));
+    await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
+    await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
+    await user.click(screen.getByRole('button', { name: /skapa användare/i }));
 
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith(
-        expect.stringMatching(/newuser@test\.com created successfully.*testPass123/),
+        expect.stringMatching(/Användare newuser@test\.com skapades/i),
         { duration: 10000 }
       );
     });
@@ -223,9 +223,9 @@ describe('AddUserModal', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
-    await user.type(screen.getByLabelText('Email'), 'newuser@test.com');
-    await user.type(screen.getByLabelText('Password'), 'testPass123');
-    await user.click(screen.getByRole('button', { name: /create user/i }));
+    await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
+    await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
+    await user.click(screen.getByRole('button', { name: /skapa användare/i }));
 
     await waitFor(() => {
       expect(mockOnSuccess).toHaveBeenCalled();
@@ -240,10 +240,10 @@ describe('AddUserModal', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
-    await user.type(screen.getByLabelText('Email'), 'duplicate@test.com');
-    await user.type(screen.getByLabelText('Password'), 'testPass123');
+    await user.type(screen.getByLabelText('E-post'), 'duplicate@test.com');
+    await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
     
-    const submitButton = screen.getByRole('button', { name: /create user/i });
+    const submitButton = screen.getByRole('button', { name: /skapa användare/i });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -254,7 +254,7 @@ describe('AddUserModal', () => {
 
     // Wait for loading state to clear
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /create user/i })).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: /skapa användare/i })).not.toBeDisabled();
     });
   });
 
@@ -268,13 +268,13 @@ describe('AddUserModal', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
-    await user.type(screen.getByLabelText('Email'), 'newuser@test.com');
-    await user.type(screen.getByLabelText('Password'), 'testPass123');
-    await user.click(screen.getByRole('button', { name: /create user/i }));
+    await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
+    await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
+    await user.click(screen.getByRole('button', { name: /skapa användare/i }));
 
     // Check loading state
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /creating/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /skapar/i })).toBeInTheDocument();
     });
   });
 
@@ -288,13 +288,13 @@ describe('AddUserModal', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
-    await user.type(screen.getByLabelText('Email'), 'newuser@test.com');
-    await user.type(screen.getByLabelText('Password'), 'testPass123');
-    await user.click(screen.getByRole('button', { name: /create user/i }));
+    await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
+    await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
+    await user.click(screen.getByRole('button', { name: /skapa användare/i }));
 
     // Check submit button is disabled
     await waitFor(() => {
-      const creatingButton = screen.getByRole('button', { name: /creating/i });
+      const creatingButton = screen.getByRole('button', { name: /skapar/i });
       expect(creatingButton).toBeDisabled();
     });
   });
@@ -303,7 +303,7 @@ describe('AddUserModal', () => {
     const user = userEvent.setup();
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    const cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
 
     expect(mockOnClose).toHaveBeenCalled();
@@ -319,13 +319,13 @@ describe('AddUserModal', () => {
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
-    await user.type(screen.getByLabelText('Email'), 'newuser@test.com');
-    await user.type(screen.getByLabelText('Password'), 'testPass123');
-    await user.click(screen.getByRole('button', { name: /create user/i }));
+    await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
+    await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
+    await user.click(screen.getByRole('button', { name: /skapa användare/i }));
 
     // Cancel button should be disabled while loading
     await waitFor(() => {
-      const cancelButton = screen.getByRole('button', { name: /cancel/i });
+      const cancelButton = screen.getByRole('button', { name: /avbryt/i });
       expect(cancelButton).toBeDisabled();
     });
   });

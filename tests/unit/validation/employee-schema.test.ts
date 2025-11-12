@@ -235,7 +235,7 @@ describe("createEmployeeSchema", () => {
 
     it("should reject invalid gender values", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = { ...validEmployeeData, gender: 'Man' as any };
+      const data = { ...validEmployeeData, gender: 'Male' as any }; // Invalid - should be 'Man' or 'Woman'
       expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
   });
@@ -388,7 +388,7 @@ describe("createEmployeeSchema", () => {
 
     it("should reject invalid rank values", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = { ...validEmployeeData, rank: 'SEV' as any };
+      const data = { ...validEmployeeData, rank: 'INVALID_RANK' as any }; // Invalid - should be 'SEV' or 'CHEF'
       expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
   });

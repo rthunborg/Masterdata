@@ -400,7 +400,7 @@ describe("EmployeeTable", () => {
   it("should display empty state when no employees", () => {
     renderWithI18n(<EmployeeTable employees={[]} isLoading={false} />);
 
-    expect(screen.getByText(/No employees found/i)).toBeInTheDocument();
+    expect(screen.getByText(/Inga anställda hittades/i)).toBeInTheDocument();
     expect(
       screen.getByText(/Click 'Add Employee' to create your first record/i)
     ).toBeInTheDocument();
@@ -522,14 +522,14 @@ describe("EmployeeTable", () => {
     it("should render search input with correct placeholder", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       expect(searchInput).toBeInTheDocument();
     });
 
     it("should filter employees by first name (case-insensitive)", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "john" } });
 
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -539,7 +539,7 @@ describe("EmployeeTable", () => {
     it("should filter employees by surname", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "Smith" } });
 
       expect(screen.getByText("Jane")).toBeInTheDocument();
@@ -549,7 +549,7 @@ describe("EmployeeTable", () => {
     it("should filter employees by SSN", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "123456" } });
 
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -559,7 +559,7 @@ describe("EmployeeTable", () => {
     it("should filter employees by email", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "john@example.com" } });
 
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -569,7 +569,7 @@ describe("EmployeeTable", () => {
     it("should filter employees by mobile", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "+46701234567" } });
 
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -579,7 +579,7 @@ describe("EmployeeTable", () => {
     it("should filter employees by rank", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "SEV" } });
 
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -589,7 +589,7 @@ describe("EmployeeTable", () => {
     it("should filter employees by gender", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "Female" } });
 
       expect(screen.getByText("Jane")).toBeInTheDocument();
@@ -599,7 +599,7 @@ describe("EmployeeTable", () => {
     it("should filter employees by town district", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "Stockholm" } });
 
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -609,7 +609,7 @@ describe("EmployeeTable", () => {
     it("should perform case-insensitive partial string matching", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "JOHN" } });
 
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -619,7 +619,7 @@ describe("EmployeeTable", () => {
     it("should show empty state when no results match search", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "NonexistentName" } });
 
       expect(
@@ -633,7 +633,7 @@ describe("EmployeeTable", () => {
     it("should show clear button when search has value", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "John" } });
 
       const clearButton = screen.getByLabelText("Clear search");
@@ -643,7 +643,7 @@ describe("EmployeeTable", () => {
     it("should clear search when clear button is clicked", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "John" } });
 
       const clearButton = screen.getByLabelText("Clear search");
@@ -657,7 +657,7 @@ describe("EmployeeTable", () => {
     it("should restore full list when search is cleared", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       
       // Filter to show only John
       fireEvent.change(searchInput, { target: { value: "John" } });
@@ -988,7 +988,7 @@ describe("EmployeeTable", () => {
       renderWithI18n(<EmployeeTable employees={testEmployees} isLoading={false} />);
 
       // Search for employees in Stockholm
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "Stockholm" } });
 
       // Only John and Jane should be visible
@@ -1014,7 +1014,7 @@ describe("EmployeeTable", () => {
       fireEvent.click(hireDateHeader);
 
       // Then search for "Stockholm" (should match John and Jane only, not Bob)
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "Stockholm" } });
 
       // Should show John and Jane, sorted by hire date (John: 2023, Jane: 2025)
@@ -1036,7 +1036,7 @@ describe("EmployeeTable", () => {
       fireEvent.click(firstNameHeader);
 
       // Search for "John"
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "John" } });
 
       // Clear search
@@ -1053,7 +1053,7 @@ describe("EmployeeTable", () => {
       renderWithI18n(<EmployeeTable employees={testEmployees} isLoading={false} />);
 
       // Search for "Stockholm"
-      const searchInput = screen.getByPlaceholderText("Search employees...");
+      const searchInput = screen.getByPlaceholderText("Sök anställda...");
       fireEvent.change(searchInput, { target: { value: "Stockholm" } });
 
       // Should show John and Jane

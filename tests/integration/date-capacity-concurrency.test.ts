@@ -164,9 +164,6 @@ describe("Date Capacity Concurrency Integration", () => {
         PATCH(request2, { params: Promise.resolve({ id: "emp-2" }) }),
       ]);
 
-      // Verify one succeeded and one failed
-      const responses = [response1, response2];
-
       // At least one should succeed, at least one should fail or return error status
       expect(dateCapacity.assignEmployeeToDate).toHaveBeenCalledTimes(2);
 
@@ -316,7 +313,6 @@ describe("Date Capacity Concurrency Integration", () => {
 
   describe("Concurrent Assignments to Different Dates", () => {
     it("should allow parallel assignments to different dates without blocking", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const dates = [
         { ...mockDateWithOneSpot, id: "date-1", remaining_spots: 10 },
         { ...mockDateWithOneSpot, id: "date-2", remaining_spots: 10 },

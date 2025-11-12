@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/important-dates/available-pe3/route";
 import { mockUsers } from "../../utils/role-test-utils";
+import * as auth from "@/lib/server/auth";
 
 // Mock the Supabase client
 const mockSupabaseClient = {
@@ -14,9 +15,22 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(() => mockSupabaseClient),
 }));
 
+vi.mock("@/lib/server/auth");
+
 describe("GET /api/important-dates/available-pe3", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Mock requireAuthAPI to succeed by default
+    vi.mocked(auth.requireAuthAPI).mockResolvedValue({
+      id: mockUsers.hrAdmin.id,
+      auth_id: mockUsers.hrAdmin.auth_id,
+      email: mockUsers.hrAdmin.email,
+      role: mockUsers.hrAdmin.role,
+      is_active: true,
+      created_at: mockUsers.hrAdmin.created_at,
+      last_active_at: null,
+    });
   });
 
   it("should return only unassigned PE3 dates", async () => {
@@ -308,10 +322,10 @@ describe("GET /api/important-dates/available-pe3", () => {
   });
 
   it("should require authentication", async () => {
-    mockSupabaseClient.auth.getSession.mockResolvedValue({
-      data: { session: null },
-      error: null,
-    });
+    // Mock auth failure
+    vi.mocked(auth.requireAuthAPI).mockRejectedValueOnce(
+      new Error("Authentication required")
+    );
 
     const response = await GET();
     

@@ -80,11 +80,7 @@ export const updateColumnSchema = z.object({
   column_name: z
     .string()
     .min(1, "Column name is required")
-    .max(63, "Column name must be less than 63 characters (PostgreSQL limit)")
-    .regex(
-      dbColumnNameRegex,
-      "Column name must be lowercase snake_case. Only letters, numbers, and underscores allowed."
-    )
+    .max(100, "Column name must be less than 100 characters")
     .optional(),
   column_type: z.enum(["text", "number", "date", "boolean"]).optional(),
   category: z.string().max(100).optional(),

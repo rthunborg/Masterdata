@@ -88,7 +88,7 @@ describe("POST /api/important-dates/import - Empty Notes Field", () => {
       {
         week_number: 7,
         year: 2025,
-        category: "Stena Dates",
+        category: "PE3 Dates",
         date_description: "Fredag 14/2",
         date_value: "15-16/2",
         notes: null,

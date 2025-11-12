@@ -562,9 +562,9 @@ describe("validateImportantDatesCSV", () => {
 
     const result = validateImportantDatesCSV(rows);
     // Row 1 and Row 3 are valid individually but duplicates of each other
-    // Row 2 has validation error (missing year)
-    // Expected: 0 valid (both duplicates excluded), 3 invalid (1 validation + 2 duplicate)
+    // Row 2 has validation errors (missing year + invalid ÖMC date format)
+    // Expected: 0 valid (both duplicates excluded), 4 invalid (2 validation errors + 2 duplicate errors)
     expect(result.valid).toHaveLength(0); // No valid rows because duplicates are excluded
-    expect(result.invalid.length).toBe(3); // 1 validation error + 2 duplicate errors
+    expect(result.invalid.length).toBe(4); // 2 validation errors (year + date_value) + 2 duplicate errors
   });
 });

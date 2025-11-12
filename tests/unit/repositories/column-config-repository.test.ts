@@ -279,6 +279,7 @@ describe("ColumnConfigRepository", () => {
           }),
         insert: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({ data: newColumn, error: null }),
+        rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -323,7 +324,8 @@ describe("ColumnConfigRepository", () => {
         order: vi.fn()
           .mockReturnValueOnce({
             order: vi.fn().mockResolvedValue({ data: [existingColumn], error: null })
-          })
+          }),
+        rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
@@ -336,7 +338,7 @@ describe("ColumnConfigRepository", () => {
           is_masterdata: false,
           role: UserRole.SODEXO,
         })
-      ).rejects.toThrow('Column "Sodexo Team" already exists');
+      ).rejects.toThrow('Column with database name "sodexo_team" already exists');
     });
 
     it("should throw error on database insert failure", async () => {
@@ -352,6 +354,7 @@ describe("ColumnConfigRepository", () => {
           data: null,
           error: { message: "Insert failed" },
         }),
+        rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);

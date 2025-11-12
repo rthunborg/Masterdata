@@ -13,8 +13,8 @@ export const createImportantDateSchema = z.object({
   deadline_submit: z.string().nullable().optional(),
   deadline_cancel: z.string().nullable().optional(),
   notes: z.string().nullable().default(null),
-  // Story 8.7: Capacity management fields
-  max_spots: z.number().int().min(1).default(99),
+  // Story 8.7: Capacity management fields (0 means unlimited/not tracked)
+  max_spots: z.number().int().min(0).default(99),
   remaining_spots: z.number().int().min(0).default(99),
 })
 .refine(
@@ -78,8 +78,8 @@ export const updateImportantDateSchema = z.object({
   deadline_submit: z.string().nullable().optional(),
   deadline_cancel: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
-  // Story 8.7: Capacity management fields
-  max_spots: z.number().int().min(1).optional(),
+  // Story 8.7: Capacity management fields (0 means unlimited/not tracked)
+  max_spots: z.number().int().min(0).optional(),
   remaining_spots: z.number().int().min(0).optional(),
 })
 .refine(

@@ -3,7 +3,7 @@
  * Adds missing properties to Employee and EmployeeFormData mocks
  * Removes duplicate 'comments' properties
  */
-
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
 

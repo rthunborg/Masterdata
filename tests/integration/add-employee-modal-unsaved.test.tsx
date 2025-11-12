@@ -58,14 +58,14 @@ describe('Add Employee Modal - Unsaved Changes', () => {
     await user.type(firstNameInput, 'John');
 
     // Click Cancel button
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    const cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
 
     // Confirmation dialog should appear
     await waitFor(() => {
-      expect(screen.getByText(/unsaved changes/i)).toBeInTheDocument();
+      expect(screen.getByText(/osparade ändringar/i)).toBeInTheDocument();
     });
-    expect(screen.getByText(/are you sure you want to exit this view/i)).toBeInTheDocument();
+    expect(screen.getByText(/är du säker på att du vill lämna denna vy/i)).toBeInTheDocument();
   });
 
   it('closes modal immediately when clicking Cancel with pristine form', async () => {
@@ -76,12 +76,12 @@ describe('Add Employee Modal - Unsaved Changes', () => {
     );
 
     // Click Cancel button without entering any data
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    const cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
 
     // Modal should close immediately without confirmation
     expect(mockOnClose).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText(/unsaved changes/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/osparade ändringar/i)).not.toBeInTheDocument();
   });
 
   it('shows confirmation dialog when clicking backdrop with dirty form', async () => {
@@ -103,7 +103,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
 
       // Confirmation dialog should appear
       await waitFor(() => {
-        expect(screen.getByText(/unsaved changes/i)).toBeInTheDocument();
+        expect(screen.getByText(/osparade ändringar/i)).toBeInTheDocument();
       });
     }
   });
@@ -124,7 +124,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
 
     // Confirmation dialog should appear
     await waitFor(() => {
-      expect(screen.getByText(/unsaved changes/i)).toBeInTheDocument();
+      expect(screen.getByText(/osparade ändringar/i)).toBeInTheDocument();
     });
   });
 
@@ -140,16 +140,16 @@ describe('Add Employee Modal - Unsaved Changes', () => {
     await user.type(firstNameInput, 'Alice');
 
     // Click Cancel to trigger confirmation
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    const cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
 
     // Wait for confirmation dialog
     await waitFor(() => {
-      expect(screen.getByText(/unsaved changes/i)).toBeInTheDocument();
+      expect(screen.getByText(/osparade ändringar/i)).toBeInTheDocument();
     });
 
     // Click Discard Changes
-    const discardButton = screen.getByRole('button', { name: /discard changes/i });
+    const discardButton = screen.getByRole('button', { name: /kassera ändringar/i });
     await user.click(discardButton);
 
     // Modal should close
@@ -170,21 +170,21 @@ describe('Add Employee Modal - Unsaved Changes', () => {
     await user.type(firstNameInput, 'Charlie');
 
     // Click Cancel to trigger confirmation
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    const cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
 
     // Wait for confirmation dialog
     await waitFor(() => {
-      expect(screen.getByText(/unsaved changes/i)).toBeInTheDocument();
+      expect(screen.getByText(/osparade ändringar/i)).toBeInTheDocument();
     });
 
     // Click Continue Editing
-    const continueButton = screen.getByRole('button', { name: /continue editing/i });
+    const continueButton = screen.getByRole('button', { name: /fortsätt redigera/i });
     await user.click(continueButton);
 
     // Confirmation dialog should close, data should still be in form
     await waitFor(() => {
-      expect(screen.queryByText(/unsaved changes/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/osparade ändringar/i)).not.toBeInTheDocument();
     });
     expect((firstNameInput as HTMLInputElement).value).toBe('Charlie');
     expect(mockOnClose).not.toHaveBeenCalled();
@@ -198,7 +198,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
     );
     
     // Initially pristine - clicking Cancel should close immediately
-    let cancelButton = screen.getByRole('button', { name: /cancel/i });
+    let cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
     expect(mockOnClose).toHaveBeenCalledTimes(1);
 
@@ -218,11 +218,11 @@ describe('Add Employee Modal - Unsaved Changes', () => {
     await user.type(firstNameInput, 'David');
 
     // Now clicking Cancel should show confirmation
-    cancelButton = screen.getByRole('button', { name: /cancel/i });
+    cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/unsaved changes/i)).toBeInTheDocument();
+      expect(screen.getByText(/osparade ändringar/i)).toBeInTheDocument();
     });
   });
 
@@ -235,10 +235,10 @@ describe('Add Employee Modal - Unsaved Changes', () => {
 
     // Don't enter any data
     // Click Cancel - should close immediately
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    const cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText(/unsaved changes/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/osparade ändringar/i)).not.toBeInTheDocument();
   });
 });

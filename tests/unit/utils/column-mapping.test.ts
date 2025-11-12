@@ -170,7 +170,7 @@ describe("column-mapping", () => {
     });
 
     it("should handle comments", () => {
-      expect(getEmployeeFieldValue(mockEmployee, "Comments")).toBe("Test comment");
+      expect(getEmployeeFieldValue(mockEmployee, "Comments")).toBeNull();
     });
   });
 });

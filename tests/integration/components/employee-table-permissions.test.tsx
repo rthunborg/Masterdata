@@ -380,7 +380,7 @@ describe("EmployeeTable Permission Rendering", () => {
 
       renderWithI18n(<EmployeeTable employees={[]} isLoading={false} />);
 
-      expect(screen.getByText(/No employees found/i)).toBeInTheDocument();
+      expect(screen.getByText(/Inga anställda hittades/i)).toBeInTheDocument();
     });
   });
 });

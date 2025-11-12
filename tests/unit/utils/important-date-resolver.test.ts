@@ -72,9 +72,9 @@ describe('important-date-resolver', () => {
       expect(result).toBe('Fredag 14/2');
     });
 
-    it('should return "(Date not found)" for invalid ID', () => {
+    it('should return "Datum borttaget" for invalid ID', () => {
       const result = resolveImportantDateId('invalid-uuid', mockDates);
-      expect(result).toBe('(Date not found)');
+      expect(result).toBe('Datum borttaget');
     });
 
     it('should return empty string for null ID', () => {
@@ -84,7 +84,7 @@ describe('important-date-resolver', () => {
 
     it('should return empty string for empty array', () => {
       const result = resolveImportantDateId('uuid-1', []);
-      expect(result).toBe('(Date not found)');
+      expect(result).toBe(''); // Empty array → empty string (dates not loaded yet)
     });
   });
 
@@ -99,9 +99,9 @@ describe('important-date-resolver', () => {
       expect(result).toBe('Week 11\n2025\nÖMC Dates\n2025-03-10');
     });
 
-    it('should return "(Date not found)" for invalid ID', () => {
+    it('should return "Datum borttaget" for invalid ID', () => {
       const result = resolveImportantDateTooltip('invalid-uuid', mockDates);
-      expect(result).toBe('(Date not found)');
+      expect(result).toBe('Datum borttaget');
     });
 
     it('should return null for null ID', () => {
@@ -170,10 +170,10 @@ describe('important-date-resolver', () => {
       expect(result).toBe('Fredag 14/2');
     });
 
-    it('should return "(Date not found)" for ID not in cache', () => {
+    it('should return "Datum borttaget" for ID not in cache', () => {
       const cache = createDateResolutionCache(mockDates);
       const result = resolveImportantDateIdFromCache('invalid-uuid', cache);
-      expect(result).toBe('(Date not found)');
+      expect(result).toBe('Datum borttaget');
     });
 
     it('should return empty string for null ID', () => {
@@ -185,7 +185,7 @@ describe('important-date-resolver', () => {
     it('should work with empty cache', () => {
       const cache = new Map<string, string>();
       const result = resolveImportantDateIdFromCache('uuid-1', cache);
-      expect(result).toBe('(Date not found)');
+      expect(result).toBe('Datum borttaget');
     });
   });
 });

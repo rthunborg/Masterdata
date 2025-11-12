@@ -58,7 +58,9 @@ describe("AddColumnModal", () => {
   it("renders form fields correctly when modal is open", () => {
     renderWithI18n(<AddColumnModal />);
 
-    expect(screen.getByLabelText(/Kolumnnamn/i)).toBeInTheDocument();
+    const nameInputs = screen.getAllByLabelText(/Kolumnnamn/i);
+    expect(nameInputs[0]).toBeInTheDocument(); // Display name
+    expect(nameInputs[1]).toBeInTheDocument(); // Database name
     expect(screen.getByText(/Kolumntyp/i)).toBeInTheDocument();
     expect(screen.getByText(/Kategori \(Valfritt\)/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Skapa kolumn/i })).toBeInTheDocument();
@@ -92,7 +94,7 @@ describe("AddColumnModal", () => {
   it("validates duplicate column name", async () => {
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
+    const nameInput = screen.getAllByLabelText(/Kolumnnamn/i)[0];
     fireEvent.change(nameInput, { target: { value: "Existing Column" } });
 
     const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
@@ -110,7 +112,7 @@ describe("AddColumnModal", () => {
   it("validates column name format", async () => {
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
+    const nameInput = screen.getAllByLabelText(/Kolumnnamn/i)[0];
     fireEvent.change(nameInput, { target: { value: "Invalid@Name!" } });
 
     const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
@@ -145,7 +147,7 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
+    const nameInput = screen.getAllByLabelText(/Kolumnnamn/i)[0];
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
     const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
@@ -180,7 +182,7 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
+    const nameInput = screen.getAllByLabelText(/Kolumnnamn/i)[0];
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
     const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
@@ -204,7 +206,7 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
+    const nameInput = screen.getAllByLabelText(/Kolumnnamn/i)[0];
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
     const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
@@ -224,7 +226,7 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
+    const nameInput = screen.getAllByLabelText(/Kolumnnamn/i)[0];
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
     const submitButton = screen.getByRole("button", { name: /Skapa kolumn/i });
@@ -280,7 +282,7 @@ describe("AddColumnModal", () => {
 
     renderWithI18n(<AddColumnModal />);
 
-    const nameInput = screen.getByLabelText(/Kolumnnamn/i);
+    const nameInput = screen.getAllByLabelText(/Kolumnnamn/i)[0];
     fireEvent.change(nameInput, { target: { value: "New Column" } });
 
     const categoryButton = screen.getByRole("combobox", { name: /Kategori/i });

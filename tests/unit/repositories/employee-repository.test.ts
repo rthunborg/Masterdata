@@ -8,6 +8,14 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
 }));
 
+// Mock termination workflow helpers (Story 8.13/8.14)
+vi.mock("@/lib/services/termination-workflow", () => ({
+  captureRepaymentDates: vi.fn().mockResolvedValue({ omc: null, pe3: null }),
+  applyRepaymentCapture: vi.fn().mockResolvedValue(undefined),
+  clearEmployeeDatesAndReleaseSpots: vi.fn().mockResolvedValue({ clearedDates: [], releasedSpots: 0 }),
+  restoreRepaymentDates: vi.fn().mockResolvedValue({ restored: { omc: false, pe3: false }, warnings: [] }),
+}));
+
 describe("EmployeeRepository", () => {
   let repository: EmployeeRepository;
 

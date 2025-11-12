@@ -26,9 +26,10 @@ describe("PermissionToggle", () => {
       />
     );
 
-    const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).toBeInTheDocument();
-    expect(checkbox).toBeChecked();
+    const toggle = screen.getByRole("button", { name: /view permission/i });
+    expect(toggle).toBeInTheDocument();
+    // Check if the toggle is checked by looking for the "eye" icon (checked state)
+    expect(toggle.querySelector('svg.lucide-eye')).toBeInTheDocument();
   });
 
   it("renders unchecked checkbox when value is false", () => {
@@ -41,8 +42,9 @@ describe("PermissionToggle", () => {
       />
     );
 
-    const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).not.toBeChecked();
+    const toggle = screen.getByRole("button", { name: /edit permission/i });
+    // Check if the toggle is unchecked by looking for the "minus" icon (unchecked state)
+    expect(toggle.querySelector('svg.lucide-minus')).toBeInTheDocument();
   });
 
   it("calls onChange when checkbox clicked", () => {
@@ -56,8 +58,8 @@ describe("PermissionToggle", () => {
       />
     );
 
-    const checkbox = screen.getByRole("checkbox");
-    fireEvent.click(checkbox);
+    const toggle = screen.getByRole("button", { name: /view permission/i });
+    fireEvent.click(toggle);
 
     expect(mockOnChange).toHaveBeenCalledWith(true);
   });
@@ -74,11 +76,11 @@ describe("PermissionToggle", () => {
       />
     );
 
-    const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).toBeDisabled();
+    const toggle = screen.getByRole("button", { name: /view permission/i });
+    expect(toggle).toBeDisabled();
     
     // Attempt to click (should not trigger onChange)
-    fireEvent.click(checkbox);
+    fireEvent.click(toggle);
     expect(mockOnChange).not.toHaveBeenCalled();
   });
 
@@ -94,8 +96,8 @@ describe("PermissionToggle", () => {
       />
     );
 
-    const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).toBeDisabled();
+    const toggle = screen.getByRole("button", { name: /view permission/i });
+    expect(toggle).toBeDisabled();
   });
 
   it("does not display tooltip when not disabled", () => {
@@ -110,8 +112,8 @@ describe("PermissionToggle", () => {
       />
     );
 
-    const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).not.toBeDisabled();
+    const toggle = screen.getByRole("button", { name: /view permission/i });
+    expect(toggle).not.toBeDisabled();
   });
 });
 

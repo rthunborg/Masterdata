@@ -9,5 +9,6 @@
     "cursor-workspace": true
   },
   "github.copilot.chat.agent.autoFix": true,
-  "chat.tools.autoApprove": true
+  "chat.tools.autoApprove": true,
+  "DockerRun.DisableAutoGenerateConfig": true
 }
