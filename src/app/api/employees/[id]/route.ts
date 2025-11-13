@@ -301,7 +301,26 @@ export async function PATCH(
     }
 
     // Update employee via repository (excluding date fields handled by transactions)
-    const employee = await employeeRepository.update(id, updates);
+    // Only call update if there are non-date fields remaining
+    let employee;
+    if (Object.keys(updates).length > 0) {
+      employee = await employeeRepository.update(id, updates);
+    } else {
+      // If only date fields were updated, fetch the updated employee
+      employee = await employeeRepository.findById(id);
+      if (!employee) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "NOT_FOUND",
+              message: `Employee with ID ${id} not found`,
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 404 }
+        );
+      }
+    }
 
     // Return successful response
     return NextResponse.json({
