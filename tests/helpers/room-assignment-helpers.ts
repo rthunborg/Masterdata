@@ -16,7 +16,7 @@ import type { ImportantDate } from "@/lib/types/important-date";
  */
 export interface EmployeeWithRoom extends Employee {
   hotel_required?: boolean;
-  hotel_room_number?: number | null;
+  room_number_shared?: number | null;
 }
 
 /**
@@ -26,7 +26,7 @@ export interface CreateEmployeesOptions {
   rank?: 'SEV' | 'CHEF';
   gender?: 'Man' | 'Woman' | null;
   hotel_required?: boolean;
-  hotel_room_number?: number | null;
+  room_number_shared?: number | null;
   hire_date?: string;
   [key: string]: any; // Allow additional fields
 }
@@ -87,7 +87,7 @@ export function createEmployeesForDate(
       created_at: '2025-01-01T00:00:00Z',
       updated_at: '2025-01-01T00:00:00Z',
       hotel_required: options.hotel_required !== undefined ? options.hotel_required : true,
-      hotel_room_number: options.hotel_room_number !== undefined ? options.hotel_room_number : null,
+      room_number_shared: options.room_number_shared !== undefined ? options.room_number_shared : null,
       ...options,
     };
     
@@ -119,8 +119,8 @@ export function verifyRoomAssignments(employees: EmployeeWithRoom[]): {
   
   // Group employees by room number
   for (const emp of employees) {
-    if (emp.hotel_required && emp.hotel_room_number !== null && emp.hotel_room_number !== undefined) {
-      const roomNum = emp.hotel_room_number;
+    if (emp.hotel_required && emp.room_number_shared !== null && emp.room_number_shared !== undefined) {
+      const roomNum = emp.room_number_shared;
       if (!rooms.has(roomNum)) {
         rooms.set(roomNum, []);
       }
@@ -159,8 +159,8 @@ export function verifyRoomAssignments(employees: EmployeeWithRoom[]): {
   
   // Check for duplicate room assignments (shouldn't happen, but verify)
   const allRoomNumbers = employees
-    .filter(e => e.hotel_required && e.hotel_room_number !== null)
-    .map(e => e.hotel_room_number!);
+    .filter(e => e.hotel_required && e.room_number_shared !== null)
+    .map(e => e.room_number_shared!);
   const uniqueRooms = new Set(allRoomNumbers);
   if (allRoomNumbers.length !== uniqueRooms.size) {
     errors.push('Duplicate room numbers found');
@@ -186,7 +186,7 @@ export function getRoomOccupants(
 ): EmployeeWithRoom[] {
   return employees.filter(
     emp => emp.hotel_required && 
-    emp.hotel_room_number === roomNumber
+    emp.room_number_shared === roomNumber
   );
 }
 
@@ -294,8 +294,8 @@ export function getRoomOccupancySummary(employees: EmployeeWithRoom[]): Map<numb
   const rooms = new Map<number, EmployeeWithRoom[]>();
   
   for (const emp of employees) {
-    if (emp.hotel_required && emp.hotel_room_number !== null) {
-      const roomNum = emp.hotel_room_number;
+    if (emp.hotel_required && emp.room_number_shared !== null) {
+      const roomNum = emp.room_number_shared;
       if (!rooms.has(roomNum)) {
         rooms.set(roomNum, []);
       }

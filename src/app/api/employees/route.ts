@@ -9,6 +9,7 @@ import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
+import { calculateRoomNumber } from "@/lib/services/room-assignment";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import type { EmployeeFormData } from "@/lib/types/employee";
@@ -80,12 +81,42 @@ export async function POST(request: NextRequest) {
       throw validationError;
     }
 
+    // Get server-side Supabase client for room assignment and date operations
+    const supabase = createClient();
+
+    // Story 8.20: Calculate room number before employee creation
+    let roomNumber: number | null = null;
+    if (validatedData.omc_date && validatedData.hotel_required) {
+      try {
+        roomNumber = await calculateRoomNumber(
+          {
+            omc_date: validatedData.omc_date,
+            rank: validatedData.rank,
+            gender: validatedData.gender ?? null,
+            hotel_required: true,
+          },
+          supabase
+        );
+      } catch (roomError) {
+        // Error handling strategy: Log warning but allow employee creation
+        // Room assignment is not critical for employee creation - can be assigned later via update
+        console.warn(
+          'Warning: Failed to calculate room number during employee creation. Employee will be created without room assignment.',
+          roomError
+        );
+        // Continue without room assignment - employee can still be created
+        // Room can be assigned later via update or manual assignment
+      }
+    }
+
     // Normalize SSN to standard format (YYMMDD-XXXX) and email (convert undefined to null)
     const normalizedData: EmployeeFormData = {
       ...validatedData,
       ssn: normalizeSSN(validatedData.ssn),
       email: validatedData.email ?? null,
       gender: validatedData.gender ?? null,
+      // Story 8.20: Include room number in employee data
+      room_number_shared: roomNumber,
       // Handle One field timestamp logic (Story 8.3)
       // If One field is set to true during creation, record the timestamp
       one_marked_at: validatedData.one === true ? new Date().toISOString() : null,
@@ -157,9 +188,6 @@ export async function POST(request: NextRequest) {
     // FUTURE ENHANCEMENT: Wrap employee creation and date assignments in database
     // transaction to ensure atomic operation and enable rollback on capacity failure.
     // See QA Review 8.7 - RELIABILITY-001 for details.
-    
-    // Get server-side Supabase client for date assignment operations
-    const supabase = createClient();
     
     for (const assignment of dateAssignments) {
       try {

@@ -1,0 +1,329 @@
+schema: 1
+epic: 11
+epic_title: 'Comprehensive Test Coverage'
+epic_status: 'Proposed'
+epic_goal: 'Implement comprehensive automated test coverage for all critical business logic and user workflows to ensure system reliability, prevent regressions, and validate all acceptance criteria across existing features.'
+
+sprint:
+  number: null  # To be filled when sprint is assigned
+  start_date: null
+  end_date: null
+  duration_weeks: null
+  team: []
+  
+epic_metrics:
+  target_coverage_overall: 80
+  target_coverage_critical: 95
+  target_test_execution_time_seconds: 300  # 5 minutes
+  current_coverage_overall: 0
+  current_coverage_critical: 0
+  current_test_execution_time_seconds: null
+  total_tests_estimated: 245
+  total_tests_implemented: 0
+  total_tests_passing: 0
+  
+stories:
+  - id: '11.1'
+    title: 'Capacity Management Test Suite'
+    priority: 'P0'
+    status: 'Not Started'
+    story_points: 5
+    estimated_tests: 40
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: []
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Tests for important dates capacity management (Story 8.7)'
+    
+  - id: '11.2'
+    title: 'Room Assignment Algorithm Test Suite'
+    priority: 'P0'
+    status: 'Not Started'
+    story_points: 5
+    estimated_tests: 25
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['11.1']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Tests for ÖMC room assignment algorithm (Story 8.16 / FR40)'
+    
+  - id: '11.3'
+    title: 'Termination & Reactivation Workflow Tests'
+    priority: 'P0'
+    status: 'Not Started'
+    story_points: 5
+    estimated_tests: 30
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['11.1']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Tests for employee termination and reactivation workflows (Stories 8.13, 8.14)'
+    
+  - id: '11.4'
+    title: 'Field Validation & Prerequisites Tests'
+    priority: 'P1'
+    status: 'In Progress'
+    story_points: 3
+    estimated_tests: 20
+    implemented_tests: 103  # Note: Exceeds estimate - actual implementation
+    passing_tests: 103
+    dependencies: []
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Tests for conditional field editability and validation. Status tracking needs update - implementation complete but docs show "Proposed"'
+    
+  - id: '11.5'
+    title: 'Date Format & Parsing Tests'
+    priority: 'P1'
+    status: 'Not Started'
+    story_points: 2
+    estimated_tests: 15
+    implemented_tests: 30  # Note: 30 already exist, need to add integration
+    passing_tests: 30
+    dependencies: []
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Tests for ÖMC two-day date formatting and parsing (Story 8.9). Unit tests exist, integration tests needed.'
+    
+  - id: '11.6'
+    title: 'Integration Tests for API Routes'
+    priority: 'P1'
+    status: 'Not Started'
+    story_points: 5
+    estimated_tests: 35
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['11.1', '11.2', '11.3', '11.4', '11.5']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Integration tests for all employee and important dates API routes'
+    
+  - id: '11.7'
+    title: 'End-to-End Critical User Journey Tests'
+    priority: 'P1'
+    status: 'Not Started'
+    story_points: 5
+    estimated_tests: 10
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['11.1', '11.2', '11.3', '11.4', '11.5', '11.6']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: ['Playwright installation required']
+    notes: 'E2E tests for complete user workflows using Playwright'
+    
+  - id: '11.8'
+    title: 'Performance & Concurrency Tests'
+    priority: 'P2'
+    status: 'Not Started'
+    story_points: 3
+    estimated_tests: 15
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['11.6']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Performance benchmarks and concurrency tests'
+    
+  - id: '11.9'
+    title: 'Data Integrity & Constraint Tests'
+    priority: 'P2'
+    status: 'Not Started'
+    story_points: 2
+    estimated_tests: 10
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['11.1', '11.6']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Tests for database constraints and data consistency'
+    
+  - id: '11.10'
+    title: 'PE3 Validation & UI Component Tests'
+    priority: 'P1'
+    status: 'Not Started'
+    story_points: 3
+    estimated_tests: 30
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['8.10', '8.15', '9.5']  # External story dependencies
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Tests for PE3 date validation rules, form UI components, field positioning'
+    
+  - id: '11.11'
+    title: 'Mobile Responsive UI Tests'
+    priority: 'P2'
+    status: 'Not Started'
+    story_points: 3
+    estimated_tests: 15
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['9.1', '9.4']  # External story dependencies
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Automated tests for mobile responsive layouts and button positioning'
+    
+  - id: '11.12'
+    title: 'Employee Card Expansion Tests'
+    priority: 'P2'
+    status: 'Not Started'
+    story_points: 2
+    estimated_tests: 10
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['9.4']  # External story dependency
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Tests for employee card "More" expansion functionality and field visibility'
+
+progress_summary:
+  total_stories: 12
+  stories_not_started: 10
+  stories_in_progress: 1
+  stories_completed: 0
+  stories_blocked: 1
+  total_story_points: 44
+  completed_story_points: 0
+  in_progress_story_points: 3
+  remaining_story_points: 41
+  
+test_coverage_summary:
+  total_tests_estimated: 245
+  total_tests_implemented: 133  # 103 from 11.4 + 30 from 11.5
+  total_tests_passing: 133
+  implementation_percentage: 54.3
+  unit_tests: 133
+  integration_tests: 0
+  e2e_tests: 0
+  performance_tests: 0
+  
+blockers:
+  - id: 'BLOCKER-001'
+    story_id: '11.7'
+    description: 'Playwright installation required for E2E tests'
+    severity: 'medium'
+    status: 'open'
+    created_date: null
+    resolved_date: null
+    owner: null
+    
+known_issues:
+  - id: 'ISSUE-001'
+    story_id: '11.4'
+    description: 'Story status tracking out of sync - implementation complete but docs show "Proposed"'
+    severity: 'low'
+    status: 'open'
+    created_date: '2025-11-13'
+    resolved_date: null
+    owner: null
+    
+  - id: 'ISSUE-002'
+    story_id: '11.4'
+    description: 'Test count discrepancies between story claims and actual implementation (39 vs 69 for Crewing/Done)'
+    severity: 'low'
+    status: 'open'
+    created_date: '2025-11-13'
+    resolved_date: null
+    owner: null
+    
+  - id: 'ISSUE-003'
+    story_id: '11.4'
+    description: 'Enum value consistency: Gender enum documentation says "Kvinna" but code uses "Woman"'
+    severity: 'low'
+    status: 'open'
+    created_date: '2025-11-13'
+    resolved_date: null
+    owner: null
+    
+external_dependencies:
+  - name: 'Playwright'
+    description: 'E2E testing framework installation'
+    status: 'pending'
+    required_for: ['11.7']
+    
+  - name: 'CI/CD Pipeline Configuration'
+    description: 'GitHub Actions or similar for automated test execution'
+    status: 'pending'
+    required_for: ['All stories']
+    
+  - name: 'Test Database Setup'
+    description: 'Supabase local instance or test environment'
+    status: 'pending'
+    required_for: ['11.6', '11.7', '11.9']
+    
+risks:
+  - id: 'RISK-001'
+    description: 'Test suite execution time may exceed 5 minutes'
+    severity: 'medium'
+    mitigation: 'Parallelize test execution, use test sharding in CI, optimize slow tests'
+    status: 'monitoring'
+    
+  - id: 'RISK-002'
+    description: 'Flaky tests due to timing issues, real-time subscriptions, or race conditions'
+    severity: 'medium'
+    mitigation: 'Use proper wait/retry logic, mock real-time subscriptions, use deterministic test data'
+    status: 'monitoring'
+    
+  - id: 'RISK-003'
+    description: 'Test maintenance burden slowing development'
+    severity: 'low'
+    mitigation: 'Write tests against interfaces/contracts, use test helpers/factories, keep tests simple'
+    status: 'monitoring'
+    
+  - id: 'RISK-004'
+    description: 'Coverage vs. quality trade-off - focus on % leads to low-quality tests'
+    severity: 'low'
+    mitigation: 'Emphasize edge case testing, code review tests, require BDD-style documentation'
+    status: 'monitoring'
+
+next_actions:
+  - action: 'Assign sprint number and dates when epic is scheduled'
+    priority: 'high'
+    owner: null
+    
+  - action: 'Update Story 11.4 status from "Proposed" to "Completed" in epic documentation'
+    priority: 'medium'
+    owner: null
+    
+  - action: 'Install and configure Playwright for E2E testing'
+    priority: 'high'
+    owner: null
+    
+  - action: 'Set up CI/CD pipeline for automated test execution'
+    priority: 'high'
+    owner: null
+    
+  - action: 'Begin Story 11.1 (Capacity Management Test Suite) - no dependencies'
+    priority: 'high'
+    owner: null
+
+last_updated: null
+updated_by: null
+

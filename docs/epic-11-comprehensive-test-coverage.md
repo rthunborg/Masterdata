@@ -567,11 +567,36 @@ export function createTestOMCDate(overrides = {}) {
 
 ---
 
+## Post-Review Follow-ups
+
+**Added**: 2025-11-13  
+**Source**: Story 11.4 Code Review
+
+### Story 11.4 Review Findings
+
+**Review Date**: 2025-11-13  
+**Review Outcome**: Changes Requested  
+**Reviewer**: Raz (AI)
+
+**Key Action Items from Review:**
+
+1. **Story Status Tracking**: Story 11.4 status is "Proposed" but implementation is complete - needs status update
+2. **Documentation Accuracy**: Test count discrepancies between story claims and actual implementation (39 vs 69 for Crewing/Done)
+3. **Enum Value Consistency**: Gender enum documentation says "Kvinna" but code uses "Woman" - needs resolution
+4. **Task Completion**: All 7 tasks marked incomplete despite test files existing - tracking out of sync
+
+**Impact on Epic**: Story 11.4 has 103 tests implemented (exceeds original estimate of 20), but documentation needs updates to reflect actual state. This is a documentation/tracking issue, not an implementation issue.
+
+**Related Stories**: None - this is specific to Story 11.4 documentation accuracy.
+
+---
+
 ## Change Log
 
 | Date       | Version | Description                  | Author             |
 | ---------- | ------- | ---------------------------- | ------------------ |
 | 2025-11-13 | 1.0     | Epic 11 created              | Sarah (PO)         |
+| 2025-11-13 | 1.1     | Post-Review Follow-ups added (Story 11.4) | Raz (AI) |
 
 ---
 

@@ -398,6 +398,44 @@ export class EmployeeRepository {
 
     return { inserted, errors };
   }
+
+  /**
+   * Delete an employee permanently (hard delete)
+   * 
+   * Story: 8.20 - Used for room recalculation on deletion
+   * Note: This is a hard delete. For soft delete, use archive() instead.
+   * 
+   * @param id - Employee UUID
+   * @returns Promise that resolves when employee is deleted
+   */
+  async delete(id: string): Promise<void> {
+    const supabase = await this.getSupabaseClient();
+
+    try {
+      const { error } = await supabase
+        .from("employees")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        // Check for not found (PGRST116 is PostgREST error code for no rows)
+        if (error.code === "PGRST116") {
+          throw new Error(`Employee with ID ${id} not found`);
+        }
+
+        console.error("Error deleting employee:", error);
+        throw new Error("Failed to delete employee");
+      }
+    } catch (error) {
+      // Re-throw known errors
+      if (error instanceof Error && error.message.includes("not found")) {
+        throw error;
+      }
+      // Unexpected errors
+      console.error("Unexpected error deleting employee:", error);
+      throw new Error("Failed to delete employee");
+    }
+  }
 }
 
 export const employeeRepository = new EmployeeRepository();

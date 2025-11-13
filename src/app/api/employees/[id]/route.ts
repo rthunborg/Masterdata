@@ -9,6 +9,7 @@ import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
+import { calculateRoomNumber, recalculateRoomsForDate, recalculateRoomsForEmployee } from "@/lib/services/room-assignment";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import type { Employee } from "@/lib/types/employee";
@@ -171,6 +172,64 @@ export async function PATCH(
       }
     }
 
+    // Story 8.20: Get current employee for room assignment logic
+    // Fetch once and reuse for all validations
+    const currentEmployee = await employeeRepository.findById(id);
+    if (!currentEmployee) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "NOT_FOUND",
+            message: `Employee with ID ${id} not found`,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    // Story 8.20: Handle room assignment changes
+    const supabase = createClient();
+    const needsRoomRecalculation: boolean = 
+      ('omc_date' in validatedData && validatedData.omc_date !== currentEmployee.omc_date) ||
+      ('rank' in validatedData && validatedData.rank !== currentEmployee.rank) ||
+      ('gender' in validatedData && validatedData.gender !== currentEmployee.gender);
+
+    // Handle hotel_required changes
+    if ('hotel_required' in validatedData) {
+      const newHotelRequired = validatedData.hotel_required ?? false;
+      const oldHotelRequired = currentEmployee.hotel_required ?? false;
+
+      if (newHotelRequired !== oldHotelRequired) {
+        if (newHotelRequired === false) {
+          // Clear room when hotel_required is set to false
+          updates.room_number_shared = null;
+        } else if (newHotelRequired === true && currentEmployee.omc_date) {
+          // Assign room when hotel_required is set to true and employee has ÖMC date
+          try {
+            const roomNumber = await calculateRoomNumber(
+              {
+                omc_date: currentEmployee.omc_date,
+                rank: currentEmployee.rank,
+                gender: currentEmployee.gender ?? null,
+                hotel_required: true,
+              },
+              supabase
+            );
+            updates.room_number_shared = roomNumber;
+          } catch (roomError) {
+            // Error handling strategy: Log warning but allow update to continue
+            // Room assignment can be retried later via another update
+            console.warn(
+              'Warning: Failed to calculate room number during employee update. Update will proceed without room assignment.',
+              roomError
+            );
+            // Continue without room assignment - can be assigned later
+          }
+        }
+      }
+    }
+
     // Story 8.7: Handle date assignment changes with capacity management
     // Check if any date fields are being updated
     const dateFieldUpdates: Array<{
@@ -181,21 +240,6 @@ export async function PATCH(
 
     // Collect date field changes
     if ('omc_date' in validatedData) {
-      // Fetch current employee if not already fetched
-      const currentEmployee = await employeeRepository.findById(id);
-      if (!currentEmployee) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_FOUND",
-              message: `Employee with ID ${id} not found`,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 404 }
-        );
-      }
-      
       const newValue = validatedData.omc_date || null;
       const oldValue = currentEmployee.omc_date || null;
       
@@ -209,21 +253,6 @@ export async function PATCH(
     }
 
     if ('stena_date' in validatedData) {
-      // Fetch current employee if not already fetched
-      const currentEmployee = await employeeRepository.findById(id);
-      if (!currentEmployee) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_FOUND",
-              message: `Employee with ID ${id} not found`,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 404 }
-        );
-      }
-      
       const newValue = validatedData.stena_date || null;
       const oldValue = currentEmployee.stena_date || null;
       
@@ -237,21 +266,6 @@ export async function PATCH(
     }
 
     if ('pe3_date' in validatedData) {
-      // Fetch current employee if not already fetched
-      const currentEmployee = await employeeRepository.findById(id);
-      if (!currentEmployee) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_FOUND",
-              message: `Employee with ID ${id} not found`,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 404 }
-        );
-      }
-      
       const newValue = validatedData.pe3_date || null;
       const oldValue = currentEmployee.pe3_date || null;
       
@@ -265,8 +279,6 @@ export async function PATCH(
     }
 
     // Process date field updates using atomic transactions
-    // Get server-side Supabase client for date assignment operations
-    const supabase = createClient();
     
     for (const dateUpdate of dateFieldUpdates) {
       // Only use transaction service if assigning to a new date (not clearing)
@@ -322,6 +334,32 @@ export async function PATCH(
       }
     }
 
+    // Story 8.20: Recalculate rooms after updates if needed
+    if (needsRoomRecalculation && employee.omc_date) {
+      try {
+        // Get the final values after update
+        const finalOmcDate = 'omc_date' in validatedData 
+          ? (validatedData.omc_date || null)
+          : currentEmployee.omc_date;
+        const oldOmcDate = currentEmployee.omc_date;
+
+        if (finalOmcDate !== oldOmcDate) {
+          // Date changed - recalculate for both old and new dates
+          await recalculateRoomsForEmployee(id, oldOmcDate, finalOmcDate, supabase);
+        } else if (employee.omc_date && (employee.hotel_required ?? false)) {
+          // Rank or gender changed - recalculate all rooms for this employee's date
+          await recalculateRoomsForDate(employee.omc_date, supabase);
+        }
+      } catch (roomError) {
+        // Error handling strategy: Log warning but allow update to continue
+        // Room recalculation can be retried later if needed
+        console.warn(
+          'Warning: Failed to recalculate rooms after employee update. Update succeeded but rooms may need manual recalculation.',
+          roomError
+        );
+      }
+    }
+
     // Return successful response
     return NextResponse.json({
       data: employee,
@@ -356,6 +394,84 @@ export async function PATCH(
           },
         },
         { status: 409 }
+      );
+    }
+
+    // Handle other errors
+    return createErrorResponse(error);
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Verify HR Admin role
+    await requireHRAdminAPI();
+
+    // Await params (Next.js 15+ requirement)
+    const { id } = await params;
+
+    // Story 8.20: Get employee before deletion to check for ÖMC date
+    const employee = await employeeRepository.findById(id);
+    if (!employee) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "NOT_FOUND",
+            message: `Employee with ID ${id} not found`,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    // Store ÖMC date for room recalculation after deletion
+    const omcDateId = employee.omc_date;
+    const hadHotelRequired = employee.hotel_required ?? false;
+
+    // Delete employee
+    await employeeRepository.delete(id);
+
+    // Story 8.20: Recalculate rooms for ÖMC date after deletion (for remaining employees)
+    if (omcDateId && hadHotelRequired) {
+      try {
+        const supabase = createClient();
+        await recalculateRoomsForDate(omcDateId, supabase);
+      } catch (roomError) {
+        // Error handling strategy: Log warning but allow deletion to complete
+        // Employee deletion succeeded; room recalculation can be done manually if needed
+        console.warn(
+          'Warning: Failed to recalculate rooms after employee deletion. Deletion succeeded but rooms may need manual recalculation.',
+          roomError
+        );
+      }
+    }
+
+    // Return successful response
+    return NextResponse.json({
+      data: {
+        message: "Employee deleted successfully",
+        id,
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    // Handle not found error
+    if (error instanceof Error && error.message.includes("not found")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "NOT_FOUND",
+            message: error.message,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 404 }
       );
     }
 

@@ -25,13 +25,16 @@ import {
   createTestOMCDate,
   verifyRoomAssignments,
   getRoomOccupants,
-} from "../../helpers/room-assignment-helpers";
-import type { EmployeeWithRoom } from "../../helpers/room-assignment-helpers";
+} from "@/../tests/helpers/room-assignment-helpers";
+import type { EmployeeWithRoom } from "@/../tests/helpers/room-assignment-helpers";
+import { createClient } from "@/lib/supabase/server";
 
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
-// Mock room assignment service when it's implemented
-// vi.mock("@/lib/services/room-assignment");
+// Mock Supabase server client to avoid cookies() error
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(),
+}));
 
 describe("Room Assignment API Integration Tests", () => {
   const mockHRAdminUser = {
@@ -49,9 +52,28 @@ describe("Room Assignment API Integration Tests", () => {
     date_value: "2025-03-08",
   });
 
+  // Shared mock Supabase client that can be accessed in tests
+  let mockSupabaseClient: any;
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    
+    // Setup Supabase server mock to return a mock client with RPC support
+    mockSupabaseClient = {
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        not: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      })),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    };
+    (createClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabaseClient as any);
   });
 
   describe("POST /api/employees - Room assignment on creation", () => {
@@ -92,17 +114,22 @@ describe("Room Assignment API Integration Tests", () => {
         comments: null,
       };
 
-      const createdEmployee: Employee & { hotel_required?: boolean; hotel_room_number?: number | null } = {
+      const createdEmployee: Employee & { hotel_required?: boolean; room_number_shared?: number | null } = {
         ...employeeData,
         id: "emp-1",
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
         hotel_required: true,
-        hotel_room_number: 1, // First employee gets room 1
+        room_number_shared: 1, // First employee gets room 1
       };
 
       vi.mocked(employeeRepository.create).mockResolvedValue(createdEmployee as Employee);
-      vi.mocked(employeeRepository.findAll).mockResolvedValue([]);
+      
+      // Mock RPC function to return room 1 for first employee
+      vi.mocked(mockSupabaseClient.rpc).mockResolvedValue({ 
+        data: 1, // First employee gets room 1
+        error: null 
+      });
 
       const request = new NextRequest("http://localhost:3000/api/employees", {
         method: "POST",
@@ -113,9 +140,13 @@ describe("Room Assignment API Integration Tests", () => {
       const json = await response.json();
 
       expect(response.status).toBe(201);
-      // Note: Actual room assignment will be handled by the room assignment service
-      // This test verifies the API route calls the service correctly
       expect(json.data).toBeDefined();
+      // Verify RPC was called for room calculation
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('calculate_room_number', {
+        p_date_id: mockOMCDate.id,
+        p_rank: "SEV",
+        p_gender: "Man",
+      });
     });
   });
 
@@ -124,7 +155,7 @@ describe("Room Assignment API Integration Tests", () => {
       const oldDate = createTestOMCDate({ id: "date-old", date_value: "2025-03-08" });
       const newDate = createTestOMCDate({ id: "date-new", date_value: "2025-03-15" });
 
-      const existingEmployee: Employee & { hotel_required?: boolean; hotel_room_number?: number | null } = {
+      const existingEmployee: Employee & { hotel_required?: boolean; room_number_shared?: number | null } = {
         id: "emp-1",
         first_name: "John",
         surname: "Doe",
@@ -162,13 +193,13 @@ describe("Room Assignment API Integration Tests", () => {
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
         hotel_required: true,
-        hotel_room_number: 2, // Had room 2 on old date
+        room_number_shared: 2, // Had room 2 on old date
       };
 
       const updatedEmployee = {
         ...existingEmployee,
         omc_date: newDate.id,
-        hotel_room_number: 1, // Should get room 1 on new date (if first)
+        room_number_shared: 1, // Should get room 1 on new date (if first)
       };
 
       vi.mocked(employeeRepository.findById).mockResolvedValue(existingEmployee as Employee);
@@ -185,14 +216,14 @@ describe("Room Assignment API Integration Tests", () => {
 
       expect(response.status).toBe(200);
       // Room should be recalculated for new date
-      // Implementation will verify hotel_room_number is updated
+      // Implementation will verify room_number_shared is updated
       expect(json.data).toBeDefined();
     });
   });
 
   describe("PATCH /api/employees/[id] - Room recalculation on rank change", () => {
     it("should recalculate room when rank changes from SEV to CHEF", async () => {
-      const employee: Employee & { hotel_required?: boolean; hotel_room_number?: number | null } = {
+      const employee: Employee & { hotel_required?: boolean; room_number_shared?: number | null } = {
         id: "emp-1",
         first_name: "John",
         surname: "Doe",
@@ -230,13 +261,13 @@ describe("Room Assignment API Integration Tests", () => {
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
         hotel_required: true,
-        hotel_room_number: 1, // Was sharing room 1 as SEV
+        room_number_shared: 1, // Was sharing room 1 as SEV
       };
 
       const updatedEmployee = {
         ...employee,
         rank: "CHEF" as const,
-        hotel_room_number: 2, // Should get private room as CHEF
+        room_number_shared: 2, // Should get private room as CHEF
       };
 
       vi.mocked(employeeRepository.findById).mockResolvedValue(employee as Employee);
@@ -295,20 +326,20 @@ describe("Room Assignment API Integration Tests", () => {
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
         hotel_required: true,
-        hotel_room_number: 1, // Sharing with another male SEV
+        room_number_shared: 1, // Sharing with another male SEV
       };
 
       const sev2: EmployeeWithRoom = {
         ...sev1,
         id: "emp-sev-2",
-        hotel_room_number: 1, // Sharing room 1
+        room_number_shared: 1, // Sharing room 1
       };
 
       // When sev1 gender changes to Woman, should get new room
       const updatedSev1 = {
         ...sev1,
         gender: "Woman" as const,
-        hotel_room_number: 2, // New room (can't share with male)
+        room_number_shared: 2, // New room (can't share with male)
       };
 
       vi.mocked(employeeRepository.findById).mockResolvedValue(sev1 as Employee);
@@ -329,7 +360,7 @@ describe("Room Assignment API Integration Tests", () => {
 
   describe("PATCH /api/employees/[id] - Room cleared on hotel toggle", () => {
     it("should clear room when hotel_required changes to false", async () => {
-      const employee: Employee & { hotel_required?: boolean; hotel_room_number?: number | null } = {
+      const employee: Employee & { hotel_required?: boolean; room_number_shared?: number | null } = {
         id: "emp-1",
         first_name: "John",
         surname: "Doe",
@@ -367,13 +398,13 @@ describe("Room Assignment API Integration Tests", () => {
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
         hotel_required: true,
-        hotel_room_number: 1,
+        room_number_shared: 1,
       };
 
       const updatedEmployee = {
         ...employee,
         hotel_required: false,
-        hotel_room_number: null, // Room cleared
+        room_number_shared: null, // Room cleared
       };
 
       vi.mocked(employeeRepository.findById).mockResolvedValue(employee as Employee);
@@ -401,9 +432,9 @@ describe("Room Assignment API Integration Tests", () => {
       );
       
       // Assign rooms manually for test
-      employees[0].hotel_room_number = 1; // First employee
-      employees[1].hotel_room_number = 2; // CHEF gets private
-      employees[2].hotel_room_number = 2; // SEV shares with another SEV (if applicable)
+      employees[0].room_number_shared = 1; // First employee
+      employees[1].room_number_shared = 2; // CHEF gets private
+      employees[2].room_number_shared = 2; // SEV shares with another SEV (if applicable)
 
       const employeeToDelete = employees[1];
 
