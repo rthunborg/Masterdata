@@ -806,20 +806,11 @@ export function EmployeeTable({
     );
   }
 
-  if (employees.length === 0) {
-    return (
-      <div className="text-center p-8 text-muted-foreground">
-        {includeArchived 
-          ? "No archived employees found." 
-          : tDashboard('noEmployeesMessage')}
-      </div>
-    );
-  }
-
-  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const filteredRowCount = employees.length > 0 ? table.getFilteredRowModel().rows.length : 0;
 
   return (
     <>
+      {/* Filter checkboxes - always show for HR Admin */}
       {isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
         <div className="flex items-center space-x-4 mb-4">
           {onIncludeArchivedChange && (
@@ -864,8 +855,17 @@ export function EmployeeTable({
         </div>
       )}
 
-      {/* Search Input and Column Visibility */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
+      {/* Empty state */}
+      {employees.length === 0 ? (
+        <div className="text-center p-8 text-muted-foreground">
+          {includeArchived 
+            ? "No archived employees found." 
+            : tDashboard('noEmployeesMessage')}
+        </div>
+      ) : (
+        <>
+          {/* Search Input and Column Visibility */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
         <div className="relative flex-1 max-w-sm w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -1119,6 +1119,8 @@ export function EmployeeTable({
           </TableBody>
         </Table>
       </div>
+        </>
+      )}
 
       <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
         <AlertDialogContent>
