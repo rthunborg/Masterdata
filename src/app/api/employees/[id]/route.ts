@@ -9,6 +9,7 @@ import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
+import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import type { Employee } from "@/lib/types/employee";
 
@@ -264,6 +265,9 @@ export async function PATCH(
     }
 
     // Process date field updates using atomic transactions
+    // Get server-side Supabase client for date assignment operations
+    const supabase = createClient();
+    
     for (const dateUpdate of dateFieldUpdates) {
       // Only use transaction service if assigning to a new date (not clearing)
       if (dateUpdate.newValue) {
@@ -272,7 +276,8 @@ export async function PATCH(
             id,
             dateUpdate.newValue,
             dateUpdate.oldValue,
-            dateUpdate.field
+            dateUpdate.field,
+            supabase // Pass server-side client for proper authentication
           );
         } catch (capacityError) {
           // Return capacity error to client

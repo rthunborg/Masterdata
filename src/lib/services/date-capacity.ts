@@ -9,8 +9,9 @@
  * Story: 8.11 - Important Dates Deadline Columns (added deadline validation)
  */
 
-import { createClient } from '@/lib/supabase/client';
+import { createClient as createClientClient } from '@/lib/supabase/client';
 import { isSubmissionOpen, isCancellationOpen } from '@/lib/utils/deadline-validator';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Validate if an employee can be assigned to a date based on remaining capacity.
@@ -21,12 +22,14 @@ import { isSubmissionOpen, isCancellationOpen } from '@/lib/utils/deadline-valid
  *
  * @param dateId - UUID of the important date record
  * @param dateType - Type of date field being assigned ('omc_date' | 'stena_date' | 'pe3_date')
+ * @param supabaseClient - Optional Supabase client (defaults to client-side for browser usage)
  * @returns true if spots available (remaining_spots > 0), false if fully booked
  */
 export async function canAssignEmployeeToDate(
-  dateId: string
+  dateId: string,
+  supabaseClient?: SupabaseClient
 ): Promise<boolean> {
-  const supabase = createClient();
+  const supabase = supabaseClient || createClientClient();
   
   const { data: date, error } = await supabase
     .from('important_dates')
@@ -60,6 +63,7 @@ export async function canAssignEmployeeToDate(
  * @param newDateId - UUID of date to assign employee to
  * @param oldDateId - UUID of previous date (null if new assignment)
  * @param dateType - Type of date field ('omc_date', 'stena_date', 'pe3_date')
+ * @param supabaseClient - Optional Supabase client (pass server-side client when calling from API routes)
  * @returns Success object with message
  * @throws Error if date is fully booked or transaction fails
  */
@@ -67,9 +71,14 @@ export async function assignEmployeeToDate(
   employeeId: string,
   newDateId: string,
   oldDateId: string | null,
-  dateType: 'omc_date' | 'stena_date' | 'pe3_date'
+  dateType: 'omc_date' | 'stena_date' | 'pe3_date',
+  supabaseClient?: SupabaseClient | Promise<SupabaseClient>
 ): Promise<{ success: boolean; message: string }> {
-  const supabase = createClient();
+  // Resolve the supabase client if it's a promise (server-side) or use directly (client-side)
+  // Default to client-side for backward compatibility with tests and client components
+  const supabase = supabaseClient 
+    ? (supabaseClient instanceof Promise ? await supabaseClient : supabaseClient)
+    : createClientClient();
 
   // Story 8.11: Check deadline constraints before assignment
   if (newDateId) {
@@ -180,13 +189,19 @@ export async function assignEmployeeToDate(
  *
  * @param dateId - UUID of date to release capacity for
  * @param employeeId - UUID of employee being removed from date
+ * @param supabaseClient - Optional Supabase client (pass server-side client when calling from API routes)
  * @returns Promise that resolves when capacity is released
  */
 export async function releaseDateCapacity(
   dateId: string,
-  employeeId: string
+  employeeId: string,
+  supabaseClient?: SupabaseClient | Promise<SupabaseClient>
 ): Promise<void> {
-  const supabase = createClient();
+  // Resolve the supabase client if it's a promise (server-side) or use directly (client-side)
+  // Default to client-side for backward compatibility with tests and client components
+  const supabase = supabaseClient 
+    ? (supabaseClient instanceof Promise ? await supabaseClient : supabaseClient)
+    : createClientClient();
 
   const { error } = await supabase.rpc('release_date_capacity', {
     date_id: dateId,
@@ -227,13 +242,15 @@ export function getCapacityStatus(
  * 
  * @param dateId - UUID of the important date
  * @param requiredSpots - Number of spots needed
+ * @param supabaseClient - Optional Supabase client (defaults to client-side for browser usage)
  * @returns true if date has sufficient capacity
  */
 export async function hasCapacityForBulkAssignment(
   dateId: string,
-  requiredSpots: number
+  requiredSpots: number,
+  supabaseClient?: SupabaseClient
 ): Promise<boolean> {
-  const supabase = createClient();
+  const supabase = supabaseClient || createClientClient();
   
   const { data: date, error } = await supabase
     .from('important_dates')

@@ -9,6 +9,7 @@ import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
+import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import type { EmployeeFormData } from "@/lib/types/employee";
 
@@ -156,13 +157,18 @@ export async function POST(request: NextRequest) {
     // FUTURE ENHANCEMENT: Wrap employee creation and date assignments in database
     // transaction to ensure atomic operation and enable rollback on capacity failure.
     // See QA Review 8.7 - RELIABILITY-001 for details.
+    
+    // Get server-side Supabase client for date assignment operations
+    const supabase = createClient();
+    
     for (const assignment of dateAssignments) {
       try {
         await assignEmployeeToDate(
           employee.id,
           assignment.dateId,
           null, // No old date for new employee
-          assignment.field
+          assignment.field,
+          supabase // Pass server-side client for proper authentication
         );
       } catch (capacityError) {
         // Capacity assignment failed - employee was created but date not assigned
