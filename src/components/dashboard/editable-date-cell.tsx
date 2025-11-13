@@ -46,6 +46,7 @@ export function EditableDateCell({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>(value || "__NONE__");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // Prevent double saves
   const [error, setError] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -241,10 +242,17 @@ export function EditableDateCell({
           }
         }}
         onValueChange={(newValue) => {
+          // Prevent double saves
+          if (isSaving) {
+            console.log("[EditableDateCell] Save already in progress, ignoring duplicate call");
+            return;
+          }
+          
           setEditValue(newValue);
           setDropdownOpen(false);
           // Auto-save on select
           setTimeout(() => {
+            setIsSaving(true);
             setIsLoading(true);
             setError(null);
             // Convert "__NONE__" placeholder to null for clearing the date
@@ -261,6 +269,7 @@ export function EditableDateCell({
               })
               .finally(() => {
                 setIsLoading(false);
+                setIsSaving(false);
               });
           }, 0);
         }}
