@@ -3,11 +3,12 @@
  * 
  * Displays visual capacity status for Important Dates.
  * Shows different badge colors based on remaining spots:
- * - Red "Full": remaining_spots === 0
- * - Yellow "Almost Full": remaining_spots < 5
- * - No badge: remaining_spots >= 5
+ * - Red "Fullbokad": remaining_spots === 0
+ * - Yellow "Nästan fullbokad": remaining <= 3 (ÖMC/PE3) or <= 10 (Stena)
+ * - No badge: remaining > threshold
  * 
  * Story: 8.7 - Important Dates Capacity Management
+ * Story: 11.1 - Capacity Management Test Suite (updated to Swedish text and category-specific thresholds)
  */
 
 import * as React from "react";
@@ -18,7 +19,7 @@ interface CapacityBadgeProps {
   maxSpots: number;
 }
 
-export function CapacityBadge({ remainingSpots }: CapacityBadgeProps) {
+export function CapacityBadge({ remainingSpots, maxSpots }: CapacityBadgeProps) {
   // Full capacity (0 spots remaining) - Red badge
   if (remainingSpots === 0) {
     return (
@@ -27,29 +28,37 @@ export function CapacityBadge({ remainingSpots }: CapacityBadgeProps) {
           "inline-flex items-center px-2 py-0.5 rounded border text-xs font-medium",
           "bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700"
         )}
-        aria-label="Fully booked"
+        aria-label="Fullbokad"
+        title={`${remainingSpots} platser kvar`}
       >
-        Full
+        Fullbokad
       </span>
     );
   }
 
-  // Almost full (less than 5 spots remaining) - Yellow badge
-  if (remainingSpots < 5) {
+  // Determine threshold based on category (inferred from maxSpots)
+  // ÖMC = 20, PE3 = 1 → threshold = 3
+  // Stena = 99 → threshold = 10
+  const isStena = maxSpots > 20; // Stena dates have max_spots = 99
+  const almostFullThreshold = isStena ? 10 : 3;
+
+  // Almost full - Yellow badge
+  if (remainingSpots <= almostFullThreshold) {
     return (
       <span
         className={cn(
           "inline-flex items-center px-2 py-0.5 rounded border text-xs font-medium",
           "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700"
         )}
-        aria-label="Almost full"
+        aria-label="Nästan fullbokad"
+        title={`${remainingSpots} platser kvar`}
       >
-        Almost Full
+        Nästan fullbokad
       </span>
     );
   }
 
-  // Good availability (5+ spots) - No badge (or optionally show green badge)
+  // Good availability - No badge
   return null;
   
   // Uncomment below to show a green "Available" badge for good capacity

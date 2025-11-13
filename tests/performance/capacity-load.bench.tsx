@@ -227,15 +227,16 @@ describe("Capacity Performance Benchmarks", () => {
 
     it("should render different badge states efficiently", () => {
       const states = [
-        { remaining: 0, label: "Full" },
-        { remaining: 3, label: "Almost Full" },
-        { remaining: 10, label: "Available (no badge)" },
+        { remaining: 0, maxSpots: 20, label: "Fullbokad" },
+        { remaining: 3, maxSpots: 20, label: "Nästan fullbokad (ÖMC)" },
+        { remaining: 10, maxSpots: 99, label: "Nästan fullbokad (Stena)" },
+        { remaining: 10, maxSpots: 20, label: "Available (no badge)" },
       ];
 
       states.forEach((state) => {
         const startTime = performance.now();
         const { unmount } = render(
-          <CapacityBadge remainingSpots={state.remaining} maxSpots={20} />
+          <CapacityBadge remainingSpots={state.remaining} maxSpots={state.maxSpots} />
         );
         const endTime = performance.now();
         const renderTime = endTime - startTime;
