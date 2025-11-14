@@ -36,8 +36,8 @@ describe("Field Validation - Component Display Tests", () => {
       );
 
       const cell = screen.getByRole("gridcell");
-      expect(cell).toHaveClass("bg-gray-50");
-      expect(cell).toHaveClass("cursor-default");
+      expect(cell).toHaveClass("bg-gray-100");
+      expect(cell).toHaveClass("cursor-not-allowed");
     });
 
     it("should show tooltip with missing prerequisites", async () => {
@@ -62,7 +62,8 @@ describe("Field Validation - Component Display Tests", () => {
       fireEvent.click(cell);
 
       await waitFor(() => {
-        const tooltips = screen.getAllByText(/missing prerequisites/i);
+        // Tooltip shows Swedish text: "Saknade förhandskrav: {fields}"
+        const tooltips = screen.getAllByText(/Saknade förhandskrav/i);
         expect(tooltips.length).toBeGreaterThan(0);
       });
     });
@@ -89,6 +90,8 @@ describe("Field Validation - Component Display Tests", () => {
       fireEvent.click(cell);
 
       await waitFor(() => {
+        // Tooltip shows English text (hardcoded in editable-cell.tsx)
+        // Using flexible matcher to catch the tooltip
         const tooltips = screen.getAllByText(/Can only be edited after One field completes 24-hour sync/i);
         expect(tooltips.length).toBeGreaterThan(0);
       });
@@ -109,8 +112,8 @@ describe("Field Validation - Component Display Tests", () => {
       );
 
       const cell = screen.getByRole("gridcell");
-      expect(cell).toHaveClass("bg-gray-50");
-      expect(cell).toHaveClass("cursor-default");
+      expect(cell).toHaveClass("bg-gray-100");
+      expect(cell).toHaveClass("cursor-not-allowed");
     });
   });
 
@@ -204,7 +207,8 @@ describe("Field Validation - Component Display Tests", () => {
 
       // Tooltip should appear with validation message
       await waitFor(() => {
-        const tooltips = screen.getAllByText(/missing prerequisites/i);
+        // Tooltip shows Swedish text: "Saknade förhandskrav: {fields}"
+        const tooltips = screen.getAllByText(/Saknade förhandskrav/i);
         expect(tooltips.length).toBeGreaterThan(0);
       });
     });

@@ -53,23 +53,6 @@ export function setOneDateWithTimer(hoursAgo: number): {
 }
 
 /**
- * Assert validation error response format
- * 
- * @param response - HTTP response object
- * @param field - Expected field name in error
- * @param reason - Expected reason/message in error
- */
-export function expectValidationError(
-  response: Response,
-  field: string,
-  reason: string
-): void {
-  expect(response.status).toBe(400);
-  // Note: This is a helper for test assertions
-  // Actual implementation will check response body in tests
-}
-
-/**
  * Create a basic test employee with minimal required fields
  * 
  * @param overrides - Optional field overrides

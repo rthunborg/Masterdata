@@ -284,14 +284,9 @@ export const updateEmployeeSchema = baseEmployeeSchema
     {
       message: "At least one field must be provided for update",
     }
-  )
-  .refine(
-    validateTalmundoField,
-    {
-      message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
-      path: ['talmundo'],
-    }
   );
+  // Note: Talmundo validation is handled in the API route handler (PATCH /api/employees/[id])
+  // because it requires current employee data from the database to check the 24-hour rule
 
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 

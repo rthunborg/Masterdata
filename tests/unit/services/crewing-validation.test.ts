@@ -144,7 +144,13 @@ describe('canEditCrewingDone', () => {
   describe('when multiple prerequisites are incomplete', () => {
     it('returns false when 5 prerequisites are false', () => {
       const result = canEditCrewingDone({
-        ...completeEmployee,        mail_lon: false,      });
+        ...completeEmployee,
+        isps: false,
+        photo: false,
+        origo: false,
+        mail_lon: false,
+        loneiva: 0,
+      });
       expect(result).toBe(false);
     });
 
