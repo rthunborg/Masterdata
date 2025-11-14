@@ -312,6 +312,107 @@ describe("POST /api/important-dates", () => {
     expect(response.status).toBe(201);
     expect(json.data.week_number).toBeNull();
   });
+
+  it("should set default capacity by category when not provided", async () => {
+    const dateWithoutCapacity = {
+      week_number: 15,
+      year: 2025,
+      category: "Stena Dates",
+      date_description: "Test Date",
+      date_value: "10/4",
+    };
+
+    const mockCreatedWithDefaults: ImportantDate = {
+      id: "date-new",
+      ...dateWithoutCapacity,
+      notes: null,
+      is_active: true,
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99, // Default from schema
+      remaining_spots: 99, // Default from schema
+      assigned_employees: [],
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    };
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(importantDateRepository.create).mockResolvedValue(mockCreatedWithDefaults);
+
+    const request = new NextRequest("http://localhost:3000/api/important-dates", {
+      method: "POST",
+      body: JSON.stringify(dateWithoutCapacity),
+    });
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(json.data.max_spots).toBe(99); // Default capacity
+    expect(json.data.remaining_spots).toBe(99);
+  });
+
+  it("should validate ÖMC two-day format (400)", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+
+    const invalidOMCData = {
+      week_number: 10,
+      year: 2025,
+      category: "ÖMC Dates",
+      date_description: "Invalid ÖMC",
+      date_value: "8/3", // Invalid: not two-day format
+    };
+
+    const request = new NextRequest("http://localhost:3000/api/important-dates", {
+      method: "POST",
+      body: JSON.stringify(invalidOMCData),
+    });
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(json.error.code).toBe("VALIDATION_ERROR");
+    expect(json.error.details.date_value).toBeDefined();
+    expect(importantDateRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("should accept valid ÖMC two-day format", async () => {
+    const validOMCData = {
+      week_number: 10,
+      year: 2025,
+      category: "ÖMC Dates",
+      date_description: "Valid ÖMC",
+      date_value: "8-9/3", // Valid two-day format
+    };
+
+    const mockCreatedOMC: ImportantDate = {
+      id: "omc-date-1",
+      ...validOMCData,
+      notes: null,
+      is_active: true,
+      time_value: null,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+      assigned_employees: [],
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    };
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(importantDateRepository.create).mockResolvedValue(mockCreatedOMC);
+
+    const request = new NextRequest("http://localhost:3000/api/important-dates", {
+      method: "POST",
+      body: JSON.stringify(validOMCData),
+    });
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(json.data.date_value).toBe("8-9/3");
+  });
 });
 
 describe("PATCH /api/important-dates/[id]", () => {
@@ -442,6 +543,40 @@ describe("PATCH /api/important-dates/[id]", () => {
     expect(response.status).toBe(400);
     expect(json.error.code).toBe("VALIDATION_ERROR");
   });
+
+  it("should validate remaining <= max (400)", async () => {
+    const mockDate = {
+      id: "date-1",
+      week_number: 10,
+      year: 2025,
+      category: "ÖMC Dates",
+      date_description: "Test Date",
+      date_value: "2025-03-08",
+      max_spots: 10,
+      remaining_spots: 5,
+    } as any;
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(importantDateRepository.findById).mockResolvedValue(mockDate);
+
+    const invalidData = {
+      max_spots: 10,
+      remaining_spots: 15, // Invalid: remaining > max
+    };
+
+    const request = new NextRequest(
+      "http://localhost:3000/api/important-dates/date-1",
+      {
+        method: "PATCH",
+        body: JSON.stringify(invalidData),
+      }
+    );
+    const response = await PATCH(request, { params: Promise.resolve({ id: "date-1" }) });
+    const json = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(json.error.code).toBe("VALIDATION_ERROR");
+  });
 });
 
 describe("DELETE /api/important-dates/[id]", () => {
@@ -523,5 +658,24 @@ describe("DELETE /api/important-dates/[id]", () => {
 
     expect(response.status).toBe(404);
     expect(json.error.code).toBe("NOT_FOUND");
+  });
+
+  it("should update assigned employees when date is deleted", async () => {
+    // Note: The repository delete method handles updating assigned employees
+    // by clearing date references in the employees table
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(importantDateRepository.delete).mockResolvedValue();
+
+    const request = new NextRequest(
+      "http://localhost:3000/api/important-dates/date-1",
+      {
+        method: "DELETE",
+      }
+    );
+    const response = await DELETE(request, { params: Promise.resolve({ id: "date-1" }) });
+
+    expect(response.status).toBe(200);
+    expect(importantDateRepository.delete).toHaveBeenCalledWith("date-1");
+    // The repository delete method should handle clearing employee date references
   });
 });

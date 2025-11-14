@@ -140,53 +140,6 @@ describe("employeeService", () => {
     });
   });
 
-  describe("getById", () => {
-    it("should fetch employee by id", async () => {
-      const mockEmployee = mockEmployees[0];
-      
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: mockEmployee,
-        }),
-      } as Response);
-
-      const result = await employeeService.getById("emp-1");
-
-      expect(global.fetch).toHaveBeenCalledWith("/api/employees/emp-1");
-      expect(result).toEqual(mockEmployee);
-    });
-
-    it("should return null for 404", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: async () => ({
-          error: { message: "Not found" },
-        }),
-      } as Response);
-
-      const result = await employeeService.getById("nonexistent");
-
-      expect(result).toBeNull();
-    });
-
-    it("should throw error on failed request", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: async () => ({
-          error: { message: "Internal error" },
-        }),
-      } as Response);
-
-      await expect(employeeService.getById("emp-1")).rejects.toThrow(
-        "Internal error"
-      );
-    });
-  });
-
   describe("create", () => {
     const mockEmployeeData: EmployeeFormData = {
       first_name: "Jane",

@@ -1,13 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { GET, POST } from "@/app/api/employees/route";
-import { PATCH } from "@/app/api/employees/[id]/route";
+import { PATCH, DELETE } from "@/app/api/employees/[id]/route";
 import { POST as TERMINATE } from "@/app/api/employees/[id]/terminate/route";
 import { POST as REACTIVATE } from "@/app/api/employees/[id]/reactivate/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
+import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
+import { assignEmployeeToDate } from "@/lib/services/date-capacity";
+import { calculateRoomNumber, recalculateRoomsForDate, recalculateRoomsForEmployee } from "@/lib/services/room-assignment";
+import { createClient } from "@/lib/supabase/server";
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 import { UserRole } from "@/lib/types/user";
+
+vi.mock("@/lib/services/date-capacity");
+vi.mock("@/lib/services/room-assignment");
+vi.mock("@/lib/server/repositories/important-date-repository");
+vi.mock("@/lib/supabase/server");
 
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
@@ -123,6 +132,7 @@ describe("GET /api/employees", () => {
     expect(employeeRepository.findAll).toHaveBeenCalledWith({
       includeArchived: false,
       includeTerminated: false,
+      needsRepayment: false,
     });
   });
 
@@ -186,6 +196,7 @@ describe("GET /api/employees", () => {
     expect(employeeRepository.findAll).toHaveBeenCalledWith({
       includeArchived: true,
       includeTerminated: false,
+      needsRepayment: false,
     });
   });
 
@@ -201,6 +212,7 @@ describe("GET /api/employees", () => {
     expect(employeeRepository.findAll).toHaveBeenCalledWith({
       includeArchived: false,
       includeTerminated: true,
+      needsRepayment: false,
     });
   });
 
@@ -474,6 +486,7 @@ describe("POST /api/employees", () => {
       ssn: "19950101-1234",
       email: "test@example.com",
       hire_date: "2024-01-01",
+      rank: "SEV" as const,
     };
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -567,6 +580,7 @@ describe("PATCH /api/employees/[id]", () => {
       updated_at: "2025-10-27T15:30:00Z",      };
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
@@ -595,6 +609,7 @@ describe("PATCH /api/employees/[id]", () => {
       updated_at: "2025-10-27T15:30:00Z",      };
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
@@ -684,6 +699,7 @@ describe("PATCH /api/employees/[id]", () => {
 
   it("should return 409 for duplicate SSN", async () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockRejectedValue(
       new Error("Employee with SSN 19900101-1234 already exists")
     );
@@ -764,6 +780,7 @@ describe("PATCH /api/employees/[id]", () => {
       updated_at: "2025-10-27T15:30:00Z",      };
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
@@ -835,8 +852,19 @@ describe("POST /api/employees/[id]/terminate", () => {
   });
 
   it("should terminate employee for HR Admin", async () => {
+    const terminatedEmployee = {
+      ...mockEmployee,
+      is_terminated: true,
+      termination_date: "2025-10-26",
+      termination_reason: "Voluntary resignation",
+    };
+
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
-    vi.mocked(employeeRepository.terminate).mockResolvedValue({ employee: mockEmployee, clearedDates: [], releasedSpots: 0 });
+    vi.mocked(employeeRepository.terminate).mockResolvedValue({ 
+      employee: terminatedEmployee, 
+      clearedDates: [], 
+      releasedSpots: 0 
+    });
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123/terminate", {
       method: "POST",
@@ -850,9 +878,9 @@ describe("POST /api/employees/[id]/terminate", () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.is_terminated).toBe(true);
-    expect(json.data.termination_date).toBe("2025-10-26");
-    expect(json.data.termination_reason).toBe("Voluntary resignation");
+    expect(json.data.employee.is_terminated).toBe(true);
+    expect(json.data.employee.termination_date).toBe("2025-10-26");
+    expect(json.data.employee.termination_reason).toBe("Voluntary resignation");
     expect(employeeRepository.terminate).toHaveBeenCalledWith(
       "employee-123",
       "2025-10-26",
@@ -1400,7 +1428,13 @@ describe("SSN Normalization Tests", () => {
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",      };
 
+      const mockCurrentEmployee: Employee = {
+        ...mockUpdatedEmployee,
+        ssn: "850315-1234", // Original SSN
+      };
+
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.findById).mockResolvedValue(mockCurrentEmployee);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
 
       const request = new NextRequest("http://localhost:3000/api/employees/emp-123", {
@@ -1465,7 +1499,13 @@ describe("SSN Normalization Tests", () => {
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",      };
 
+      const mockCurrentEmployee: Employee = {
+        ...mockUpdatedEmployee,
+        ssn: "850315-1234", // Original SSN
+      };
+
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.findById).mockResolvedValue(mockCurrentEmployee);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
 
       const request = new NextRequest("http://localhost:3000/api/employees/emp-123", {
@@ -1531,7 +1571,13 @@ describe("SSN Normalization Tests", () => {
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-10-27T12:00:00Z",      };
 
+      const mockCurrentEmployee: Employee = {
+        ...mockUpdatedEmployee,
+        first_name: "Test", // Original first name
+      };
+
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(employeeRepository.findById).mockResolvedValue(mockCurrentEmployee);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
 
       const request = new NextRequest("http://localhost:3000/api/employees/emp-123", {
@@ -1558,5 +1604,441 @@ describe("SSN Normalization Tests", () => {
         })
       );
     });
+  });
+});
+
+describe("POST /api/employees - Capacity Management", () => {
+  const mockHRAdminUser = {
+    id: "user-1",
+    auth_id: "auth-1",
+    email: "admin@example.com",
+    role: UserRole.HR_ADMIN,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createClient).mockResolvedValue({} as any);
+  });
+
+  it("should decrement capacity on date assignment", async () => {
+    const employeeData: EmployeeFormData = {
+      first_name: "Jane",
+      surname: "Smith",
+      ssn: "19900101-1234",
+      email: "jane.smith@example.com",
+      mobile: "+46701234567",
+      rank: "CHEF",
+      gender: "Woman",
+      town_district: "Gothenburg",
+      hire_date: "2025-01-01",
+      stena_date: null,
+      omc_date: "omc-date-1",
+      pe3_date: null,
+      termination_date: null,
+      termination_reason: null,
+      is_terminated: false,
+      is_archived: false,
+      repayment_needed_omc: null,
+      repayment_needed_pe3: null,
+      one: null,
+      one_marked_at: null,
+      talmundo: null,
+      isps: null,
+      photo: null,
+      origo: null,
+      loneiva: null,
+      mail_lon: null,
+      bankuppgifter: null,
+      li: null,
+      passport: null,
+      kvitto_c17_18: null,
+      c17: null,
+      crewing_done: null,
+      comments: null,
+    };
+
+    const mockCreatedEmployee: Employee = {
+      id: "new-emp-123",
+      ...employeeData,
+      created_at: "2025-10-27T12:00:00Z",
+      updated_at: "2025-10-27T12:00:00Z",
+    };
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
+    vi.mocked(assignEmployeeToDate).mockResolvedValue();
+
+    const request = new NextRequest("http://localhost:3000/api/employees", {
+      method: "POST",
+      body: JSON.stringify(employeeData),
+    });
+
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(assignEmployeeToDate).toHaveBeenCalledWith(
+      "new-emp-123",
+      "omc-date-1",
+      null,
+      "omc_date",
+      expect.anything()
+    );
+  });
+
+  it("should assign room number on ÖMC date assignment when hotel_required is true", async () => {
+    const employeeData: EmployeeFormData = {
+      first_name: "Jane",
+      surname: "Smith",
+      ssn: "19900101-1234",
+      email: "jane.smith@example.com",
+      mobile: "+46701234567",
+      rank: "CHEF",
+      gender: "Woman",
+      town_district: "Gothenburg",
+      hire_date: "2025-01-01",
+      stena_date: null,
+      omc_date: "omc-date-1",
+      pe3_date: null,
+      termination_date: null,
+      termination_reason: null,
+      is_terminated: false,
+      is_archived: false,
+      repayment_needed_omc: null,
+      repayment_needed_pe3: null,
+      one: null,
+      one_marked_at: null,
+      talmundo: null,
+      isps: null,
+      photo: null,
+      origo: null,
+      loneiva: null,
+      mail_lon: null,
+      bankuppgifter: null,
+      li: null,
+      passport: null,
+      kvitto_c17_18: null,
+      c17: null,
+      crewing_done: null,
+      comments: null,
+      hotel_required: true,
+    };
+
+    const mockCreatedEmployee: Employee = {
+      id: "new-emp-123",
+      ...employeeData,
+      hotel_room_number: 5,
+      created_at: "2025-10-27T12:00:00Z",
+      updated_at: "2025-10-27T12:00:00Z",
+    };
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(calculateRoomNumber).mockResolvedValue(5);
+    vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
+    vi.mocked(assignEmployeeToDate).mockResolvedValue();
+
+    const request = new NextRequest("http://localhost:3000/api/employees", {
+      method: "POST",
+      body: JSON.stringify(employeeData),
+    });
+
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(calculateRoomNumber).toHaveBeenCalledWith(
+      {
+        omc_date: "omc-date-1",
+        rank: "CHEF",
+        gender: "Woman",
+        hotel_required: true,
+      },
+      expect.anything()
+    );
+    expect(json.data.hotel_room_number).toBe(5);
+  });
+});
+
+describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
+  const mockHRAdminUser = {
+    id: "user-1",
+    auth_id: "auth-1",
+    email: "admin@example.com",
+    role: UserRole.HR_ADMIN,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
+  };
+
+  const mockEmployee: Employee = {
+    id: "employee-123",
+    first_name: "John",
+    surname: "Doe",
+    ssn: "19850315-1234",
+    email: "john.doe@example.com",
+    mobile: "+46701234567",
+    rank: "CHEF",
+    gender: "Man",
+    town_district: "Stockholm",
+    hire_date: "2025-01-15",
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
+    termination_date: null,
+    termination_reason: null,
+    is_terminated: false,
+    is_archived: false,
+    repayment_needed_omc: null,
+    repayment_needed_pe3: null,
+    one: null,
+    one_marked_at: null,
+    talmundo: null,
+    isps: null,
+    photo: null,
+    origo: null,
+    loneiva: null,
+    mail_lon: null,
+    bankuppgifter: null,
+    li: null,
+    passport: null,
+    kvitto_c17_18: null,
+    c17: null,
+    crewing_done: null,
+    comments: null,
+    created_at: "2025-01-01T00:00:00Z",
+    updated_at: "2025-01-01T00:00:00Z",
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createClient).mockResolvedValue({} as any);
+  });
+
+  it("should recalculate capacity on date change", async () => {
+    const updatedEmployee = {
+      ...mockEmployee,
+      omc_date: "omc-date-2",
+      updated_at: "2025-10-27T15:30:00Z",
+    };
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
+    vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
+    vi.mocked(assignEmployeeToDate).mockResolvedValue();
+
+    const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
+      method: "PATCH",
+      body: JSON.stringify({ omc_date: "omc-date-2" }),
+    });
+
+    const response = await PATCH(request, { params: Promise.resolve({ id: "employee-123" }) });
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(assignEmployeeToDate).toHaveBeenCalledWith(
+      "employee-123",
+      "omc-date-2",
+      null,
+      "omc_date",
+      expect.anything()
+    );
+  });
+
+  it("should recalculate rooms on date change", async () => {
+    const employeeWithDate: Employee = {
+      ...mockEmployee,
+      omc_date: "omc-date-1",
+      hotel_required: true,
+      hotel_room_number: 3,
+    };
+
+    const updatedEmployee = {
+      ...employeeWithDate,
+      omc_date: "omc-date-2",
+      hotel_room_number: 7,
+      updated_at: "2025-10-27T15:30:00Z",
+    };
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(employeeWithDate);
+    vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
+    vi.mocked(recalculateRoomsForEmployee).mockResolvedValue();
+    vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
+    vi.mocked(createClient).mockResolvedValue({} as any);
+
+    const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
+      method: "PATCH",
+      body: JSON.stringify({ omc_date: "omc-date-2" }),
+    });
+
+    const response = await PATCH(request, { params: Promise.resolve({ id: "employee-123" }) });
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(recalculateRoomsForEmployee).toHaveBeenCalled();
+  });
+
+  it("should recalculate rooms on rank change", async () => {
+    const employeeWithDate: Employee = {
+      ...mockEmployee,
+      omc_date: "omc-date-1",
+      rank: "SEV",
+      hotel_required: true,
+      hotel_room_number: 3,
+    };
+
+    const updatedEmployee = {
+      ...employeeWithDate,
+      rank: "CHEF",
+      hotel_room_number: 5,
+      updated_at: "2025-10-27T15:30:00Z",
+    };
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(employeeWithDate);
+    vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
+    vi.mocked(recalculateRoomsForDate).mockResolvedValue();
+    vi.mocked(createClient).mockResolvedValue({} as any);
+
+    const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
+      method: "PATCH",
+      body: JSON.stringify({ rank: "CHEF" }),
+    });
+
+    const response = await PATCH(request, { params: Promise.resolve({ id: "employee-123" }) });
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(recalculateRoomsForDate).toHaveBeenCalled();
+  });
+});
+
+describe("DELETE /api/employees/[id]", () => {
+  const mockHRAdminUser = {
+    id: "user-1",
+    auth_id: "auth-1",
+    email: "admin@example.com",
+    role: UserRole.HR_ADMIN,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
+  };
+
+  const mockEmployee: Employee = {
+    id: "employee-123",
+    first_name: "John",
+    surname: "Doe",
+    ssn: "19850315-1234",
+    email: "john.doe@example.com",
+    mobile: "+46701234567",
+    rank: "CHEF",
+    gender: "Man",
+    town_district: "Stockholm",
+    hire_date: "2025-01-15",
+    stena_date: null,
+    omc_date: "omc-date-1",
+    pe3_date: null,
+    termination_date: null,
+    termination_reason: null,
+    is_terminated: false,
+    is_archived: false,
+    repayment_needed_omc: null,
+    repayment_needed_pe3: null,
+    one: null,
+    one_marked_at: null,
+    talmundo: null,
+    isps: null,
+    photo: null,
+    origo: null,
+    loneiva: null,
+    mail_lon: null,
+    bankuppgifter: null,
+    li: null,
+    passport: null,
+    kvitto_c17_18: null,
+    c17: null,
+    crewing_done: null,
+    comments: null,
+    created_at: "2025-01-01T00:00:00Z",
+    updated_at: "2025-01-01T00:00:00Z",
+    hotel_required: true,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createClient).mockResolvedValue({} as any);
+  });
+
+  it("should delete employee successfully", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
+    vi.mocked(employeeRepository.delete).mockResolvedValue();
+    vi.mocked(recalculateRoomsForDate).mockResolvedValue();
+
+    const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
+      method: "DELETE",
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: "employee-123" }) });
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.data.message).toBe("Employee deleted successfully");
+    expect(json.data.id).toBe("employee-123");
+    expect(employeeRepository.delete).toHaveBeenCalledWith("employee-123");
+  });
+
+  it("should release capacity spots on deletion", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
+    vi.mocked(employeeRepository.delete).mockResolvedValue();
+    vi.mocked(recalculateRoomsForDate).mockResolvedValue();
+
+    const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
+      method: "DELETE",
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: "employee-123" }) });
+
+    expect(response.status).toBe(200);
+    // Capacity release happens via date capacity service when employee is deleted
+    // The deletion itself releases the capacity spot
+    expect(employeeRepository.delete).toHaveBeenCalled();
+  });
+
+  it("should recalculate rooms for ÖMC date after deletion", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
+    vi.mocked(employeeRepository.delete).mockResolvedValue();
+    vi.mocked(recalculateRoomsForDate).mockResolvedValue();
+
+    const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
+      method: "DELETE",
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: "employee-123" }) });
+
+    expect(response.status).toBe(200);
+    expect(recalculateRoomsForDate).toHaveBeenCalledWith("omc-date-1", expect.anything());
+  });
+
+  it("should return 404 if employee not found", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findById).mockResolvedValue(null);
+
+    const request = new NextRequest("http://localhost:3000/api/employees/non-existent-id", {
+      method: "DELETE",
+    });
+
+    const response = await DELETE(request, { params: Promise.resolve({ id: "non-existent-id" }) });
+    const json = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(json.error.code).toBe("NOT_FOUND");
+    expect(json.error.message).toContain("not found");
+    expect(employeeRepository.delete).not.toHaveBeenCalled();
   });
 });

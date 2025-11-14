@@ -44,22 +44,6 @@ export const employeeService = {
     return json.data;
   },
 
-  async getById(id: string): Promise<Employee | null> {
-    const response = await fetch(`/api/employees/${id}`);
-
-    if (response.status === 404) {
-      return null;
-    }
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to fetch employee");
-    }
-
-    const json = await response.json();
-    return json.data;
-  },
-
   async create(data: EmployeeFormData): Promise<Employee> {
     const response = await fetch("/api/employees", {
       method: "POST",

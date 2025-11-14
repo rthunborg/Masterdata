@@ -253,6 +253,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Handle duplicate PE3 date error (database unique constraint)
+    if (error instanceof Error && (
+      error.message.includes("PE3 date") && error.message.includes("already assigned") ||
+      error.message.includes("duplicate key value") && error.message.includes("pe3_date") ||
+      error.message.includes("unique constraint") && error.message.includes("pe3_date")
+    )) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "DUPLICATE_PE3_DATE",
+            message: error.message.includes("already assigned") 
+              ? error.message 
+              : "This PE3 date is already assigned to another employee",
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 409 }
+      );
+    }
+
     // Handle other errors
     return createErrorResponse(error);
   }
