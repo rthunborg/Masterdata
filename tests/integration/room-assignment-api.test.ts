@@ -206,6 +206,11 @@ describe("Room Assignment API Integration Tests", () => {
       vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee as Employee);
       vi.mocked(employeeRepository.findAll).mockResolvedValue([]); // No other employees on new date
 
+      // Mock RPC function for recalculation (called for both old and new dates)
+      vi.mocked(mockSupabaseClient.rpc)
+        .mockResolvedValueOnce({ data: null, error: null }) // Recalculate old date
+        .mockResolvedValueOnce({ data: null, error: null }); // Recalculate new date
+
       const request = new NextRequest(`http://localhost:3000/api/employees/${existingEmployee.id}`, {
         method: "PATCH",
         body: JSON.stringify({ omc_date: newDate.id }),
@@ -218,6 +223,13 @@ describe("Room Assignment API Integration Tests", () => {
       // Room should be recalculated for new date
       // Implementation will verify room_number_shared is updated
       expect(json.data).toBeDefined();
+      // Verify RPC was called for recalculation
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('recalculate_rooms_for_date', {
+        p_date_id: oldDate.id,
+      });
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('recalculate_rooms_for_date', {
+        p_date_id: newDate.id,
+      });
     });
   });
 
@@ -274,6 +286,12 @@ describe("Room Assignment API Integration Tests", () => {
       vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee as Employee);
       vi.mocked(employeeRepository.findAll).mockResolvedValue([]);
 
+      // Mock RPC function for room calculation (CHEF gets private room)
+      vi.mocked(mockSupabaseClient.rpc).mockResolvedValue({ 
+        data: 2, // CHEF gets next available private room
+        error: null 
+      });
+
       const request = new NextRequest(`http://localhost:3000/api/employees/${employee.id}`, {
         method: "PATCH",
         body: JSON.stringify({ rank: "CHEF" }),
@@ -283,6 +301,12 @@ describe("Room Assignment API Integration Tests", () => {
       
       expect(response.status).toBe(200);
       // Room should be recalculated to private room for CHEF
+      // Verify RPC was called for room calculation
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('calculate_room_number', {
+        p_date_id: mockOMCDate.id,
+        p_rank: "CHEF",
+        p_gender: "Man",
+      });
     });
   });
 
@@ -346,6 +370,12 @@ describe("Room Assignment API Integration Tests", () => {
       vi.mocked(employeeRepository.update).mockResolvedValue(updatedSev1 as Employee);
       vi.mocked(employeeRepository.findAll).mockResolvedValue([sev2 as Employee]);
 
+      // Mock RPC function for room calculation (gender change requires new room)
+      vi.mocked(mockSupabaseClient.rpc).mockResolvedValue({ 
+        data: 2, // New room (can't share with male SEV)
+        error: null 
+      });
+
       const request = new NextRequest(`http://localhost:3000/api/employees/${sev1.id}`, {
         method: "PATCH",
         body: JSON.stringify({ gender: "Woman" }),
@@ -355,6 +385,12 @@ describe("Room Assignment API Integration Tests", () => {
       
       expect(response.status).toBe(200);
       // Room should be recalculated due to gender mismatch
+      // Verify RPC was called for room calculation
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('calculate_room_number', {
+        p_date_id: mockOMCDate.id,
+        p_rank: "SEV",
+        p_gender: "Woman",
+      });
     });
   });
 
@@ -410,6 +446,9 @@ describe("Room Assignment API Integration Tests", () => {
       vi.mocked(employeeRepository.findById).mockResolvedValue(employee as Employee);
       vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee as Employee);
 
+      // No RPC call needed - hotel_required=false clears room directly
+      // (room_number_shared is set to null in the update handler)
+
       const request = new NextRequest(`http://localhost:3000/api/employees/${employee.id}`, {
         method: "PATCH",
         body: JSON.stringify({ hotel_required: false }),
@@ -419,6 +458,8 @@ describe("Room Assignment API Integration Tests", () => {
       
       expect(response.status).toBe(200);
       // Room should be cleared (set to null)
+      // RPC should not be called for hotel toggle to false
+      expect(mockSupabaseClient.rpc).not.toHaveBeenCalled();
     });
   });
 
@@ -445,6 +486,12 @@ describe("Room Assignment API Integration Tests", () => {
         employees[2],
       ] as Employee[]);
 
+      // Mock RPC function for recalculation after deletion
+      vi.mocked(mockSupabaseClient.rpc).mockResolvedValue({ 
+        data: null, 
+        error: null 
+      });
+
       const request = new NextRequest(`http://localhost:3000/api/employees/${employeeToDelete.id}`, {
         method: "DELETE",
       });
@@ -453,6 +500,10 @@ describe("Room Assignment API Integration Tests", () => {
       
       expect(response.status).toBe(200);
       // Remaining employees' rooms should be recalculated
+      // Verify RPC was called for recalculation
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('recalculate_rooms_for_date', {
+        p_date_id: mockOMCDate.id,
+      });
     });
   });
 
@@ -501,6 +552,21 @@ describe("Room Assignment API Integration Tests", () => {
 
       vi.mocked(employeeRepository.findAll).mockResolvedValue(employees as Employee[]);
 
+      // Mock RPC function for room calculations (multiple calls expected)
+      // This test verifies the algorithm logic, so we'll mock multiple RPC calls
+      // representing the sequential room assignments
+      vi.mocked(mockSupabaseClient.rpc)
+        .mockResolvedValueOnce({ data: 1, error: null }) // First SEV gets room 1
+        .mockResolvedValueOnce({ data: 2, error: null }) // CHEF gets room 2
+        .mockResolvedValueOnce({ data: 1, error: null }) // SEV shares room 1
+        .mockResolvedValueOnce({ data: 3, error: null }) // SEV (Woman) gets room 3
+        .mockResolvedValueOnce({ data: 4, error: null }) // CHEF gets room 4
+        .mockResolvedValueOnce({ data: 5, error: null }) // SEV (Man) gets room 5 (room 1 full)
+        .mockResolvedValueOnce({ data: 3, error: null }) // SEV (Woman) shares room 3
+        .mockResolvedValueOnce({ data: 6, error: null }) // CHEF gets room 6
+        .mockResolvedValueOnce({ data: 5, error: null }) // SEV (Man) shares room 5
+        .mockResolvedValueOnce({ data: 7, error: null }); // SEV (Woman) gets room 7 (room 3 full)
+
       // Verify room assignments are valid
       const validation = verifyRoomAssignments(employees);
       expect(validation.isValid).toBe(true);
@@ -548,6 +614,12 @@ describe("Room Assignment API Integration Tests", () => {
 
       vi.mocked(employeeRepository.create).mockRejectedValue(new Error("Database error"));
 
+      // Mock RPC function (should be called but employee creation will fail)
+      vi.mocked(mockSupabaseClient.rpc).mockResolvedValue({ 
+        data: 1, 
+        error: null 
+      });
+
       const request = new NextRequest("http://localhost:3000/api/employees", {
         method: "POST",
         body: JSON.stringify(employeeData),
@@ -557,6 +629,7 @@ describe("Room Assignment API Integration Tests", () => {
       
       expect(response.status).toBeGreaterThanOrEqual(400);
       // Room should not be assigned if employee creation fails
+      // RPC may be called, but room assignment won't be persisted due to employee creation failure
     });
   });
 });
