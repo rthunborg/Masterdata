@@ -35,6 +35,10 @@
   "exclude": [
     "node_modules",
     "check-*.ts",
-    "apply-*.js"
+    "apply-*.js",
+    "tests/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.bench.ts"
   ]
 }

@@ -189,7 +189,7 @@ export async function PATCH(
     }
 
     // Story 8.20: Handle room assignment changes
-    const supabase = createClient();
+    const supabase = await createClient();
     const needsRoomRecalculation: boolean = 
       ('omc_date' in validatedData && validatedData.omc_date !== currentEmployee.omc_date) ||
       ('rank' in validatedData && validatedData.rank !== currentEmployee.rank) ||
@@ -438,7 +438,7 @@ export async function DELETE(
     // Story 8.20: Recalculate rooms for ÖMC date after deletion (for remaining employees)
     if (omcDateId && hadHotelRequired) {
       try {
-        const supabase = createClient();
+        const supabase = await createClient();
         await recalculateRoomsForDate(omcDateId, supabase);
       } catch (roomError) {
         // Error handling strategy: Log warning but allow deletion to complete

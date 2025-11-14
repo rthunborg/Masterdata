@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get server-side Supabase client for room assignment and date operations
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Story 8.20: Calculate room number before employee creation
     let roomNumber: number | null = null;

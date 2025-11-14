@@ -56,7 +56,7 @@ export interface Employee {
   crewing_done: boolean | null;
   // Story 8.20: ÖMC Room Assignment fields
   /** Hotel accommodation required for ÖMC training */
-  hotel_required?: boolean;
+  hotel_required?: boolean | null;
   /** Room number assigned for shared accommodation (FR40 algorithm) */
   room_number_shared?: number | null;
   created_at: string;

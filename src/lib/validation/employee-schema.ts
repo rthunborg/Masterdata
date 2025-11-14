@@ -125,6 +125,9 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     kvitto_c17_18: z.boolean().nullable().default(null),
     c17: z.boolean().nullable().default(null),
     crewing_done: z.boolean().nullable().default(null),
+    // Story 8.20: ÖMC Room Assignment fields
+    hotel_required: z.boolean().nullable().default(null),
+    room_number_shared: z.number().int().nullable().default(null),
     // System-managed fields with defaults
     is_terminated: z.boolean().default(false),
     is_archived: z.boolean().default(false),
@@ -212,10 +215,13 @@ const baseEmployeeSchema = z.object({
   li: z.boolean().nullable().default(null),
   passport: z.boolean().nullable().default(null),
   kvitto_c17_18: z.boolean().nullable().default(null),
-  c17: z.boolean().nullable().default(null),
-  crewing_done: z.boolean().nullable().default(null),
-  // System-managed fields with defaults
-  is_terminated: z.boolean().default(false),
+    c17: z.boolean().nullable().default(null),
+    crewing_done: z.boolean().nullable().default(null),
+    // Story 8.20: ÖMC Room Assignment fields
+    hotel_required: z.boolean().nullable().default(null),
+    room_number_shared: z.number().int().nullable().default(null),
+    // System-managed fields with defaults
+    is_terminated: z.boolean().default(false),
   is_archived: z.boolean().default(false),
   termination_date: z.string().nullable().default(null),
   termination_reason: z.string().nullable().default(null),
