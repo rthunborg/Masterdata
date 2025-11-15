@@ -292,6 +292,25 @@ export async function PATCH(
             supabase // Pass server-side client for proper authentication
           );
         } catch (capacityError) {
+          // Check if this is a PE3 duplicate error
+          if (capacityError instanceof Error && (
+            capacityError.message.includes("PE3 date") && capacityError.message.includes("already assigned") ||
+            capacityError.message.includes("duplicate key value") && capacityError.message.includes("pe3_date") ||
+            capacityError.message.includes("unique constraint") && capacityError.message.includes("pe3_date")
+          )) {
+            return NextResponse.json(
+              {
+                error: {
+                  code: "DUPLICATE_PE3_DATE",
+                  message: capacityError.message.includes("already assigned") 
+                    ? capacityError.message 
+                    : "This PE3 date is already assigned to another employee",
+                  timestamp: new Date().toISOString(),
+                },
+              },
+              { status: 409 }
+            );
+          }
           // Return capacity error to client
           return NextResponse.json(
             {

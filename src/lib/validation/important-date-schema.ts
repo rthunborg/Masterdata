@@ -140,5 +140,18 @@ export const updateImportantDateSchema = z.object({
       path: ['deadline_submit'],
     };
   }
+)
+.refine(
+  (data) => {
+    // Validate remaining_spots <= max_spots when both are provided
+    if (data.max_spots !== undefined && data.remaining_spots !== undefined) {
+      return data.remaining_spots <= data.max_spots;
+    }
+    return true;
+  },
+  {
+    message: 'Remaining spots cannot exceed max spots',
+    path: ['remaining_spots'],
+  }
 );
 

@@ -24,11 +24,15 @@ import { NextRequest } from "next/server";
 import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
+import { assignEmployeeToDate } from "@/lib/services/date-capacity";
+import { createClient } from "@/lib/supabase/server";
 import { UserRole } from "@/lib/types/user";
 
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
 vi.mock("@/lib/server/repositories/important-date-repository");
+vi.mock("@/lib/services/date-capacity");
+vi.mock("@/lib/supabase/server");
 
 describe("Error Handling - 400 Bad Request", () => {
   const mockHRAdminUser = {
@@ -255,8 +259,19 @@ describe("Error Handling - 409 Conflict", () => {
 
   it("should return 409 for PE3 uniqueness violation", async () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    const mockCreatedEmployee = {
+      id: "emp-123",
+      first_name: "John",
+      surname: "Doe",
+      ssn: "19900101-1234",
+      email: "john@example.com",
+      hire_date: "2025-01-01",
+      pe3_date: "pe3-date-1",
+    } as any;
+    vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     const duplicateError = new Error("PE3 date pe3-date-1 is already assigned to another employee");
-    vi.mocked(employeeRepository.create).mockRejectedValue(duplicateError);
+    vi.mocked(assignEmployeeToDate).mockRejectedValue(duplicateError);
+    vi.mocked(createClient).mockResolvedValue({} as any);
 
     const employeeData = {
       first_name: "John",

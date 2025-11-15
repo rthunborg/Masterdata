@@ -50,9 +50,9 @@ export async function GET() {
       assignedPE3Dates?.map((emp) => emp.pe3_date) || []
     );
 
-    // Filter to only unassigned dates
+    // Filter to only unassigned dates with available capacity
     const availableDates = (data || []).filter(
-      (date) => !assignedDateIds.has(date.id)
+      (date) => !assignedDateIds.has(date.id) && date.remaining_spots > 0
     ) as ImportantDate[];
 
     return NextResponse.json({

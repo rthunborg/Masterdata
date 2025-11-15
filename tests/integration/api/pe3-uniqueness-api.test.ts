@@ -19,6 +19,7 @@ import { NextRequest } from "next/server";
 import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { createClient } from "@/lib/supabase/server";
+import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { UserRole } from "@/lib/types/user";
@@ -26,6 +27,7 @@ import { UserRole } from "@/lib/types/user";
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
 vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/services/date-capacity");
 
 describe("GET /api/important-dates/available-pe3", () => {
   const mockHRAdminUser = {
@@ -255,6 +257,17 @@ describe("GET /api/important-dates/available-pe3", () => {
 
   it("should return 401 for unauthenticated requests", async () => {
     vi.mocked(auth.requireAuthAPI).mockRejectedValue(new Error("Authentication required"));
+    vi.mocked(auth.createErrorResponse).mockReturnValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
+          },
+        }),
+        { status: 401 }
+      )
+    );
 
     const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
     const response = await GET(request);
@@ -343,6 +356,8 @@ describe("POST /api/employees - PE3 Uniqueness", () => {
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
+    vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
+    vi.mocked(createClient).mockResolvedValue({} as any);
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
       method: "POST",
@@ -420,8 +435,10 @@ describe("PATCH /api/employees/[id] - PE3 Uniqueness", () => {
   it("should reject duplicate PE3 date assignment (409)", async () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
+    // assignEmployeeToDate throws PE3 duplicate error
     const duplicateError = new Error("PE3 date pe3-date-1 is already assigned to another employee");
-    vi.mocked(employeeRepository.update).mockRejectedValue(duplicateError);
+    vi.mocked(assignEmployeeToDate).mockRejectedValue(duplicateError);
+    vi.mocked(createClient).mockResolvedValue({} as any);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -443,8 +460,10 @@ describe("PATCH /api/employees/[id] - PE3 Uniqueness", () => {
     };
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
-    vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
-    vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
+    // When only date fields are updated, route calls findById after assignEmployeeToDate
+    vi.mocked(employeeRepository.findById).mockResolvedValueOnce(mockEmployee).mockResolvedValueOnce(updatedEmployee);
+    vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
+    vi.mocked(createClient).mockResolvedValue({} as any);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
