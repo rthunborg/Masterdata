@@ -55,7 +55,7 @@ describe("POST /api/employees/import", () => {
 
   it("should import employees successfully for HR Admin", async () => {
     const csvContent = `First Name,Surname,SSN,Email,Rank,Hire Date
-John,Doe,19850315-1234,john@example.com,CAPTAIN,2025-01-15
+John,Doe,19850315-1234,john@example.com,SEV,2025-01-15
 Jane,Smith,19900520-5678,jane@example.com,CHEF,2025-02-01`;
 
     const mockInsertedEmployees: Employee[] = [
@@ -160,7 +160,7 @@ Jane,Smith,19900520-5678,jane@example.com,CHEF,2025-02-01`;
 
   it("should handle duplicate SSN errors", async () => {
     const csvContent = `First Name,Surname,SSN,Email,Rank,Hire Date
-John,Doe,19850315-1234,john@example.com,CAPTAIN,2025-01-15
+John,Doe,19850315-1234,john@example.com,SEV,2025-01-15
 Jane,Smith,19850315-1234,jane@example.com,CHEF,2025-02-01`;
 
     const mockInsertedEmployees: Employee[] = [
@@ -262,7 +262,10 @@ Jane,Smith,19850315-1234,jane@example.com,CHEF,2025-02-01`;
 
     expect(response.status).toBe(200);
     expect(json.data.imported).toBe(1);
+    // skipped = validation errors + insert errors
+    // In this case: 0 validation errors + 1 insert error (duplicate SSN) = 1 skipped
     expect(json.data.skipped).toBe(1);
+    expect(json.data.errors.length).toBe(1);
     expect(json.data.errors[0].error).toContain("Duplicate SSN");
   });
 

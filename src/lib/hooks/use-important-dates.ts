@@ -17,6 +17,7 @@ export function useImportantDates(category?: string) {
 
   useEffect(() => {
     const supabase = createClient();
+    let isMounted = true;
 
     async function fetchDates() {
       setIsLoading(true);
@@ -33,6 +34,8 @@ export function useImportantDates(category?: string) {
 
         const { data, error } = await query;
 
+        if (!isMounted) return;
+
         if (error) {
           console.error("Error fetching important dates:", error);
           setDates([]);
@@ -41,9 +44,13 @@ export function useImportantDates(category?: string) {
         }
       } catch (err) {
         console.error("Unexpected error fetching important dates:", err);
-        setDates([]);
+        if (isMounted) {
+          setDates([]);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -69,6 +76,7 @@ export function useImportantDates(category?: string) {
       .subscribe();
 
     return () => {
+      isMounted = false;
       supabase.removeChannel(channel);
     };
   }, [category]);

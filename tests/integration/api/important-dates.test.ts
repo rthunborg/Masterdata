@@ -376,6 +376,98 @@ describe("POST /api/important-dates", () => {
     expect(importantDateRepository.create).not.toHaveBeenCalled();
   });
 
+  it("should reject PE3 date without time field (400)", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+
+    const invalidPE3Data = {
+      week_number: 10,
+      year: 2025,
+      category: "PE3 Dates",
+      date_description: "PE3 without time",
+      date_value: "2025-03-15",
+      time_value: null, // Missing required time for PE3
+    };
+
+    const request = new NextRequest("http://localhost:3000/api/important-dates", {
+      method: "POST",
+      body: JSON.stringify(invalidPE3Data),
+    });
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(json.error.code).toBe("VALIDATION_ERROR");
+    expect(json.error.details.time_value).toBeDefined();
+    expect(json.error.details.time_value[0]).toBe("Time is required for PE3 dates");
+    expect(importantDateRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("should reject PE3 date with empty time string (400)", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+
+    const invalidPE3Data = {
+      week_number: 10,
+      year: 2025,
+      category: "PE3 Dates",
+      date_description: "PE3 with empty time",
+      date_value: "2025-03-15",
+      time_value: "", // Empty time string
+    };
+
+    const request = new NextRequest("http://localhost:3000/api/important-dates", {
+      method: "POST",
+      body: JSON.stringify(invalidPE3Data),
+    });
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(json.error.code).toBe("VALIDATION_ERROR");
+    expect(json.error.details.time_value).toBeDefined();
+    expect(json.error.details.time_value[0]).toBe("Time is required for PE3 dates");
+    expect(importantDateRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("should accept PE3 date with valid time", async () => {
+    const validPE3Data = {
+      week_number: 10,
+      year: 2025,
+      category: "PE3 Dates",
+      date_description: "PE3 with time",
+      date_value: "2025-03-15",
+      time_value: "14:30", // Valid time
+    };
+
+    const mockCreatedPE3: ImportantDate = {
+      id: "pe3-date-1",
+      ...validPE3Data,
+      notes: null,
+      is_active: true,
+      deadline_submit: null,
+      deadline_cancel: null,
+      max_spots: 99,
+      remaining_spots: 99,
+      assigned_employees: [],
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    };
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(importantDateRepository.create).mockResolvedValue(mockCreatedPE3);
+
+    const request = new NextRequest("http://localhost:3000/api/important-dates", {
+      method: "POST",
+      body: JSON.stringify(validPE3Data),
+    });
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(json.data.category).toBe("PE3 Dates");
+    expect(json.data.time_value).toBe("14:30");
+    expect(importantDateRepository.create).toHaveBeenCalled();
+  });
+
   it("should accept valid ÖMC two-day format", async () => {
     const validOMCData = {
       week_number: 10,

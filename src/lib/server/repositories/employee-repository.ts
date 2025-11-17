@@ -94,8 +94,16 @@ export class EmployeeRepository {
         if (error.code === "23505" && error.message.includes("ssn")) {
           throw new Error(`Employee with SSN ${data.ssn} already exists`);
         }
-        console.error("Error creating employee:", error);
-        throw new Error("Failed to create employee");
+        // Log full error details for debugging
+        console.error("Error creating employee:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          data: JSON.stringify(data, null, 2),
+        });
+        // Include error code and message in thrown error for better debugging
+        throw new Error(`Failed to create employee: ${error.code} - ${error.message}`);
       }
 
       if (!employee) {

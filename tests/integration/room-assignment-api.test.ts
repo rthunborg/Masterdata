@@ -28,8 +28,29 @@ import {
 } from "@/../tests/helpers/room-assignment-helpers";
 import type { EmployeeWithRoom } from "@/../tests/helpers/room-assignment-helpers";
 import { createClient } from "@/lib/supabase/server";
+import * as dateCapacity from "@/lib/services/date-capacity";
 
-vi.mock("@/lib/server/auth");
+vi.mock("@/lib/services/date-capacity");
+vi.mock("@/lib/server/auth", async () => {
+  const actual = await vi.importActual("@/lib/server/auth");
+  return {
+    ...actual,
+    requireHRAdminAPI: vi.fn(),
+    createErrorResponse: vi.fn((error: unknown) => {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "INTERNAL_ERROR",
+            message,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+        { status: 500 }
+      );
+    }),
+  };
+});
 vi.mock("@/lib/server/repositories/employee-repository");
 // Mock Supabase server client to avoid cookies() error
 vi.mock("@/lib/supabase/server", () => ({
@@ -89,6 +110,7 @@ describe("Room Assignment API Integration Tests", () => {
         town_district: "Stockholm",
         hire_date: "2025-01-01",
         omc_date: mockOMCDate.id,
+        hotel_required: true, // Required for room assignment
         stena_date: null,
         pe3_date: null,
         termination_date: null,
@@ -124,6 +146,40 @@ describe("Room Assignment API Integration Tests", () => {
       };
 
       vi.mocked(employeeRepository.create).mockResolvedValue(createdEmployee as Employee);
+      
+      // Mock assignEmployeeToDate to succeed
+      vi.mocked(dateCapacity.assignEmployeeToDate).mockResolvedValue({
+        success: true,
+        message: "Employee assigned successfully",
+      });
+      
+      // Mock Supabase queries for date info and employee (needed by assignEmployeeToDate)
+      let callCount = 0;
+      const mockFromChain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockImplementation(() => {
+          callCount++;
+          // First call: date info for deadline check
+          if (callCount === 1) {
+            return Promise.resolve({ 
+              data: { deadline_submit: null, deadline_cancel: null }, 
+              error: null 
+            });
+          }
+          // Second call: employee info for assigned_employees array
+          return Promise.resolve({ 
+            data: { 
+              id: createdEmployee.id, 
+              first_name: createdEmployee.first_name, 
+              surname: createdEmployee.surname, 
+              email: createdEmployee.email 
+            }, 
+            error: null 
+          });
+        }),
+      };
+      vi.mocked(mockSupabaseClient.from).mockReturnValue(mockFromChain as any);
       
       // Mock RPC function to return room 1 for first employee
       vi.mocked(mockSupabaseClient.rpc).mockResolvedValue({ 
@@ -216,7 +272,7 @@ describe("Room Assignment API Integration Tests", () => {
         body: JSON.stringify({ omc_date: newDate.id }),
       });
 
-      const response = await PATCH_EMPLOYEE(request, { params: { id: existingEmployee.id } });
+      const response = await PATCH_EMPLOYEE(request, { params: Promise.resolve({ id: existingEmployee.id }) });
       const json = await response.json();
 
       expect(response.status).toBe(200);
@@ -297,15 +353,13 @@ describe("Room Assignment API Integration Tests", () => {
         body: JSON.stringify({ rank: "CHEF" }),
       });
 
-      const response = await PATCH_EMPLOYEE(request, { params: { id: employee.id } });
+      const response = await PATCH_EMPLOYEE(request, { params: Promise.resolve({ id: employee.id }) });
       
       expect(response.status).toBe(200);
       // Room should be recalculated to private room for CHEF
-      // Verify RPC was called for room calculation
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('calculate_room_number', {
+      // Verify RPC was called for room recalculation (recalculateRoomsForDate, not calculateRoomNumber)
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('recalculate_rooms_for_date', {
         p_date_id: mockOMCDate.id,
-        p_rank: "CHEF",
-        p_gender: "Man",
       });
     });
   });
@@ -381,15 +435,13 @@ describe("Room Assignment API Integration Tests", () => {
         body: JSON.stringify({ gender: "Woman" }),
       });
 
-      const response = await PATCH_EMPLOYEE(request, { params: { id: sev1.id } });
+      const response = await PATCH_EMPLOYEE(request, { params: Promise.resolve({ id: sev1.id }) });
       
       expect(response.status).toBe(200);
       // Room should be recalculated due to gender mismatch
-      // Verify RPC was called for room calculation
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('calculate_room_number', {
+      // Verify RPC was called for room recalculation (recalculateRoomsForDate, not calculateRoomNumber)
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('recalculate_rooms_for_date', {
         p_date_id: mockOMCDate.id,
-        p_rank: "SEV",
-        p_gender: "Woman",
       });
     });
   });
@@ -454,7 +506,7 @@ describe("Room Assignment API Integration Tests", () => {
         body: JSON.stringify({ hotel_required: false }),
       });
 
-      const response = await PATCH_EMPLOYEE(request, { params: { id: employee.id } });
+      const response = await PATCH_EMPLOYEE(request, { params: Promise.resolve({ id: employee.id }) });
       
       expect(response.status).toBe(200);
       // Room should be cleared (set to null)
@@ -496,7 +548,7 @@ describe("Room Assignment API Integration Tests", () => {
         method: "DELETE",
       });
 
-      const response = await DELETE_EMPLOYEE(request, { params: { id: employeeToDelete.id } });
+      const response = await DELETE_EMPLOYEE(request, { params: Promise.resolve({ id: employeeToDelete.id }) });
       
       expect(response.status).toBe(200);
       // Remaining employees' rooms should be recalculated

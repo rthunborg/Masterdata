@@ -34,8 +34,10 @@ describe("room-assignment service", () => {
   const mockDateValue = "2025-03-08";
 
   let mockSupabaseFrom: ReturnType<typeof vi.fn>;
+  let mockSupabaseRpc: ReturnType<typeof vi.fn>;
   let mockSupabaseClient: {
     from: ReturnType<typeof vi.fn>;
+    rpc: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -56,9 +58,17 @@ describe("room-assignment service", () => {
     };
 
     mockSupabaseFrom = vi.fn((table: string) => createChainMock());
+    
+    // Mock RPC function - return error to force fallback to TypeScript implementation
+    // (which is what these tests are actually validating)
+    mockSupabaseRpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: 'RPC function not available in test environment' },
+    });
 
     mockSupabaseClient = {
       from: mockSupabaseFrom,
+      rpc: mockSupabaseRpc,
     };
 
     // Mock createClient to return our mock client
@@ -73,7 +83,7 @@ describe("room-assignment service", () => {
 
   // Helper to setup Supabase mock with existing employees
   function setupSupabaseMock(existingEmployees: Array<{ rank: 'SEV' | 'CHEF'; gender: 'Man' | 'Woman' | null; room_number_shared: number | null; hire_date?: string }>) {
-    const mockOrder2 = vi.fn().mockResolvedValue({
+    const resolvedValue = {
       data: existingEmployees.map((emp, idx) => ({
         id: `emp-${idx}`,
         rank: emp.rank,
@@ -82,7 +92,16 @@ describe("room-assignment service", () => {
         hire_date: emp.hire_date || `2025-01-${String(idx + 1).padStart(2, '0')}`,
       })),
       error: null,
-    });
+    };
+    
+    // Create an awaitable object (Promise-like) for the final order() call
+    const awaitableResult = Promise.resolve(resolvedValue);
+    const mockOrder2Result = {
+      then: awaitableResult.then.bind(awaitableResult),
+      catch: awaitableResult.catch.bind(awaitableResult),
+    };
+    
+    const mockOrder2 = vi.fn().mockReturnValue(mockOrder2Result);
     const mockOrder1 = vi.fn().mockReturnValue({ order: mockOrder2 });
     const mockNot = vi.fn().mockReturnValue({ order: mockOrder1 });
     const mockEq2 = vi.fn().mockReturnValue({ not: mockNot });
@@ -357,21 +376,6 @@ describe("room-assignment service", () => {
       expect(result).toBeNull();
     });
 
-    it.skip("should recalculate rooms when date changes", async () => {
-      // SKIPPED: This test requires complex mocking of recalculateRoomsForDate
-      // which involves multiple database update operations and transaction handling.
-      // 
-      // Rationale: The recalculation logic is better tested in integration tests
-      // (tests/integration/room-assignment-api.test.ts) where we can test the full
-      // flow including API routes, repository methods, and database interactions.
-      // 
-      // The functionality is implemented and verified working in:
-      // - Integration tests for date change scenarios
-      // - Integration tests for employee deletion (which triggers recalculation)
-      // - Manual testing in production-like scenarios
-      //
-      // Story 8.20 - Review Follow-up: Documented as acceptable to skip per review findings.
-    });
 
     it("should clear room when hotel_required toggles to false", async () => {
       // When hotel_required is false, service should return null
@@ -389,28 +393,10 @@ describe("room-assignment service", () => {
     });
   });
 
-  describe("recalculateRoomsForDate", () => {
-    it.skip("should recalculate all rooms for a date when called", async () => {
-      // SKIPPED: This test requires complex mocking of database update operations.
-      // 
-      // recalculateRoomsForDate performs multiple database operations:
-      // 1. Fetch all employees for date (with RPC function or fallback query)
-      // 2. Calculate new room assignments for all employees
-      // 3. Update each employee's room_number_shared in batch
-      // 4. Handle RPC function calls with SELECT FOR UPDATE locking (AC6)
-      //
-      // Rationale: This is better tested in integration tests where we can:
-      // - Test the full flow including RPC function calls
-      // - Verify atomic recalculation behavior
-      // - Test concurrency scenarios with proper database mocking
-      //
-      // The functionality is implemented and verified working in:
-      // - Integration tests for date change scenarios (triggers recalculation)
-      // - Integration tests for employee deletion (triggers recalculation)
-      // - RPC function tests in migration file
-      //
-      // Story 8.20 - Review Follow-up: Documented as acceptable to skip per review findings.
-    });
-  });
+  // Note: recalculateRoomsForDate is fully tested in integration tests:
+  // - tests/integration/room-recalculation.test.ts: Multiple recalculation scenarios
+  // - tests/integration/room-assignment-api.test.ts: RPC function calls verified
+  // - tests/integration/room-assignment-edge-cases.test.ts: Bulk deletion recalculation
+  // - tests/integration/api/employees.test.ts: Date/rank/gender change recalculation
 });
 

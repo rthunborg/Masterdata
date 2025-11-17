@@ -381,10 +381,9 @@ describe("Error Handling - Error Response Format", () => {
       new Response(
         JSON.stringify({
           error: {
-            code: "CONFLICT",
+            code: "CAPACITY_FULL",
             message: "ÖMC-datum 8-9 mars 2025 är fullbokat",
             field: "omc_date",
-            code: "CAPACITY_FULL",
           },
         }),
         { status: 409 }

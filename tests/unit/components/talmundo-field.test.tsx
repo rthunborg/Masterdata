@@ -33,8 +33,8 @@ describe("Talmundo Field - Component Tests", () => {
       );
 
       const cell = screen.getByRole("gridcell");
-      expect(cell).toHaveClass("bg-gray-50");
-      expect(cell).toHaveClass("cursor-default");
+      expect(cell).toHaveClass("bg-gray-100");
+      expect(cell).toHaveClass("cursor-not-allowed");
       
       // Field should be read-only
       fireEvent.click(cell);
@@ -83,8 +83,8 @@ describe("Talmundo Field - Component Tests", () => {
       );
 
       const cell = screen.getByRole("gridcell");
-      expect(cell).toHaveClass("bg-gray-50");
-      expect(cell).toHaveClass("cursor-default");
+      expect(cell).toHaveClass("bg-gray-100");
+      expect(cell).toHaveClass("cursor-not-allowed");
       
       // Field should be read-only
       fireEvent.click(cell);

@@ -50,6 +50,7 @@ export function createMockSupabaseClient(
   };
 
   // All methods return the mock itself for chaining
+  // Special handling for methods that should resolve to promises
   Object.keys(chainMock).forEach((key) => {
     if (key !== 'then' && key !== 'catch') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,12 +60,20 @@ export function createMockSupabaseClient(
 
   // When awaited, return the resolved data or a default success response
   const defaultResponse = resolvedData || { data: null, error: null };
-  chainMock.then.mockImplementation((onFulfilled) => {
+  
+  // Make the chainMock itself thenable (so it can be awaited)
+  chainMock.then = ((onFulfilled?: (value: typeof defaultResponse) => any) => {
     return Promise.resolve(defaultResponse).then(onFulfilled);
-  });
-
-  chainMock.catch.mockImplementation((onRejected) => {
+  }) as any;
+  
+  chainMock.catch = ((onRejected?: (reason: any) => any) => {
     return Promise.resolve(defaultResponse).catch(onRejected);
+  }) as any;
+  
+  // Make chainMock itself a Promise-like object
+  Object.defineProperty(chainMock, Symbol.toStringTag, {
+    value: 'Promise',
+    configurable: true,
   });
 
   // The supabase client itself

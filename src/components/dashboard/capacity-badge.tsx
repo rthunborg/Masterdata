@@ -20,6 +20,11 @@ interface CapacityBadgeProps {
 }
 
 export function CapacityBadge({ remainingSpots, maxSpots }: CapacityBadgeProps) {
+  // Unlimited capacity (maxSpots === 0) - No badge
+  if (maxSpots === 0) {
+    return null;
+  }
+
   // Full capacity (0 spots remaining) - Red badge
   if (remainingSpots === 0) {
     return (

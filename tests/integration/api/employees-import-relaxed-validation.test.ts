@@ -52,7 +52,7 @@ describe("POST /api/employees/import - Relaxed Validation", () => {
 
   it("should accept employee with empty email", async () => {
     const csvContent = `First Name,Surname,SSN,Email,Rank,Hire Date
-John,Doe,19850315-1234,,Manager,2025-01-15`;
+John,Doe,19850315-1234,,SEV,2025-01-15`;
 
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: [{
@@ -123,12 +123,12 @@ John,Doe,19850315-1234,john@example.com,,2025-01-15`;
     const body = await response.json();
     expect(body.error.code).toBe("VALIDATION_ERROR");
     expect(body.error.message).toBe("No valid employees found in CSV");
-    expect(body.error.details[0].error).toContain("Rank is required");
+    expect(body.error.details[0].error).toMatch(/rank.*SEV.*CHEF|Rank.*required/i);
   });
 
   it("should reject employee with invalid email format", async () => {
     const csvContent = `First Name,Surname,SSN,Email,Rank,Hire Date
-John,Doe,19850315-1234,invalid-email,Manager,2025-01-15`;
+John,Doe,19850315-1234,invalid-email,SEV,2025-01-15`;
 
     const file = createMockFile(csvContent, "test.csv");
     const formData = new FormData();
@@ -146,7 +146,7 @@ John,Doe,19850315-1234,invalid-email,Manager,2025-01-15`;
 
   it("should accept employee with only required fields", async () => {
     const csvContent = `First Name,Surname,SSN,Rank,Hire Date
-John,Doe,19850315-1234,Manager,2025-01-15`;
+John,Doe,19850315-1234,SEV,2025-01-15`;
 
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: [{
@@ -204,7 +204,7 @@ John,Doe,19850315-1234,Manager,2025-01-15`;
 
   it("should accept employee with mixed empty and populated optional fields", async () => {
     const csvContent = `First Name,Surname,SSN,Email,Mobile,Gender,Town District,Rank,Hire Date,Comments
-Jane,Smith,19900520-5678,,+46709876543,,Stockholm,Manager,2024-06-01,`;
+Jane,Smith,19900520-5678,,+46709876543,,Stockholm,CHEF,2024-06-01,`;
 
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: [{
@@ -262,7 +262,7 @@ Jane,Smith,19900520-5678,,+46709876543,,Stockholm,Manager,2024-06-01,`;
 
   it("should accept employees with empty date fields", async () => {
     const csvContent = `First Name,Surname,SSN,Email,Rank,Hire Date,Stena Date,ÖMC Date,PE3 Date
-John,Doe,19850315-1234,john@example.com,Manager,2025-01-15,,,`;
+John,Doe,19850315-1234,john@example.com,SEV,2025-01-15,,,`;
 
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: [{

@@ -19,8 +19,29 @@ import * as dateCapacity from "@/lib/services/date-capacity";
 import type { Employee } from "@/lib/types/employee";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { UserRole } from "@/lib/types/user";
+import { createClient } from "@/lib/supabase/server";
 
-vi.mock("@/lib/server/auth");
+vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/server/auth", async () => {
+  const actual = await vi.importActual("@/lib/server/auth");
+  return {
+    ...actual,
+    requireHRAdminAPI: vi.fn(),
+    createErrorResponse: vi.fn((error: unknown) => {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "INTERNAL_ERROR",
+            message,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+        { status: 500 }
+      );
+    }),
+  };
+});
 vi.mock("@/lib/server/repositories/employee-repository");
 
 // Partial mock for date-capacity service to test real concurrency behavior
@@ -112,6 +133,20 @@ describe("Date Capacity Concurrency Integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    // Mock Supabase client
+    vi.mocked(createClient).mockResolvedValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          })),
+        })),
+        update: vi.fn(() => ({
+          eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+        })),
+      })),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    } as any);
   });
 
   describe("Concurrent Assignment to Last Spot", () => {

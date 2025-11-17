@@ -33,16 +33,52 @@ export const createImportantDateSchema = z.object({
 )
 .refine(
   (data) => {
-    // Validate time format if provided
+    // PE3 dates require time field
+    if (data.category === 'PE3 Dates') {
+      if (!data.time_value || data.time_value.trim() === '') {
+        return false;
+      }
+      const result = validateTimeFormat(data.time_value);
+      return result.valid;
+    }
+    // For other categories, validate time format if provided
     if (data.time_value && data.time_value.trim() !== '') {
       const result = validateTimeFormat(data.time_value);
       return result.valid;
     }
     return true;
   },
-  {
-    message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-    path: ['time_value'],
+  (data) => {
+    // PE3 dates require time
+    if (data.category === 'PE3 Dates') {
+      if (!data.time_value || data.time_value.trim() === '') {
+        return {
+          message: 'Time is required for PE3 dates',
+          path: ['time_value'],
+        };
+      }
+      const result = validateTimeFormat(data.time_value);
+      if (!result.valid) {
+        return {
+          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+          path: ['time_value'],
+        };
+      }
+    }
+    // For other categories, validate format if provided
+    if (data.time_value && data.time_value.trim() !== '') {
+      const result = validateTimeFormat(data.time_value);
+      if (!result.valid) {
+        return {
+          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+          path: ['time_value'],
+        };
+      }
+    }
+    return {
+      message: '',
+      path: ['time_value'],
+    };
   }
 )
 .refine(
@@ -98,16 +134,52 @@ export const updateImportantDateSchema = z.object({
 )
 .refine(
   (data) => {
-    // Validate time format if provided
+    // PE3 dates require time field (only if category is PE3 Dates)
+    if (data.category === 'PE3 Dates' && data.time_value !== undefined) {
+      if (!data.time_value || data.time_value.trim() === '') {
+        return false;
+      }
+      const result = validateTimeFormat(data.time_value);
+      return result.valid;
+    }
+    // For other categories, validate time format if provided
     if (data.time_value && data.time_value.trim() !== '') {
       const result = validateTimeFormat(data.time_value);
       return result.valid;
     }
     return true;
   },
-  {
-    message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-    path: ['time_value'],
+  (data) => {
+    // PE3 dates require time
+    if (data.category === 'PE3 Dates' && data.time_value !== undefined) {
+      if (!data.time_value || data.time_value.trim() === '') {
+        return {
+          message: 'Time is required for PE3 dates',
+          path: ['time_value'],
+        };
+      }
+      const result = validateTimeFormat(data.time_value);
+      if (!result.valid) {
+        return {
+          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+          path: ['time_value'],
+        };
+      }
+    }
+    // For other categories, validate format if provided
+    if (data.time_value && data.time_value.trim() !== '') {
+      const result = validateTimeFormat(data.time_value);
+      if (!result.valid) {
+        return {
+          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+          path: ['time_value'],
+        };
+      }
+    }
+    return {
+      message: '',
+      path: ['time_value'],
+    };
   }
 )
 .refine(

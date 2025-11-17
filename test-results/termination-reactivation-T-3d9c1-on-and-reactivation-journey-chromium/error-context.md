@@ -1,0 +1,2299 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - banner:
+      - generic:
+        - generic:
+          - img
+          - heading [level=1]: HR Masterdata
+        - generic:
+          - generic: admin@test.com
+          - generic: HR Administrator
+          - button:
+            - img
+            - generic: Logga ut
+    - navigation:
+      - generic:
+        - generic:
+          - link:
+            - /url: /dashboard
+            - text: Anställda
+          - link:
+            - /url: /dashboard/important-dates
+            - text: Viktiga datum
+          - link:
+            - /url: /dashboard/admin/users
+            - text: Användarhantering
+          - link:
+            - /url: /dashboard/admin/columns
+            - text: Kolumninställningar
+    - main:
+      - generic:
+        - generic:
+          - generic:
+            - heading [level=2]: Personalhantering
+            - paragraph: Visa detaljer
+          - generic:
+            - generic:
+              - generic:
+                - img
+                - text: "Visa som:"
+              - combobox:
+                - generic: HR Admin (Default)
+                - img
+            - button:
+              - img
+              - text: Lägg till anställd
+            - button:
+              - img
+              - text: Importera anställda
+        - generic:
+          - generic:
+            - heading [level=3]: Alla
+            - paragraph: Inga anställda hittades
+          - generic:
+            - generic:
+              - generic:
+                - checkbox
+                - generic: Visa arkiverade
+              - generic:
+                - checkbox
+                - generic: Visa uppsagda
+              - generic:
+                - checkbox
+                - generic: Behöver återbetalning
+            - generic:
+              - generic:
+                - img
+                - textbox:
+                  - /placeholder: Sök anställda...
+              - combobox:
+                - generic: All Employees
+                - img
+              - button [disabled]: Exportera & markera besättningsklar
+              - generic:
+                - button:
+                  - img
+                  - text: Kolumnsynlighet
+            - generic:
+              - generic:
+                - table:
+                  - rowgroup:
+                    - row:
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Stena Date
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: ÖMC Date
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: PE3 Date
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: First Name
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Surname
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Town District
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Mobile
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Email
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Social Security No.
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Anställningsdatum
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Rank
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Gender
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Comments
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: One
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: ISPS
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Photo
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Origo
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Lönenivå
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Mail lön
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Bankuppgifter
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: LI
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Passport
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Kvitto C17/18
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: C17
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Crewing/Done
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Stena ID- Origo nummer
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Beställning gjord
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Fartyg
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Skickat beställning till Fartyg/Warehouse
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Mottaget
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Kontaktat medarbetare
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Uthämtat
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Talmundo
+                              - generic:
+                                - img
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Mottagit kort
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Skickat kort till fartyg
+                              - generic:
+                                - img
+                          - generic: Toplux
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Ersatt
+                              - generic:
+                                - img
+                          - generic: Payroll
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Klart/sign
+                              - generic:
+                                - img
+                          - generic: Payroll
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Notering
+                              - generic:
+                                - img
+                          - generic: Payroll
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Rotation 1 or 2
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Hotel Required?
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Room Number (Shared)
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Dietary Requirement?
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Joining Instructions sent
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Candidate Confirmed
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Seably
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Receipt C-17
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: C-17 Certificate
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Receipt C-18
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: C-18 Certificate
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: ÖMC Certificate
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Uploaded in CrewSF
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic:
+                            - button:
+                              - generic: Completed
+                              - generic:
+                                - img
+                          - generic: OMC
+                      - cell:
+                        - generic:
+                          - generic: Åtgärder
+                  - rowgroup:
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Anna
+                      - cell:
+                        - gridcell: Test
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+                    - row:
+                      - cell:
+                        - gridcell: Onsdag 17/12
+                      - cell:
+                        - gridcell: 19-20 december 2025
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: Rasmus
+                      - cell:
+                        - gridcell: Thunborg
+                      - cell:
+                        - gridcell: Göteborg
+                      - cell:
+                        - gridcell: "+46763908120"
+                      - cell:
+                        - gridcell: rasmus.thunborg@enhancior.se
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: SEV
+                      - cell:
+                        - gridcell: Man
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell [disabled]: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell:
+                          - generic: —
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - gridcell: "No"
+                      - cell:
+                        - generic:
+                          - button:
+                            - img
+                          - button:
+                            - img
+    - region "Notifications alt+T"
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e6] [cursor=pointer]:
+    - img [ref=e7]
+  - alert
+  - dialog "Lägg till anställd" [ref=e11]:
+    - generic [ref=e12]:
+      - heading "Lägg till anställd" [level=2] [ref=e13]
+      - paragraph [ref=e14]: Skapa en ny anställningspost med nödvändig information.
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - text: Förnamn
+            - generic [ref=e19]: "*"
+          - textbox "Förnamn *" [ref=e20]:
+            - /placeholder: John
+            - text: Terminate
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - text: Efternamn
+            - generic [ref=e23]: "*"
+          - textbox "Efternamn *" [ref=e24]:
+            - /placeholder: Doe
+            - text: Test
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - text: Personnummer
+            - generic [ref=e27]: "*"
+          - textbox "Personnummer *" [active] [ref=e28]:
+            - /placeholder: 19850315-1234
+            - text: "199001017777"
+        - generic [ref=e29]:
+          - generic [ref=e30]: E-post
+          - textbox "E-post" [ref=e31]:
+            - /placeholder: john.doe@example.com (optional)
+        - generic [ref=e32]:
+          - generic [ref=e33]: Mobiltelefon
+          - textbox "Mobiltelefon" [ref=e34]:
+            - /placeholder: "+46701234567"
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - text: Rang
+            - generic [ref=e37]: "*"
+          - combobox "Rang *" [ref=e38]:
+            - generic: SEV
+            - img
+          - combobox [ref=e39]
+        - generic [ref=e40]:
+          - generic [ref=e41]: Stad
+          - textbox "Stad" [ref=e42]:
+            - /placeholder: Stockholm
+        - generic [ref=e43]:
+          - generic [ref=e44]: Kön
+          - combobox "Kön" [ref=e45]:
+            - generic: Välj kön
+            - img
+          - combobox [ref=e46]
+        - generic [ref=e47]:
+          - generic [ref=e48]:
+            - text: Anställningsdatum
+            - generic [ref=e49]: "*"
+          - textbox "Anställningsdatum *" [ref=e50]: 2025-11-16
+        - generic [ref=e51]:
+          - generic [ref=e52]:
+            - text: Stena-datum
+            - generic [ref=e53]: "*"
+          - combobox "Stena-datum *" [ref=e54]:
+            - generic: Välj Stena-datum
+            - img
+          - combobox [ref=e55]
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - text: ÖMC-datum
+            - generic [ref=e58]: "*"
+          - combobox "ÖMC-datum *" [ref=e59]:
+            - generic: Välj ÖMC-datum
+            - img
+          - combobox [ref=e60]
+        - generic [ref=e61]:
+          - generic [ref=e62]: PE3-datum
+          - generic [ref=e63]:
+            - combobox "PE3-datum" [ref=e64]:
+              - generic: Välj PE3-datum (valfritt)
+              - img
+            - combobox [ref=e65]
+          - paragraph [ref=e66]: 1 PE3-datum återstår
+      - generic [ref=e67]:
+        - generic [ref=e68]: Kommentarer
+        - textbox "Kommentarer" [ref=e69]:
+          - /placeholder: Ytterligare anteckningar om den anställde...
+      - generic [ref=e70]:
+        - button "Avbryt" [ref=e71]
+        - button "Spara" [ref=e72]
+    - button "Close" [ref=e73]:
+      - img
+      - generic [ref=e74]: Close
+```

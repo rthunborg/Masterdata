@@ -103,7 +103,7 @@ describe('CapacityBadge', () => {
 
     it('should apply yellow color classes when almost full', () => {
       // ÖMC date (threshold = 3)
-      render(<CapacityBadge remainingSpots={3} maxSpots={20} />);
+      const { rerender } = render(<CapacityBadge remainingSpots={3} maxSpots={20} />);
       let badge = screen.getByLabelText('Nästan fullbokad');
       expect(badge).toHaveClass('bg-yellow-100');
       expect(badge).toHaveClass('text-yellow-800');
@@ -112,8 +112,8 @@ describe('CapacityBadge', () => {
       expect(badge).toHaveClass('dark:text-yellow-200');
       expect(badge).toHaveClass('dark:border-yellow-700');
 
-      // Stena date (threshold = 10)
-      render(<CapacityBadge remainingSpots={10} maxSpots={99} />);
+      // Stena date (threshold = 10) - use rerender to avoid multiple elements
+      rerender(<CapacityBadge remainingSpots={10} maxSpots={99} />);
       badge = screen.getByLabelText('Nästan fullbokad');
       expect(badge).toHaveClass('bg-yellow-100');
       expect(badge).toHaveClass('text-yellow-800');

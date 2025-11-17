@@ -30,6 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   createEmployeeSchemaWithMessages,
   type CreateEmployeeInput,
@@ -88,6 +89,7 @@ export function AddEmployeeModal({
       rank: "SEV",
       gender: null,
       town_district: null,
+      hotel_required: false,
       hire_date: new Date().toISOString().split("T")[0],
       stena_date: "",
       omc_date: "",
@@ -358,6 +360,31 @@ export function AddEmployeeModal({
                         }
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Hotel Required */}
+              <FormField
+                control={form.control}
+                name="hotel_required"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value ?? false}
+                        onCheckedChange={(checked) => field.onChange(checked === true)}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer font-normal">
+                        {t('hotelRequired')}
+                      </FormLabel>
+                      <FormDescription className="text-xs">
+                        {t('hotelRequiredDescription')}
+                      </FormDescription>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

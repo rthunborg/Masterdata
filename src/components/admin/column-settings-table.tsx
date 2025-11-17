@@ -121,10 +121,11 @@ function EditableColumnNameCell({
         onClick={() => !isUpdating && setIsEditing(true)}
         className={cn(
           "cursor-pointer px-2 py-1 rounded hover:bg-blue-50 transition-colors",
-          "min-h-8 flex items-center font-medium",
+          "min-h-8 font-medium break-words",
           isUpdating && "cursor-not-allowed opacity-50"
         )}
         title="Click to edit display name"
+        style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
       >
         {value}
       </div>

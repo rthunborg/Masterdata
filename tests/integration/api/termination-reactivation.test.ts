@@ -121,13 +121,12 @@ describe('POST /api/employees/[id]/terminate', () => {
   it('should terminate employee with ÖMC date (repayment captured)', async () => {
     const omcDateId = 'omc-date-1';
     const mockEmployee = createMockEmployee({
-      omc_date: omcDateId,
+      omc_date: null,
       termination_date: '2025-11-13',
       termination_reason: 'End of contract',
       is_terminated: true,
       repayment_needed_omc: '2025-03-08',
       stena_date: null,
-      omc_date: null,
       pe3_date: null,
     });
 
@@ -159,14 +158,13 @@ describe('POST /api/employees/[id]/terminate', () => {
   it('should terminate employee with PE3 date (repayment captured)', async () => {
     const pe3DateId = 'pe3-date-1';
     const mockEmployee = createMockEmployee({
-      pe3_date: pe3DateId,
+      pe3_date: null,
       termination_date: '2025-11-13',
       termination_reason: 'Retirement',
       is_terminated: true,
       repayment_needed_pe3: '2025-04-20',
       stena_date: null,
       omc_date: null,
-      pe3_date: null,
     });
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
@@ -197,16 +195,14 @@ describe('POST /api/employees/[id]/terminate', () => {
     const omcDateId = 'omc-date-1';
     const pe3DateId = 'pe3-date-1';
     const mockEmployee = createMockEmployee({
-      omc_date: omcDateId,
-      pe3_date: pe3DateId,
+      omc_date: null,
+      pe3_date: null,
       termination_date: '2025-11-13',
       termination_reason: 'End of contract',
       is_terminated: true,
       repayment_needed_omc: '2025-03-08',
       repayment_needed_pe3: '2025-04-20',
       stena_date: null,
-      omc_date: null,
-      pe3_date: null,
     });
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);

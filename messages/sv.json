@@ -97,6 +97,8 @@
     "employeeUnarchived": "Anställd återställd",
     "mobile": "Mobiltelefon",
     "townDistrict": "Stad",
+    "hotelRequired": "Hotell krävs",
+    "hotelRequiredDescription": "Kryssa i om den anställde behöver hotellboende under ÖMC-utbildningen",
     "rank": "Rang",
     "gender": "Kön",
     "comments": "Kommentarer",

@@ -68,12 +68,8 @@ describe("EditableCell - Permission States", () => {
       });
     });
 
-    // Tooltip auto-dismiss is controlled by the component's setTimeout
-    // This test would require complex fake timer setup with Radix UI, so we skip it
-    // The core tooltip functionality is tested in the previous test
-    it.skip("tooltip auto-dismisses after 2 seconds", async () => {
-      // Test skipped - tooltip dismiss timing is hard to test with Radix UI and fake timers
-    });
+    // Tooltip auto-dismiss test removed - hard to test with Radix UI and fake timers.
+    // The core tooltip functionality is tested in the previous test.
 
     it("does not enter edit mode when clicked", () => {
       renderWithI18n(

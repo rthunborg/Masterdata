@@ -82,19 +82,24 @@ describe('TerminateEmployeeModal', () => {
     updated_at: '2025-01-01T00:00:00Z',
   };
 
-  const mockSupabaseClient = {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn(),
-        })),
-      })),
-    })),
+  const mockSupabaseClient: any = {
+    from: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createClient).mockReturnValue(mockSupabaseClient as never);
+    
+    // Default mock that returns empty data
+    const defaultSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+    mockSupabaseClient.from.mockReturnValue({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          single: defaultSingle,
+        })),
+      })),
+    });
+    
+    vi.mocked(createClient).mockReturnValue(mockSupabaseClient);
   });
 
   it('should render modal with employee data', () => {
@@ -107,7 +112,7 @@ describe('TerminateEmployeeModal', () => {
       />
     );
 
-    expect(screen.getByText(/terminate/i)).toBeInTheDocument();
+    expect(screen.getByText(/markera anställd som uppsagd/i)).toBeInTheDocument();
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     expect(screen.getByText('123456-7890')).toBeInTheDocument();
   });
@@ -158,15 +163,23 @@ describe('TerminateEmployeeModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Stena Training/i)).toBeInTheDocument();
-      expect(screen.getByText(/ÖMC Training/i)).toBeInTheDocument();
-      expect(screen.getByText(/PE3 Training/i)).toBeInTheDocument();
+      // May appear multiple times (in description and preview), so use getAllByText
+      expect(screen.getAllByText(/Stena Training/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/ÖMC Training/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/PE3 Training/i).length).toBeGreaterThan(0);
     });
   });
 
   it('should display repayment fields preview', async () => {
+    // Mock employee with repayment dates set (for repayment preview)
+    const employeeWithRepayment = {
+      ...mockEmployee,
+      repayment_needed_omc: '2025-03-08',
+      repayment_needed_pe3: '2025-04-20',
+    };
+
     const mockSingle = vi.fn()
-      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: null }) // stena_date
       .mockResolvedValueOnce({
         data: {
           date_description: 'ÖMC Training 8-9 mars',
@@ -174,7 +187,7 @@ describe('TerminateEmployeeModal', () => {
           remaining_spots: 10,
         },
         error: null,
-      })
+      }) // omc_date
       .mockResolvedValueOnce({
         data: {
           date_description: 'PE3 Training',
@@ -182,7 +195,7 @@ describe('TerminateEmployeeModal', () => {
           remaining_spots: 3,
         },
         error: null,
-      });
+      }); // pe3_date
 
     mockSupabaseClient.from.mockReturnValue({
       select: vi.fn(() => ({
@@ -194,20 +207,24 @@ describe('TerminateEmployeeModal', () => {
 
     renderWithI18n(
       <TerminateEmployeeModal
-        employee={mockEmployee}
+        employee={employeeWithRepayment}
         open={true}
         onOpenChange={mockOnOpenChange}
         onSuccess={mockOnSuccess}
       />
     );
 
+    // Wait for async date fetching and repayment preview to render
     await waitFor(() => {
-      expect(screen.getByText(/repayment/i)).toBeInTheDocument();
-    });
+      // May appear multiple times, so use getAllByText
+      const repaymentTexts = screen.getAllByText(/återbetalning/i);
+      expect(repaymentTexts.length).toBeGreaterThan(0);
+    }, { timeout: 3000 });
   });
 
   it('should display spots to be released', async () => {
     const mockSingle = vi.fn()
+      .mockResolvedValueOnce({ data: null, error: null }) // stena_date (not assigned in mockEmployee)
       .mockResolvedValueOnce({
         data: {
           date_description: 'ÖMC Training',
@@ -215,7 +232,7 @@ describe('TerminateEmployeeModal', () => {
           remaining_spots: 5,
         },
         error: null,
-      })
+      }) // omc_date
       .mockResolvedValueOnce({
         data: {
           date_description: 'PE3 Training',
@@ -223,8 +240,7 @@ describe('TerminateEmployeeModal', () => {
           remaining_spots: 3,
         },
         error: null,
-      })
-      .mockResolvedValueOnce({ data: null, error: null });
+      }); // pe3_date
 
     mockSupabaseClient.from.mockReturnValue({
       select: vi.fn(() => ({
@@ -243,9 +259,12 @@ describe('TerminateEmployeeModal', () => {
       />
     );
 
+    // Wait for async date fetching and spots preview to render
     await waitFor(() => {
-      expect(screen.getByText(/spots/i)).toBeInTheDocument();
-    });
+      // May appear multiple times (once per date), so use getAllByText
+      const spotsTexts = screen.getAllByText(/platser/i);
+      expect(spotsTexts.length).toBeGreaterThan(0);
+    }, { timeout: 3000 });
   });
 
   it('should show loading state during async operations', async () => {
@@ -263,9 +282,9 @@ describe('TerminateEmployeeModal', () => {
       />
     );
 
-    const dateInput = screen.getByLabelText(/termination date/i);
-    const reasonInput = screen.getByLabelText(/termination reason/i);
-    const submitButton = screen.getByRole('button', { name: /confirm/i });
+    const dateInput = screen.getByLabelText(/uppsägningsdatum/i);
+    const reasonInput = screen.getByLabelText(/uppsägningsorsak/i);
+    const submitButton = screen.getByRole('button', { name: /bekräfta uppsägning/i });
 
     await user.type(dateInput, '2025-11-13');
     await user.type(reasonInput, 'Test reason');
@@ -291,9 +310,9 @@ describe('TerminateEmployeeModal', () => {
       />
     );
 
-    const dateInput = screen.getByLabelText(/termination date/i);
-    const reasonInput = screen.getByLabelText(/termination reason/i);
-    const submitButton = screen.getByRole('button', { name: /confirm/i });
+    const dateInput = screen.getByLabelText(/uppsägningsdatum/i);
+    const reasonInput = screen.getByLabelText(/uppsägningsorsak/i);
+    const submitButton = screen.getByRole('button', { name: /bekräfta uppsägning/i });
 
     await user.type(dateInput, '2025-11-13');
     await user.type(reasonInput, 'Test reason');
@@ -316,11 +335,13 @@ describe('TerminateEmployeeModal', () => {
       />
     );
 
-    const submitButton = screen.getByRole('button', { name: /confirm/i });
+    const submitButton = screen.getByRole('button', { name: /bekräfta uppsägning/i });
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/required/i)).toBeInTheDocument();
+      // Validation error messages - may appear multiple times, so use getAllByText
+      const requiredMessages = screen.getAllByText(/required/i);
+      expect(requiredMessages.length).toBeGreaterThan(0);
     });
 
     expect(employeeService.terminate).not.toHaveBeenCalled();
@@ -343,9 +364,9 @@ describe('TerminateEmployeeModal', () => {
       />
     );
 
-    const dateInput = screen.getByLabelText(/termination date/i);
-    const reasonInput = screen.getByLabelText(/termination reason/i);
-    const submitButton = screen.getByRole('button', { name: /confirm/i });
+    const dateInput = screen.getByLabelText(/uppsägningsdatum/i);
+    const reasonInput = screen.getByLabelText(/uppsägningsorsak/i);
+    const submitButton = screen.getByRole('button', { name: /bekräfta uppsägning/i });
 
     await user.type(dateInput, '2025-11-13');
     await user.type(reasonInput, 'Test reason');
@@ -380,7 +401,7 @@ describe('TerminateEmployeeModal', () => {
       />
     );
 
-    expect(screen.getByText(/no date assignments/i)).toBeInTheDocument();
+    expect(screen.getByText(/inga datumanmälningar att rensa/i)).toBeInTheDocument();
   });
 });
 

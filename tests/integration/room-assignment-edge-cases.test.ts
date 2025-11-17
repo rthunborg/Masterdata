@@ -20,15 +20,38 @@ import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 import { UserRole } from "@/lib/types/user";
+import { createClient } from "@/lib/supabase/server";
 import {
   createEmployeesForDate,
   createTestOMCDate,
   verifyRoomAssignments,
   createMixedRankEmployees,
-} from "../../helpers/room-assignment-helpers";
-import type { EmployeeWithRoom } from "../../helpers/room-assignment-helpers";
+} from "../helpers/room-assignment-helpers";
+import type { EmployeeWithRoom } from "../helpers/room-assignment-helpers";
+import * as dateCapacity from "@/lib/services/date-capacity";
 
-vi.mock("@/lib/server/auth");
+vi.mock("@/lib/services/date-capacity");
+vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/server/auth", async () => {
+  const actual = await vi.importActual("@/lib/server/auth");
+  return {
+    ...actual,
+    requireHRAdminAPI: vi.fn(),
+    createErrorResponse: vi.fn((error: unknown) => {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "INTERNAL_ERROR",
+            message,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+        { status: 500 }
+      );
+    }),
+  };
+});
 vi.mock("@/lib/server/repositories/employee-repository");
 
 describe("Room Assignment Edge Case Tests", () => {
@@ -52,6 +75,46 @@ describe("Room Assignment Edge Case Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    // Mock assignEmployeeToDate to succeed
+    vi.mocked(dateCapacity.assignEmployeeToDate).mockResolvedValue({
+      success: true,
+      message: "Employee assigned successfully",
+    });
+    // Mock Supabase client with proper chain for date queries
+    let supabaseCallCount = 0;
+    vi.mocked(createClient).mockResolvedValue({
+      from: vi.fn(() => {
+        supabaseCallCount = 0; // Reset for each from() call
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          not: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          update: vi.fn().mockReturnThis(),
+          single: vi.fn().mockImplementation(() => {
+            supabaseCallCount++;
+            // First call: date info for deadline check
+            if (supabaseCallCount === 1) {
+              return Promise.resolve({ 
+                data: { deadline_submit: null, deadline_cancel: null }, 
+                error: null 
+              });
+            }
+            // Subsequent calls: employee info or other data
+            return Promise.resolve({ 
+              data: { 
+                id: "emp-1", 
+                first_name: "John", 
+                surname: "Doe", 
+                email: "john@example.com" 
+              }, 
+              error: null 
+            });
+          }),
+        };
+      }),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    } as any);
   });
 
   describe("100 employees on same date", () => {
@@ -317,6 +380,7 @@ describe("Room Assignment Edge Case Tests", () => {
         town_district: "Stockholm",
         hire_date: "2025-01-01",
         omc_date: mockOMCDate.id,
+        hotel_required: false, // No hotel required
         stena_date: null,
         pe3_date: null,
         termination_date: null,
@@ -342,13 +406,13 @@ describe("Room Assignment Edge Case Tests", () => {
         comments: null,
       };
 
-      const createdEmployee: Employee & { hotel_required?: boolean; hotel_room_number?: number | null } = {
+      const createdEmployee: Employee & { hotel_required?: boolean; room_number_shared?: number | null } = {
         ...employeeData,
         id: "emp-1",
         created_at: "2025-01-01T00:00:00Z",
         updated_at: "2025-01-01T00:00:00Z",
         hotel_required: false, // No hotel required
-        hotel_room_number: null, // No room assigned
+        room_number_shared: null, // No room assigned
       };
 
       vi.mocked(employeeRepository.create).mockResolvedValue(createdEmployee as Employee);
@@ -363,7 +427,7 @@ describe("Room Assignment Edge Case Tests", () => {
 
       expect(response.status).toBe(201);
       // Room should be null when hotel_required is false
-      expect(json.data.hotel_room_number).toBeNull();
+      expect(json.data.room_number_shared).toBeNull();
     });
   });
 

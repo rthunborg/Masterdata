@@ -100,12 +100,17 @@ describe('Reactivation Workflow Service', () => {
         error: null,
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls - second eq returns object with single()
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       vi.mocked(assignEmployeeToDate).mockResolvedValue({
@@ -140,8 +145,8 @@ describe('Reactivation Workflow Service', () => {
       const result = await restoreRepaymentDates(employeeId);
 
       expect(mockDateSelect).toHaveBeenCalledWith('id, date_description, remaining_spots');
-      expect(mockDateEq).toHaveBeenCalledWith('date_value', omcDateValue);
-      expect(mockDateEq).toHaveBeenCalledWith('category', 'ÖMC Dates');
+      expect(mockDateEq1).toHaveBeenCalledWith('date_value', omcDateValue);
+      expect(mockDateEq2).toHaveBeenCalledWith('category', 'ÖMC Dates');
       expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date');
       expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
       expect(result.restored.omc).toBe(true);
@@ -181,12 +186,17 @@ describe('Reactivation Workflow Service', () => {
         error: null,
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
@@ -245,12 +255,17 @@ describe('Reactivation Workflow Service', () => {
         error: null,
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       vi.mocked(assignEmployeeToDate).mockResolvedValue({
@@ -323,12 +338,17 @@ describe('Reactivation Workflow Service', () => {
         error: null,
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
@@ -384,12 +404,17 @@ describe('Reactivation Workflow Service', () => {
         error: { code: 'PGRST116', message: 'No rows found' },
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
@@ -443,12 +468,17 @@ describe('Reactivation Workflow Service', () => {
         error: { code: 'PGRST116', message: 'No rows found' },
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
@@ -509,12 +539,17 @@ describe('Reactivation Workflow Service', () => {
         error: null,
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       vi.mocked(assignEmployeeToDate).mockResolvedValue({
@@ -586,12 +621,17 @@ describe('Reactivation Workflow Service', () => {
         error: null,
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       vi.mocked(assignEmployeeToDate).mockResolvedValue({
@@ -665,12 +705,17 @@ describe('Reactivation Workflow Service', () => {
         error: null,
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       vi.mocked(assignEmployeeToDate).mockResolvedValue({
@@ -743,12 +788,17 @@ describe('Reactivation Workflow Service', () => {
         error: null,
       });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       vi.mocked(assignEmployeeToDate).mockResolvedValue({
@@ -863,12 +913,17 @@ describe('Reactivation Workflow Service', () => {
           error: null,
         });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
@@ -929,12 +984,17 @@ describe('Reactivation Workflow Service', () => {
           error: { code: 'PGRST116', message: 'No rows found' },
         });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
@@ -997,12 +1057,17 @@ describe('Reactivation Workflow Service', () => {
           error: { code: 'PGRST116', message: 'No rows found' },
         });
 
-      const mockDateEq = vi.fn().mockReturnValue({
+      // Support chained .eq() calls
+      const mockDateEq2 = vi.fn().mockReturnValue({
         single: mockDateSingle,
       });
 
+      const mockDateEq1 = vi.fn().mockReturnValue({
+        eq: mockDateEq2,
+      });
+
       const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
+        eq: mockDateEq1,
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {

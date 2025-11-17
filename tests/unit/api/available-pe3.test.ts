@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/important-dates/available-pe3/route";
 import { mockUsers } from "../../utils/role-test-utils";
 import * as auth from "@/lib/server/auth";
+import { createClient } from "@/lib/supabase/server";
 
 // Mock the Supabase client
 const mockSupabaseClient = {
@@ -12,10 +13,42 @@ const mockSupabaseClient = {
 };
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(() => mockSupabaseClient),
+  createClient: vi.fn(),
 }));
 
-vi.mock("@/lib/server/auth");
+vi.mock("@/lib/server/auth", async () => {
+  const actual = await vi.importActual("@/lib/server/auth");
+  return {
+    ...actual,
+    requireAuthAPI: vi.fn(),
+    createErrorResponse: vi.fn((error: unknown) => {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      // Check if it's an authentication error
+      if (message.includes("Authentication required")) {
+        return new Response(
+          JSON.stringify({
+            error: {
+              code: "UNAUTHORIZED",
+              message,
+              timestamp: new Date().toISOString(),
+            },
+          }),
+          { status: 401 }
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "INTERNAL_ERROR",
+            message,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+        { status: 500 }
+      );
+    }),
+  };
+});
 
 describe("GET /api/important-dates/available-pe3", () => {
   beforeEach(() => {
@@ -31,6 +64,9 @@ describe("GET /api/important-dates/available-pe3", () => {
       created_at: mockUsers.hrAdmin.created_at,
       last_active_at: null,
     });
+    
+    // Mock createClient to return mockSupabaseClient
+    vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as any);
   });
 
   it("should return only unassigned PE3 dates", async () => {
@@ -62,61 +98,68 @@ describe("GET /api/important-dates/available-pe3", () => {
 
       if (table === "important_dates") {
         return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              gte: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data: [
-                    {
-                      id: "date-1",
-                      week_number: 10,
-                      year: 2025,
-                      category: "PE3 Dates",
-                      date_description: "Fredag 7/3",
-                      date_value: "2025-03-07",
-                      notes: null,
-                      created_at: "2025-01-01T00:00:00Z",
-                      updated_at: "2025-01-01T00:00:00Z",      },
-                    {
-                      id: "date-2",
-                      week_number: 14,
-                      year: 2025,
-                      category: "PE3 Dates",
-                      date_description: "Fredag 4/4",
-                      date_value: "2025-04-04",
-                      notes: null,
-                      created_at: "2025-01-01T00:00:00Z",
-                      updated_at: "2025-01-01T00:00:00Z",      },
-                    {
-                      id: "date-3",
-                      week_number: 20,
-                      year: 2025,
-                      category: "PE3 Dates",
-                      date_description: "Fredag 16/5",
-                      date_value: "2025-05-16",
-                      notes: null,
-                      created_at: "2025-01-01T00:00:00Z",
-                      updated_at: "2025-01-01T00:00:00Z",      },
-                  ],
-                  error: null,
-                }),
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [
+              {
+                id: "date-1",
+                week_number: 10,
+                year: 2025,
+                category: "PE3 Dates",
+                date_description: "Fredag 7/3",
+                date_value: "2025-03-07",
+                notes: null,
+                time_value: null,
+                max_spots: 1,
+                remaining_spots: 1,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+              {
+                id: "date-2",
+                week_number: 14,
+                year: 2025,
+                category: "PE3 Dates",
+                date_description: "Fredag 4/4",
+                date_value: "2025-04-04",
+                notes: null,
+                time_value: null,
+                max_spots: 1,
+                remaining_spots: 1,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+              {
+                id: "date-3",
+                week_number: 20,
+                year: 2025,
+                category: "PE3 Dates",
+                date_description: "Fredag 16/5",
+                date_value: "2025-05-16",
+                notes: null,
+                time_value: null,
+                max_spots: 1,
+                remaining_spots: 1,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+            ],
+            error: null,
           }),
         };
       }
 
       if (table === "employees") {
         return {
-          select: vi.fn().mockReturnValue({
-            not: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({
-                data: [
-                  { pe3_date: "date-2" }, // date-2 is assigned
-                ],
-                error: null,
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          not: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({
+            data: [
+              { pe3_date: "date-2" }, // date-2 is assigned
+            ],
+            error: null,
           }),
         };
       }
@@ -163,39 +206,38 @@ describe("GET /api/important-dates/available-pe3", () => {
 
       if (table === "important_dates") {
         return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              gte: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data: [
-                    {
-                      id: "date-future",
-                      week_number: 20,
-                      year: 2025,
-                      category: "PE3 Dates",
-                      date_description: "Fredag 16/5",
-                      date_value: "2025-05-16",
-                      notes: null,
-                      created_at: "2025-01-01T00:00:00Z",
-                      updated_at: "2025-01-01T00:00:00Z",      },
-                  ],
-                  error: null,
-                }),
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [
+              {
+                id: "date-future",
+                week_number: 20,
+                year: 2025,
+                category: "PE3 Dates",
+                date_description: "Fredag 16/5",
+                date_value: "2025-05-16",
+                notes: null,
+                time_value: null,
+                max_spots: 1,
+                remaining_spots: 1,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+            ],
+            error: null,
           }),
         };
       }
 
       if (table === "employees") {
         return {
-          select: vi.fn().mockReturnValue({
-            not: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({
-                data: [],
-                error: null,
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          not: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
           }),
         };
       }
@@ -245,51 +287,54 @@ describe("GET /api/important-dates/available-pe3", () => {
 
       if (table === "important_dates") {
         return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              gte: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data: [
-                    {
-                      id: "date-1",
-                      week_number: 10,
-                      year: 2025,
-                      category: "PE3 Dates",
-                      date_description: "Fredag 7/3",
-                      date_value: "2025-03-07",
-                      notes: null,
-                      created_at: "2025-01-01T00:00:00Z",
-                      updated_at: "2025-01-01T00:00:00Z",      },
-                    {
-                      id: "date-2",
-                      week_number: 14,
-                      year: 2025,
-                      category: "PE3 Dates",
-                      date_description: "Fredag 4/4",
-                      date_value: "2025-04-04",
-                      notes: null,
-                      created_at: "2025-01-01T00:00:00Z",
-                      updated_at: "2025-01-01T00:00:00Z",      },
-                  ],
-                  error: null,
-                }),
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [
+              {
+                id: "date-1",
+                week_number: 10,
+                year: 2025,
+                category: "PE3 Dates",
+                date_description: "Fredag 7/3",
+                date_value: "2025-03-07",
+                notes: null,
+                time_value: null,
+                max_spots: 1,
+                remaining_spots: 1,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+              {
+                id: "date-2",
+                week_number: 14,
+                year: 2025,
+                category: "PE3 Dates",
+                date_description: "Fredag 4/4",
+                date_value: "2025-04-04",
+                notes: null,
+                time_value: null,
+                max_spots: 1,
+                remaining_spots: 1,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+            ],
+            error: null,
           }),
         };
       }
 
       if (table === "employees") {
         return {
-          select: vi.fn().mockReturnValue({
-            not: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({
-                // First call: date-2 is assigned
-                // Second call: no dates assigned
-                data: callCount === 0 ? [{ pe3_date: "date-2" }] : [],
-                error: null,
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          not: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({
+            // First call: date-2 is assigned
+            // Second call: no dates assigned
+            data: callCount === 0 ? [{ pe3_date: "date-2" }] : [],
+            error: null,
           }),
         };
       }
@@ -363,28 +408,23 @@ describe("GET /api/important-dates/available-pe3", () => {
 
       if (table === "important_dates") {
         return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              gte: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data: [],
-                  error: null,
-                }),
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
           }),
         };
       }
 
       if (table === "employees") {
         return {
-          select: vi.fn().mockReturnValue({
-            not: vi.fn().mockReturnValue({
-              eq: vi.fn().mockResolvedValue({
-                data: [],
-                error: null,
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          not: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
           }),
         };
       }
@@ -433,15 +473,12 @@ describe("GET /api/important-dates/available-pe3", () => {
 
       if (table === "important_dates") {
         return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              gte: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: { message: "Database connection error" },
-                }),
-              }),
-            }),
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          gte: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: null,
+            error: { message: "Database connection error" },
           }),
         };
       }

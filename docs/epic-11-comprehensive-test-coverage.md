@@ -60,6 +60,7 @@ Implementing comprehensive test coverage will:
 10. **Story 11.10**: PE3 Validation & UI Component Tests (30 tests)
 11. **Story 11.11**: Mobile Responsive UI Tests (15 tests)
 12. **Story 11.12**: Employee Card Expansion Tests (10 tests)
+13. **Story 11.13**: Test Suite Cleanup and Fixes (all tests)
 
 **Test Types:**
 - Unit tests (business logic, utilities, services)
@@ -354,6 +355,27 @@ Implementing comprehensive test coverage will:
 
 ---
 
+### Story 11.13: Test Suite Cleanup and Fixes
+
+**Priority**: P0 (Critical)
+
+**Goal**: Run all tests in the project, fix failing tests, and remove/update outdated tests to match current architecture.
+
+**Test Coverage:**
+- Execute all test types (unit, integration, e2e, performance)
+- Fix failing tests (API changes, schema changes, service changes)
+- Remove outdated tests (removed features, deprecated patterns)
+- Update tests for current architecture (repository pattern, API structure, component patterns)
+- Validate test suite health (all passing, no flaky tests)
+
+**Estimated Tests**: All existing tests (validate and fix)
+
+**Dependencies**: None (can run independently)
+
+**Story Points**: 5
+
+---
+
 ## Technical Implementation Notes
 
 ### Testing Framework Stack
@@ -501,6 +523,7 @@ export function createTestOMCDate(overrides = {}) {
 - Story 11.10 depends on Stories 8.10, 8.15, 9.5 (tests existing implementations)
 - Story 11.11 depends on Stories 9.1, 9.4 (tests mobile responsive implementations)
 - Story 11.12 depends on Story 9.4 (tests employee card expansion)
+- Story 11.13 has no dependencies (can run independently to validate all tests)
 
 **External Dependencies:**
 - Playwright installation (for E2E tests)
@@ -597,6 +620,7 @@ export function createTestOMCDate(overrides = {}) {
 | ---------- | ------- | ---------------------------- | ------------------ |
 | 2025-11-13 | 1.0     | Epic 11 created              | Sarah (PO)         |
 | 2025-11-13 | 1.1     | Post-Review Follow-ups added (Story 11.4) | Raz (AI) |
+| 2025-01-XX | 1.2     | Story 11.13 added (Test Suite Cleanup and Fixes) | PM |
 
 ---
 

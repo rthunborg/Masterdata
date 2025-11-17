@@ -26,8 +26,29 @@ import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { UserRole } from "@/lib/types/user";
+import { createClient } from "@/lib/supabase/server";
 
-vi.mock("@/lib/server/auth");
+vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/server/auth", async () => {
+  const actual = await vi.importActual("@/lib/server/auth");
+  return {
+    ...actual,
+    requireHRAdminAPI: vi.fn(),
+    createErrorResponse: vi.fn((error: unknown) => {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "INTERNAL_ERROR",
+            message,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+        { status: 500 }
+      );
+    }),
+  };
+});
 vi.mock("@/lib/server/repositories/employee-repository");
 vi.mock("@/lib/server/repositories/important-date-repository");
 vi.mock("@/lib/services/date-capacity");
@@ -110,6 +131,20 @@ describe("Capacity Management API Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    // Mock Supabase client
+    vi.mocked(createClient).mockResolvedValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          })),
+        })),
+        update: vi.fn(() => ({
+          eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+        })),
+      })),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    } as any);
   });
 
   describe("POST /api/employees - Spot decrement on date assignment", () => {
@@ -280,8 +315,9 @@ describe("Capacity Management API Integration Tests", () => {
   describe("POST /api/important-dates - Default capacity setup", () => {
     it("should set default capacity when creating important date", async () => {
       const dateData = {
+        year: 2025,
         category: "ÖMC Dates",
-        date_value: "2025-03-15",
+        date_value: "8-9/3", // ÖMC format: two-day range
         max_spots: 20,
       };
 
@@ -309,8 +345,9 @@ describe("Capacity Management API Integration Tests", () => {
     it("should set default capacity by category (ÖMC=20, Stena=99, PE3=1)", async () => {
       // Test ÖMC default
       const omcDateData = {
+        year: 2025,
         category: "ÖMC Dates",
-        date_value: "2025-03-15",
+        date_value: "8-9/3", // ÖMC format: two-day range
       };
 
       vi.mocked(importantDateRepository.create).mockResolvedValue({
@@ -332,6 +369,7 @@ describe("Capacity Management API Integration Tests", () => {
 
       // Test Stena default
       const stenaDateData = {
+        year: 2025,
         category: "Stena Dates",
         date_value: "2025-03-16",
       };
@@ -356,8 +394,10 @@ describe("Capacity Management API Integration Tests", () => {
 
       // Test PE3 default
       const pe3DateData = {
+        year: 2025,
         category: "PE3 Dates",
         date_value: "2025-03-17",
+        time_value: "14:00", // Required for PE3 dates
       };
 
       vi.mocked(importantDateRepository.create).mockResolvedValue({

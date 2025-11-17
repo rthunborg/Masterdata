@@ -51,7 +51,7 @@ describe("ImportantDatesTable", () => {
       year: 2025,
       category: "ÖMC Dates",
       date_description: "Fredag 7/3",
-      date_value: "8-9/3",
+      date_value: "2025-03-08", // ISO date string for ÖMC (will be formatted as "8-9 mars 2025")
       notes: "Important deadline",
       time_value: null,
     deadline_submit: null,
@@ -95,7 +95,8 @@ describe("ImportantDatesTable", () => {
       expect(screen.getByText("15-16/2")).toBeInTheDocument();
       expect(screen.getByText("Stena Dates")).toBeInTheDocument();
       expect(screen.getByText("Fredag 7/3")).toBeInTheDocument();
-      expect(screen.getByText("8-9/3")).toBeInTheDocument();
+      // ÖMC dates are formatted as "8-9 mars 2025" (Swedish format with month name)
+      expect(screen.getByText(/8-9 mars 2025/i)).toBeInTheDocument();
       expect(screen.getByText("ÖMC Dates")).toBeInTheDocument();
     });
 
@@ -122,7 +123,7 @@ describe("ImportantDatesTable", () => {
         />
       );
 
-      expect(screen.getByText(/No important dates found/i)).toBeInTheDocument();
+      expect(screen.getByText(/Inga viktiga datum hittades/i)).toBeInTheDocument();
     });
 
     it("should render all table columns", () => {
@@ -134,13 +135,13 @@ describe("ImportantDatesTable", () => {
         />
       );
 
-      expect(screen.getByText("Week Number")).toBeInTheDocument();
-      expect(screen.getByText("Year")).toBeInTheDocument();
-      expect(screen.getByText("Category")).toBeInTheDocument();
-      expect(screen.getByText("Date Description")).toBeInTheDocument();
-      expect(screen.getByText("Date")).toBeInTheDocument();
-      expect(screen.getByText("Notes")).toBeInTheDocument();
-      expect(screen.getByText("Actions")).toBeInTheDocument();
+      expect(screen.getByText("Veckonummer")).toBeInTheDocument();
+      expect(screen.getByText("År")).toBeInTheDocument();
+      expect(screen.getByText("Kategori")).toBeInTheDocument();
+      expect(screen.getByText("Datumbeskrivning")).toBeInTheDocument();
+      expect(screen.getByText("Datum")).toBeInTheDocument();
+      expect(screen.getByText("Anteckningar")).toBeInTheDocument();
+      expect(screen.getByText("Åtgärder")).toBeInTheDocument();
     });
   });
 
@@ -211,7 +212,7 @@ describe("ImportantDatesTable", () => {
         />
       );
 
-      expect(screen.getByLabelText(/filter by category/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/filtrera efter kategori/i)).toBeInTheDocument();
     });
 
     it("should filter dates by Stena Dates category", () => {
@@ -280,7 +281,7 @@ describe("ImportantDatesTable", () => {
         />
       );
 
-      const categoryHeader = screen.getByText("Category");
+      const categoryHeader = screen.getByText("Kategori");
       expect(categoryHeader).toBeInTheDocument();
       
       // Click should trigger sorting

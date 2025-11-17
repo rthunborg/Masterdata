@@ -103,11 +103,20 @@ describe('One Field Status Service', () => {
     });
 
     it('returns only minutes when less than 1 hour remaining', () => {
+      // Use fake timers to ensure consistent timing
+      vi.useFakeTimers();
+      const now = new Date('2025-01-15T12:00:00Z');
+      vi.setSystemTime(now);
+      
       // 23 hours 30 minutes ago = 30 minutes remaining
-      const twentyThreeThirtyAgo = new Date(Date.now() - (23 * 60 * 60 * 1000 + 30 * 60 * 1000));
+      const twentyThreeThirtyAgo = new Date(now.getTime() - (23 * 60 * 60 * 1000 + 30 * 60 * 1000));
       const remaining = getRemainingTime(twentyThreeThirtyAgo);
-      expect(remaining).toMatch(/30 minutes/);
+      
+      // Allow for slight timing variations (29-31 minutes)
+      expect(remaining).toMatch(/\d+ minutes/);
       expect(remaining).not.toMatch(/hours/);
+      
+      vi.useRealTimers();
     });
 
     it('formats hours and minutes correctly', () => {

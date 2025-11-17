@@ -1,0 +1,2067 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - img "Stena Line" [ref=e6]
+          - heading "HR Masterdata" [level=1] [ref=e7]
+        - generic [ref=e8]:
+          - generic [ref=e9]: admin@test.com
+          - generic [ref=e10]: HR Administrator
+          - button "Logga ut" [ref=e11]:
+            - img
+            - generic [ref=e12]: Logga ut
+    - navigation [ref=e13]:
+      - generic [ref=e15]:
+        - link "Anställda" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+        - link "Viktiga datum" [ref=e17] [cursor=pointer]:
+          - /url: /dashboard/important-dates
+        - link "Användarhantering" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/admin/users
+        - link "Kolumninställningar" [ref=e19] [cursor=pointer]:
+          - /url: /dashboard/admin/columns
+    - main [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - heading "Personalhantering" [level=2] [ref=e24]
+            - paragraph [ref=e25]: Visa detaljer
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - img [ref=e29]
+                - text: "Visa som:"
+              - combobox "Visa som:" [ref=e32]:
+                - generic: HR Admin (Default)
+                - img
+            - button "Lägg till anställd" [ref=e33]:
+              - img
+              - text: Lägg till anställd
+            - button "Importera anställda" [ref=e34]:
+              - img
+              - text: Importera anställda
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - heading "Alla" [level=3] [ref=e37]
+            - paragraph [ref=e38]: Inga anställda hittades
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - generic [ref=e41]:
+                - checkbox "Visa arkiverade" [ref=e42]
+                - generic [ref=e43] [cursor=pointer]: Visa arkiverade
+              - generic [ref=e44]:
+                - checkbox "Visa uppsagda" [ref=e45]
+                - generic [ref=e46] [cursor=pointer]: Visa uppsagda
+              - generic [ref=e47]:
+                - checkbox "Behöver återbetalning" [ref=e48]
+                - generic [ref=e49] [cursor=pointer]: Behöver återbetalning
+            - generic [ref=e50]:
+              - generic [ref=e51]:
+                - img [ref=e52]
+                - textbox "Sök anställda..." [ref=e55]
+              - combobox [ref=e56]:
+                - generic: All Employees
+                - img
+              - button "Exportera & markera besättningsklar" [disabled]
+              - button "Kolumnsynlighet" [ref=e58]:
+                - img
+                - text: Kolumnsynlighet
+            - table [ref=e61]:
+              - rowgroup [ref=e62]:
+                - row [ref=e63]:
+                  - cell "Sort by Stena Date" [ref=e64]:
+                    - button "Sort by Stena Date" [ref=e67] [cursor=pointer]:
+                      - generic [ref=e68]: Stena Date
+                      - img [ref=e70]
+                  - cell "Sort by ÖMC Date" [ref=e74]:
+                    - button "Sort by ÖMC Date" [ref=e77] [cursor=pointer]:
+                      - generic [ref=e78]: ÖMC Date
+                      - img [ref=e80]
+                  - cell "Sort by PE3 Date" [ref=e84]:
+                    - button "Sort by PE3 Date" [ref=e87] [cursor=pointer]:
+                      - generic [ref=e88]: PE3 Date
+                      - img [ref=e90]
+                  - cell "Sort by First Name" [ref=e94]:
+                    - button "Sort by First Name" [ref=e97] [cursor=pointer]:
+                      - generic [ref=e98]: First Name
+                      - img [ref=e100]
+                  - cell "Sort by Surname" [ref=e104]:
+                    - button "Sort by Surname" [ref=e107] [cursor=pointer]:
+                      - generic [ref=e108]: Surname
+                      - img [ref=e110]
+                  - cell "Sort by Town District" [ref=e114]:
+                    - button "Sort by Town District" [ref=e117] [cursor=pointer]:
+                      - generic [ref=e118]: Town District
+                      - img [ref=e120]
+                  - cell "Sort by Mobile" [ref=e124]:
+                    - button "Sort by Mobile" [ref=e127] [cursor=pointer]:
+                      - generic [ref=e128]: Mobile
+                      - img [ref=e130]
+                  - cell "Sort by Email" [ref=e134]:
+                    - button "Sort by Email" [ref=e137] [cursor=pointer]:
+                      - generic [ref=e138]: Email
+                      - img [ref=e140]
+                  - cell "Sort by Social Security No." [ref=e144]:
+                    - button "Sort by Social Security No." [ref=e147] [cursor=pointer]:
+                      - generic [ref=e148]: Social Security No.
+                      - img [ref=e150]
+                  - cell "Sort by Anställningsdatum" [ref=e154]:
+                    - button "Sort by Anställningsdatum" [ref=e157] [cursor=pointer]:
+                      - generic [ref=e158]: Anställningsdatum
+                      - img [ref=e160]
+                  - cell "Sort by Rank" [ref=e164]:
+                    - button "Sort by Rank" [ref=e167] [cursor=pointer]:
+                      - generic [ref=e168]: Rank
+                      - img [ref=e170]
+                  - cell "Sort by Gender" [ref=e174]:
+                    - button "Sort by Gender" [ref=e177] [cursor=pointer]:
+                      - generic [ref=e178]: Gender
+                      - img [ref=e180]
+                  - cell "Sort by Comments" [ref=e184]:
+                    - button "Sort by Comments" [ref=e187] [cursor=pointer]:
+                      - generic [ref=e188]: Comments
+                      - img [ref=e190]
+                  - cell "Sort by One" [ref=e194]:
+                    - button "Sort by One" [ref=e197] [cursor=pointer]:
+                      - generic [ref=e198]: One
+                      - img [ref=e200]
+                  - cell "Sort by ISPS" [ref=e204]:
+                    - button "Sort by ISPS" [ref=e207] [cursor=pointer]:
+                      - generic [ref=e208]: ISPS
+                      - img [ref=e210]
+                  - cell "Sort by Photo" [ref=e214]:
+                    - button "Sort by Photo" [ref=e217] [cursor=pointer]:
+                      - generic [ref=e218]: Photo
+                      - img [ref=e220]
+                  - cell "Sort by Origo" [ref=e224]:
+                    - button "Sort by Origo" [ref=e227] [cursor=pointer]:
+                      - generic [ref=e228]: Origo
+                      - img [ref=e230]
+                  - cell "Sort by Lönenivå" [ref=e234]:
+                    - button "Sort by Lönenivå" [ref=e237] [cursor=pointer]:
+                      - generic [ref=e238]: Lönenivå
+                      - img [ref=e240]
+                  - cell "Sort by Mail lön" [ref=e244]:
+                    - button "Sort by Mail lön" [ref=e247] [cursor=pointer]:
+                      - generic [ref=e248]: Mail lön
+                      - img [ref=e250]
+                  - cell "Sort by Bankuppgifter" [ref=e254]:
+                    - button "Sort by Bankuppgifter" [ref=e257] [cursor=pointer]:
+                      - generic [ref=e258]: Bankuppgifter
+                      - img [ref=e260]
+                  - cell "Sort by LI" [ref=e264]:
+                    - button "Sort by LI" [ref=e267] [cursor=pointer]:
+                      - generic [ref=e268]: LI
+                      - img [ref=e270]
+                  - cell "Sort by Passport" [ref=e274]:
+                    - button "Sort by Passport" [ref=e277] [cursor=pointer]:
+                      - generic [ref=e278]: Passport
+                      - img [ref=e280]
+                  - cell "Sort by Kvitto C17/18" [ref=e284]:
+                    - button "Sort by Kvitto C17/18" [ref=e287] [cursor=pointer]:
+                      - generic [ref=e288]: Kvitto C17/18
+                      - img [ref=e290]
+                  - cell "Sort by C17" [ref=e294]:
+                    - button "Sort by C17" [ref=e297] [cursor=pointer]:
+                      - generic [ref=e298]: C17
+                      - img [ref=e300]
+                  - cell "Sort by Crewing/Done" [ref=e304]:
+                    - button "Sort by Crewing/Done" [ref=e307] [cursor=pointer]:
+                      - generic [ref=e308]: Crewing/Done
+                      - img [ref=e310]
+                  - cell "Sort by Stena ID- Origo nummer Toplux" [ref=e314]:
+                    - generic [ref=e315]:
+                      - button "Sort by Stena ID- Origo nummer" [ref=e317] [cursor=pointer]:
+                        - generic [ref=e318]: Stena ID- Origo nummer
+                        - img [ref=e320]
+                      - generic [ref=e323]: Toplux
+                  - cell "Sort by Beställning gjord Toplux" [ref=e325]:
+                    - generic [ref=e326]:
+                      - button "Sort by Beställning gjord" [ref=e328] [cursor=pointer]:
+                        - generic [ref=e329]: Beställning gjord
+                        - img [ref=e331]
+                      - generic [ref=e334]: Toplux
+                  - cell "Sort by Fartyg Toplux" [ref=e336]:
+                    - generic [ref=e337]:
+                      - button "Sort by Fartyg" [ref=e339] [cursor=pointer]:
+                        - generic [ref=e340]: Fartyg
+                        - img [ref=e342]
+                      - generic [ref=e345]: Toplux
+                  - cell "Sort by Skickat beställning till Fartyg/Warehouse Toplux" [ref=e347]:
+                    - generic [ref=e348]:
+                      - button "Sort by Skickat beställning till Fartyg/Warehouse" [ref=e350] [cursor=pointer]:
+                        - generic [ref=e351]: Skickat beställning till Fartyg/Warehouse
+                        - img [ref=e353]
+                      - generic [ref=e356]: Toplux
+                  - cell "Sort by Mottaget Toplux" [ref=e358]:
+                    - generic [ref=e359]:
+                      - button "Sort by Mottaget" [ref=e361] [cursor=pointer]:
+                        - generic [ref=e362]: Mottaget
+                        - img [ref=e364]
+                      - generic [ref=e367]: Toplux
+                  - cell "Sort by Kontaktat medarbetare Toplux" [ref=e369]:
+                    - generic [ref=e370]:
+                      - button "Sort by Kontaktat medarbetare" [ref=e372] [cursor=pointer]:
+                        - generic [ref=e373]: Kontaktat medarbetare
+                        - img [ref=e375]
+                      - generic [ref=e378]: Toplux
+                  - cell "Sort by Uthämtat Toplux" [ref=e380]:
+                    - generic [ref=e381]:
+                      - button "Sort by Uthämtat" [ref=e383] [cursor=pointer]:
+                        - generic [ref=e384]: Uthämtat
+                        - img [ref=e386]
+                      - generic [ref=e389]: Toplux
+                  - cell "Sort by Talmundo" [ref=e391]:
+                    - button "Sort by Talmundo" [ref=e394] [cursor=pointer]:
+                      - generic [ref=e395]: Talmundo
+                      - img [ref=e397]
+                  - cell "Sort by Mottagit kort Toplux" [ref=e401]:
+                    - generic [ref=e402]:
+                      - button "Sort by Mottagit kort" [ref=e404] [cursor=pointer]:
+                        - generic [ref=e405]: Mottagit kort
+                        - img [ref=e407]
+                      - generic [ref=e410]: Toplux
+                  - cell "Sort by Skickat kort till fartyg Toplux" [ref=e412]:
+                    - generic [ref=e413]:
+                      - button "Sort by Skickat kort till fartyg" [ref=e415] [cursor=pointer]:
+                        - generic [ref=e416]: Skickat kort till fartyg
+                        - img [ref=e418]
+                      - generic [ref=e421]: Toplux
+                  - cell "Sort by Ersatt Payroll" [ref=e423]:
+                    - generic [ref=e424]:
+                      - button "Sort by Ersatt" [ref=e426] [cursor=pointer]:
+                        - generic [ref=e427]: Ersatt
+                        - img [ref=e429]
+                      - generic [ref=e432]: Payroll
+                  - cell "Sort by Klart/sign Payroll" [ref=e434]:
+                    - generic [ref=e435]:
+                      - button "Sort by Klart/sign" [ref=e437] [cursor=pointer]:
+                        - generic [ref=e438]: Klart/sign
+                        - img [ref=e440]
+                      - generic [ref=e443]: Payroll
+                  - cell "Sort by Notering Payroll" [ref=e445]:
+                    - generic [ref=e446]:
+                      - button "Sort by Notering" [ref=e448] [cursor=pointer]:
+                        - generic [ref=e449]: Notering
+                        - img [ref=e451]
+                      - generic [ref=e454]: Payroll
+                  - cell "Sort by Rotation 1 or 2 OMC" [ref=e456]:
+                    - generic [ref=e457]:
+                      - button "Sort by Rotation 1 or 2" [ref=e459] [cursor=pointer]:
+                        - generic [ref=e460]: Rotation 1 or 2
+                        - img [ref=e462]
+                      - generic [ref=e465]: OMC
+                  - cell "Sort by Hotel Required? OMC" [ref=e467]:
+                    - generic [ref=e468]:
+                      - button "Sort by Hotel Required?" [ref=e470] [cursor=pointer]:
+                        - generic [ref=e471]: Hotel Required?
+                        - img [ref=e473]
+                      - generic [ref=e476]: OMC
+                  - cell "Sort by Room Number (Shared) OMC" [ref=e478]:
+                    - generic [ref=e479]:
+                      - button "Sort by Room Number (Shared)" [ref=e481] [cursor=pointer]:
+                        - generic [ref=e482]: Room Number (Shared)
+                        - img [ref=e484]
+                      - generic [ref=e487]: OMC
+                  - cell "Sort by Dietary Requirement? OMC" [ref=e489]:
+                    - generic [ref=e490]:
+                      - button "Sort by Dietary Requirement?" [ref=e492] [cursor=pointer]:
+                        - generic [ref=e493]: Dietary Requirement?
+                        - img [ref=e495]
+                      - generic [ref=e498]: OMC
+                  - cell "Sort by Joining Instructions sent OMC" [ref=e500]:
+                    - generic [ref=e501]:
+                      - button "Sort by Joining Instructions sent" [ref=e503] [cursor=pointer]:
+                        - generic [ref=e504]: Joining Instructions sent
+                        - img [ref=e506]
+                      - generic [ref=e509]: OMC
+                  - cell "Sort by Candidate Confirmed OMC" [ref=e511]:
+                    - generic [ref=e512]:
+                      - button "Sort by Candidate Confirmed" [ref=e514] [cursor=pointer]:
+                        - generic [ref=e515]: Candidate Confirmed
+                        - img [ref=e517]
+                      - generic [ref=e520]: OMC
+                  - cell "Sort by Seably OMC" [ref=e522]:
+                    - generic [ref=e523]:
+                      - button "Sort by Seably" [ref=e525] [cursor=pointer]:
+                        - generic [ref=e526]: Seably
+                        - img [ref=e528]
+                      - generic [ref=e531]: OMC
+                  - cell "Sort by Receipt C-17 OMC" [ref=e533]:
+                    - generic [ref=e534]:
+                      - button "Sort by Receipt C-17" [ref=e536] [cursor=pointer]:
+                        - generic [ref=e537]: Receipt C-17
+                        - img [ref=e539]
+                      - generic [ref=e542]: OMC
+                  - cell "Sort by C-17 Certificate OMC" [ref=e544]:
+                    - generic [ref=e545]:
+                      - button "Sort by C-17 Certificate" [ref=e547] [cursor=pointer]:
+                        - generic [ref=e548]: C-17 Certificate
+                        - img [ref=e550]
+                      - generic [ref=e553]: OMC
+                  - cell "Sort by Receipt C-18 OMC" [ref=e555]:
+                    - generic [ref=e556]:
+                      - button "Sort by Receipt C-18" [ref=e558] [cursor=pointer]:
+                        - generic [ref=e559]: Receipt C-18
+                        - img [ref=e561]
+                      - generic [ref=e564]: OMC
+                  - cell "Sort by C-18 Certificate OMC" [ref=e566]:
+                    - generic [ref=e567]:
+                      - button "Sort by C-18 Certificate" [ref=e569] [cursor=pointer]:
+                        - generic [ref=e570]: C-18 Certificate
+                        - img [ref=e572]
+                      - generic [ref=e575]: OMC
+                  - cell "Sort by ÖMC Certificate OMC" [ref=e577]:
+                    - generic [ref=e578]:
+                      - button "Sort by ÖMC Certificate" [ref=e580] [cursor=pointer]:
+                        - generic [ref=e581]: ÖMC Certificate
+                        - img [ref=e583]
+                      - generic [ref=e586]: OMC
+                  - cell "Sort by Uploaded in CrewSF OMC" [ref=e588]:
+                    - generic [ref=e589]:
+                      - button "Sort by Uploaded in CrewSF" [ref=e591] [cursor=pointer]:
+                        - generic [ref=e592]: Uploaded in CrewSF
+                        - img [ref=e594]
+                      - generic [ref=e597]: OMC
+                  - cell "Sort by Completed OMC" [ref=e599]:
+                    - generic [ref=e600]:
+                      - button "Sort by Completed" [ref=e602] [cursor=pointer]:
+                        - generic [ref=e603]: Completed
+                        - img [ref=e605]
+                      - generic [ref=e608]: OMC
+                  - cell "Åtgärder" [ref=e610]:
+                    - generic [ref=e612]: Åtgärder
+              - rowgroup [ref=e614]:
+                - row [ref=e615]:
+                  - cell "Edit stena_date" [ref=e616]:
+                    - gridcell "Edit stena_date" [ref=e617] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e618]:
+                    - gridcell "Edit omc_date" [ref=e619] [cursor=pointer]:
+                      - generic [ref=e620]: —
+                  - cell "Edit pe3_date" [ref=e621]:
+                    - gridcell "Edit pe3_date" [ref=e622] [cursor=pointer]:
+                      - generic [ref=e623]: —
+                  - cell "Edit first_name" [ref=e624]:
+                    - gridcell "Edit first_name" [ref=e625] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e626]:
+                    - gridcell "Edit surname" [ref=e627] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e628]:
+                    - gridcell "Edit town_district" [ref=e629] [cursor=pointer]:
+                      - generic [ref=e630]: —
+                  - cell "Edit mobile" [ref=e631]:
+                    - gridcell "Edit mobile" [ref=e632] [cursor=pointer]:
+                      - generic [ref=e633]: —
+                  - cell "Edit email" [ref=e634]:
+                    - gridcell "Edit email" [ref=e635] [cursor=pointer]:
+                      - generic [ref=e636]: —
+                  - cell "Edit social_security_no." [ref=e637]:
+                    - gridcell "Edit social_security_no." [ref=e638] [cursor=pointer]:
+                      - generic [ref=e639]: —
+                  - cell "Edit hire_date" [ref=e640]:
+                    - gridcell "Edit hire_date" [ref=e641] [cursor=pointer]:
+                      - generic [ref=e642]: —
+                  - cell "Edit rank" [ref=e643]:
+                    - gridcell "Edit rank" [ref=e644] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e645]:
+                    - gridcell "Edit gender" [ref=e646] [cursor=pointer]:
+                      - generic [ref=e647]: —
+                  - cell "Edit comments" [ref=e648]:
+                    - gridcell "Edit comments" [ref=e649] [cursor=pointer]:
+                      - generic [ref=e650]: —
+                  - cell "Edit one" [ref=e651]:
+                    - gridcell "Edit one" [ref=e652] [cursor=pointer]:
+                      - generic [ref=e653]: —
+                  - cell "Edit isps" [ref=e654]:
+                    - gridcell "Edit isps" [ref=e655] [cursor=pointer]:
+                      - generic [ref=e656]: —
+                  - cell "Edit photo" [ref=e657]:
+                    - gridcell "Edit photo" [ref=e658] [cursor=pointer]:
+                      - generic [ref=e659]: —
+                  - cell "Edit origo" [ref=e660]:
+                    - gridcell "Edit origo" [ref=e661] [cursor=pointer]:
+                      - generic [ref=e662]: —
+                  - cell "Edit lönenivå" [ref=e663]:
+                    - gridcell "Edit lönenivå" [ref=e664] [cursor=pointer]:
+                      - generic [ref=e665]: —
+                  - cell "Edit mail_lön" [ref=e666]:
+                    - gridcell "Edit mail_lön" [ref=e667] [cursor=pointer]:
+                      - generic [ref=e668]: —
+                  - cell "Edit bankuppgifter" [ref=e669]:
+                    - gridcell "Edit bankuppgifter" [ref=e670] [cursor=pointer]:
+                      - generic [ref=e671]: —
+                  - cell "Edit li" [ref=e672]:
+                    - gridcell "Edit li" [ref=e673] [cursor=pointer]:
+                      - generic [ref=e674]: —
+                  - cell "Edit passport" [ref=e675]:
+                    - gridcell "Edit passport" [ref=e676] [cursor=pointer]:
+                      - generic [ref=e677]: —
+                  - cell "Edit kvitto_c17/18" [ref=e678]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e679] [cursor=pointer]:
+                      - generic [ref=e680]: —
+                  - cell "Edit c17" [ref=e681]:
+                    - gridcell "Edit c17" [ref=e682] [cursor=pointer]:
+                      - generic [ref=e683]: —
+                  - cell "Edit crewing/done" [ref=e684]:
+                    - gridcell "Edit crewing/done" [ref=e685] [cursor=pointer]:
+                      - generic [ref=e686]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e687]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e688] [cursor=pointer]:
+                      - generic [ref=e689]: —
+                  - cell "Edit bestallning_gjord" [ref=e690]:
+                    - gridcell "Edit bestallning_gjord" [ref=e691] [cursor=pointer]:
+                      - generic [ref=e692]: —
+                  - cell "Edit fartyg" [ref=e693]:
+                    - gridcell "Edit fartyg" [ref=e694] [cursor=pointer]:
+                      - generic [ref=e695]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e696]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e697] [cursor=pointer]:
+                      - generic [ref=e698]: —
+                  - cell "Edit mottaget" [ref=e699]:
+                    - gridcell "Edit mottaget" [ref=e700] [cursor=pointer]:
+                      - generic [ref=e701]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e702]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e703] [cursor=pointer]:
+                      - generic [ref=e704]: —
+                  - cell "Edit uthamtat" [ref=e705]:
+                    - gridcell "Edit uthamtat" [ref=e706] [cursor=pointer]:
+                      - generic [ref=e707]: —
+                  - cell "talmundo (read-only)" [ref=e708]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e709]: "No"
+                  - cell "Edit mottagit_kort" [ref=e710]:
+                    - gridcell "Edit mottagit_kort" [ref=e711] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e712]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e713] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e714]:
+                    - gridcell "Edit ersatt" [ref=e715] [cursor=pointer]:
+                      - generic [ref=e716]: —
+                  - cell "Edit klart_sign" [ref=e717]:
+                    - gridcell "Edit klart_sign" [ref=e718] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e719]:
+                    - gridcell "Edit notering" [ref=e720] [cursor=pointer]:
+                      - generic [ref=e721]: —
+                  - cell "Edit rotation" [ref=e722]:
+                    - gridcell "Edit rotation" [ref=e723] [cursor=pointer]:
+                      - generic [ref=e724]: —
+                  - cell "Edit hotel_required" [ref=e725]:
+                    - gridcell "Edit hotel_required" [ref=e726] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e727]:
+                    - gridcell "Edit room_number_shared" [ref=e728] [cursor=pointer]:
+                      - generic [ref=e729]: —
+                  - cell "Edit dietary_requirement" [ref=e730]:
+                    - gridcell "Edit dietary_requirement" [ref=e731] [cursor=pointer]:
+                      - generic [ref=e732]: —
+                  - cell "Edit joining_instructions_sent" [ref=e733]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e734] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e735]:
+                    - gridcell "Edit candidate_confirmed" [ref=e736] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e737]:
+                    - gridcell "Edit seably_status" [ref=e738] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e739]:
+                    - gridcell "Edit receipt_c17" [ref=e740] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e741]:
+                    - gridcell "Edit certificate_c17" [ref=e742] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e743]:
+                    - gridcell "Edit receipt_c18" [ref=e744] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e745]:
+                    - gridcell "Edit certificate_c18" [ref=e746] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e747]:
+                    - gridcell "Edit omc_certificate" [ref=e748] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e749]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e750] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e751]:
+                    - gridcell "Edit completed" [ref=e752] [cursor=pointer]: "No"
+                  - cell [ref=e753]:
+                    - generic [ref=e754]:
+                      - button [ref=e755]:
+                        - img
+                      - button [ref=e756]:
+                        - img
+                - row [ref=e757]:
+                  - cell "Edit stena_date" [ref=e758]:
+                    - gridcell "Edit stena_date" [ref=e759] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e760]:
+                    - gridcell "Edit omc_date" [ref=e761] [cursor=pointer]:
+                      - generic [ref=e762]: —
+                  - cell "Edit pe3_date" [ref=e763]:
+                    - gridcell "Edit pe3_date" [ref=e764] [cursor=pointer]:
+                      - generic [ref=e765]: —
+                  - cell "Edit first_name" [ref=e766]:
+                    - gridcell "Edit first_name" [ref=e767] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e768]:
+                    - gridcell "Edit surname" [ref=e769] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e770]:
+                    - gridcell "Edit town_district" [ref=e771] [cursor=pointer]:
+                      - generic [ref=e772]: —
+                  - cell "Edit mobile" [ref=e773]:
+                    - gridcell "Edit mobile" [ref=e774] [cursor=pointer]:
+                      - generic [ref=e775]: —
+                  - cell "Edit email" [ref=e776]:
+                    - gridcell "Edit email" [ref=e777] [cursor=pointer]:
+                      - generic [ref=e778]: —
+                  - cell "Edit social_security_no." [ref=e779]:
+                    - gridcell "Edit social_security_no." [ref=e780] [cursor=pointer]:
+                      - generic [ref=e781]: —
+                  - cell "Edit hire_date" [ref=e782]:
+                    - gridcell "Edit hire_date" [ref=e783] [cursor=pointer]:
+                      - generic [ref=e784]: —
+                  - cell "Edit rank" [ref=e785]:
+                    - gridcell "Edit rank" [ref=e786] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e787]:
+                    - gridcell "Edit gender" [ref=e788] [cursor=pointer]:
+                      - generic [ref=e789]: —
+                  - cell "Edit comments" [ref=e790]:
+                    - gridcell "Edit comments" [ref=e791] [cursor=pointer]:
+                      - generic [ref=e792]: —
+                  - cell "Edit one" [ref=e793]:
+                    - gridcell "Edit one" [ref=e794] [cursor=pointer]:
+                      - generic [ref=e795]: —
+                  - cell "Edit isps" [ref=e796]:
+                    - gridcell "Edit isps" [ref=e797] [cursor=pointer]:
+                      - generic [ref=e798]: —
+                  - cell "Edit photo" [ref=e799]:
+                    - gridcell "Edit photo" [ref=e800] [cursor=pointer]:
+                      - generic [ref=e801]: —
+                  - cell "Edit origo" [ref=e802]:
+                    - gridcell "Edit origo" [ref=e803] [cursor=pointer]:
+                      - generic [ref=e804]: —
+                  - cell "Edit lönenivå" [ref=e805]:
+                    - gridcell "Edit lönenivå" [ref=e806] [cursor=pointer]:
+                      - generic [ref=e807]: —
+                  - cell "Edit mail_lön" [ref=e808]:
+                    - gridcell "Edit mail_lön" [ref=e809] [cursor=pointer]:
+                      - generic [ref=e810]: —
+                  - cell "Edit bankuppgifter" [ref=e811]:
+                    - gridcell "Edit bankuppgifter" [ref=e812] [cursor=pointer]:
+                      - generic [ref=e813]: —
+                  - cell "Edit li" [ref=e814]:
+                    - gridcell "Edit li" [ref=e815] [cursor=pointer]:
+                      - generic [ref=e816]: —
+                  - cell "Edit passport" [ref=e817]:
+                    - gridcell "Edit passport" [ref=e818] [cursor=pointer]:
+                      - generic [ref=e819]: —
+                  - cell "Edit kvitto_c17/18" [ref=e820]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e821] [cursor=pointer]:
+                      - generic [ref=e822]: —
+                  - cell "Edit c17" [ref=e823]:
+                    - gridcell "Edit c17" [ref=e824] [cursor=pointer]:
+                      - generic [ref=e825]: —
+                  - cell "Edit crewing/done" [ref=e826]:
+                    - gridcell "Edit crewing/done" [ref=e827] [cursor=pointer]:
+                      - generic [ref=e828]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e829]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e830] [cursor=pointer]:
+                      - generic [ref=e831]: —
+                  - cell "Edit bestallning_gjord" [ref=e832]:
+                    - gridcell "Edit bestallning_gjord" [ref=e833] [cursor=pointer]:
+                      - generic [ref=e834]: —
+                  - cell "Edit fartyg" [ref=e835]:
+                    - gridcell "Edit fartyg" [ref=e836] [cursor=pointer]:
+                      - generic [ref=e837]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e838]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e839] [cursor=pointer]:
+                      - generic [ref=e840]: —
+                  - cell "Edit mottaget" [ref=e841]:
+                    - gridcell "Edit mottaget" [ref=e842] [cursor=pointer]:
+                      - generic [ref=e843]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e844]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e845] [cursor=pointer]:
+                      - generic [ref=e846]: —
+                  - cell "Edit uthamtat" [ref=e847]:
+                    - gridcell "Edit uthamtat" [ref=e848] [cursor=pointer]:
+                      - generic [ref=e849]: —
+                  - cell "talmundo (read-only)" [ref=e850]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e851]: "No"
+                  - cell "Edit mottagit_kort" [ref=e852]:
+                    - gridcell "Edit mottagit_kort" [ref=e853] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e854]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e855] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e856]:
+                    - gridcell "Edit ersatt" [ref=e857] [cursor=pointer]:
+                      - generic [ref=e858]: —
+                  - cell "Edit klart_sign" [ref=e859]:
+                    - gridcell "Edit klart_sign" [ref=e860] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e861]:
+                    - gridcell "Edit notering" [ref=e862] [cursor=pointer]:
+                      - generic [ref=e863]: —
+                  - cell "Edit rotation" [ref=e864]:
+                    - gridcell "Edit rotation" [ref=e865] [cursor=pointer]:
+                      - generic [ref=e866]: —
+                  - cell "Edit hotel_required" [ref=e867]:
+                    - gridcell "Edit hotel_required" [ref=e868] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e869]:
+                    - gridcell "Edit room_number_shared" [ref=e870] [cursor=pointer]:
+                      - generic [ref=e871]: —
+                  - cell "Edit dietary_requirement" [ref=e872]:
+                    - gridcell "Edit dietary_requirement" [ref=e873] [cursor=pointer]:
+                      - generic [ref=e874]: —
+                  - cell "Edit joining_instructions_sent" [ref=e875]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e876] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e877]:
+                    - gridcell "Edit candidate_confirmed" [ref=e878] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e879]:
+                    - gridcell "Edit seably_status" [ref=e880] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e881]:
+                    - gridcell "Edit receipt_c17" [ref=e882] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e883]:
+                    - gridcell "Edit certificate_c17" [ref=e884] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e885]:
+                    - gridcell "Edit receipt_c18" [ref=e886] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e887]:
+                    - gridcell "Edit certificate_c18" [ref=e888] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e889]:
+                    - gridcell "Edit omc_certificate" [ref=e890] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e891]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e892] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e893]:
+                    - gridcell "Edit completed" [ref=e894] [cursor=pointer]: "No"
+                  - cell [ref=e895]:
+                    - generic [ref=e896]:
+                      - button [ref=e897]:
+                        - img
+                      - button [ref=e898]:
+                        - img
+                - row [ref=e899]:
+                  - cell "Edit stena_date" [ref=e900]:
+                    - gridcell "Edit stena_date" [ref=e901] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e902]:
+                    - gridcell "Edit omc_date" [ref=e903] [cursor=pointer]:
+                      - generic [ref=e904]: —
+                  - cell "Edit pe3_date" [ref=e905]:
+                    - gridcell "Edit pe3_date" [ref=e906] [cursor=pointer]:
+                      - generic [ref=e907]: —
+                  - cell "Edit first_name" [ref=e908]:
+                    - gridcell "Edit first_name" [ref=e909] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e910]:
+                    - gridcell "Edit surname" [ref=e911] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e912]:
+                    - gridcell "Edit town_district" [ref=e913] [cursor=pointer]:
+                      - generic [ref=e914]: —
+                  - cell "Edit mobile" [ref=e915]:
+                    - gridcell "Edit mobile" [ref=e916] [cursor=pointer]:
+                      - generic [ref=e917]: —
+                  - cell "Edit email" [ref=e918]:
+                    - gridcell "Edit email" [ref=e919] [cursor=pointer]:
+                      - generic [ref=e920]: —
+                  - cell "Edit social_security_no." [ref=e921]:
+                    - gridcell "Edit social_security_no." [ref=e922] [cursor=pointer]:
+                      - generic [ref=e923]: —
+                  - cell "Edit hire_date" [ref=e924]:
+                    - gridcell "Edit hire_date" [ref=e925] [cursor=pointer]:
+                      - generic [ref=e926]: —
+                  - cell "Edit rank" [ref=e927]:
+                    - gridcell "Edit rank" [ref=e928] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e929]:
+                    - gridcell "Edit gender" [ref=e930] [cursor=pointer]:
+                      - generic [ref=e931]: —
+                  - cell "Edit comments" [ref=e932]:
+                    - gridcell "Edit comments" [ref=e933] [cursor=pointer]:
+                      - generic [ref=e934]: —
+                  - cell "Edit one" [ref=e935]:
+                    - gridcell "Edit one" [ref=e936] [cursor=pointer]:
+                      - generic [ref=e937]: —
+                  - cell "Edit isps" [ref=e938]:
+                    - gridcell "Edit isps" [ref=e939] [cursor=pointer]:
+                      - generic [ref=e940]: —
+                  - cell "Edit photo" [ref=e941]:
+                    - gridcell "Edit photo" [ref=e942] [cursor=pointer]:
+                      - generic [ref=e943]: —
+                  - cell "Edit origo" [ref=e944]:
+                    - gridcell "Edit origo" [ref=e945] [cursor=pointer]:
+                      - generic [ref=e946]: —
+                  - cell "Edit lönenivå" [ref=e947]:
+                    - gridcell "Edit lönenivå" [ref=e948] [cursor=pointer]:
+                      - generic [ref=e949]: —
+                  - cell "Edit mail_lön" [ref=e950]:
+                    - gridcell "Edit mail_lön" [ref=e951] [cursor=pointer]:
+                      - generic [ref=e952]: —
+                  - cell "Edit bankuppgifter" [ref=e953]:
+                    - gridcell "Edit bankuppgifter" [ref=e954] [cursor=pointer]:
+                      - generic [ref=e955]: —
+                  - cell "Edit li" [ref=e956]:
+                    - gridcell "Edit li" [ref=e957] [cursor=pointer]:
+                      - generic [ref=e958]: —
+                  - cell "Edit passport" [ref=e959]:
+                    - gridcell "Edit passport" [ref=e960] [cursor=pointer]:
+                      - generic [ref=e961]: —
+                  - cell "Edit kvitto_c17/18" [ref=e962]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e963] [cursor=pointer]:
+                      - generic [ref=e964]: —
+                  - cell "Edit c17" [ref=e965]:
+                    - gridcell "Edit c17" [ref=e966] [cursor=pointer]:
+                      - generic [ref=e967]: —
+                  - cell "Edit crewing/done" [ref=e968]:
+                    - gridcell "Edit crewing/done" [ref=e969] [cursor=pointer]:
+                      - generic [ref=e970]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e971]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e972] [cursor=pointer]:
+                      - generic [ref=e973]: —
+                  - cell "Edit bestallning_gjord" [ref=e974]:
+                    - gridcell "Edit bestallning_gjord" [ref=e975] [cursor=pointer]:
+                      - generic [ref=e976]: —
+                  - cell "Edit fartyg" [ref=e977]:
+                    - gridcell "Edit fartyg" [ref=e978] [cursor=pointer]:
+                      - generic [ref=e979]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e980]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e981] [cursor=pointer]:
+                      - generic [ref=e982]: —
+                  - cell "Edit mottaget" [ref=e983]:
+                    - gridcell "Edit mottaget" [ref=e984] [cursor=pointer]:
+                      - generic [ref=e985]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e986]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e987] [cursor=pointer]:
+                      - generic [ref=e988]: —
+                  - cell "Edit uthamtat" [ref=e989]:
+                    - gridcell "Edit uthamtat" [ref=e990] [cursor=pointer]:
+                      - generic [ref=e991]: —
+                  - cell "talmundo (read-only)" [ref=e992]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e993]: "No"
+                  - cell "Edit mottagit_kort" [ref=e994]:
+                    - gridcell "Edit mottagit_kort" [ref=e995] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e996]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e997] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e998]:
+                    - gridcell "Edit ersatt" [ref=e999] [cursor=pointer]:
+                      - generic [ref=e1000]: —
+                  - cell "Edit klart_sign" [ref=e1001]:
+                    - gridcell "Edit klart_sign" [ref=e1002] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e1003]:
+                    - gridcell "Edit notering" [ref=e1004] [cursor=pointer]:
+                      - generic [ref=e1005]: —
+                  - cell "Edit rotation" [ref=e1006]:
+                    - gridcell "Edit rotation" [ref=e1007] [cursor=pointer]:
+                      - generic [ref=e1008]: —
+                  - cell "Edit hotel_required" [ref=e1009]:
+                    - gridcell "Edit hotel_required" [ref=e1010] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e1011]:
+                    - gridcell "Edit room_number_shared" [ref=e1012] [cursor=pointer]:
+                      - generic [ref=e1013]: —
+                  - cell "Edit dietary_requirement" [ref=e1014]:
+                    - gridcell "Edit dietary_requirement" [ref=e1015] [cursor=pointer]:
+                      - generic [ref=e1016]: —
+                  - cell "Edit joining_instructions_sent" [ref=e1017]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e1018] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e1019]:
+                    - gridcell "Edit candidate_confirmed" [ref=e1020] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e1021]:
+                    - gridcell "Edit seably_status" [ref=e1022] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e1023]:
+                    - gridcell "Edit receipt_c17" [ref=e1024] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e1025]:
+                    - gridcell "Edit certificate_c17" [ref=e1026] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e1027]:
+                    - gridcell "Edit receipt_c18" [ref=e1028] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e1029]:
+                    - gridcell "Edit certificate_c18" [ref=e1030] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e1031]:
+                    - gridcell "Edit omc_certificate" [ref=e1032] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e1033]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e1034] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e1035]:
+                    - gridcell "Edit completed" [ref=e1036] [cursor=pointer]: "No"
+                  - cell [ref=e1037]:
+                    - generic [ref=e1038]:
+                      - button [ref=e1039]:
+                        - img
+                      - button [ref=e1040]:
+                        - img
+                - row [ref=e1041]:
+                  - cell "Edit stena_date" [ref=e1042]:
+                    - gridcell "Edit stena_date" [ref=e1043] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e1044]:
+                    - gridcell "Edit omc_date" [ref=e1045] [cursor=pointer]:
+                      - generic [ref=e1046]: —
+                  - cell "Edit pe3_date" [ref=e1047]:
+                    - gridcell "Edit pe3_date" [ref=e1048] [cursor=pointer]:
+                      - generic [ref=e1049]: —
+                  - cell "Edit first_name" [ref=e1050]:
+                    - gridcell "Edit first_name" [ref=e1051] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e1052]:
+                    - gridcell "Edit surname" [ref=e1053] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e1054]:
+                    - gridcell "Edit town_district" [ref=e1055] [cursor=pointer]:
+                      - generic [ref=e1056]: —
+                  - cell "Edit mobile" [ref=e1057]:
+                    - gridcell "Edit mobile" [ref=e1058] [cursor=pointer]:
+                      - generic [ref=e1059]: —
+                  - cell "Edit email" [ref=e1060]:
+                    - gridcell "Edit email" [ref=e1061] [cursor=pointer]:
+                      - generic [ref=e1062]: —
+                  - cell "Edit social_security_no." [ref=e1063]:
+                    - gridcell "Edit social_security_no." [ref=e1064] [cursor=pointer]:
+                      - generic [ref=e1065]: —
+                  - cell "Edit hire_date" [ref=e1066]:
+                    - gridcell "Edit hire_date" [ref=e1067] [cursor=pointer]:
+                      - generic [ref=e1068]: —
+                  - cell "Edit rank" [ref=e1069]:
+                    - gridcell "Edit rank" [ref=e1070] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e1071]:
+                    - gridcell "Edit gender" [ref=e1072] [cursor=pointer]:
+                      - generic [ref=e1073]: —
+                  - cell "Edit comments" [ref=e1074]:
+                    - gridcell "Edit comments" [ref=e1075] [cursor=pointer]:
+                      - generic [ref=e1076]: —
+                  - cell "Edit one" [ref=e1077]:
+                    - gridcell "Edit one" [ref=e1078] [cursor=pointer]:
+                      - generic [ref=e1079]: —
+                  - cell "Edit isps" [ref=e1080]:
+                    - gridcell "Edit isps" [ref=e1081] [cursor=pointer]:
+                      - generic [ref=e1082]: —
+                  - cell "Edit photo" [ref=e1083]:
+                    - gridcell "Edit photo" [ref=e1084] [cursor=pointer]:
+                      - generic [ref=e1085]: —
+                  - cell "Edit origo" [ref=e1086]:
+                    - gridcell "Edit origo" [ref=e1087] [cursor=pointer]:
+                      - generic [ref=e1088]: —
+                  - cell "Edit lönenivå" [ref=e1089]:
+                    - gridcell "Edit lönenivå" [ref=e1090] [cursor=pointer]:
+                      - generic [ref=e1091]: —
+                  - cell "Edit mail_lön" [ref=e1092]:
+                    - gridcell "Edit mail_lön" [ref=e1093] [cursor=pointer]:
+                      - generic [ref=e1094]: —
+                  - cell "Edit bankuppgifter" [ref=e1095]:
+                    - gridcell "Edit bankuppgifter" [ref=e1096] [cursor=pointer]:
+                      - generic [ref=e1097]: —
+                  - cell "Edit li" [ref=e1098]:
+                    - gridcell "Edit li" [ref=e1099] [cursor=pointer]:
+                      - generic [ref=e1100]: —
+                  - cell "Edit passport" [ref=e1101]:
+                    - gridcell "Edit passport" [ref=e1102] [cursor=pointer]:
+                      - generic [ref=e1103]: —
+                  - cell "Edit kvitto_c17/18" [ref=e1104]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e1105] [cursor=pointer]:
+                      - generic [ref=e1106]: —
+                  - cell "Edit c17" [ref=e1107]:
+                    - gridcell "Edit c17" [ref=e1108] [cursor=pointer]:
+                      - generic [ref=e1109]: —
+                  - cell "Edit crewing/done" [ref=e1110]:
+                    - gridcell "Edit crewing/done" [ref=e1111] [cursor=pointer]:
+                      - generic [ref=e1112]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e1113]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e1114] [cursor=pointer]:
+                      - generic [ref=e1115]: —
+                  - cell "Edit bestallning_gjord" [ref=e1116]:
+                    - gridcell "Edit bestallning_gjord" [ref=e1117] [cursor=pointer]:
+                      - generic [ref=e1118]: —
+                  - cell "Edit fartyg" [ref=e1119]:
+                    - gridcell "Edit fartyg" [ref=e1120] [cursor=pointer]:
+                      - generic [ref=e1121]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1122]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1123] [cursor=pointer]:
+                      - generic [ref=e1124]: —
+                  - cell "Edit mottaget" [ref=e1125]:
+                    - gridcell "Edit mottaget" [ref=e1126] [cursor=pointer]:
+                      - generic [ref=e1127]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e1128]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e1129] [cursor=pointer]:
+                      - generic [ref=e1130]: —
+                  - cell "Edit uthamtat" [ref=e1131]:
+                    - gridcell "Edit uthamtat" [ref=e1132] [cursor=pointer]:
+                      - generic [ref=e1133]: —
+                  - cell "talmundo (read-only)" [ref=e1134]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e1135]: "No"
+                  - cell "Edit mottagit_kort" [ref=e1136]:
+                    - gridcell "Edit mottagit_kort" [ref=e1137] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e1138]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e1139] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e1140]:
+                    - gridcell "Edit ersatt" [ref=e1141] [cursor=pointer]:
+                      - generic [ref=e1142]: —
+                  - cell "Edit klart_sign" [ref=e1143]:
+                    - gridcell "Edit klart_sign" [ref=e1144] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e1145]:
+                    - gridcell "Edit notering" [ref=e1146] [cursor=pointer]:
+                      - generic [ref=e1147]: —
+                  - cell "Edit rotation" [ref=e1148]:
+                    - gridcell "Edit rotation" [ref=e1149] [cursor=pointer]:
+                      - generic [ref=e1150]: —
+                  - cell "Edit hotel_required" [ref=e1151]:
+                    - gridcell "Edit hotel_required" [ref=e1152] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e1153]:
+                    - gridcell "Edit room_number_shared" [ref=e1154] [cursor=pointer]:
+                      - generic [ref=e1155]: —
+                  - cell "Edit dietary_requirement" [ref=e1156]:
+                    - gridcell "Edit dietary_requirement" [ref=e1157] [cursor=pointer]:
+                      - generic [ref=e1158]: —
+                  - cell "Edit joining_instructions_sent" [ref=e1159]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e1160] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e1161]:
+                    - gridcell "Edit candidate_confirmed" [ref=e1162] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e1163]:
+                    - gridcell "Edit seably_status" [ref=e1164] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e1165]:
+                    - gridcell "Edit receipt_c17" [ref=e1166] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e1167]:
+                    - gridcell "Edit certificate_c17" [ref=e1168] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e1169]:
+                    - gridcell "Edit receipt_c18" [ref=e1170] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e1171]:
+                    - gridcell "Edit certificate_c18" [ref=e1172] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e1173]:
+                    - gridcell "Edit omc_certificate" [ref=e1174] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e1175]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e1176] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e1177]:
+                    - gridcell "Edit completed" [ref=e1178] [cursor=pointer]: "No"
+                  - cell [ref=e1179]:
+                    - generic [ref=e1180]:
+                      - button [ref=e1181]:
+                        - img
+                      - button [ref=e1182]:
+                        - img
+                - row [ref=e1183]:
+                  - cell "Edit stena_date" [ref=e1184]:
+                    - gridcell "Edit stena_date" [ref=e1185] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e1186]:
+                    - gridcell "Edit omc_date" [ref=e1187] [cursor=pointer]:
+                      - generic [ref=e1188]: —
+                  - cell "Edit pe3_date" [ref=e1189]:
+                    - gridcell "Edit pe3_date" [ref=e1190] [cursor=pointer]:
+                      - generic [ref=e1191]: —
+                  - cell "Edit first_name" [ref=e1192]:
+                    - gridcell "Edit first_name" [ref=e1193] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e1194]:
+                    - gridcell "Edit surname" [ref=e1195] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e1196]:
+                    - gridcell "Edit town_district" [ref=e1197] [cursor=pointer]:
+                      - generic [ref=e1198]: —
+                  - cell "Edit mobile" [ref=e1199]:
+                    - gridcell "Edit mobile" [ref=e1200] [cursor=pointer]:
+                      - generic [ref=e1201]: —
+                  - cell "Edit email" [ref=e1202]:
+                    - gridcell "Edit email" [ref=e1203] [cursor=pointer]:
+                      - generic [ref=e1204]: —
+                  - cell "Edit social_security_no." [ref=e1205]:
+                    - gridcell "Edit social_security_no." [ref=e1206] [cursor=pointer]:
+                      - generic [ref=e1207]: —
+                  - cell "Edit hire_date" [ref=e1208]:
+                    - gridcell "Edit hire_date" [ref=e1209] [cursor=pointer]:
+                      - generic [ref=e1210]: —
+                  - cell "Edit rank" [ref=e1211]:
+                    - gridcell "Edit rank" [ref=e1212] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e1213]:
+                    - gridcell "Edit gender" [ref=e1214] [cursor=pointer]:
+                      - generic [ref=e1215]: —
+                  - cell "Edit comments" [ref=e1216]:
+                    - gridcell "Edit comments" [ref=e1217] [cursor=pointer]:
+                      - generic [ref=e1218]: —
+                  - cell "Edit one" [ref=e1219]:
+                    - gridcell "Edit one" [ref=e1220] [cursor=pointer]:
+                      - generic [ref=e1221]: —
+                  - cell "Edit isps" [ref=e1222]:
+                    - gridcell "Edit isps" [ref=e1223] [cursor=pointer]:
+                      - generic [ref=e1224]: —
+                  - cell "Edit photo" [ref=e1225]:
+                    - gridcell "Edit photo" [ref=e1226] [cursor=pointer]:
+                      - generic [ref=e1227]: —
+                  - cell "Edit origo" [ref=e1228]:
+                    - gridcell "Edit origo" [ref=e1229] [cursor=pointer]:
+                      - generic [ref=e1230]: —
+                  - cell "Edit lönenivå" [ref=e1231]:
+                    - gridcell "Edit lönenivå" [ref=e1232] [cursor=pointer]:
+                      - generic [ref=e1233]: —
+                  - cell "Edit mail_lön" [ref=e1234]:
+                    - gridcell "Edit mail_lön" [ref=e1235] [cursor=pointer]:
+                      - generic [ref=e1236]: —
+                  - cell "Edit bankuppgifter" [ref=e1237]:
+                    - gridcell "Edit bankuppgifter" [ref=e1238] [cursor=pointer]:
+                      - generic [ref=e1239]: —
+                  - cell "Edit li" [ref=e1240]:
+                    - gridcell "Edit li" [ref=e1241] [cursor=pointer]:
+                      - generic [ref=e1242]: —
+                  - cell "Edit passport" [ref=e1243]:
+                    - gridcell "Edit passport" [ref=e1244] [cursor=pointer]:
+                      - generic [ref=e1245]: —
+                  - cell "Edit kvitto_c17/18" [ref=e1246]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e1247] [cursor=pointer]:
+                      - generic [ref=e1248]: —
+                  - cell "Edit c17" [ref=e1249]:
+                    - gridcell "Edit c17" [ref=e1250] [cursor=pointer]:
+                      - generic [ref=e1251]: —
+                  - cell "Edit crewing/done" [ref=e1252]:
+                    - gridcell "Edit crewing/done" [ref=e1253] [cursor=pointer]:
+                      - generic [ref=e1254]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e1255]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e1256] [cursor=pointer]:
+                      - generic [ref=e1257]: —
+                  - cell "Edit bestallning_gjord" [ref=e1258]:
+                    - gridcell "Edit bestallning_gjord" [ref=e1259] [cursor=pointer]:
+                      - generic [ref=e1260]: —
+                  - cell "Edit fartyg" [ref=e1261]:
+                    - gridcell "Edit fartyg" [ref=e1262] [cursor=pointer]:
+                      - generic [ref=e1263]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1264]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1265] [cursor=pointer]:
+                      - generic [ref=e1266]: —
+                  - cell "Edit mottaget" [ref=e1267]:
+                    - gridcell "Edit mottaget" [ref=e1268] [cursor=pointer]:
+                      - generic [ref=e1269]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e1270]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e1271] [cursor=pointer]:
+                      - generic [ref=e1272]: —
+                  - cell "Edit uthamtat" [ref=e1273]:
+                    - gridcell "Edit uthamtat" [ref=e1274] [cursor=pointer]:
+                      - generic [ref=e1275]: —
+                  - cell "talmundo (read-only)" [ref=e1276]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e1277]: "No"
+                  - cell "Edit mottagit_kort" [ref=e1278]:
+                    - gridcell "Edit mottagit_kort" [ref=e1279] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e1280]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e1281] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e1282]:
+                    - gridcell "Edit ersatt" [ref=e1283] [cursor=pointer]:
+                      - generic [ref=e1284]: —
+                  - cell "Edit klart_sign" [ref=e1285]:
+                    - gridcell "Edit klart_sign" [ref=e1286] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e1287]:
+                    - gridcell "Edit notering" [ref=e1288] [cursor=pointer]:
+                      - generic [ref=e1289]: —
+                  - cell "Edit rotation" [ref=e1290]:
+                    - gridcell "Edit rotation" [ref=e1291] [cursor=pointer]:
+                      - generic [ref=e1292]: —
+                  - cell "Edit hotel_required" [ref=e1293]:
+                    - gridcell "Edit hotel_required" [ref=e1294] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e1295]:
+                    - gridcell "Edit room_number_shared" [ref=e1296] [cursor=pointer]:
+                      - generic [ref=e1297]: —
+                  - cell "Edit dietary_requirement" [ref=e1298]:
+                    - gridcell "Edit dietary_requirement" [ref=e1299] [cursor=pointer]:
+                      - generic [ref=e1300]: —
+                  - cell "Edit joining_instructions_sent" [ref=e1301]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e1302] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e1303]:
+                    - gridcell "Edit candidate_confirmed" [ref=e1304] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e1305]:
+                    - gridcell "Edit seably_status" [ref=e1306] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e1307]:
+                    - gridcell "Edit receipt_c17" [ref=e1308] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e1309]:
+                    - gridcell "Edit certificate_c17" [ref=e1310] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e1311]:
+                    - gridcell "Edit receipt_c18" [ref=e1312] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e1313]:
+                    - gridcell "Edit certificate_c18" [ref=e1314] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e1315]:
+                    - gridcell "Edit omc_certificate" [ref=e1316] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e1317]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e1318] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e1319]:
+                    - gridcell "Edit completed" [ref=e1320] [cursor=pointer]: "No"
+                  - cell [ref=e1321]:
+                    - generic [ref=e1322]:
+                      - button [ref=e1323]:
+                        - img
+                      - button [ref=e1324]:
+                        - img
+                - row [ref=e1325]:
+                  - cell "Edit stena_date" [ref=e1326]:
+                    - gridcell "Edit stena_date" [ref=e1327] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e1328]:
+                    - gridcell "Edit omc_date" [ref=e1329] [cursor=pointer]:
+                      - generic [ref=e1330]: —
+                  - cell "Edit pe3_date" [ref=e1331]:
+                    - gridcell "Edit pe3_date" [ref=e1332] [cursor=pointer]:
+                      - generic [ref=e1333]: —
+                  - cell "Edit first_name" [ref=e1334]:
+                    - gridcell "Edit first_name" [ref=e1335] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e1336]:
+                    - gridcell "Edit surname" [ref=e1337] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e1338]:
+                    - gridcell "Edit town_district" [ref=e1339] [cursor=pointer]:
+                      - generic [ref=e1340]: —
+                  - cell "Edit mobile" [ref=e1341]:
+                    - gridcell "Edit mobile" [ref=e1342] [cursor=pointer]:
+                      - generic [ref=e1343]: —
+                  - cell "Edit email" [ref=e1344]:
+                    - gridcell "Edit email" [ref=e1345] [cursor=pointer]:
+                      - generic [ref=e1346]: —
+                  - cell "Edit social_security_no." [ref=e1347]:
+                    - gridcell "Edit social_security_no." [ref=e1348] [cursor=pointer]:
+                      - generic [ref=e1349]: —
+                  - cell "Edit hire_date" [ref=e1350]:
+                    - gridcell "Edit hire_date" [ref=e1351] [cursor=pointer]:
+                      - generic [ref=e1352]: —
+                  - cell "Edit rank" [ref=e1353]:
+                    - gridcell "Edit rank" [ref=e1354] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e1355]:
+                    - gridcell "Edit gender" [ref=e1356] [cursor=pointer]:
+                      - generic [ref=e1357]: —
+                  - cell "Edit comments" [ref=e1358]:
+                    - gridcell "Edit comments" [ref=e1359] [cursor=pointer]:
+                      - generic [ref=e1360]: —
+                  - cell "Edit one" [ref=e1361]:
+                    - gridcell "Edit one" [ref=e1362] [cursor=pointer]:
+                      - generic [ref=e1363]: —
+                  - cell "Edit isps" [ref=e1364]:
+                    - gridcell "Edit isps" [ref=e1365] [cursor=pointer]:
+                      - generic [ref=e1366]: —
+                  - cell "Edit photo" [ref=e1367]:
+                    - gridcell "Edit photo" [ref=e1368] [cursor=pointer]:
+                      - generic [ref=e1369]: —
+                  - cell "Edit origo" [ref=e1370]:
+                    - gridcell "Edit origo" [ref=e1371] [cursor=pointer]:
+                      - generic [ref=e1372]: —
+                  - cell "Edit lönenivå" [ref=e1373]:
+                    - gridcell "Edit lönenivå" [ref=e1374] [cursor=pointer]:
+                      - generic [ref=e1375]: —
+                  - cell "Edit mail_lön" [ref=e1376]:
+                    - gridcell "Edit mail_lön" [ref=e1377] [cursor=pointer]:
+                      - generic [ref=e1378]: —
+                  - cell "Edit bankuppgifter" [ref=e1379]:
+                    - gridcell "Edit bankuppgifter" [ref=e1380] [cursor=pointer]:
+                      - generic [ref=e1381]: —
+                  - cell "Edit li" [ref=e1382]:
+                    - gridcell "Edit li" [ref=e1383] [cursor=pointer]:
+                      - generic [ref=e1384]: —
+                  - cell "Edit passport" [ref=e1385]:
+                    - gridcell "Edit passport" [ref=e1386] [cursor=pointer]:
+                      - generic [ref=e1387]: —
+                  - cell "Edit kvitto_c17/18" [ref=e1388]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e1389] [cursor=pointer]:
+                      - generic [ref=e1390]: —
+                  - cell "Edit c17" [ref=e1391]:
+                    - gridcell "Edit c17" [ref=e1392] [cursor=pointer]:
+                      - generic [ref=e1393]: —
+                  - cell "Edit crewing/done" [ref=e1394]:
+                    - gridcell "Edit crewing/done" [ref=e1395] [cursor=pointer]:
+                      - generic [ref=e1396]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e1397]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e1398] [cursor=pointer]:
+                      - generic [ref=e1399]: —
+                  - cell "Edit bestallning_gjord" [ref=e1400]:
+                    - gridcell "Edit bestallning_gjord" [ref=e1401] [cursor=pointer]:
+                      - generic [ref=e1402]: —
+                  - cell "Edit fartyg" [ref=e1403]:
+                    - gridcell "Edit fartyg" [ref=e1404] [cursor=pointer]:
+                      - generic [ref=e1405]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1406]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1407] [cursor=pointer]:
+                      - generic [ref=e1408]: —
+                  - cell "Edit mottaget" [ref=e1409]:
+                    - gridcell "Edit mottaget" [ref=e1410] [cursor=pointer]:
+                      - generic [ref=e1411]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e1412]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e1413] [cursor=pointer]:
+                      - generic [ref=e1414]: —
+                  - cell "Edit uthamtat" [ref=e1415]:
+                    - gridcell "Edit uthamtat" [ref=e1416] [cursor=pointer]:
+                      - generic [ref=e1417]: —
+                  - cell "talmundo (read-only)" [ref=e1418]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e1419]: "No"
+                  - cell "Edit mottagit_kort" [ref=e1420]:
+                    - gridcell "Edit mottagit_kort" [ref=e1421] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e1422]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e1423] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e1424]:
+                    - gridcell "Edit ersatt" [ref=e1425] [cursor=pointer]:
+                      - generic [ref=e1426]: —
+                  - cell "Edit klart_sign" [ref=e1427]:
+                    - gridcell "Edit klart_sign" [ref=e1428] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e1429]:
+                    - gridcell "Edit notering" [ref=e1430] [cursor=pointer]:
+                      - generic [ref=e1431]: —
+                  - cell "Edit rotation" [ref=e1432]:
+                    - gridcell "Edit rotation" [ref=e1433] [cursor=pointer]:
+                      - generic [ref=e1434]: —
+                  - cell "Edit hotel_required" [ref=e1435]:
+                    - gridcell "Edit hotel_required" [ref=e1436] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e1437]:
+                    - gridcell "Edit room_number_shared" [ref=e1438] [cursor=pointer]:
+                      - generic [ref=e1439]: —
+                  - cell "Edit dietary_requirement" [ref=e1440]:
+                    - gridcell "Edit dietary_requirement" [ref=e1441] [cursor=pointer]:
+                      - generic [ref=e1442]: —
+                  - cell "Edit joining_instructions_sent" [ref=e1443]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e1444] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e1445]:
+                    - gridcell "Edit candidate_confirmed" [ref=e1446] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e1447]:
+                    - gridcell "Edit seably_status" [ref=e1448] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e1449]:
+                    - gridcell "Edit receipt_c17" [ref=e1450] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e1451]:
+                    - gridcell "Edit certificate_c17" [ref=e1452] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e1453]:
+                    - gridcell "Edit receipt_c18" [ref=e1454] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e1455]:
+                    - gridcell "Edit certificate_c18" [ref=e1456] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e1457]:
+                    - gridcell "Edit omc_certificate" [ref=e1458] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e1459]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e1460] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e1461]:
+                    - gridcell "Edit completed" [ref=e1462] [cursor=pointer]: "No"
+                  - cell [ref=e1463]:
+                    - generic [ref=e1464]:
+                      - button [ref=e1465]:
+                        - img
+                      - button [ref=e1466]:
+                        - img
+                - row [ref=e1467]:
+                  - cell "Edit stena_date" [ref=e1468]:
+                    - gridcell "Edit stena_date" [ref=e1469] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e1470]:
+                    - gridcell "Edit omc_date" [ref=e1471] [cursor=pointer]:
+                      - generic [ref=e1472]: —
+                  - cell "Edit pe3_date" [ref=e1473]:
+                    - gridcell "Edit pe3_date" [ref=e1474] [cursor=pointer]:
+                      - generic [ref=e1475]: —
+                  - cell "Edit first_name" [ref=e1476]:
+                    - gridcell "Edit first_name" [ref=e1477] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e1478]:
+                    - gridcell "Edit surname" [ref=e1479] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e1480]:
+                    - gridcell "Edit town_district" [ref=e1481] [cursor=pointer]:
+                      - generic [ref=e1482]: —
+                  - cell "Edit mobile" [ref=e1483]:
+                    - gridcell "Edit mobile" [ref=e1484] [cursor=pointer]:
+                      - generic [ref=e1485]: —
+                  - cell "Edit email" [ref=e1486]:
+                    - gridcell "Edit email" [ref=e1487] [cursor=pointer]:
+                      - generic [ref=e1488]: —
+                  - cell "Edit social_security_no." [ref=e1489]:
+                    - gridcell "Edit social_security_no." [ref=e1490] [cursor=pointer]:
+                      - generic [ref=e1491]: —
+                  - cell "Edit hire_date" [ref=e1492]:
+                    - gridcell "Edit hire_date" [ref=e1493] [cursor=pointer]:
+                      - generic [ref=e1494]: —
+                  - cell "Edit rank" [ref=e1495]:
+                    - gridcell "Edit rank" [ref=e1496] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e1497]:
+                    - gridcell "Edit gender" [ref=e1498] [cursor=pointer]:
+                      - generic [ref=e1499]: —
+                  - cell "Edit comments" [ref=e1500]:
+                    - gridcell "Edit comments" [ref=e1501] [cursor=pointer]:
+                      - generic [ref=e1502]: —
+                  - cell "Edit one" [ref=e1503]:
+                    - gridcell "Edit one" [ref=e1504] [cursor=pointer]:
+                      - generic [ref=e1505]: —
+                  - cell "Edit isps" [ref=e1506]:
+                    - gridcell "Edit isps" [ref=e1507] [cursor=pointer]:
+                      - generic [ref=e1508]: —
+                  - cell "Edit photo" [ref=e1509]:
+                    - gridcell "Edit photo" [ref=e1510] [cursor=pointer]:
+                      - generic [ref=e1511]: —
+                  - cell "Edit origo" [ref=e1512]:
+                    - gridcell "Edit origo" [ref=e1513] [cursor=pointer]:
+                      - generic [ref=e1514]: —
+                  - cell "Edit lönenivå" [ref=e1515]:
+                    - gridcell "Edit lönenivå" [ref=e1516] [cursor=pointer]:
+                      - generic [ref=e1517]: —
+                  - cell "Edit mail_lön" [ref=e1518]:
+                    - gridcell "Edit mail_lön" [ref=e1519] [cursor=pointer]:
+                      - generic [ref=e1520]: —
+                  - cell "Edit bankuppgifter" [ref=e1521]:
+                    - gridcell "Edit bankuppgifter" [ref=e1522] [cursor=pointer]:
+                      - generic [ref=e1523]: —
+                  - cell "Edit li" [ref=e1524]:
+                    - gridcell "Edit li" [ref=e1525] [cursor=pointer]:
+                      - generic [ref=e1526]: —
+                  - cell "Edit passport" [ref=e1527]:
+                    - gridcell "Edit passport" [ref=e1528] [cursor=pointer]:
+                      - generic [ref=e1529]: —
+                  - cell "Edit kvitto_c17/18" [ref=e1530]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e1531] [cursor=pointer]:
+                      - generic [ref=e1532]: —
+                  - cell "Edit c17" [ref=e1533]:
+                    - gridcell "Edit c17" [ref=e1534] [cursor=pointer]:
+                      - generic [ref=e1535]: —
+                  - cell "Edit crewing/done" [ref=e1536]:
+                    - gridcell "Edit crewing/done" [ref=e1537] [cursor=pointer]:
+                      - generic [ref=e1538]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e1539]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e1540] [cursor=pointer]:
+                      - generic [ref=e1541]: —
+                  - cell "Edit bestallning_gjord" [ref=e1542]:
+                    - gridcell "Edit bestallning_gjord" [ref=e1543] [cursor=pointer]:
+                      - generic [ref=e1544]: —
+                  - cell "Edit fartyg" [ref=e1545]:
+                    - gridcell "Edit fartyg" [ref=e1546] [cursor=pointer]:
+                      - generic [ref=e1547]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1548]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1549] [cursor=pointer]:
+                      - generic [ref=e1550]: —
+                  - cell "Edit mottaget" [ref=e1551]:
+                    - gridcell "Edit mottaget" [ref=e1552] [cursor=pointer]:
+                      - generic [ref=e1553]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e1554]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e1555] [cursor=pointer]:
+                      - generic [ref=e1556]: —
+                  - cell "Edit uthamtat" [ref=e1557]:
+                    - gridcell "Edit uthamtat" [ref=e1558] [cursor=pointer]:
+                      - generic [ref=e1559]: —
+                  - cell "talmundo (read-only)" [ref=e1560]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e1561]: "No"
+                  - cell "Edit mottagit_kort" [ref=e1562]:
+                    - gridcell "Edit mottagit_kort" [ref=e1563] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e1564]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e1565] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e1566]:
+                    - gridcell "Edit ersatt" [ref=e1567] [cursor=pointer]:
+                      - generic [ref=e1568]: —
+                  - cell "Edit klart_sign" [ref=e1569]:
+                    - gridcell "Edit klart_sign" [ref=e1570] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e1571]:
+                    - gridcell "Edit notering" [ref=e1572] [cursor=pointer]:
+                      - generic [ref=e1573]: —
+                  - cell "Edit rotation" [ref=e1574]:
+                    - gridcell "Edit rotation" [ref=e1575] [cursor=pointer]:
+                      - generic [ref=e1576]: —
+                  - cell "Edit hotel_required" [ref=e1577]:
+                    - gridcell "Edit hotel_required" [ref=e1578] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e1579]:
+                    - gridcell "Edit room_number_shared" [ref=e1580] [cursor=pointer]:
+                      - generic [ref=e1581]: —
+                  - cell "Edit dietary_requirement" [ref=e1582]:
+                    - gridcell "Edit dietary_requirement" [ref=e1583] [cursor=pointer]:
+                      - generic [ref=e1584]: —
+                  - cell "Edit joining_instructions_sent" [ref=e1585]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e1586] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e1587]:
+                    - gridcell "Edit candidate_confirmed" [ref=e1588] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e1589]:
+                    - gridcell "Edit seably_status" [ref=e1590] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e1591]:
+                    - gridcell "Edit receipt_c17" [ref=e1592] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e1593]:
+                    - gridcell "Edit certificate_c17" [ref=e1594] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e1595]:
+                    - gridcell "Edit receipt_c18" [ref=e1596] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e1597]:
+                    - gridcell "Edit certificate_c18" [ref=e1598] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e1599]:
+                    - gridcell "Edit omc_certificate" [ref=e1600] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e1601]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e1602] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e1603]:
+                    - gridcell "Edit completed" [ref=e1604] [cursor=pointer]: "No"
+                  - cell [ref=e1605]:
+                    - generic [ref=e1606]:
+                      - button [ref=e1607]:
+                        - img
+                      - button [ref=e1608]:
+                        - img
+                - row [ref=e1609]:
+                  - cell "Edit stena_date" [ref=e1610]:
+                    - gridcell "Edit stena_date" [ref=e1611] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e1612]:
+                    - gridcell "Edit omc_date" [ref=e1613] [cursor=pointer]:
+                      - generic [ref=e1614]: —
+                  - cell "Edit pe3_date" [ref=e1615]:
+                    - gridcell "Edit pe3_date" [ref=e1616] [cursor=pointer]:
+                      - generic [ref=e1617]: —
+                  - cell "Edit first_name" [ref=e1618]:
+                    - gridcell "Edit first_name" [ref=e1619] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e1620]:
+                    - gridcell "Edit surname" [ref=e1621] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e1622]:
+                    - gridcell "Edit town_district" [ref=e1623] [cursor=pointer]:
+                      - generic [ref=e1624]: —
+                  - cell "Edit mobile" [ref=e1625]:
+                    - gridcell "Edit mobile" [ref=e1626] [cursor=pointer]:
+                      - generic [ref=e1627]: —
+                  - cell "Edit email" [ref=e1628]:
+                    - gridcell "Edit email" [ref=e1629] [cursor=pointer]:
+                      - generic [ref=e1630]: —
+                  - cell "Edit social_security_no." [ref=e1631]:
+                    - gridcell "Edit social_security_no." [ref=e1632] [cursor=pointer]:
+                      - generic [ref=e1633]: —
+                  - cell "Edit hire_date" [ref=e1634]:
+                    - gridcell "Edit hire_date" [ref=e1635] [cursor=pointer]:
+                      - generic [ref=e1636]: —
+                  - cell "Edit rank" [ref=e1637]:
+                    - gridcell "Edit rank" [ref=e1638] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e1639]:
+                    - gridcell "Edit gender" [ref=e1640] [cursor=pointer]:
+                      - generic [ref=e1641]: —
+                  - cell "Edit comments" [ref=e1642]:
+                    - gridcell "Edit comments" [ref=e1643] [cursor=pointer]:
+                      - generic [ref=e1644]: —
+                  - cell "Edit one" [ref=e1645]:
+                    - gridcell "Edit one" [ref=e1646] [cursor=pointer]:
+                      - generic [ref=e1647]: —
+                  - cell "Edit isps" [ref=e1648]:
+                    - gridcell "Edit isps" [ref=e1649] [cursor=pointer]:
+                      - generic [ref=e1650]: —
+                  - cell "Edit photo" [ref=e1651]:
+                    - gridcell "Edit photo" [ref=e1652] [cursor=pointer]:
+                      - generic [ref=e1653]: —
+                  - cell "Edit origo" [ref=e1654]:
+                    - gridcell "Edit origo" [ref=e1655] [cursor=pointer]:
+                      - generic [ref=e1656]: —
+                  - cell "Edit lönenivå" [ref=e1657]:
+                    - gridcell "Edit lönenivå" [ref=e1658] [cursor=pointer]:
+                      - generic [ref=e1659]: —
+                  - cell "Edit mail_lön" [ref=e1660]:
+                    - gridcell "Edit mail_lön" [ref=e1661] [cursor=pointer]:
+                      - generic [ref=e1662]: —
+                  - cell "Edit bankuppgifter" [ref=e1663]:
+                    - gridcell "Edit bankuppgifter" [ref=e1664] [cursor=pointer]:
+                      - generic [ref=e1665]: —
+                  - cell "Edit li" [ref=e1666]:
+                    - gridcell "Edit li" [ref=e1667] [cursor=pointer]:
+                      - generic [ref=e1668]: —
+                  - cell "Edit passport" [ref=e1669]:
+                    - gridcell "Edit passport" [ref=e1670] [cursor=pointer]:
+                      - generic [ref=e1671]: —
+                  - cell "Edit kvitto_c17/18" [ref=e1672]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e1673] [cursor=pointer]:
+                      - generic [ref=e1674]: —
+                  - cell "Edit c17" [ref=e1675]:
+                    - gridcell "Edit c17" [ref=e1676] [cursor=pointer]:
+                      - generic [ref=e1677]: —
+                  - cell "Edit crewing/done" [ref=e1678]:
+                    - gridcell "Edit crewing/done" [ref=e1679] [cursor=pointer]:
+                      - generic [ref=e1680]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e1681]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e1682] [cursor=pointer]:
+                      - generic [ref=e1683]: —
+                  - cell "Edit bestallning_gjord" [ref=e1684]:
+                    - gridcell "Edit bestallning_gjord" [ref=e1685] [cursor=pointer]:
+                      - generic [ref=e1686]: —
+                  - cell "Edit fartyg" [ref=e1687]:
+                    - gridcell "Edit fartyg" [ref=e1688] [cursor=pointer]:
+                      - generic [ref=e1689]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1690]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1691] [cursor=pointer]:
+                      - generic [ref=e1692]: —
+                  - cell "Edit mottaget" [ref=e1693]:
+                    - gridcell "Edit mottaget" [ref=e1694] [cursor=pointer]:
+                      - generic [ref=e1695]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e1696]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e1697] [cursor=pointer]:
+                      - generic [ref=e1698]: —
+                  - cell "Edit uthamtat" [ref=e1699]:
+                    - gridcell "Edit uthamtat" [ref=e1700] [cursor=pointer]:
+                      - generic [ref=e1701]: —
+                  - cell "talmundo (read-only)" [ref=e1702]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e1703]: "No"
+                  - cell "Edit mottagit_kort" [ref=e1704]:
+                    - gridcell "Edit mottagit_kort" [ref=e1705] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e1706]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e1707] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e1708]:
+                    - gridcell "Edit ersatt" [ref=e1709] [cursor=pointer]:
+                      - generic [ref=e1710]: —
+                  - cell "Edit klart_sign" [ref=e1711]:
+                    - gridcell "Edit klart_sign" [ref=e1712] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e1713]:
+                    - gridcell "Edit notering" [ref=e1714] [cursor=pointer]:
+                      - generic [ref=e1715]: —
+                  - cell "Edit rotation" [ref=e1716]:
+                    - gridcell "Edit rotation" [ref=e1717] [cursor=pointer]:
+                      - generic [ref=e1718]: —
+                  - cell "Edit hotel_required" [ref=e1719]:
+                    - gridcell "Edit hotel_required" [ref=e1720] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e1721]:
+                    - gridcell "Edit room_number_shared" [ref=e1722] [cursor=pointer]:
+                      - generic [ref=e1723]: —
+                  - cell "Edit dietary_requirement" [ref=e1724]:
+                    - gridcell "Edit dietary_requirement" [ref=e1725] [cursor=pointer]:
+                      - generic [ref=e1726]: —
+                  - cell "Edit joining_instructions_sent" [ref=e1727]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e1728] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e1729]:
+                    - gridcell "Edit candidate_confirmed" [ref=e1730] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e1731]:
+                    - gridcell "Edit seably_status" [ref=e1732] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e1733]:
+                    - gridcell "Edit receipt_c17" [ref=e1734] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e1735]:
+                    - gridcell "Edit certificate_c17" [ref=e1736] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e1737]:
+                    - gridcell "Edit receipt_c18" [ref=e1738] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e1739]:
+                    - gridcell "Edit certificate_c18" [ref=e1740] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e1741]:
+                    - gridcell "Edit omc_certificate" [ref=e1742] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e1743]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e1744] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e1745]:
+                    - gridcell "Edit completed" [ref=e1746] [cursor=pointer]: "No"
+                  - cell [ref=e1747]:
+                    - generic [ref=e1748]:
+                      - button [ref=e1749]:
+                        - img
+                      - button [ref=e1750]:
+                        - img
+                - row [ref=e1751]:
+                  - cell "Edit stena_date" [ref=e1752]:
+                    - gridcell "Edit stena_date" [ref=e1753] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e1754]:
+                    - gridcell "Edit omc_date" [ref=e1755] [cursor=pointer]:
+                      - generic [ref=e1756]: —
+                  - cell "Edit pe3_date" [ref=e1757]:
+                    - gridcell "Edit pe3_date" [ref=e1758] [cursor=pointer]:
+                      - generic [ref=e1759]: —
+                  - cell "Edit first_name" [ref=e1760]:
+                    - gridcell "Edit first_name" [ref=e1761] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e1762]:
+                    - gridcell "Edit surname" [ref=e1763] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e1764]:
+                    - gridcell "Edit town_district" [ref=e1765] [cursor=pointer]:
+                      - generic [ref=e1766]: —
+                  - cell "Edit mobile" [ref=e1767]:
+                    - gridcell "Edit mobile" [ref=e1768] [cursor=pointer]:
+                      - generic [ref=e1769]: —
+                  - cell "Edit email" [ref=e1770]:
+                    - gridcell "Edit email" [ref=e1771] [cursor=pointer]:
+                      - generic [ref=e1772]: —
+                  - cell "Edit social_security_no." [ref=e1773]:
+                    - gridcell "Edit social_security_no." [ref=e1774] [cursor=pointer]:
+                      - generic [ref=e1775]: —
+                  - cell "Edit hire_date" [ref=e1776]:
+                    - gridcell "Edit hire_date" [ref=e1777] [cursor=pointer]:
+                      - generic [ref=e1778]: —
+                  - cell "Edit rank" [ref=e1779]:
+                    - gridcell "Edit rank" [ref=e1780] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e1781]:
+                    - gridcell "Edit gender" [ref=e1782] [cursor=pointer]:
+                      - generic [ref=e1783]: —
+                  - cell "Edit comments" [ref=e1784]:
+                    - gridcell "Edit comments" [ref=e1785] [cursor=pointer]:
+                      - generic [ref=e1786]: —
+                  - cell "Edit one" [ref=e1787]:
+                    - gridcell "Edit one" [ref=e1788] [cursor=pointer]:
+                      - generic [ref=e1789]: —
+                  - cell "Edit isps" [ref=e1790]:
+                    - gridcell "Edit isps" [ref=e1791] [cursor=pointer]:
+                      - generic [ref=e1792]: —
+                  - cell "Edit photo" [ref=e1793]:
+                    - gridcell "Edit photo" [ref=e1794] [cursor=pointer]:
+                      - generic [ref=e1795]: —
+                  - cell "Edit origo" [ref=e1796]:
+                    - gridcell "Edit origo" [ref=e1797] [cursor=pointer]:
+                      - generic [ref=e1798]: —
+                  - cell "Edit lönenivå" [ref=e1799]:
+                    - gridcell "Edit lönenivå" [ref=e1800] [cursor=pointer]:
+                      - generic [ref=e1801]: —
+                  - cell "Edit mail_lön" [ref=e1802]:
+                    - gridcell "Edit mail_lön" [ref=e1803] [cursor=pointer]:
+                      - generic [ref=e1804]: —
+                  - cell "Edit bankuppgifter" [ref=e1805]:
+                    - gridcell "Edit bankuppgifter" [ref=e1806] [cursor=pointer]:
+                      - generic [ref=e1807]: —
+                  - cell "Edit li" [ref=e1808]:
+                    - gridcell "Edit li" [ref=e1809] [cursor=pointer]:
+                      - generic [ref=e1810]: —
+                  - cell "Edit passport" [ref=e1811]:
+                    - gridcell "Edit passport" [ref=e1812] [cursor=pointer]:
+                      - generic [ref=e1813]: —
+                  - cell "Edit kvitto_c17/18" [ref=e1814]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e1815] [cursor=pointer]:
+                      - generic [ref=e1816]: —
+                  - cell "Edit c17" [ref=e1817]:
+                    - gridcell "Edit c17" [ref=e1818] [cursor=pointer]:
+                      - generic [ref=e1819]: —
+                  - cell "Edit crewing/done" [ref=e1820]:
+                    - gridcell "Edit crewing/done" [ref=e1821] [cursor=pointer]:
+                      - generic [ref=e1822]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e1823]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e1824] [cursor=pointer]:
+                      - generic [ref=e1825]: —
+                  - cell "Edit bestallning_gjord" [ref=e1826]:
+                    - gridcell "Edit bestallning_gjord" [ref=e1827] [cursor=pointer]:
+                      - generic [ref=e1828]: —
+                  - cell "Edit fartyg" [ref=e1829]:
+                    - gridcell "Edit fartyg" [ref=e1830] [cursor=pointer]:
+                      - generic [ref=e1831]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1832]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1833] [cursor=pointer]:
+                      - generic [ref=e1834]: —
+                  - cell "Edit mottaget" [ref=e1835]:
+                    - gridcell "Edit mottaget" [ref=e1836] [cursor=pointer]:
+                      - generic [ref=e1837]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e1838]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e1839] [cursor=pointer]:
+                      - generic [ref=e1840]: —
+                  - cell "Edit uthamtat" [ref=e1841]:
+                    - gridcell "Edit uthamtat" [ref=e1842] [cursor=pointer]:
+                      - generic [ref=e1843]: —
+                  - cell "talmundo (read-only)" [ref=e1844]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e1845]: "No"
+                  - cell "Edit mottagit_kort" [ref=e1846]:
+                    - gridcell "Edit mottagit_kort" [ref=e1847] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e1848]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e1849] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e1850]:
+                    - gridcell "Edit ersatt" [ref=e1851] [cursor=pointer]:
+                      - generic [ref=e1852]: —
+                  - cell "Edit klart_sign" [ref=e1853]:
+                    - gridcell "Edit klart_sign" [ref=e1854] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e1855]:
+                    - gridcell "Edit notering" [ref=e1856] [cursor=pointer]:
+                      - generic [ref=e1857]: —
+                  - cell "Edit rotation" [ref=e1858]:
+                    - gridcell "Edit rotation" [ref=e1859] [cursor=pointer]:
+                      - generic [ref=e1860]: —
+                  - cell "Edit hotel_required" [ref=e1861]:
+                    - gridcell "Edit hotel_required" [ref=e1862] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e1863]:
+                    - gridcell "Edit room_number_shared" [ref=e1864] [cursor=pointer]:
+                      - generic [ref=e1865]: —
+                  - cell "Edit dietary_requirement" [ref=e1866]:
+                    - gridcell "Edit dietary_requirement" [ref=e1867] [cursor=pointer]:
+                      - generic [ref=e1868]: —
+                  - cell "Edit joining_instructions_sent" [ref=e1869]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e1870] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e1871]:
+                    - gridcell "Edit candidate_confirmed" [ref=e1872] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e1873]:
+                    - gridcell "Edit seably_status" [ref=e1874] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e1875]:
+                    - gridcell "Edit receipt_c17" [ref=e1876] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e1877]:
+                    - gridcell "Edit certificate_c17" [ref=e1878] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e1879]:
+                    - gridcell "Edit receipt_c18" [ref=e1880] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e1881]:
+                    - gridcell "Edit certificate_c18" [ref=e1882] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e1883]:
+                    - gridcell "Edit omc_certificate" [ref=e1884] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e1885]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e1886] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e1887]:
+                    - gridcell "Edit completed" [ref=e1888] [cursor=pointer]: "No"
+                  - cell [ref=e1889]:
+                    - generic [ref=e1890]:
+                      - button [ref=e1891]:
+                        - img
+                      - button [ref=e1892]:
+                        - img
+                - row [ref=e1893]:
+                  - cell "Edit stena_date" [ref=e1894]:
+                    - gridcell "Edit stena_date" [ref=e1895] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e1896]:
+                    - gridcell "Edit omc_date" [ref=e1897] [cursor=pointer]:
+                      - generic [ref=e1898]: —
+                  - cell "Edit pe3_date" [ref=e1899]:
+                    - gridcell "Edit pe3_date" [ref=e1900] [cursor=pointer]:
+                      - generic [ref=e1901]: —
+                  - cell "Edit first_name" [ref=e1902]:
+                    - gridcell "Edit first_name" [ref=e1903] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e1904]:
+                    - gridcell "Edit surname" [ref=e1905] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e1906]:
+                    - gridcell "Edit town_district" [ref=e1907] [cursor=pointer]:
+                      - generic [ref=e1908]: —
+                  - cell "Edit mobile" [ref=e1909]:
+                    - gridcell "Edit mobile" [ref=e1910] [cursor=pointer]:
+                      - generic [ref=e1911]: —
+                  - cell "Edit email" [ref=e1912]:
+                    - gridcell "Edit email" [ref=e1913] [cursor=pointer]:
+                      - generic [ref=e1914]: —
+                  - cell "Edit social_security_no." [ref=e1915]:
+                    - gridcell "Edit social_security_no." [ref=e1916] [cursor=pointer]:
+                      - generic [ref=e1917]: —
+                  - cell "Edit hire_date" [ref=e1918]:
+                    - gridcell "Edit hire_date" [ref=e1919] [cursor=pointer]:
+                      - generic [ref=e1920]: —
+                  - cell "Edit rank" [ref=e1921]:
+                    - gridcell "Edit rank" [ref=e1922] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e1923]:
+                    - gridcell "Edit gender" [ref=e1924] [cursor=pointer]:
+                      - generic [ref=e1925]: —
+                  - cell "Edit comments" [ref=e1926]:
+                    - gridcell "Edit comments" [ref=e1927] [cursor=pointer]:
+                      - generic [ref=e1928]: —
+                  - cell "Edit one" [ref=e1929]:
+                    - gridcell "Edit one" [ref=e1930] [cursor=pointer]:
+                      - generic [ref=e1931]: —
+                  - cell "Edit isps" [ref=e1932]:
+                    - gridcell "Edit isps" [ref=e1933] [cursor=pointer]:
+                      - generic [ref=e1934]: —
+                  - cell "Edit photo" [ref=e1935]:
+                    - gridcell "Edit photo" [ref=e1936] [cursor=pointer]:
+                      - generic [ref=e1937]: —
+                  - cell "Edit origo" [ref=e1938]:
+                    - gridcell "Edit origo" [ref=e1939] [cursor=pointer]:
+                      - generic [ref=e1940]: —
+                  - cell "Edit lönenivå" [ref=e1941]:
+                    - gridcell "Edit lönenivå" [ref=e1942] [cursor=pointer]:
+                      - generic [ref=e1943]: —
+                  - cell "Edit mail_lön" [ref=e1944]:
+                    - gridcell "Edit mail_lön" [ref=e1945] [cursor=pointer]:
+                      - generic [ref=e1946]: —
+                  - cell "Edit bankuppgifter" [ref=e1947]:
+                    - gridcell "Edit bankuppgifter" [ref=e1948] [cursor=pointer]:
+                      - generic [ref=e1949]: —
+                  - cell "Edit li" [ref=e1950]:
+                    - gridcell "Edit li" [ref=e1951] [cursor=pointer]:
+                      - generic [ref=e1952]: —
+                  - cell "Edit passport" [ref=e1953]:
+                    - gridcell "Edit passport" [ref=e1954] [cursor=pointer]:
+                      - generic [ref=e1955]: —
+                  - cell "Edit kvitto_c17/18" [ref=e1956]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e1957] [cursor=pointer]:
+                      - generic [ref=e1958]: —
+                  - cell "Edit c17" [ref=e1959]:
+                    - gridcell "Edit c17" [ref=e1960] [cursor=pointer]:
+                      - generic [ref=e1961]: —
+                  - cell "Edit crewing/done" [ref=e1962]:
+                    - gridcell "Edit crewing/done" [ref=e1963] [cursor=pointer]:
+                      - generic [ref=e1964]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e1965]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e1966] [cursor=pointer]:
+                      - generic [ref=e1967]: —
+                  - cell "Edit bestallning_gjord" [ref=e1968]:
+                    - gridcell "Edit bestallning_gjord" [ref=e1969] [cursor=pointer]:
+                      - generic [ref=e1970]: —
+                  - cell "Edit fartyg" [ref=e1971]:
+                    - gridcell "Edit fartyg" [ref=e1972] [cursor=pointer]:
+                      - generic [ref=e1973]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1974]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e1975] [cursor=pointer]:
+                      - generic [ref=e1976]: —
+                  - cell "Edit mottaget" [ref=e1977]:
+                    - gridcell "Edit mottaget" [ref=e1978] [cursor=pointer]:
+                      - generic [ref=e1979]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e1980]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e1981] [cursor=pointer]:
+                      - generic [ref=e1982]: —
+                  - cell "Edit uthamtat" [ref=e1983]:
+                    - gridcell "Edit uthamtat" [ref=e1984] [cursor=pointer]:
+                      - generic [ref=e1985]: —
+                  - cell "talmundo (read-only)" [ref=e1986]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e1987]: "No"
+                  - cell "Edit mottagit_kort" [ref=e1988]:
+                    - gridcell "Edit mottagit_kort" [ref=e1989] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e1990]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e1991] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e1992]:
+                    - gridcell "Edit ersatt" [ref=e1993] [cursor=pointer]:
+                      - generic [ref=e1994]: —
+                  - cell "Edit klart_sign" [ref=e1995]:
+                    - gridcell "Edit klart_sign" [ref=e1996] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e1997]:
+                    - gridcell "Edit notering" [ref=e1998] [cursor=pointer]:
+                      - generic [ref=e1999]: —
+                  - cell "Edit rotation" [ref=e2000]:
+                    - gridcell "Edit rotation" [ref=e2001] [cursor=pointer]:
+                      - generic [ref=e2002]: —
+                  - cell "Edit hotel_required" [ref=e2003]:
+                    - gridcell "Edit hotel_required" [ref=e2004] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e2005]:
+                    - gridcell "Edit room_number_shared" [ref=e2006] [cursor=pointer]:
+                      - generic [ref=e2007]: —
+                  - cell "Edit dietary_requirement" [ref=e2008]:
+                    - gridcell "Edit dietary_requirement" [ref=e2009] [cursor=pointer]:
+                      - generic [ref=e2010]: —
+                  - cell "Edit joining_instructions_sent" [ref=e2011]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e2012] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e2013]:
+                    - gridcell "Edit candidate_confirmed" [ref=e2014] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e2015]:
+                    - gridcell "Edit seably_status" [ref=e2016] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e2017]:
+                    - gridcell "Edit receipt_c17" [ref=e2018] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e2019]:
+                    - gridcell "Edit certificate_c17" [ref=e2020] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e2021]:
+                    - gridcell "Edit receipt_c18" [ref=e2022] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e2023]:
+                    - gridcell "Edit certificate_c18" [ref=e2024] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e2025]:
+                    - gridcell "Edit omc_certificate" [ref=e2026] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e2027]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e2028] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e2029]:
+                    - gridcell "Edit completed" [ref=e2030] [cursor=pointer]: "No"
+                  - cell [ref=e2031]:
+                    - generic [ref=e2032]:
+                      - button [ref=e2033]:
+                        - img
+                      - button [ref=e2034]:
+                        - img
+                - row [ref=e2035]:
+                  - cell "Edit stena_date" [ref=e2036]:
+                    - gridcell "Edit stena_date" [ref=e2037] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e2038]:
+                    - gridcell "Edit omc_date" [ref=e2039] [cursor=pointer]:
+                      - generic [ref=e2040]: —
+                  - cell "Edit pe3_date" [ref=e2041]:
+                    - gridcell "Edit pe3_date" [ref=e2042] [cursor=pointer]:
+                      - generic [ref=e2043]: —
+                  - cell "Edit first_name" [ref=e2044]:
+                    - gridcell "Edit first_name" [ref=e2045] [cursor=pointer]: Anna
+                  - cell "Edit surname" [ref=e2046]:
+                    - gridcell "Edit surname" [ref=e2047] [cursor=pointer]: Test
+                  - cell "Edit town_district" [ref=e2048]:
+                    - gridcell "Edit town_district" [ref=e2049] [cursor=pointer]:
+                      - generic [ref=e2050]: —
+                  - cell "Edit mobile" [ref=e2051]:
+                    - gridcell "Edit mobile" [ref=e2052] [cursor=pointer]:
+                      - generic [ref=e2053]: —
+                  - cell "Edit email" [ref=e2054]:
+                    - gridcell "Edit email" [ref=e2055] [cursor=pointer]:
+                      - generic [ref=e2056]: —
+                  - cell "Edit social_security_no." [ref=e2057]:
+                    - gridcell "Edit social_security_no." [ref=e2058] [cursor=pointer]:
+                      - generic [ref=e2059]: —
+                  - cell "Edit hire_date" [ref=e2060]:
+                    - gridcell "Edit hire_date" [ref=e2061] [cursor=pointer]:
+                      - generic [ref=e2062]: —
+                  - cell "Edit rank" [ref=e2063]:
+                    - gridcell "Edit rank" [ref=e2064] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e2065]:
+                    - gridcell "Edit gender" [ref=e2066] [cursor=pointer]:
+                      - generic [ref=e2067]: —
+                  - cell "Edit comments" [ref=e2068]:
+                    - gridcell "Edit comments" [ref=e2069] [cursor=pointer]:
+                      - generic [ref=e2070]: —
+                  - cell "Edit one" [ref=e2071]:
+                    - gridcell "Edit one" [ref=e2072] [cursor=pointer]:
+                      - generic [ref=e2073]: —
+                  - cell "Edit isps" [ref=e2074]:
+                    - gridcell "Edit isps" [ref=e2075] [cursor=pointer]:
+                      - generic [ref=e2076]: —
+                  - cell "Edit photo" [ref=e2077]:
+                    - gridcell "Edit photo" [ref=e2078] [cursor=pointer]:
+                      - generic [ref=e2079]: —
+                  - cell "Edit origo" [ref=e2080]:
+                    - gridcell "Edit origo" [ref=e2081] [cursor=pointer]:
+                      - generic [ref=e2082]: —
+                  - cell "Edit lönenivå" [ref=e2083]:
+                    - gridcell "Edit lönenivå" [ref=e2084] [cursor=pointer]:
+                      - generic [ref=e2085]: —
+                  - cell "Edit mail_lön" [ref=e2086]:
+                    - gridcell "Edit mail_lön" [ref=e2087] [cursor=pointer]:
+                      - generic [ref=e2088]: —
+                  - cell "Edit bankuppgifter" [ref=e2089]:
+                    - gridcell "Edit bankuppgifter" [ref=e2090] [cursor=pointer]:
+                      - generic [ref=e2091]: —
+                  - cell "Edit li" [ref=e2092]:
+                    - gridcell "Edit li" [ref=e2093] [cursor=pointer]:
+                      - generic [ref=e2094]: —
+                  - cell "Edit passport" [ref=e2095]:
+                    - gridcell "Edit passport" [ref=e2096] [cursor=pointer]:
+                      - generic [ref=e2097]: —
+                  - cell "Edit kvitto_c17/18" [ref=e2098]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e2099] [cursor=pointer]:
+                      - generic [ref=e2100]: —
+                  - cell "Edit c17" [ref=e2101]:
+                    - gridcell "Edit c17" [ref=e2102] [cursor=pointer]:
+                      - generic [ref=e2103]: —
+                  - cell "Edit crewing/done" [ref=e2104]:
+                    - gridcell "Edit crewing/done" [ref=e2105] [cursor=pointer]:
+                      - generic [ref=e2106]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e2107]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e2108] [cursor=pointer]:
+                      - generic [ref=e2109]: —
+                  - cell "Edit bestallning_gjord" [ref=e2110]:
+                    - gridcell "Edit bestallning_gjord" [ref=e2111] [cursor=pointer]:
+                      - generic [ref=e2112]: —
+                  - cell "Edit fartyg" [ref=e2113]:
+                    - gridcell "Edit fartyg" [ref=e2114] [cursor=pointer]:
+                      - generic [ref=e2115]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e2116]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e2117] [cursor=pointer]:
+                      - generic [ref=e2118]: —
+                  - cell "Edit mottaget" [ref=e2119]:
+                    - gridcell "Edit mottaget" [ref=e2120] [cursor=pointer]:
+                      - generic [ref=e2121]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e2122]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e2123] [cursor=pointer]:
+                      - generic [ref=e2124]: —
+                  - cell "Edit uthamtat" [ref=e2125]:
+                    - gridcell "Edit uthamtat" [ref=e2126] [cursor=pointer]:
+                      - generic [ref=e2127]: —
+                  - cell "talmundo (read-only)" [ref=e2128]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e2129]: "No"
+                  - cell "Edit mottagit_kort" [ref=e2130]:
+                    - gridcell "Edit mottagit_kort" [ref=e2131] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e2132]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e2133] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e2134]:
+                    - gridcell "Edit ersatt" [ref=e2135] [cursor=pointer]:
+                      - generic [ref=e2136]: —
+                  - cell "Edit klart_sign" [ref=e2137]:
+                    - gridcell "Edit klart_sign" [ref=e2138] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e2139]:
+                    - gridcell "Edit notering" [ref=e2140] [cursor=pointer]:
+                      - generic [ref=e2141]: —
+                  - cell "Edit rotation" [ref=e2142]:
+                    - gridcell "Edit rotation" [ref=e2143] [cursor=pointer]:
+                      - generic [ref=e2144]: —
+                  - cell "Edit hotel_required" [ref=e2145]:
+                    - gridcell "Edit hotel_required" [ref=e2146] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e2147]:
+                    - gridcell "Edit room_number_shared" [ref=e2148] [cursor=pointer]:
+                      - generic [ref=e2149]: —
+                  - cell "Edit dietary_requirement" [ref=e2150]:
+                    - gridcell "Edit dietary_requirement" [ref=e2151] [cursor=pointer]:
+                      - generic [ref=e2152]: —
+                  - cell "Edit joining_instructions_sent" [ref=e2153]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e2154] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e2155]:
+                    - gridcell "Edit candidate_confirmed" [ref=e2156] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e2157]:
+                    - gridcell "Edit seably_status" [ref=e2158] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e2159]:
+                    - gridcell "Edit receipt_c17" [ref=e2160] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e2161]:
+                    - gridcell "Edit certificate_c17" [ref=e2162] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e2163]:
+                    - gridcell "Edit receipt_c18" [ref=e2164] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e2165]:
+                    - gridcell "Edit certificate_c18" [ref=e2166] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e2167]:
+                    - gridcell "Edit omc_certificate" [ref=e2168] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e2169]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e2170] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e2171]:
+                    - gridcell "Edit completed" [ref=e2172] [cursor=pointer]: "No"
+                  - cell [ref=e2173]:
+                    - generic [ref=e2174]:
+                      - button [ref=e2175]:
+                        - img
+                      - button [ref=e2176]:
+                        - img
+                - row [ref=e2177]:
+                  - cell "Edit stena_date" [ref=e2178]:
+                    - gridcell "Edit stena_date" [ref=e2179] [cursor=pointer]: Onsdag 17/12
+                  - cell "Edit omc_date" [ref=e2180]:
+                    - gridcell "Edit omc_date" [ref=e2181] [cursor=pointer]: 19-20 december 2025
+                  - cell "Edit pe3_date" [ref=e2182]:
+                    - gridcell "Edit pe3_date" [ref=e2183] [cursor=pointer]:
+                      - generic [ref=e2184]: —
+                  - cell "Edit first_name" [ref=e2185]:
+                    - gridcell "Edit first_name" [ref=e2186] [cursor=pointer]: Rasmus
+                  - cell "Edit surname" [ref=e2187]:
+                    - gridcell "Edit surname" [ref=e2188] [cursor=pointer]: Thunborg
+                  - cell "Edit town_district" [ref=e2189]:
+                    - gridcell "Edit town_district" [ref=e2190] [cursor=pointer]: Göteborg
+                  - cell "Edit mobile" [ref=e2191]:
+                    - gridcell "Edit mobile" [ref=e2192] [cursor=pointer]: "+46763908120"
+                  - cell "Edit email" [ref=e2193]:
+                    - gridcell "Edit email" [ref=e2194] [cursor=pointer]: rasmus.thunborg@enhancior.se
+                  - cell "Edit social_security_no." [ref=e2195]:
+                    - gridcell "Edit social_security_no." [ref=e2196] [cursor=pointer]:
+                      - generic [ref=e2197]: —
+                  - cell "Edit hire_date" [ref=e2198]:
+                    - gridcell "Edit hire_date" [ref=e2199] [cursor=pointer]:
+                      - generic [ref=e2200]: —
+                  - cell "Edit rank" [ref=e2201]:
+                    - gridcell "Edit rank" [ref=e2202] [cursor=pointer]: SEV
+                  - cell "Edit gender" [ref=e2203]:
+                    - gridcell "Edit gender" [ref=e2204] [cursor=pointer]: Man
+                  - cell "Edit comments" [ref=e2205]:
+                    - gridcell "Edit comments" [ref=e2206] [cursor=pointer]:
+                      - generic [ref=e2207]: —
+                  - cell "Edit one" [ref=e2208]:
+                    - gridcell "Edit one" [ref=e2209] [cursor=pointer]:
+                      - generic [ref=e2210]: —
+                  - cell "Edit isps" [ref=e2211]:
+                    - gridcell "Edit isps" [ref=e2212] [cursor=pointer]:
+                      - generic [ref=e2213]: —
+                  - cell "Edit photo" [ref=e2214]:
+                    - gridcell "Edit photo" [ref=e2215] [cursor=pointer]:
+                      - generic [ref=e2216]: —
+                  - cell "Edit origo" [ref=e2217]:
+                    - gridcell "Edit origo" [ref=e2218] [cursor=pointer]:
+                      - generic [ref=e2219]: —
+                  - cell "Edit lönenivå" [ref=e2220]:
+                    - gridcell "Edit lönenivå" [ref=e2221] [cursor=pointer]:
+                      - generic [ref=e2222]: —
+                  - cell "Edit mail_lön" [ref=e2223]:
+                    - gridcell "Edit mail_lön" [ref=e2224] [cursor=pointer]:
+                      - generic [ref=e2225]: —
+                  - cell "Edit bankuppgifter" [ref=e2226]:
+                    - gridcell "Edit bankuppgifter" [ref=e2227] [cursor=pointer]:
+                      - generic [ref=e2228]: —
+                  - cell "Edit li" [ref=e2229]:
+                    - gridcell "Edit li" [ref=e2230] [cursor=pointer]:
+                      - generic [ref=e2231]: —
+                  - cell "Edit passport" [ref=e2232]:
+                    - gridcell "Edit passport" [ref=e2233] [cursor=pointer]:
+                      - generic [ref=e2234]: —
+                  - cell "Edit kvitto_c17/18" [ref=e2235]:
+                    - gridcell "Edit kvitto_c17/18" [ref=e2236] [cursor=pointer]:
+                      - generic [ref=e2237]: —
+                  - cell "Edit c17" [ref=e2238]:
+                    - gridcell "Edit c17" [ref=e2239] [cursor=pointer]:
+                      - generic [ref=e2240]: —
+                  - cell "Edit crewing/done" [ref=e2241]:
+                    - gridcell "Edit crewing/done" [ref=e2242] [cursor=pointer]:
+                      - generic [ref=e2243]: —
+                  - cell "Edit stena_id_origo_nummer" [ref=e2244]:
+                    - gridcell "Edit stena_id_origo_nummer" [ref=e2245] [cursor=pointer]:
+                      - generic [ref=e2246]: —
+                  - cell "Edit bestallning_gjord" [ref=e2247]:
+                    - gridcell "Edit bestallning_gjord" [ref=e2248] [cursor=pointer]:
+                      - generic [ref=e2249]: —
+                  - cell "Edit fartyg" [ref=e2250]:
+                    - gridcell "Edit fartyg" [ref=e2251] [cursor=pointer]:
+                      - generic [ref=e2252]: —
+                  - cell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e2253]:
+                    - gridcell "Edit skickat_bestallning_till_fartyg_warehouse" [ref=e2254] [cursor=pointer]:
+                      - generic [ref=e2255]: —
+                  - cell "Edit mottaget" [ref=e2256]:
+                    - gridcell "Edit mottaget" [ref=e2257] [cursor=pointer]:
+                      - generic [ref=e2258]: —
+                  - cell "Edit kontaktat_medarbetare" [ref=e2259]:
+                    - gridcell "Edit kontaktat_medarbetare" [ref=e2260] [cursor=pointer]:
+                      - generic [ref=e2261]: —
+                  - cell "Edit uthamtat" [ref=e2262]:
+                    - gridcell "Edit uthamtat" [ref=e2263] [cursor=pointer]:
+                      - generic [ref=e2264]: —
+                  - cell "talmundo (read-only)" [ref=e2265]:
+                    - gridcell "talmundo (read-only)" [disabled] [ref=e2266]: "No"
+                  - cell "Edit mottagit_kort" [ref=e2267]:
+                    - gridcell "Edit mottagit_kort" [ref=e2268] [cursor=pointer]: "No"
+                  - cell "Edit skickat_kort_till_fartyg" [ref=e2269]:
+                    - gridcell "Edit skickat_kort_till_fartyg" [ref=e2270] [cursor=pointer]: "No"
+                  - cell "Edit ersatt" [ref=e2271]:
+                    - gridcell "Edit ersatt" [ref=e2272] [cursor=pointer]:
+                      - generic [ref=e2273]: —
+                  - cell "Edit klart_sign" [ref=e2274]:
+                    - gridcell "Edit klart_sign" [ref=e2275] [cursor=pointer]: "No"
+                  - cell "Edit notering" [ref=e2276]:
+                    - gridcell "Edit notering" [ref=e2277] [cursor=pointer]:
+                      - generic [ref=e2278]: —
+                  - cell "Edit rotation" [ref=e2279]:
+                    - gridcell "Edit rotation" [ref=e2280] [cursor=pointer]:
+                      - generic [ref=e2281]: —
+                  - cell "Edit hotel_required" [ref=e2282]:
+                    - gridcell "Edit hotel_required" [ref=e2283] [cursor=pointer]: "No"
+                  - cell "Edit room_number_shared" [ref=e2284]:
+                    - gridcell "Edit room_number_shared" [ref=e2285] [cursor=pointer]:
+                      - generic [ref=e2286]: —
+                  - cell "Edit dietary_requirement" [ref=e2287]:
+                    - gridcell "Edit dietary_requirement" [ref=e2288] [cursor=pointer]:
+                      - generic [ref=e2289]: —
+                  - cell "Edit joining_instructions_sent" [ref=e2290]:
+                    - gridcell "Edit joining_instructions_sent" [ref=e2291] [cursor=pointer]: "No"
+                  - cell "Edit candidate_confirmed" [ref=e2292]:
+                    - gridcell "Edit candidate_confirmed" [ref=e2293] [cursor=pointer]: "No"
+                  - cell "Edit seably_status" [ref=e2294]:
+                    - gridcell "Edit seably_status" [ref=e2295] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c17" [ref=e2296]:
+                    - gridcell "Edit receipt_c17" [ref=e2297] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c17" [ref=e2298]:
+                    - gridcell "Edit certificate_c17" [ref=e2299] [cursor=pointer]: "No"
+                  - cell "Edit receipt_c18" [ref=e2300]:
+                    - gridcell "Edit receipt_c18" [ref=e2301] [cursor=pointer]: "No"
+                  - cell "Edit certificate_c18" [ref=e2302]:
+                    - gridcell "Edit certificate_c18" [ref=e2303] [cursor=pointer]: "No"
+                  - cell "Edit omc_certificate" [ref=e2304]:
+                    - gridcell "Edit omc_certificate" [ref=e2305] [cursor=pointer]: "No"
+                  - cell "Edit uploaded_in_crewsf" [ref=e2306]:
+                    - gridcell "Edit uploaded_in_crewsf" [ref=e2307] [cursor=pointer]: "No"
+                  - cell "Edit completed" [ref=e2308]:
+                    - gridcell "Edit completed" [ref=e2309] [cursor=pointer]: "No"
+                  - cell [ref=e2310]:
+                    - generic [ref=e2311]:
+                      - button [ref=e2312]:
+                        - img
+                      - button [ref=e2313]:
+                        - img
+    - region "Notifications alt+T"
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e2319] [cursor=pointer]:
+    - img [ref=e2320]
+  - alert [ref=e2323]
+```

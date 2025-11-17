@@ -110,11 +110,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Normalize SSN to standard format (YYMMDD-XXXX) and email (convert undefined to null)
+    // Convert empty strings to null for UUID date fields (database expects null, not "")
     const normalizedData: EmployeeFormData = {
       ...validatedData,
       ssn: normalizeSSN(validatedData.ssn),
       email: validatedData.email ?? null,
       gender: validatedData.gender ?? null,
+      // Convert empty strings to null for date UUID fields
+      stena_date: validatedData.stena_date === "" || !validatedData.stena_date ? null : validatedData.stena_date,
+      omc_date: validatedData.omc_date === "" || !validatedData.omc_date ? null : validatedData.omc_date,
+      pe3_date: validatedData.pe3_date === "" || !validatedData.pe3_date ? null : validatedData.pe3_date,
       // Story 8.20: Include room number in employee data
       room_number_shared: roomNumber,
       // Handle One field timestamp logic (Story 8.3)

@@ -59,8 +59,13 @@ function ReactivateEmployeeDialog({
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }) {
-  const handleReactivate = async () => {
+  const handleReactivate = async (e?: React.MouseEvent) => {
     if (!employee) return;
+    
+    // Prevent dialog from closing automatically on error
+    if (e) {
+      e.preventDefault();
+    }
 
     try {
       await employeeService.reactivate(employee.id);
@@ -70,6 +75,8 @@ function ReactivateEmployeeDialog({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Reactivation failed';
       toast.error(errorMessage);
+      // Explicitly do NOT call onSuccess or onOpenChange on error
+      // Dialog should remain open so user can see the error
     }
   };
 
@@ -94,8 +101,8 @@ function ReactivateEmployeeDialog({
 }
 
 describe('ReactivateEmployeeDialog', () => {
-  const mockOnOpenChange = vi.fn();
-  const mockOnSuccess = vi.fn();
+  let mockOnOpenChange: ReturnType<typeof vi.fn>;
+  let mockOnSuccess: ReturnType<typeof vi.fn>;
 
   const mockTerminatedEmployee: Employee = {
     id: 'emp-123',
@@ -137,6 +144,8 @@ describe('ReactivateEmployeeDialog', () => {
   };
 
   beforeEach(() => {
+    mockOnOpenChange = vi.fn();
+    mockOnSuccess = vi.fn();
     vi.clearAllMocks();
   });
 
@@ -292,7 +301,14 @@ describe('ReactivateEmployeeDialog', () => {
 
   it('should display error messages on failure', async () => {
     const user = userEvent.setup();
-    vi.mocked(employeeService.reactivate).mockRejectedValue(
+    // Clear mocks before this test to ensure clean state
+    mockOnSuccess.mockClear();
+    mockOnOpenChange.mockClear();
+    vi.mocked(toast.error).mockClear();
+    vi.mocked(employeeService.reactivate).mockClear();
+    
+    // Mock the service to reject with an error
+    vi.mocked(employeeService.reactivate).mockRejectedValueOnce(
       new Error('Reactivation failed')
     );
 
@@ -308,11 +324,18 @@ describe('ReactivateEmployeeDialog', () => {
     const confirmButton = screen.getByRole('button', { name: /Confirm Reactivation/i });
     await user.click(confirmButton);
 
+    // Wait for error toast to be called
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Reactivation failed');
-    });
+    }, { timeout: 2000 });
 
+    // Give a small delay to ensure all async operations complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Verify onSuccess was NOT called (error should prevent success callback)
+    // Check after error toast is confirmed to ensure error handling completed
     expect(mockOnSuccess).not.toHaveBeenCalled();
+    expect(mockOnOpenChange).not.toHaveBeenCalled();
   });
 
   it('should calculate reactivation preview correctly', () => {
