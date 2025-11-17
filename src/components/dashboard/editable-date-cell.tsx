@@ -51,6 +51,7 @@ export function EditableDateCell({
   const [showTooltip, setShowTooltip] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const cellRef = useRef<HTMLDivElement>(null);
+  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // For PE3 dates, use the hook to get only available dates - only when editing
   // Pass enabled flag to prevent fetching when not in edit mode
@@ -95,6 +96,16 @@ export function EditableDateCell({
       return () => clearTimeout(timer);
     }
   }, [isEditing, dropdownOpen]);
+
+  // Cleanup tooltip timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current);
+        tooltipTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Handle click outside to cancel
   useEffect(() => {
@@ -162,8 +173,15 @@ export function EditableDateCell({
             <div
               ref={cellRef}
               onClick={() => {
+                // Clear any existing timeout
+                if (tooltipTimeoutRef.current) {
+                  clearTimeout(tooltipTimeoutRef.current);
+                }
                 setShowTooltip(true);
-                setTimeout(() => setShowTooltip(false), 2000);
+                tooltipTimeoutRef.current = setTimeout(() => {
+                  setShowTooltip(false);
+                  tooltipTimeoutRef.current = null;
+                }, 2000);
               }}
               className={cn(
                 "px-3 py-2 rounded min-h-10 flex items-center select-text cursor-default bg-gray-50",
