@@ -78,9 +78,7 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     gender: z
       .enum(["Man", "Woman"], {
         errorMap: () => ({ message: msg('genderInvalid') })
-      })
-      .nullable()
-      .optional(),
+      }), // Required field - no default value
     town_district: z.string().nullable().default(null),
     hire_date: z
       .string()
@@ -170,9 +168,7 @@ const baseEmployeeSchema = z.object({
   gender: z
     .enum(["Man", "Woman"], {
       errorMap: () => ({ message: "Gender must be Man or Woman" })
-    })
-    .nullable()
-    .optional(),
+    }), // Required field - no default value
   town_district: z.string().nullable().default(null),
   hire_date: z
     .string()

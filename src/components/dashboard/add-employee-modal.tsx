@@ -87,10 +87,10 @@ export function AddEmployeeModal({
       email: null,
       mobile: null,
       rank: "SEV",
-      gender: null,
+      gender: undefined, // Required field - no default value
       town_district: null,
       hotel_required: false,
-      hire_date: new Date().toISOString().split("T")[0],
+      hire_date: new Date().toISOString().split("T")[0], // Default to current date, but user can change it
       stena_date: "",
       omc_date: "",
       pe3_date: null,
@@ -109,11 +109,11 @@ export function AddEmployeeModal({
     try {
       setIsSubmitting(true);
       
-      // Normalize email and gender fields: convert undefined to null
+      // Normalize email field: convert undefined to null
+      // Gender is now required, so no normalization needed
       const normalizedData = {
         ...data,
         email: data.email ?? null,
-        gender: data.gender ?? null,
       };
       
       await employeeService.create(normalizedData);
@@ -396,7 +396,9 @@ export function AddEmployeeModal({
                 name="gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('gender')}</FormLabel>
+                    <FormLabel>
+                      {t('gender')} <span className="text-red-500">*</span>
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? undefined}
