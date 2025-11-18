@@ -6,6 +6,8 @@ import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
 import { employeeService } from "@/lib/services/employee-service";
 import type { Employee } from "@/lib/types/employee";
 import { toast } from "sonner";
+import { useImportantDates } from "@/lib/hooks/use-important-dates";
+import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 
 // Mock the employee service
 vi.mock("@/lib/services/employee-service", () => ({
@@ -20,6 +22,15 @@ vi.mock("sonner", () => ({
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+// Mock the date hooks
+vi.mock("@/lib/hooks/use-important-dates", () => ({
+  useImportantDates: vi.fn(),
+}));
+
+vi.mock("@/lib/hooks/use-available-pe3-dates", () => ({
+  useAvailablePE3Dates: vi.fn(),
 }));
 
 describe("AddEmployeeModal", () => {
@@ -268,6 +279,193 @@ describe("AddEmployeeModal", () => {
       expect(toast.error).toHaveBeenCalledWith("Kunde inte spara ändringar", {
         description: "Unexpected server error",
       });
+    });
+  });
+
+  describe("Date Dropdown Remaining Spots Display", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should display remaining spots in parentheses for Stena dates in dropdown", async () => {
+      const mockStenaDates = [
+        {
+          id: "stena-1",
+          week_number: 10,
+          year: 2025,
+          category: "Stena Dates",
+          date_description: "Fredag 7/3",
+          date_value: "2025-03-07",
+          remaining_spots: 5,
+          max_spots: 99,
+          assigned_employees: [],
+        },
+      ];
+
+      vi.mocked(useImportantDates)
+        .mockReturnValueOnce({ dates: mockStenaDates, isLoading: false })
+        .mockReturnValueOnce({ dates: [], isLoading: false }); // ÖMC dates
+
+      vi.mocked(useAvailablePE3Dates).mockReturnValue({
+        availableDates: [],
+        totalAvailable: 0,
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+
+      renderWithI18n(
+        <AddEmployeeModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      );
+
+      // Open Stena date dropdown
+      const stenaDateSelect = screen.getByLabelText(/Stena.*datum/i);
+      await user.click(stenaDateSelect);
+
+      // Wait for dropdown options to appear
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+      });
+
+      // Verify the date option contains remaining spots in parentheses
+      const dateOption = screen.getByText(
+        (content, element) => {
+          return (
+            element?.textContent?.includes("Fredag 7/3") &&
+            element?.textContent?.includes("(5)")
+          );
+        },
+        { selector: "[role='option']" }
+      );
+
+      expect(dateOption).toBeInTheDocument();
+      expect(dateOption).toHaveTextContent("(5)");
+    });
+
+    it("should display remaining spots in parentheses for ÖMC dates in dropdown", async () => {
+      const mockOmcDates = [
+        {
+          id: "omc-1",
+          week_number: 11,
+          year: 2025,
+          category: "ÖMC Dates",
+          date_description: "Måndag 10/3",
+          date_value: "2025-03-10",
+          remaining_spots: 3,
+          max_spots: 20,
+          assigned_employees: [],
+        },
+      ];
+
+      vi.mocked(useImportantDates)
+        .mockReturnValueOnce({ dates: [], isLoading: false }) // Stena dates
+        .mockReturnValueOnce({ dates: mockOmcDates, isLoading: false }); // ÖMC dates
+
+      vi.mocked(useAvailablePE3Dates).mockReturnValue({
+        availableDates: [],
+        totalAvailable: 0,
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+
+      renderWithI18n(
+        <AddEmployeeModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      );
+
+      // Open ÖMC date dropdown
+      const omcDateSelect = screen.getByLabelText(/ÖMC.*datum/i);
+      await user.click(omcDateSelect);
+
+      // Wait for dropdown options to appear
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+      });
+
+      // Verify the date option contains remaining spots in parentheses
+      const dateOption = screen.getByText(
+        (content, element) => {
+          return (
+            element?.textContent?.includes("Måndag 10/3") &&
+            element?.textContent?.includes("(3)")
+          );
+        },
+        { selector: "[role='option']" }
+      );
+
+      expect(dateOption).toBeInTheDocument();
+      expect(dateOption).toHaveTextContent("(3)");
+    });
+
+    it("should display remaining spots in parentheses for PE3 dates in dropdown", async () => {
+      const mockPE3Dates = [
+        {
+          id: "pe3-1",
+          week_number: 12,
+          year: 2025,
+          category: "PE3 Dates",
+          date_description: "Torsdag 13/3",
+          date_value: "2025-03-13",
+          time_value: "14:30",
+          remaining_spots: 1,
+          max_spots: 1,
+          assigned_employees: [],
+        },
+      ];
+
+      vi.mocked(useImportantDates)
+        .mockReturnValueOnce({ dates: [], isLoading: false }) // Stena dates
+        .mockReturnValueOnce({ dates: [], isLoading: false }); // ÖMC dates
+
+      vi.mocked(useAvailablePE3Dates).mockReturnValue({
+        availableDates: mockPE3Dates,
+        totalAvailable: 1,
+        isLoading: false,
+      });
+
+      const user = userEvent.setup();
+
+      renderWithI18n(
+        <AddEmployeeModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      );
+
+      // Open PE3 date dropdown
+      const pe3DateSelect = screen.getByLabelText(/PE3.*datum/i);
+      await user.click(pe3DateSelect);
+
+      // Wait for dropdown options to appear
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+      });
+
+      // Verify the date option contains remaining spots in parentheses
+      const dateOption = screen.getByText(
+        (content, element) => {
+          return (
+            element?.textContent?.includes("13/3") &&
+            element?.textContent?.includes("(1)")
+          );
+        },
+        { selector: "[role='option']" }
+      );
+
+      expect(dateOption).toBeInTheDocument();
+      expect(dateOption).toHaveTextContent("(1)");
     });
   });
 });

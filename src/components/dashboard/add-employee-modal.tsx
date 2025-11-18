@@ -461,7 +461,6 @@ export function AddEmployeeModal({
                             const remainingSpots = date.remaining_spots ?? 0;
                             const maxSpots = date.max_spots ?? 99;
                             const isFull = remainingSpots === 0;
-                            const isAlmostFull = remainingSpots < 5 && remainingSpots > 0;
                             
                             return (
                               <SelectItem 
@@ -472,15 +471,9 @@ export function AddEmployeeModal({
                               >
                                 <div className="flex items-center justify-between gap-2 w-full">
                                   <span className={cn(isFull && "text-muted-foreground")}>
-                                    {formatImportantDateOption(date)}
+                                    {formatImportantDateOption(date)} ({remainingSpots})
                                   </span>
                                   <div className="flex items-center gap-1.5">
-                                    <span className={cn(
-                                      "text-xs font-medium",
-                                      isFull ? "text-red-600" : isAlmostFull ? "text-yellow-600" : "text-muted-foreground"
-                                    )}>
-                                      {remainingSpots} left
-                                    </span>
                                     <CapacityBadge
                                       remainingSpots={remainingSpots}
                                       maxSpots={maxSpots}
@@ -523,7 +516,6 @@ export function AddEmployeeModal({
                             const remainingSpots = date.remaining_spots ?? 0;
                             const maxSpots = date.max_spots ?? 99;
                             const isFull = remainingSpots === 0;
-                            const isAlmostFull = remainingSpots < 5 && remainingSpots > 0;
                             
                             return (
                               <SelectItem 
@@ -534,15 +526,9 @@ export function AddEmployeeModal({
                               >
                                 <div className="flex items-center justify-between gap-2 w-full">
                                   <span className={cn(isFull && "text-muted-foreground")}>
-                                    {formatImportantDateOption(date)}
+                                    {formatImportantDateOption(date)} ({remainingSpots})
                                   </span>
                                   <div className="flex items-center gap-1.5">
-                                    <span className={cn(
-                                      "text-xs font-medium",
-                                      isFull ? "text-red-600" : isAlmostFull ? "text-yellow-600" : "text-muted-foreground"
-                                    )}>
-                                      {remainingSpots} left
-                                    </span>
                                     <CapacityBadge
                                       remainingSpots={remainingSpots}
                                       maxSpots={maxSpots}
@@ -599,7 +585,7 @@ export function AddEmployeeModal({
                                 >
                                   <div className="flex items-center justify-between gap-2 w-full">
                                     <span className={cn(isFull && "text-muted-foreground")}>
-                                      {formatImportantDateOption(date)}
+                                      {formatImportantDateOption(date)} ({remainingSpots})
                                     </span>
                                     <div className="flex items-center gap-1.5">
                                       {isFull ? (

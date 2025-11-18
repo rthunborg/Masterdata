@@ -700,4 +700,115 @@ describe("EditableDateCell", () => {
       expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
   });
+
+  describe("Remaining Spots Display Format", () => {
+    it("should display remaining spots count in parentheses in dropdown options", async () => {
+      const dateWithSpots: ImportantDate = {
+        ...mockStenaDate,
+        id: "date-with-spots",
+        remaining_spots: 5,
+        max_spots: 20,
+      };
+
+      renderWithI18n(
+        <EditableDateCell
+          value={null}
+          displayValue=""
+          employeeId="emp-1"
+          field="stena_date"
+          dateCategory="Stena Dates"
+          allDates={[dateWithSpots]}
+          canEdit={true}
+          onSave={mockOnSave}
+        />
+      );
+
+      // Enter edit mode
+      const cell = screen.getByRole("gridcell");
+      fireEvent.click(cell);
+
+      // Wait for dropdown to open
+      await waitFor(() => {
+        expect(screen.getByRole("combobox")).toBeInTheDocument();
+      });
+
+      // Open the select dropdown
+      const combobox = screen.getByRole("combobox");
+      fireEvent.click(combobox);
+
+      // Wait for options to appear
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+      });
+
+      // Find the date option and verify it contains remaining spots in parentheses
+      const dateOption = screen.getByText(
+        (content, element) => {
+          return (
+            element?.textContent?.includes(dateWithSpots.date_description) &&
+            element?.textContent?.includes(`(${dateWithSpots.remaining_spots})`)
+          );
+        },
+        { selector: "[role='option']" }
+      );
+
+      expect(dateOption).toBeInTheDocument();
+      expect(dateOption).toHaveTextContent(`(${dateWithSpots.remaining_spots})`);
+    });
+
+    it("should display remaining spots for dates with different spot counts", async () => {
+      const datesWithDifferentSpots: ImportantDate[] = [
+        { ...mockStenaDate, id: "date-1", remaining_spots: 0, max_spots: 20 },
+        { ...mockStenaDate, id: "date-2", remaining_spots: 3, max_spots: 20 },
+        { ...mockStenaDate, id: "date-3", remaining_spots: 15, max_spots: 20 },
+      ];
+
+      renderWithI18n(
+        <EditableDateCell
+          value={null}
+          displayValue=""
+          employeeId="emp-1"
+          field="stena_date"
+          dateCategory="Stena Dates"
+          allDates={datesWithDifferentSpots}
+          canEdit={true}
+          onSave={mockOnSave}
+        />
+      );
+
+      // Enter edit mode
+      const cell = screen.getByRole("gridcell");
+      fireEvent.click(cell);
+
+      // Wait for dropdown to open
+      await waitFor(() => {
+        expect(screen.getByRole("combobox")).toBeInTheDocument();
+      });
+
+      // Open the select dropdown
+      const combobox = screen.getByRole("combobox");
+      fireEvent.click(combobox);
+
+      // Wait for options to appear
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+      });
+
+      // Verify each date shows its remaining spots in parentheses
+      datesWithDifferentSpots.forEach((date) => {
+        const option = screen.getByText(
+          (content, element) => {
+            return (
+              element?.textContent?.includes(date.date_description) &&
+              element?.textContent?.includes(`(${date.remaining_spots})`)
+            );
+          },
+          { selector: "[role='option']" }
+        );
+        expect(option).toBeInTheDocument();
+      });
+    });
+  });
 });

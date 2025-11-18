@@ -315,15 +315,9 @@ export function EditableDateCell({
               >
                 <div className="flex items-center justify-between gap-2 w-full">
                   <span className={cn(isFull && "text-muted-foreground")}>
-                    {date.date_description} (Week {date.week_number}, {date.year})
+                    {date.date_description} (Week {date.week_number}, {date.year}) ({remainingSpots})
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <span className={cn(
-                      "text-xs font-medium",
-                      isFull ? "text-red-600" : isAlmostFull ? "text-yellow-600" : "text-muted-foreground"
-                    )}>
-                      {remainingSpots} left
-                    </span>
                     <CapacityBadge
                       remainingSpots={remainingSpots}
                       maxSpots={maxSpots}
