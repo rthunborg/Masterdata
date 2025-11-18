@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -31,6 +30,13 @@ import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-
 import { useTranslations } from "@/lib/i18n";
 import type { Employee } from "@/lib/types/employee";
 import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
+import dynamic from "next/dynamic";
+
+// Lazy load Calendar component (react-day-picker is heavy) - Story 12.5: Performance optimization
+const Calendar = dynamic(
+  () => import("@/components/ui/calendar").then((mod) => ({ default: mod.Calendar })),
+  { ssr: false }
+);
 
 interface EditableCellProps {
   value: string | number | boolean | null;

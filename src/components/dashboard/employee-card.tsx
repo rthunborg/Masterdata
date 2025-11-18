@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, Archive, ArchiveRestore, UserX, Mail, Phone } from 'lucide-react';
+import { ChevronDown, ChevronUp, Archive, ArchiveRestore, UserX, Mail, Phone, Edit } from 'lucide-react';
 import type { Employee } from '@/lib/types/employee';
 import type { ColumnConfig } from '@/lib/types/column-config';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ import { customDataService } from '@/lib/services/custom-data-service';
 import { toast } from 'sonner';
 import { getEmployeeFieldValue } from '@/lib/utils/column-mapping';
 import { useImportantDates } from '@/lib/hooks/use-important-dates';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -22,22 +23,32 @@ interface EmployeeCardProps {
   onArchive?: (employee: Employee) => void;
   onUnarchive?: (employee: Employee) => void;
   onTerminate?: (employee: Employee) => void;
+  onEdit?: (employee: Employee) => void;
   onEmployeeUpdated?: () => void;
   className?: string;
 }
 
-export function EmployeeCard({
+function EmployeeCardComponent({
   employee,
   isHRAdmin,
   columnConfigs = [],
   onArchive,
   onUnarchive,
   onTerminate,
+  onEdit,
   onEmployeeUpdated,
   className,
 }: EmployeeCardProps) {
   const [expanded, setExpanded] = useState(false);
   const { dates: allImportantDates } = useImportantDates();
+  const isMobile = useMediaQuery('(max-width: 1023px)');
+  
+  // Swipe gesture state
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const actionButtonsWidth = 240; // 3 buttons * 80px each
 
   const getStatusBadge = () => {
     if (employee.is_terminated) {
@@ -98,9 +109,173 @@ export function EmployeeCard({
     return col.column_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  // Haptic feedback helper (iOS)
+  const triggerHapticFeedback = useCallback(() => {
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(10); // Short vibration
+    }
+  }, []);
+
+  // Reset swipe position
+  const resetSwipe = useCallback(() => {
+    setSwipeOffset(0);
+    setIsSwiping(false);
+    touchStartRef.current = null;
+  }, []);
+
+  // Touch event handlers for swipe gesture
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!isMobile || !isHRAdmin) return; // Only on mobile and for HR admins
+    
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    setIsSwiping(true);
+  }, [isMobile, isHRAdmin]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isMobile || !isHRAdmin || !touchStartRef.current) return;
+    
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+    
+    // Check if gesture is primarily horizontal (AC: prioritize vertical scroll if ambiguous)
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+    
+    // If vertical movement is greater, treat as scroll and ignore
+    if (absDeltaY > absDeltaX) {
+      return;
+    }
+    
+    // Prevent default scroll during horizontal swipe
+    if (absDeltaX > 10) {
+      e.preventDefault();
+    }
+    
+    // Only allow left swipe (negative deltaX)
+    if (deltaX < 0) {
+      const newOffset = Math.max(-actionButtonsWidth, deltaX);
+      setSwipeOffset(newOffset);
+    }
+  }, [isMobile, isHRAdmin, actionButtonsWidth]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isMobile || !isHRAdmin || !touchStartRef.current) return;
+    
+    const threshold = 50; // Minimum 50px horizontal movement (AC requirement)
+    const shouldReveal = Math.abs(swipeOffset) >= threshold;
+    
+    if (shouldReveal && swipeOffset < -threshold) {
+      // Reveal actions (swipe left)
+      setSwipeOffset(-actionButtonsWidth);
+      triggerHapticFeedback();
+    } else {
+      // Return to original position
+      resetSwipe();
+    }
+    
+    setIsSwiping(false);
+    touchStartRef.current = null;
+  }, [isMobile, isHRAdmin, swipeOffset, actionButtonsWidth, triggerHapticFeedback, resetSwipe]);
+
+  // Handle click outside to close swipe
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        if (swipeOffset < 0) {
+          resetSwipe();
+        }
+      }
+    };
+
+    if (swipeOffset < 0) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [swipeOffset, resetSwipe]);
+
+  // Handle action button clicks
+  const handleArchiveClick = useCallback(() => {
+    resetSwipe();
+    onArchive?.(employee);
+  }, [resetSwipe, onArchive, employee]);
+
+  const handleTerminateClick = useCallback(() => {
+    resetSwipe();
+    onTerminate?.(employee);
+  }, [resetSwipe, onTerminate, employee]);
+
+  const handleEditClick = useCallback(() => {
+    resetSwipe();
+    onEdit?.(employee);
+  }, [resetSwipe, onEdit, employee]);
+
   return (
-    <Card className={cn('w-full', className)}>
-      <CardHeader className="pb-3">
+    <div 
+      className="relative overflow-hidden"
+      ref={cardRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Action buttons revealed on swipe */}
+      {isMobile && isHRAdmin && !employee.is_archived && !employee.is_terminated && (
+        <div 
+          className="absolute right-0 top-0 h-full flex items-center gap-0 z-10"
+          style={{ width: `${actionButtonsWidth}px` }}
+        >
+          <Button
+            variant="destructive"
+            size="default"
+            onClick={handleArchiveClick}
+            className="h-full rounded-none min-w-[80px] touch-manipulation"
+            style={{ minHeight: '44px' }}
+          >
+            <Archive className="h-5 w-5" />
+            <span className="ml-1 text-xs">Archive</span>
+          </Button>
+          <Button
+            variant="destructive"
+            size="default"
+            onClick={handleTerminateClick}
+            className="h-full rounded-none min-w-[80px] touch-manipulation"
+            style={{ minHeight: '44px' }}
+          >
+            <UserX className="h-5 w-5" />
+            <span className="ml-1 text-xs">Terminate</span>
+          </Button>
+          <Button
+            variant="default"
+            size="default"
+            onClick={handleEditClick}
+            className="h-full rounded-none min-w-[80px] touch-manipulation"
+            style={{ minHeight: '44px' }}
+          >
+            <Edit className="h-5 w-5" />
+            <span className="ml-1 text-xs">Edit</span>
+          </Button>
+        </div>
+      )}
+      
+      {/* Main card with swipe transform */}
+      <Card 
+        className={cn(
+          'w-full transition-transform duration-300 ease-out',
+          isSwiping && 'transition-none',
+          className
+        )}
+        style={{
+          transform: `translateX(${swipeOffset}px)`,
+          willChange: isSwiping ? 'transform' : 'auto',
+        }}
+      >
+        <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-semibold truncate">
@@ -247,5 +422,25 @@ export function EmployeeCard({
         )}
       </CardFooter>
     </Card>
+    </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders (Story 12.5: Performance optimization)
+export const EmployeeCard = memo(EmployeeCardComponent, (prevProps, nextProps) => {
+  // Custom comparison function for better memoization
+  return (
+    prevProps.employee.id === nextProps.employee.id &&
+    prevProps.employee.first_name === nextProps.employee.first_name &&
+    prevProps.employee.surname === nextProps.employee.surname &&
+    prevProps.employee.is_archived === nextProps.employee.is_archived &&
+    prevProps.employee.is_terminated === nextProps.employee.is_terminated &&
+    prevProps.isHRAdmin === nextProps.isHRAdmin &&
+    (prevProps.columnConfigs?.length ?? 0) === (nextProps.columnConfigs?.length ?? 0) &&
+    prevProps.onArchive === nextProps.onArchive &&
+    prevProps.onUnarchive === nextProps.onUnarchive &&
+    prevProps.onTerminate === nextProps.onTerminate &&
+    prevProps.onEdit === nextProps.onEdit &&
+    prevProps.onEmployeeUpdated === nextProps.onEmployeeUpdated
+  );
+});

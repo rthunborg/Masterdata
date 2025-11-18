@@ -13,15 +13,27 @@ import {
 import { ImportantDatesTable } from "@/components/dashboard/important-dates-table";
 import { ImportantDateCardList } from "@/components/dashboard/important-date-card-list";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
-import { ImportImportantDatesModal } from "@/components/dashboard/import-important-dates-modal";
-import { CategoryExportModal } from "@/components/dashboard/category-export-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { exportImportantDates } from "@/lib/services/export-service";
 import { useEffect, useState, useCallback } from "react";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { Plus, ArrowLeft, Upload, Download, FileDown } from "lucide-react";
 import { Link } from "@/lib/navigation";
+import dynamic from "next/dynamic";
+
+// Lazy load heavy modals for better initial bundle size (Story 12.5: Performance optimization)
+const AddImportantDateModal = dynamic(
+  () => import("@/components/dashboard/add-important-date-modal").then((mod) => ({ default: mod.AddImportantDateModal })),
+  { ssr: false }
+);
+const ImportImportantDatesModal = dynamic(
+  () => import("@/components/dashboard/import-important-dates-modal").then((mod) => ({ default: mod.ImportImportantDatesModal })),
+  { ssr: false }
+);
+const CategoryExportModal = dynamic(
+  () => import("@/components/dashboard/category-export-modal").then((mod) => ({ default: mod.CategoryExportModal })),
+  { ssr: false }
+);
 
 export default function ImportantDatesPage() {
   const { user, isLoading: authLoading } = useAuth();

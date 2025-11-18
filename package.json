@@ -37,6 +37,7 @@
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.76.1",
     "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-virtual": "^3.13.12",
     "@types/papaparse": "^5.3.16",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",

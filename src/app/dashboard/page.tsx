@@ -17,16 +17,40 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ResponsiveEmployeeView } from "@/components/dashboard/responsive-employee-view";
-import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
-import { AddColumnModal } from "@/components/dashboard/add-column-modal";
-import { EditColumnModal } from "@/components/dashboard/edit-column-modal";
 import { ManageColumnsDialog } from "@/components/dashboard/manage-columns-dropdown";
-import { ImportEmployeesModal } from "@/components/dashboard/import-employees-modal";
 import { RoleSelector } from "@/components/dashboard/role-selector";
 import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
-import { useState, useEffect } from "react";
+import { OfflineBanner } from "@/components/dashboard/offline-banner";
+import { CacheExpirationWarning } from "@/components/dashboard/cache-expiration-warning";
+import { useOfflineSync } from "@/lib/hooks/use-offline-sync";
+import { useState, useEffect, useCallback } from "react";
+import type { Employee } from "@/lib/types/employee";
+import type { ConflictResolution } from "@/lib/services/offline-sync";
 import { Plus, Upload, Columns } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
+import dynamic from "next/dynamic";
+
+// Lazy load heavy modals for better initial bundle size (Story 12.5: Performance optimization)
+const AddEmployeeModal = dynamic(
+  () => import("@/components/dashboard/add-employee-modal").then((mod) => ({ default: mod.AddEmployeeModal })),
+  { ssr: false }
+);
+const AddColumnModal = dynamic(
+  () => import("@/components/dashboard/add-column-modal").then((mod) => ({ default: mod.AddColumnModal })),
+  { ssr: false }
+);
+const EditColumnModal = dynamic(
+  () => import("@/components/dashboard/edit-column-modal").then((mod) => ({ default: mod.EditColumnModal })),
+  { ssr: false }
+);
+const ImportEmployeesModal = dynamic(
+  () => import("@/components/dashboard/import-employees-modal").then((mod) => ({ default: mod.ImportEmployeesModal })),
+  { ssr: false }
+);
+const ConflictResolutionDialog = dynamic(
+  () => import("@/components/dashboard/conflict-resolution-dialog").then((mod) => ({ default: mod.ConflictResolutionDialog })),
+  { ssr: false }
+);
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -75,6 +99,29 @@ export default function DashboardPage() {
   
   const [globalFilter, setGlobalFilter] = useState("");
 
+  // Story 12.3: Conflict resolution state
+  const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
+  const [conflictData, setConflictData] = useState<{
+    mutationId: string;
+    employeeId: string;
+    localData: Partial<Employee>;
+    serverData: Employee;
+    employee: Employee | null;
+    resolvePromise: ((resolution: ConflictResolution) => void) | null;
+  } | null>(null);
+
+  // Handle conflict resolution from dialog
+  const handleConflictResolve = useCallback((action: "keep-local" | "keep-server" | "merge") => {
+    if (conflictData?.resolvePromise) {
+      conflictData.resolvePromise({
+        mutationId: conflictData.mutationId,
+        action,
+      });
+      setConflictDialogOpen(false);
+      setConflictData(null);
+    }
+  }, [conflictData]);
+
   // Save filter state to session storage
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -100,6 +147,27 @@ export default function DashboardPage() {
     enableNotifications: user?.role !== "hr_admin", // Only enable for external parties
     globalFilter,
   });
+
+  // Conflict resolver function for offline sync (must be after useEmployees to access employees)
+  const handleConflict = useCallback(async (conflict: {
+    mutationId: string;
+    employeeId: string;
+    localData: Partial<Employee>;
+    serverData: Employee;
+  }): Promise<ConflictResolution> => {
+    // Find the employee in the current list for display
+    const employee = employees.find((emp) => emp.id === conflict.employeeId) || null;
+
+    // Show dialog and wait for user resolution
+    return new Promise<ConflictResolution>((resolve) => {
+      setConflictData({
+        ...conflict,
+        employee,
+        resolvePromise: resolve,
+      });
+      setConflictDialogOpen(true);
+    });
+  }, [employees]);
 
   const handleEmployeeAdded = () => {
     refetch();
@@ -129,8 +197,17 @@ export default function DashboardPage() {
     );
   }
 
+  // Story 12.3: Enable offline sync monitoring with conflict resolution
+  useOfflineSync(handleConflict);
+
   return (
     <div className="px-4 sm:px-0">
+      {/* Offline Banner - Shows when offline (Story 12.3) */}
+      <OfflineBanner />
+      
+      {/* Cache Expiration Warning (Story 12.3) */}
+      <CacheExpirationWarning />
+      
       {/* Role Preview Banner - Shows at top when in preview mode */}
       <RolePreviewBanner />
       
@@ -258,6 +335,28 @@ export default function DashboardPage() {
       <AddColumnModal onColumnCreated={handleColumnCreated} />
       
       <EditColumnModal />
+
+      {/* Story 12.3: Conflict Resolution Dialog */}
+      {conflictData && (
+        <ConflictResolutionDialog
+          isOpen={conflictDialogOpen}
+          onClose={() => {
+            // If user closes without resolving, default to keep-server
+            if (conflictData.resolvePromise) {
+              conflictData.resolvePromise({
+                mutationId: conflictData.mutationId,
+                action: "keep-server",
+              });
+            }
+            setConflictDialogOpen(false);
+            setConflictData(null);
+          }}
+          employee={conflictData.employee}
+          localData={conflictData.localData}
+          serverData={conflictData.serverData}
+          onResolve={handleConflictResolve}
+        />
+      )}
     </div>
   );
 }

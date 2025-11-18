@@ -96,6 +96,12 @@ This document provides the complete epic and story breakdown for hr-masterdata, 
 - Can be delivered incrementally without disrupting desktop experience
 - Builds upon existing mobile foundation (Story 9.1) rather than duplicating work
 
+**Test Organization Requirements:**
+- All new tests created for Epic 12 stories must be organized in folders named for the epic and story number
+- Test folder structure: `tests/{test-type}/epic-12/story-12.X/` (e.g., `tests/unit/epic-12/story-12.1/`, `tests/integration/epic-12/story-12.1/`, `tests/e2e/epic-12/story-12.1/`)
+- This organization ensures that when multiple developers work on different stories and push code/tests, it's easy to identify which tests belong to which story
+- If tests fail, developers can quickly locate and fix tests related to their specific story
+
 ---
 
 ## Epic 12: Mobile Experience Enhancement
@@ -643,6 +649,12 @@ This document provides the complete epic and story breakdown for hr-masterdata, 
 - Visual indicators enhance the selection and filter experience
 - Filter fixes enable proper selection behavior
 - Stories naturally flow from foundation (fixes) → features (selection/export) → polish (visual indicators, optimizations)
+
+**Test Organization Requirements:**
+- All new tests created for Epic 13 stories must be organized in folders named for the epic and story number
+- Test folder structure: `tests/{test-type}/epic-13/story-13.X/` (e.g., `tests/unit/epic-13/story-13.1/`, `tests/integration/epic-13/story-13.1/`, `tests/e2e/epic-13/story-13.1/`)
+- This organization ensures that when multiple developers work on different stories and push code/tests, it's easy to identify which tests belong to which story
+- If tests fail, developers can quickly locate and fix tests related to their specific story
 
 ---
 

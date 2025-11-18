@@ -13,10 +13,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Skip middleware for static files and API routes
+  // Skip middleware for static files, API routes, PWA files
   if (
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
+    pathname === '/sw.js' ||
+    pathname === '/manifest.json' ||
     pathname.includes('.')
   ) {
     return NextResponse.next();

@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { TerminateEmployeeModal } from './terminate-employee-modal';
+import { EditEmployeeModal } from './edit-employee-modal';
 import { employeeService } from '@/lib/services/employee-service';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -26,7 +27,7 @@ interface ResponsiveEmployeeViewProps {
   employees: Employee[];
   isLoading: boolean;
   isHRAdmin: boolean;
-  onEmployeeUpdated?: () => void;
+  onEmployeeUpdated?: () => void | Promise<void>;
   includeArchived?: boolean;
   onIncludeArchivedChange?: (value: boolean) => void;
   includeTerminated?: boolean;
@@ -66,6 +67,7 @@ export function ResponsiveEmployeeView({
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
   const [terminateModalOpen, setTerminateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -83,6 +85,11 @@ export function ResponsiveEmployeeView({
   const handleTerminate = (employee: Employee) => {
     setSelectedEmployee(employee);
     setTerminateModalOpen(true);
+  };
+
+  const handleEdit = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setEditModalOpen(true);
   };
 
   const handleConfirmArchive = async () => {
@@ -159,6 +166,7 @@ export function ResponsiveEmployeeView({
           onArchive={handleArchive}
           onUnarchive={handleUnarchive}
           onTerminate={handleTerminate}
+          onEdit={handleEdit}
           columnConfigs={columnConfigs}
           onEmployeeUpdated={onEmployeeUpdated}
         />
@@ -227,6 +235,21 @@ export function ResponsiveEmployeeView({
           onSuccess={handleTerminated}
         />
       )}
+
+      {/* Edit Modal for Mobile */}
+      <EditEmployeeModal
+        employee={selectedEmployee}
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedEmployee(null);
+        }}
+        onSuccess={() => {
+          setEditModalOpen(false);
+          setSelectedEmployee(null);
+          onEmployeeUpdated?.();
+        }}
+      />
     </>
   );
 }

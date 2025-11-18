@@ -243,6 +243,25 @@ export const employeeService = {
     return { warnings: result.warnings || [] };
   },
 
+  async getById(id: string): Promise<Employee> {
+    const response = await fetch(`/api/employees/${id}`);
+
+    if (!response.ok) {
+      const error = await response.json();
+      
+      // Handle not found error
+      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
+        throw new Error(error.error.message || `Employee with ID ${id} not found`);
+      }
+
+      // Generic error
+      throw new Error(error.error?.message || "Failed to fetch employee");
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
+
   async importCSV(file: File): Promise<{
     imported: number;
     skipped: number;

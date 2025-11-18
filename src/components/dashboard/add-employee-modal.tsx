@@ -36,6 +36,8 @@ import {
   type CreateEmployeeInput,
 } from "@/lib/validation/employee-schema";
 import { employeeService } from "@/lib/services/employee-service";
+import { employeeServiceOffline } from "@/lib/services/employee-service-offline";
+import { useNetworkStatus } from "@/lib/hooks/use-network-status";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { formatImportantDateOption } from "@/lib/utils/format";
@@ -56,6 +58,7 @@ export function AddEmployeeModal({
 }: AddEmployeeModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const { isOnline } = useNetworkStatus(); // Story 12.3: Offline support
   const t = useTranslations('forms');
   const tCommon = useTranslations('common');
   const tDashboard = useTranslations('dashboard');
@@ -116,9 +119,14 @@ export function AddEmployeeModal({
         email: data.email ?? null,
       };
       
-      await employeeService.create(normalizedData);
-      
-      toast.success(t('employeeAdded'));
+      // Story 12.3: Use offline service for offline support
+      if (!isOnline) {
+        await employeeServiceOffline.create(normalizedData);
+        toast.info("Employee saved locally. Will sync when online.");
+      } else {
+        await employeeService.create(normalizedData);
+        toast.success(t('employeeAdded'));
+      }
       
       form.reset();
       onSuccess();

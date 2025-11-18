@@ -17,6 +17,61 @@ import type { Employee } from "@/lib/types/employee";
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Verify authentication (all roles can view, but permissions handled by repository)
+    await requireHRAdminAPI();
+
+    // Await params (Next.js 15+ requirement)
+    const { id } = await params;
+
+    // Get employee by ID
+    const employee = await employeeRepository.findById(id);
+    
+    if (!employee) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "NOT_FOUND",
+            message: `Employee with ID ${id} not found`,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    // Return successful response
+    return NextResponse.json({
+      data: employee,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: `req_${Date.now()}`,
+      },
+    });
+  } catch (error) {
+    // Handle not found error
+    if (error instanceof Error && error.message.includes("not found")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "NOT_FOUND",
+            message: error.message,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    // Handle other errors
+    return createErrorResponse(error);
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

@@ -56,7 +56,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Eye, EyeOff } from "lucide-react";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Eye, EyeOff, Clock } from "lucide-react";
 import { EditableCell } from "./editable-cell";
 import { getReadableTextColor } from "@/lib/utils/color-contrast";
 import { EditableDateCell } from "./editable-date-cell";
@@ -64,6 +64,8 @@ import { TerminateEmployeeModal } from "./terminate-employee-modal";
 import { employeeService } from "@/lib/services/employee-service";
 import { customDataService } from "@/lib/services/custom-data-service";
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
+import { mutationQueueService } from "@/lib/services/mutation-queue";
+import { useNetworkStatus } from "@/lib/hooks/use-network-status";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useColumns } from "@/lib/hooks/use-columns";
@@ -258,22 +260,55 @@ export function EmployeeTable({
     };
   }, [scrollToEmployee]);
 
-  // Handler for masterdata column updates
+  // Network status for offline support (Story 12.3)
+  const { isOnline } = useNetworkStatus();
+  
+  // Track pending mutations for visual indicators
+  const [pendingMutations, setPendingMutations] = React.useState<Set<string>>(new Set());
+  
+  // Load pending mutations on mount and when employees change
+  React.useEffect(() => {
+    const loadPendingMutations = async () => {
+      const mutations = await mutationQueueService.getPendingMutations();
+      const employeeIds = new Set(
+        mutations
+          .filter((m) => m.employeeId)
+          .map((m) => m.employeeId!)
+      );
+      setPendingMutations(employeeIds);
+    };
+    
+    loadPendingMutations();
+    // Refresh every 5 seconds to catch new mutations
+    const interval = setInterval(loadPendingMutations, 5000);
+    return () => clearInterval(interval);
+  }, [employees]);
+
+  // Handler for masterdata column updates (Story 12.3: offline support)
   const handleMasterdataUpdate = React.useCallback(async (
     id: string, 
     field: string, 
     value: string | number | boolean | null
   ) => {
     try {
-      await employeeService.update(id, { [field]: value });
-      toast.success("Employee updated successfully");
+      if (!isOnline) {
+        // Offline: queue mutation
+        await mutationQueueService.queueMutation("update", { [field]: value }, id);
+        toast.info("Change saved locally. Will sync when online.");
+        // Update pending mutations set
+        setPendingMutations((prev) => new Set(prev).add(id));
+      } else {
+        // Online: update immediately
+        await employeeService.update(id, { [field]: value });
+        toast.success("Employee updated successfully");
+      }
       onEmployeeUpdated?.();
     } catch (error: unknown) {
       console.error("[EmployeeTable] Update failed:", error);
       const message = error instanceof Error ? error.message : "Failed to update employee";
       throw new Error(message);
     }
-  }, [onEmployeeUpdated]);
+  }, [onEmployeeUpdated, isOnline]);
 
   // Handler for custom column updates
   const handleCustomDataUpdate = React.useCallback(async (
@@ -1092,6 +1127,8 @@ export function EmployeeTable({
                 const isUpdatedRow = updatedEmployeeId === row.original.id;
                 // Story 8.5: Visual indicator for crew-ready status
                 const isCrewReady = row.original.crewing_done === true;
+                // Story 12.3: Check if employee has pending sync mutations
+                const hasPendingSync = pendingMutations.has(row.original.id);
                 
                 return (
                   <TableRow 
@@ -1107,13 +1144,28 @@ export function EmployeeTable({
                       row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
                       row.original.is_terminated && !row.original.is_archived && "bg-red-50 text-red-800",
                       isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20",
-                      isUpdatedRow && "animate-pulse bg-blue-50 border-l-4 border-l-blue-400 transition-all duration-2000"
+                      isUpdatedRow && "animate-pulse bg-blue-50 border-l-4 border-l-blue-400 transition-all duration-2000",
+                      // Story 12.3: Visual indicator for pending sync
+                      hasPendingSync && !row.original.is_archived && "border-l-2 border-l-yellow-400 bg-yellow-50/30"
                     )}
                     data-testid={`employee-row-${row.original.id}`}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().map((cell, cellIndex) => (
                       <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        <div className="flex items-center gap-2">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {/* Story 12.3: Pending sync indicator in first cell */}
+                          {cellIndex === 0 && hasPendingSync && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Clock className="h-3 w-3 text-yellow-600 animate-pulse" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Pending sync - changes will sync when online</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
                       </TableCell>
                     ))}
                   </TableRow>

@@ -17,6 +17,9 @@ import {
   formatBatchedNotification,
 } from "@/lib/utils/change-detection";
 import { toast } from "sonner";
+import { useNetworkStatus } from "./use-network-status";
+import { offlineCacheService } from "@/lib/services/offline-cache";
+import { mutationQueueService } from "@/lib/services/mutation-queue";
 
 interface UseEmployeesOptions {
   filters?: EmployeeFilters;
@@ -84,24 +87,70 @@ export function useEmployees({
     };
   }, [employees, filters, globalFilter]);
 
-  // Fetch employees from API
+  // Network status for offline support (Story 12.3)
+  const { isOnline } = useNetworkStatus();
+
+  // Fetch employees from API or cache
   const fetchEmployees = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const data = await employeeService.getAll(filters);
+      let data: Employee[];
+
+      if (!isOnline) {
+        // Offline: try to get from cache
+        const cachedData = await offlineCacheService.getCachedEmployeeList();
+        if (cachedData) {
+          data = cachedData;
+        } else {
+          throw new Error("No cached data available. Please connect to the internet to load data.");
+        }
+      } else {
+        // Online: fetch from API
+        data = await employeeService.getAll(filters);
+        
+        // Cache the data for offline use
+        try {
+          await offlineCacheService.cacheEmployeeList(data);
+        } catch (cacheError) {
+          console.warn("Failed to cache employee data:", cacheError);
+        }
+      }
+
+      // Apply pending mutations optimistically (Story 12.3)
+      const pendingMutations = await mutationQueueService.getPendingMutations();
+      for (const mutation of pendingMutations) {
+        if (mutation.type === "update" && mutation.employeeId) {
+          const employeeIndex = data.findIndex((e) => e.id === mutation.employeeId);
+          if (employeeIndex !== -1) {
+            data[employeeIndex] = { ...data[employeeIndex], ...mutation.data };
+          }
+        } else if (mutation.type === "create" && mutation.tempId) {
+          // Add new employee with temp ID
+          data.push({
+            ...(mutation.data as any),
+            id: mutation.tempId,
+          } as Employee);
+        } else if (mutation.type === "delete" && mutation.employeeId) {
+          data = data.filter((e) => e.id !== mutation.employeeId);
+        }
+      }
 
       // For external party users, fetch custom data
       if (userRole && userRole !== "hr_admin") {
         const employeesWithCustomData = await Promise.all(
           data.map(async (employee) => {
             try {
+              // Skip custom data fetch if offline
+              if (!isOnline) {
+                return { ...employee, customData: employee.customData || {} };
+              }
               const customData = await customDataService.getCustomData(employee.id);
               return { ...employee, customData };
             } catch (err) {
               console.warn(`Failed to fetch custom data for employee ${employee.id}:`, err);
-              return { ...employee, customData: {} };
+              return { ...employee, customData: employee.customData || {} };
             }
           })
         );
@@ -116,7 +165,7 @@ export function useEmployees({
     } finally {
       setIsLoading(false);
     }
-  }, [filters, userRole]);
+  }, [filters, userRole, isOnline]);
 
   // Notification batching function
   const flushNotificationBatch = useCallback(() => {
