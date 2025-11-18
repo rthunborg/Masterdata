@@ -467,7 +467,7 @@ export async function createEmployeeViaUI(page: Page, data: Partial<EmployeeData
   if (data.omc_date) {
     await dismissUnsavedDialog(page);
     await page.waitForTimeout(300);
-    const omcLabel = page.locator('label:has-text("ÖMC"), label:has-text("OMC")').first();
+    const omcLabel = page.locator('label:has-text("ÖMC"), label:has-text("ÖMC")').first();
     const hasOmcLabel = await omcLabel.count() > 0;
     
     if (hasOmcLabel) {

@@ -23,7 +23,7 @@ VALUES
   '{"hr_admin": {"view": true, "edit": false}}'::jsonb,
   100,
   NOW(),
-  'Återbetalningsskyldig OMC'
+  'Återbetalningsskyldig ÖMC'
 ),
 (
   'repayment_needed_pe3',

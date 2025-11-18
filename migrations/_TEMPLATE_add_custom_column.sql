@@ -36,7 +36,7 @@ INSERT INTO public.column_config (
   '{COLUMN_NAME}',
   '{text|number|date|boolean}', -- Match with SQL type
   false, -- Custom column, not masterdata
-  '{CATEGORY}', -- E.g., 'Sodexo', 'OMC', 'Payroll', 'Toplux'
+  '{CATEGORY}', -- E.g., 'Sodexo', 'ÖMC', 'Payroll', 'Toplux'
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config), -- Auto-increment
   '{
     "hr_admin": {"view": true, "edit": true},

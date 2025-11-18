@@ -124,7 +124,7 @@ describe("RolePreviewBanner", () => {
   it("displays correct role names for all external parties", () => {
     const testCases = [
       { role: UserRole.SODEXO, displayName: "Sodexo" },
-      { role: UserRole.OMC, displayName: "OMC" },
+      { role: UserRole.OMC, displayName: "ÖMC" },
       { role: UserRole.PAYROLL, displayName: "Payroll" },
       { role: UserRole.TOPLUX, displayName: "Toplux" },
     ];

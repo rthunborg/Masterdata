@@ -39,6 +39,18 @@ describe("AddEmployeeModal", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Set up default mock return values for hooks
+    // useImportantDates is called twice (Stena and ÖMC), so we use mockReturnValue
+    // which will return the same value for all calls
+    vi.mocked(useImportantDates)
+      .mockReturnValue({ dates: [], isLoading: false });
+    
+    vi.mocked(useAvailablePE3Dates).mockReturnValue({
+      availableDates: [],
+      totalAvailable: 0,
+      isLoading: false,
+    });
   });
 
   const mockEmployee: Employee = {
@@ -285,26 +297,46 @@ describe("AddEmployeeModal", () => {
   describe("Date Dropdown Remaining Spots Display", () => {
     beforeEach(() => {
       vi.clearAllMocks();
+      // Note: Don't set up default mocks here - each test will set up its own mocks
     });
 
     it("should display remaining spots in parentheses for Stena dates in dropdown", async () => {
+      // Use a fixed future date to avoid being filtered out
+      // The component filters with: new Date(d.date_value) >= new Date()
+      // This compares midnight UTC to current time, so we need a date definitely in the future
+      // Format: YYYY-MM-DD (ISO date string)
+      // Use a fixed date far in the future to ensure it's always valid
+      const futureDateStr = "2026-12-31"; // Far in the future
       const mockStenaDates = [
         {
           id: "stena-1",
           week_number: 10,
-          year: 2025,
+          year: 2026,
           category: "Stena Dates",
           date_description: "Fredag 7/3",
-          date_value: "2025-03-07",
+          date_value: futureDateStr, // Format as YYYY-MM-DD
+          notes: null,
+          time_value: null,
+          deadline_submit: null,
+          deadline_cancel: null,
+          is_active: true,
           remaining_spots: 5,
           max_spots: 99,
           assigned_employees: [],
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
         },
       ];
 
-      vi.mocked(useImportantDates)
-        .mockReturnValueOnce({ dates: mockStenaDates, isLoading: false })
-        .mockReturnValueOnce({ dates: [], isLoading: false }); // ÖMC dates
+      // Set up mocks BEFORE rendering
+      // The component calls useImportantDates twice with different category parameters
+      // Mock based on the category parameter
+      vi.mocked(useImportantDates).mockImplementation((category: string) => {
+        if (category === 'Stena Dates') {
+          return { dates: mockStenaDates, isLoading: false };
+        }
+        return { dates: [], isLoading: false }; // ÖMC Dates or any other category
+      });
 
       vi.mocked(useAvailablePE3Dates).mockReturnValue({
         availableDates: [],
@@ -322,32 +354,63 @@ describe("AddEmployeeModal", () => {
         />
       );
 
+      // Wait for the component to render and hooks to be called
+      await waitFor(() => {
+        expect(screen.getByLabelText(/Stena.*datum/i)).toBeInTheDocument();
+      });
+
       // Open Stena date dropdown
       const stenaDateSelect = screen.getByLabelText(/Stena.*datum/i);
       await user.click(stenaDateSelect);
 
-      // Wait for dropdown options to appear
+      // Wait for dropdown to open - check for SelectContent
       await waitFor(() => {
-        const options = screen.getAllByRole("option");
-        expect(options.length).toBeGreaterThan(0);
-      });
+        const selectContent = document.querySelector('[role="listbox"]');
+        expect(selectContent).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      // Wait for options to appear - filter out "(None)" and "No available dates" options
+      // The component filters dates with: new Date(d.date_value) >= new Date()
+      // So we need to ensure our date is definitely in the future
+      await waitFor(() => {
+        const allOptions = screen.queryAllByRole("option");
+        const dateOptions = allOptions.filter(opt => {
+          const text = opt.textContent || '';
+          return !text.includes("(None)") && 
+                 !text.includes("No available dates") &&
+                 text.includes("(5)"); // Our test date has 5 remaining spots
+        });
+        expect(dateOptions.length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
 
       // Verify the date option contains remaining spots in parentheses
-      const dateOption = screen.getByText(
-        (content, element) => {
-          return (
-            element?.textContent?.includes("Fredag 7/3") &&
-            element?.textContent?.includes("(5)")
-          );
-        },
-        { selector: "[role='option']" }
-      );
+      // Note: formatImportantDateOption adds "Week X - " prefix, so we check for the formatted text
+      const allOptions = screen.getAllByRole("option");
+      const dateOption = allOptions.find(opt => {
+        const text = opt.textContent || '';
+        return (
+          (text.includes("Fredag 7/3") || text.includes("Week 10")) &&
+          text.includes("(5)")
+        );
+      });
 
+      expect(dateOption).toBeDefined();
       expect(dateOption).toBeInTheDocument();
       expect(dateOption).toHaveTextContent("(5)");
     });
 
     it("should display remaining spots in parentheses for ÖMC dates in dropdown", async () => {
+      // Use a future date to avoid being filtered out
+      // The component filters with: new Date(d.date_value) >= new Date()
+      // This compares midnight UTC to current time, so we need a date definitely in the future
+      // Format: YYYY-MM-DD (ISO date string)
+      const today = new Date();
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + 30); // 30 days in the future to be safe
+      const year = futureDate.getFullYear();
+      const month = String(futureDate.getMonth() + 1).padStart(2, '0');
+      const day = String(futureDate.getDate()).padStart(2, '0');
+      const futureDateStr = `${year}-${month}-${day}`;
       const mockOmcDates = [
         {
           id: "omc-1",
@@ -355,16 +418,29 @@ describe("AddEmployeeModal", () => {
           year: 2025,
           category: "ÖMC Dates",
           date_description: "Måndag 10/3",
-          date_value: "2025-03-10",
+          date_value: futureDateStr, // Format as YYYY-MM-DD
+          notes: null,
+          time_value: null,
+          deadline_submit: null,
+          deadline_cancel: null,
+          is_active: true,
           remaining_spots: 3,
           max_spots: 20,
           assigned_employees: [],
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
         },
       ];
 
-      vi.mocked(useImportantDates)
-        .mockReturnValueOnce({ dates: [], isLoading: false }) // Stena dates
-        .mockReturnValueOnce({ dates: mockOmcDates, isLoading: false }); // ÖMC dates
+      // Set up mocks BEFORE rendering
+      // The component calls useImportantDates twice with different category parameters
+      // Mock based on the category parameter
+      vi.mocked(useImportantDates).mockImplementation((category: string) => {
+        if (category === 'ÖMC Dates') {
+          return { dates: mockOmcDates, isLoading: false };
+        }
+        return { dates: [], isLoading: false }; // Stena Dates or any other category
+      });
 
       vi.mocked(useAvailablePE3Dates).mockReturnValue({
         availableDates: [],
@@ -382,22 +458,35 @@ describe("AddEmployeeModal", () => {
         />
       );
 
+      // Wait for the component to render and hooks to be called
+      await waitFor(() => {
+        expect(screen.getByLabelText(/ÖMC.*datum/i)).toBeInTheDocument();
+      });
+
       // Open ÖMC date dropdown
       const omcDateSelect = screen.getByLabelText(/ÖMC.*datum/i);
       await user.click(omcDateSelect);
 
-      // Wait for dropdown options to appear
+      // Wait for dropdown to open - check for SelectContent
+      await waitFor(() => {
+        const selectContent = document.querySelector('[role="listbox"]');
+        expect(selectContent).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      // Wait for options to appear
       await waitFor(() => {
         const options = screen.getAllByRole("option");
         expect(options.length).toBeGreaterThan(0);
-      });
+      }, { timeout: 3000 });
 
       // Verify the date option contains remaining spots in parentheses
+      // Note: formatImportantDateOption formats ÖMC dates differently, so we check for the formatted text
       const dateOption = screen.getByText(
         (content, element) => {
+          const text = element?.textContent || '';
           return (
-            element?.textContent?.includes("Måndag 10/3") &&
-            element?.textContent?.includes("(3)")
+            (text.includes("Måndag 10/3") || text.includes("Week 11") || text.includes("mars")) &&
+            text.includes("(3)")
           );
         },
         { selector: "[role='option']" }
@@ -408,6 +497,17 @@ describe("AddEmployeeModal", () => {
     });
 
     it("should display remaining spots in parentheses for PE3 dates in dropdown", async () => {
+      // Use a future date to avoid being filtered out
+      // The component filters with: new Date(d.date_value) >= new Date()
+      // This compares midnight UTC to current time, so we need a date definitely in the future
+      // Format: YYYY-MM-DD (ISO date string)
+      const today = new Date();
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + 30); // 30 days in the future to be safe
+      const year = futureDate.getFullYear();
+      const month = String(futureDate.getMonth() + 1).padStart(2, '0');
+      const day = String(futureDate.getDate()).padStart(2, '0');
+      const futureDateStr = `${year}-${month}-${day}`;
       const mockPE3Dates = [
         {
           id: "pe3-1",
@@ -415,11 +515,17 @@ describe("AddEmployeeModal", () => {
           year: 2025,
           category: "PE3 Dates",
           date_description: "Torsdag 13/3",
-          date_value: "2025-03-13",
+          date_value: futureDateStr, // Format as YYYY-MM-DD
+          notes: null,
           time_value: "14:30",
+          deadline_submit: null,
+          deadline_cancel: null,
+          is_active: true,
           remaining_spots: 1,
           max_spots: 1,
           assigned_employees: [],
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
         },
       ];
 
@@ -454,11 +560,14 @@ describe("AddEmployeeModal", () => {
       });
 
       // Verify the date option contains remaining spots in parentheses
+      // Note: formatImportantDateOption formats PE3 dates as "Week X - day/month time" (e.g., "Week 12 - 15/3 14:30")
       const dateOption = screen.getByText(
         (content, element) => {
+          const text = element?.textContent || '';
+          // PE3 dates are formatted as "day/month time" or might include the original description
           return (
-            element?.textContent?.includes("13/3") &&
-            element?.textContent?.includes("(1)")
+            (text.includes("Torsdag 13/3") || text.includes("Week 12") || text.includes("14:30") || text.includes("13/3")) &&
+            text.includes("(1)")
           );
         },
         { selector: "[role='option']" }

@@ -94,7 +94,7 @@ describe('UserManagementTable', () => {
 
     // Check role display
     expect(screen.getByText('Sodexo')).toBeInTheDocument();
-    expect(screen.getByText('OMC')).toBeInTheDocument();
+    expect(screen.getByText('ÖMC')).toBeInTheDocument();
     expect(screen.getByText('HR Administrator')).toBeInTheDocument();
   });
 

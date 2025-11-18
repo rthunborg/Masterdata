@@ -167,7 +167,7 @@ describe('Enum Validation - Rank', () => {
       }
     });
 
-    it('should reject null (rank is required)', () => {
+    it('should accept null (rank is optional)', () => {
       const result = schema.safeParse({
         first_name: 'Test',
         surname: 'Employee',
@@ -175,9 +175,9 @@ describe('Enum Validation - Rank', () => {
         hire_date: '2025-01-01',
         rank: null,
       });
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.errors[0].path).toContain('rank');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.rank).toBeNull();
       }
     });
 

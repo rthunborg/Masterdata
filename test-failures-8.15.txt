@@ -2718,7 +2718,7 @@ m)[39m {
 }
 
 [90mstderr[2m | tests/integration/external-party-dashboard.test.tsx[2m > [22m[2mExternal Party 
-Dashboard Access[2m > [22m[2mRole Display[2m > [22m[2mdisplays 'OMC' for omc user role
+Dashboard Access[2m > [22m[2mRole Display[2m > [22m[2mdisplays 'ÖMC' for omc user role
 [22m[39mFailed to load column widths from localStorage: TypeError: localStorage.getItem is not a 
 function
     at loadColumnWidths (D:/Masterdata/hr-masterdata/src/lib/utils/column-width-storage.ts:58:33)
@@ -2742,7 +2742,7 @@ m@19.2.0_react@19.2.0\node_modules\[4mreact-dom[24m\cjs\react-dom-client.devel
 39m
 
 [90mstderr[2m | tests/integration/external-party-dashboard.test.tsx[2m > [22m[2mExternal Party 
-Dashboard Access[2m > [22m[2mRole Display[2m > [22m[2mdisplays 'OMC' for omc user role
+Dashboard Access[2m > [22m[2mRole Display[2m > [22m[2mdisplays 'ÖMC' for omc user role
 [22m[39mError fetching available PE3 dates: TypeError: Failed to parse URL from 
 /api/important-dates/available-pe3
 [90m    at node:internal/deps/undici/undici:15845:13[39m
@@ -3227,7 +3227,7 @@ m)[39m {
 
  [31mΓ¥»[39m tests/integration/external-party-dashboard.test.tsx [2m([22m[2m8 tests[22m[2m | [22m[31m8 failed[39m[2m)[22m[33m 917[2mms[22m[39m
 [31m       [31m├ù[31m displays 'Sodexo' for sodexo user role[39m[33m 313[2mms[22m[39m
-[31m       [31m├ù[31m displays 'OMC' for omc user role[39m[32m 69[2mms[22m[39m
+[31m       [31m├ù[31m displays 'ÖMC' for omc user role[39m[32m 69[2mms[22m[39m
 [31m       [31m├ù[31m displays 'Payroll' for payroll user role[39m[32m 149[2mms[22m[39m
 [31m       [31m├ù[31m displays 'Toplux' for toplux user role[39m[32m 96[2mms[22m[39m
 [31m       [31m├ù[31m hides Add Employee button for external party users[39m[32m 56[2mms[22m[39m
@@ -10534,7 +10534,7 @@ response[33m.[39m[34mjson[39m()[33m;[39m
 [41m[1m FAIL [22m[49m tests/integration/external-party-dashboard.test.tsx[2m > [22mExternal Party 
 Dashboard Access[2m > [22mRole Display[2m > [22mdisplays 'Sodexo' for sodexo user role
 [41m[1m FAIL [22m[49m tests/integration/external-party-dashboard.test.tsx[2m > [22mExternal Party 
-Dashboard Access[2m > [22mRole Display[2m > [22mdisplays 'OMC' for omc user role
+Dashboard Access[2m > [22mRole Display[2m > [22mdisplays 'ÖMC' for omc user role
 [41m[1m FAIL [22m[49m tests/integration/external-party-dashboard.test.tsx[2m > [22mExternal Party 
 Dashboard Access[2m > [22mRole Display[2m > [22mdisplays 'Payroll' for payroll user role
 [41m[1m FAIL [22m[49m tests/integration/external-party-dashboard.test.tsx[2m > [22mExternal Party 

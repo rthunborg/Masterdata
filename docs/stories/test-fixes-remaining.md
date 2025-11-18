@@ -191,7 +191,7 @@ expect(screen.getByLabelText(/Kolumnnamn/i)).toBeInTheDocument();
    - Update field labels: "Förnamn", "Efternamn", "Personnummer", etc.
 
 3. **add-user-modal.test.tsx**
-   - Update role options: "HR Admin", "Sodexo", "OMC"
+   - Update role options: "HR Admin", "Sodexo", "ÖMC"
    - Fix form validation messages
 
 4. **add-important-date-modal.test.tsx**

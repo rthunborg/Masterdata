@@ -30,7 +30,7 @@ export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
     case UserRole.HR_ADMIN: return "HR Administrator";
     case UserRole.SODEXO: return "Sodexo";
-    case UserRole.OMC: return "OMC";
+    case UserRole.OMC: return "ÖMC";
     case UserRole.PAYROLL: return "Payroll";
     case UserRole.TOPLUX: return "Toplux";
     default: return role;

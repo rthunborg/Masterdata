@@ -5,7 +5,7 @@ export interface Employee {
   ssn: string;
   email: string | null;
   mobile: string | null;
-  rank: 'SEV' | 'CHEF';
+  rank: 'SEV' | 'CHEF' | null;
   gender: 'Man' | 'Woman' | null;
   town_district: string | null;
   hire_date: string;
@@ -75,7 +75,7 @@ export interface EmployeeListItem {
   surname: string;
   email: string | null;
   mobile: string | null;
-  rank: 'SEV' | 'CHEF';
+  rank: 'SEV' | 'CHEF' | null;
   hire_date: string;
   is_terminated: boolean;
   is_archived: boolean;

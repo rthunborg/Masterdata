@@ -70,7 +70,7 @@ describe("External Party Dashboard Access", () => {
       });
     });
 
-    it("displays 'OMC' for omc user role", async () => {
+    it("displays 'ÖMC' for omc user role", async () => {
       const { useAuth } = await import("@/lib/hooks/use-auth");
       vi.mocked(useAuth).mockReturnValue({
         user: {

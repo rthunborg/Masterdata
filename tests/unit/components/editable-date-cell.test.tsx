@@ -703,9 +703,13 @@ describe("EditableDateCell", () => {
 
   describe("Remaining Spots Display Format", () => {
     it("should display remaining spots count in parentheses in dropdown options", async () => {
+      // Use a future date to avoid being filtered out
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 30); // 30 days in the future
       const dateWithSpots: ImportantDate = {
         ...mockStenaDate,
         id: "date-with-spots",
+        date_value: futureDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
         remaining_spots: 5,
         max_spots: 20,
       };
@@ -758,10 +762,18 @@ describe("EditableDateCell", () => {
     });
 
     it("should display remaining spots for dates with different spot counts", async () => {
+      // Use future dates to avoid being filtered out
+      const futureDate1 = new Date();
+      futureDate1.setDate(futureDate1.getDate() + 30);
+      const futureDate2 = new Date();
+      futureDate2.setDate(futureDate2.getDate() + 35);
+      const futureDate3 = new Date();
+      futureDate3.setDate(futureDate3.getDate() + 40);
+      
       const datesWithDifferentSpots: ImportantDate[] = [
-        { ...mockStenaDate, id: "date-1", remaining_spots: 0, max_spots: 20 },
-        { ...mockStenaDate, id: "date-2", remaining_spots: 3, max_spots: 20 },
-        { ...mockStenaDate, id: "date-3", remaining_spots: 15, max_spots: 20 },
+        { ...mockStenaDate, id: "date-1", date_value: futureDate1.toISOString().split('T')[0], remaining_spots: 0, max_spots: 20 },
+        { ...mockStenaDate, id: "date-2", date_value: futureDate2.toISOString().split('T')[0], remaining_spots: 3, max_spots: 20 },
+        { ...mockStenaDate, id: "date-3", date_value: futureDate3.toISOString().split('T')[0], remaining_spots: 15, max_spots: 20 },
       ];
 
       renderWithI18n(

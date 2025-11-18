@@ -172,13 +172,14 @@ export function EmployeeTable({
     }).length;
   }, [employees]);
   
-  // Polling state for One field status updates (Story 8.3)
-  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
-  
   // Poll every 60 seconds to update One field badge statuses (Story 8.3)
+  // The One field status is calculated based on one_marked_at timestamp vs current time
+  // We need periodic re-renders to update the badge status as time passes
+  const [, setRefreshTrigger] = React.useState(0);
   React.useEffect(() => {
     const interval = setInterval(() => {
       // Force table re-render to recalculate One field status badges
+      // The state update triggers a re-render even though we don't read the value
       setRefreshTrigger((prev) => prev + 1);
     }, 60000); // 60 seconds
 
@@ -213,6 +214,9 @@ export function EmployeeTable({
   }, [columnSizing, user?.id]);
   
   // Reset column widths handler (Story 9.4)
+  // Note: This function is available for future use if a reset button is added to the UI
+  // Currently not connected to any UI element, but kept for potential future feature
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleResetColumnWidths = React.useCallback(() => {
     if (user?.id) {
       clearColumnWidths('dashboard', user.id);
@@ -422,7 +426,7 @@ export function EmployeeTable({
     const roleFilteredColumns = columnConfigs;
     
     // Story 8.13 AC 3: Filter repayment columns - only show when viewing terminated employees
-    const repaymentColumns = ['Återbetalningsskyldig OMC', 'Återbetalningsskyldig PE3'];
+    const repaymentColumns = ['Återbetalningsskyldig ÖMC', 'Återbetalningsskyldig PE3'];
     const terminatedFilteredColumns = includeTerminated 
       ? roleFilteredColumns 
       : roleFilteredColumns.filter((config) => !repaymentColumns.includes(config.column_name));
@@ -957,7 +961,7 @@ export function EmployeeTable({
                       const displayName = config.column_name;
                       
                       // Story 8.13 AC 4: Tooltip for repayment columns
-                      const isRepaymentColumn = ['Återbetalningsskyldig OMC', 'Återbetalningsskyldig PE3'].includes(config.column_name);
+                      const isRepaymentColumn = ['Återbetalningsskyldig ÖMC', 'Återbetalningsskyldig PE3'].includes(config.column_name);
                       
                       return (
                         <div key={config.id} className="flex items-center justify-between">

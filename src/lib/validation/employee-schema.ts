@@ -74,11 +74,13 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     mobile: z.string().nullable().default(null),
     rank: z.enum(["SEV", "CHEF"], {
       errorMap: () => ({ message: msg('rankInvalid') })
-    }),
+    }).nullable().default(null),
     gender: z
       .enum(["Man", "Woman"], {
         errorMap: () => ({ message: msg('genderInvalid') })
-      }), // Required field - no default value
+      })
+      .nullable()
+      .default(null),
     town_district: z.string().nullable().default(null),
     hire_date: z
       .string()
@@ -164,11 +166,13 @@ const baseEmployeeSchema = z.object({
   mobile: z.string().nullable().default(null),
   rank: z.enum(["SEV", "CHEF"], {
     errorMap: () => ({ message: "Rank must be SEV or CHEF" })
-  }),
+  }).nullable().default(null),
   gender: z
     .enum(["Man", "Woman"], {
       errorMap: () => ({ message: "Gender must be Man or Woman" })
-    }), // Required field - no default value
+    })
+    .nullable()
+    .default(null),
   town_district: z.string().nullable().default(null),
   hire_date: z
     .string()

@@ -249,85 +249,85 @@
                         - generic [ref=e523]: Notering
                         - img [ref=e525]
                       - generic [ref=e530]: Payroll
-                  - cell "Sort by Rotation 1 or 2 OMC" [ref=e532]:
+                  - cell "Sort by Rotation 1 or 2 ÖMC" [ref=e532]:
                     - generic [ref=e533]:
                       - button "Sort by Rotation 1 or 2" [ref=e535] [cursor=pointer]:
                         - generic [ref=e536]: Rotation 1 or 2
                         - img [ref=e538]
                       - generic [ref=e543]: OMC
-                  - cell "Sort by Hotel Required? OMC" [ref=e545]:
+                  - cell "Sort by Hotel Required? ÖMC" [ref=e545]:
                     - generic [ref=e546]:
                       - button "Sort by Hotel Required?" [ref=e548] [cursor=pointer]:
                         - generic [ref=e549]: Hotel Required?
                         - img [ref=e551]
                       - generic [ref=e556]: OMC
-                  - cell "Sort by Room Number (Shared) OMC" [ref=e558]:
+                  - cell "Sort by Room Number (Shared) ÖMC" [ref=e558]:
                     - generic [ref=e559]:
                       - button "Sort by Room Number (Shared)" [ref=e561] [cursor=pointer]:
                         - generic [ref=e562]: Room Number (Shared)
                         - img [ref=e564]
                       - generic [ref=e569]: OMC
-                  - cell "Sort by Dietary Requirement? OMC" [ref=e571]:
+                  - cell "Sort by Dietary Requirement? ÖMC" [ref=e571]:
                     - generic [ref=e572]:
                       - button "Sort by Dietary Requirement?" [ref=e574] [cursor=pointer]:
                         - generic [ref=e575]: Dietary Requirement?
                         - img [ref=e577]
                       - generic [ref=e582]: OMC
-                  - cell "Sort by Joining Instructions sent OMC" [ref=e584]:
+                  - cell "Sort by Joining Instructions sent ÖMC" [ref=e584]:
                     - generic [ref=e585]:
                       - button "Sort by Joining Instructions sent" [ref=e587] [cursor=pointer]:
                         - generic [ref=e588]: Joining Instructions sent
                         - img [ref=e590]
                       - generic [ref=e595]: OMC
-                  - cell "Sort by Candidate Confirmed OMC" [ref=e597]:
+                  - cell "Sort by Candidate Confirmed ÖMC" [ref=e597]:
                     - generic [ref=e598]:
                       - button "Sort by Candidate Confirmed" [ref=e600] [cursor=pointer]:
                         - generic [ref=e601]: Candidate Confirmed
                         - img [ref=e603]
                       - generic [ref=e608]: OMC
-                  - cell "Sort by Seably OMC" [ref=e610]:
+                  - cell "Sort by Seably ÖMC" [ref=e610]:
                     - generic [ref=e611]:
                       - button "Sort by Seably" [ref=e613] [cursor=pointer]:
                         - generic [ref=e614]: Seably
                         - img [ref=e616]
                       - generic [ref=e621]: OMC
-                  - cell "Sort by Receipt C-17 OMC" [ref=e623]:
+                  - cell "Sort by Receipt C-17 ÖMC" [ref=e623]:
                     - generic [ref=e624]:
                       - button "Sort by Receipt C-17" [ref=e626] [cursor=pointer]:
                         - generic [ref=e627]: Receipt C-17
                         - img [ref=e629]
                       - generic [ref=e634]: OMC
-                  - cell "Sort by C-17 Certificate OMC" [ref=e636]:
+                  - cell "Sort by C-17 Certificate ÖMC" [ref=e636]:
                     - generic [ref=e637]:
                       - button "Sort by C-17 Certificate" [ref=e639] [cursor=pointer]:
                         - generic [ref=e640]: C-17 Certificate
                         - img [ref=e642]
                       - generic [ref=e647]: OMC
-                  - cell "Sort by Receipt C-18 OMC" [ref=e649]:
+                  - cell "Sort by Receipt C-18 ÖMC" [ref=e649]:
                     - generic [ref=e650]:
                       - button "Sort by Receipt C-18" [ref=e652] [cursor=pointer]:
                         - generic [ref=e653]: Receipt C-18
                         - img [ref=e655]
                       - generic [ref=e660]: OMC
-                  - cell "Sort by C-18 Certificate OMC" [ref=e662]:
+                  - cell "Sort by C-18 Certificate ÖMC" [ref=e662]:
                     - generic [ref=e663]:
                       - button "Sort by C-18 Certificate" [ref=e665] [cursor=pointer]:
                         - generic [ref=e666]: C-18 Certificate
                         - img [ref=e668]
                       - generic [ref=e673]: OMC
-                  - cell "Sort by ÖMC Certificate OMC" [ref=e675]:
+                  - cell "Sort by ÖMC Certificate ÖMC" [ref=e675]:
                     - generic [ref=e676]:
                       - button "Sort by ÖMC Certificate" [ref=e678] [cursor=pointer]:
                         - generic [ref=e679]: ÖMC Certificate
                         - img [ref=e681]
                       - generic [ref=e686]: OMC
-                  - cell "Sort by Uploaded in CrewSF OMC" [ref=e688]:
+                  - cell "Sort by Uploaded in CrewSF ÖMC" [ref=e688]:
                     - generic [ref=e689]:
                       - button "Sort by Uploaded in CrewSF" [ref=e691] [cursor=pointer]:
                         - generic [ref=e692]: Uploaded in CrewSF
                         - img [ref=e694]
                       - generic [ref=e699]: OMC
-                  - cell "Sort by Completed OMC" [ref=e701]:
+                  - cell "Sort by Completed ÖMC" [ref=e701]:
                     - generic [ref=e702]:
                       - button "Sort by Completed" [ref=e704] [cursor=pointer]:
                         - generic [ref=e705]: Completed

@@ -424,7 +424,7 @@ INSERT INTO public.column_config (
   'rotation',
   'number',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -453,7 +453,7 @@ INSERT INTO public.column_config (
   'hotel_required',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -482,7 +482,7 @@ INSERT INTO public.column_config (
   'room_number_shared',
   'number',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -511,7 +511,7 @@ INSERT INTO public.column_config (
   'dietary_requirement',
   'text',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -540,7 +540,7 @@ INSERT INTO public.column_config (
   'joining_instructions_sent',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -569,7 +569,7 @@ INSERT INTO public.column_config (
   'candidate_confirmed',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -598,7 +598,7 @@ INSERT INTO public.column_config (
   'seably_status',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -627,7 +627,7 @@ INSERT INTO public.column_config (
   'receipt_c17',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -656,7 +656,7 @@ INSERT INTO public.column_config (
   'certificate_c17',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -685,7 +685,7 @@ INSERT INTO public.column_config (
   'receipt_c18',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -714,7 +714,7 @@ INSERT INTO public.column_config (
   'certificate_c18',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -743,7 +743,7 @@ INSERT INTO public.column_config (
   'omc_certificate',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -772,7 +772,7 @@ INSERT INTO public.column_config (
   'uploaded_in_crewsf',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -801,7 +801,7 @@ INSERT INTO public.column_config (
   'completed',
   'boolean',
   false,
-  'OMC',
+  'ÖMC',
   (SELECT COALESCE(MAX(display_order), 0) + 1 FROM public.column_config),
   '{"hr_admin":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":true,"edit":true},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false}}'::jsonb
 )
@@ -820,7 +820,7 @@ DECLARE
 BEGIN
   SELECT COUNT(*) INTO toplux_count FROM public.column_config WHERE category = 'Toplux';
   SELECT COUNT(*) INTO payroll_count FROM public.column_config WHERE category = 'Payroll';
-  SELECT COUNT(*) INTO omc_count FROM public.column_config WHERE category = 'OMC';
+  SELECT COUNT(*) INTO omc_count FROM public.column_config WHERE category = 'ÖMC';
   SELECT COUNT(*) INTO total_count FROM public.column_config WHERE is_masterdata = false;
   
   RAISE NOTICE '============================================';

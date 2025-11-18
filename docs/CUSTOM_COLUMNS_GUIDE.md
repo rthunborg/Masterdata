@@ -37,7 +37,7 @@ ADD COLUMN omc_training_completed BOOLEAN;
 3. Enter column details:
    - **Column Name**: Must be `snake_case` (e.g., `sodexo_meal_plan`, `omc_training_status`)
    - **Column Type**: text, number, date, or boolean
-   - **Category**: Group columns by party (e.g., "Sodexo", "OMC")
+   - **Category**: Group columns by party (e.g., "Sodexo", "ÖMC")
 4. Click **"Create Column"**
 
 **Important**: The column definition is saved to `column_config` table, but the actual database column is not created yet. A deployment is required.
