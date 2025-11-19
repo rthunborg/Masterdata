@@ -15,10 +15,10 @@ End-to-end (E2E) tests validate complete user workflows through the entire appli
 ## Prerequisites
 
 1. **Playwright installed**: Already included in `package.json`
-2. **Browsers installed**: Run `npx playwright install --with-deps chromium firefox`
+2. **Browsers installed**: Run `pnpm exec playwright install --with-deps chromium firefox`
 3. **Test database configured**: Ensure `.env.test` has valid Supabase credentials
-4. **Test users created**: Run `npm run setup:test-users` to create test users
-5. **Development server**: E2E tests automatically start the dev server, but you can run it manually with `npm run dev`
+4. **Test users created**: Run `pnpm run setup:test-users` to create test users
+5. **Development server**: E2E tests automatically start the dev server, but you can run it manually with `pnpm run dev`
 
 ## Environment Setup
 
@@ -48,10 +48,10 @@ E2E tests use a separate test database (configured via `.env.local` or `.env.tes
 
 ```bash
 # Create HR Admin test user (required for E2E tests)
-npx tsx scripts/apply-hr-admin-migration.ts
+pnpm exec tsx scripts/apply-hr-admin-migration.ts
 
 # Create other test users (optional, for multi-user tests)
-npm run setup:test-users
+pnpm run setup:test-users
 ```
 
 This creates the following test users:
@@ -70,13 +70,13 @@ The global setup script (`tests/e2e/global-setup.ts`) automatically seeds test d
 ### Run All E2E Tests
 
 ```bash
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 ### Run Tests in UI Mode (Interactive)
 
 ```bash
-npm run test:e2e:ui
+pnpm run test:e2e:ui
 ```
 
 Opens Playwright's interactive UI where you can:
@@ -88,7 +88,7 @@ Opens Playwright's interactive UI where you can:
 ### Run Tests in Headed Mode (See Browser)
 
 ```bash
-npm run test:e2e:headed
+pnpm run test:e2e:headed
 ```
 
 Runs tests with visible browser windows (useful for debugging).
@@ -96,7 +96,7 @@ Runs tests with visible browser windows (useful for debugging).
 ### Run Tests in Debug Mode
 
 ```bash
-npm run test:e2e:debug
+pnpm run test:e2e:debug
 ```
 
 Opens Playwright Inspector for step-by-step debugging.
@@ -104,14 +104,14 @@ Opens Playwright Inspector for step-by-step debugging.
 ### Run Specific Test File
 
 ```bash
-npx playwright test tests/e2e/employee-lifecycle.spec.ts
+pnpm exec playwright test tests/e2e/employee-lifecycle.spec.ts
 ```
 
 ### Run Tests for Specific Browser
 
 ```bash
-npx playwright test --project=chromium
-npx playwright test --project=firefox
+pnpm exec playwright test --project=chromium
+pnpm exec playwright test --project=firefox
 ```
 
 ## Test Structure
@@ -203,7 +203,7 @@ const csv = await downloadAndParseCSV(page);
 
 ### Automatic Server Management
 
-Playwright automatically starts the Next.js dev server before tests and stops it after. You don't need to run `npm run dev` manually.
+Playwright automatically starts the Next.js dev server before tests and stops it after. You don't need to run `pnpm run dev` manually.
 
 ### Test Isolation
 
@@ -236,7 +236,7 @@ The report shows:
 ### Debug in UI Mode
 
 ```bash
-npm run test:e2e:ui
+pnpm run test:e2e:ui
 ```
 
 Click on a test to:
@@ -247,7 +247,7 @@ Click on a test to:
 ### Debug with Inspector
 
 ```bash
-npm run test:e2e:debug
+pnpm run test:e2e:debug
 ```
 
 Opens Playwright Inspector with:
@@ -277,9 +277,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: npm run test:e2e
+      - uses: pnpm/action-setup@v2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps
+      - run: pnpm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -292,7 +293,7 @@ jobs:
 ### Tests Fail with "Application not accessible"
 
 - Ensure `.env.test` has correct Supabase credentials
-- Check that test users exist: `npm run setup:test-users`
+- Check that test users exist: `pnpm run setup:test-users`
 - Verify Supabase project is accessible
 
 ### Tests Fail with "Element not found"

@@ -130,9 +130,9 @@ export default defineConfig({
 
 ```bash
 # Playwright
-npm run test:smoke                    # Run all @smoke tests
-npm run test:p0                       # Run all P0 tests
-npm run test -- --grep "@smoke.*@p0"  # Run tests with BOTH tags
+pnpm run test:smoke                    # Run all @smoke tests
+pnpm run test:p0                       # Run all P0 tests
+pnpm run test -- --grep "@smoke.*@p0"  # Run tests with BOTH tags
 
 # Cypress (with @cypress/grep plugin)
 npx cypress run --env grepTags="@smoke"
@@ -242,7 +242,7 @@ export default defineConfig({
 // scripts/run-by-component.ts
 /**
  * Run tests related to specific component(s)
- * Usage: npm run test:component UserProfile,Settings
+ * Usage: pnpm run test:component UserProfile,Settings
  */
 
 import { execSync } from 'child_process';
@@ -251,7 +251,7 @@ const components = process.argv[2]?.split(',') || [];
 
 if (components.length === 0) {
   console.error('❌ No components specified');
-  console.log('Usage: npm run test:component UserProfile,Settings');
+  console.log('Usage: pnpm run test:component UserProfile,Settings');
   process.exit(1);
 }
 
@@ -402,7 +402,7 @@ if [ "$RUN_ALL_TESTS" = true ]; then
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "🚨 Running FULL test suite (critical changes detected)"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  npm run test
+  pnpm run test
   exit $?
 fi
 
@@ -413,7 +413,7 @@ UNIQUE_TEST_FILES=($(echo "${ALL_TEST_FILES[@]}" | tr ' ' '\n' | sort -u))
 if [ ${#UNIQUE_TEST_FILES[@]} -eq 0 ]; then
   echo ""
   echo "✅ No tests found for changed files. Running smoke tests."
-  npm run test:smoke
+  pnpm run test:smoke
   exit $?
 fi
 
@@ -427,7 +427,7 @@ for test_file in "${UNIQUE_TEST_FILES[@]}"; do
 done
 
 echo ""
-npm run test -- "${UNIQUE_TEST_FILES[@]}"
+pnpm run test -- "${UNIQUE_TEST_FILES[@]}"
 ```
 
 **GitHub Actions integration**:
@@ -507,7 +507,7 @@ export const TEST_PROMOTION_RULES: Record<TestStage, TestPromotion> = {
   'pre-commit': {
     stage: 'pre-commit',
     description: 'Local developer checks before git commit',
-    testCommand: 'npm run test:smoke',
+    testCommand: 'pnpm run test:smoke',
     timebudget: '2',
     required: true,
     failureAction: 'block',
@@ -515,7 +515,7 @@ export const TEST_PROMOTION_RULES: Record<TestStage, TestPromotion> = {
   'ci-pr': {
     stage: 'ci-pr',
     description: 'CI checks on pull request creation/update',
-    testCommand: 'npm run test:changed && npm run test:p0-p1',
+    testCommand: 'pnpm run test:changed && pnpm run test:p0-p1',
     timebudget: '10',
     required: true,
     failureAction: 'block',
@@ -523,7 +523,7 @@ export const TEST_PROMOTION_RULES: Record<TestStage, TestPromotion> = {
   'ci-merge': {
     stage: 'ci-merge',
     description: 'Full regression before merge to main',
-    testCommand: 'npm run test:regression',
+    testCommand: 'pnpm run test:regression',
     timebudget: '30',
     required: true,
     failureAction: 'block',
@@ -531,7 +531,7 @@ export const TEST_PROMOTION_RULES: Record<TestStage, TestPromotion> = {
   staging: {
     stage: 'staging',
     description: 'Post-deployment validation in staging environment',
-    testCommand: 'npm run test:e2e -- --grep "@smoke"',
+    testCommand: 'pnpm run test:e2e -- --grep "@smoke"',
     timebudget: '15',
     required: true,
     failureAction: 'block',
@@ -539,7 +539,7 @@ export const TEST_PROMOTION_RULES: Record<TestStage, TestPromotion> = {
   production: {
     stage: 'production',
     description: 'Production smoke tests post-deployment',
-    testCommand: 'npm run test:e2e:prod -- --grep "@smoke.*@p0"',
+    testCommand: 'pnpm run test:e2e:prod -- --grep "@smoke.*@p0"',
     timebudget: '5',
     required: false,
     failureAction: 'alert',
@@ -576,7 +576,7 @@ export function canPromote(currentStage: TestStage, testsPassed: boolean): boole
 
 echo "🔍 Running pre-commit tests..."
 
-npm run test:smoke
+pnpm run test:smoke
 
 if [ $? -ne 0 ]; then
   echo ""
@@ -611,8 +611,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run PR-level tests
         run: |
-          npm run test:changed
-          npm run test:p0-p1
+          pnpm run test:changed
+          pnpm run test:p0-p1
 
   # Stage 2: Full regression (pre-merge)
   regression-tests:
@@ -622,7 +622,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run full regression
-        run: npm run test:regression
+        run: pnpm run test:regression
 
   # Stage 3: Staging validation (post-deploy)
   staging-smoke:
@@ -632,7 +632,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run staging smoke tests
-        run: npm run test:e2e -- --grep "@smoke"
+        run: pnpm run test:e2e -- --grep "@smoke"
         env:
           TEST_ENV: staging
 
@@ -645,7 +645,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run production smoke tests
-        run: npm run test:e2e:prod -- --grep "@smoke.*@p0"
+        run: pnpm run test:e2e:prod -- --grep "@smoke.*@p0"
         env:
           TEST_ENV: production
 
@@ -675,7 +675,7 @@ jobs:
 
 ## When Full Regression Runs
 
-Full regression suite (`npm run test:regression`) runs in these scenarios:
+Full regression suite (`pnpm run test:regression`) runs in these scenarios:
 
 - ✅ Before merging to `main` (CI Merge stage)
 - ✅ Nightly builds (scheduled workflow)

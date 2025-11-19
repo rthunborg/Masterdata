@@ -427,8 +427,8 @@ After completing this workflow, provide a summary:
 **Next Steps**:
 
 1. Copy `.env.example` to `.env` and fill in environment variables
-2. Run `npm install` to install test dependencies
-3. Run `npm run test:e2e` to execute sample tests
+2. Run `pnpm install` to install test dependencies
+3. Run `pnpm run test:e2e` to execute sample tests
 4. Review `tests/README.md` for detailed setup instructions
 
 **Knowledge Base References Applied**:

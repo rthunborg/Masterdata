@@ -2,6 +2,7 @@
   "name": "hr-masterdata",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.19.0",
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
@@ -17,8 +18,8 @@
     "test:e2e:debug": "dotenv -e .env.local -- playwright test --debug",
     "test:watch": "vitest watch",
     "format": "prettier --write .",
-    "setup:test-users": "npx tsx scripts/apply-external-party-test-users.ts",
-    "setup:test-users:prod": "npx tsx scripts/apply-external-party-test-users.ts --prod"
+    "setup:test-users": "pnpm exec tsx scripts/apply-external-party-test-users.ts",
+    "setup:test-users:prod": "pnpm exec tsx scripts/apply-external-party-test-users.ts --prod"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

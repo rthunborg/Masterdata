@@ -158,7 +158,7 @@ Before starting this workflow, verify:
 - [ ] GREEN phase tasks listed for DEV team
 - [ ] REFACTOR phase guidance provided
 - [ ] Execution commands provided:
-  - [ ] Run all tests: `npm run test:e2e`
+  - [ ] Run all tests: `pnpm run test:e2e`
   - [ ] Run specific test file
   - [ ] Run in headed mode
   - [ ] Debug specific test

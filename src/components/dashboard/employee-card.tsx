@@ -320,7 +320,7 @@ function EmployeeCardComponent({
       {/* Action buttons revealed on swipe */}
       {isMobile && isHRAdmin && !employee.is_archived && !employee.is_terminated && (
         <div 
-          className="absolute right-0 top-0 h-full flex items-center gap-0 z-10"
+          className="absolute right-0 top-0 bottom-0 flex items-center gap-0 z-10"
           style={{ width: `${actionButtonsWidth}px` }}
           role="group"
           aria-label="Swipe actions"
@@ -329,8 +329,8 @@ function EmployeeCardComponent({
             variant="destructive"
             size="default"
             onClick={handleArchiveClick}
-            className="h-full rounded-none min-w-[80px] touch-manipulation"
-            style={{ minHeight: '44px' }}
+            className="rounded-none min-w-[80px] touch-manipulation h-auto"
+            style={{ minHeight: '44px', height: 'auto' }}
             aria-label={`Archive ${employee.first_name} ${employee.surname}`}
           >
             <Archive className="h-5 w-5" aria-hidden="true" />
@@ -340,8 +340,8 @@ function EmployeeCardComponent({
             variant="destructive"
             size="default"
             onClick={handleTerminateClick}
-            className="h-full rounded-none min-w-[80px] touch-manipulation"
-            style={{ minHeight: '44px' }}
+            className="rounded-none min-w-[80px] touch-manipulation h-auto"
+            style={{ minHeight: '44px', height: 'auto' }}
             aria-label={`Terminate ${employee.first_name} ${employee.surname}`}
           >
             <UserX className="h-5 w-5" aria-hidden="true" />
@@ -351,8 +351,8 @@ function EmployeeCardComponent({
             variant="default"
             size="default"
             onClick={handleEditClick}
-            className="h-full rounded-none min-w-[80px] touch-manipulation"
-            style={{ minHeight: '44px' }}
+            className="rounded-none min-w-[80px] touch-manipulation h-auto"
+            style={{ minHeight: '44px', height: 'auto' }}
             aria-label={`Edit ${employee.first_name} ${employee.surname}`}
           >
             <Edit className="h-5 w-5" aria-hidden="true" />

@@ -181,7 +181,7 @@ The application implements comprehensive role-based access control at both the r
 Before you begin, ensure you have the following installed:
 
 - **Node.js** 18.17+ or 20+ ([Download](https://nodejs.org/))
-- **pnpm** 8.14+ (installed globally: `npm install -g pnpm`)
+- **pnpm** 8.14+ (install via [corepack](https://nodejs.org/api/corepack.html): `corepack enable` or `npm install -g pnpm`)
 - **Git** 2.0+ ([Download](https://git-scm.com/))
 
 ## Setup Instructions

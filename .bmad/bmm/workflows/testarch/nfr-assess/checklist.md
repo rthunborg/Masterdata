@@ -82,7 +82,7 @@
 
 - [ ] SAST results collected (SonarQube, Checkmarx, Veracode, etc.)
 - [ ] DAST results collected (OWASP ZAP, Burp Suite, etc.)
-- [ ] Dependency scanning results collected (Snyk, Dependabot, npm audit)
+- [ ] Dependency scanning results collected (Snyk, Dependabot, pnpm audit)
 - [ ] Penetration test reports collected (if available)
 - [ ] Security audit logs collected
 - [ ] Compliance audit results collected (if applicable)

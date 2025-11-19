@@ -10,8 +10,8 @@ node --version    # Node.js 18.17+ or 20+
 pnpm --version    # pnpm 8.14+
 git --version     # Git 2.0+
 
-# Install pnpm globally if not installed
-npm install -g pnpm
+# Install pnpm globally if not installed (or use corepack: corepack enable)
+pnpm install -g pnpm
 
 # Install Supabase CLI
 pnpm install -g supabase

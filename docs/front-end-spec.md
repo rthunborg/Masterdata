@@ -766,7 +766,7 @@ I --> B
 
 - Pre-built accessible components (modals, dropdowns, buttons, inputs)
 - Customizable design tokens via Tailwind config
-- Copy-paste component code (not npm dependency)
+- Copy-paste component code (not pnpm dependency)
 - Full control over styling and behavior
 - TypeScript support out of the box
 - Excellent documentation and community support

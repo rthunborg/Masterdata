@@ -90,7 +90,7 @@ export default defineConfig({
     video: 'off', // No video locally for speed
   },
   webServer: {
-    command: 'npm run dev',
+    command: 'pnpm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
@@ -346,13 +346,13 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm ci
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Run tests
-        run: npm run test
+        run: pnpm run test
         env:
           TEST_ENV: staging
 
@@ -459,13 +459,13 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm ci
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Run tests (shard ${{ matrix.shard }})
-        run: npm run test
+        run: pnpm run test
         env:
           SHARD_INDEX: ${{ matrix.shard }}
           SHARD_TOTAL: 4
@@ -688,7 +688,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-      - run: npm ci
+      - run: pnpm ci
       - run: npx playwright install --with-deps
 
       - name: Run tests (${{ matrix.project }})

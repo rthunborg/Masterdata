@@ -589,10 +589,10 @@ Based on detected stack and scripts:
 
 ```
 1. Clone repo (if not already)
-2. npm install (installs all deps from package.json)
+2. pnpm install (installs all deps from package.json)
 3. cp .env.example .env (configure environment)
-4. npm run dev (starts development server)
-5. npm test (runs test suite)
+4. pnpm run dev (starts development server)
+5. pnpm test (runs test suite)
 ```
 
 Or for Python:

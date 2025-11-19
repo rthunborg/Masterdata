@@ -126,6 +126,23 @@ export function EditEmployeeModal({
     }
   }, [employee, isOpen, form]);
 
+  // Scroll to top when modal opens (only once, doesn't prevent normal scrolling)
+  useEffect(() => {
+    if (isOpen) {
+      // Use setTimeout to ensure the modal is fully rendered
+      const timeoutId = setTimeout(() => {
+        // Find the dialog content element by data attribute
+        // This scrolls to top once when opening, but doesn't prevent normal scrolling afterward
+        const dialogContent = document.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+        if (dialogContent && dialogContent.scrollTop > 0) {
+          dialogContent.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 150);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isOpen]);
+
   // Extract isDirty from formState for unsaved changes tracking
   const { isDirty } = form.formState;
 

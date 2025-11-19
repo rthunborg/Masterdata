@@ -187,7 +187,7 @@ graph TB
 | **E2E Testing**          | Playwright                             | 1.40+ (post-MVP)     | End-to-end browser tests         | Reliable, cross-browser, excellent debugging                                                                  |
 | **Build Tool**           | Next.js built-in                       | 14.1+                | Webpack/Turbopack bundling       | Zero config, optimized for Next.js                                                                            |
 | **Bundler**              | Turbopack                              | Latest (Next.js 14+) | Fast development bundling        | 10x faster than Webpack in dev mode                                                                           |
-| **Package Manager**      | pnpm                                   | 8.14+                | Dependency management            | Faster than npm, efficient disk usage, strict dependency resolution                                           |
+| **Package Manager**      | pnpm                                   | 8.14+                | Dependency management            | Faster than pnpm, efficient disk usage, strict dependency resolution                                           |
 | **IaC Tool**             | Supabase CLI + Vercel CLI              | Latest               | Infrastructure as code           | Database migrations via Supabase CLI, deployment via Vercel CLI                                               |
 | **CI/CD**                | GitHub Actions + Vercel                | -                    | Automated testing and deployment | Free for open source, integrates with Vercel, automated preview deploys                                       |
 | **Monitoring**           | Vercel Analytics (post-MVP)            | -                    | Performance monitoring           | Core Web Vitals, edge function metrics                                                                        |
@@ -2537,8 +2537,8 @@ node --version    # Node.js 18.17+ or 20+
 pnpm --version    # pnpm 8.14+
 git --version     # Git 2.0+
 
-# Install pnpm globally if not installed
-npm install -g pnpm
+# Install pnpm globally if not installed (or use corepack: corepack enable)
+pnpm install -g pnpm
 
 # Install Supabase CLI
 pnpm install -g supabase
@@ -2797,7 +2797,7 @@ supabase db push  # Push migrations to production
 
 - **Code Splitting:** Route-level loading.tsx files with skeleton states
 - **Image Optimization:** WebP format, responsive sizes, 7-day cache
-- **Bundle Analysis:** @next/bundle-analyzer configured (npm run build:analyze)
+- **Bundle Analysis:** @next/bundle-analyzer configured (pnpm run build:analyze)
 - **CSS:** Tailwind purge removes unused styles, minimal runtime CSS-in-JS
 - **Responsive Loading:** Different skeletons for mobile (cards) vs desktop (table rows)
 

@@ -232,7 +232,7 @@ Before starting the workflow:
 - [ ] All quality checks passed
 - [ ] All integration points verified
 - [ ] Sample test executes successfully
-- [ ] User can run `npm run test:e2e` without errors
+- [ ] User can run `pnpm run test:e2e` without errors
 - [ ] Documentation is complete and accurate
 - [ ] No critical issues or blockers identified
 
@@ -244,8 +244,8 @@ Before starting the workflow:
 
 1. [ ] Copy `.env.example` to `.env`
 2. [ ] Fill in environment-specific values in `.env`
-3. [ ] Run `npm install` to install test dependencies
-4. [ ] Run `npm run test:e2e` to verify setup
+3. [ ] Run `pnpm install` to install test dependencies
+4. [ ] Run `pnpm run test:e2e` to verify setup
 5. [ ] Review `tests/README.md` for project-specific guidance
 
 **Recommended next workflows:**
@@ -266,7 +266,7 @@ If workflow fails and needs to be rolled back:
 4. [ ] Delete `.nvmrc` (if created)
 5. [ ] Delete framework config file
 6. [ ] Remove test dependencies from package.json (if added)
-7. [ ] Run `npm install` to clean up node_modules
+7. [ ] Run `pnpm install` to clean up node_modules
 
 ---
 

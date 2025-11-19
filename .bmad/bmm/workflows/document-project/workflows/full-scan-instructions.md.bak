@@ -468,10 +468,10 @@ project-root/
 <step n="6" goal="Extract development and operational information" if="workflow_mode != deep_dive">
 <action>Scan for development setup using key_file_patterns and existing docs:
 - Prerequisites (Node version, Python version, etc.)
-- Installation steps (npm install, etc.)
+- Installation steps (pnpm install, etc.)
 - Environment setup (.env files, config)
-- Build commands (npm run build, make, etc.)
-- Run commands (npm start, go run, etc.)
+- Build commands (pnpm run build, make, etc.)
+- Run commands (pnpm start, go run, etc.)
 - Test commands using test_file_patterns
 </action>
 

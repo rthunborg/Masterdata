@@ -38,7 +38,7 @@
 - [ ] **Framework detected**: Exact framework name and version captured (e.g., "Express 4.18.2")
 - [ ] **Dependencies extracted**: All production dependencies with specific versions
 - [ ] **Dev tools identified**: TypeScript, Jest, ESLint, pytest, etc. with versions
-- [ ] **Scripts documented**: Available npm/pip/etc scripts identified
+- [ ] **Scripts documented**: Available pnpm/pip/etc scripts identified
 - [ ] **Stack summary**: project_stack_summary is complete and accurate
 
 ### Brownfield Analysis (if applicable)

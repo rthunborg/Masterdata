@@ -4,7 +4,7 @@
  * This script creates icon-192x192.png and icon-512x512.png
  * from public/images/stena-logo.png
  * 
- * Requirements: sharp package (npm install sharp --save-dev)
+ * Requirements: sharp package (pnpm add -D sharp)
  * 
  * Usage: node scripts/generate-pwa-icons.js
  */
@@ -17,7 +17,7 @@ let sharp;
 try {
   sharp = require('sharp');
 } catch (e) {
-  console.error('Error: sharp package is required. Install it with: npm install sharp --save-dev');
+  console.error('Error: sharp package is required. Install it with: pnpm add -D sharp');
   process.exit(1);
 }
 

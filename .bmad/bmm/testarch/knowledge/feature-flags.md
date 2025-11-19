@@ -713,7 +713,7 @@ if (audit.expiredFlags.length > 0) {
 {
   "scripts": {
     "feature-flags:audit": "ts-node scripts/feature-flag-audit.ts",
-    "feature-flags:audit:ci": "npm run feature-flags:audit || true"
+    "feature-flags:audit:ci": "pnpm run feature-flags:audit || true"
   }
 }
 ```

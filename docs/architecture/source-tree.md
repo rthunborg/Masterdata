@@ -233,7 +233,8 @@ Organized test suite following testing pyramid: 70% unit, 25% integration, 5% e2
 | Pattern | Example | Usage |
 |---------|---------|-------|
 | \page.tsx\ | \pp/dashboard/page.tsx\ | Next.js page component |
-| \oute.ts\ | \pp/api/employees/route.ts\ | Next.js API route |
+| \
+oute.ts\ | \pp/api/employees/route.ts\ | Next.js API route |
 | \layout.tsx\ | \pp/layout.tsx\ | Next.js layout component |
 | \*.tsx\ | \employee-table.tsx\ | React component with JSX |
 | \*.ts\ | \employee-service.ts\ | TypeScript module (no JSX) |
@@ -292,7 +293,7 @@ These files should always be loaded by dev agents:
 - **\
 ext.config.js\** - Next.js build configuration
 - **\	ailwind.config.ts\** - Tailwind CSS theme and plugins
-- **\	sconfig.json\** - TypeScript compiler options
+- **\	sconfig.json\** - TypeScript compipnpm options
 - **\package.json\** - Dependencies and npm scripts
 
 ### Entry Points

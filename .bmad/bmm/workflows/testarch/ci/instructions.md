@@ -18,7 +18,7 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
 **Critical:** Verify these requirements before proceeding. If any fail, HALT and notify the user.
 
 - ✅ Git repository is initialized (`.git/` directory exists)
-- ✅ Local test suite passes (`npm run test:e2e` succeeds)
+- ✅ Local test suite passes (`pnpm run test:e2e` succeeds)
 - ✅ Test framework is configured (from `framework` workflow)
 - ✅ Team agrees on target CI platform (GitHub Actions, GitLab CI, Circle CI, etc.)
 - ✅ Access to CI platform settings/secrets available (if updating existing pipeline)
@@ -44,7 +44,7 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
    - If not found, HALT with message: "Run `framework` workflow first to set up test infrastructure"
 
 3. **Run Local Tests**
-   - Execute `npm run test:e2e` (or equivalent from package.json)
+   - Execute `pnpm run test:e2e` (or equivalent from package.json)
    - Ensure tests pass before CI setup
    - If tests fail, HALT with message: "Fix failing tests before setting up CI/CD"
 
@@ -125,7 +125,7 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
 
    steps:
      - name: Run tests
-       run: npm run test:e2e -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+       run: pnpm run test:e2e -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
    ```
 
    **Purpose:** Splits tests into N parallel jobs for faster execution (target: <10 min per shard)
@@ -147,13 +147,13 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
            node-version-file: '.nvmrc'
 
        - name: Install dependencies
-         run: npm ci
+         run: pnpm ci
 
        - name: Run burn-in loop (10 iterations)
          run: |
            for i in {1..10}; do
              echo "🔥 Burn-in iteration $i/10"
-             npm run test:e2e || exit 1
+             pnpm run test:e2e || exit 1
            done
 
        - name: Upload failure artifacts
@@ -180,7 +180,7 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
    - name: Cache dependencies
      uses: actions/cache@v4
      with:
-       path: ~/.npm
+       path: ~/.pnpm
        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
        restore-keys: |
          ${{ runner.os }}-node-
@@ -230,7 +230,7 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
        timeout_minutes: 30
        max_attempts: 3
        retry_on: error
-       command: npm run test:e2e
+       command: pnpm run test:e2e
    ```
 
    **Purpose:** Handles transient failures (network issues, race conditions)
@@ -261,7 +261,7 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
 
    if echo "$CHANGED_FILES" | grep -q "src/.*\.ts$"; then
      echo "Running affected tests..."
-     npm run test:e2e -- --grep="$(echo $CHANGED_FILES | sed 's/src\///g' | sed 's/\.ts//g')"
+     pnpm run test:e2e -- --grep="$(echo $CHANGED_FILES | sed 's/src\///g' | sed 's/\.ts//g')"
    else
      echo "No test-affecting changes detected"
    fi
@@ -276,15 +276,15 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
    echo "🔍 Running CI pipeline locally..."
 
    # Lint
-   npm run lint || exit 1
+   pnpm run lint || exit 1
 
    # Tests
-   npm run test:e2e || exit 1
+   pnpm run test:e2e || exit 1
 
    # Burn-in (reduced iterations)
    for i in {1..3}; do
      echo "🔥 Burn-in $i/3"
-     npm run test:e2e || exit 1
+     pnpm run test:e2e || exit 1
    done
 
    echo "✅ Local CI pipeline passed"
@@ -333,7 +333,7 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
    - Inline comments in CI configuration
 
 5. **Optimization Features**
-   - Dependency caching (npm, browser binaries)
+   - Dependency caching (pnpm, browser binaries)
    - Parallel sharding (4 jobs default)
    - Retry logic (2 retries on failure)
    - Failure-only artifact upload

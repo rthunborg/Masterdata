@@ -22,7 +22,7 @@
 | **E2E Testing** | Playwright | 1.40+ (post-MVP) | End-to-end browser tests | Reliable, cross-browser, excellent debugging |
 | **Build Tool** | Next.js built-in | 14.1+ | Webpack/Turbopack bundling | Zero config, optimized for Next.js |
 | **Bundler** | Turbopack | Latest (Next.js 14+) | Fast development bundling | 10x faster than Webpack in dev mode |
-| **Package Manager** | pnpm | 8.14+ | Dependency management | Faster than npm, efficient disk usage, strict dependency resolution |
+| **Package Manager** | pnpm | 8.14+ | Dependency management | Faster than pnpm, efficient disk usage, strict dependency resolution |
 | **IaC Tool** | Supabase CLI + Vercel CLI | Latest | Infrastructure as code | Database migrations via Supabase CLI, deployment via Vercel CLI |
 | **CI/CD** | GitHub Actions + Vercel | - | Automated testing and deployment | Free for open source, integrates with Vercel, automated preview deploys |
 | **Monitoring** | Vercel Analytics (post-MVP) | - | Performance monitoring | Core Web Vitals, edge function metrics |

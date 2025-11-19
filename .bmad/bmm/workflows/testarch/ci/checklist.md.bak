@@ -5,7 +5,7 @@
 - [ ] Git repository initialized (`.git/` exists)
 - [ ] Git remote configured (`git remote -v` shows origin)
 - [ ] Test framework configured (playwright.config._ or cypress.config._)
-- [ ] Local tests pass (`npm run test:e2e` succeeds)
+- [ ] Local tests pass (`pnpm run test:e2e` succeeds)
 - [ ] Team agrees on CI platform
 - [ ] Access to CI platform settings (if updating)
 
@@ -45,7 +45,7 @@
 
 ### Step 5: Caching Configuration
 
-- [ ] Dependency cache configured (npm/yarn)
+- [ ] Dependency cache configured (pnpm/yarn)
 - [ ] Cache key uses lockfile hash
 - [ ] Browser cache configured (Playwright/Cypress)
 - [ ] Restore-keys defined for fallback
