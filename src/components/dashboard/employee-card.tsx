@@ -320,7 +320,7 @@ function EmployeeCardComponent({
       {/* Action buttons revealed on swipe */}
       {isMobile && isHRAdmin && !employee.is_archived && !employee.is_terminated && (
         <div 
-          className="absolute right-0 top-0 bottom-0 flex items-center gap-0 z-10"
+          className="absolute right-0 top-0 bottom-0 flex items-start gap-0 z-10"
           style={{ width: `${actionButtonsWidth}px` }}
           role="group"
           aria-label="Swipe actions"
@@ -442,110 +442,112 @@ function EmployeeCardComponent({
 
         {/* Story 12.8: Always-visible fields on mobile */}
         {isMobile && (
-          <div className="mt-4 pt-4 border-t space-y-3">
-            {/* First Name */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">First Name</label>
-              <EditableCell
-                value={employee.first_name}
-                employeeId={employee.id}
-                field="first_name"
-                type="text"
-                canEdit={true}
-                onSave={handleMasterdataUpdate}
-                onError={(error) => toast.error(error)}
-              />
-            </div>
+          <div className="mt-4 pt-4 border-t">
+            <div className="grid grid-cols-2 gap-3">
+              {/* First Name */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">First Name</label>
+                <EditableCell
+                  value={employee.first_name}
+                  employeeId={employee.id}
+                  field="first_name"
+                  type="text"
+                  canEdit={true}
+                  onSave={handleMasterdataUpdate}
+                  onError={(error) => toast.error(error)}
+                />
+              </div>
 
-            {/* Surname */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Surname</label>
-              <EditableCell
-                value={employee.surname}
-                employeeId={employee.id}
-                field="surname"
-                type="text"
-                canEdit={true}
-                onSave={handleMasterdataUpdate}
-                onError={(error) => toast.error(error)}
-              />
-            </div>
+              {/* Surname */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Surname</label>
+                <EditableCell
+                  value={employee.surname}
+                  employeeId={employee.id}
+                  field="surname"
+                  type="text"
+                  canEdit={true}
+                  onSave={handleMasterdataUpdate}
+                  onError={(error) => toast.error(error)}
+                />
+              </div>
 
-            {/* Rank */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Rank</label>
-              <EditableCell
-                value={employee.rank}
-                employeeId={employee.id}
-                field="rank"
-                type="select"
-                options={['SEV', 'CHEF']}
-                canEdit={true}
-                onSave={handleMasterdataUpdate}
-                onError={(error) => toast.error(error)}
-              />
-            </div>
+              {/* Rank */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Rank</label>
+                <EditableCell
+                  value={employee.rank}
+                  employeeId={employee.id}
+                  field="rank"
+                  type="select"
+                  options={['SEV', 'CHEF']}
+                  canEdit={true}
+                  onSave={handleMasterdataUpdate}
+                  onError={(error) => toast.error(error)}
+                />
+              </div>
 
-            {/* City/Town District */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">City/Town District</label>
-              <EditableCell
-                value={employee.town_district}
-                employeeId={employee.id}
-                field="town_district"
-                type="text"
-                canEdit={true}
-                onSave={handleMasterdataUpdate}
-                onError={(error) => toast.error(error)}
-              />
-            </div>
+              {/* City/Town District */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">City/Town District</label>
+                <EditableCell
+                  value={employee.town_district}
+                  employeeId={employee.id}
+                  field="town_district"
+                  type="text"
+                  canEdit={true}
+                  onSave={handleMasterdataUpdate}
+                  onError={(error) => toast.error(error)}
+                />
+              </div>
 
-            {/* Stena Date */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Stena Date</label>
-              <EditableDateCell
-                value={employee.stena_date}
-                displayValue={getEmployeeFieldValue(employee, 'Stena Date', true, allImportantDates) as string || '—'}
-                employeeId={employee.id}
-                field="stena_date"
-                dateCategory="Stena Dates"
-                allDates={allImportantDates}
-                canEdit={true}
-                onSave={handleMasterdataUpdate}
-                onError={(error) => toast.error(error)}
-              />
-            </div>
+              {/* Stena Date */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Stena Date</label>
+                <EditableDateCell
+                  value={employee.stena_date}
+                  displayValue={getEmployeeFieldValue(employee, 'Stena Date', true, allImportantDates) as string || '—'}
+                  employeeId={employee.id}
+                  field="stena_date"
+                  dateCategory="Stena Dates"
+                  allDates={allImportantDates}
+                  canEdit={true}
+                  onSave={handleMasterdataUpdate}
+                  onError={(error) => toast.error(error)}
+                />
+              </div>
 
-            {/* ÖMC Date */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">ÖMC Date</label>
-              <EditableDateCell
-                value={employee.omc_date}
-                displayValue={getEmployeeFieldValue(employee, 'ÖMC Date', true, allImportantDates) as string || '—'}
-                employeeId={employee.id}
-                field="omc_date"
-                dateCategory="ÖMC Dates"
-                allDates={allImportantDates}
-                canEdit={true}
-                onSave={handleMasterdataUpdate}
-                onError={(error) => toast.error(error)}
-              />
-            </div>
+              {/* ÖMC Date */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">ÖMC Date</label>
+                <EditableDateCell
+                  value={employee.omc_date}
+                  displayValue={getEmployeeFieldValue(employee, 'ÖMC Date', true, allImportantDates) as string || '—'}
+                  employeeId={employee.id}
+                  field="omc_date"
+                  dateCategory="ÖMC Dates"
+                  allDates={allImportantDates}
+                  canEdit={true}
+                  onSave={handleMasterdataUpdate}
+                  onError={(error) => toast.error(error)}
+                />
+              </div>
 
-            {/* PE3 Date */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">PE3 Date</label>
-              <EditableDateCell
-                value={employee.pe3_date}
-                displayValue={getEmployeeFieldValue(employee, 'PE3 Date', true, allImportantDates) as string || '—'}
-                employeeId={employee.id}
-                field="pe3_date"
-                dateCategory="PE3 Dates"
-                allDates={allImportantDates}
-                canEdit={true}
-                onSave={handleMasterdataUpdate}
-                onError={(error) => toast.error(error)}
-              />
+              {/* PE3 Date */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">PE3 Date</label>
+                <EditableDateCell
+                  value={employee.pe3_date}
+                  displayValue={getEmployeeFieldValue(employee, 'PE3 Date', true, allImportantDates) as string || '—'}
+                  employeeId={employee.id}
+                  field="pe3_date"
+                  dateCategory="PE3 Dates"
+                  allDates={allImportantDates}
+                  canEdit={true}
+                  onSave={handleMasterdataUpdate}
+                  onError={(error) => toast.error(error)}
+                />
+              </div>
             </div>
           </div>
         )}

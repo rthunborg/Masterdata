@@ -234,7 +234,7 @@ export default function DashboardPage() {
           {user?.role === "hr_admin" && (
             <RoleSelector />
           )}
-          {user?.role === "hr_admin" && (
+          {user?.role === "hr_admin" && !isMobile && (
             <>
               <Tooltip>
                 <TooltipTrigger asChild>
