@@ -19,6 +19,13 @@ describe('InstallPrompt', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Clear localStorage
+    localStorage.clear();
+
+    // Set up installation criteria to be met (for tests that need prompt to show)
+    localStorage.setItem('pwa_visit_count', '2');
+    localStorage.setItem('pwa_time_spent', '30');
+
     // Mock window.matchMedia
     Object.defineProperty(window, 'matchMedia', {
       writable: true,

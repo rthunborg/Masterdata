@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "@/lib/i18n";
 import { toast } from "sonner";
+import { useAriaAnnouncements } from "@/hooks/use-aria-announcements";
 import {
   Dialog,
   DialogContent,
@@ -105,8 +106,11 @@ export function AddEmployeeModal({
     },
   });
 
-  // Extract isDirty from formState for unsaved changes tracking
-  const { isDirty } = form.formState;
+  // Extract isDirty and errors from formState for unsaved changes tracking and accessibility
+  const { isDirty, errors } = form.formState;
+  
+  // Hook for screen reader announcements of validation errors
+  const announcementRef = useAriaAnnouncements(errors);
 
   const onSubmit = async (data: CreateEmployeeInput) => {
     try {
@@ -217,19 +221,34 @@ export function AddEmployeeModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+            {/* Live region for validation error announcements */}
+            <div 
+              ref={announcementRef}
+              role="alert" 
+              aria-live="polite" 
+              aria-atomic="true" 
+              className="sr-only"
+              id="form-errors-announcement"
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* First Name */}
               <FormField
                 control={form.control}
                 name="first_name"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>
-                      {t('firstName')} <span className="text-red-500">*</span>
+                      {t('firstName')} <span className="text-red-500" aria-label="required">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="John" {...field} className="h-12 md:h-10" />
+                      <Input 
+                        placeholder="John" 
+                        {...field} 
+                        className="h-12 md:h-10" 
+                        aria-required="true"
+                        aria-invalid={fieldState.invalid}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -240,13 +259,19 @@ export function AddEmployeeModal({
               <FormField
                 control={form.control}
                 name="surname"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>
-                      {t('surname')} <span className="text-red-500">*</span>
+                      {t('surname')} <span className="text-red-500" aria-label="required">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" {...field} className="h-12 md:h-10" />
+                      <Input 
+                        placeholder="Doe" 
+                        {...field} 
+                        className="h-12 md:h-10" 
+                        aria-required="true"
+                        aria-invalid={fieldState.invalid}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -257,10 +282,10 @@ export function AddEmployeeModal({
               <FormField
                 control={form.control}
                 name="ssn"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>
-                      {t('ssn')} <span className="text-red-500">*</span>
+                      {t('ssn')} <span className="text-red-500" aria-label="required">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input 
@@ -268,6 +293,8 @@ export function AddEmployeeModal({
                         {...field} 
                         className="h-12 md:h-10"
                         inputMode="numeric"
+                        aria-required="true"
+                        aria-invalid={fieldState.invalid}
                       />
                     </FormControl>
                     <FormMessage />
@@ -327,17 +354,17 @@ export function AddEmployeeModal({
               <FormField
                 control={form.control}
                 name="rank"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>
-                      {t('rank')} <span className="text-red-500">*</span>
+                      {t('rank')} <span className="text-red-500" aria-label="required">*</span>
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? undefined}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger aria-required="true" aria-invalid={fieldState.invalid}>
                           <SelectValue placeholder={t('selectRank')} />
                         </SelectTrigger>
                       </FormControl>
@@ -402,17 +429,17 @@ export function AddEmployeeModal({
               <FormField
                 control={form.control}
                 name="gender"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <FormLabel>
-                      {t('gender')} <span className="text-red-500">*</span>
+                      {t('gender')} <span className="text-red-500" aria-label="required">*</span>
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? undefined}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger aria-required="true" aria-invalid={fieldState.invalid}>
                           <SelectValue placeholder={t('selectGender')} />
                         </SelectTrigger>
                       </FormControl>

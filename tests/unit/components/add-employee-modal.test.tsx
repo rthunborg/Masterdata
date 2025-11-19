@@ -149,11 +149,11 @@ describe("AddEmployeeModal", () => {
     const submitButton = screen.getByRole("button", { name: /Spara/i });
     await user.click(submitButton);
 
-    // Wait for validation errors
+    // Wait for validation errors (use getAllByText since errors appear in multiple places)
     await waitFor(() => {
-      expect(screen.getByText(/Förnamn krävs/i)).toBeInTheDocument();
-      expect(screen.getByText(/Efternamn krävs/i)).toBeInTheDocument();
-      expect(screen.getByText(/Personnummer krävs/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Förnamn krävs/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Efternamn krävs/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Personnummer krävs/i).length).toBeGreaterThan(0);
       // Note: Rank validation not triggered in this test scenario
     });
 
@@ -248,11 +248,11 @@ describe("AddEmployeeModal", () => {
     const submitButton = screen.getByRole("button", { name: /Spara/i });
     await user.click(submitButton);
 
-    // Wait for error message
+    // Wait for error message (use getAllByText since error appears in multiple places)
     await waitFor(() => {
       expect(
-        screen.getByText(/En anställd med detta personnummer finns redan/i)
-      ).toBeInTheDocument();
+        screen.getAllByText(/En anställd med detta personnummer finns redan/i).length
+      ).toBeGreaterThan(0);
     });
 
     // Should not call success callbacks

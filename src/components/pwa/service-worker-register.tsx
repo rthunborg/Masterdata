@@ -38,13 +38,15 @@ export function ServiceWorkerRegister() {
 
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New service worker is installed and waiting
+              // New service worker is installed and waiting (not yet activated)
               if (isMountedRef.current) {
                 toast.info('App updated. Refresh to see changes.', {
                   duration: 10000,
                   action: {
-                    label: 'Refresh',
+                    label: 'Refresh Now',
                     onClick: () => {
+                      // User explicitly requests update - activate immediately
+                      newWorker.postMessage({ type: 'SKIP_WAITING' });
                       window.location.reload();
                     },
                   },
@@ -57,8 +59,23 @@ export function ServiceWorkerRegister() {
         // Listen for controller change (service worker activated)
         const handleControllerChange = () => {
           if (isMountedRef.current) {
-            // Service worker has been activated, reload to get new version
-            window.location.reload();
+            // Service worker has been activated
+            // Show notification and reload on next navigation (per AC4 requirement)
+            toast.info('App updated. Changes will apply on next page navigation.', {
+              duration: 5000,
+            });
+            // Reload on next navigation instead of immediately
+            const handleNavigation = () => {
+              window.location.reload();
+            };
+            // Reload when user navigates (link click, back/forward, etc.)
+            window.addEventListener('beforeunload', handleNavigation);
+            // Also reload after a short delay if user doesn't navigate
+            setTimeout(() => {
+              if (isMountedRef.current) {
+                window.location.reload();
+              }
+            }, 10000); // 10 second grace period
           }
         };
 

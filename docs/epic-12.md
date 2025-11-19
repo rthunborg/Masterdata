@@ -85,6 +85,35 @@ This epic can be executed in parallel with other work or as a focused sprint aft
 
 ---
 
+## Post-Review Follow-ups
+
+**Added**: 2025-01-27  
+**Source**: Story 12.4 Code Review
+
+### Story 12.4 Review Findings
+
+**Review Date**: 2025-01-27  
+**Review Outcome**: Changes Requested  
+**Reviewer**: Senior Developer (BMAD Code Review Workflow)
+
+**Key Action Items from Review:**
+
+1. **Critical Blocker - Missing PWA Icons**: Icons referenced in manifest.json (`/icons/icon-192x192.png` and `/icons/icon-512x512.png`) do not exist. PWA installation will fail without valid icons. Action required: Create icons from Stena logo (see `docs/stories/12.4-pwa-icons-required.md`).
+
+2. **Missing Splash Screen**: Acceptance criteria requires splash screen with Stena Line logo on PWA launch, but this is not implemented. Action required: Add splash screen configuration to manifest.json or implement custom splash screen.
+
+3. **Service Worker Update Strategy**: Current implementation uses `skipWaiting()` which activates updates immediately rather than "after current page session ends" as required by AC. Action required: Implement proper waiting strategy that activates on next navigation.
+
+4. **Installation Criteria Not Enforced**: AC requires install prompt only after "visited site 2+ times, spent 30+ seconds", but current implementation shows prompt immediately. Action required: Implement localStorage tracking for visit count and time spent.
+
+**Impact on Epic**: Story 12.4 is a foundational story for PWA functionality. The missing icons and splash screen are critical blockers that prevent PWA installation from working. The service worker update strategy issue may cause user disruption. These issues must be resolved before Story 12.4 can be marked as "Done" and before dependent stories (12.3, 12.5) can fully leverage PWA capabilities.
+
+**Related Stories**: 
+- Story 12.3 (Offline Support) depends on Service Worker from Story 12.4
+- Story 12.5 (Mobile Performance Optimizations) may benefit from PWA caching strategies
+
+---
+
 **Last Updated:** 2025-01-27  
 **Author:** Raz (PM)
 

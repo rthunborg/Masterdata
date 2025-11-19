@@ -259,8 +259,8 @@ export async function PATCH(
         if (newHotelRequired === false) {
           // Clear room when hotel_required is set to false
           updates.room_number_shared = null;
-        } else if (newHotelRequired === true && currentEmployee.omc_date) {
-          // Assign room when hotel_required is set to true and employee has ÖMC date
+        } else if (newHotelRequired === true && currentEmployee.omc_date && currentEmployee.rank) {
+          // Assign room when hotel_required is set to true and employee has ÖMC date and rank
           try {
             const roomNumber = await calculateRoomNumber(
               {

@@ -39,8 +39,8 @@ self.addEventListener('install', (event) => {
     })
   );
   
-  // Force activation of new service worker
-  self.skipWaiting();
+  // Don't force activation - wait for current page session to end (per AC4 requirement)
+  // skipWaiting() will be called explicitly when user requests update
 });
 
 /**

@@ -245,6 +245,13 @@ export function EditableDateCell({
   }
 
   // Editing mode - show dropdown
+  // Note: Story 12.8 requires "native mobile date picker" but also requires showing remaining spots
+  // in parentheses. Native <input type="date"> cannot display custom information like remaining spots.
+  // We use a Select dropdown instead, which provides better UX by showing:
+  // - Remaining spots in parentheses (e.g., "8-9 mars (5 spots left)")
+  // - Capacity badges for visual feedback
+  // - Filtered dates by category and availability
+  // The Select is mobile-optimized with min-h-10 (40px) touch targets and auto-opens on edit.
   return (
     <div ref={cellRef} className="relative">
       <Select
@@ -293,7 +300,7 @@ export function EditableDateCell({
         }}
         disabled={isLoading || (dateCategory === "PE3 Dates" && pe3Loading)}
       >
-        <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-10")}>
+        <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-11 touch-manipulation")}>
           <SelectValue placeholder="Select a date..." />
         </SelectTrigger>
         <SelectContent>
@@ -310,6 +317,7 @@ export function EditableDateCell({
                 value={date.id}
                 disabled={isFull}
                 className={cn(
+                  "min-h-11 touch-manipulation",
                   isFull && "opacity-50 cursor-not-allowed",
                 )}
               >

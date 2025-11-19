@@ -110,7 +110,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
         />
       );
 
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       expect(card).toBeInTheDocument();
 
       // Simulate touch start
@@ -154,7 +154,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
         />
       );
 
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       expect(card).toBeInTheDocument();
 
       // Simulate touch start
@@ -193,7 +193,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
         />
       );
 
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       expect(card).toBeInTheDocument();
 
       // Simulate touch start
@@ -248,7 +248,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
         />
       );
 
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       expect(card).toBeInTheDocument();
 
       // Simulate full swipe left (>= 50px)
@@ -294,7 +294,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       );
 
       // Reveal actions by swiping
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       const touchStart = { touches: [{ clientX: 200, clientY: 100 }] };
       fireEvent.touchStart(card!, touchStart);
       const touchMove = { touches: [{ clientX: 100, clientY: 100 }], preventDefault: vi.fn() };
@@ -333,7 +333,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       );
 
       // Reveal actions
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       const touchStart = { touches: [{ clientX: 200, clientY: 100 }] };
       fireEvent.touchStart(card!, touchStart);
       const touchMove = { touches: [{ clientX: 100, clientY: 100 }], preventDefault: vi.fn() };
@@ -371,7 +371,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       );
 
       // Reveal actions
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       const touchStart = { touches: [{ clientX: 200, clientY: 100 }] };
       fireEvent.touchStart(card!, touchStart);
       const touchMove = { touches: [{ clientX: 100, clientY: 100 }], preventDefault: vi.fn() };
@@ -406,7 +406,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
         />
       );
 
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       expect(card).toBeInTheDocument();
 
       // Simulate touch events
@@ -439,7 +439,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
         />
       );
 
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       
       // Swipe left to reveal
       const touchStart = { touches: [{ clientX: 200, clientY: 100 }] };
@@ -487,7 +487,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       );
 
       // Actions should not be available for archived employees
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       const touchStart = { touches: [{ clientX: 200, clientY: 100 }] };
       fireEvent.touchStart(card!, touchStart);
       const touchMove = { touches: [{ clientX: 100, clientY: 100 }], preventDefault: vi.fn() };
@@ -518,7 +518,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       );
 
       // Actions should not be available for terminated employees
-      const card = screen.getByText(/John Doe/i).closest("div[class*='relative']");
+      const card = screen.getByText(/John Doe/i).closest("article[class*='relative']");
       const touchStart = { touches: [{ clientX: 200, clientY: 100 }] };
       fireEvent.touchStart(card!, touchStart);
       const touchMove = { touches: [{ clientX: 100, clientY: 100 }], preventDefault: vi.fn() };

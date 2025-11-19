@@ -63,7 +63,7 @@ export interface UsePullToRefreshReturn {
   /**
    * Ref to attach to scrollable container
    */
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 /**

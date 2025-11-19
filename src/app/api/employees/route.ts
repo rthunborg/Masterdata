@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 
     // Story 8.20: Calculate room number before employee creation
     let roomNumber: number | null = null;
-    if (validatedData.omc_date && validatedData.hotel_required) {
+    if (validatedData.omc_date && validatedData.hotel_required && validatedData.rank) {
       try {
         roomNumber = await calculateRoomNumber(
           {

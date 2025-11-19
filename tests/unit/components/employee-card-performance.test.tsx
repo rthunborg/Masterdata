@@ -41,6 +41,20 @@ vi.mock("@/lib/hooks/use-important-dates", () => ({
   useImportantDates: vi.fn(),
 }));
 
+// Mock useMediaQuery to default to desktop mode for these tests
+vi.mock("@/hooks/use-media-query", () => ({
+  useMediaQuery: vi.fn(() => false), // Default to desktop
+}));
+
+// Mock useLongPress hook
+vi.mock("@/hooks/use-long-press", () => ({
+  useLongPress: vi.fn(() => ({
+    onTouchStart: vi.fn(),
+    onTouchMove: vi.fn(),
+    onTouchEnd: vi.fn(),
+  })),
+}));
+
 // Helper to create test column configs
 function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnConfig {
   return {
@@ -94,13 +108,13 @@ describe("EmployeeCard - Performance Tests", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       
       const startTime = performance.now();
       await user.click(moreButton);
       
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
+        expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
       }, { timeout: 1000 });
       
       const endTime = performance.now();
@@ -112,7 +126,7 @@ describe("EmployeeCard - Performance Tests", () => {
       expect(expansionTime).toBeLessThan(1000); // 1 second is reasonable for test environment
       
       // Verify expansion actually happened
-      expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
+      expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
     });
 
     it("should expand card with large number of fields (50+) without lag", async () => {
@@ -136,7 +150,7 @@ describe("EmployeeCard - Performance Tests", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       
       const startTime = performance.now();
       await user.click(moreButton);
@@ -166,7 +180,7 @@ describe("EmployeeCard - Performance Tests", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       
       // Start expansion
       const clickPromise = user.click(moreButton);
@@ -180,7 +194,7 @@ describe("EmployeeCard - Performance Tests", () => {
       await clickPromise;
       
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
+        expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
       });
 
       // Other buttons should still be accessible
@@ -209,19 +223,19 @@ describe("EmployeeCard - Performance Tests", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       
       // Perform multiple expansion/collapse cycles
       for (let i = 0; i < 5; i++) {
         await user.click(moreButton);
         await waitFor(() => {
-          expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
+          expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
         });
         
-        const lessButton = screen.getByRole("button", { name: /less/i });
+        const lessButton = screen.getByLabelText(/Collapse details/i);
         await user.click(lessButton);
         await waitFor(() => {
-          expect(screen.getByRole("button", { name: /more/i })).toBeInTheDocument();
+          expect(screen.getByLabelText(/Expand details/i)).toBeInTheDocument();
         });
       }
 
@@ -245,14 +259,14 @@ describe("EmployeeCard - Performance Tests", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       
       // Click button - expansion should work smoothly even on slower devices
       await user.click(moreButton);
       
       // Wait for expansion to complete
       await waitFor(() => {
-        const lessButton = screen.getByRole("button", { name: /less/i });
+        const lessButton = screen.getByLabelText(/Collapse details/i);
         expect(lessButton).toBeInTheDocument();
       }, { timeout: 1000 }); // Allow up to 1 second for slower devices
     });

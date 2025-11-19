@@ -378,6 +378,7 @@ export function EditableCell({
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
+            inputMode="text"
             className={error ? "border-destructive" : ""}
             aria-invalid={!!error}
             aria-describedby={error ? `${field}-error` : undefined}
@@ -410,6 +411,7 @@ export function EditableCell({
             }}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
+            inputMode="numeric"
             className={error ? "border-destructive" : ""}
             aria-invalid={!!error}
             aria-describedby={error ? `${field}-error` : undefined}

@@ -43,6 +43,20 @@ vi.mock("@/lib/hooks/use-important-dates", () => ({
   useImportantDates: vi.fn(),
 }));
 
+// Mock useMediaQuery to default to desktop mode for these tests
+vi.mock("@/hooks/use-media-query", () => ({
+  useMediaQuery: vi.fn(() => false), // Default to desktop
+}));
+
+// Mock useLongPress hook
+vi.mock("@/hooks/use-long-press", () => ({
+  useLongPress: vi.fn(() => ({
+    onTouchStart: vi.fn(),
+    onTouchMove: vi.fn(),
+    onTouchEnd: vi.fn(),
+  })),
+}));
+
 // Helper to create test column configs
 function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnConfig {
   return {
@@ -116,7 +130,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       expect(moreButton).toBeInTheDocument();
       expect(screen.queryByText("Less")).not.toBeInTheDocument();
     });
@@ -133,12 +147,12 @@ describe("EmployeeCard - Expansion Behavior", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       // Should show "Less" button
-      expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: /more/i })).not.toBeInTheDocument();
+      expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
+      expect(screen.queryByLabelText(/Expand details/i)).not.toBeInTheDocument();
 
       // Should show expanded fields
       await waitFor(() => {
@@ -160,11 +174,11 @@ describe("EmployeeCard - Expansion Behavior", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
+        expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
       });
     });
 
@@ -181,20 +195,20 @@ describe("EmployeeCard - Expansion Behavior", () => {
       );
 
       // Expand first
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
+        expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
       });
 
       // Collapse
-      const lessButton = screen.getByRole("button", { name: /less/i });
+      const lessButton = screen.getByLabelText(/Collapse details/i);
       await user.click(lessButton);
 
       // Should show "More" button again
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /more/i })).toBeInTheDocument();
+        expect(screen.getByLabelText(/Expand details/i)).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: /less/i })).not.toBeInTheDocument();
       });
 
@@ -214,11 +228,11 @@ describe("EmployeeCard - Expansion Behavior", () => {
       );
 
       // Expand card
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
+        expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
       });
 
       // Re-render with same props
@@ -233,7 +247,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
       );
 
       // State should be maintained (expanded)
-      expect(screen.getByRole("button", { name: /less/i })).toBeInTheDocument();
+      expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
       expect(screen.getByText("First Name")).toBeInTheDocument();
     });
 
@@ -257,7 +271,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -288,7 +302,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -318,7 +332,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {

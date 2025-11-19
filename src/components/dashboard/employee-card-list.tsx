@@ -8,8 +8,10 @@ import type { Employee } from '@/lib/types/employee';
 import type { ColumnConfig } from '@/lib/types/column-config';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useSearchHistory } from '@/hooks/use-search-history';
 import { toast } from 'sonner';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
@@ -42,6 +44,30 @@ export function EmployeeCardList({
 }: EmployeeCardListProps) {
   // Only enable pull-to-refresh on mobile devices (< 1024px)
   const isMobile = useMediaQuery('(max-width: 1023px)');
+
+  // Story 12.6: AC 5 - Search debouncing and history
+  const [localSearchValue, setLocalSearchValue] = useState(searchValue);
+  const debouncedSearchValue = useDebounce(localSearchValue, 300);
+  const { history, addToHistory } = useSearchHistory();
+
+  // Update parent when debounced value changes
+  useEffect(() => {
+    onSearchChange(debouncedSearchValue);
+  }, [debouncedSearchValue, onSearchChange]);
+
+  // Sync with external searchValue changes
+  useEffect(() => {
+    setLocalSearchValue(searchValue);
+  }, [searchValue]);
+
+  // Save to history when search is submitted (on Enter or Search button)
+  const handleSearchSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (localSearchValue.trim()) {
+      addToHistory(localSearchValue.trim());
+      onSearchChange(localSearchValue);
+    }
+  }, [localSearchValue, addToHistory, onSearchChange]);
 
   // Handle refresh callback
   const handleRefresh = useCallback(async () => {
@@ -105,18 +131,24 @@ export function EmployeeCardList({
   const pullPercentage = Math.min((pullDistance / threshold) * 100, 100);
 
   return (
-    <div className="space-y-4 p-4">
-      {/* Search bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <main className="space-y-4 p-4" aria-label="Employee list">
+      {/* Search bar - Story 12.6: AC 5 - Debounced search with history */}
+      <form onSubmit={handleSearchSubmit} className="relative">
+        <label htmlFor="employee-search" className="sr-only">
+          Search employees
+        </label>
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
         <Input
+          id="employee-search"
           type="search"
           placeholder="Search employees..."
-          value={searchValue}
-          onChange={(e) => onSearchChange(e.target.value)}
+          value={localSearchValue}
+          onChange={(e) => setLocalSearchValue(e.target.value)}
           className="pl-10 h-12"
+          aria-label="Search employees by name, email, or rank"
+          // Mobile keyboard will show "Search" button when type="search"
         />
-      </div>
+      </form>
 
       {/* Pull-to-refresh container */}
       <div
@@ -126,6 +158,8 @@ export function EmployeeCardList({
         style={{
           maxHeight: 'calc(100vh - 200px)',
         }}
+        role="region"
+        aria-label="Employee cards"
       >
         {/* Pull-to-refresh indicator */}
         {(isPulling || isRefreshing) && (
@@ -189,7 +223,7 @@ export function EmployeeCardList({
 
         {/* Employee cards */}
         {employees.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-12 text-muted-foreground" role="status" aria-live="polite">
             No employees found
           </div>
         ) : shouldUseVirtualScrolling ? (
@@ -222,6 +256,7 @@ export function EmployeeCardList({
                       height: `${virtualItem.size}px`,
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
+                    role="listitem"
                   >
                     <div className="pb-3">
                       <EmployeeCard
@@ -233,6 +268,8 @@ export function EmployeeCardList({
                         onEdit={onEdit}
                         columnConfigs={columnConfigs}
                         onEmployeeUpdated={onEmployeeUpdated}
+                        cardIndex={virtualItem.index + 1}
+                        totalCards={employees.length}
                       />
                     </div>
                   </div>
@@ -242,31 +279,36 @@ export function EmployeeCardList({
           </div>
         ) : (
           // Regular rendering for smaller lists
-          <div
-            className="space-y-3"
+          <ul
+            className="space-y-3 list-none"
             style={{
               transform: isPulling && !isRefreshing
                 ? `translateY(${Math.min(pullDistance, threshold)}px)`
                 : 'translateY(0)',
               transition: isPulling ? 'none' : 'transform 0.3s ease-out',
             }}
+            role="list"
+            aria-label={`${employees.length} employee${employees.length !== 1 ? 's' : ''}`}
           >
-            {employees.map((employee) => (
-              <EmployeeCard
-                key={employee.id}
-                employee={employee}
-                isHRAdmin={isHRAdmin}
-                onArchive={onArchive}
-                onUnarchive={onUnarchive}
-                onTerminate={onTerminate}
-                onEdit={onEdit}
-                columnConfigs={columnConfigs}
-                onEmployeeUpdated={onEmployeeUpdated}
-              />
+            {employees.map((employee, index) => (
+              <li key={employee.id} role="listitem">
+                <EmployeeCard
+                  employee={employee}
+                  isHRAdmin={isHRAdmin}
+                  onArchive={onArchive}
+                  onUnarchive={onUnarchive}
+                  onTerminate={onTerminate}
+                  onEdit={onEdit}
+                  columnConfigs={columnConfigs}
+                  onEmployeeUpdated={onEmployeeUpdated}
+                  cardIndex={index + 1}
+                  totalCards={employees.length}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
-    </div>
+    </main>
   );
 }

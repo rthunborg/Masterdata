@@ -29,6 +29,8 @@ import type { ConflictResolution } from "@/lib/services/offline-sync";
 import { Plus, Upload, Columns } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
 import dynamic from "next/dynamic";
+import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 // Lazy load heavy modals for better initial bundle size (Story 12.5: Performance optimization)
 const AddEmployeeModal = dynamic(
@@ -56,6 +58,7 @@ export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { openModal, isPreviewMode } = useUIStore();
   const t = useTranslations('dashboard');
+  const isMobile = useMediaQuery('(max-width: 1023px)');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
   const tTooltips = useTranslations('tooltips');
@@ -355,6 +358,21 @@ export default function DashboardPage() {
           localData={conflictData.localData}
           serverData={conflictData.serverData}
           onResolve={handleConflictResolve}
+        />
+      )}
+
+      {/* Story 12.6: AC 4 - Floating Action Button for HR Admins on mobile */}
+      {isMobile && user?.role === "hr_admin" && (
+        <FloatingActionButton
+          onAddEmployee={() => setIsAddModalOpen(true)}
+          onImportCSV={() => setIsImportModalOpen(true)}
+          onQuickSearch={() => {
+            // Focus on search input - handled by ResponsiveEmployeeView
+            const searchInput = document.getElementById('employee-search');
+            if (searchInput) {
+              searchInput.focus();
+            }
+          }}
         />
       )}
     </div>

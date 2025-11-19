@@ -47,7 +47,12 @@ export function Header() {
           </h1>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0">
-          <span className="text-sm text-gray-600 hidden md:inline truncate max-w-[150px]">
+          {/* Mobile-only user name/email display (left of logout button) */}
+          <span className="text-sm text-gray-600 lg:hidden truncate max-w-[120px] sm:max-w-[150px]">
+            {user.email}
+          </span>
+          {/* Desktop email display */}
+          <span className="text-sm text-gray-600 hidden lg:inline truncate max-w-[150px]">
             {user.email}
           </span>
           <Badge variant="secondary" className="hidden sm:inline-flex">

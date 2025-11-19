@@ -42,6 +42,20 @@ vi.mock("@/lib/hooks/use-important-dates", () => ({
   useImportantDates: vi.fn(),
 }));
 
+// Mock useMediaQuery to default to desktop mode for these tests
+vi.mock("@/hooks/use-media-query", () => ({
+  useMediaQuery: vi.fn(() => false), // Default to desktop
+}));
+
+// Mock useLongPress hook
+vi.mock("@/hooks/use-long-press", () => ({
+  useLongPress: vi.fn(() => ({
+    onTouchStart: vi.fn(),
+    onTouchMove: vi.fn(),
+    onTouchEnd: vi.fn(),
+  })),
+}));
+
 // Helper to create test column configs
 function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnConfig {
   return {
@@ -157,7 +171,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -179,7 +193,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -226,7 +240,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -262,7 +276,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -313,7 +327,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -358,7 +372,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -398,7 +412,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {
@@ -445,7 +459,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         />
       );
 
-      const moreButton = screen.getByRole("button", { name: /more/i });
+      const moreButton = screen.getByLabelText(/Expand details/i);
       await user.click(moreButton);
 
       await waitFor(() => {

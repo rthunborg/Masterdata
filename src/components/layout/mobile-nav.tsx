@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Menu, Home, Calendar, Users, Settings } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -63,7 +64,19 @@ export function MobileNav({ user, className }: MobileNavProps) {
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] sm:w-[320px]">
         <SheetHeader>
-          <SheetTitle>Navigation</SheetTitle>
+          <SheetTitle className="flex flex-col items-center gap-2">
+            <Image
+              src="/images/stena-logo.png"
+              alt="Stena Line"
+              width={120}
+              height={40}
+              className="h-8 w-auto"
+              priority
+            />
+            <span className="text-base font-semibold text-center">
+              Säsongsrekrytering 2026
+            </span>
+          </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-2 mt-6">
           {navigationItems

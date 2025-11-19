@@ -115,7 +115,7 @@ export function ConflictResolutionDialog({
               onResolve("keep-server");
               onClose();
             }}
-            variant="outline"
+            className="border border-input bg-background hover:bg-accent hover:text-accent-foreground"
           >
             Keep Server
           </AlertDialogAction>
@@ -124,7 +124,7 @@ export function ConflictResolutionDialog({
               onResolve("merge");
               onClose();
             }}
-            variant="outline"
+            className="border border-input bg-background hover:bg-accent hover:text-accent-foreground"
           >
             Merge
           </AlertDialogAction>
