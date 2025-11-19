@@ -23,7 +23,7 @@ import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
 import { OfflineBanner } from "@/components/dashboard/offline-banner";
 import { CacheExpirationWarning } from "@/components/dashboard/cache-expiration-warning";
 import { useOfflineSync } from "@/lib/hooks/use-offline-sync";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Employee } from "@/lib/types/employee";
 import type { ConflictResolution } from "@/lib/services/offline-sync";
 import { Plus, Upload, Columns } from "lucide-react";
@@ -136,6 +136,14 @@ export default function DashboardPage() {
     }
   }, [includeArchived, includeTerminated, needsRepayment]);
 
+  // Memoize filters object to prevent infinite re-renders
+  // This ensures the filters object reference only changes when filter values actually change
+  const filters = useMemo(() => ({
+    includeArchived,
+    includeTerminated,
+    needsRepayment, // Story 8.13 AC 9
+  }), [includeArchived, includeTerminated, needsRepayment]);
+
   // Use the new real-time enabled hook with notifications
   const { 
     employees, 
@@ -144,7 +152,7 @@ export default function DashboardPage() {
     refetch,
     updatedEmployeeId
   } = useEmployees({
-    filters: { includeArchived, includeTerminated, needsRepayment }, // Story 8.13 AC 9
+    filters, // Use memoized filters object
     enableRealtime: true,
     userRole: user?.role,
     enableNotifications: user?.role !== "hr_admin", // Only enable for external parties
