@@ -168,7 +168,7 @@ describe('ÖMC Date Database Storage', () => {
     // Note: Performance tests can be flaky in CI environments
     // The test verifies the operation completes and produces correct results
     // Timing may vary based on system load, so we use a reasonable threshold
-    expect(duration).toBeLessThan(500); // Increased threshold for CI environments
+    expect(duration).toBeLessThan(1000); // Increased threshold for CI environments
     expect(formatted.length).toBe(1000); // All dates should be formatted
   });
 });

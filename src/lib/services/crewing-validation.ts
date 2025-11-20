@@ -184,3 +184,30 @@ export function getIncompleteFields(employee: Partial<Employee>): string[] {
     })
     .map((field) => FIELD_LABELS[field]);
 }
+
+/**
+ * Get array of employee IDs that meet crew ready criteria.
+ * 
+ * Story 13.5: Crew Ready Filter Auto-Selection
+ * 
+ * Crew ready criteria: All boolean fields (except `hotel_required`) = `true` AND `loneiva` has value.
+ * Uses the same logic as `canEditCrewingDone` to determine crew ready status.
+ * 
+ * @param employees - Array of employees to filter
+ * @returns Array of employee IDs that meet crew ready criteria
+ * 
+ * @example
+ * ```typescript
+ * const employees = [
+ *   { id: '1', isps: true, photo: true, origo: true, mail_lon: true, loneiva: 1, bankuppgifter: true, li: true, passport: true, kvitto_c17_18: true, c17: true },
+ *   { id: '2', isps: false, photo: true, origo: true, mail_lon: true, loneiva: 1, bankuppgifter: true, li: true, passport: true, kvitto_c17_18: true, c17: true },
+ * ];
+ * const crewReadyIds = getCrewReadyEmployeeIds(employees);
+ * // Returns: ['1']
+ * ```
+ */
+export function getCrewReadyEmployeeIds(employees: Employee[]): string[] {
+  return employees
+    .filter((employee) => canEditCrewingDone(employee))
+    .map((employee) => employee.id);
+}

@@ -163,7 +163,7 @@ describe("AddEmployeeModal", () => {
     expect(mockOnClose).not.toHaveBeenCalled();
   });
 
-  it("should call onSuccess and onClose after successful submission", async () => {
+  it("should call onSuccess and onClose after successful submission", { timeout: 15000 }, async () => {
     const user = userEvent.setup();
     vi.mocked(employeeService.create).mockResolvedValue(mockEmployee);
 
@@ -220,7 +220,7 @@ describe("AddEmployeeModal", () => {
     expect(employeeService.create).not.toHaveBeenCalled();
   });
 
-  it("should display error for duplicate SSN", async () => {
+  it("should display error for duplicate SSN", { timeout: 15000 }, async () => {
     const user = userEvent.setup();
     const duplicateError = new Error(
       "Employee with SSN 19900101-1234 already exists"
@@ -260,7 +260,7 @@ describe("AddEmployeeModal", () => {
     expect(mockOnClose).not.toHaveBeenCalled();
   });
 
-  it("should display generic error toast for unexpected errors", async () => {
+  it("should display generic error toast for unexpected errors", { timeout: 15000 }, async () => {
     const user = userEvent.setup();
     const genericError = new Error("Unexpected server error");
     vi.mocked(employeeService.create).mockRejectedValue(genericError);

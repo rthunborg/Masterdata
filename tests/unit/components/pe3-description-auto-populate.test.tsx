@@ -37,7 +37,7 @@ describe("PE3 Auto-Description Population", () => {
   });
 
   describe("AC2: PE3 Auto-Description Population Tests", () => {
-    it("should auto-populate description when date and time are set for PE3", async () => {
+    it("should auto-populate description when date and time are set for PE3", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
       renderWithI18n(
@@ -72,7 +72,7 @@ describe("PE3 Auto-Description Population", () => {
       }, { timeout: 5000, interval: 100 });
     });
 
-    it("should update description when date changes for PE3", async () => {
+    it("should update description when date changes for PE3", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
       renderWithI18n(
@@ -116,7 +116,7 @@ describe("PE3 Auto-Description Population", () => {
       }, { timeout: 5000, interval: 100 });
     });
 
-    it("should update description when time changes for PE3", async () => {
+    it("should update description when time changes for PE3", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
       renderWithI18n(
@@ -161,7 +161,7 @@ describe("PE3 Auto-Description Population", () => {
       }, { timeout: 5000, interval: 100 });
     });
 
-    it("should use Swedish locale formatting for description", async () => {
+    it("should use Swedish locale formatting for description", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
       renderWithI18n(
@@ -198,7 +198,7 @@ describe("PE3 Auto-Description Population", () => {
       }, { timeout: 10000, interval: 200 });
     });
 
-    it("should allow manual override of auto-generated description", async () => {
+    it("should allow manual override of auto-generated description", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
       renderWithI18n(

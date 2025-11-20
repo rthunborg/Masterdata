@@ -1,0 +1,402 @@
+/**
+ * Integration Tests for Crew Ready Auto-Selection
+ * Story 13.5: Crew Ready Filter Auto-Selection
+ * 
+ * Tests verify:
+ * 1. Crew ready filter activates and selects employees
+ * 2. Selected employees show greyish tint
+ * 3. Checkboxes are checked for selected employees
+ * 4. Switching filters clears selection
+ * 5. Employee count display shows correct number
+ */
+
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
+import { EmployeeTable } from '@/components/dashboard/employee-table';
+import type { Employee } from '@/lib/types/employee';
+import { UserRole } from '@/lib/types/user';
+import { getCrewReadyEmployeeIds } from '@/lib/services/crewing-validation';
+
+// Mock services
+vi.mock('@/lib/services/employee-service', () => ({
+  employeeService: {
+    update: vi.fn(() => Promise.resolve({})),
+  },
+}));
+
+vi.mock('@/lib/services/custom-data-service', () => ({
+  customDataService: {
+    updateCustomData: vi.fn(() => Promise.resolve({})),
+  },
+}));
+
+// Mock the auth hook
+vi.mock('@/lib/hooks/use-auth', () => ({
+  useAuth: vi.fn(() => ({
+    user: {
+      id: '1',
+      email: 'hr@example.com',
+      role: UserRole.HR_ADMIN,
+    },
+    isAuthenticated: true,
+    isLoading: false,
+  })),
+}));
+
+// Mock Supabase client
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: vi.fn(() => ({
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
+    })),
+    channel: vi.fn(() => ({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+    })),
+    removeChannel: vi.fn(),
+  })),
+}));
+
+// Mock fetch
+global.fetch = vi.fn();
+
+// Mock columns hook
+vi.mock('@/lib/hooks/use-columns', () => ({
+  useColumns: vi.fn(() => ({
+    columns: [
+      { 
+        id: 'first_name', 
+        column_name: 'First Name', 
+        column_type: 'text', 
+        is_masterdata: true, 
+        category: null, 
+        is_visible: true,
+        role_permissions: {
+          hr_admin: { view: true, edit: true },
+        },
+        created_at: '2025-01-01T00:00:00Z',
+        db_column_name: 'first_name',
+        category_color: '#FFFFFF',
+        display_order: 0,
+        updated_at: new Date().toISOString(),
+      },
+    ],
+    isLoading: false,
+    error: null,
+  })),
+}));
+
+// Mock important dates hook
+vi.mock('@/lib/hooks/use-important-dates', () => ({
+  useImportantDates: vi.fn(() => ({
+    dates: [],
+    isLoading: false,
+    error: null,
+  })),
+}));
+
+// Mock UI store
+vi.mock('@/lib/store/ui-store', () => ({
+  useUIStore: vi.fn(() => ({
+    previewRole: null,
+    isPreviewMode: false,
+    columnVisibility: {},
+    initColumnVisibility: vi.fn(),
+    toggleColumnVisibility: vi.fn(),
+    resetColumnVisibility: vi.fn(),
+  })),
+}));
+
+// Mock network status
+vi.mock('@/lib/hooks/use-network-status', () => ({
+  useNetworkStatus: vi.fn(() => ({
+    isOnline: true,
+  })),
+}));
+
+// Mock mutation queue
+vi.mock('@/lib/services/mutation-queue', () => ({
+  mutationQueueService: {
+    getPendingMutations: vi.fn(() => Promise.resolve([])),
+  },
+}));
+
+// Mock translations
+vi.mock('@/lib/i18n', () => ({
+  useTranslations: vi.fn(() => (key: string) => key),
+}));
+
+// Create mock employees
+const createCrewReadyEmployee = (id: string, overrides: Partial<Employee> = {}): Employee => ({
+  id,
+  first_name: 'John',
+  surname: 'Doe',
+  ssn: '123456-7890',
+  email: 'john@example.com',
+  mobile: '+46701234567',
+  rank: 'SEV',
+  gender: 'Man',
+  town_district: 'Stockholm',
+  hire_date: '2025-01-15',
+  stena_date: null,
+  omc_date: null,
+  pe3_date: null,
+  termination_date: null,
+  termination_reason: null,
+  is_terminated: false,
+  is_archived: false,
+  repayment_needed_omc: null,
+  repayment_needed_pe3: null,
+  one: null,
+  one_marked_at: null,
+  talmundo: null,
+  isps: true,
+  photo: true,
+  origo: true,
+  loneiva: 1,
+  mail_lon: true,
+  bankuppgifter: true,
+  li: true,
+  passport: true,
+  kvitto_c17_18: true,
+  c17: true,
+  crewing_done: true,
+  comments: null,
+  created_at: '2025-01-01T00:00:00Z',
+  updated_at: '2025-01-01T00:00:00Z',
+  ...overrides,
+});
+
+const createNonCrewReadyEmployee = (id: string, overrides: Partial<Employee> = {}): Employee => ({
+  ...createCrewReadyEmployee(id),
+  isps: false, // Missing prerequisite
+  crewing_done: false,
+  ...overrides,
+});
+
+describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
+  const mockOnEmployeeUpdated = vi.fn();
+  const mockOnIncludeArchivedChange = vi.fn();
+  const mockOnIncludeTerminatedChange = vi.fn();
+  const mockOnNeedsRepaymentChange = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should auto-select crew ready employees when filter is activated', { timeout: 15000 }, async () => {
+    const crewReady1 = createCrewReadyEmployee('1');
+    const crewReady2 = createCrewReadyEmployee('2');
+    const nonCrewReady = createNonCrewReadyEmployee('3');
+    const employees = [crewReady1, crewReady2, nonCrewReady];
+
+    renderWithI18n(
+      <EmployeeTable
+        employees={employees}
+        isLoading={false}
+        onEmployeeUpdated={mockOnEmployeeUpdated}
+        includeArchived={false}
+        onIncludeArchivedChange={mockOnIncludeArchivedChange}
+        includeTerminated={false}
+        onIncludeTerminatedChange={mockOnIncludeTerminatedChange}
+        needsRepayment={false}
+        onNeedsRepaymentChange={mockOnNeedsRepaymentChange}
+      />
+    );
+
+    // Find the crew ready filter select
+    const filterSelect = screen.getByTestId('crew-status-filter');
+    
+    // Activate crew ready filter
+    fireEvent.click(filterSelect);
+    const crewReadyOption = screen.getByText('Crew Ready');
+    fireEvent.click(crewReadyOption);
+
+    // Wait for auto-selection to occur
+    await waitFor(() => {
+      const table = screen.getByRole('table');
+      const checkboxes = within(table).getAllByRole('checkbox');
+      // First two checkboxes (crew ready employees) should be checked
+      expect(checkboxes[0]).toBeChecked();
+      expect(checkboxes[1]).toBeChecked();
+      // Non-crew ready employee should be filtered out
+      expect(checkboxes).toHaveLength(2);
+    });
+  });
+
+  it('should show greyish tint on selected employees', async () => {
+    const crewReady1 = createCrewReadyEmployee('1');
+    const employees = [crewReady1];
+
+    renderWithI18n(
+      <EmployeeTable
+        employees={employees}
+        isLoading={false}
+        onEmployeeUpdated={mockOnEmployeeUpdated}
+        includeArchived={false}
+        onIncludeArchivedChange={mockOnIncludeArchivedChange}
+        includeTerminated={false}
+        onIncludeTerminatedChange={mockOnIncludeTerminatedChange}
+        needsRepayment={false}
+        onNeedsRepaymentChange={mockOnNeedsRepaymentChange}
+      />
+    );
+
+    // Activate crew ready filter
+    const filterSelect = screen.getByTestId('crew-status-filter');
+    fireEvent.click(filterSelect);
+    const crewReadyOption = screen.getByText('Crew Ready');
+    fireEvent.click(crewReadyOption);
+
+    // Wait for selection and check styling
+    await waitFor(() => {
+      const row = screen.getByTestId('employee-row-1');
+      expect(row).toHaveClass(/bg-gray-100/);
+    });
+  });
+
+  it('should display employee count when employees are selected', async () => {
+    const crewReady1 = createCrewReadyEmployee('1');
+    const crewReady2 = createCrewReadyEmployee('2');
+    const employees = [crewReady1, crewReady2];
+
+    renderWithI18n(
+      <EmployeeTable
+        employees={employees}
+        isLoading={false}
+        onEmployeeUpdated={mockOnEmployeeUpdated}
+        includeArchived={false}
+        onIncludeArchivedChange={mockOnIncludeArchivedChange}
+        includeTerminated={false}
+        onIncludeTerminatedChange={mockOnIncludeTerminatedChange}
+        needsRepayment={false}
+        onNeedsRepaymentChange={mockOnNeedsRepaymentChange}
+      />
+    );
+
+    // Activate crew ready filter
+    const filterSelect = screen.getByTestId('crew-status-filter');
+    fireEvent.click(filterSelect);
+    const crewReadyOption = screen.getByText('Crew Ready');
+    fireEvent.click(crewReadyOption);
+
+    // Wait for count display
+    await waitFor(() => {
+      const countDisplay = screen.getByText(/export \(2\)/i);
+      expect(countDisplay).toBeInTheDocument();
+    });
+  });
+
+  it('should clear selection when switching to another filter', async () => {
+    const crewReady1 = createCrewReadyEmployee('1');
+    const employees = [crewReady1];
+
+    const { rerender } = renderWithI18n(
+      <EmployeeTable
+        employees={employees}
+        isLoading={false}
+        onEmployeeUpdated={mockOnEmployeeUpdated}
+        includeArchived={false}
+        onIncludeArchivedChange={mockOnIncludeArchivedChange}
+        includeTerminated={false}
+        onIncludeTerminatedChange={mockOnIncludeTerminatedChange}
+        needsRepayment={false}
+        onNeedsRepaymentChange={mockOnNeedsRepaymentChange}
+      />
+    );
+
+    // Activate crew ready filter
+    const filterSelect = screen.getByTestId('crew-status-filter');
+    fireEvent.click(filterSelect);
+    const crewReadyOption = screen.getByText('Crew Ready');
+    fireEvent.click(crewReadyOption);
+
+    // Wait for selection
+    await waitFor(() => {
+      const table = screen.getByRole('table');
+      const checkbox = within(table).getAllByRole('checkbox')[0];
+      expect(checkbox).toBeChecked();
+    });
+
+    // Activate terminated filter (should clear selection and deactivate crew ready filter)
+    // Simulate parent updating the prop
+    rerender(
+      <EmployeeTable
+        employees={employees}
+        isLoading={false}
+        onEmployeeUpdated={mockOnEmployeeUpdated}
+        includeArchived={false}
+        onIncludeArchivedChange={mockOnIncludeArchivedChange}
+        includeTerminated={true}
+        onIncludeTerminatedChange={mockOnIncludeTerminatedChange}
+        needsRepayment={false}
+        onNeedsRepaymentChange={mockOnNeedsRepaymentChange}
+      />
+    );
+
+    // Wait for selection to clear
+    await waitFor(() => {
+      const table = screen.getByRole('table');
+      const checkbox = within(table).getAllByRole('checkbox')[0];
+      expect(checkbox).not.toBeChecked();
+    });
+
+    // Crew ready filter should be deactivated (back to "All Employees")
+    await waitFor(() => {
+      const filterSelect = screen.getByTestId('crew-status-filter');
+      expect(filterSelect).toHaveTextContent(/all employees/i);
+    });
+  });
+
+  it('should allow manual selection override when crew ready filter is active', async () => {
+    const crewReady1 = createCrewReadyEmployee('1');
+    const crewReady2 = createCrewReadyEmployee('2');
+    const employees = [crewReady1, crewReady2];
+
+    renderWithI18n(
+      <EmployeeTable
+        employees={employees}
+        isLoading={false}
+        onEmployeeUpdated={mockOnEmployeeUpdated}
+        includeArchived={false}
+        onIncludeArchivedChange={mockOnIncludeArchivedChange}
+        includeTerminated={false}
+        onIncludeTerminatedChange={mockOnIncludeTerminatedChange}
+        needsRepayment={false}
+        onNeedsRepaymentChange={mockOnNeedsRepaymentChange}
+      />
+    );
+
+    // Activate crew ready filter
+    const filterSelect = screen.getByTestId('crew-status-filter');
+    fireEvent.click(filterSelect);
+    const crewReadyOption = screen.getByText('Crew Ready');
+    fireEvent.click(crewReadyOption);
+
+    // Wait for auto-selection
+    await waitFor(() => {
+      const table = screen.getByRole('table');
+      const checkboxes = within(table).getAllByRole('checkbox');
+      expect(checkboxes[0]).toBeChecked();
+      expect(checkboxes[1]).toBeChecked();
+    });
+
+    // Manually uncheck first employee
+    const table = screen.getByRole('table');
+    const checkboxes = within(table).getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+
+    // First should be unchecked, second should remain checked
+    await waitFor(() => {
+      const currentCheckboxes = within(table).getAllByRole('checkbox');
+      expect(currentCheckboxes[0]).not.toBeChecked();
+      expect(currentCheckboxes[1]).toBeChecked();
+    });
+  });
+});

@@ -22,7 +22,10 @@ describe("shouldUpdateActivity", () => {
   });
 
   it("should return false when exactly at 5 minute threshold", () => {
-    const exactlyFiveMinutes = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const now = 1600000000000;
+    vi.spyOn(Date, 'now').mockReturnValue(now);
+    const exactlyFiveMinutes = new Date(now - 5 * 60 * 1000).toISOString();
     expect(shouldUpdateActivity(exactlyFiveMinutes)).toBe(false);
+    vi.restoreAllMocks();
   });
 });

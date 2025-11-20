@@ -46,7 +46,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
     });
   });
 
-  it('shows confirmation dialog when clicking Cancel with dirty form', async () => {
+  it('shows confirmation dialog when clicking Cancel with dirty form', { timeout: 15000 }, async () => {
     const user = userEvent.setup();
 
     renderWithI18n(

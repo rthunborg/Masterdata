@@ -158,9 +158,9 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
     expect(screen.getByText("SSN")).toBeInTheDocument();
     expect(screen.getByText("Email")).toBeInTheDocument();
 
-    // Verify column count (4 data columns + 1 Actions column for HR Admin)
+    // Verify column count (Selection + 4 data columns + Actions column for HR Admin)
     const headers = screen.getAllByRole("columnheader");
-    expect(headers).toHaveLength(5); // 4 data columns + Actions
+    expect(headers).toHaveLength(6); // Selection + 4 data columns + Actions
   });
 
   it("should render only permitted columns for Sodexo role", () => {
@@ -247,7 +247,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
 
     // Verify columns are absent from DOM, not just hidden
     const headers = screen.getAllByRole("columnheader");
-    expect(headers).toHaveLength(3); // Only 3 columns in DOM
+    expect(headers).toHaveLength(4); // Selection + 3 columns in DOM
   });
 
   it("should render SSN for Payroll role but not Mobile", () => {

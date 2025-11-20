@@ -99,126 +99,79 @@ describe('Dashboard Mobile Button Tests (AC1)', () => {
     });
   });
 
-  it('AC1: Add Employee button fits within screen width on 320px viewport', () => {
-    setViewportSize(VIEWPORTS.mobileSmall.width, VIEWPORTS.mobileSmall.height);
-    
-    const { container } = renderWithI18n(<DashboardPage />);
-    
-    const addButton = screen.getByRole('button', { name: /Lägg till anställd|Add Employee/i });
-    const buttonRect = addButton.getBoundingClientRect();
-    
-    expect(buttonRect.width).toBeLessThanOrEqual(320);
-    expect(buttonRect.left).toBeGreaterThanOrEqual(0);
-    expect(buttonRect.right).toBeLessThanOrEqual(320);
-  });
-
-  it('AC1: Import Employee button fits within screen width on 375px viewport', () => {
-    setViewportSize(VIEWPORTS.mobile.width, VIEWPORTS.mobile.height);
-    
-    const { container } = renderWithI18n(<DashboardPage />);
-    
-    const importButton = screen.getByRole('button', { name: /Importera anställda|Import Employees/i });
-    const buttonRect = importButton.getBoundingClientRect();
-    
-    expect(buttonRect.width).toBeLessThanOrEqual(375);
-    expect(buttonRect.left).toBeGreaterThanOrEqual(0);
-    expect(buttonRect.right).toBeLessThanOrEqual(375);
-  });
-
-  it('AC1: Buttons stack vertically on mobile (<640px)', () => {
+  it('AC1: FAB is visible on mobile (<1024px) and desktop buttons are hidden', () => {
     setViewportSize(375, 667); // Mobile viewport
     
     const { container } = renderWithI18n(<DashboardPage />);
     
-    // Find button container - should have flex-col on mobile
-    // The container uses: flex flex-col sm:flex-row gap-2
-    const buttonContainer = container.querySelector('.flex-col, [class*="flex-col"]');
+    // Check that FAB is present (it has aria-label="Open quick actions menu" or similar, 
+    // but looking at the implementation of FloatingActionButton, the main button doesn't have an aria-label in the provided snippet.
+    // Wait, let's check FloatingActionButton implementation again.
+    // It renders a div with class 'fixed bottom-6 right-6 z-50'.
+    // Inside it, there is a button.
     
-    // Check if container has flex-col class (mobile layout)
-    if (buttonContainer) {
-      const hasFlexCol = buttonContainer.classList.contains('flex-col') || 
-                        buttonContainer.className.includes('flex-col');
-      expect(hasFlexCol).toBeTruthy();
-    }
+    // Let's look for the FAB by its icon or class if aria-label is missing.
+    // The snippet showed:
+    // <button ... aria-label="Open quick actions menu" ...>
+    // So it DOES have an aria-label.
     
-    // Alternative: Check if buttons are positioned vertically
-    const buttons = screen.getAllByRole('button').filter(btn => 
-      btn.textContent?.includes('Lägg till') || btn.textContent?.includes('Importera') ||
-      btn.textContent?.includes('Add Employee') || btn.textContent?.includes('Import Employees')
-    );
+    const fab = screen.getByLabelText('Open quick actions menu');
+    expect(fab).toBeInTheDocument();
     
-    if (buttons.length >= 2) {
-      const firstButton = buttons[0];
-      const secondButton = buttons[1];
-      const firstRect = firstButton.getBoundingClientRect();
-      const secondRect = secondButton.getBoundingClientRect();
-      
-      // On mobile, second button should be below first (vertical stacking)
-      // Allow for small tolerance (1px) for edge cases where buttons are exactly adjacent
-      expect(secondRect.top).toBeGreaterThanOrEqual(firstRect.bottom - 1);
-    }
+    // Check that desktop buttons are NOT present
+    const addEmployeeDesktop = screen.queryByText('Lägg till anställd');
+    const importEmployeeDesktop = screen.queryByText('Importera anställda');
+    
+    expect(addEmployeeDesktop).not.toBeInTheDocument();
+    expect(importEmployeeDesktop).not.toBeInTheDocument();
   });
 
-  it('AC1: Buttons have proper spacing (gap-2 on mobile, gap-4 on desktop)', () => {
-    // Test mobile spacing
-    setViewportSize(375, 667);
-    const { container: mobileContainer } = renderWithI18n(<DashboardPage />);
-    
-    // Find button container - should have gap-2 class on mobile
-    const mobileButtonContainer = mobileContainer.querySelector('[class*="gap"]');
-    if (mobileButtonContainer) {
-      // Check for Tailwind gap classes directly (gap-2 or gap-4)
-      const hasGapClass = mobileButtonContainer.classList.contains('gap-2') || 
-                         mobileButtonContainer.classList.contains('gap-4') ||
-                         mobileButtonContainer.className.includes('gap-2') ||
-                         mobileButtonContainer.className.includes('gap-4');
-      expect(hasGapClass).toBeTruthy();
-    }
-    
-    // Test desktop spacing
-    setViewportSize(VIEWPORTS.desktop.width, VIEWPORTS.desktop.height);
-    const { container: desktopContainer } = renderWithI18n(<DashboardPage />);
-    
-    const desktopButtonContainer = desktopContainer.querySelector('[class*="gap"]');
-    if (desktopButtonContainer) {
-      // Check for Tailwind gap classes directly
-      const hasGapClass = desktopButtonContainer.classList.contains('gap-2') || 
-                         desktopButtonContainer.classList.contains('gap-4') ||
-                         desktopButtonContainer.className.includes('gap-2') ||
-                         desktopButtonContainer.className.includes('gap-4');
-      expect(hasGapClass).toBeTruthy();
-    }
-  });
-
-  it('AC1: No horizontal overflow on narrow screens', () => {
-    setViewportSize(320, 568); // Narrowest mobile viewport
+  it('AC1: Desktop buttons are visible on desktop (>=1024px)', () => {
+    setViewportSize(1280, 800); // Desktop viewport
     
     const { container } = renderWithI18n(<DashboardPage />);
     
-    // Check main container for overflow
-    const mainContainer = container.querySelector('.px-4, [class*="container"]') || container;
-    expect(() => assertNoOverflow(mainContainer as HTMLElement)).not.toThrow();
+    // Check that FAB is NOT present
+    const fab = screen.queryByLabelText('Open quick actions menu');
+    expect(fab).not.toBeInTheDocument();
     
-    // Check button container specifically
-    const buttonContainer = container.querySelector('.flex-col, .flex-row, [class*="flex"]');
-    if (buttonContainer) {
-      expect(() => assertNoOverflow(buttonContainer as HTMLElement)).not.toThrow();
-    }
-  });
-
-  it('AC1: Buttons fit within screen width on 768px viewport', () => {
-    setViewportSize(768, 1024); // Tablet viewport
-    
-    const { container } = renderWithI18n(<DashboardPage />);
+    // Check that desktop buttons ARE present
+    // Note: The text might be different depending on translation mock.
+    // The test wrapper uses a mock translation.
+    // Let's assume the keys are 'addEmployee' and 'importEmployees'.
+    // If renderWithI18n uses real translations or a specific mock, we need to match that.
+    // The previous tests used regex /Lägg till anställd|Add Employee/i.
     
     const addButton = screen.getByRole('button', { name: /Lägg till anställd|Add Employee/i });
     const importButton = screen.getByRole('button', { name: /Importera anställda|Import Employees/i });
     
-    const addRect = addButton.getBoundingClientRect();
-    const importRect = importButton.getBoundingClientRect();
+    expect(addButton).toBeInTheDocument();
+    expect(importButton).toBeInTheDocument();
+  });
+
+  it('AC1: FAB menu items are accessible when opened', async () => {
+    setViewportSize(375, 667); // Mobile viewport
+    const user = {
+      setup: () => {}, // Mock user event setup if needed, but we can use fireEvent
+    };
     
-    expect(addRect.right).toBeLessThanOrEqual(768);
-    expect(importRect.right).toBeLessThanOrEqual(768);
+    const { container } = renderWithI18n(<DashboardPage />);
+    
+    const fab = screen.getByLabelText('Open quick actions menu');
+    
+    // Click FAB to open menu
+    // We need to import fireEvent
+    const { fireEvent } = await import('@testing-library/react');
+    fireEvent.click(fab);
+    
+    // Now the menu items should be visible
+    // The FAB implementation shows buttons with aria-label "Add Employee", "Import CSV", "Quick Search"
+    
+    const addEmployeeFab = screen.getByLabelText('Add Employee');
+    const importCsvFab = screen.getByLabelText('Import CSV');
+    
+    expect(addEmployeeFab).toBeInTheDocument();
+    expect(importCsvFab).toBeInTheDocument();
   });
 });
 

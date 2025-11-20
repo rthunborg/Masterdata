@@ -45,6 +45,27 @@ export function EmployeeCardList({
   // Only enable pull-to-refresh on mobile devices (< 1024px)
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
+  // Story 13.3: Employee selection state management
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<Set<string>>(new Set());
+
+  // Story 13.3: Toggle employee selection
+  const toggleEmployeeSelection = useCallback((id: string) => {
+    setSelectedEmployeeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  // Story 13.3: Check if employee is selected
+  const isEmployeeSelected = useCallback((id: string) => {
+    return selectedEmployeeIds.has(id);
+  }, [selectedEmployeeIds]);
+
   // Story 12.6: AC 5 - Search debouncing and history
   const [localSearchValue, setLocalSearchValue] = useState(searchValue);
   const debouncedSearchValue = useDebounce(localSearchValue, 300);
@@ -74,7 +95,7 @@ export function EmployeeCardList({
     if (!onEmployeeUpdated) {
       return;
     }
-    
+
     // Call the refetch function and await it if it returns a Promise
     const result = onEmployeeUpdated();
     if (result instanceof Promise) {
@@ -108,7 +129,7 @@ export function EmployeeCardList({
   // Virtual scrolling setup (Story 12.5: Performance optimization)
   // Must be after usePullToRefresh to access containerRef
   const shouldUseVirtualScrolling = employees.length > 100;
-  
+
   const virtualizer = useVirtualizer({
     count: employees.length,
     getScrollElement: () => containerRef.current,
@@ -270,6 +291,8 @@ export function EmployeeCardList({
                         onEmployeeUpdated={onEmployeeUpdated}
                         cardIndex={virtualItem.index + 1}
                         totalCards={employees.length}
+                        isSelected={isEmployeeSelected(employee.id)}
+                        onToggleSelection={toggleEmployeeSelection}
                       />
                     </div>
                   </div>
@@ -303,6 +326,8 @@ export function EmployeeCardList({
                   onEmployeeUpdated={onEmployeeUpdated}
                   cardIndex={index + 1}
                   totalCards={employees.length}
+                  isSelected={isEmployeeSelected(employee.id)}
+                  onToggleSelection={() => toggleEmployeeSelection(employee.id)}
                 />
               </li>
             ))}

@@ -11,27 +11,51 @@ export const runtime = 'nodejs';
 /**
  * POST /api/employees/export-crew-ready
  * 
- * Export all employees who have all prerequisites met for Crewing/Done
+ * Export selected employees who have all prerequisites met for Crewing/Done
  * but currently have crewing_done = false or null.
  * After export, mark all exported employees as crewing_done = true.
  * 
  * Story 8.5: Crewing/Done Field Conditional Logic - Export Enhancement
+ * Story 13.4: Export Only Selected Employees
  */
-export async function POST() {
+export async function POST(request: Request) {
   try {
     // Verify HR Admin role
     await requireHRAdminAPI();
 
-    // Fetch all employees (excluding archived and terminated)
+    // Parse request body to get selected employee IDs
+    const body = await request.json();
+    const { selectedEmployeeIds } = body;
+
+    // Validate: If selectedEmployeeIds is empty, return error message
+    if (!selectedEmployeeIds || !Array.isArray(selectedEmployeeIds) || selectedEmployeeIds.length === 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "NO_EMPLOYEES_SELECTED",
+            message: "No employees selected. Please select employees to export.",
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Fetch selected employees (excluding archived and terminated)
     const allEmployees = await employeeRepository.findAll({
       includeArchived: false,
       includeTerminated: false,
     });
 
-    // Filter employees who:
+    // Filter by selected IDs first
+    const selectedEmployees = allEmployees.filter((emp: Employee) =>
+      selectedEmployeeIds.includes(emp.id)
+    );
+
+    // Then filter employees who:
     // 1. Have all prerequisites met (canEditCrewingDone returns true)
     // 2. Have crewing_done = false or null
-    const eligibleEmployees = allEmployees.filter((emp: Employee) => {
+    const eligibleEmployees = selectedEmployees.filter((emp: Employee) => {
       return canEditCrewingDone(emp) && emp.crewing_done !== true;
     });
 
@@ -40,7 +64,7 @@ export async function POST() {
         {
           error: {
             code: "NO_ELIGIBLE_EMPLOYEES",
-            message: "No employees found with all prerequisites met and crewing_done not yet marked",
+            message: "No selected employees found with all prerequisites met and crewing_done not yet marked",
             timestamp: new Date().toISOString(),
           },
         },

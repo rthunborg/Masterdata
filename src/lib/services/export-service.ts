@@ -47,10 +47,10 @@ export function exportImportantDates(dates: ImportantDate[]): void {
     const dateValue = isOMCDate(date.category)
       ? formatOMCDate(date.date_value, 'sv-SE')
       : date.date_value;
-    
+
     // Story 8.10: Format time for PE3 dates
     const timeValue = formatTimeDisplay(date.time_value);
-    
+
     return [
       date.week_number ?? '',
       date.year,
@@ -70,12 +70,13 @@ export function exportImportantDates(dates: ImportantDate[]): void {
   const csvContent = generateCSV(headers, rows);
   const timestamp = new Date().toISOString().split('T')[0];
   const filename = `important_dates_${timestamp}.csv`;
-  
+
   downloadCSV(csvContent, filename);
 }
 
 /**
  * Options for category-based employee export
+ * Story 13.4: Added selectedEmployeeIds to support exporting only selected employees
  */
 export interface CategoryExportOptions {
   category: 'Stena Dates' | 'ÖMC Dates' | 'PE3 Dates';
@@ -83,6 +84,7 @@ export interface CategoryExportOptions {
   dateTo?: string;
   selectedFields: string[];
   fieldDefinitions: ExportField[];
+  selectedEmployeeIds?: string[]; // Story 13.4: Optional - filter by selected employee IDs
 }
 
 /**
@@ -97,12 +99,13 @@ const CATEGORY_TO_FIELD_MAP = {
 /**
  * Export employees assigned to dates within a specific category (AC 13-19)
  * Includes date range filtering and custom field selection
+ * Story 13.4: Added support for filtering by selected employee IDs
  */
 export async function exportEmployeesByCategory(
   options: CategoryExportOptions
 ): Promise<void> {
-  const { category, dateFrom, dateTo, selectedFields, fieldDefinitions } = options;
-  
+  const { category, dateFrom, dateTo, selectedFields, fieldDefinitions, selectedEmployeeIds } = options;
+
   const supabase = createClient();
   const dateField = CATEGORY_TO_FIELD_MAP[category];
 
@@ -118,6 +121,11 @@ export async function exportEmployeesByCategory(
     .from('employees')
     .select(selectFields)
     .not(dateField, 'is', null);
+
+  // Story 13.4: Filter by selected employee IDs if provided
+  if (selectedEmployeeIds && selectedEmployeeIds.length > 0) {
+    query = query.in('id', selectedEmployeeIds);
+  }
 
   // Apply date range filter if provided
   if (dateFrom && dateTo) {
@@ -135,7 +143,11 @@ export async function exportEmployeesByCategory(
     throw new Error(`Failed to fetch employees: ${error.message}`);
   }
 
+  // Story 13.4: Ensure error handling for empty selection
   if (!employees || employees.length === 0) {
+    if (selectedEmployeeIds && selectedEmployeeIds.length > 0) {
+      throw new Error('No selected employees found for the selected criteria');
+    }
     throw new Error('No employees found for the selected criteria');
   }
 
@@ -144,7 +156,7 @@ export async function exportEmployeesByCategory(
     const field = fieldDefinitions.find(f => f.key === fieldKey);
     return field?.label || fieldKey;
   });
-  
+
   const headers = [
     ...fieldLabels,
     'Assigned Date Description',
@@ -157,7 +169,7 @@ export async function exportEmployeesByCategory(
     const fieldValues = selectedFields.map(fieldKey => {
       const field = fieldDefinitions.find(f => f.key === fieldKey);
       const value = emp[fieldKey as keyof typeof emp];
-      
+
       // Format based on field type
       if (field?.type === 'date' && value) {
         return formatDateForCSV(value as string);
@@ -182,7 +194,7 @@ export async function exportEmployeesByCategory(
 
   const csvContent = generateCSV(headers, rows);
   const filename = getCategoryExportFilename(category, dateFrom, dateTo);
-  
+
   downloadCSV(csvContent, filename);
 }
 

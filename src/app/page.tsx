@@ -2,6 +2,7 @@ import { Link } from '@/lib/navigation';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { t } from '@/lib/i18n';
+import { BackgroundImagePreload } from '@/components/background-image-preload';
 
 export default function Home() {
   return (
@@ -9,9 +10,12 @@ export default function Home() {
       className="relative flex min-h-screen items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/images/stena-bg.jpg')" }}
     >
+      {/* Preload background image with high priority */}
+      <BackgroundImagePreload src="/images/stena-bg.jpg" />
+
       {/* Dark overlay for text contrast */}
       <div className="absolute inset-0 bg-black/50 -z-10" />
-      
+
       <main className="relative w-full max-w-2xl px-6 py-12">
         <Card className="p-8 md:p-12 shadow-lg bg-white">
           <div className="space-y-6">

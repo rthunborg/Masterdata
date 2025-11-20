@@ -64,7 +64,7 @@ export default function DashboardPage() {
   const tTooltips = useTranslations('tooltips');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  
+
   // Initialize filter state from session storage
   const [includeArchived, setIncludeArchived] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -76,7 +76,7 @@ export default function DashboardPage() {
     }
     return false;
   });
-  
+
   const [includeTerminated, setIncludeTerminated] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = sessionStorage.getItem('employeeFilters');
@@ -87,7 +87,7 @@ export default function DashboardPage() {
     }
     return false;
   });
-  
+
   // Story 8.13 AC 9: Add needsRepayment filter
   const [needsRepayment, setNeedsRepayment] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -99,7 +99,7 @@ export default function DashboardPage() {
     }
     return false;
   });
-  
+
   const [globalFilter, setGlobalFilter] = useState("");
 
   // Story 12.3: Conflict resolution state
@@ -124,6 +124,44 @@ export default function DashboardPage() {
       setConflictData(null);
     }
   }, [conflictData]);
+
+  // Story 13.1: Filter handlers with mutually exclusive behavior
+  // When one filter is checked, uncheck the others
+  const onIncludeArchivedChange = useCallback((checked: boolean) => {
+    if (checked) {
+      // Activating archived filter: deactivate others
+      setIncludeArchived(true);
+      setIncludeTerminated(false);
+      setNeedsRepayment(false);
+    } else {
+      // Deactivating: just set this one to false
+      setIncludeArchived(false);
+    }
+  }, []);
+
+  const onIncludeTerminatedChange = useCallback((checked: boolean) => {
+    if (checked) {
+      // Activating terminated filter: deactivate others
+      setIncludeTerminated(true);
+      setIncludeArchived(false);
+      setNeedsRepayment(false);
+    } else {
+      // Deactivating: just set this one to false
+      setIncludeTerminated(false);
+    }
+  }, []);
+
+  const onNeedsRepaymentChange = useCallback((checked: boolean) => {
+    if (checked) {
+      // Activating repayment filter: deactivate others
+      setNeedsRepayment(true);
+      setIncludeArchived(false);
+      setIncludeTerminated(false);
+    } else {
+      // Deactivating: just set this one to false
+      setNeedsRepayment(false);
+    }
+  }, []);
 
   // Save filter state to session storage
   useEffect(() => {
@@ -215,13 +253,13 @@ export default function DashboardPage() {
     <div className="px-4 sm:px-0">
       {/* Offline Banner - Shows when offline (Story 12.3) */}
       <OfflineBanner />
-      
+
       {/* Cache Expiration Warning (Story 12.3) */}
       <CacheExpirationWarning />
-      
+
       {/* Role Preview Banner - Shows at top when in preview mode */}
       <RolePreviewBanner />
-      
+
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">{t('title')}</h2>
@@ -319,11 +357,11 @@ export default function DashboardPage() {
               isHRAdmin={user?.role === "hr_admin"}
               onEmployeeUpdated={refetch}
               includeArchived={includeArchived}
-              onIncludeArchivedChange={setIncludeArchived}
+              onIncludeArchivedChange={onIncludeArchivedChange}
               includeTerminated={includeTerminated}
-              onIncludeTerminatedChange={setIncludeTerminated}
+              onIncludeTerminatedChange={onIncludeTerminatedChange}
               needsRepayment={needsRepayment}
-              onNeedsRepaymentChange={setNeedsRepayment}
+              onNeedsRepaymentChange={onNeedsRepaymentChange}
               updatedEmployeeId={updatedEmployeeId}
               onGlobalFilterChange={setGlobalFilter}
             />
@@ -344,7 +382,7 @@ export default function DashboardPage() {
       />
 
       <AddColumnModal onColumnCreated={handleColumnCreated} />
-      
+
       <EditColumnModal />
 
       {/* Story 12.3: Conflict Resolution Dialog */}

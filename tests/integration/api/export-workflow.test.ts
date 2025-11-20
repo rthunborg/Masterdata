@@ -117,9 +117,10 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: [eligibleEmployee.id] }),
     });
 
-    const response = await POST();
+    const response = await POST(request);
     const csvText = await response.text();
 
     expect(response.status).toBe(200);
@@ -128,7 +129,7 @@ describe("POST /api/employees/export-crew-ready", () => {
     expect(csvText).toContain("John");
     expect(csvText).toContain("Doe");
     expect(csvText).toContain("123456-7890");
-    
+
     // Verify employee was marked as crewing_done = true
     expect(employeeRepository.update).toHaveBeenCalledWith("emp-1", { crewing_done: true });
   });
@@ -156,9 +157,10 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: [eligible1.id, eligible2.id, ineligible.id] }),
     });
 
-    const response = await POST();
+    const response = await POST(request);
     const csvText = await response.text();
 
     expect(response.status).toBe(200);
@@ -180,13 +182,14 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: [eligibleEmployee.id] }),
     });
 
-    const response = await POST();
+    const response = await POST(request);
     const csvText = await response.text();
 
     expect(response.status).toBe(200);
-    
+
     // Verify CSV contains all required fields
     expect(csvText).toContain("Employee ID");
     expect(csvText).toContain("First Name");
@@ -222,9 +225,10 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: [eligibleEmployee.id] }),
     });
 
-    const response = await POST();
+    const response = await POST(request);
     const csvText = await response.text();
 
     expect(response.status).toBe(200);
@@ -242,15 +246,16 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: [eligibleEmployee.id] }),
     });
 
-    const response = await POST();
+    const response = await POST(request);
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/csv");
     expect(response.headers.get("Content-Disposition")).toContain("attachment");
     expect(response.headers.get("Content-Disposition")).toContain(".csv");
-    
+
     const csvText = await response.text();
     // Verify it's valid CSV (contains commas and newlines)
     expect(csvText).toContain(",");
@@ -265,14 +270,15 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: ["emp-1"] }),
     });
 
-    const response = await POST();
+    const response = await POST(request);
     const json = await response.json();
 
     expect(response.status).toBe(404);
     expect(json.error.code).toBe("NO_ELIGIBLE_EMPLOYEES");
-    expect(json.error.message).toContain("No employees found");
+    expect(json.error.message).toContain("No selected employees found");
   });
 
   it("should handle case where no employees meet prerequisites", async () => {
@@ -287,9 +293,10 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: [employeeWithoutPrerequisites.id] }),
     });
 
-    const response = await POST();
+    const response = await POST(request);
     const json = await response.json();
 
     expect(response.status).toBe(404);
@@ -312,13 +319,95 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: ["emp-1"] }),
     });
 
-    const response = await POST();
+    const response = await POST(request);
     const json = await response.json();
 
     expect(response.status).toBe(401);
     expect(json.error.code).toBe("UNAUTHORIZED");
   });
-});
 
+  it("should return 400 when no employees are selected", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+
+    const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
+      method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: [] }),
+    });
+
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(json.error.code).toBe("NO_EMPLOYEES_SELECTED");
+    expect(json.error.message).toContain("No employees selected");
+  });
+
+  it("should return 400 when selectedEmployeeIds is missing", async () => {
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+
+    const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(json.error.code).toBe("NO_EMPLOYEES_SELECTED");
+  });
+
+  it("should only export selected employees that meet eligibility criteria", async () => {
+    const eligible1 = createMockEmployee({
+      id: "emp-1",
+      crewing_done: false,
+    });
+    const eligible2 = createMockEmployee({
+      id: "emp-2",
+      crewing_done: false,
+    });
+    const ineligible = createMockEmployee({
+      id: "emp-3",
+      crewing_done: false,
+      isps: false, // Missing prerequisite
+    });
+    const notSelected = createMockEmployee({
+      id: "emp-4",
+      crewing_done: false,
+    });
+
+    const allEmployees = [eligible1, eligible2, ineligible, notSelected];
+
+    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
+    vi.mocked(canEditCrewingDone).mockImplementation((emp) => {
+      return emp.id !== "emp-3"; // emp-3 doesn't meet prerequisites
+    });
+    vi.mocked(employeeRepository.update).mockResolvedValue(eligible1);
+
+    // Only select emp-1 and emp-2 (both eligible), emp-3 (ineligible), but not emp-4
+    const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
+      method: "POST",
+      body: JSON.stringify({ selectedEmployeeIds: [eligible1.id, eligible2.id, ineligible.id] }),
+    });
+
+    const response = await POST(request);
+    const csvText = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("X-Employees-Exported")).toBe("2"); // Only eligible1 and eligible2
+    expect(csvText).toContain("emp-1");
+    expect(csvText).toContain("emp-2");
+    expect(csvText).not.toContain("emp-3"); // Ineligible
+    expect(csvText).not.toContain("emp-4"); // Not selected
+
+    // Verify only eligible selected employees were marked as crewing_done
+    expect(employeeRepository.update).toHaveBeenCalledWith("emp-1", { crewing_done: true });
+    expect(employeeRepository.update).toHaveBeenCalledWith("emp-2", { crewing_done: true });
+    expect(employeeRepository.update).not.toHaveBeenCalledWith("emp-3", expect.anything());
+    expect(employeeRepository.update).not.toHaveBeenCalledWith("emp-4", expect.anything());
+  });
+});

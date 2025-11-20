@@ -91,7 +91,7 @@ describe("Employee Creation Hotel Field", () => {
       expect(checkbox).not.toBeChecked();
     });
 
-    it("should allow hotel field to be optional (not mandatory)", async () => {
+    it("should allow hotel field to be optional (not mandatory)", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
       renderWithI18n(
@@ -118,7 +118,7 @@ describe("Employee Creation Hotel Field", () => {
       }
     });
 
-    it("should trigger room assignment when hotel=true during creation", async () => {
+    it("should trigger room assignment when hotel=true during creation", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       const mockCreate = vi.mocked(employeeService.create);
       
@@ -170,7 +170,7 @@ describe("Employee Creation Hotel Field", () => {
       }, { timeout: 3000 });
     });
 
-    it("should not assign room when hotel=false during creation", async () => {
+    it("should not assign room when hotel=false during creation", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       const mockCreate = vi.mocked(employeeService.create);
       

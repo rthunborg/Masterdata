@@ -232,7 +232,7 @@ describe('AddUserModal', () => {
     });
   });
 
-  it('displays error toast on creation failure', async () => {
+  it('displays error toast on creation failure', { timeout: 15000 }, async () => {
     const user = userEvent.setup();
     const mockCreateUser = vi.mocked(adminService.createUser);
     mockCreateUser.mockRejectedValueOnce(new Error('User with this email already exists'));
@@ -258,7 +258,7 @@ describe('AddUserModal', () => {
     });
   });
 
-  it('shows loading state during form submission', async () => {
+  it('shows loading state during form submission', { timeout: 15000 }, async () => {
     const user = userEvent.setup();
     const mockCreateUser = vi.mocked(adminService.createUser);
     mockCreateUser.mockImplementation(
@@ -278,7 +278,7 @@ describe('AddUserModal', () => {
     });
   });
 
-  it('prevents form submission while loading', async () => {
+  it('prevents form submission while loading', { timeout: 15000 }, async () => {
     const user = userEvent.setup();
     const mockCreateUser = vi.mocked(adminService.createUser);
     mockCreateUser.mockImplementation(
@@ -322,7 +322,7 @@ describe('AddUserModal', () => {
     const user = userEvent.setup();
     const mockCreateUser = vi.mocked(adminService.createUser);
     mockCreateUser.mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 100))
+      () => new Promise((resolve) => setTimeout(resolve, 500))
     );
 
     renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);

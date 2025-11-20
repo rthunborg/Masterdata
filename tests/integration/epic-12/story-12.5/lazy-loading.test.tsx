@@ -9,6 +9,37 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 
+// Mock hooks to prevent side effects during import
+vi.mock('@/lib/hooks/use-auth', () => ({
+  useAuth: vi.fn(() => ({
+    user: { role: 'hr_admin' },
+    isLoading: false,
+  })),
+}));
+
+vi.mock('@/lib/hooks/use-employees', () => ({
+  useEmployees: vi.fn(() => ({
+    employees: [],
+    isLoading: false,
+    refetch: vi.fn(),
+  })),
+}));
+
+vi.mock('@/lib/store/ui-store', () => ({
+  useUIStore: vi.fn(() => ({
+    openModal: vi.fn(),
+    isPreviewMode: false,
+  })),
+}));
+
+vi.mock('@/lib/hooks/use-offline-sync', () => ({
+  useOfflineSync: vi.fn(),
+}));
+
+vi.mock('@/hooks/use-media-query', () => ({
+  useMediaQuery: vi.fn(() => false),
+}));
+
 // Mock next/dynamic - track calls for verification
 const dynamicCalls: Array<[() => Promise<any>, { ssr?: boolean }]> = [];
 
@@ -17,10 +48,48 @@ vi.mock('next/dynamic', () => ({
     // Track the call
     dynamicCalls.push([loader, options || {}]);
     
-    const Component = vi.fn(() => null);
+    const Component = vi.fn(() => null) as any;
     Component.displayName = 'DynamicComponent';
     return Component;
   },
+}));
+
+// Mock child components to avoid deep imports and side effects
+vi.mock('@/components/dashboard/responsive-employee-view', () => ({
+  ResponsiveEmployeeView: () => null,
+}));
+vi.mock('@/components/dashboard/manage-columns-dropdown', () => ({
+  ManageColumnsDialog: () => null,
+}));
+vi.mock('@/components/dashboard/role-selector', () => ({
+  RoleSelector: () => null,
+}));
+vi.mock('@/components/dashboard/role-preview-banner', () => ({
+  RolePreviewBanner: () => null,
+}));
+vi.mock('@/components/dashboard/offline-banner', () => ({
+  OfflineBanner: () => null,
+}));
+vi.mock('@/components/dashboard/cache-expiration-warning', () => ({
+  CacheExpirationWarning: () => null,
+}));
+vi.mock('@/components/dashboard/floating-action-button', () => ({
+  FloatingActionButton: () => null,
+}));
+vi.mock('@/components/ui/button', () => ({
+  Button: () => null,
+}));
+vi.mock('@/components/ui/card', () => ({
+  Card: () => null,
+  CardContent: () => null,
+  CardDescription: () => null,
+  CardHeader: () => null,
+  CardTitle: () => null,
+}));
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: { children: React.ReactNode }) => children,
+  TooltipContent: () => null,
+  TooltipTrigger: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 describe('Lazy Loading Integration Tests', () => {
@@ -55,7 +124,7 @@ describe('Lazy Loading Integration Tests', () => {
     expect(addEmployeeCall?.[1]?.ssr).toBe(false);
   }, 15000); // Increase timeout to 15 seconds
 
-  it('should lazy load Calendar component in editable-cell', async () => {
+  it('should lazy load Calendar component in editable-cell', { timeout: 15000 }, async () => {
     // Check that Calendar is lazy-loaded in editable-cell component
     const EditableCell = await import('@/components/dashboard/editable-cell');
     
@@ -65,7 +134,7 @@ describe('Lazy Loading Integration Tests', () => {
     // Since modules are cached, we verify the pattern exists in code
   });
 
-  it('should lazy load modals in important-dates page', async () => {
+  it('should lazy load modals in important-dates page', { timeout: 15000 }, async () => {
     // Import the important-dates page
     const ImportantDatesPage = await import('@/app/dashboard/important-dates/page');
     

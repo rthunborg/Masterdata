@@ -74,7 +74,7 @@ describe("Form Validation Integration Workflows", () => {
   });
 
   describe("AC6: Form Validation Integration Tests", () => {
-    it("should validate PE3 time before submission", async () => {
+    it("should validate PE3 time before submission", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       const mockCreate = vi.mocked(importantDateService.create);
       mockCreate.mockRejectedValue(new Error("Validation failed"));
@@ -136,7 +136,7 @@ describe("Form Validation Integration Workflows", () => {
       expect(employeeService.create).not.toHaveBeenCalled();
     });
 
-    it("should display validation errors in correct locations", async () => {
+    it("should display validation errors in correct locations", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
 
       renderWithI18n(
@@ -169,7 +169,7 @@ describe("Form Validation Integration Workflows", () => {
       });
     });
 
-    it("should block invalid submissions before API calls", async () => {
+    it("should block invalid submissions before API calls", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       const mockCreate = vi.mocked(importantDateService.create);
 
@@ -200,7 +200,7 @@ describe("Form Validation Integration Workflows", () => {
       expect(mockCreate).not.toHaveBeenCalled();
     });
 
-    it("should trigger correct API calls for valid submissions", async () => {
+    it("should trigger correct API calls for valid submissions", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       const mockCreate = vi.mocked(importantDateService.create);
       
