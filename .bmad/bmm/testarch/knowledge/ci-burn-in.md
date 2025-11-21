@@ -41,14 +41,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ${{ env.NODE_VERSION_FILE }}
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Cache node modules
         uses: actions/cache@v4
-        id: pnpm-cache
+        id: npm-cache
         with:
           path: |
-            ~/.pnpm
+            ~/.npm
             node_modules
             ~/.cache/Cypress
             ~/.cache/ms-playwright
@@ -57,11 +57,11 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        if: steps.pnpm-cache.outputs.cache-hit != 'true'
-        run: pnpm ci --prefer-offline --no-audit
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
 
       - name: Install Playwright browsers
-        if: steps.pnpm-cache.outputs.cache-hit != 'true'
+        if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
   test-changed-specs:
@@ -79,13 +79,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ${{ env.NODE_VERSION_FILE }}
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Restore dependencies
         uses: actions/cache@v4
         with:
           path: |
-            ~/.pnpm
+            ~/.npm
             node_modules
             ~/.cache/ms-playwright
           key: ${{ env.CACHE_KEY }}
@@ -104,7 +104,7 @@ jobs:
           echo "Running burn-in: 10 iterations on changed specs"
           for i in {1..10}; do
             echo "Burn-in iteration $i/10"
-            pnpm run test -- $SPECS || {
+            npm run test -- $SPECS || {
               echo "❌ Burn-in failed on iteration $i"
               exit 1
             }
@@ -139,19 +139,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ${{ env.NODE_VERSION_FILE }}
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Restore dependencies
         uses: actions/cache@v4
         with:
           path: |
-            ~/.pnpm
+            ~/.npm
             node_modules
             ~/.cache/ms-playwright
           key: ${{ env.CACHE_KEY }}
 
       - name: Run E2E tests (shard ${{ matrix.shard }})
-        run: pnpm run test:e2e -- --shard=${{ matrix.shard }}/4
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/4
         env:
           TEST_ENV: staging
           CI: true
@@ -265,7 +265,7 @@ for i in $(seq 1 $ITERATIONS); do
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   # Run tests with explicit file list
-  if pnpm run test -- $CHANGED_SPECS 2>&1 | tee "burn-in-log-$i.txt"; then
+  if npm run test -- $CHANGED_SPECS 2>&1 | tee "burn-in-log-$i.txt"; then
     echo "✅ Iteration $i passed"
   else
     echo "❌ Iteration $i failed"
@@ -571,13 +571,13 @@ if echo "$CHANGED_FILES" | grep -qE '(package\.json|package-lock\.json|playwrigh
 # Auth/security changes = run all auth + smoke tests
 elif echo "$CHANGED_FILES" | grep -qE '(auth|login|signup|security)'; then
   echo "🔒 Auth/security files changed. Running auth + smoke tests."
-  pnpm run test -- --grep "@auth|@smoke"
+  npm run test -- --grep "@auth|@smoke"
   exit $?
 
 # API changes = run integration + smoke tests
 elif echo "$CHANGED_FILES" | grep -qE '(api|service|controller)'; then
   echo "🔌 API files changed. Running integration + smoke tests."
-  pnpm run test -- --grep "@integration|@smoke"
+  npm run test -- --grep "@integration|@smoke"
   exit $?
 
 # UI component changes = run related component tests
@@ -593,10 +593,10 @@ elif echo "$CHANGED_FILES" | grep -qE '\.(tsx|jsx|vue)$'; then
 
   if [ -n "$affected_specs" ]; then
     echo "Running tests for: $affected_specs"
-    pnpm run test -- $affected_specs --grep "@smoke"
+    npm run test -- $affected_specs --grep "@smoke"
   else
     echo "No specific tests found. Running smoke tests only."
-    pnpm run test -- --grep "@smoke"
+    npm run test -- --grep "@smoke"
   fi
   exit $?
 
@@ -613,11 +613,11 @@ fi
 if [ "$run_all_tests" = true ]; then
   echo ""
   echo "Running full test suite..."
-  pnpm run test
+  npm run test
 elif [ "$run_smoke_only" = true ]; then
   echo ""
   echo "Running smoke tests..."
-  pnpm run test -- --grep "@smoke"
+  npm run test -- --grep "@smoke"
 fi
 ```
 
@@ -657,14 +657,14 @@ jobs:
 
 Before deploying your CI pipeline, verify:
 
-- [ ] **Caching strategy**: node_modules, pnpm cache, browser binaries cached
+- [ ] **Caching strategy**: node_modules, npm cache, browser binaries cached
 - [ ] **Timeout budgets**: Each job has reasonable timeout (10-30 min)
 - [ ] **Artifact retention**: 30 days for reports, 7 days for failure artifacts
 - [ ] **Parallelization**: Matrix strategy uses fail-fast: false
 - [ ] **Burn-in enabled**: Changed specs run 5-10x before merge
 - [ ] **wait-on app startup**: CI waits for app (wait-on: 'http://localhost:3000')
 - [ ] **Secrets documented**: README lists required secrets (API keys, tokens)
-- [ ] **Local parity**: CI scripts runnable locally (pnpm run test:ci)
+- [ ] **Local parity**: CI scripts runnable locally (npm run test:ci)
 
 ## Integration Points
 

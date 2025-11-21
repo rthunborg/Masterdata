@@ -257,10 +257,10 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
       - name: Run Playwright tests
-        run: pnpm run test:e2e
+        run: npm run test:e2e
         continue-on-error: true # Capture artifacts even on failure
 
       - name: Upload test artifacts on failure

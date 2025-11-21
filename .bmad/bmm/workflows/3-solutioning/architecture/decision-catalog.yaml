@@ -174,13 +174,13 @@ starter_templates:
 
   create_t3_app:
     name: "Create T3 App"
-    command_search: "pnpm create t3-app@latest"
+    command_search: "npm create t3-app@latest"
     decisions_provided: ["Next.js", "TypeScript", "tRPC", "Prisma", "NextAuth", "Tailwind CSS"]
     good_for: ["Type-safe full-stack apps"]
 
   create_vite:
     name: "Create Vite"
-    command_search: "pnpm create vite@latest"
+    command_search: "npm create vite@latest"
     decisions_provided: ["Framework choice (React/Vue/Svelte)", "TypeScript option", "Vite bundler"]
     good_for: ["Fast dev SPAs", "Library development"]
 

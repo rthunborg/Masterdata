@@ -693,9 +693,11 @@ function EmployeeCardComponent({
 
           isSwiping && 'transition-none',
 
-          // Story 13.3: Visual feedback for selected cards
-
-          isSelected && !employee.is_archived && 'bg-gray-100 dark:bg-gray-800',
+          // Story 13.11: Status tints (priority: terminated > crew ready)
+          employee.is_terminated && !employee.is_archived && 'bg-red-50 dark:bg-red-950/20',
+          employee.crewing_done === true && !employee.is_archived && !employee.is_terminated && 'bg-green-50/50 dark:bg-green-950/20',
+          // Story 13.3: Visual feedback for selected cards (combines with status tints using opacity)
+          isSelected && !employee.is_archived && 'bg-gray-100/50 dark:bg-gray-800/50',
 
           // Story 13.3: Add cursor pointer for all cards (except archived)
 

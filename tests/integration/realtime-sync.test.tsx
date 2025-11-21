@@ -292,7 +292,6 @@ describe("Real-time Employee Sync Integration", () => {
 
     const row = screen.getByTestId("employee-row-1");
     expect(row).toHaveClass("bg-red-50");
-    expect(row).toHaveClass("text-red-800");
   });
 
   it("should show loading state", () => {

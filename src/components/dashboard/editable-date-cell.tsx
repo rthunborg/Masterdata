@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { hasValueChanged } from "@/lib/utils/change-detection";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { useTranslations } from "@/lib/i18n";
@@ -259,10 +260,18 @@ export function EditableDateCell({
         open={dropdownOpen}
         onOpenChange={(open) => {
           setDropdownOpen(open);
-          // If dropdown closes without changing value, exit edit mode
+          // Story 13.10: If dropdown closes without changing value, exit edit mode without save
           if (!open) {
             setTimeout(() => {
-              setIsEditing(false);
+              // Check if value actually changed
+              const normalizedCurrent = editValue === "__NONE__" ? null : editValue || null;
+              const normalizedOriginal = value ?? null;
+              
+              // If value hasn't changed, just exit edit mode (no API call)
+              if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+                setIsEditing(false);
+              }
+              // If value changed, onValueChange will handle the save
             }, 100);
           }
         }}
@@ -275,13 +284,23 @@ export function EditableDateCell({
           
           setEditValue(newValue);
           setDropdownOpen(false);
-          // Auto-save on select
+          
+          // Story 13.10: Check if value actually changed before saving
+          // Convert "__NONE__" placeholder to null for comparison
+          const valueToSave = newValue === "__NONE__" ? null : newValue || null;
+          const normalizedOriginal = value ?? null;
+          
+          if (!hasValueChanged(normalizedOriginal, valueToSave)) {
+            // Value hasn't changed, just exit edit mode without API call
+            setIsEditing(false);
+            return;
+          }
+          
+          // Auto-save on select (only if value changed)
           setTimeout(() => {
             setIsSaving(true);
             setIsLoading(true);
             setError(null);
-            // Convert "__NONE__" placeholder to null for clearing the date
-            const valueToSave = newValue === "__NONE__" ? null : newValue || null;
             onSave(employeeId, field, valueToSave)
               .then(() => {
                 setIsEditing(false);

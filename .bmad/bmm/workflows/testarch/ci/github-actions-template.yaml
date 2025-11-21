@@ -31,13 +31,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
       - name: Run linter
-        run: pnpm run lint
+        run: npm run lint
 
   # Test stage - Parallel execution with sharding
   test:
@@ -58,7 +58,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -69,13 +69,13 @@ jobs:
             ${{ runner.os }}-playwright-
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
       - name: Run tests (shard ${{ matrix.shard }}/4)
-        run: pnpm run test:e2e -- --shard=${{ matrix.shard }}/4
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/4
 
       - name: Upload test results
         if: failure()
@@ -103,7 +103,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -112,7 +112,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
@@ -124,7 +124,7 @@ jobs:
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🔥 Burn-in iteration $i/10"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            pnpm run test:e2e || exit 1
+            npm run test:e2e || exit 1
           done
           echo "✅ Burn-in complete - no flaky tests detected"
 

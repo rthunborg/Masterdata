@@ -788,20 +788,20 @@ Expands test automation coverage by generating comprehensive test suites at appr
 
    ```bash
    # Run all tests
-   pnpm run test:e2e
+   npm run test:e2e
 
    # Run by priority
-   pnpm run test:e2e -- --grep "@P0"
-   pnpm run test:e2e -- --grep "@P1"
+   npm run test:e2e -- --grep "@P0"
+   npm run test:e2e -- --grep "@P1"
 
    # Run specific file
-   pnpm run test:e2e -- user-authentication.spec.ts
+   npm run test:e2e -- user-authentication.spec.ts
 
    # Run in headed mode
-   pnpm run test:e2e -- --headed
+   npm run test:e2e -- --headed
 
    # Debug specific test
-   pnpm run test:e2e -- user-authentication.spec.ts --debug
+   npm run test:e2e -- user-authentication.spec.ts --debug
    ```
    ````
 
@@ -900,11 +900,11 @@ Expands test automation coverage by generating comprehensive test suites at appr
 
    ```bash
    # Run all new tests
-   pnpm run test:e2e
+   npm run test:e2e
 
    # Run by priority
-   pnpm run test:e2e:p0  # Critical paths only
-   pnpm run test:e2e:p1  # P0 + P1 tests
+   npm run test:e2e:p0  # Critical paths only
+   npm run test:e2e:p1  # P0 + P1 tests
    ```
    ````
 
@@ -940,7 +940,7 @@ Expands test automation coverage by generating comprehensive test suites at appr
 
    ## Next Steps
    1. Review generated tests with team
-   2. Run tests in CI pipeline: `pnpm run test:e2e`
+   2. Run tests in CI pipeline: `npm run test:e2e`
    3. Integrate with quality gate: `bmad tea *gate`
    4. Monitor for flaky tests in burn-in loop
 
@@ -1010,7 +1010,7 @@ Expands test automation coverage by generating comprehensive test suites at appr
    **Infrastructure:** {fixture_count} fixtures, {factory_count} factories
    **Output:** {output_summary}
 
-   **Run tests:** `pnpm run test:e2e`
+   **Run tests:** `npm run test:e2e`
    **Next steps:** Review tests, run in CI, integrate with quality gate
    ```
 
@@ -1072,10 +1072,10 @@ test('[P2] should remember login preference', async ({ page }) => { ... });
 
 ```bash
 # Run only P0 tests (critical paths)
-pnpm run test:e2e -- --grep "@P0"
+npm run test:e2e -- --grep "@P0"
 
 # Run P0 + P1 tests (pre-merge)
-pnpm run test:e2e -- --grep "@P0|@P1"
+npm run test:e2e -- --grep "@P0|@P1"
 ```
 
 ### No Page Objects
@@ -1218,14 +1218,14 @@ After completing this workflow, provide a summary:
 
 ```bash
 # Run all tests
-pnpm run test:e2e
+npm run test:e2e
 
 # Run by priority
-pnpm run test:e2e:p0  # Critical paths only
-pnpm run test:e2e:p1  # P0 + P1 tests
+npm run test:e2e:p0  # Critical paths only
+npm run test:e2e:p1  # P0 + P1 tests
 
 # Run specific file
-pnpm run test:e2e -- {first_test_file}
+npm run test:e2e -- {first_test_file}
 ```
 ````
 

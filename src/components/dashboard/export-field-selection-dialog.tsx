@@ -375,6 +375,8 @@ export function ExportFieldSelectionDialog({
 
                         onCheckedChange={() => toggleField(field.id)}
 
+                        data-testid={`export-field-checkbox-${field.fieldKey}`}
+
                       />
 
                       <Label
@@ -424,6 +426,8 @@ export function ExportFieldSelectionDialog({
                           checked={selectedFields.has(field.id)}
 
                           onCheckedChange={() => toggleField(field.id)}
+
+                          data-testid={`export-field-checkbox-${field.fieldKey}`}
 
                         />
 

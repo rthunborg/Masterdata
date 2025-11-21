@@ -30,6 +30,7 @@ import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-
 import { useTranslations } from "@/lib/i18n";
 import type { Employee } from "@/lib/types/employee";
 import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
+import { hasValueChanged } from "@/lib/utils/change-detection";
 import dynamic from "next/dynamic";
 
 // Lazy load Calendar component (react-day-picker is heavy) - Story 12.5: Performance optimization
@@ -116,8 +117,13 @@ export function EditableCell({
   }, [isEditing]);
 
   const handleSave = async () => {
-    // If value hasn't changed, just exit edit mode
-    if (editValue === value) {
+    // Check if value actually changed using proper change detection
+    // Story 13.10: Prevent unnecessary view refreshes
+    const normalizedCurrent = editValue ?? null;
+    const normalizedOriginal = value ?? null;
+    
+    if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+      // Value hasn't changed, just exit edit mode without API call
       setIsEditing(false);
       setError(null);
       return;
@@ -162,9 +168,12 @@ export function EditableCell({
 
     function handleClickOutside(event: MouseEvent) {
       if (cellRef.current && !cellRef.current.contains(event.target as Node)) {
-        // Create closure to avoid stale values
-        const saveValue = editValue === value ? null : editValue;
-        if (saveValue !== null) {
+        // Story 13.10: Use proper change detection to prevent unnecessary saves
+        const normalizedCurrent = editValue ?? null;
+        const normalizedOriginal = value ?? null;
+        
+        if (hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+          // Value changed, save it
           setIsLoading(true);
           setError(null);
           onSave(employeeId, field, editValue || null)
@@ -180,6 +189,7 @@ export function EditableCell({
               setIsLoading(false);
             });
         } else {
+          // Value hasn't changed, just exit edit mode without API call
           setIsEditing(false);
         }
       }

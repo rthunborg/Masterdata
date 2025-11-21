@@ -175,13 +175,13 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
       const row = screen.getByTestId('employee-row-1');
       
       // Initially no tint
-      expect(row).not.toHaveClass('bg-gray-100');
+      expect(row.className).not.toContain('bg-gray-100/50');
       
       // Select
       fireEvent.click(checkbox);
       
       // Should have tint
-      expect(row).toHaveClass('bg-gray-100');
+      expect(row.className).toContain('bg-gray-100/50');
     });
 
     it('unselected rows do not show tint', async () => {
@@ -197,10 +197,10 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
       
       // Select then deselect by clicking the row
       await user.click(row);
-      expect(row).toHaveClass('bg-gray-100');
+      expect(row.className).toContain('bg-gray-100/50');
       
       await user.click(row);
-      expect(row).not.toHaveClass('bg-gray-100');
+      expect(row.className).not.toContain('bg-gray-100/50');
     });
 
     it('tint works in light mode', () => {
@@ -218,7 +218,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
       fireEvent.click(checkbox);
       
       // Should have light mode tint
-      expect(row).toHaveClass('bg-gray-100');
+      expect(row.className).toContain('bg-gray-100/50');
     });
 
     it('tint works in dark mode', () => {
@@ -256,7 +256,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
 
       // Card header should have tint when selected
       const cardHeader = screen.getByTestId('employee-card-header');
-      expect(cardHeader).toHaveClass('bg-gray-100');
+      expect(cardHeader.className).toContain('bg-gray-100/50');
       expect(cardHeader).toHaveClass('dark:bg-gray-800');
     });
 
@@ -275,7 +275,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
 
       // Card header should not have tint when unselected
       const cardHeader = screen.getByTestId('employee-card-header');
-      expect(cardHeader).not.toHaveClass('bg-gray-100');
+      expect(cardHeader.className).not.toContain('bg-gray-100/50');
     });
   });
 });

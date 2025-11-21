@@ -101,6 +101,9 @@ export function EditEmployeeModal({
       omc_date: "",
       pe3_date: null,
       comments: null,
+      // Story 13.9: Repayment fields (read-only, auto-managed)
+      repayment_needed_omc: null,
+      repayment_needed_pe3: null,
     },
   });
 
@@ -122,6 +125,9 @@ export function EditEmployeeModal({
         omc_date: employee.omc_date || "",
         pe3_date: employee.pe3_date || null,
         comments: employee.comments || null,
+        // Story 13.9: Include repayment fields for terminated employees
+        repayment_needed_omc: employee.repayment_needed_omc || null,
+        repayment_needed_pe3: employee.repayment_needed_pe3 || null,
       });
     }
   }, [employee, isOpen, form]);
@@ -672,6 +678,63 @@ export function EditEmployeeModal({
                   </FormItem>
                 )}
               />
+
+              {/* Story 13.9: Repayment fields - only visible for terminated employees */}
+              {employee.is_terminated && (
+                <>
+                  {/* Repayment Needed (ÖMC) */}
+                  <FormField
+                    control={form.control}
+                    name="repayment_needed_omc"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {tDashboard('repaymentNeededOMC') || 'Repayment Needed (ÖMC)'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                            value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                            disabled={true}
+                            className="h-12 md:h-10 bg-muted cursor-not-allowed"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {tDashboard('repaymentFieldDescription') || 'Auto-managed by termination workflow. Read-only.'}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Repayment Needed (PE3) */}
+                  <FormField
+                    control={form.control}
+                    name="repayment_needed_pe3"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {tDashboard('repaymentNeededPE3') || 'Repayment Needed (PE3)'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                            value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                            disabled={true}
+                            className="h-12 md:h-10 bg-muted cursor-not-allowed"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {tDashboard('repaymentFieldDescription') || 'Auto-managed by termination workflow. Read-only.'}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
             </div>
 
             {/* Comments */}

@@ -16,7 +16,7 @@
 - [ ] **EVERY** feature claim has source (official docs, release notes, website)
 - [ ] Performance benchmarks cite source (official benchmarks, third-party tests with URLs)
 - [ ] Compatibility claims verified (official compatibility matrix, documentation)
-- [ ] Community size/popularity backed by sources (GitHub stars, pnpm downloads, official stats)
+- [ ] Community size/popularity backed by sources (GitHub stars, npm downloads, official stats)
 - [ ] "Supports X" claims verified via official documentation with URL
 - [ ] No invented capabilities or features
 
@@ -25,7 +25,7 @@
 - [ ] Official documentation prioritized (docs.technology.com > blog posts)
 - [ ] Version info from official release pages (highest credibility)
 - [ ] Benchmarks from official sources or reputable third-parties (not random blogs)
-- [ ] Community data from verified sources (GitHub, pnpm, official registries)
+- [ ] Community data from verified sources (GitHub, npm, official registries)
 - [ ] Pricing from official pricing pages (with URL and date verified)
 
 ### Multi-Source Verification (Critical Technical Claims)

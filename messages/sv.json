@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "HR Masterdata",
+    "appName": "Säsongsrekrytering 2026",
     "signOut": "Logga ut",
     "save": "Spara",
     "cancel": "Avbryt",
@@ -61,10 +61,6 @@
     "noEmployeesMatchSearch": "Inga anställda matchar din sökning. Prova att justera dina söktermer.",
     "noEmployeesToDisplay": "Inga anställda att visa.",
     "dateDeleted": "(Datum hittades inte)",
-    "columnVisibility": "Kolumnsynlighet",
-    "showHiddenColumns": "Visa dolda kolumner",
-    "columnVisibilityDescription": "Klicka på ögonikonen för att dölja eller visa kolumner",
-    "resetColumnVisibility": "Återställ till standard",
     "resetColumnWidths": "Återställ kolumnbredder",
     "columnWidthsReset": "Kolumnbredder har återställts till standard",
     "dragToResize": "Dra för att ändra storlek",

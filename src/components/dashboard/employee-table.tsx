@@ -114,17 +114,7 @@ import {
 
 } from "@/components/ui/tooltip";
 
-import {
-
-  Popover,
-
-  PopoverContent,
-
-  PopoverTrigger,
-
-} from "@/components/ui/popover";
-
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Eye, EyeOff, Clock, Download } from "lucide-react";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Download } from "lucide-react";
 
 
 import { EditableCell } from "./editable-cell";
@@ -302,7 +292,7 @@ export function EmployeeTable({
   // Get preview mode state and column visibility
 
 
-  const { previewRole, isPreviewMode, initColumnVisibility, columnVisibility, toggleColumnVisibility, resetColumnVisibility } = useUIStore();
+  const { previewRole, isPreviewMode, initColumnVisibility, columnVisibility } = useUIStore();
 
 
   // Initialize column visibility preferences on mount
@@ -394,6 +384,18 @@ export function EmployeeTable({
     return selectedEmployeeIds.has(id);
 
   }, [selectedEmployeeIds]);
+
+  // Story 13.3: Row click handler with event delegation
+  const handleRowClick = React.useCallback((event: React.MouseEvent<HTMLTableRowElement>, employeeId: string) => {
+    // Check if click is on an interactive element
+    const target = event.target as HTMLElement;
+    if (target.closest('button, input, a, [role="button"], [role="menuitem"], [role="menu"]')) {
+      return; // Don't change selection
+    }
+
+    // Toggle selection
+    toggleEmployeeSelection(employeeId);
+  }, [toggleEmployeeSelection]);
 
   // Story 8.5: Calculate count of eligible employees for crew-ready exportReadyFilter, setCrewReadyFilter] = React.useState<'all' | 'ready' | 'not-ready'>('all');
 
@@ -961,6 +963,8 @@ export function EmployeeTable({
 
             className="w-4 h-4"
 
+            data-testid={`employee-select-checkbox-${row.original.id}`}
+
           />
 
         </div>
@@ -975,7 +979,9 @@ export function EmployeeTable({
     const roleFilteredColumns = columnConfigs;
 
 
-    // Story 8.13 AC 3: Filter repayment columns - only show when viewing terminated employees
+    // Story 8.13 AC 3 & Story 13.9: Filter repayment columns - only show when viewing terminated employees
+    // Repayment columns are included in column definitions when includeTerminated is true,
+    // but will be conditionally rendered per-row based on employee.is_terminated status
 
 
     const repaymentColumns = ['Återbetalningsskyldig ÖMC', 'Återbetalningsskyldig PE3'];
@@ -1054,6 +1060,13 @@ export function EmployeeTable({
 
 
         const DataCell = ({ row }: { row: Row<Employee> }) => {
+
+
+          // Story 13.9: Hide repayment columns for non-terminated employees
+          const isRepaymentColumn = repaymentColumns.includes(config.column_name);
+          if (isRepaymentColumn && !row.original.is_terminated) {
+            return <div className="text-muted-foreground">—</div>;
+          }
 
 
           // For masterdata columns, use column_name (display name like "ÖMC Date")
@@ -2134,147 +2147,6 @@ export function EmployeeTable({
           </Tooltip>
         )}
 
-        <div className="flex gap-2 w-full sm:w-auto">
-
-          {/* Column Visibility Controls for HR Admin */}
-
-          {isHRAdmin && (
-
-            <Popover>
-
-              <PopoverTrigger asChild>
-
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
-
-                  <EyeOff className="h-4 w-4 mr-2" />
-
-                  {tDashboard("columnVisibility")}
-
-                </Button>
-
-              </PopoverTrigger>
-
-              <PopoverContent className="w-80" align="end">
-
-                <div className="space-y-4">
-
-                  <div>
-
-                    <h4 className="font-medium mb-2">{tDashboard("showHiddenColumns")}</h4>
-
-                    <p className="text-sm text-muted-foreground mb-3">
-
-                      {tDashboard("columnVisibilityDescription")}
-
-                    </p>
-
-                  </div>
-
-                  {/* List of hideable columns */}
-
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-
-                    {columnConfigs.map((config) => {
-
-                      const isVisible = columnVisibility[config.id] !== false;
-
-
-                      const displayName = config.column_name;
-
-
-                      // Story 8.13 AC 4: Tooltip for repayment columns
-
-
-                      const isRepaymentColumn = ['Återbetalningsskyldig ÖMC', 'Återbetalningsskyldig PE3'].includes(config.column_name);
-
-                      return (
-
-                        <div key={config.id} className="flex items-center justify-between">
-
-                          <div className="flex items-center gap-2">
-
-                            <span className="text-sm">{displayName}</span>
-
-                            {isRepaymentColumn && (
-
-                              <Tooltip>
-
-                                <TooltipTrigger asChild>
-
-                                  <span className="text-xs text-muted-foreground cursor-help">ⓘ</span>
-
-                                </TooltipTrigger>
-
-                                <TooltipContent>
-
-                                  <p className="text-xs">{tDashboard("repaymentColumnTooltip")}</p>
-
-                                </TooltipContent>
-
-                              </Tooltip>
-
-                            )}
-
-                          </div>
-
-                          <Button
-
-                            variant="ghost"
-
-                            size="sm"
-
-                            onClick={() => toggleColumnVisibility(config.id)}
-
-                          >
-
-                            {isVisible ? (
-
-                              <Eye className="h-4 w-4 text-green-600" />
-
-                            ) : (
-
-                              <EyeOff className="h-4 w-4 text-muted-foreground" />
-
-                            )}
-
-                          </Button>
-
-                        </div>
-
-                      );
-
-                    })}
-
-                  </div>
-
-                  {/* Reset button */}
-
-                  <Button
-
-                    variant="outline"
-
-                    size="sm"
-
-                    className="w-full"
-
-                    onClick={resetColumnVisibility}
-
-                  >
-
-                    {tDashboard("resetColumnVisibility")}
-
-                  </Button>
-
-                </div>
-
-              </PopoverContent>
-
-            </Popover>
-
-          )}
-
-        </div>
-
       </div>
 
       <div className="rounded-md border">
@@ -2450,7 +2322,7 @@ export function EmployeeTable({
                   <TableRow 
                     key={row.id}
                     data-state={isEmployeeSelected(row.original.id) ? "selected" : undefined}
-                    onClick={() => toggleEmployeeSelection(row.original.id)}
+                    onClick={(e) => handleRowClick(e, row.original.id)}
                     ref={(el) => {
 
                       if (el) {
@@ -2469,7 +2341,8 @@ export function EmployeeTable({
 
                       row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
 
-                      row.original.is_terminated && !row.original.is_archived && "bg-red-50 text-red-800",
+                      // Story 13.11: Status tints (priority: terminated > crew ready)
+                      row.original.is_terminated && !row.original.is_archived && "bg-red-50 dark:bg-red-950/20",
 
                       isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20",
 
@@ -2479,8 +2352,8 @@ export function EmployeeTable({
 
                       hasPendingSync && !row.original.is_archived && "border-l-2 border-l-yellow-400 bg-yellow-50/30",
 
-                      // Story 13.2 & 13.3: Row selection styling
-                      isEmployeeSelected(row.original.id) && "bg-gray-100 dark:bg-gray-800",
+                      // Story 13.2 & 13.3: Row selection styling (combines with status tints using opacity)
+                      isEmployeeSelected(row.original.id) && "bg-gray-100/50 dark:bg-gray-800/50",
 
                       // Story 13.3: Cursor pointer for clickable rows
                       "cursor-pointer"

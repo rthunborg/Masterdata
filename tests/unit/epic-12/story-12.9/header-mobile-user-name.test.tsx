@@ -17,7 +17,7 @@ vi.mock('@/lib/navigation');
 vi.mock('@/lib/i18n', () => ({
   t: {
     common: {
-      appName: 'HR Masterdata',
+      appName: 'Säsongsrekrytering 2026',
       signOut: 'Sign Out',
     },
   },

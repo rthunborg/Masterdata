@@ -294,16 +294,16 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
       - name: Start database
         run: docker-compose up -d postgres
 
       - name: Run migrations
-        run: pnpm run db:migrate
+        run: npm run db:migrate
 
       - name: Verify pacts
-        run: pnpm run test:contract:provider
+        run: npm run test:contract:provider
         env:
           PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
@@ -357,10 +357,10 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
       - name: Run consumer contract tests
-        run: pnpm run test:contract
+        run: npm run test:contract
 
       - name: Publish pacts to broker
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
@@ -404,13 +404,13 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
       - name: Start dependencies
         run: docker-compose up -d
 
       - name: Run provider verification
-        run: pnpm run test:contract:provider
+        run: npm run test:contract:provider
         env:
           PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
@@ -884,7 +884,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Check pact compatibility
-        run: pnpm run pact:can-deploy ${{ github.ref_name }} production
+        run: npm run pact:can-deploy ${{ github.ref_name }} production
         env:
           PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
@@ -897,7 +897,7 @@ jobs:
         run: ./scripts/deploy.sh production
 
       - name: Record deployment in Pact Broker
-        run: pnpm run pact:record ${{ github.ref_name }} production
+        run: npm run pact:record ${{ github.ref_name }} production
         env:
           PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
@@ -919,7 +919,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cleanup old pacts
-        run: pnpm run pact:cleanup
+        run: npm run pact:cleanup
         env:
           PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}

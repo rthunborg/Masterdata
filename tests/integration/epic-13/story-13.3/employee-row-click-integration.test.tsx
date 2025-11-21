@@ -169,7 +169,7 @@ describe('Story 13.3: Row Click Integration', () => {
       fireEvent.click(row);
       
       await waitFor(() => {
-        expect(row).toHaveClass('bg-gray-100');
+        expect(row.className).toContain('bg-gray-100/50');
       });
     });
 
@@ -188,7 +188,7 @@ describe('Story 13.3: Row Click Integration', () => {
       
       // Row should have selected styling
       await waitFor(() => {
-        expect(row).toHaveClass('bg-gray-100');
+        expect(row.className).toContain('bg-gray-100/50');
       });
     });
 
@@ -203,14 +203,14 @@ describe('Story 13.3: Row Click Integration', () => {
       const row = screen.getByTestId('employee-row-1');
       
       // Initially should not have tint
-      expect(row).not.toHaveClass('bg-gray-100');
+      expect(row.className).not.toContain('bg-gray-100/50');
       
       // Click row
       fireEvent.click(row);
       
       // Should have tint
       await waitFor(() => {
-        expect(row).toHaveClass('bg-gray-100');
+        expect(row.className).toContain('bg-gray-100/50');
       });
     });
 
@@ -227,7 +227,7 @@ describe('Story 13.3: Row Click Integration', () => {
       // Click row to select
       fireEvent.click(row);
       await waitFor(() => {
-        expect(row).toHaveClass('bg-gray-100');
+        expect(row.className).toContain('bg-gray-100/50');
       });
       
       // Find and click a button (if available)
@@ -237,7 +237,7 @@ describe('Story 13.3: Row Click Integration', () => {
         fireEvent.click(buttons[0]);
         
         // Row should still be selected
-        expect(row).toHaveClass('bg-gray-100');
+        expect(row.className).toContain('bg-gray-100/50');
       }
     });
   });

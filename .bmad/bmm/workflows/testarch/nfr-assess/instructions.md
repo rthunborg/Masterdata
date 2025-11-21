@@ -329,7 +329,7 @@ This workflow performs a comprehensive assessment of non-functional requirements
 
 - SAST results (SonarQube, Checkmarx, Veracode)
 - DAST results (OWASP ZAP, Burp Suite)
-- Dependency scanning (Snyk, Dependabot, pnpm audit)
+- Dependency scanning (Snyk, Dependabot, npm audit)
 - Penetration test reports
 - Security audit logs
 

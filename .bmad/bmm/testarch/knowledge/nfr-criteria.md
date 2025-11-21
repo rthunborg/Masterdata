@@ -466,10 +466,10 @@ jobs:
       - uses: actions/setup-node@v4
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
       - name: Run tests with coverage
-        run: pnpm run test:coverage
+        run: npm run test:coverage
 
       - name: Check coverage threshold (80% minimum)
         run: |
@@ -507,17 +507,17 @@ jobs:
       - uses: actions/setup-node@v4
 
       - name: Install dependencies
-        run: pnpm ci
+        run: npm ci
 
-      - name: Run pnpm audit (no critical/high vulnerabilities)
+      - name: Run npm audit (no critical/high vulnerabilities)
         run: |
-          pnpm audit --json > audit.json || true
+          npm audit --json > audit.json || true
           CRITICAL=$(jq '.metadata.vulnerabilities.critical' audit.json)
           HIGH=$(jq '.metadata.vulnerabilities.high' audit.json)
           echo "Critical: $CRITICAL, High: $HIGH"
           if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
             echo "❌ FAIL: Found $CRITICAL critical and $HIGH high vulnerabilities"
-            pnpm audit
+            npm audit
             exit 1
           else
             echo "✅ PASS: No critical/high vulnerabilities"
@@ -597,14 +597,14 @@ test.describe('Maintainability NFR: Observability Validation', () => {
 **Key Points**:
 
 - **Coverage/duplication**: CI jobs (GitHub Actions), not Playwright tests
-- **Vulnerability scanning**: pnpm audit in CI, not Playwright tests
+- **Vulnerability scanning**: npm audit in CI, not Playwright tests
 - **Observability**: Playwright validates error tracking (Sentry) and telemetry headers
 - **Structured logging**: Validate logging contract (trace IDs, Server-Timing headers)
 - **Separation of concerns**: Build-time checks (coverage, audit) vs runtime checks (error tracking, telemetry)
 
 **Maintainability NFR Criteria**:
 
-- ✅ PASS: Clean code (80%+ coverage from CI, <5% duplication from CI), observability validated in E2E, no critical vulnerabilities from pnpm audit
+- ✅ PASS: Clean code (80%+ coverage from CI, <5% duplication from CI), observability validated in E2E, no critical vulnerabilities from npm audit
 - ⚠️ CONCERNS: Duplication >5%, coverage 60-79%, or unclear ownership
 - ❌ FAIL: Absent tests (<60%), tangled implementations (>10% duplication), or no observability
 
@@ -637,7 +637,7 @@ Before release gate:
 - [ ] **Maintainability** (CI Tools):
   - [ ] Test coverage ≥80% (from CI coverage report)
   - [ ] Code duplication <5% (from jscpd CI job)
-  - [ ] No critical/high vulnerabilities (from pnpm audit CI job)
+  - [ ] No critical/high vulnerabilities (from npm audit CI job)
   - [ ] Structured logging validated (Playwright validates telemetry headers)
   - [ ] Error tracking configured (Sentry/monitoring integration validated)
 
@@ -662,7 +662,7 @@ Before release gate:
 - **Used in workflows**: `*nfr-assess` (automated NFR validation), `*trace` (gate decision Phase 2), `*test-design` (NFR risk assessment via Utility Tree)
 - **Related fragments**: `risk-governance.md` (NFR risk scoring), `probability-impact.md` (NFR impact assessment), `test-quality.md` (maintainability standards), `test-levels-framework.md` (system-level testing for NFRs)
 - **Tools by NFR Category**:
-  - **Security**: Playwright (E2E auth/authz), OWASP ZAP, Burp Suite, pnpm audit, Snyk
+  - **Security**: Playwright (E2E auth/authz), OWASP ZAP, Burp Suite, npm audit, Snyk
   - **Performance**: k6 (load/stress/spike/endurance), Lighthouse (Core Web Vitals), Artillery
   - **Reliability**: Playwright (E2E error handling), API tests (retries, health checks), Chaos Engineering tools
   - **Maintainability**: GitHub Actions (coverage, duplication, audit), jscpd, Playwright (observability validation)

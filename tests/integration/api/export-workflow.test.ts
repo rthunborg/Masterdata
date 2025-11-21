@@ -124,7 +124,7 @@ describe("POST /api/employees/export-crew-ready", () => {
     const csvText = await response.text();
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Type")).toBe("text/csv");
+    expect(response.headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
     expect(response.headers.get("X-Employees-Exported")).toBe("1");
     expect(csvText).toContain("John");
     expect(csvText).toContain("Doe");
@@ -252,7 +252,7 @@ describe("POST /api/employees/export-crew-ready", () => {
     const response = await POST(request);
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Type")).toBe("text/csv");
+    expect(response.headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
     expect(response.headers.get("Content-Disposition")).toContain("attachment");
     expect(response.headers.get("Content-Disposition")).toContain(".csv");
 

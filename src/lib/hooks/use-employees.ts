@@ -15,6 +15,7 @@ import {
   getChangedField,
   formatNotification,
   formatBatchedNotification,
+  hasValueChanged,
 } from "@/lib/utils/change-detection";
 import { toast } from "sonner";
 import { useNetworkStatus } from "./use-network-status";
@@ -220,6 +221,66 @@ export function useEmployees({
     fetchEmployees();
   }, [fetchEmployees]);
 
+  /**
+   * Helper function to check if an employee has actually changed.
+   * Compares all relevant fields between old and new employee data.
+   * Story 13.10: Prevent unnecessary view refreshes
+   */
+  const hasEmployeeChanged = useCallback((oldEmployee: Employee, newEmployee: Employee): boolean => {
+    // Get all keys from both objects (union of keys)
+    const allKeys = new Set([
+      ...Object.keys(oldEmployee),
+      ...Object.keys(newEmployee),
+    ]);
+
+    // Compare each field
+    for (const key of allKeys) {
+      // Skip metadata fields that change on every update
+      if (key === 'updated_at' || key === 'created_at') {
+        continue;
+      }
+
+      const oldValue = oldEmployee[key as keyof Employee];
+      const newValue = newEmployee[key as keyof Employee];
+
+      // Special handling for customData (deep comparison)
+      if (key === 'customData') {
+        const oldCustomData = oldValue as Record<string, any> | undefined;
+        const newCustomData = newValue as Record<string, any> | undefined;
+        
+        // If both are undefined/null, they're the same
+        if (!oldCustomData && !newCustomData) {
+          continue;
+        }
+        
+        // If one is undefined/null and the other isn't, they're different
+        if (!oldCustomData || !newCustomData) {
+          return true;
+        }
+
+        // Compare all keys in customData
+        const customDataKeys = new Set([
+          ...Object.keys(oldCustomData),
+          ...Object.keys(newCustomData),
+        ]);
+
+        for (const customKey of customDataKeys) {
+          if (hasValueChanged(oldCustomData[customKey], newCustomData[customKey])) {
+            return true;
+          }
+        }
+        continue;
+      }
+
+      // Use hasValueChanged for all other fields
+      if (hasValueChanged(oldValue, newValue)) {
+        return true;
+      }
+    }
+
+    return false;
+  }, []);
+
   // Handle real-time events
   const handleRealtimeEvent = useCallback(
     async (event: RealtimeEvent) => {
@@ -287,13 +348,33 @@ export function useEmployees({
           }
         }
 
-        setEmployees((prev) =>
-          prev.map((emp) =>
-            emp.id === updatedEmployee.id
-              ? { ...emp, ...updatedEmployee, customData: updatedEmployee.customData || emp.customData }
-              : emp
-          )
-        );
+        // Story 13.10: Only update state if data actually changed
+        setEmployees((prev) => {
+          const currentEmployee = prev.find((emp) => emp.id === updatedEmployee.id);
+          
+          // If employee not found in current state, add it (shouldn't happen, but handle gracefully)
+          if (!currentEmployee) {
+            return prev;
+          }
+
+          // Merge updated employee with current employee to preserve customData
+          const mergedEmployee: Employee = {
+            ...currentEmployee,
+            ...updatedEmployee,
+            customData: updatedEmployee.customData || currentEmployee.customData,
+          };
+
+          // Check if employee data actually changed
+          if (!hasEmployeeChanged(currentEmployee, mergedEmployee)) {
+            // No changes detected, return previous state to prevent unnecessary re-render
+            return prev;
+          }
+
+          // Data changed, update the employee
+          return prev.map((emp) =>
+            emp.id === updatedEmployee.id ? mergedEmployee : emp
+          );
+        });
         
         setUpdatedEmployeeId(updatedEmployee.id);
         setTimeout(() => setUpdatedEmployeeId(null), 2000);
@@ -350,7 +431,7 @@ export function useEmployees({
         console.warn(`Real-time event processing exceeded 100ms: ${elapsed.toFixed(2)}ms`);
       }
     },
-    [filters, userRole, enableNotifications, addNotificationToBatch]
+    [filters, userRole, enableNotifications, addNotificationToBatch, hasEmployeeChanged]
   );
 
   // Debounce real-time event handling to prevent UI thrashing

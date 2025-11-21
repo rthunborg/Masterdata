@@ -11,8 +11,8 @@ stages:
 variables:
   # Disable git depth for accurate change detection
   GIT_DEPTH: 0
-  # Use pnpm ci for faster, deterministic installs
-  npm_config_cache: "$CI_PROJECT_DIR/.pnpm"
+  # Use npm ci for faster, deterministic installs
+  npm_config_cache: "$CI_PROJECT_DIR/.npm"
   # Playwright browser cache
   PLAYWRIGHT_BROWSERS_PATH: "$CI_PROJECT_DIR/.cache/ms-playwright"
 
@@ -22,7 +22,7 @@ cache:
     files:
       - package-lock.json
   paths:
-    - .pnpm/
+    - .npm/
     - .cache/ms-playwright/
     - node_modules/
 
@@ -31,8 +31,8 @@ lint:
   stage: lint
   image: node:20
   script:
-    - pnpm ci
-    - pnpm run lint
+    - npm ci
+    - npm run lint
   timeout: 5 minutes
 
 # Test stage - Parallel execution with sharding
@@ -42,7 +42,7 @@ lint:
   needs:
     - lint
   before_script:
-    - pnpm ci
+    - npm ci
     - npx playwright install --with-deps chromium
   artifacts:
     when: on_failure
@@ -55,22 +55,22 @@ lint:
 test:shard-1:
   <<: *test-template
   script:
-    - pnpm run test:e2e -- --shard=1/4
+    - npm run test:e2e -- --shard=1/4
 
 test:shard-2:
   <<: *test-template
   script:
-    - pnpm run test:e2e -- --shard=2/4
+    - npm run test:e2e -- --shard=2/4
 
 test:shard-3:
   <<: *test-template
   script:
-    - pnpm run test:e2e -- --shard=3/4
+    - npm run test:e2e -- --shard=3/4
 
 test:shard-4:
   <<: *test-template
   script:
-    - pnpm run test:e2e -- --shard=4/4
+    - npm run test:e2e -- --shard=4/4
 
 # Burn-in stage - Flaky test detection
 burn-in:
@@ -86,7 +86,7 @@ burn-in:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   before_script:
-    - pnpm ci
+    - npm ci
     - npx playwright install --with-deps chromium
   script:
     - |
@@ -95,7 +95,7 @@ burn-in:
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "🔥 Burn-in iteration $i/10"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        pnpm run test:e2e || exit 1
+        npm run test:e2e || exit 1
       done
       echo "✅ Burn-in complete - no flaky tests detected"
   artifacts:

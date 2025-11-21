@@ -124,7 +124,7 @@ describe("POST /api/employees/export", () => {
     const response = await POST(request);
     
     expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Type")).toBe("text/csv");
+    expect(response.headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
     expect(Papa.unparse).toHaveBeenCalled();
     
     // Verify Papa.unparse was called with correct data

@@ -1266,6 +1266,78 @@ This document provides the complete epic and story breakdown for hr-masterdata, 
 
 ---
 
+### Story 13.13: Investigate and Fix Epic 13 Test Failures
+
+**As a** developer working on Epic 13,  
+**I want** all test failures introduced by Epic 13 implementations to be systematically investigated and resolved,  
+**So that** I can ensure the test suite accurately reflects the current system behavior and catches real regressions.
+
+**Acceptance Criteria:**
+
+**Given** the complete test suite  
+**When** all tests are executed  
+**Then** a comprehensive inventory of failing tests is created with categorization:
+- All failing tests identified with file path, test name, and error message
+- Failures categorized by type:
+  - **Type A**: Tests failing due to Epic 13 implementation changes (scope changed - tests need updating)
+  - **Type B**: Tests failing due to bugs introduced by Epic 13 implementations (implementation needs fixing)
+  - **Type C**: Tests failing due to infrastructure/setup issues (unrelated to Epic 13)
+- Each failure linked to specific Epic 13 story(s) that may have caused it
+- Failure count and percentage documented
+
+**Given** a categorized list of test failures  
+**When** investigating each failure  
+**Then** root cause analysis is documented:
+- For each Type A failure: Document what changed in scope/behavior and why test needs updating
+- For each Type B failure: Document the bug introduced and how it breaks expected behavior
+- For each Type C failure: Document the infrastructure issue and whether it's related to Epic 13
+- Evidence provided for each determination (code references, behavior changes, etc.)
+
+**Given** Type B failures (bugs introduced by Epic 13)  
+**When** fixing the implementation  
+**Then** all Type B failures are resolved:
+- Implementation bugs are fixed to restore expected behavior
+- Fixed implementations pass all related tests
+- No new bugs introduced by fixes
+- Changes documented in code comments or commit messages
+
+**Given** Type A failures (tests need updating for new behavior)  
+**When** updating tests  
+**Then** all Type A failures are resolved:
+- Tests updated to reflect new expected behavior from Epic 13 implementations
+- Test assertions match current system behavior
+- Test documentation/comments updated to explain new expectations
+- Updated tests pass with current implementation
+
+**Given** Type C failures (infrastructure/setup issues)  
+**When** fixing infrastructure  
+**Then** all Type C failures are resolved:
+- Test setup/mocking issues fixed
+- Infrastructure changes don't break other tests
+- All tests can execute successfully
+
+**Given** all fixes are complete  
+**When** running the full test suite  
+**Then** comprehensive verification is performed:
+- All previously failing tests now pass
+- No new test failures introduced
+- Test execution report generated showing before/after status
+- Summary document created explaining fixes applied
+
+**Prerequisites:** 
+- All Epic 13 stories (13.1-13.12) must be implemented
+- Test suite must be executable
+
+**Technical Notes:**
+- Systematic approach: Execute tests → Categorize failures → Analyze root causes → Fix appropriately
+- Decision framework: Determine if failure is scope change (Type A) vs. bug (Type B) by checking if new behavior matches Epic 13 requirements
+- Common failure patterns: Selection-related, export-related, filter-related, visual indicators, header text, refresh behavior
+- Files likely affected: `tests/unit/components/employee-table.test.tsx`, `tests/integration/api/export-*.test.ts`, `tests/e2e/employee-*.spec.ts`
+- Create analysis documents: `docs/stories/13.13-test-failure-inventory.md`, `docs/stories/13.13-type-a-analysis.md`, `docs/stories/13.13-type-b-analysis.md`, `docs/stories/13.13-type-c-analysis.md`, `docs/stories/13.13-test-fix-summary.md`
+- All tests must pass before marking story complete
+
+---
+
 **Epic 13 Story Summary:**
 
 1. Story 13.1: Fix Filter Checkbox Functionality
@@ -1280,6 +1352,7 @@ This document provides the complete epic and story breakdown for hr-masterdata, 
 10. Story 13.10: Prevent Unnecessary View Refreshes
 11. Story 13.11: Visual Indicators for Employee Status
 12. Story 13.12: Update Header Text to "Säsongsrekrytering 2026"
+13. Story 13.13: Investigate and Fix Epic 13 Test Failures
 
 **Next Steps in BMad Method:**
 
