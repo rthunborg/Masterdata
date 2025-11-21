@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     }
 
     // Get all important dates for resolving date field UUIDs
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: importantDates, error: datesError } = await supabase
       .from('important_dates')
       .select('*')
