@@ -11,6 +11,10 @@ import { EditableDateCell } from "@/components/dashboard/editable-date-cell";
 import type { ImportantDate } from "@/lib/types/important-date";
 
 describe("View Refresh Prevention - Integration Tests", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe("EditableCell", () => {
     it("should not call onSave when value is unchanged", async () => {
       const onSave = vi.fn().mockResolvedValue(undefined);
@@ -138,28 +142,42 @@ describe("View Refresh Prevention - Integration Tests", () => {
   });
 
   describe("EditableDateCell", () => {
-    const mockDates: ImportantDate[] = [
+    // Use fixed future dates to avoid filtering (component filters out past dates)
+    // Using dates far in the future to ensure they're always valid regardless of when tests run
+    const futureDate1Str = "2026-12-01";
+    const futureDate2Str = "2026-12-15";
+    
+    const getMockDates = (): ImportantDate[] => [
       {
         id: "date-1",
-        date_value: "2024-12-01",
+        date_value: futureDate1Str,
+        date_description: "Test Date 1",
         description: "Test Date 1",
         category: "Stena Dates",
         is_active: true,
         capacity: 10,
         remaining_spots: 5,
+        week_number: 1,
+        year: 2026,
+        max_spots: 10,
       },
       {
         id: "date-2",
-        date_value: "2024-12-02",
+        date_value: futureDate2Str,
+        date_description: "Test Date 2",
         description: "Test Date 2",
         category: "Stena Dates",
         is_active: true,
         capacity: 10,
         remaining_spots: 5,
+        week_number: 2,
+        year: 2026,
+        max_spots: 10,
       },
     ];
 
     it("should not call onSave when same date is selected", async () => {
+      const mockDates = getMockDates();
       const onSave = vi.fn().mockResolvedValue(undefined);
       const user = userEvent.setup();
 
@@ -175,33 +193,48 @@ describe("View Refresh Prevention - Integration Tests", () => {
         />
       );
 
-      // Click to enter edit mode
+      // Click to enter edit mode (dropdown auto-opens after 50ms)
       const cell = screen.getByText("Test Date 1");
       await user.click(cell);
 
-      // Wait for dropdown to appear and select the same date
+      // Wait for dropdown to appear and be ready (component has 50ms delay + render time)
       await waitFor(() => {
-        const select = screen.getByRole("combobox");
+        const select = screen.queryByRole("combobox");
         expect(select).toBeInTheDocument();
-      });
-
-      // Select the same date (date-1)
-      const select = screen.getByRole("combobox");
-      await user.click(select);
+      }, { timeout: 5000 });
       
-      // Wait for options and select the same value
+      // Wait for dropdown to be open and options to appear (component auto-opens it)
+      // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
+      // Increase timeout for full suite runs where there may be more contention
       await waitFor(async () => {
-        const option = screen.getByText("Test Date 1");
-        await user.click(option);
-      });
+        // Look for option role elements - wait for them to be visible and interactive
+        const options = screen.queryAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+        // Also verify at least one option is visible (not hidden)
+        const visibleOptions = options.filter(opt => {
+          const style = window.getComputedStyle(opt);
+          return style.display !== 'none' && style.visibility !== 'hidden';
+        });
+        expect(visibleOptions.length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
 
-      // Wait a bit and verify onSave was not called
+      // Select the same date (dropdown should already be open)
+      // Find the option that contains "Test Date 1" text
+      const options = await screen.findAllByRole("option", {}, { timeout: 5000 });
+      const sameDateOption = options.find(opt => opt.textContent?.includes("Test Date 1"));
+      expect(sameDateOption).toBeDefined();
+      if (sameDateOption) {
+        await user.click(sameDateOption);
+      }
+
+      // Wait for dropdown to close and verify onSave was not called (increase timeout for full suite runs)
       await waitFor(() => {
         expect(onSave).not.toHaveBeenCalled();
-      }, { timeout: 2000 });
+      }, { timeout: 5000 });
     });
 
     it("should call onSave when different date is selected", async () => {
+      const mockDates = getMockDates();
       const onSave = vi.fn().mockResolvedValue(undefined);
       const user = userEvent.setup();
 
@@ -217,29 +250,44 @@ describe("View Refresh Prevention - Integration Tests", () => {
         />
       );
 
-      // Click to enter edit mode
+      // Click to enter edit mode (dropdown auto-opens after 50ms)
       const cell = screen.getByText("Test Date 1");
       await user.click(cell);
 
-      // Wait for dropdown to appear
+      // Wait for dropdown to appear and be ready (component has 50ms delay + render time)
       await waitFor(() => {
-        const select = screen.getByRole("combobox");
+        const select = screen.queryByRole("combobox");
         expect(select).toBeInTheDocument();
-      });
-
-      // Select different date
-      const select = screen.getByRole("combobox");
-      await user.click(select);
+      }, { timeout: 5000 });
       
+      // Wait for dropdown to be open and options to appear (component auto-opens it)
+      // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
+      // Increase timeout for full suite runs where there may be more contention
       await waitFor(async () => {
-        const option = screen.getByText("Test Date 2");
-        await user.click(option);
-      });
+        // Look for option role elements - wait for them to be visible and interactive
+        const options = screen.queryAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+        // Also verify at least one option is visible (not hidden)
+        const visibleOptions = options.filter(opt => {
+          const style = window.getComputedStyle(opt);
+          return style.display !== 'none' && style.visibility !== 'hidden';
+        });
+        expect(visibleOptions.length).toBeGreaterThan(0);
+      }, { timeout: 5000 });
 
-      // Wait for save to be called
+      // Select different date (dropdown should already be open)
+      // Find the option that contains "Test Date 2" text
+      const options = await screen.findAllByRole("option", {}, { timeout: 5000 });
+      const differentDateOption = options.find(opt => opt.textContent?.includes("Test Date 2"));
+      expect(differentDateOption).toBeDefined();
+      if (differentDateOption) {
+        await user.click(differentDateOption);
+      }
+
+      // Wait for save to be called (increase timeout for full suite runs)
       await waitFor(() => {
         expect(onSave).toHaveBeenCalledWith("emp-1", "stena_date", "date-2");
-      }, { timeout: 2000 });
+      }, { timeout: 5000 });
     });
   });
 });

@@ -718,7 +718,7 @@ function EmployeeCardComponent({
       >
 
         <CardHeader 
-          className={cn("pb-3", isSelected && "bg-gray-100 dark:bg-gray-800")}
+          className={cn("pb-3", isSelected && "bg-gray-100/50 dark:bg-gray-800/50")}
           data-testid="employee-card-header"
         >
 

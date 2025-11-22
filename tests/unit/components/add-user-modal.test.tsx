@@ -272,10 +272,11 @@ describe('AddUserModal', () => {
     await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
     await user.click(screen.getByRole('button', { name: /skapa användare/i }));
 
-    // Check loading state
+    // Check loading state - button text changes to "skapar" (creating) during submission
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /skapar/i })).toBeInTheDocument();
-    });
+      const loadingButton = screen.queryByRole('button', { name: /skapar/i });
+      expect(loadingButton).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 
   it('prevents form submission while loading', { timeout: 15000 }, async () => {

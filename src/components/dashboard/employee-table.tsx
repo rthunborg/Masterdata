@@ -2342,9 +2342,10 @@ export function EmployeeTable({
                       row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
 
                       // Story 13.11: Status tints (priority: terminated > crew ready)
-                      row.original.is_terminated && !row.original.is_archived && "bg-red-50 dark:bg-red-950/20",
+                      // Override TableRow's default data-[state=selected]:bg-muted to allow status tints to show
+                      row.original.is_terminated && !row.original.is_archived && "bg-red-50 dark:bg-red-950/20 data-[state=selected]:!bg-red-50",
 
-                      isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20",
+                      isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20 data-[state=selected]:!bg-green-50/50",
 
                       isUpdatedRow && "animate-pulse bg-blue-50 border-l-4 border-l-blue-400 transition-all duration-2000",
 

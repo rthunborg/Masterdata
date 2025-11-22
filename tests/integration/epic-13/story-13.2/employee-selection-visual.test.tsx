@@ -235,8 +235,8 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
       // Select
       fireEvent.click(checkbox);
       
-      // Should have dark mode tint
-      expect(row).toHaveClass('dark:bg-gray-800');
+      // Should have dark mode tint (with opacity to combine with status tints)
+      expect(row.className).toContain('dark:bg-gray-800/50');
     });
   });
 
@@ -254,10 +254,10 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
         />
       );
 
-      // Card header should have tint when selected
+      // Card header should have tint when selected (with opacity to combine with status tints)
       const cardHeader = screen.getByTestId('employee-card-header');
       expect(cardHeader.className).toContain('bg-gray-100/50');
-      expect(cardHeader).toHaveClass('dark:bg-gray-800');
+      expect(cardHeader.className).toContain('dark:bg-gray-800/50');
     });
 
     it('mobile cards do not show tint when unselected', () => {
