@@ -1525,10 +1525,10 @@ export function EmployeeTable({
 
   // Story 13.5: Reset Crew Ready filter when Terminated filter is enabled
   React.useEffect(() => {
-    if (includeTerminated) {
+    if (includeTerminated || includeArchived || needsRepayment) {
       setCrewReadyFilter('all');
     }
-  }, [includeTerminated]);
+  }, [includeTerminated, includeArchived, needsRepayment]);
 
   // Story 13.5: Auto-select employees when Crew Ready filter is activated
   React.useEffect(() => {
@@ -1898,7 +1898,7 @@ export function EmployeeTable({
 
           {includeArchived 
 
-            ? "No archived employees found." 
+            ? "No arkiverade anställda hittades." 
 
             : tDashboard('noEmployeesMessage')}
 

@@ -82,6 +82,7 @@ export function ExportFieldSelectionDialog({
 }: ExportFieldSelectionDialogProps) {
 
   const tDashboard = useTranslations("dashboard");
+  const tCommon = useTranslations("common");
 
 
   // Get all available fields: masterdata fields + custom columns
@@ -507,7 +508,7 @@ export function ExportFieldSelectionDialog({
 
           <Button variant="outline" onClick={handleCancel}>
 
-            {tDashboard("cancel") || "Cancel"}
+            {tCommon("cancel") || "Cancel"}
 
           </Button>
 
@@ -519,7 +520,7 @@ export function ExportFieldSelectionDialog({
 
           >
 
-            {tDashboard("export") || "Export"}
+            {tCommon("export") || "Export"}
 
           </Button>
 

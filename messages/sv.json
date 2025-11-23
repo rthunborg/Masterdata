@@ -47,7 +47,7 @@
     "all": "Alla",
     "employeeCount": "{count} anställda",
     "noEmployees": "Inga anställda hittades",
-    "noEmployeesMessage": "Inga anställda hittades. Klicka på 'Lägg till anställd' för att skapa din första post.",
+    "noEmployeesMessage": "Inga anställda hittades.",
     "editEmployee": "Redigera anställd",
     "archiveEmployee": "Arkivera anställd",
     "unarchiveEmployee": "Återställ anställd",
@@ -69,7 +69,12 @@
     "exportCrewReadyTooltipPlural": "Exportera {count} anställda med alla förhandskrav uppfyllda och markera dem som besättningsklara",
     "missingPrerequisites": "Saknade förhandskrav: {fields}",
     "selectSalaryLevel": "Välj lönenivå",
-    "notSet": "Ej angiven"
+    "notSet": "Ej angiven",
+    "export": {
+      "selectFields": "Välj fält att exportera",
+      "selectFieldsDescription": "Välj vilka fält som ska inkluderas i exporten. Synliga kolumner är förvalda.",
+      "masterdataFields": "Masterdatafält"
+    }
   },
   "forms": {
     "firstName": "Förnamn",
