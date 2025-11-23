@@ -45,7 +45,7 @@ export function ImportEmployeesModal({
   onOpenChange,
   onSuccess,
 }: ImportEmployeesModalProps) {
-  const t = useTranslations('modals.importEmployees');
+  const tModals = useTranslations('modals');
   const tCommon = useTranslations('common');
   
   const [file, setFile] = useState<File | null>(null);
@@ -70,7 +70,7 @@ export function ImportEmployeesModal({
         setCSVData(results.data.slice(0, 5) as CSVRow[]); // Preview first 5 rows
       },
       error: (error) => {
-        toast.error(t('parseFailed', { message: error.message }));
+        toast.error(tModals('importEmployees.parseFailed', { message: error.message }));
         setFile(null);
       },
     });
@@ -85,13 +85,13 @@ export function ImportEmployeesModal({
       setImportResult(result);
       
       if (result.imported > 0) {
-        toast.success(t('importSuccess', { count: result.imported }));
+        toast.success(tModals('importEmployees.importSuccess', { count: result.imported }));
         onSuccess();
       } else {
-        toast.warning(t('noEmployeesImported'));
+        toast.warning(tModals('importEmployees.noEmployeesImported'));
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : t('importFailed');
+      const message = error instanceof Error ? error.message : tModals('importEmployees.importFailed');
       toast.error(message);
     } finally {
       setIsImporting(false);
@@ -113,7 +113,7 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    toast.success(t('templateDownloaded'));
+    toast.success(tModals('importEmployees.templateDownloaded'));
   };
 
   const handleDownloadErrorReport = () => {
@@ -135,7 +135,7 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    toast.success(t('errorReportDownloaded'));
+    toast.success(tModals('importEmployees.errorReportDownloaded'));
   };
 
   const handleClose = () => {
@@ -151,9 +151,9 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogTitle>{tModals('importEmployees.title')}</DialogTitle>
           <DialogDescription>
-            {t('description')}
+            {tModals('importEmployees.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -169,7 +169,7 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
               />
             </div>
             <Button variant="outline" onClick={handleDownloadTemplate}>
-              {t('downloadTemplate')}
+              {tModals('importEmployees.downloadTemplate')}
             </Button>
           </div>
         )}
@@ -178,7 +178,7 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
         {file && csvData.length > 0 && !importResult && (
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium mb-2">{t('csvPreview')}</h4>
+              <h4 className="font-medium mb-2">{tModals('importEmployees.csvPreview')}</h4>
               <div className="border rounded-md overflow-auto max-h-64">
                 <Table>
                   <TableHeader>
@@ -196,7 +196,7 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
                         {csvHeaders.map((header) => (
                           <TableCell key={header} className="whitespace-nowrap">
                             {row[header] === "" || row[header] === null || row[header] === undefined ? (
-                              <span className="text-muted-foreground italic">{t('empty')}</span>
+                              <span className="text-muted-foreground italic">{tModals('importEmployees.empty')}</span>
                             ) : (
                               row[header]
                             )}
@@ -209,7 +209,7 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              {t('mappingHint')}
+              {tModals('importEmployees.mappingHint')}
             </p>
           </div>
         )}
@@ -220,9 +220,9 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
-            <p className="text-lg font-medium">{t('importing')}</p>
+            <p className="text-lg font-medium">{tModals('importEmployees.importing')}</p>
             <p className="text-sm text-muted-foreground">
-              {t('pleaseWait')}
+              {tModals('importEmployees.pleaseWait')}
             </p>
           </div>
         )}
@@ -231,20 +231,20 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
         {importResult && !isImporting && (
           <div className="space-y-4">
             <div className="rounded-lg border p-4 bg-muted/50">
-              <h4 className="font-semibold text-lg mb-2">{t('importComplete')}</h4>
+              <h4 className="font-semibold text-lg mb-2">{tModals('importEmployees.importComplete')}</h4>
               <div className="space-y-1">
                 <p className="text-sm">
                   <span className="font-medium text-green-600">
-                    {t('successfullyImported')}
+                    {tModals('importEmployees.successfullyImported')}
                   </span>{" "}
-                  {importResult.imported} {t('employees')}
+                  {importResult.imported} {tModals('importEmployees.employees')}
                 </p>
                 {importResult.skipped > 0 && (
                   <p className="text-sm">
                     <span className="font-medium text-orange-600">
-                      {t('skippedErrors')}
+                      {tModals('importEmployees.skippedErrors')}
                     </span>{" "}
-                    {importResult.skipped} {t('rows')}
+                    {importResult.skipped} {tModals('importEmployees.rows')}
                   </p>
                 )}
               </div>
@@ -253,26 +253,26 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
             {importResult.errors.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h5 className="font-medium">{t('errors')}</h5>
+                  <h5 className="font-medium">{tModals('importEmployees.errors')}</h5>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleDownloadErrorReport}
                   >
-                    {t('downloadErrorReport')}
+                    {tModals('importEmployees.downloadErrorReport')}
                   </Button>
                 </div>
                 <div className="border rounded-md p-3 max-h-48 overflow-y-auto bg-muted/30">
                   <ul className="space-y-2 text-sm">
                     {importResult.errors.slice(0, 10).map((err, i) => (
                       <li key={i} className="text-red-600">
-                        <span className="font-medium">{t('row')} {err.row}:</span>{" "}
+                        <span className="font-medium">{tModals('importEmployees.row')} {err.row}:</span>{" "}
                         {err.error}
                       </li>
                     ))}
                     {importResult.errors.length > 10 && (
                       <li className="text-muted-foreground italic">
-                        {t('moreErrors', { count: importResult.errors.length - 10 })}
+                        {tModals('importEmployees.moreErrors', { count: importResult.errors.length - 10 })}
                       </li>
                     )}
                   </ul>

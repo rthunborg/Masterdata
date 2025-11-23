@@ -197,11 +197,13 @@ describe("View Refresh Prevention - Integration Tests", () => {
       const cell = screen.getByText("Test Date 1");
       await user.click(cell);
 
-      // Wait for dropdown to appear and be ready (component has 50ms delay + render time)
+      // Wait for the Select component to render (it appears when isEditing becomes true)
+      // The SelectTrigger has role="combobox", so wait for that
+      // Use interval to check more frequently
       await waitFor(() => {
         const select = screen.queryByRole("combobox");
         expect(select).toBeInTheDocument();
-      }, { timeout: 10000 });
+      }, { timeout: 10000, interval: 100 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
       // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
@@ -255,11 +257,13 @@ describe("View Refresh Prevention - Integration Tests", () => {
       const cell = screen.getByText("Test Date 1");
       await user.click(cell);
 
-      // Wait for dropdown to appear and be ready (component has 50ms delay + render time)
+      // Wait for the Select component to render (it appears when isEditing becomes true)
+      // The SelectTrigger has role="combobox", so wait for that
+      // Use interval to check more frequently
       await waitFor(() => {
         const select = screen.queryByRole("combobox");
         expect(select).toBeInTheDocument();
-      }, { timeout: 10000 });
+      }, { timeout: 10000, interval: 100 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
       // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
