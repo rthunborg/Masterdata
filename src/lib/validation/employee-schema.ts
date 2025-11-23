@@ -137,6 +137,8 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
     repayment_needed_omc: z.string().nullable().default(null),
     repayment_needed_pe3: z.string().nullable().default(null),
+    // Story 14.1: ÖMC Masterdata Reminder Notification
+    omc_masterdata_reminder_sent_at: z.string().datetime().nullable().default(null),
   });
 }
 
@@ -229,6 +231,8 @@ const baseEmployeeSchema = z.object({
   // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
   repayment_needed_omc: z.string().nullable().default(null),
   repayment_needed_pe3: z.string().nullable().default(null),
+  // Story 14.1: ÖMC Masterdata Reminder Notification
+  omc_masterdata_reminder_sent_at: z.string().datetime().nullable().default(null),
 });
 
 /**

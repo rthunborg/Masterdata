@@ -59,6 +59,9 @@ export interface Employee {
   hotel_required?: boolean | null;
   /** Room number assigned for shared accommodation (FR40 algorithm) */
   room_number_shared?: number | null;
+  // Story 14.1: ÖMC Masterdata Reminder Notification
+  /** Timestamp when reminder notification was sent for incomplete masterdata after ÖMC completion */
+  omc_masterdata_reminder_sent_at?: string | null;
   created_at: string;
   updated_at: string;
   customData?: Record<string, string | number | boolean | null>; // Custom column data from party tables
