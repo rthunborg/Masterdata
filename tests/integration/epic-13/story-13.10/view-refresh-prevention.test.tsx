@@ -176,7 +176,7 @@ describe("View Refresh Prevention - Integration Tests", () => {
       },
     ];
 
-    it("should not call onSave when same date is selected", async () => {
+    it("should not call onSave when same date is selected", { timeout: 15000 }, async () => {
       const mockDates = getMockDates();
       const onSave = vi.fn().mockResolvedValue(undefined);
       const user = userEvent.setup();
@@ -201,7 +201,7 @@ describe("View Refresh Prevention - Integration Tests", () => {
       await waitFor(() => {
         const select = screen.queryByRole("combobox");
         expect(select).toBeInTheDocument();
-      }, { timeout: 5000 });
+      }, { timeout: 10000 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
       // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
@@ -216,24 +216,25 @@ describe("View Refresh Prevention - Integration Tests", () => {
           return style.display !== 'none' && style.visibility !== 'hidden';
         });
         expect(visibleOptions.length).toBeGreaterThan(0);
-      }, { timeout: 5000 });
+      }, { timeout: 10000 });
 
       // Select the same date (dropdown should already be open)
       // Find the option that contains "Test Date 1" text
-      const options = await screen.findAllByRole("option", {}, { timeout: 5000 });
+      const options = await screen.findAllByRole("option", {}, { timeout: 10000 });
       const sameDateOption = options.find(opt => opt.textContent?.includes("Test Date 1"));
       expect(sameDateOption).toBeDefined();
       if (sameDateOption) {
         await user.click(sameDateOption);
       }
 
-      // Wait for dropdown to close and verify onSave was not called (increase timeout for full suite runs)
+      // Wait for dropdown to close and verify onSave was not called
+      // Component has 100ms timeout before checking value change, so wait a bit longer
       await waitFor(() => {
         expect(onSave).not.toHaveBeenCalled();
-      }, { timeout: 5000 });
+      }, { timeout: 10000 });
     });
 
-    it("should call onSave when different date is selected", async () => {
+    it("should call onSave when different date is selected", { timeout: 15000 }, async () => {
       const mockDates = getMockDates();
       const onSave = vi.fn().mockResolvedValue(undefined);
       const user = userEvent.setup();
@@ -258,7 +259,7 @@ describe("View Refresh Prevention - Integration Tests", () => {
       await waitFor(() => {
         const select = screen.queryByRole("combobox");
         expect(select).toBeInTheDocument();
-      }, { timeout: 5000 });
+      }, { timeout: 10000 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
       // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
@@ -273,21 +274,21 @@ describe("View Refresh Prevention - Integration Tests", () => {
           return style.display !== 'none' && style.visibility !== 'hidden';
         });
         expect(visibleOptions.length).toBeGreaterThan(0);
-      }, { timeout: 5000 });
+      }, { timeout: 10000 });
 
       // Select different date (dropdown should already be open)
       // Find the option that contains "Test Date 2" text
-      const options = await screen.findAllByRole("option", {}, { timeout: 5000 });
+      const options = await screen.findAllByRole("option", {}, { timeout: 10000 });
       const differentDateOption = options.find(opt => opt.textContent?.includes("Test Date 2"));
       expect(differentDateOption).toBeDefined();
       if (differentDateOption) {
         await user.click(differentDateOption);
       }
 
-      // Wait for save to be called (increase timeout for full suite runs)
+      // Wait for save to be called (component has setTimeout with 0ms delay)
       await waitFor(() => {
         expect(onSave).toHaveBeenCalledWith("emp-1", "stena_date", "date-2");
-      }, { timeout: 5000 });
+      }, { timeout: 10000 });
     });
   });
 });

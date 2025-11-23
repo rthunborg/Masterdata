@@ -82,7 +82,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
     
     // Wait for component to render
     const addButton = await screen.findByRole('button', { 
-      name: /Lägg till datum|Add Date/i 
+      name: /Nytt datum|Add Date/i 
     });
     
     expect(isFullyVisible(addButton)).toBe(true);
@@ -116,7 +116,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
     const { container } = renderWithI18n(<ImportantDatesPage />);
     
     const addButton = await screen.findByRole('button', { 
-      name: /Lägg till datum|Add Date/i 
+      name: /Nytt datum|Add Date/i 
     });
     const importButton = await screen.findByRole('button', { 
       name: /Importera|Import/i 
@@ -135,7 +135,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
     
     const { container } = renderWithI18n(<ImportantDatesPage />);
     
-    await screen.findByRole('button', { name: /Lägg till datum|Add Date/i });
+    await screen.findByRole('button', { name: /Nytt datum|Add Date/i });
     
     // Find button container - should have flex-col on mobile
     const buttonContainer = container.querySelector('.flex-col, [class*="flex-col"]');
@@ -154,7 +154,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
     const { container } = renderWithI18n(<ImportantDatesPage />);
     
     const addButton = await screen.findByRole('button', { 
-      name: /Lägg till datum|Add Date/i 
+      name: /Nytt datum|Add Date/i 
     });
     
     // Check if button has min-h-11 class (44px) or h-11 class

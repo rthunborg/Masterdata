@@ -64,7 +64,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   
-  const t = useTranslations('modals.addColumn');
+  const tModals = useTranslations('modals');
   const tCommon = useTranslations('common');
 
   // Extract existing categories from columns with their colors
@@ -135,7 +135,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
       form.reset();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : t('createFailed');
+        error instanceof Error ? error.message : tModals('addColumn.createFailed');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -204,7 +204,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
               name="is_masterdata"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>{t('columnTypeSelectionLabel')}</FormLabel>
+                  <FormLabel>{tModals('addColumn.columnTypeSelectionLabel')}</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={(value) => field.onChange(value === "true")}
@@ -217,7 +217,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                           <RadioGroupItem value="false" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          {t('columnTypeExternal')}
+                          {tModals('addColumn.columnTypeExternal')}
                         </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
@@ -225,13 +225,13 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                           <RadioGroupItem value="true" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-pointer">
-                          {t('columnTypeMasterdata')}
+                          {tModals('addColumn.columnTypeMasterdata')}
                         </FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
                   <FormDescription className="text-xs text-muted-foreground">
-                    {t('columnTypeSelectionDescription')}
+                    {tModals('addColumn.columnTypeSelectionDescription')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
