@@ -246,9 +246,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Story 12.3: Enable offline sync monitoring with conflict resolution
-  useOfflineSync(handleConflict);
-
   return (
     <div className="px-4 sm:px-0">
       {/* Offline Banner - Shows when offline (Story 12.3) */}
@@ -263,9 +260,6 @@ export default function DashboardPage() {
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">{t('title')}</h2>
-          <p className="mt-2 text-gray-600">
-            {t('viewDetails')}
-          </p>
         </div>
         <div className="flex flex-col sm:flex-row flex-wrap gap-2 items-stretch sm:items-center">
           {/* Role Selector - Only visible to HR Admin */}
@@ -346,9 +340,6 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>{t('all')}</CardTitle>
-            <CardDescription>
-              {t('noEmployees')}
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveEmployeeView

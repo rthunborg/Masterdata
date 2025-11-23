@@ -45,7 +45,7 @@ export function ImportEmployeesModal({
   onOpenChange,
   onSuccess,
 }: ImportEmployeesModalProps) {
-  const t = useTranslations('modals');
+  const t = useTranslations('modals.importEmployees');
   const tCommon = useTranslations('common');
   
   const [file, setFile] = useState<File | null>(null);
@@ -196,7 +196,7 @@ Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Senior Engineer,,2024-12-01,
                         {csvHeaders.map((header) => (
                           <TableCell key={header} className="whitespace-nowrap">
                             {row[header] === "" || row[header] === null || row[header] === undefined ? (
-                              <span className="text-muted-foreground italic">(empty)</span>
+                              <span className="text-muted-foreground italic">{t('empty')}</span>
                             ) : (
                               row[header]
                             )}

@@ -28,18 +28,27 @@ export class EmployeeRepository {
         .order("surname", { ascending: true })
         .order("first_name", { ascending: true });
 
-      // Filter by archived status (default: exclude archived)
-      if (!filters?.includeArchived) {
+      // Filter by archived status
+      // When includeArchived is true: show only archived employees
+      // When includeArchived is false/undefined: show only non-archived employees (default)
+      if (filters?.includeArchived === true) {
+        query = query.eq("is_archived", true);
+      } else {
         query = query.eq("is_archived", false);
       }
 
-      // Filter by termination status (default: exclude terminated)
-      if (!filters?.includeTerminated) {
+      // Filter by termination status
+      // When includeTerminated is true: show only terminated employees
+      // When includeTerminated is false/undefined: show only non-terminated employees (default)
+      if (filters?.includeTerminated === true) {
+        query = query.eq("is_terminated", true);
+      } else {
         query = query.eq("is_terminated", false);
       }
       
       // Story 8.13 AC 9: Filter by repayment needed
-      if (filters?.needsRepayment) {
+      // When needsRepayment is true: show only employees needing repayment
+      if (filters?.needsRepayment === true) {
         query = query.or("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
       }
 

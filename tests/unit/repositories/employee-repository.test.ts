@@ -30,6 +30,7 @@ describe("EmployeeRepository", () => {
       from: vi.fn(),
       select: vi.fn(),
       eq: vi.fn(),
+      or: vi.fn(),
       order: vi.fn(),
       single: vi.fn(),
       then: vi.fn(),  // Make it thenable for await
@@ -40,6 +41,7 @@ describe("EmployeeRepository", () => {
     chainMock.from.mockReturnValue(chainMock);
     chainMock.select.mockReturnValue(chainMock);
     chainMock.eq.mockReturnValue(chainMock);
+    chainMock.or.mockReturnValue(chainMock);
     chainMock.order.mockReturnValue(chainMock);
 
     // When awaited, return the resolved data
@@ -125,15 +127,318 @@ describe("EmployeeRepository", () => {
       expect(result).toEqual([]);
     });
 
-    it("should accept filter parameters", async () => {
-      createMockSupabaseClient({ data: [], error: null });
+    it("should filter to show only archived employees when includeArchived is true", async () => {
+      const mockArchivedEmployees: Employee[] = [
+        {
+          id: "1",
+          first_name: "Archived",
+          surname: "Employee",
+          ssn: "123456-7890",
+          email: "archived@example.com",
+          mobile: "+46701234567",
+          rank: "SEV",
+          gender: 'Man',
+          town_district: "Stockholm",
+          hire_date: "2025-01-15",
+          stena_date: null,
+          omc_date: null,
+          pe3_date: null,
+          termination_date: null,
+          termination_reason: null,
+          is_terminated: false,
+          is_archived: true,
+          repayment_needed_omc: null,
+          repayment_needed_pe3: null,
+          comments: null,
+          one: null,
+          one_marked_at: null,
+          talmundo: null,
+          isps: null,
+          photo: null,
+          origo: null,
+          loneiva: null,
+          mail_lon: null,
+          bankuppgifter: null,
+          li: null,
+          passport: null,
+          kvitto_c17_18: null,
+          c17: null,
+          crewing_done: null,
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
+        },
+      ];
 
-      await repository.findAll({ includeArchived: true });
-      await repository.findAll({ includeTerminated: true });
-      await repository.findAll({ includeArchived: true, includeTerminated: true });
+      const { chainMock } = createMockSupabaseClient({ data: mockArchivedEmployees, error: null });
 
-      // Just verify the calls complete without error
-      expect(true).toBe(true);
+      const result = await repository.findAll({ includeArchived: true });
+
+      expect(result).toEqual(mockArchivedEmployees);
+      expect(result.length).toBe(1);
+      expect(result[0].is_archived).toBe(true);
+      expect(chainMock.eq).toHaveBeenCalledWith("is_archived", true);
+    });
+
+    it("should filter to show only non-archived employees when includeArchived is false", async () => {
+      const mockActiveEmployees: Employee[] = [
+        {
+          id: "1",
+          first_name: "Active",
+          surname: "Employee",
+          ssn: "123456-7890",
+          email: "active@example.com",
+          mobile: "+46701234567",
+          rank: "SEV",
+          gender: 'Man',
+          town_district: "Stockholm",
+          hire_date: "2025-01-15",
+          stena_date: null,
+          omc_date: null,
+          pe3_date: null,
+          termination_date: null,
+          termination_reason: null,
+          is_terminated: false,
+          is_archived: false,
+          repayment_needed_omc: null,
+          repayment_needed_pe3: null,
+          comments: null,
+          one: null,
+          one_marked_at: null,
+          talmundo: null,
+          isps: null,
+          photo: null,
+          origo: null,
+          loneiva: null,
+          mail_lon: null,
+          bankuppgifter: null,
+          li: null,
+          passport: null,
+          kvitto_c17_18: null,
+          c17: null,
+          crewing_done: null,
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
+        },
+      ];
+
+      const { chainMock } = createMockSupabaseClient({ data: mockActiveEmployees, error: null });
+
+      const result = await repository.findAll({ includeArchived: false });
+
+      expect(result).toEqual(mockActiveEmployees);
+      expect(result.length).toBe(1);
+      expect(result[0].is_archived).toBe(false);
+      expect(chainMock.eq).toHaveBeenCalledWith("is_archived", false);
+    });
+
+    it("should filter to show only terminated employees when includeTerminated is true", async () => {
+      const mockTerminatedEmployees: Employee[] = [
+        {
+          id: "1",
+          first_name: "Terminated",
+          surname: "Employee",
+          ssn: "123456-7890",
+          email: "terminated@example.com",
+          mobile: "+46701234567",
+          rank: "SEV",
+          gender: 'Man',
+          town_district: "Stockholm",
+          hire_date: "2025-01-15",
+          stena_date: null,
+          omc_date: null,
+          pe3_date: null,
+          termination_date: "2025-10-26",
+          termination_reason: "Resigned",
+          is_terminated: true,
+          is_archived: false,
+          repayment_needed_omc: null,
+          repayment_needed_pe3: null,
+          comments: null,
+          one: null,
+          one_marked_at: null,
+          talmundo: null,
+          isps: null,
+          photo: null,
+          origo: null,
+          loneiva: null,
+          mail_lon: null,
+          bankuppgifter: null,
+          li: null,
+          passport: null,
+          kvitto_c17_18: null,
+          c17: null,
+          crewing_done: null,
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
+        },
+      ];
+
+      const { chainMock } = createMockSupabaseClient({ data: mockTerminatedEmployees, error: null });
+
+      const result = await repository.findAll({ includeTerminated: true });
+
+      expect(result).toEqual(mockTerminatedEmployees);
+      expect(result.length).toBe(1);
+      expect(result[0].is_terminated).toBe(true);
+      expect(chainMock.eq).toHaveBeenCalledWith("is_terminated", true);
+    });
+
+    it("should filter to show only non-terminated employees when includeTerminated is false", async () => {
+      const mockActiveEmployees: Employee[] = [
+        {
+          id: "1",
+          first_name: "Active",
+          surname: "Employee",
+          ssn: "123456-7890",
+          email: "active@example.com",
+          mobile: "+46701234567",
+          rank: "SEV",
+          gender: 'Man',
+          town_district: "Stockholm",
+          hire_date: "2025-01-15",
+          stena_date: null,
+          omc_date: null,
+          pe3_date: null,
+          termination_date: null,
+          termination_reason: null,
+          is_terminated: false,
+          is_archived: false,
+          repayment_needed_omc: null,
+          repayment_needed_pe3: null,
+          comments: null,
+          one: null,
+          one_marked_at: null,
+          talmundo: null,
+          isps: null,
+          photo: null,
+          origo: null,
+          loneiva: null,
+          mail_lon: null,
+          bankuppgifter: null,
+          li: null,
+          passport: null,
+          kvitto_c17_18: null,
+          c17: null,
+          crewing_done: null,
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
+        },
+      ];
+
+      const { chainMock } = createMockSupabaseClient({ data: mockActiveEmployees, error: null });
+
+      const result = await repository.findAll({ includeTerminated: false });
+
+      expect(result).toEqual(mockActiveEmployees);
+      expect(result.length).toBe(1);
+      expect(result[0].is_terminated).toBe(false);
+      expect(chainMock.eq).toHaveBeenCalledWith("is_terminated", false);
+    });
+
+    it("should filter to show only employees needing repayment when needsRepayment is true", async () => {
+      const mockRepaymentEmployees: Employee[] = [
+        {
+          id: "1",
+          first_name: "Repayment",
+          surname: "Employee",
+          ssn: "123456-7890",
+          email: "repayment@example.com",
+          mobile: "+46701234567",
+          rank: "SEV",
+          gender: 'Man',
+          town_district: "Stockholm",
+          hire_date: "2025-01-15",
+          stena_date: null,
+          omc_date: null,
+          pe3_date: null,
+          termination_date: "2025-10-26",
+          termination_reason: "Resigned",
+          is_terminated: true,
+          is_archived: false,
+          repayment_needed_omc: "2025-11-01",
+          repayment_needed_pe3: null,
+          comments: null,
+          one: null,
+          one_marked_at: null,
+          talmundo: null,
+          isps: null,
+          photo: null,
+          origo: null,
+          loneiva: null,
+          mail_lon: null,
+          bankuppgifter: null,
+          li: null,
+          passport: null,
+          kvitto_c17_18: null,
+          c17: null,
+          crewing_done: null,
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
+        },
+      ];
+
+      const { chainMock } = createMockSupabaseClient({ data: mockRepaymentEmployees, error: null });
+
+      const result = await repository.findAll({ needsRepayment: true });
+
+      expect(result).toEqual(mockRepaymentEmployees);
+      expect(result.length).toBe(1);
+      expect(result[0].repayment_needed_omc).toBe("2025-11-01");
+      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
+    });
+
+    it("should apply multiple filters correctly", async () => {
+      const mockFilteredEmployees: Employee[] = [
+        {
+          id: "1",
+          first_name: "Filtered",
+          surname: "Employee",
+          ssn: "123456-7890",
+          email: "filtered@example.com",
+          mobile: "+46701234567",
+          rank: "SEV",
+          gender: 'Man',
+          town_district: "Stockholm",
+          hire_date: "2025-01-15",
+          stena_date: null,
+          omc_date: null,
+          pe3_date: null,
+          termination_date: "2025-10-26",
+          termination_reason: "Resigned",
+          is_terminated: true,
+          is_archived: false,
+          repayment_needed_omc: "2025-11-01",
+          repayment_needed_pe3: null,
+          comments: null,
+          one: null,
+          one_marked_at: null,
+          talmundo: null,
+          isps: null,
+          photo: null,
+          origo: null,
+          loneiva: null,
+          mail_lon: null,
+          bankuppgifter: null,
+          li: null,
+          passport: null,
+          kvitto_c17_18: null,
+          c17: null,
+          crewing_done: null,
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-01-01T00:00:00Z",
+        },
+      ];
+
+      const { chainMock } = createMockSupabaseClient({ data: mockFilteredEmployees, error: null });
+
+      const result = await repository.findAll({ 
+        includeTerminated: true,
+        needsRepayment: true 
+      });
+
+      expect(result).toEqual(mockFilteredEmployees);
+      expect(chainMock.eq).toHaveBeenCalledWith("is_terminated", true);
+      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
     });
   });
 

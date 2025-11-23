@@ -64,7 +64,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   
-  const t = useTranslations('modals');
+  const t = useTranslations('modals.addColumn');
   const tCommon = useTranslations('common');
 
   // Extract existing categories from columns with their colors

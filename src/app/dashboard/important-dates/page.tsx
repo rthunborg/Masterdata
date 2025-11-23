@@ -82,13 +82,6 @@ export default function ImportantDatesPage() {
     fetchDates();
   };
 
-  const handleExportAll = () => {
-    if (dates.length === 0) {
-      return;
-    }
-    exportImportantDates(dates);
-  };
-
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -119,19 +112,12 @@ export default function ImportantDatesPage() {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-bold text-gray-900">{t('importantDates')}</h2>
-            <p className="mt-2 text-gray-600">
-              {t('pageDescription')}
-            </p>
           </div>
           {user?.role === "hr_admin" && (
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button onClick={() => setIsCategoryExportModalOpen(true)} variant="outline" className="w-full sm:w-auto min-h-11">
                 <FileDown className="h-4 w-4 mr-2" />
-                Export by Category
-              </Button>
-              <Button onClick={handleExportAll} variant="outline" className="w-full sm:w-auto min-h-11" disabled={dates.length === 0}>
-                <Download className="h-4 w-4 mr-2" />
-                Export All Dates
+                Exporta datum
               </Button>
               <Button onClick={() => setIsImportModalOpen(true)} variant="outline" className="w-full sm:w-auto min-h-11">
                 <Upload className="h-4 w-4 mr-2" />
@@ -166,9 +152,6 @@ export default function ImportantDatesPage() {
         <Card>
           <CardHeader>
             <CardTitle>{t('importantDates')}</CardTitle>
-            <CardDescription>
-              {t('pageSubtitle')}
-            </CardDescription>
           </CardHeader>
           <CardContent>
             {isMobile ? (

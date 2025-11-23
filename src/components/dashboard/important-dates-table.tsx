@@ -125,15 +125,6 @@ export function ImportantDatesTable({
       }
     }, 300);
   }, [columnSizing, user?.id]);
-  
-  // Reset column widths handler (Story 9.4b)
-  const handleResetColumnWidths = React.useCallback(() => {
-    if (user?.id) {
-      clearColumnWidths('importantDates', user.id);
-      setColumnSizing({});
-      toast.success(tDashboard('columnWidthsReset'));
-    }
-  }, [user?.id, tDashboard]);
 
   const handleCellUpdate = React.useCallback(async (
     id: string, 
@@ -604,15 +595,6 @@ export function ImportantDatesTable({
             <SelectItem value="Other">Other</SelectItem>
           </SelectContent>
         </Select>
-        
-        {/* Reset Column Widths Button (Story 9.4b) */}
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleResetColumnWidths}
-        >
-          {tDashboard("resetColumnWidths")}
-        </Button>
       </div>
 
       {/* Table */}

@@ -20,10 +20,6 @@ import {
 
   type SortingState,
 
-
-  type ColumnSizingState,
-
-
   type Row,
 
   flexRender,
@@ -171,16 +167,6 @@ import { useUIStore } from "@/lib/store/ui-store";
 
 import { useTranslations } from "@/lib/i18n";
 
-
-import { 
-
-  loadColumnWidths, 
-
-  saveColumnWidths, 
-
-  clearColumnWidths 
-
-} from "@/lib/utils/column-width-storage";
 
 interface EmployeeTableProps {
 
@@ -442,77 +428,8 @@ export function EmployeeTable({
 
   }, []);
 
-  // Column resizing state (Story 9.4)
-
-
-  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {
-
-
-    // Load saved widths from localStorage on mount
-
-    if (user?.id) {
-
-      return loadColumnWidths('dashboard', user.id) || {};
-
-    }
-
-    return {};
-
-  });
-
-  // Debounced save for column widths (Story 9.4)
-
-
-  const saveDebounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-
-
-  const handleColumnSizingChange = React.useCallback((updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)) => {
-
-
-    const newSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
-
-    setColumnSizing(newSizing);
-
-    // Debounce save to localStorage (300ms delay)
-
-    if (saveDebounceTimerRef.current) {
-
-      clearTimeout(saveDebounceTimerRef.current);
-
-    }
-
-    saveDebounceTimerRef.current = setTimeout(() => {
-
-      if (user?.id) {
-
-        saveColumnWidths('dashboard', user.id, newSizing);
-
-      }
-
-    }, 300);
-
-  }, [columnSizing, user?.id]);
-
-  // Reset column widths handler (Story 9.4)
-
-
-  // Note: This function is available for future use if a reset button is added to the UI
-
-
-  // Currently not connected to any UI element, but kept for potential future feature
-  const handleResetColumnWidths = React.useCallback(() => {
-    if (user?.id) {
-      clearColumnWidths('dashboard', user.id);
-      setColumnSizing({});
-      toast.success(tDashboard('columnWidthsReset'));
-    }
-  }, [user?.id, tDashboard]);
-  
-  // Suppress unused warning for future feature
-  void handleResetColumnWidths;
 
   // Row refs for scrolling
-
 
   const rowRefs = React.useRef<Map<string, HTMLTableRowElement>>(new Map());
 
@@ -1761,7 +1678,6 @@ export function EmployeeTable({
     state: {
       globalFilter,
       sorting,
-      columnSizing,
       rowSelection: React.useMemo(() => {
         const selection: Record<string, boolean> = {};
         selectedEmployeeIds.forEach((id) => {
@@ -1774,8 +1690,6 @@ export function EmployeeTable({
     onGlobalFilterChange: setGlobalFilter,
 
     onSortingChange: setSorting,
-
-    onColumnSizingChange: handleColumnSizingChange,
 
     globalFilterFn: globalFilterFn,
 
@@ -2052,15 +1966,40 @@ export function EmployeeTable({
 
           <SelectContent>
 
-            <SelectItem value="all">All Employees</SelectItem>
+            <SelectItem value="all">Alla anställda</SelectItem>
 
             <SelectItem value="ready">Crew Ready</SelectItem>
 
-            <SelectItem value="not-ready">Not Crew Ready</SelectItem>
+            <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
 
           </SelectContent>
 
         </Select>
+
+        {/* Story 13.6: General Export Button with Field Selection (HR Admin only) */}
+        {isHRAdmin && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportClick}
+                disabled={selectedEmployeeIds.size === 0}
+                className="whitespace-nowrap"
+              >
+                {tDashboard("exportSelected") || "Exporta markerade anställda"}
+                {selectedEmployeeIds.size > 0 && ` (${selectedEmployeeIds.size})`}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {selectedEmployeeIds.size === 0
+                  ? tDashboard("noEmployeesSelected") || "No employees selected. Please select employees to export."
+                  : tDashboard("exportSelectedEmployees") || `Export ${selectedEmployeeIds.size} selected employee${selectedEmployeeIds.size === 1 ? '' : 's'}`}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {/* Story 8.5: Export Crew-Ready Employees (HR Admin only) */}
 
@@ -2120,31 +2059,6 @@ export function EmployeeTable({
 
           </Tooltip>
 
-        )}
-
-        {/* Story 13.6: General Export Button with Field Selection (HR Admin only) */}
-        {isHRAdmin && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportClick}
-                disabled={selectedEmployeeIds.size === 0}
-                className="whitespace-nowrap"
-              >
-                {tDashboard("export") || "Export"}
-                {selectedEmployeeIds.size > 0 && ` (${selectedEmployeeIds.size})`}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {selectedEmployeeIds.size === 0
-                  ? tDashboard("noEmployeesSelected") || "No employees selected. Please select employees to export."
-                  : tDashboard("exportSelectedEmployees") || `Export ${selectedEmployeeIds.size} selected employee${selectedEmployeeIds.size === 1 ? '' : 's'}`}
-              </p>
-            </TooltipContent>
-          </Tooltip>
         )}
 
       </div>
