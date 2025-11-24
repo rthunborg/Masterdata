@@ -25,10 +25,12 @@ vi.mock("sonner", () => ({
 // Mock useTranslations to return actual translated strings
 vi.mock("@/lib/i18n", () => ({
   useTranslations: vi.fn((namespace: string) => {
-    const translations: Record<string, Record<string, string>> = {
-      'toasts.dates': {
-        'dateDeleted': 'Viktigt datum raderat',
-        'deleteFailed': 'Kunde inte radera viktigt datum',
+    const translations: Record<string, Record<string, any>> = {
+      'toasts': {
+        'dates': {
+          'dateDeleted': 'Viktigt datum raderat',
+          'deleteFailed': 'Kunde inte radera viktigt datum',
+        },
       },
       'tooltips': {},
       'dates': {
@@ -48,8 +50,16 @@ vi.mock("@/lib/i18n", () => ({
       'dashboard': {},
     };
     return (key: string) => {
-      const ns = translations[namespace];
-      return ns?.[key] || key;
+      const keys = key.split('.');
+      let value: any = translations[namespace];
+      for (const k of keys) {
+        if (value && typeof value === 'object') {
+          value = value[k];
+        } else {
+          return key;
+        }
+      }
+      return value || key;
     };
   }),
 }));

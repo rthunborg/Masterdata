@@ -103,7 +103,7 @@ function EmployeeCardComponent({
   onToggleSelection,
 
 }: EmployeeCardProps) {
-  const tToasts = useTranslations('toasts.employees');
+  const tToasts = useTranslations('toasts');
 
   const [expanded, setExpanded] = useState(false);
 
@@ -182,7 +182,7 @@ function EmployeeCardComponent({
 
       await employeeService.update(id, { [field]: value });
 
-      toast.success(tToasts("fieldUpdated"));
+      toast.success(tToasts("employees.fieldUpdated"));
 
       onEmployeeUpdated?.();
 
@@ -212,7 +212,7 @@ function EmployeeCardComponent({
 
       await customDataService.updateCustomData(id, { [columnName]: value });
 
-      toast.success(tToasts("fieldUpdated"));
+      toast.success(tToasts("employees.fieldUpdated"));
 
       onEmployeeUpdated?.();
 

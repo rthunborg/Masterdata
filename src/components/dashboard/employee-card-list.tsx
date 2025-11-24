@@ -43,7 +43,7 @@ export function EmployeeCardList({
   columnConfigs = [],
   onEmployeeUpdated,
 }: EmployeeCardListProps) {
-  const tToasts = useTranslations('toasts.refresh');
+  const tToasts = useTranslations('toasts');
   // Only enable pull-to-refresh on mobile devices (< 1024px)
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
@@ -119,10 +119,10 @@ export function EmployeeCardList({
     enabled: isMobile,
     onRefresh: handleRefresh,
     onRefreshComplete: () => {
-      toast.success(tToasts('dataRefreshed'));
+      toast.success(tToasts('refresh.dataRefreshed'));
     },
     onRefreshError: (error) => {
-      toast.error(tToasts('refreshFailed'), {
+      toast.error(tToasts('refresh.refreshFailed'), {
         description: error.message,
       });
     },

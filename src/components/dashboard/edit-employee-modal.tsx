@@ -66,6 +66,7 @@ export function EditEmployeeModal({
   const tCommon = useTranslations('common');
   const tDashboard = useTranslations('dashboard');
   const tErrors = useTranslations('errors');
+  const tToasts = useTranslations('toasts');
 
   // Fetch Important Dates with real-time updates
   const { dates: stenaDates, isLoading: stenaLoading } =
@@ -167,7 +168,7 @@ export function EditEmployeeModal({
       // Story 12.3: Use offline service for offline support
       if (!isOnline) {
         await employeeServiceOffline.update(employee.id, normalizedData);
-        toast.info(tToasts("savedLocally"));
+        toast.info(tToasts("employees.savedLocally"));
       } else {
         await employeeService.update(employee.id, normalizedData);
         toast.success(t('employeeUpdated') || 'Employee updated successfully');

@@ -46,14 +46,24 @@ vi.mock("@/lib/hooks/use-important-dates", () => ({
 // Mock useTranslations to return actual translated strings
 vi.mock("@/lib/i18n", () => ({
   useTranslations: vi.fn((namespace: string) => {
-    const translations: Record<string, Record<string, string>> = {
-      'toasts.employees': {
-        'fieldUpdated': 'Fält uppdaterat',
+    const translations: Record<string, Record<string, any>> = {
+      'toasts': {
+        'employees': {
+          'fieldUpdated': 'Fält uppdaterat',
+        },
       },
     };
     return (key: string) => {
-      const ns = translations[namespace];
-      return ns?.[key] || key;
+      const keys = key.split('.');
+      let value: any = translations[namespace];
+      for (const k of keys) {
+        if (value && typeof value === 'object') {
+          value = value[k];
+        } else {
+          return key;
+        }
+      }
+      return value || key;
     };
   }),
 }));

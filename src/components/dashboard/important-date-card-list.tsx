@@ -38,7 +38,7 @@ export function ImportantDateCardList({
   isHRAdmin,
   onDateDeleted,
 }: ImportantDateCardListProps) {
-  const tToasts = useTranslations('toasts.dates');
+  const tToasts = useTranslations('toasts');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<ImportantDate | null>(null);
@@ -72,11 +72,11 @@ export function ImportantDateCardList({
     try {
       setIsDeleting(true);
       await importantDateService.delete(selectedDate.id);
-      toast.success(tToasts('dateDeleted'));
+      toast.success(tToasts('dates.dateDeleted'));
       setDeleteDialogOpen(false);
       onDateDeleted?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : tToasts('deleteFailed');
+      const message = error instanceof Error ? error.message : tToasts('dates.deleteFailed');
       toast.error(message);
     } finally {
       setIsDeleting(false);

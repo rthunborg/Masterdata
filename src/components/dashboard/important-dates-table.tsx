@@ -85,7 +85,7 @@ export function ImportantDatesTable({
   const isHRAdmin = userRole === "hr_admin";
   const t = useTranslations("tooltips");
   const tDates = useTranslations("dates");
-  const tToasts = useTranslations("toasts.dates");
+  const tToasts = useTranslations("toasts");
   const tDashboard = useTranslations("dashboard");
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<ImportantDate | null>(null);
@@ -194,11 +194,11 @@ export function ImportantDatesTable({
     try {
       setIsDeleting(true);
       await importantDateService.delete(selectedDate.id);
-      toast.success(tToasts('dateDeleted'));
+      toast.success(tToasts('dates.dateDeleted'));
       setDeleteDialogOpen(false);
       onDateDeleted?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : tToasts('deleteFailed');
+      const message = error instanceof Error ? error.message : tToasts('dates.deleteFailed');
       toast.error(message);
     } finally {
       setIsDeleting(false);
@@ -209,10 +209,10 @@ export function ImportantDatesTable({
     try {
       setIsArchiving(true);
       await importantDateService.archive(date.id);
-      toast.success(tToasts('dateArchived'));
+      toast.success(tToasts('dates.dateArchived'));
       onDateUpdated?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : tToasts('archiveFailed');
+      const message = error instanceof Error ? error.message : tToasts('dates.archiveFailed');
       toast.error(message);
     } finally {
       setIsArchiving(false);
@@ -223,10 +223,10 @@ export function ImportantDatesTable({
     try {
       setIsArchiving(true);
       await importantDateService.restore(date.id);
-      toast.success(tToasts('dateRestored'));
+      toast.success(tToasts('dates.dateRestored'));
       onDateUpdated?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : tToasts('restoreFailed');
+      const message = error instanceof Error ? error.message : tToasts('dates.restoreFailed');
       toast.error(message);
     } finally {
       setIsArchiving(false);

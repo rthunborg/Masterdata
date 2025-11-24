@@ -24,7 +24,7 @@ export function useOfflineSync(
 ) {
   const { isOnline } = useNetworkStatus();
   const previousOnlineStatus = useRef<boolean | null>(null);
-  const t = useTranslations("toasts.offlineSync");
+  const t = useTranslations("toasts");
 
   const syncPendingMutations = useCallback(async () => {
     try {
@@ -32,28 +32,28 @@ export function useOfflineSync(
       
       if (result.syncedCount > 0) {
         const message = result.syncedCount === 1 
-          ? t("syncedSuccess", { count: result.syncedCount, plural: "" })
-          : t("syncedSuccessPlural", { count: result.syncedCount });
+          ? t("offlineSync.syncedSuccess", { count: result.syncedCount, plural: "" })
+          : t("offlineSync.syncedSuccessPlural", { count: result.syncedCount });
         toast.success(message);
       }
       
       if (result.failedCount > 0) {
         const message = result.failedCount === 1
-          ? t("syncFailed", { count: result.failedCount, plural: "" })
-          : t("syncFailedPlural", { count: result.failedCount });
+          ? t("offlineSync.syncFailed", { count: result.failedCount, plural: "" })
+          : t("offlineSync.syncFailedPlural", { count: result.failedCount });
         toast.error(message);
       }
       
       if (result.conflicts.length > 0 && !conflictResolver) {
         // Only show warning if no resolver was provided (fallback to last-write-wins)
         const message = result.conflicts.length === 1
-          ? t("conflictsDetected", { count: result.conflicts.length, plural: "" })
-          : t("conflictsDetectedPlural", { count: result.conflicts.length });
+          ? t("offlineSync.conflictsDetected", { count: result.conflicts.length, plural: "" })
+          : t("offlineSync.conflictsDetectedPlural", { count: result.conflicts.length });
         toast.warning(message);
       }
     } catch (error) {
       console.error("Failed to sync pending mutations:", error);
-      toast.error(t("syncPendingFailed"));
+      toast.error(t("offlineSync.syncPendingFailed"));
     }
   }, [conflictResolver, t]);
 
