@@ -139,7 +139,7 @@ export function OMCDatePicker({
         <Input
           id="omc-date-input"
           type="text"
-          placeholder='t.ex. "8-9/3" eller "8-9 mars 2025"'
+          placeholder=""
           value={textInput || displayValue}
           onChange={handleTextInputChange}
           onBlur={handleTextInputBlur}

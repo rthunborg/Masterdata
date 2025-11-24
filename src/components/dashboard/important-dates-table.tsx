@@ -85,6 +85,7 @@ export function ImportantDatesTable({
   const isHRAdmin = userRole === "hr_admin";
   const t = useTranslations("tooltips");
   const tDates = useTranslations("dates");
+  const tToasts = useTranslations("toasts.dates");
   const tDashboard = useTranslations("dashboard");
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<ImportantDate | null>(null);
@@ -141,14 +142,46 @@ export function ImportantDatesTable({
         }
       }
       
-      await importantDateService.update(id, { [field]: updateValue });
-      toast.success("Important date updated successfully");
+      // Convert max_spots to number and adjust remaining_spots accordingly
+      if (field === "max_spots") {
+        const numValue = typeof value === "number" ? value : (value !== null ? parseInt(String(value), 10) : null);
+        if (numValue === null || isNaN(numValue) || numValue < 0) {
+          throw new Error("Max capacity must be a valid non-negative number");
+        }
+        
+        // Find current date to get current capacity values
+        const currentDate = dates.find(d => d.id === id);
+        if (currentDate) {
+          const currentMaxSpots = currentDate.max_spots ?? 99;
+          const currentRemainingSpots = currentDate.remaining_spots ?? 99;
+          
+          // Calculate number of assigned employees
+          const assignedCount = currentMaxSpots - currentRemainingSpots;
+          
+          // Calculate new remaining spots: new max - assigned count
+          // Ensure it doesn't go below 0
+          const newRemainingSpots = Math.max(0, numValue - assignedCount);
+          
+          // Update both max_spots and remaining_spots
+          await importantDateService.update(id, { 
+            max_spots: numValue,
+            remaining_spots: newRemainingSpots
+          });
+        } else {
+          // Fallback: just update max_spots if date not found
+          await importantDateService.update(id, { max_spots: numValue });
+        }
+      } else {
+        await importantDateService.update(id, { [field]: updateValue });
+      }
+      
+      toast.success(tDates('dateUpdated'));
       onDateUpdated?.();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to update important date";
       throw new Error(message);
     }
-  }, [onDateUpdated]);
+  }, [onDateUpdated, dates, tDates]);
 
   const handleDeleteClick = (date: ImportantDate) => {
     setSelectedDate(date);
@@ -161,11 +194,11 @@ export function ImportantDatesTable({
     try {
       setIsDeleting(true);
       await importantDateService.delete(selectedDate.id);
-      toast.success("Important date deleted successfully");
+      toast.success(tToasts('dateDeleted'));
       setDeleteDialogOpen(false);
       onDateDeleted?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to delete important date";
+      const message = error instanceof Error ? error.message : tToasts('deleteFailed');
       toast.error(message);
     } finally {
       setIsDeleting(false);
@@ -176,29 +209,29 @@ export function ImportantDatesTable({
     try {
       setIsArchiving(true);
       await importantDateService.archive(date.id);
-      toast.success("Important date archived successfully");
+      toast.success(tToasts('dateArchived'));
       onDateUpdated?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to archive important date";
+      const message = error instanceof Error ? error.message : tToasts('archiveFailed');
       toast.error(message);
     } finally {
       setIsArchiving(false);
     }
-  }, [onDateUpdated]);
+  }, [onDateUpdated, tToasts]);
 
   const handleRestoreClick = React.useCallback(async (date: ImportantDate) => {
     try {
       setIsArchiving(true);
       await importantDateService.restore(date.id);
-      toast.success("Important date restored successfully");
+      toast.success(tToasts('dateRestored'));
       onDateUpdated?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to restore important date";
+      const message = error instanceof Error ? error.message : tToasts('restoreFailed');
       toast.error(message);
     } finally {
       setIsArchiving(false);
     }
-  }, [onDateUpdated]);
+  }, [onDateUpdated, tToasts]);
 
   const columns: ColumnDef<ImportantDate>[] = React.useMemo(() => {
     const cols: ColumnDef<ImportantDate>[] = [
@@ -402,10 +435,10 @@ export function ImportantDatesTable({
           const isArchived = !row.original.is_active;
           return isHRAdmin && !isArchived ? (
             <EditableCell
-              value={row.original.max_spots?.toString() || "99"}
+              value={row.original.max_spots ?? 99}
               employeeId={row.original.id}
               field="max_spots"
-              type="text"
+              type="number"
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />

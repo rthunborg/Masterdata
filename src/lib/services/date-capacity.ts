@@ -14,6 +14,31 @@ import { isSubmissionOpen, isCancellationOpen } from '@/lib/utils/deadline-valid
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
+ * Get default max capacity for an important date based on its category.
+ * 
+ * Business rules:
+ * - ÖMC Dates: 20 spots
+ * - Stena Dates: 99 spots
+ * - PE3 Dates: 1 spot
+ * - Other: 99 spots (default)
+ * 
+ * @param category - Date category ("ÖMC Dates", "Stena Dates", "PE3 Dates", "Other")
+ * @returns Default max capacity for the category
+ */
+export function getDefaultMaxCapacity(category: string): number {
+  switch (category) {
+    case 'ÖMC Dates':
+      return 20;
+    case 'Stena Dates':
+      return 99;
+    case 'PE3 Dates':
+      return 1;
+    default:
+      return 99;
+  }
+}
+
+/**
  * Validate if an employee can be assigned to a date based on remaining capacity.
  * 
  * This is a read-only check that should be used for UI validation before attempting

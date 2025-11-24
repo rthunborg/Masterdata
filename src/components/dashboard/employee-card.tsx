@@ -26,6 +26,8 @@ import { customDataService } from '@/lib/services/custom-data-service';
 
 import { toast } from 'sonner';
 
+import { useTranslations } from '@/lib/i18n';
+
 import { getEmployeeFieldValue } from '@/lib/utils/column-mapping';
 
 import { useImportantDates } from '@/lib/hooks/use-important-dates';
@@ -101,6 +103,7 @@ function EmployeeCardComponent({
   onToggleSelection,
 
 }: EmployeeCardProps) {
+  const tToasts = useTranslations('toasts.employees');
 
   const [expanded, setExpanded] = useState(false);
 
@@ -179,7 +182,7 @@ function EmployeeCardComponent({
 
       await employeeService.update(id, { [field]: value });
 
-      toast.success("Field updated successfully");
+      toast.success(tToasts("fieldUpdated"));
 
       onEmployeeUpdated?.();
 
@@ -209,7 +212,7 @@ function EmployeeCardComponent({
 
       await customDataService.updateCustomData(id, { [columnName]: value });
 
-      toast.success("Field updated successfully");
+      toast.success(tToasts("fieldUpdated"));
 
       onEmployeeUpdated?.();
 

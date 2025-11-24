@@ -74,7 +74,10 @@
       "selectFields": "Välj fält att exportera",
       "selectFieldsDescription": "Välj vilka fält som ska inkluderas i exporten. Synliga kolumner är förvalda.",
       "masterdataFields": "Masterdatafält"
-    }
+    },
+    "noEmployeesSelected": "Inga anställda valda. Välj anställda att exportera.",
+    "noFieldsSelected": "Inga fält valda. Välj minst ett fält att exportera.",
+    "exportSuccess": "Exporterade {count} anställda"
   },
   "forms": {
     "firstName": "Förnamn",
@@ -264,7 +267,7 @@
       "categoryOther": "Övrigt",
       "creating": "Skapar...",
       "createButton": "Skapa",
-      "dateCreated": "Viktigt datum \"{description}\" skapades",
+      "dateCreated": "Datum tillagt.",
       "createFailed": "Kunde inte skapa viktigt datum"
     },
     "addUser": {
@@ -471,5 +474,105 @@
     "deleteColumn": "Ta bort anpassad kolumn",
     "hideColumn": "Dölj kolumn från tabell",
     "showColumn": "Visa kolumn i tabell"
+  },
+  "toasts": {
+    "offlineSync": {
+      "syncedSuccess": "{count} väntande ändring{plural} synkroniserade",
+      "syncedSuccessPlural": "{count} väntande ändringar synkroniserade",
+      "syncFailed": "Kunde inte synkronisera {count} ändring{plural}",
+      "syncFailedPlural": "Kunde inte synkronisera {count} ändringar",
+      "conflictsDetected": "{count} konflikt{plural} upptäckta. Använder senaste-skrivning-vinner strategi.",
+      "conflictsDetectedPlural": "{count} konflikter upptäckta. Använder senaste-skrivning-vinner strategi.",
+      "syncPendingFailed": "Kunde inte synkronisera väntande ändringar"
+    },
+    "dates": {
+      "dateDeleted": "Viktigt datum raderat",
+      "dateArchived": "Viktigt datum arkiverat",
+      "dateRestored": "Viktigt datum återställt",
+      "deleteFailed": "Kunde inte radera viktigt datum",
+      "archiveFailed": "Kunde inte arkivera viktigt datum",
+      "restoreFailed": "Kunde inte återställa viktigt datum"
+    },
+    "employees": {
+      "changeSavedLocally": "Ändring sparad lokalt. Kommer att synkroniseras när online.",
+      "updatedSuccessfully": "Anställd uppdaterad",
+      "customDataUpdated": "Anpassad data uppdaterad",
+      "archived": "{name} har arkiverats.",
+      "restored": "{name} har återställts.",
+      "reactivated": "{name} har återaktiverats.",
+      "archiveFailed": "Kunde inte arkivera anställd",
+      "unarchiveFailed": "Kunde inte återställa anställd",
+      "reactivateFailed": "Kunde inte återaktivera anställd",
+      "updateFailed": "Kunde inte uppdatera anställd",
+      "noCrewReadyFound": "Inga anställda hittades med alla förhandskrav uppfyllda men inte ännu markerade som besättningsklara",
+      "exportedCrewReady": "Exporterade {count} anställda och markerade dem som besättningsklara",
+      "exportCrewReadyFailed": "Kunde inte exportera besättningsklara anställda",
+      "noEmployeesSelected": "Inga anställda valda. Välj anställda att exportera.",
+      "noFieldsSelected": "Inga fält valda. Välj minst ett fält att exportera.",
+      "exportSuccess": "Exporterade {count} anställda",
+      "exportFailed": "Kunde inte exportera anställda",
+      "savedLocally": "Anställd sparad lokalt. Kommer att synkroniseras när online.",
+      "fieldUpdated": "Fält uppdaterat"
+    },
+    "columns": {
+      "columnCreated": "Kolumn \"{name}\" skapad",
+      "columnDeleted": "Kolumn \"{name}\" borttagen",
+      "createFailed": "Kunde inte skapa kolumn",
+      "orderUpdated": "Kolumnordning uppdaterad",
+      "orderUpdateFailed": "Kunde inte uppdatera kolumnordning",
+      "movedUp": "Kolumn flyttad upp",
+      "movedDown": "Kolumn flyttad ner",
+      "moveFailed": "Kunde inte flytta kolumn",
+      "permissionsUpdated": "Behörigheter uppdaterade",
+      "permissionsUpdateFailed": "Kunde inte uppdatera behörigheter",
+      "categoryUpdated": "Kategori uppdaterad",
+      "categoryUpdateFailed": "Kunde inte uppdatera kategori",
+      "categoryColorUpdated": "Kategorifärg uppdaterad för alla kolumner",
+      "categoryColorUpdateFailed": "Kunde inte uppdatera kategorifärg",
+      "nameUpdated": "Kolumnnamn uppdaterat",
+      "nameUpdateFailed": "Kunde inte uppdatera kolumnnamn"
+    },
+    "users": {
+      "userDeleted": "Användare {email} raderad",
+      "userActivated": "Användare {email} aktiverad",
+      "userDeactivated": "Användare {email} inaktiverad",
+      "userActionFailed": "Kunde inte utföra åtgärd"
+    },
+    "assignedEmployees": {
+      "noEmployeesToExport": "Inga anställda att exportera",
+      "csvDownloaded": "CSV nedladdad",
+      "csvDownloadFailed": "Kunde inte ladda ner CSV"
+    },
+    "termination": {
+      "employeeTerminated": "{name} har markerats som uppsagd.",
+      "employeeTerminatedWithDates": "{name} har markerats som uppsagd. {count} datumanmälningar rensade och {spots} platser frigjorda.",
+      "terminateFailed": "Kunde inte säga upp anställd"
+    },
+    "import": {
+      "deadlineCalculationFailed": "Kunde inte beräkna deadlines. Kontrollera dina datum.",
+      "parseFailed": "Kunde inte tolka CSV: {message}",
+      "importSuccess": "Framgångsrikt importerade {count} datum",
+      "noDatesImported": "Inga datum importerades",
+      "importFailed": "Kunde inte importera datum",
+      "errorReportDownloaded": "Felrapport nedladdad"
+    },
+    "export": {
+      "selectFields": "Välj minst ett fält att exportera",
+      "invalidDateRange": "\"Från\"-datum måste vara före \"Till\"-datum",
+      "exportCompleted": "Export slutförd",
+      "exportFailed": "Kunde inte exportera"
+    },
+    "pwa": {
+      "appInstalled": "HR Masterdata-appen installerades!",
+      "installing": "Installerar HR Masterdata-appen...",
+      "installationCancelled": "Installation avbruten",
+      "installPromptFailed": "Kunde inte visa installationsprompt",
+      "appUpdatedRefresh": "App uppdaterad. Uppdatera för att se ändringar.",
+      "appUpdatedNextNav": "App uppdaterad. Ändringar tillämpas vid nästa sidnavigering."
+    },
+    "refresh": {
+      "dataRefreshed": "Data uppdaterad",
+      "refreshFailed": "Kunde inte uppdatera. Kontrollera din anslutning och försök igen."
+    }
   }
 }

@@ -58,6 +58,87 @@ describe('CSV Export with ÖMC Dates', () => {
     expect(capturedCSV).toContain('8-9 mars 2025');
     expect(capturedCSV).toContain('ÖMC Dates');
   });
+
+  it('should export dates without employees and show "None" in Assigned Employees column', () => {
+    const dates: ImportantDate[] = [
+      {
+        id: '1',
+        week_number: 10,
+        year: 2025,
+        category: 'ÖMC Dates',
+        date_description: 'Date with no employees',
+        date_value: '2025-03-08',
+        time_value: null,
+        deadline_submit: null,
+        deadline_cancel: null,
+        max_spots: 99,
+        remaining_spots: 99,
+        notes: null,
+        assigned_employees: [], // No employees assigned
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: '2',
+        week_number: 11,
+        year: 2025,
+        category: 'PE3 Dates',
+        date_description: 'Date with employees',
+        date_value: '2025-03-15',
+        time_value: '14:30',
+        deadline_submit: null,
+        deadline_cancel: null,
+        max_spots: 50,
+        remaining_spots: 48,
+        notes: null,
+        assigned_employees: [
+          { id: 'emp-1', name: 'John Doe', email: 'john@example.com', ssn: '1234', room_number: null },
+        ],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ];
+
+    exportImportantDates(dates);
+    
+    expect(capturedCSV).not.toBeNull();
+    // Verify dates without employees show "None"
+    expect(capturedCSV).toContain('None');
+    // Verify dates with employees show employee names
+    expect(capturedCSV).toContain('John Doe');
+    // Verify both dates are exported (not filtered out)
+    expect(capturedCSV).toContain('Date with no employees');
+    expect(capturedCSV).toContain('Date with employees');
+  });
+
+  it('should export dates with null assigned_employees array', () => {
+    const dates: ImportantDate[] = [
+      {
+        id: '1',
+        week_number: 10,
+        year: 2025,
+        category: 'Stena Dates',
+        date_description: 'Date with null employees',
+        date_value: '2025-03-08',
+        time_value: null,
+        deadline_submit: null,
+        deadline_cancel: null,
+        max_spots: 99,
+        remaining_spots: 99,
+        notes: null,
+        assigned_employees: null as any, // Explicitly null
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ];
+
+    exportImportantDates(dates);
+    
+    expect(capturedCSV).not.toBeNull();
+    // Should handle null gracefully and show "None"
+    expect(capturedCSV).toContain('None');
+    expect(capturedCSV).toContain('Date with null employees');
+  });
 });
 
 describe('CSV Import with ÖMC Dates', () => {

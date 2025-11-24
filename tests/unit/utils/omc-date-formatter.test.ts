@@ -6,6 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   formatOMCDate,
+  formatOMCDateDescription,
   parseOMCDateInput,
   validateOMCDateRange,
   isOMCDate,
@@ -203,6 +204,44 @@ describe('validateOMCDateRange', () => {
     
     expect(result.valid).toBe(false);
     expect(result.error).toContain('Date objects');
+  });
+});
+
+describe('formatOMCDateDescription', () => {
+  it('should format date as two-day range without year (same month)', () => {
+    const result = formatOMCDateDescription('2025-03-08');
+    expect(result).toBe('8-9 mars');
+  });
+
+  it('should handle Date object input', () => {
+    const date = new Date(2025, 2, 8); // March 8, 2025
+    const result = formatOMCDateDescription(date);
+    expect(result).toBe('8-9 mars');
+  });
+
+  it('should handle month boundary with short month names', () => {
+    const result = formatOMCDateDescription('2025-02-28');
+    expect(result).toBe('28 feb, 1 mars');
+  });
+
+  it('should handle year boundary (December 31 - January 1)', () => {
+    const result = formatOMCDateDescription('2024-12-31');
+    expect(result).toBe('31 dec, 1 januari');
+  });
+
+  it('should return empty string for invalid input', () => {
+    const result = formatOMCDateDescription('invalid-date');
+    expect(result).toBe('');
+  });
+
+  it('should format dates in same month correctly', () => {
+    const result = formatOMCDateDescription('2025-07-15');
+    expect(result).toBe('15-16 juli');
+  });
+
+  it('should format dates spanning two months correctly', () => {
+    const result = formatOMCDateDescription('2025-03-31');
+    expect(result).toBe('31 mar, 1 april');
   });
 });
 

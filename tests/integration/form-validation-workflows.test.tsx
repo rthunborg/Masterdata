@@ -210,7 +210,7 @@ describe("Form Validation Integration Workflows", () => {
         date_value: "2025-03-15",
         time_value: "14:30",
         year: 2025,
-        date_description: "15 mars 2025 14:30",
+        date_description: "15 mars 14:30",
         // ... other fields
       } as any;
 

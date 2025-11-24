@@ -150,9 +150,6 @@ export default function ImportantDatesPage() {
         </Card>
       ) : (
         <Card>
-          <CardHeader>
-            <CardTitle>{t('importantDates')}</CardTitle>
-          </CardHeader>
           <CardContent>
             {isMobile ? (
               <ImportantDateCardList

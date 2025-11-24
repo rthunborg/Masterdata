@@ -120,7 +120,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
 
       const newColumn = await columnConfigService.createCustomColumn(submitData);
 
-      toast.success(`Kolumn "${newColumn.column_name}" skapad`);
+      toast.success(tModals('addColumn.columnCreated', { name: newColumn.column_name }));
 
       // Refetch columns to update the table
       refetch();

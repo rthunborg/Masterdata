@@ -84,6 +84,7 @@ describe("POST /api/important-dates/import - Empty Notes Field", () => {
     expect(body.data.skipped).toBe(0);
     
     // Verify that createMany was called with null for notes
+    // Note: PE3 Dates have default capacity of 1 (not 99 like Stena Dates)
     expect(vi.mocked(importantDateRepository.createMany)).toHaveBeenCalledWith([
       {
         week_number: 7,
@@ -95,8 +96,8 @@ describe("POST /api/important-dates/import - Empty Notes Field", () => {
       time_value: null,
       deadline_submit: null,
       deadline_cancel: null,
-      max_spots: 99,
-      remaining_spots: 99,
+      max_spots: 1,
+      remaining_spots: 1,
     }
     ]);
   });

@@ -11,6 +11,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { toast } from 'sonner';
+import { useTranslations } from '@/lib/i18n';
 import { useCallback, useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -42,6 +43,7 @@ export function EmployeeCardList({
   columnConfigs = [],
   onEmployeeUpdated,
 }: EmployeeCardListProps) {
+  const tToasts = useTranslations('toasts.refresh');
   // Only enable pull-to-refresh on mobile devices (< 1024px)
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
@@ -117,10 +119,10 @@ export function EmployeeCardList({
     enabled: isMobile,
     onRefresh: handleRefresh,
     onRefreshComplete: () => {
-      toast.success('Data refreshed successfully');
+      toast.success(tToasts('dataRefreshed'));
     },
     onRefreshError: (error) => {
-      toast.error('Unable to refresh. Please check your connection and try again.', {
+      toast.error(tToasts('refreshFailed'), {
         description: error.message,
       });
     },

@@ -22,6 +22,38 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Mock useTranslations to return actual translated strings
+vi.mock("@/lib/i18n", () => ({
+  useTranslations: vi.fn((namespace: string) => {
+    const translations: Record<string, Record<string, string>> = {
+      'toasts.dates': {
+        'dateDeleted': 'Viktigt datum raderat',
+        'deleteFailed': 'Kunde inte radera viktigt datum',
+      },
+      'tooltips': {},
+      'dates': {
+        'noDates': 'Inga viktiga datum hittades',
+        'noDataFound': 'Inga viktiga datum hittades',
+        'noImportantDates': 'Inga viktiga datum hittades.',
+        'weekNumber': 'Veckonummer',
+        'year': 'År',
+        'category': 'Kategori',
+        'filterByCategory': 'Filtrera efter kategori',
+        'allCategories': 'Alla kategorier',
+        'dateDescription': 'Datumbeskrivning',
+        'dateValue': 'Datum',
+        'notes': 'Anteckningar',
+        'actions': 'Åtgärder',
+      },
+      'dashboard': {},
+    };
+    return (key: string) => {
+      const ns = translations[namespace];
+      return ns?.[key] || key;
+    };
+  }),
+}));
+
 describe("ImportantDatesTable", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -123,7 +155,7 @@ describe("ImportantDatesTable", () => {
         />
       );
 
-      expect(screen.getByText(/Inga viktiga datum hittades/i)).toBeInTheDocument();
+      expect(screen.getByText(/Inga viktiga datum hittades\./i)).toBeInTheDocument();
     });
 
     it("should render all table columns", () => {
@@ -348,7 +380,7 @@ describe("ImportantDatesTable", () => {
       await fireEvent.click(confirmButton);
 
       expect(importantDateService.delete).toHaveBeenCalledWith("date-1");
-      expect(toast.success).toHaveBeenCalledWith("Important date deleted successfully");
+      expect(toast.success).toHaveBeenCalledWith("Viktigt datum raderat");
       expect(mockOnDateDeleted).toHaveBeenCalled();
     });
 
@@ -371,6 +403,7 @@ describe("ImportantDatesTable", () => {
       const confirmButton = screen.getByRole("button", { name: /delete/i });
       await fireEvent.click(confirmButton);
 
+      // The error handler uses error.message if it's an Error, otherwise falls back to translation
       expect(toast.error).toHaveBeenCalledWith("Failed to delete");
     });
   });

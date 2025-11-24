@@ -68,7 +68,7 @@ describe("PE3 Auto-Description Population", () => {
       // Wait for auto-population - onChange handlers should trigger immediately after blur
       await waitFor(() => {
         const descriptionInput = screen.getByLabelText(/datumbeskrivning/i) as HTMLInputElement;
-        expect(descriptionInput.value).toBe("15 mars 2025 14:30");
+        expect(descriptionInput.value).toBe("15 mars 14:30");
       }, { timeout: 5000, interval: 100 });
     });
 
@@ -102,7 +102,7 @@ describe("PE3 Auto-Description Population", () => {
       // Wait for initial auto-population
       await waitFor(() => {
         const descriptionInput = screen.getByLabelText(/datumbeskrivning/i) as HTMLInputElement;
-        expect(descriptionInput.value).toBe("15 mars 2025 14:30");
+        expect(descriptionInput.value).toBe("15 mars 14:30");
       }, { timeout: 5000, interval: 100 });
 
       // Change date
@@ -112,7 +112,7 @@ describe("PE3 Auto-Description Population", () => {
       // Wait for description to update
       await waitFor(() => {
         const descriptionInput = screen.getByLabelText(/datumbeskrivning/i) as HTMLInputElement;
-        expect(descriptionInput.value).toBe("20 april 2025 14:30");
+        expect(descriptionInput.value).toBe("20 april 14:30");
       }, { timeout: 5000, interval: 100 });
     });
 
@@ -146,7 +146,7 @@ describe("PE3 Auto-Description Population", () => {
       // Wait for initial auto-population
       await waitFor(() => {
         const descriptionInput = screen.getByLabelText(/datumbeskrivning/i) as HTMLInputElement;
-        expect(descriptionInput.value).toBe("15 mars 2025 14:30");
+        expect(descriptionInput.value).toBe("15 mars 14:30");
       }, { timeout: 5000, interval: 100 });
 
       // Change time
@@ -157,7 +157,7 @@ describe("PE3 Auto-Description Population", () => {
       // Wait for description to update
       await waitFor(() => {
         const descriptionInput = screen.getByLabelText(/datumbeskrivning/i) as HTMLInputElement;
-        expect(descriptionInput.value).toBe("15 mars 2025 09:15");
+        expect(descriptionInput.value).toBe("15 mars 09:15");
       }, { timeout: 5000, interval: 100 });
     });
 
@@ -179,7 +179,7 @@ describe("PE3 Auto-Description Population", () => {
       await user.click(pe3Option);
 
       // Test a single month to verify Swedish locale (reduced to 1 to avoid timeout)
-      const testCase = { date: "2025-01-15", time: "10:00", expected: "15 januari 2025 10:00" };
+      const testCase = { date: "2025-01-15", time: "10:00", expected: "15 januari 10:00" };
 
       const dateInput = screen.getByLabelText(/datumvärde/i) as HTMLInputElement;
       const timeInput = screen.getByLabelText(/tid/i) as HTMLInputElement;
@@ -228,7 +228,7 @@ describe("PE3 Auto-Description Population", () => {
       // Wait for auto-population
       await waitFor(() => {
         const descriptionInput = screen.getByLabelText(/datumbeskrivning/i) as HTMLInputElement;
-        expect(descriptionInput.value).toBe("15 mars 2025 14:30");
+        expect(descriptionInput.value).toBe("15 mars 14:30");
       }, { timeout: 5000, interval: 100 });
 
       // Manually override description - use fireEvent to set value directly

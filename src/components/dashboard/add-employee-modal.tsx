@@ -64,6 +64,7 @@ export function AddEmployeeModal({
   const tCommon = useTranslations('common');
   const tDashboard = useTranslations('dashboard');
   const tErrors = useTranslations('errors');
+  const tToasts = useTranslations('toasts.employees');
 
   // Fetch Important Dates with real-time updates
   const { dates: stenaDates, isLoading: stenaLoading } =
@@ -126,7 +127,7 @@ export function AddEmployeeModal({
       // Story 12.3: Use offline service for offline support
       if (!isOnline) {
         await employeeServiceOffline.create(normalizedData);
-        toast.info("Employee saved locally. Will sync when online.");
+        toast.info(tToasts("savedLocally"));
       } else {
         await employeeService.create(normalizedData);
         toast.success(t('employeeAdded'));

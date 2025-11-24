@@ -223,3 +223,52 @@ export function validateOMCDateRange(
 export function isOMCDate(category: string): boolean {
   return category === 'ÖMC Dates';
 }
+
+/**
+ * Format ÖMC date description for date_description field.
+ * Formats as "7-8 mars" or "28 feb, 1 mars" if spanning two months.
+ * 
+ * @param startDate - Start date (ISO string or Date object)
+ * @returns Formatted description string without year
+ * 
+ * @example
+ * formatOMCDateDescription('2025-03-08') // Returns "8-9 mars"
+ * formatOMCDateDescription('2025-02-28') // Returns "28 feb, 1 mars"
+ */
+export function formatOMCDateDescription(startDate: Date | string): string {
+  const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
+  
+  // Validate date
+  if (isNaN(start.getTime())) {
+    return '';
+  }
+  
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+
+  const startDay = start.getDate();
+  const endDay = end.getDate();
+  const startMonth = start.getMonth();
+  const endMonth = end.getMonth();
+  
+  const swedishMonths = [
+    'januari', 'februari', 'mars', 'april', 'maj', 'juni',
+    'juli', 'augusti', 'september', 'oktober', 'november', 'december'
+  ];
+  
+  const swedishMonthsShort = [
+    'jan', 'feb', 'mar', 'apr', 'maj', 'jun',
+    'jul', 'aug', 'sep', 'okt', 'nov', 'dec'
+  ];
+  
+  // If same month: "7-8 mars"
+  if (startMonth === endMonth) {
+    const monthName = swedishMonths[startMonth];
+    return `${startDay}-${endDay} ${monthName}`;
+  }
+  
+  // If different months: "28 feb, 1 mars"
+  const startMonthName = swedishMonthsShort[startMonth];
+  const endMonthName = swedishMonths[endMonth];
+  return `${startDay} ${startMonthName}, ${endDay} ${endMonthName}`;
+}

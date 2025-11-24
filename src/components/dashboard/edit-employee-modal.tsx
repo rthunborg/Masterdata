@@ -167,7 +167,7 @@ export function EditEmployeeModal({
       // Story 12.3: Use offline service for offline support
       if (!isOnline) {
         await employeeServiceOffline.update(employee.id, normalizedData);
-        toast.info("Employee updated locally. Will sync when online.");
+        toast.info(tToasts("savedLocally"));
       } else {
         await employeeService.update(employee.id, normalizedData);
         toast.success(t('employeeUpdated') || 'Employee updated successfully');

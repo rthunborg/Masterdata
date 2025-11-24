@@ -2,6 +2,7 @@ import { z } from "zod";
 import { parseOMCDateInput } from "@/lib/utils/omc-date-formatter";
 import { validateTimeFormat } from "@/lib/utils/time-formatter";
 import { validateDeadlines } from "@/lib/utils/deadline-validator";
+import { getDefaultMaxCapacity } from "@/lib/services/date-capacity";
 
 export const createImportantDateSchema = z.object({
   week_number: z.number().int().min(1).max(53).nullable().default(null),
@@ -14,8 +15,18 @@ export const createImportantDateSchema = z.object({
   deadline_cancel: z.string().nullable().optional(),
   notes: z.string().nullable().default(null),
   // Story 8.7: Capacity management fields (0 means unlimited/not tracked)
-  max_spots: z.number().int().min(0).default(99),
-  remaining_spots: z.number().int().min(0).default(99),
+  // Defaults are set based on category in the transform below
+  max_spots: z.number().int().min(0).optional(),
+  remaining_spots: z.number().int().min(0).optional(),
+})
+.transform((data) => {
+  // Set default max_spots and remaining_spots based on category if not provided
+  const defaultMaxCapacity = getDefaultMaxCapacity(data.category);
+  return {
+    ...data,
+    max_spots: data.max_spots ?? defaultMaxCapacity,
+    remaining_spots: data.remaining_spots ?? defaultMaxCapacity,
+  };
 })
 .refine(
   (data) => {

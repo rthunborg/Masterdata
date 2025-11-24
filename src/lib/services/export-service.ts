@@ -25,6 +25,10 @@ import { createClient } from '@/lib/supabase/client';
  * Story 8.9: ÖMC dates exported with two-day format (e.g., "8-9 mars 2025")
  * Story 8.10: PE3 dates exported with time column (e.g., "14:30")
  * Story 8.11: Deadline columns exported
+ * 
+ * IMPORTANT: This function exports ALL dates passed to it, including dates with no employees assigned.
+ * Dates without employees will show "None" in the "Assigned Employees" column to make it visible
+ * that no employee is scheduled on those dates.
  */
 export function exportImportantDates(dates: ImportantDate[]): void {
   const headers = [
@@ -42,6 +46,8 @@ export function exportImportantDates(dates: ImportantDate[]): void {
     'Notes',
   ];
 
+  // Export all dates, including those with no employees assigned
+  // This ensures visibility of dates with no scheduled employees
   const rows = dates.map(date => {
     // Story 8.9: Format ÖMC dates with two-day range for export
     const dateValue = isOMCDate(date.category)
@@ -50,6 +56,9 @@ export function exportImportantDates(dates: ImportantDate[]): void {
 
     // Story 8.10: Format time for PE3 dates
     const timeValue = formatTimeDisplay(date.time_value);
+
+    // Handle dates with no employees - use empty array which will display as "None"
+    const assignedEmployees = date.assigned_employees || [];
 
     return [
       date.week_number ?? '',
@@ -62,7 +71,7 @@ export function exportImportantDates(dates: ImportantDate[]): void {
       date.deadline_cancel ?? '',
       date.max_spots ?? 99,
       date.remaining_spots ?? 99,
-      formatAssignedEmployeesForCSV(date.assigned_employees || []),
+      formatAssignedEmployeesForCSV(assignedEmployees),
       date.notes ?? '',
     ];
   });

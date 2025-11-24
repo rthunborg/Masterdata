@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { importantDateService } from '@/lib/services/important-date-service';
 import { toast } from 'sonner';
+import { useTranslations } from '@/lib/i18n';
 import { getDeadlineStatus } from '@/lib/utils/deadline-validator';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -37,6 +38,7 @@ export function ImportantDateCardList({
   isHRAdmin,
   onDateDeleted,
 }: ImportantDateCardListProps) {
+  const tToasts = useTranslations('toasts.dates');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<ImportantDate | null>(null);
@@ -70,11 +72,11 @@ export function ImportantDateCardList({
     try {
       setIsDeleting(true);
       await importantDateService.delete(selectedDate.id);
-      toast.success('Important date deleted successfully');
+      toast.success(tToasts('dateDeleted'));
       setDeleteDialogOpen(false);
       onDateDeleted?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to delete date';
+      const message = error instanceof Error ? error.message : tToasts('deleteFailed');
       toast.error(message);
     } finally {
       setIsDeleting(false);

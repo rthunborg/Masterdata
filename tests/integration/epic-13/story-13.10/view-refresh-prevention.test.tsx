@@ -10,6 +10,31 @@ import { EditableCell } from "@/components/dashboard/editable-cell";
 import { EditableDateCell } from "@/components/dashboard/editable-date-cell";
 import type { ImportantDate } from "@/lib/types/important-date";
 
+// Mock useTranslations for EditableDateCell
+vi.mock("@/lib/i18n", () => ({
+  useTranslations: vi.fn((namespace: string) => {
+    const translations: Record<string, Record<string, string>> = {
+      'dashboard': {
+        'dateDeleted': 'Date deleted',
+      },
+    };
+    return (key: string) => {
+      const ns = translations[namespace];
+      return ns?.[key] || key;
+    };
+  }),
+}));
+
+// Mock useAvailablePE3Dates hook
+vi.mock("@/lib/hooks/use-available-pe3-dates", () => ({
+  useAvailablePE3Dates: vi.fn(() => ({
+    availableDates: [],
+    totalAvailable: 0,
+    isLoading: false,
+    error: null,
+  })),
+}));
+
 describe("View Refresh Prevention - Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -199,11 +224,7 @@ describe("View Refresh Prevention - Integration Tests", () => {
 
       // Wait for the Select component to render (it appears when isEditing becomes true)
       // The SelectTrigger has role="combobox", so wait for that
-      // Use interval to check more frequently
-      await waitFor(() => {
-        const select = screen.queryByRole("combobox");
-        expect(select).toBeInTheDocument();
-      }, { timeout: 10000, interval: 100 });
+      await screen.findByRole("combobox", {}, { timeout: 10000 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
       // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
@@ -259,11 +280,7 @@ describe("View Refresh Prevention - Integration Tests", () => {
 
       // Wait for the Select component to render (it appears when isEditing becomes true)
       // The SelectTrigger has role="combobox", so wait for that
-      // Use interval to check more frequently
-      await waitFor(() => {
-        const select = screen.queryByRole("combobox");
-        expect(select).toBeInTheDocument();
-      }, { timeout: 10000, interval: 100 });
+      await screen.findByRole("combobox", {}, { timeout: 10000 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
       // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"

@@ -3,6 +3,7 @@ import { parseOMCDateInput, isOMCDate } from "./omc-date-formatter";
 import { parseTimeInput } from "./time-formatter";
 import { validateDeadlines } from "./deadline-validator";
 import { format } from "date-fns";
+import { getDefaultMaxCapacity } from "@/lib/services/date-capacity";
 
 export interface ValidationResult {
   valid: boolean;
@@ -215,9 +216,9 @@ export function validateImportantDatesCSV(rows: Record<string, unknown>[]): {
           row.notes && String(row.notes).trim() !== ""
             ? String(row.notes).trim()
             : null,
-        // Story 8.7: Default capacity values for CSV imports
-        max_spots: 99,
-        remaining_spots: 99,
+        // Story 8.7: Default capacity values for CSV imports based on category
+        max_spots: getDefaultMaxCapacity(category),
+        remaining_spots: getDefaultMaxCapacity(category),
       };
 
       potentiallyValid.push({ data: formData, rowNumber });

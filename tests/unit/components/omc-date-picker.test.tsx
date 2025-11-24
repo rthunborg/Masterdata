@@ -34,7 +34,8 @@ describe('OMCDatePicker Component', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText(/t.ex. "8-9\/3"/);
+    // Input no longer has placeholder, use ID instead
+    const input = screen.getByLabelText(/ÖMC-datum/i) as HTMLInputElement;
 
     // Test short format
     await user.type(input, '8-9/3');
@@ -63,7 +64,8 @@ describe('OMCDatePicker Component', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText(/t.ex. "8-9\/3"/);
+    // Input no longer has placeholder, use label instead
+    const input = screen.getByLabelText(/ÖMC-datum/i) as HTMLInputElement;
 
     // Try non-consecutive days
     await user.type(input, '8-10/3');
@@ -87,7 +89,8 @@ describe('OMCDatePicker Component', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText(/t.ex. "8-9\/3"/);
+    // Input no longer has placeholder, use label instead
+    const input = screen.getByLabelText(/ÖMC-datum/i) as HTMLInputElement;
 
     // Type invalid format
     await user.type(input, 'invalid date');
@@ -121,7 +124,8 @@ describe('OMCDatePicker Component', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText(/t.ex. "8-9\/3"/);
+    // Input no longer has placeholder, use label instead
+    const input = screen.getByLabelText(/ÖMC-datum/i) as HTMLInputElement;
 
     await user.type(input, '15-16 mars');
     

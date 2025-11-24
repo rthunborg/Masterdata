@@ -275,6 +275,9 @@ export function EmployeeTable({
   const tAdmin = useTranslations("admin");
 
 
+  const tToasts = useTranslations("toasts.employees");
+
+
   // Get preview mode state and column visibility
 
 
@@ -557,7 +560,7 @@ export function EmployeeTable({
 
         await mutationQueueService.queueMutation("update", { [field]: value }, id);
 
-        toast.info("Change saved locally. Will sync when online.");
+        toast.info(tToasts("changeSavedLocally"));
 
         // Update pending mutations set
 
@@ -569,7 +572,7 @@ export function EmployeeTable({
 
         await employeeService.update(id, { [field]: value });
 
-        toast.success("Employee updated successfully");
+        toast.success(tToasts("updatedSuccessfully"));
 
       }
 
@@ -579,7 +582,7 @@ export function EmployeeTable({
 
       console.error("[EmployeeTable] Update failed:", error);
 
-      const message = error instanceof Error ? error.message : "Failed to update employee";
+      const message = error instanceof Error ? error.message : tToasts("updateFailed");
 
       throw new Error(message);
 
@@ -604,7 +607,7 @@ export function EmployeeTable({
 
       await customDataService.updateCustomData(id, { [columnName]: value });
 
-      toast.success("Custom data updated successfully");
+      toast.success(tToasts("customDataUpdated"));
 
       onEmployeeUpdated?.();
 
@@ -646,7 +649,7 @@ export function EmployeeTable({
 
       toast.success(
 
-        `${selectedEmployee.first_name} ${selectedEmployee.surname} has been archived.`
+        tToasts("archived", { name: `${selectedEmployee.first_name} ${selectedEmployee.surname}` })
 
       );
 
@@ -656,7 +659,7 @@ export function EmployeeTable({
 
     } catch (error: unknown) {
 
-      const message = error instanceof Error ? error.message : "Failed to archive employee";
+      const message = error instanceof Error ? error.message : tToasts("archiveFailed");
 
       toast.error(message);
 
@@ -680,7 +683,7 @@ export function EmployeeTable({
 
       toast.success(
 
-        `${selectedEmployee.first_name} ${selectedEmployee.surname} has been restored.`
+        tToasts("restored", { name: `${selectedEmployee.first_name} ${selectedEmployee.surname}` })
 
       );
 
@@ -690,7 +693,7 @@ export function EmployeeTable({
 
     } catch (error: unknown) {
 
-      const message = error instanceof Error ? error.message : "Failed to unarchive employee";
+      const message = error instanceof Error ? error.message : tToasts("unarchiveFailed");
 
       toast.error(message);
 
@@ -736,7 +739,7 @@ export function EmployeeTable({
 
       toast.success(
 
-        `${selectedEmployee.first_name} ${selectedEmployee.surname} has been reactivated.`
+        tToasts("reactivated", { name: `${selectedEmployee.first_name} ${selectedEmployee.surname}` })
 
       );
 
@@ -758,7 +761,7 @@ export function EmployeeTable({
 
     } catch (error: unknown) {
 
-      const message = error instanceof Error ? error.message : "Failed to reactivate employee";
+      const message = error instanceof Error ? error.message : tToasts("reactivateFailed");
 
       toast.error(message);
 
@@ -791,7 +794,7 @@ export function EmployeeTable({
 
         if (response.status === 404) {
 
-          toast.info('No employees found with all prerequisites met but not yet marked as crew-ready');
+          toast.info(tToasts('noCrewReadyFound'));
 
           return;
 
@@ -831,7 +834,7 @@ export function EmployeeTable({
 
       window.URL.revokeObjectURL(url);
 
-      toast.success(`Exported ${count} employees and marked them as crew-ready`);
+      toast.success(tToasts("exportedCrewReady", { count }));
 
       // Refresh the table to show updated crewing_done values
 
@@ -839,7 +842,7 @@ export function EmployeeTable({
 
     } catch (error: unknown) {
 
-      const message = error instanceof Error ? error.message : 'Failed to export crew-ready employees';
+      const message = error instanceof Error ? error.message : tToasts('exportCrewReadyFailed');
 
       toast.error(message);
 
@@ -1553,7 +1556,7 @@ export function EmployeeTable({
 
     if (selectedIds.length === 0) {
 
-      toast.error(tDashboard("noEmployeesSelected") || "No employees selected. Please select employees to export.");
+      toast.error(tDashboard("noEmployeesSelected") || tToasts("noEmployeesSelected"));
 
       return;
 
@@ -1571,7 +1574,7 @@ export function EmployeeTable({
 
       if (selectedIds.length === 0) {
 
-        toast.error(tDashboard("noEmployeesSelected") || "No employees selected. Please select employees to export.");
+        toast.error(tDashboard("noEmployeesSelected") || tToasts("noEmployeesSelected"));
 
         return;
 
@@ -1579,7 +1582,7 @@ export function EmployeeTable({
 
       if (selectedFields.length === 0) {
 
-        toast.error(tDashboard("noFieldsSelected") || "No fields selected. Please select at least one field to export.");
+        toast.error(tDashboard("noFieldsSelected") || tToasts("noFieldsSelected"));
 
         return;
 
@@ -1639,11 +1642,11 @@ export function EmployeeTable({
 
       window.URL.revokeObjectURL(url);
 
-      toast.success(tDashboard("exportSuccess") || `Exported ${selectedIds.length} employees`);
+      toast.success(tDashboard("exportSuccess", { count: selectedIds.length }) || tToasts("exportSuccess", { count: selectedIds.length }));
 
     } catch (error: unknown) {
 
-      const message = error instanceof Error ? error.message : 'Failed to export employees';
+      const message = error instanceof Error ? error.message : tToasts('exportFailed');
 
       toast.error(message);
 

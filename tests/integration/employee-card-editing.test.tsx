@@ -43,6 +43,21 @@ vi.mock("@/lib/hooks/use-important-dates", () => ({
   useImportantDates: vi.fn(),
 }));
 
+// Mock useTranslations to return actual translated strings
+vi.mock("@/lib/i18n", () => ({
+  useTranslations: vi.fn((namespace: string) => {
+    const translations: Record<string, Record<string, string>> = {
+      'toasts.employees': {
+        'fieldUpdated': 'Fält uppdaterat',
+      },
+    };
+    return (key: string) => {
+      const ns = translations[namespace];
+      return ns?.[key] || key;
+    };
+  }),
+}));
+
 // Mock useMediaQuery to default to desktop mode for these tests
 vi.mock("@/hooks/use-media-query", () => ({
   useMediaQuery: vi.fn(() => false), // Default to desktop
@@ -314,7 +329,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
       }, { timeout: 2000 });
 
       // Should show success toast
-      expect(toast.success).toHaveBeenCalledWith("Field updated successfully");
+      expect(toast.success).toHaveBeenCalledWith("Fält uppdaterat");
     });
 
     it("should show validation errors for invalid updates", async () => {

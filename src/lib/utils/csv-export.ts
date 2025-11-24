@@ -58,6 +58,9 @@ export function formatDateForCSV(date: string | null): string {
 /**
  * Format assigned employees array for readable display in CSV
  * AC 7: If >10 employees, truncate and add count
+ * 
+ * Returns 'None' for dates with no employees assigned, making it visible
+ * in the export that no employee is scheduled on those dates.
  */
 export function formatAssignedEmployeesForCSV(employees: { name: string }[]): string {
   if (employees.length === 0) return 'None';
