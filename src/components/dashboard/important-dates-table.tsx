@@ -58,6 +58,7 @@ import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
 import { formatTimeDisplay } from "@/lib/utils/time-formatter";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
+import { hasValueChanged } from "@/lib/utils/change-detection";
 import { 
   loadColumnWidths, 
   saveColumnWidths, 
@@ -133,12 +134,27 @@ export function ImportantDatesTable({
     value: string | number | boolean | null
   ) => {
     try {
+      // Find current date once for both change detection and update logic
+      const currentDate = dates.find(d => d.id === id);
+      
+      // Story 13.10: Check if value actually changed before making API call
+      if (currentDate) {
+        const originalValue = currentDate[field as keyof typeof currentDate];
+        const normalizedOriginal = originalValue ?? null;
+        const normalizedCurrent = value ?? null;
+        
+        // If value hasn't changed, don't make API call or trigger refresh
+        if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+          return;
+        }
+      }
+      
       // Convert week_number string to number if needed
       let updateValue: string | number | null = value as string | number | null;
       if (field === "week_number" && value !== null && typeof value === "string") {
         updateValue = parseInt(value, 10);
         if (isNaN(updateValue)) {
-          throw new Error("Week number must be a valid number");
+          throw new Error("Veckonummer måste vara ett giltigt nummer");
         }
       }
       
@@ -146,11 +162,9 @@ export function ImportantDatesTable({
       if (field === "max_spots") {
         const numValue = typeof value === "number" ? value : (value !== null ? parseInt(String(value), 10) : null);
         if (numValue === null || isNaN(numValue) || numValue < 0) {
-          throw new Error("Max capacity must be a valid non-negative number");
+          throw new Error("Max kapacitet måste vara ett giltigt icke-negativt nummer");
         }
         
-        // Find current date to get current capacity values
-        const currentDate = dates.find(d => d.id === id);
         if (currentDate) {
           const currentMaxSpots = currentDate.max_spots ?? 99;
           const currentRemainingSpots = currentDate.remaining_spots ?? 99;
@@ -178,7 +192,7 @@ export function ImportantDatesTable({
       toast.success(tDates('dateUpdated'));
       onDateUpdated?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to update important date";
+      const message = error instanceof Error ? error.message : "Misslyckades att uppdatera viktig datum";
       throw new Error(message);
     }
   }, [onDateUpdated, dates, tDates]);

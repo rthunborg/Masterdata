@@ -282,7 +282,8 @@
       "creating": "Skapar...",
       "createButton": "Skapa användare",
       "userCreated": "Användare {email} skapades.",
-      "createFailed": "Kunde inte skapa användare"
+      "createFailed": "Kunde inte skapa användare",
+      "emailAlreadyExists": "En användare med denna e-post finns redan"
     },
     "terminateEmployee": {
       "title": "Markera anställd som uppsagd",

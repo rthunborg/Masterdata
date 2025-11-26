@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { adminService } from '@/lib/services/admin-service';
+import { useTranslations } from '@/lib/i18n';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
@@ -32,6 +33,7 @@ export function ResponsiveUserView({
 }: ResponsiveUserViewProps) {
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const { user: currentUser } = useAuth();
+  const tToasts = useTranslations('toasts');
   const [searchValue, setSearchValue] = useState('');
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -75,20 +77,19 @@ export function ResponsiveUserView({
 
       if (action === 'activate') {
         await adminService.updateUserStatus(user.id, true);
-        toast.success(`${user.email} has been activated.`);
+        toast.success(tToasts('users.userActivated', { email: user.email }));
       } else if (action === 'deactivate') {
         await adminService.updateUserStatus(user.id, false);
-        toast.success(`${user.email} has been deactivated.`);
+        toast.success(tToasts('users.userDeactivated', { email: user.email }));
       } else if (action === 'delete') {
         await adminService.deleteUser(user.id);
-        toast.success(`${user.email} has been deleted.`);
+        toast.success(tToasts('users.userDeleted', { email: user.email }));
       }
 
       setConfirmDialog({ open: false, user: null, action: 'deactivate' });
       onUserStatusChanged();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Action failed';
-      toast.error(message);
+      toast.error(tToasts('users.userActionFailed'));
     } finally {
       setIsUpdating(false);
     }

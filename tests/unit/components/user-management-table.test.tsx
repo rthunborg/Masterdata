@@ -197,7 +197,7 @@ describe('UserManagementTable', () => {
       expect(mockUpdateUserStatus).toHaveBeenCalledWith('user-1', false);
       expect(mockOnUserStatusChanged).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith(
-        expect.stringContaining('deactivated successfully')
+        expect.stringContaining('inaktiverad')
       );
     });
   });
@@ -235,7 +235,7 @@ describe('UserManagementTable', () => {
       expect(mockUpdateUserStatus).toHaveBeenCalledWith('user-2', true);
       expect(mockOnUserStatusChanged).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith(
-        expect.stringContaining('activated successfully')
+        expect.stringContaining('aktiverad')
       );
     });
   });

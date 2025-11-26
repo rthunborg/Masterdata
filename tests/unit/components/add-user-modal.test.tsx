@@ -248,7 +248,7 @@ describe('AddUserModal', () => {
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(
-        expect.stringContaining('User with this email already exists')
+        expect.stringContaining('En användare med denna e-post finns redan')
       );
     });
 
@@ -294,16 +294,21 @@ describe('AddUserModal', () => {
     const submitButton = screen.getByRole('button', { name: /skapa användare/i });
     await user.click(submitButton);
 
-    // Check submit button is disabled or shows loading state
-    // The button might be disabled or show "skapar" text
+    // Check submit button is disabled while loading
+    // The button should be disabled and show "skapar" text
     await waitFor(() => {
-      const button = screen.queryByRole('button', { name: /skapar|skapa användare/i });
-      if (button) {
-        // Either disabled or showing loading text
-        expect(button).toBeInTheDocument();
-        // If it's the submit button, it should be disabled
-        if (button === submitButton || button.getAttribute('disabled') !== null) {
-          expect(button).toBeDisabled();
+      // Find the button with loading text (it's the same button, just text changed)
+      const loadingButton = screen.queryByRole('button', { name: /skapar/i });
+      if (loadingButton) {
+        // Button should be disabled while loading
+        expect(loadingButton).toBeDisabled();
+      } else {
+        // Fallback: check if submit button is disabled
+        const currentSubmitButton = screen.queryByRole('button', { name: /skapa användare/i });
+        if (currentSubmitButton) {
+          expect(currentSubmitButton).toBeDisabled();
+        } else {
+          throw new Error('Submit button not found');
         }
       }
     }, { timeout: 2000 });

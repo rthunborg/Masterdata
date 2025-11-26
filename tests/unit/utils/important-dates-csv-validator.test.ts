@@ -51,7 +51,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "year",
-      message: "Year is required",
+      message: "År är obligatoriskt",
     });
   });
 
@@ -67,7 +67,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "year",
-      message: "Year must be a number",
+      message: "År måste vara ett nummer",
     });
   });
 
@@ -83,7 +83,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "year",
-      message: "Year must be between 1900 and 2100",
+      message: "År måste vara mellan 1900 och 2100",
     });
   });
 
@@ -100,7 +100,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "week_number",
-      message: "Week number must be between 1 and 53",
+      message: "Veckonummer måste vara mellan 1 och 53",
     });
   });
 
@@ -117,7 +117,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "week_number",
-      message: "Week number must be between 1 and 53",
+      message: "Veckonummer måste vara mellan 1 och 53",
     });
   });
 
@@ -160,7 +160,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "category",
-      message: "Category is required",
+      message: "Kategori är obligatorisk",
     });
   });
 
@@ -176,7 +176,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "category",
-      message: "Category is required",
+      message: "Kategori är obligatorisk",
     });
   });
 
@@ -191,7 +191,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "date_description",
-      message: "Date description is required",
+      message: "Datumbeskrivning är obligatorisk",
     });
   });
 
@@ -206,7 +206,7 @@ describe("validateImportantDateRow", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual({
       field: "date_value",
-      message: "Date value is required",
+      message: "Datumvärde är obligatoriskt",
     });
   });
 
@@ -519,8 +519,8 @@ describe("validateImportantDatesCSV", () => {
     const result = validateImportantDatesCSV(rows);
     expect(result.valid).toHaveLength(0);
     expect(result.invalid).toHaveLength(2);
-    expect(result.invalid[0].message).toContain("Duplicate date entry");
-    expect(result.invalid[1].message).toContain("Duplicate date entry");
+    expect(result.invalid[0].message).toContain("Duplicerat datum (v. 7, år 2025, kategori stena dates)");
+    expect(result.invalid[1].message).toContain("Duplicerat datum (v. 7, år 2025, kategori stena dates)");
   });
 
   it("handles mixed validation errors and duplicates", () => {

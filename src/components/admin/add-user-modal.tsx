@@ -76,7 +76,20 @@ export function AddUserModal({ open, onClose, onSuccess }: AddUserModalProps) {
         onClose();
       }, 500);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('addUser.createFailed'));
+      let errorMessage = t('addUser.createFailed');
+      
+      if (error instanceof Error) {
+        // Map common API error messages to Swedish translations
+        const errorMsg = error.message.toLowerCase();
+        if (errorMsg.includes('email already exists') || errorMsg.includes('user with this email already exists')) {
+          errorMessage = t('addUser.emailAlreadyExists');
+        } else {
+          // For other errors, use the generic error message
+          errorMessage = t('addUser.createFailed');
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

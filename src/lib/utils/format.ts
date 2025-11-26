@@ -50,7 +50,7 @@ export function formatImportantDateOption(date: ImportantDate): string {
   }
   
   if (date.week_number !== null && date.week_number !== undefined) {
-    return `Week ${date.week_number} - ${displayText}`;
+    return `v. ${date.week_number} - ${displayText}`;
   }
   return displayText;
 }

@@ -171,7 +171,7 @@ export function EditEmployeeModal({
         toast.info(tToasts("employees.savedLocally"));
       } else {
         await employeeService.update(employee.id, normalizedData);
-        toast.success(t('employeeUpdated') || 'Employee updated successfully');
+        toast.success(t('employeeUpdated'));
       }
       
       form.reset();

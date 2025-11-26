@@ -186,7 +186,7 @@ export function ImportImportantDatesModal({
         }
       },
       error: (error) => {
-        toast.error(`Failed to parse CSV: ${error.message}`);
+        toast.error(tToasts("import.parseFailed", { message: error.message }));
         setFile(null);
       },
     });
@@ -232,15 +232,13 @@ export function ImportImportantDatesModal({
       setImportResult(result);
 
       if (result.imported > 0) {
-        toast.success(`Successfully imported ${result.imported} dates`);
+        toast.success(tToasts("import.importSuccess", { count: result.imported }));
         onImportComplete();
       } else {
-        toast.warning("No dates were imported");
+        toast.warning(tToasts("import.noDatesImported"));
       }
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to import dates";
-      toast.error(message);
+      toast.error(tToasts("import.importFailed"));
     } finally {
       setIsImporting(false);
     }

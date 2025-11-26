@@ -55,6 +55,7 @@ export function UserManagementTable({
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
   const tDashboard = useTranslations("dashboard");
+  const tToasts = useTranslations("toasts");
   const format = useFormatter();
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
@@ -314,13 +315,15 @@ export function UserManagementTable({
       if (confirmDialog.action === "delete") {
         // Handle delete action
         await adminService.deleteUser(confirmDialog.user.id);
-        toast.success(`User ${confirmDialog.user.email} deleted successfully`);
+        toast.success(tToasts("users.userDeleted", { email: confirmDialog.user.email }));
       } else {
         // Handle activate/deactivate action
         const newStatus = confirmDialog.action === "activate";
         await adminService.updateUserStatus(confirmDialog.user.id, newStatus);
         toast.success(
-          `User ${confirmDialog.user.email} ${newStatus ? "activated" : "deactivated"} successfully`
+          newStatus 
+            ? tToasts("users.userActivated", { email: confirmDialog.user.email })
+            : tToasts("users.userDeactivated", { email: confirmDialog.user.email })
         );
       }
 
@@ -328,7 +331,7 @@ export function UserManagementTable({
       setConfirmDialog({ open: false, user: null, action: "deactivate" });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : `Failed to ${confirmDialog.action} user`
+        error instanceof Error ? error.message : tToasts("users.userActionFailed")
       );
     } finally {
       setIsUpdating(false);

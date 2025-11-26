@@ -91,12 +91,12 @@ describe('important-date-resolver', () => {
   describe('resolveImportantDateTooltip', () => {
     it('should return formatted tooltip with all fields', () => {
       const result = resolveImportantDateTooltip('uuid-1', mockDates);
-      expect(result).toBe('Week 7\n2025\nStena Dates\n2025-02-14');
+      expect(result).toBe('v. 7\n2025\nStena Dates\n2025-02-14');
     });
 
     it('should return formatted tooltip with notes', () => {
       const result = resolveImportantDateTooltip('uuid-2', mockDates);
-      expect(result).toBe('Week 11\n2025\nÖMC Dates\n2025-03-10');
+      expect(result).toBe('v. 11\n2025\nÖMC Dates\n2025-03-10');
     });
 
     it('should return "Datum borttaget" for invalid ID', () => {
@@ -126,7 +126,7 @@ describe('important-date-resolver', () => {
         date_value: '',
       };
       const result = resolveImportantDateTooltip('uuid-no-value', [dateWithoutValue]);
-      expect(result).toBe('Week 7\n2025\nStena Dates');
+      expect(result).toBe('v. 7\n2025\nStena Dates');
     });
   });
 

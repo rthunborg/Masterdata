@@ -385,6 +385,95 @@ describe("AddImportantDateModal", () => {
       expect(categorySelect).toBeInTheDocument();
       expect(categorySelect).toHaveTextContent("Stena Dates");
     });
+
+    it("should not show deadline fields when category is not PE3 Dates", () => {
+      renderWithI18n(
+        <AddImportantDateModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      );
+
+      // Default category is "Stena Dates", so deadline fields should not be visible
+      expect(screen.queryByLabelText(/inlämningsdeadline/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/avbokningsdeadline/i)).not.toBeInTheDocument();
+    });
+
+    it("should show deadline fields when category is PE3 Dates", async () => {
+      const user = userEvent.setup();
+
+      renderWithI18n(
+        <AddImportantDateModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      );
+
+      // Select PE3 Dates category
+      const categorySelect = screen.getByRole("combobox", { name: /kategori/i });
+      await user.click(categorySelect);
+      
+      await waitFor(() => {
+        const pe3Option = screen.getByRole("option", { name: "PE3 Dates" });
+        expect(pe3Option).toBeInTheDocument();
+      });
+      
+      const pe3Option = screen.getByRole("option", { name: "PE3 Dates" });
+      await user.click(pe3Option);
+
+      // Deadline fields should now be visible
+      await waitFor(() => {
+        expect(screen.getByLabelText(/inlämningsdeadline/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/avbokningsdeadline/i)).toBeInTheDocument();
+      });
+    });
+
+    it("should hide deadline fields when switching from PE3 Dates to another category", async () => {
+      const user = userEvent.setup();
+
+      renderWithI18n(
+        <AddImportantDateModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      );
+
+      // First, select PE3 Dates
+      const categorySelect = screen.getByRole("combobox", { name: /kategori/i });
+      await user.click(categorySelect);
+      
+      await waitFor(() => {
+        const pe3Option = screen.getByRole("option", { name: "PE3 Dates" });
+        expect(pe3Option).toBeInTheDocument();
+      });
+      
+      const pe3Option = screen.getByRole("option", { name: "PE3 Dates" });
+      await user.click(pe3Option);
+
+      // Verify deadline fields are visible
+      await waitFor(() => {
+        expect(screen.getByLabelText(/inlämningsdeadline/i)).toBeInTheDocument();
+      });
+
+      // Now switch back to Stena Dates
+      await user.click(categorySelect);
+      await waitFor(() => {
+        const stenaOption = screen.getByRole("option", { name: "Stena Dates" });
+        expect(stenaOption).toBeInTheDocument();
+      });
+      
+      const stenaOption = screen.getByRole("option", { name: "Stena Dates" });
+      await user.click(stenaOption);
+
+      // Deadline fields should now be hidden
+      await waitFor(() => {
+        expect(screen.queryByLabelText(/inlämningsdeadline/i)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText(/avbokningsdeadline/i)).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe("Year Change Updates Date", () => {

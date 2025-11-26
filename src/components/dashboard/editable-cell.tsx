@@ -167,7 +167,10 @@ export function EditableCell({
     }
 
     function handleClickOutside(event: MouseEvent) {
-      if (cellRef.current && !cellRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      
+      // Check if click is outside this cell
+      if (cellRef.current && !cellRef.current.contains(target)) {
         // Story 13.10: Use proper change detection to prevent unnecessary saves
         const normalizedCurrent = editValue ?? null;
         const normalizedOriginal = value ?? null;
@@ -355,10 +358,20 @@ export function EditableCell({
       {isLoneivaField && (
         <Select
           value={editValue !== null && editValue !== undefined ? String(editValue) : ""}
-          onValueChange={(value) => {
-            const parsedValue = value === "" ? null : parseInt(value, 10);
+          onValueChange={(selectedValue) => {
+            const parsedValue = selectedValue === "" ? null : parseInt(selectedValue, 10);
+            // Story 13.10: Check if value actually changed before saving
+            const normalizedCurrent = parsedValue ?? null;
+            const normalizedOriginal = (value !== null && value !== undefined) ? (typeof value === 'number' ? value : parseInt(String(value), 10)) : null;
+            
+            if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+              // Value hasn't changed, just exit edit mode without API call
+              setIsEditing(false);
+              return;
+            }
+            
             setEditValue(parsedValue ?? "");
-            // Auto-save on select
+            // Auto-save on select (only if value changed)
             setTimeout(() => {
               onSave(employeeId, field, parsedValue).then(() => {
                 setIsEditing(false);
@@ -447,8 +460,18 @@ export function EditableCell({
             checked={Boolean(editValue)}
             onChange={(e) => {
               const newValue = e.target.checked;
+              // Story 13.10: Check if value actually changed before saving
+              const normalizedCurrent = newValue;
+              const normalizedOriginal = Boolean(value);
+              
+              if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+                // Value hasn't changed, just exit edit mode without API call
+                setIsEditing(false);
+                return;
+              }
+              
               setEditValue(newValue);
-              // Auto-save boolean changes
+              // Auto-save boolean changes (only if value changed)
               setTimeout(() => {
                 onSave(employeeId, field, newValue)
                   .then(() => {
@@ -493,9 +516,20 @@ export function EditableCell({
               onSelect={(date) => {
                 if (date) {
                   const dateStr = format(date, "yyyy-MM-dd");
+                  // Story 13.10: Check if value actually changed before saving
+                  const normalizedCurrent = dateStr;
+                  const normalizedOriginal = value ?? null;
+                  
+                  if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+                    // Value hasn't changed, just exit edit mode without API call
+                    setShowDatePicker(false);
+                    setIsEditing(false);
+                    return;
+                  }
+                  
                   setEditValue(dateStr);
                   setShowDatePicker(false);
-                  // Trigger save after selecting date
+                  // Trigger save after selecting date (only if value changed)
                   setTimeout(() => {
                     onSave(employeeId, field, dateStr).catch((err) => {
                       const message = err instanceof Error ? err.message : "Failed to update";
@@ -514,11 +548,21 @@ export function EditableCell({
       {type === "select" && options && (
         <Select
           value={String(editValue)}
-          onValueChange={(value) => {
-            setEditValue(value);
-            // Auto-save on select
+          onValueChange={(selectedValue) => {
+            // Story 13.10: Check if value actually changed before saving
+            const normalizedCurrent = selectedValue;
+            const normalizedOriginal = (value !== null && value !== undefined) ? String(value) : null;
+            
+            if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+              // Value hasn't changed, just exit edit mode without API call
+              setIsEditing(false);
+              return;
+            }
+            
+            setEditValue(selectedValue);
+            // Auto-save on select (only if value changed)
             setTimeout(() => {
-              onSave(employeeId, field, value).then(() => {
+              onSave(employeeId, field, selectedValue).then(() => {
                 setIsEditing(false);
               }).catch((err) => {
                 const message = err instanceof Error ? err.message : "Failed to update";

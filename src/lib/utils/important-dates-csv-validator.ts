@@ -23,15 +23,15 @@ export function validateImportantDateRow(
 
   // Validate year (required, 4 digits)
   if (!row.year) {
-    errors.push({ field: "year", message: "Year is required" });
+    errors.push({ field: "year", message: "År är obligatoriskt" });
   } else {
     const year = Number(row.year);
     if (isNaN(year) || !Number.isInteger(year)) {
-      errors.push({ field: "year", message: "Year must be a number" });
+      errors.push({ field: "year", message: "År måste vara ett nummer" });
     } else if (year < 1900 || year > 2100) {
       errors.push({
         field: "year",
-        message: "Year must be between 1900 and 2100",
+        message: "År måste vara mellan 1900 och 2100",
       });
     }
   }
@@ -42,33 +42,33 @@ export function validateImportantDateRow(
     if (isNaN(weekNumber) || !Number.isInteger(weekNumber)) {
       errors.push({
         field: "week_number",
-        message: "Week number must be a number",
+        message: "Veckonummer måste vara ett nummer",
       });
     } else if (weekNumber < 1 || weekNumber > 53) {
       errors.push({
         field: "week_number",
-        message: "Week number must be between 1 and 53",
+        message: "Veckonummer måste vara mellan 1 och 53",
       });
     }
   }
 
   // Validate category (required, non-empty text)
   if (!row.category || String(row.category).trim() === "") {
-    errors.push({ field: "category", message: "Category is required" });
+    errors.push({ field: "category", message: "Kategori är obligatorisk" });
   }
 
   // Validate date_description (required, non-empty text)
   if (!row.date_description || String(row.date_description).trim() === "") {
     errors.push({
       field: "date_description",
-      message: "Date description is required",
+      message: "Datumbeskrivning är obligatorisk",
     });
   }
 
   // Validate date_value (required, non-empty text)
   // Story 8.9: For ÖMC dates, validate and parse two-day format
   if (!row.date_value || String(row.date_value).trim() === "") {
-    errors.push({ field: "date_value", message: "Date value is required" });
+    errors.push({ field: "date_value", message: "Datumvärde är obligatoriskt" });
   } else {
     const category = String(row.category || "").trim();
     const dateValue = String(row.date_value).trim();
@@ -261,7 +261,7 @@ export function validateImportantDatesCSV(rows: Record<string, unknown>[]): {
         duplicateRowNumbers.add(rowNumber);
         invalid.push({
           row: rowNumber,
-          message: `Duplicate date entry (Week ${weekDisplay}, Year ${year}, Category ${category})`,
+          message: `Duplicerat datum (v. ${weekDisplay}, år ${year}, kategori ${category})`,
         });
       });
     }

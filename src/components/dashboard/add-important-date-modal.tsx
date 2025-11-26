@@ -570,61 +570,65 @@ export function AddImportantDateModal({
                 />
               )}
 
-              {/* Deadline Submit */}
-              <FormField
-                control={form.control}
-                name="deadline_submit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Inlämningsdeadline (Valfritt)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(value === "" ? null : value);
-                        }}
-                      />
-                    </FormControl>
-                    <p className="text-xs text-muted-foreground">
-                      Efter detta datum kan inga nya medarbetare tilldelas
-                    </p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Deadline Submit - only for PE3 Dates */}
+              {form.watch('category') === 'PE3 Dates' && (
+                <FormField
+                  control={form.control}
+                  name="deadline_submit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Inlämningsdeadline (Valfritt)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? null : value);
+                          }}
+                        />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        Efter detta datum kan inga nya medarbetare tilldelas
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-              {/* Deadline Cancel */}
-              <FormField
-                control={form.control}
-                name="deadline_cancel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Avbokningsdeadline (Valfritt)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(value === "" ? null : value);
-                        }}
-                      />
-                    </FormControl>
-                    <p className="text-xs text-muted-foreground">
-                      Efter detta datum kan tilldelningar inte avbokas
-                    </p>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Deadline Cancel - only for PE3 Dates */}
+              {form.watch('category') === 'PE3 Dates' && (
+                <FormField
+                  control={form.control}
+                  name="deadline_cancel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Avbokningsdeadline (Valfritt)
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? null : value);
+                          }}
+                        />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        Efter detta datum kan tilldelningar inte avbokas
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {/* Date Description - now optional and auto-populated */}
               <FormField

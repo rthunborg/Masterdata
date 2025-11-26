@@ -54,7 +54,7 @@ export function resolveImportantDateTooltip(
   const parts: string[] = [];
   
   if (date.week_number !== null) {
-    parts.push(`Week ${date.week_number}`);
+    parts.push(`v. ${date.week_number}`);
   }
   
   parts.push(`${date.year}`);

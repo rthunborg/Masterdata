@@ -156,7 +156,7 @@ describe("importantDateService", () => {
             code: "VALIDATION_ERROR",
             message: "Invalid input data",
             details: {
-              date_description: ["Date description is required"],
+              date_description: ["Datumbeskrivning är obligatorisk"],
             },
           },
         }),

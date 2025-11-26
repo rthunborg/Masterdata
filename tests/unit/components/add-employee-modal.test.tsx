@@ -481,14 +481,17 @@ describe("AddEmployeeModal", () => {
       }, { timeout: 3000 });
 
       // Verify the date option contains remaining spots in parentheses
-      // Note: formatImportantDateOption formats ÖMC dates differently, so we check for the formatted text
+      // Note: formatImportantDateOption formats ÖMC dates as "v. [week] - [two-day range]"
+      // For ÖMC dates, it uses formatOMCDate which returns format like "8-9 mars 2025"
+      // So the full format would be: "v. 11 - 8-9 mars 2025 (3)"
       const dateOption = screen.getByText(
         (content, element) => {
           const text = element?.textContent || '';
-          return (
-            (text.includes("Måndag 10/3") || text.includes("Week 11") || text.includes("mars")) &&
-            text.includes("(3)")
-          );
+          // Check for week number format ("v. 11" or "v.11"), date range pattern (contains "-" and numbers), and remaining spots
+          const hasWeekNumber = text.includes("v. 11") || text.includes("v.11") || (text.includes("11") && text.includes("v."));
+          const hasDateRange = /\d+-\d+/.test(text); // Pattern like "8-9" for date range
+          const hasRemainingSpots = text.includes("(3)");
+          return hasWeekNumber && hasDateRange && hasRemainingSpots;
         },
         { selector: "[role='option']" }
       );

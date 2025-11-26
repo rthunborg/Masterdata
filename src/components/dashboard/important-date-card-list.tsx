@@ -167,7 +167,7 @@ export function ImportantDateCardList({
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>
-                        {date.week_number ? `Week ${date.week_number}` : 'No week'}
+                        {date.week_number ? `v. ${date.week_number}` : ''}
                       </span>
                     </div>
                     <span className="font-medium">
