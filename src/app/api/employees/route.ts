@@ -111,8 +111,12 @@ export async function POST(request: NextRequest) {
 
     // Normalize SSN to standard format (YYMMDD-XXXX) and email (convert undefined to null)
     // Convert empty strings to null for UUID date fields (database expects null, not "")
-    const normalizedData: EmployeeFormData = {
-      ...validatedData,
+    // Exclude system-managed fields that should not be set during creation
+    // These fields are system-managed and should only be set by their respective services
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { omc_masterdata_reminder_sent_at, repayment_needed_omc, repayment_needed_pe3, ...validatedDataWithoutSystemFields } = validatedData;
+    const normalizedData = {
+      ...validatedDataWithoutSystemFields,
       ssn: normalizeSSN(validatedData.ssn),
       email: validatedData.email ?? null,
       gender: validatedData.gender ?? null,
@@ -125,7 +129,7 @@ export async function POST(request: NextRequest) {
       // Handle One field timestamp logic (Story 8.3)
       // If One field is set to true during creation, record the timestamp
       one_marked_at: validatedData.one === true ? new Date().toISOString() : null,
-    };
+    } as EmployeeFormData;
 
     // Story 8.4: Validate Talmundo on creation
     if (validatedData.talmundo === true) {
