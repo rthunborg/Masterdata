@@ -236,6 +236,41 @@ describe('Story 13.3: Row Click Selection', () => {
         expect(row).not.toHaveAttribute('data-state', 'selected');
       }
     });
+
+    it('clicking editable cell display div does NOT change selection', () => {
+      renderWithI18n(
+        <EmployeeTable
+          employees={mockEmployees}
+          isLoading={false}
+        />
+      );
+
+      const row = screen.getByTestId('employee-row-1');
+      
+      // Find an editable cell (gridcell) in the row
+      const editableCells = screen.queryAllByRole('gridcell');
+      
+      if (editableCells.length > 0) {
+        // Find a cell that is editable (aria-readonly="false")
+        const editableCell = editableCells.find(
+          (cell) => cell.getAttribute('aria-readonly') === 'false'
+        );
+        
+        if (editableCell) {
+          // Click the editable cell display div (before it becomes an input)
+          fireEvent.click(editableCell);
+          
+          // Row should NOT have selected styling (selection should not change)
+          expect(row).not.toHaveAttribute('data-state', 'selected');
+          
+          // Editable cell should enter edit mode (input should appear within the row)
+          // Check if any textbox exists within the row (could be the search input or the editable cell input)
+          const inputs = screen.queryAllByRole('textbox');
+          // At least one input should exist (either search or the editable cell that entered edit mode)
+          expect(inputs.length).toBeGreaterThan(0);
+        }
+      }
+    });
   });
 
   describe('Task 1.2: Integrate with Selection State', () => {

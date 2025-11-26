@@ -235,7 +235,8 @@ export function EditableCell({
           <TooltipTrigger asChild>
             <div
               ref={cellRef}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent row selection when clicking read-only cell
                 setShowTooltip(true);
                 setTimeout(() => setShowTooltip(false), 2000);
               }}
@@ -310,7 +311,10 @@ export function EditableCell({
     return (
       <div
         ref={cellRef}
-        onClick={() => setIsEditing(true)}
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent row selection when clicking to edit
+          setIsEditing(true);
+        }}
         className={cn(
           "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
           "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center gap-2 bg-white"
@@ -319,6 +323,7 @@ export function EditableCell({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
+            e.stopPropagation(); // Prevent row selection when using keyboard
             setIsEditing(true);
           }
         }}

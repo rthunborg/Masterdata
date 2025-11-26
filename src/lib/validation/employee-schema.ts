@@ -105,12 +105,14 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     pe3_date: z.string().nullable().default(null),
     comments: z.string().nullable().default(null),
     // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
-    one: z.boolean().nullable().default(null),
+    // All boolean fields default to false and are not nullable
+    // Accept null values and transform them to false for backward compatibility
+    one: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
     one_marked_at: z.string().datetime().nullable().default(null), // Story 8.3: Timestamp when One field was set to true
-    talmundo: z.boolean().nullable().default(null), // Story 8.4: Talmundo completion (editable only when One is green)
-    isps: z.boolean().nullable().default(null),
-    photo: z.boolean().nullable().default(null),
-    origo: z.boolean().nullable().default(null),
+    talmundo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false), // Story 8.4: Talmundo completion (editable only when One is green)
+    isps: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    photo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    origo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
     loneiva: z
       .number()
       .int('Lönenivå must be a whole number')
@@ -118,15 +120,15 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
       .max(7, 'Lönenivå must be at most 7')
       .nullable()
       .default(null),
-    mail_lon: z.boolean().nullable().default(null),
-    bankuppgifter: z.boolean().nullable().default(null),
-    li: z.boolean().nullable().default(null),
-    passport: z.boolean().nullable().default(null),
-    kvitto_c17_18: z.boolean().nullable().default(null),
-    c17: z.boolean().nullable().default(null),
-    crewing_done: z.boolean().nullable().default(null),
+    mail_lon: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    bankuppgifter: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    li: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    passport: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    kvitto_c17_18: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    c17: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    crewing_done: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
     // Story 8.20: ÖMC Room Assignment fields
-    hotel_required: z.boolean().nullable().default(null),
+    hotel_required: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
     room_number_shared: z.number().int().nullable().default(null),
     // System-managed fields with defaults
     is_terminated: z.boolean().default(false),
@@ -199,12 +201,14 @@ const baseEmployeeSchema = z.object({
   pe3_date: z.string().nullable().default(null),
   comments: z.string().nullable().default(null),
   // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
-  one: z.boolean().nullable().default(null),
+  // All boolean fields default to false and are not nullable
+  // Accept null values and transform them to false for backward compatibility
+  one: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
   one_marked_at: z.string().datetime().nullable().default(null), // Story 8.3: Timestamp when One field was set to true
-  talmundo: z.boolean().nullable().default(null), // Story 8.4: Talmundo completion (editable only when One is green)
-  isps: z.boolean().nullable().default(null),
-  photo: z.boolean().nullable().default(null),
-  origo: z.boolean().nullable().default(null),
+  talmundo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false), // Story 8.4: Talmundo completion (editable only when One is green)
+  isps: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  photo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  origo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
   loneiva: z
     .number()
     .int('Lönenivå must be a whole number')
@@ -212,15 +216,15 @@ const baseEmployeeSchema = z.object({
     .max(7, 'Lönenivå must be at most 7')
     .nullable()
     .default(null),
-  mail_lon: z.boolean().nullable().default(null),
-  bankuppgifter: z.boolean().nullable().default(null),
-  li: z.boolean().nullable().default(null),
-  passport: z.boolean().nullable().default(null),
-  kvitto_c17_18: z.boolean().nullable().default(null),
-    c17: z.boolean().nullable().default(null),
-    crewing_done: z.boolean().nullable().default(null),
+  mail_lon: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  bankuppgifter: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  li: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  passport: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  kvitto_c17_18: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    c17: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    crewing_done: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
     // Story 8.20: ÖMC Room Assignment fields
-    hotel_required: z.boolean().nullable().default(null),
+    hotel_required: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
     room_number_shared: z.number().int().nullable().default(null),
     // System-managed fields with defaults
     is_terminated: z.boolean().default(false),

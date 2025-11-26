@@ -72,6 +72,7 @@ export function ImportImportantDatesModal({
 }: ImportImportantDatesModalProps) {
   const tCommon = useTranslations("common");
   const tDates = useTranslations("dates");
+  const tToasts = useTranslations("toasts");
 
   const [file, setFile] = useState<File | null>(null);
   const [csvData, setCSVData] = useState<CSVRow[]>([]);
@@ -181,7 +182,7 @@ export function ImportImportantDatesModal({
           }
         } catch (error) {
           console.error("Failed to calculate deadlines:", error);
-          toast.error("Failed to calculate deadlines. Please check your dates.");
+          toast.error(tToasts("import.deadlineCalculationFailed"));
         }
       },
       error: (error) => {
@@ -287,7 +288,7 @@ Week Number,Year,Date Description,Date Value,Time,Notes
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    toast.success("Error report downloaded");
+    toast.success(tToasts("import.errorReportDownloaded"));
   };
 
   const handleClose = () => {

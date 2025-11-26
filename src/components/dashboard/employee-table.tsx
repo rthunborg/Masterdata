@@ -376,9 +376,9 @@ export function EmployeeTable({
 
   // Story 13.3: Row click handler with event delegation
   const handleRowClick = React.useCallback((event: React.MouseEvent<HTMLTableRowElement>, employeeId: string) => {
-    // Check if click is on an interactive element
+    // Check if click is on an interactive element or editable cell
     const target = event.target as HTMLElement;
-    if (target.closest('button, input, a, [role="button"], [role="menuitem"], [role="menu"]')) {
+    if (target.closest('button, input, a, [role="button"], [role="menuitem"], [role="menu"], [role="gridcell"]')) {
       return; // Don't change selection
     }
 

@@ -173,7 +173,8 @@ export function EditableDateCell({
           <TooltipTrigger asChild>
             <div
               ref={cellRef}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent row selection when clicking read-only cell
                 // Clear any existing timeout
                 if (tooltipTimeoutRef.current) {
                   clearTimeout(tooltipTimeoutRef.current);
@@ -212,7 +213,8 @@ export function EditableDateCell({
         <TooltipTrigger asChild>
           <div
             ref={cellRef}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent row selection when clicking to edit
               setEditValue(value || "__NONE__"); // Sync before editing
               setIsEditing(true);
             }}
@@ -225,6 +227,7 @@ export function EditableDateCell({
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
+                e.stopPropagation(); // Prevent row selection when using keyboard
                 setEditValue(value || "__NONE__"); // Sync before editing
                 setIsEditing(true);
               }

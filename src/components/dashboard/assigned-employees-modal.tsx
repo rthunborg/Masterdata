@@ -22,6 +22,7 @@ import { Download, Search } from "lucide-react";
 import type { ImportantDate, AssignedEmployee } from "@/lib/types/important-date";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslations } from "@/lib/i18n";
 
 interface AssignedEmployeesModalProps {
   date: ImportantDate | null;
@@ -38,6 +39,7 @@ export function AssignedEmployeesModal({
   date, 
   onClose 
 }: AssignedEmployeesModalProps) {
+  const tToasts = useTranslations("toasts");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [showUpdateIndicator, setShowUpdateIndicator] = React.useState(false);
@@ -137,7 +139,7 @@ export function AssignedEmployeesModal({
    */
   const handleDownloadCSV = () => {
     if (!date?.assigned_employees || date.assigned_employees.length === 0) {
-      toast.error("No employees to export");
+      toast.error(tToasts("assignedEmployees.noEmployeesToExport"));
       return;
     }
 
@@ -175,10 +177,10 @@ export function AssignedEmployeesModal({
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success("CSV downloaded successfully");
+      toast.success(tToasts("assignedEmployees.csvDownloaded"));
     } catch (error) {
       console.error("Error downloading CSV:", error);
-      toast.error("Failed to download CSV");
+      toast.error(tToasts("assignedEmployees.csvDownloadFailed"));
     }
   };
 

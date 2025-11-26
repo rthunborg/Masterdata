@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useTranslations } from '@/lib/i18n';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -82,6 +83,7 @@ function meetsInstallCriteria(): boolean {
 }
 
 export function InstallPrompt() {
+  const tToasts = useTranslations("toasts");
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
@@ -151,7 +153,7 @@ export function InstallPrompt() {
       setIsInstalled(true);
       setDeferredPrompt(null);
       setShowPrompt(false);
-      toast.success('HR Masterdata app installed successfully!');
+      toast.success(tToasts("pwa.appInstalled"));
     });
 
     return () => {
@@ -182,15 +184,15 @@ export function InstallPrompt() {
       const { outcome } = await deferredPrompt.userChoice;
 
       if (outcome === 'accepted') {
-        toast.success('Installing HR Masterdata app...');
+        toast.success(tToasts("pwa.installing"));
         setDeferredPrompt(null);
         setShowPrompt(false);
       } else {
-        toast.info('Installation cancelled');
+        toast.info(tToasts("pwa.installationCancelled"));
       }
     } catch (error) {
       console.error('[PWA] Install prompt error:', error);
-      toast.error('Failed to show install prompt');
+      toast.error(tToasts("pwa.installPromptFailed"));
     }
   };
 

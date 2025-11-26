@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { EXPORTABLE_EMPLOYEE_FIELDS, DEFAULT_EXPORT_FIELDS } from "@/lib/constants/export-fields";
 import { exportEmployeesByCategory } from "@/lib/services/export-service";
 import { toast } from "sonner";
+import { useTranslations } from "@/lib/i18n";
 
 interface CategoryExportModalProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ interface CategoryExportModalProps {
  * AC 13-19: Export employees by category with date range and field selection
  */
 export function CategoryExportModal({ isOpen, onClose }: CategoryExportModalProps) {
+  const tToasts = useTranslations("toasts");
   const [category, setCategory] = React.useState<'Stena Dates' | 'ÖMC Dates' | 'PE3 Dates'>('ÖMC Dates');
   const [dateFrom, setDateFrom] = React.useState<string>('');
   const [dateTo, setDateTo] = React.useState<string>('');
@@ -69,12 +71,12 @@ export function CategoryExportModal({ isOpen, onClose }: CategoryExportModalProp
 
   async function handleExport() {
     if (selectedFields.length === 0) {
-      toast.error('Please select at least one field to export');
+      toast.error(tToasts("export.selectFields"));
       return;
     }
 
     if (dateFrom && dateTo && dateFrom > dateTo) {
-      toast.error('"From" date must be before "To" date');
+      toast.error(tToasts("export.invalidDateRange"));
       return;
     }
 
@@ -88,10 +90,10 @@ export function CategoryExportModal({ isOpen, onClose }: CategoryExportModalProp
         fieldDefinitions: EXPORTABLE_EMPLOYEE_FIELDS,
       });
 
-      toast.success('Export completed successfully');
+      toast.success(tToasts("export.exportCompleted"));
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Export failed';
+      const message = error instanceof Error ? error.message : tToasts("export.exportFailed");
       toast.error(message);
     } finally {
       setIsExporting(false);

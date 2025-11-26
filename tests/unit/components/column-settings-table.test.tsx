@@ -149,7 +149,7 @@ describe("ColumnSettingsTable", () => {
       await waitFor(() => {
         expect(columnService.updateColumnPermissions).toHaveBeenCalled();
         expect(toast.success).toHaveBeenCalledWith(
-          "Permissions updated successfully"
+          "Behörigheter uppdaterade"
         );
         expect(mockOnPermissionsUpdated).toHaveBeenCalled();
       });
@@ -192,7 +192,7 @@ describe("ColumnSettingsTable", () => {
       fireEvent.click(enabledToggles[0]);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("Failed to update permissions");
+        expect(toast.error).toHaveBeenCalledWith("Kunde inte uppdatera behörigheter");
       });
     }
   });

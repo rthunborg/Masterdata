@@ -547,6 +547,7 @@ export function ColumnSettingsTable({
   const [columnToDelete, setColumnToDelete] = useState<ColumnConfig | null>(null);
   const t = useTranslations("tooltips");
   const tAdmin = useTranslations("admin");
+  const tToasts = useTranslations("toasts");
 
   // Detect mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -606,11 +607,11 @@ export function ColumnSettingsTable({
 
       try {
         await columnService.reorderColumns(updates);
-        toast.success("Column order updated successfully");
+        toast.success(tToasts("columns.orderUpdated"));
         onPermissionsUpdated();
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Failed to reorder columns"
+          error instanceof Error ? error.message : tToasts("columns.orderUpdateFailed")
         );
         // Revert on error
         setItems(columns);
@@ -640,10 +641,10 @@ export function ColumnSettingsTable({
 
     try {
       await columnService.reorderColumns(updates);
-      toast.success("Column moved up");
+      toast.success(tToasts("columns.movedUp"));
       onPermissionsUpdated();
     } catch {
-      toast.error("Failed to move column");
+      toast.error(tToasts("columns.moveFailed"));
       setItems(columns);
     }
   };
@@ -670,10 +671,10 @@ export function ColumnSettingsTable({
 
     try {
       await columnService.reorderColumns(updates);
-      toast.success("Column moved down");
+      toast.success(tToasts("columns.movedDown"));
       onPermissionsUpdated();
     } catch {
-      toast.error("Failed to move column");
+      toast.error(tToasts("columns.moveFailed"));
       setItems(columns);
     }
   };
@@ -711,11 +712,11 @@ export function ColumnSettingsTable({
         role_permissions: updatedPermissions,
       });
 
-      toast.success("Permissions updated successfully");
+      toast.success(tToasts("columns.permissionsUpdated"));
       onPermissionsUpdated();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update permissions"
+        error instanceof Error ? error.message : tToasts("columns.permissionsUpdateFailed")
       );
     } finally {
       setUpdatingColumnId(null);
@@ -733,11 +734,11 @@ export function ColumnSettingsTable({
       await columnService.updateColumnPermissions(columnId, {
         category: newCategory || null,
       });
-      toast.success("Category updated successfully");
+      toast.success(tToasts("columns.categoryUpdated"));
       onPermissionsUpdated();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update category"
+        error instanceof Error ? error.message : tToasts("columns.categoryUpdateFailed")
       );
     } finally {
       setUpdatingColumnId(null);
@@ -747,11 +748,11 @@ export function ColumnSettingsTable({
   const handleCategoryColorUpdate = async (categoryName: string, color: string | null) => {
     try {
       await columnService.updateCategoryColor(categoryName, color);
-      toast.success("Category color updated for all columns");
+      toast.success(tToasts("columns.categoryColorUpdated"));
       onPermissionsUpdated();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update category color"
+        error instanceof Error ? error.message : tToasts("columns.categoryColorUpdateFailed")
       );
     }
   };
@@ -762,11 +763,11 @@ export function ColumnSettingsTable({
       await columnService.updateColumnPermissions(columnId, {
         column_name: newName,
       });
-      toast.success("Column name updated successfully");
+      toast.success(tToasts("columns.nameUpdated"));
       onPermissionsUpdated();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update column name"
+        error instanceof Error ? error.message : tToasts("columns.nameUpdateFailed")
       );
     } finally {
       setUpdatingColumnId(null);

@@ -193,21 +193,22 @@ export async function POST(request: NextRequest) {
           // Repayment tracking fields (Story 8.13)
           repayment_needed_omc: null,
           repayment_needed_pe3: null,
-          // Masterdata columns (Story 7.1) - default to null for CSV imports
-          one: null,
-          one_marked_at: null, // Story 8.3
-          talmundo: null, // Story 8.4
-          isps: null,
-          photo: null,
-          origo: null,
-          loneiva: null,
-          mail_lon: null,
-          bankuppgifter: null,
-          li: null,
-          passport: null,
-          kvitto_c17_18: null,
-          c17: null,
-          crewing_done: null,
+          // Masterdata columns (Story 7.1) - all boolean fields default to false
+          one: validated.one === true || validated.one === "true" || validated.one === "1" || validated.one === "yes" ? true : false,
+          one_marked_at: null, // Story 8.3 - will be set if one is true during creation
+          talmundo: validated.talmundo === true || validated.talmundo === "true" || validated.talmundo === "1" || validated.talmundo === "yes" ? true : false, // Story 8.4
+          isps: validated.isps === true || validated.isps === "true" || validated.isps === "1" || validated.isps === "yes" ? true : false,
+          photo: validated.photo === true || validated.photo === "true" || validated.photo === "1" || validated.photo === "yes" ? true : false,
+          origo: validated.origo === true || validated.origo === "true" || validated.origo === "1" || validated.origo === "yes" ? true : false,
+          loneiva: validated.loneiva === "" || !validated.loneiva ? null : (typeof validated.loneiva === "number" ? validated.loneiva : parseInt(String(validated.loneiva), 10)),
+          mail_lon: validated.mail_lon === true || validated.mail_lon === "true" || validated.mail_lon === "1" || validated.mail_lon === "yes" ? true : false,
+          bankuppgifter: validated.bankuppgifter === true || validated.bankuppgifter === "true" || validated.bankuppgifter === "1" || validated.bankuppgifter === "yes" ? true : false,
+          li: validated.li === true || validated.li === "true" || validated.li === "1" || validated.li === "yes" ? true : false,
+          passport: validated.passport === true || validated.passport === "true" || validated.passport === "1" || validated.passport === "yes" ? true : false,
+          kvitto_c17_18: validated.kvitto_c17_18 === true || validated.kvitto_c17_18 === "true" || validated.kvitto_c17_18 === "1" || validated.kvitto_c17_18 === "yes" ? true : false,
+          c17: validated.c17 === true || validated.c17 === "true" || validated.c17 === "1" || validated.c17 === "yes" ? true : false,
+          crewing_done: validated.crewing_done === true || validated.crewing_done === "true" || validated.crewing_done === "1" || validated.crewing_done === "yes" ? true : false,
+          hotel_required: validated.hotel_required === true || validated.hotel_required === "true" || validated.hotel_required === "1" || validated.hotel_required === "yes" ? true : false,
         };
 
         validEmployees.push(employeeData);
