@@ -44,7 +44,6 @@
     "filterByStatus": "Filtrera efter status",
     "active": "Aktiv",
     "archived": "Arkiverad",
-    "all": "Alla",
     "employeeCount": "{count} anställda",
     "noEmployees": "Inga anställda hittades",
     "noEmployeesMessage": "Inga anställda hittades.",

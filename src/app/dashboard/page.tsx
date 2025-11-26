@@ -338,9 +338,6 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <Card>
-          <CardHeader>
-            <CardTitle>{t('all')}</CardTitle>
-          </CardHeader>
           <CardContent>
             <ResponsiveEmployeeView
               employees={employees}
