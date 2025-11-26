@@ -612,7 +612,7 @@ export function ImportantDatesTable({
   return (
     <div className="space-y-4">
       {/* Category Filter */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 pt-4">
         <Label htmlFor="category-filter" className="whitespace-nowrap">
           {tDates('filterByCategory')}:
         </Label>

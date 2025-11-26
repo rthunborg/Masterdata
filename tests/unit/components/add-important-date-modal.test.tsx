@@ -224,7 +224,7 @@ describe("AddImportantDateModal", () => {
       });
 
       expect(toast.success).toHaveBeenCalledWith(
-        "dateCreated"
+        "Datum skapat"
       );
       expect(mockOnSuccess).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
