@@ -209,6 +209,7 @@ export async function POST(request: NextRequest) {
           c17: validated.c17 === true || validated.c17 === "true" || validated.c17 === "1" || validated.c17 === "yes" ? true : false,
           crewing_done: validated.crewing_done === true || validated.crewing_done === "true" || validated.crewing_done === "1" || validated.crewing_done === "yes" ? true : false,
           hotel_required: validated.hotel_required === true || validated.hotel_required === "true" || validated.hotel_required === "1" || validated.hotel_required === "yes" ? true : false,
+          room_number_shared: validated.room_number_shared === "" || !validated.room_number_shared ? null : (typeof validated.room_number_shared === "number" ? validated.room_number_shared : parseInt(String(validated.room_number_shared), 10)),
         };
 
         validEmployees.push(employeeData);

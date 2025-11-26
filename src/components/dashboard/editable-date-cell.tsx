@@ -214,9 +214,10 @@ export function EditableDateCell({
           <div
             ref={cellRef}
             onClick={(e) => {
-              e.stopPropagation(); // Prevent row selection when clicking to edit
+              // Update state first, then stop propagation
               setEditValue(value || "__NONE__"); // Sync before editing
               setIsEditing(true);
+              e.stopPropagation(); // Prevent row selection when clicking to edit
             }}
             className={cn(
               "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",

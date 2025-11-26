@@ -445,6 +445,9 @@ export const csvImportEmployeeSchema = z.object({
   kvitto_c17_18: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   c17: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   crewing_done: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
+  // Story 8.20: ÖMC Room Assignment fields
+  hotel_required: z.union([z.boolean(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
+  room_number_shared: z.union([z.number().int(), z.string(), z.null()]).nullable().optional().or(z.literal("")),
   // System-managed fields with defaults
   is_terminated: z.boolean().default(false).optional(),
   is_archived: z.boolean().default(false).optional(),

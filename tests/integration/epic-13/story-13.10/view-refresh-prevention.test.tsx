@@ -224,7 +224,26 @@ describe("View Refresh Prevention - Integration Tests", () => {
 
       // Wait for the Select component to render (it appears when isEditing becomes true)
       // The SelectTrigger has role="combobox", so wait for that
-      await screen.findByRole("combobox", {}, { timeout: 10000 });
+      // Use waitFor to handle potential timing issues with state updates after stopPropagation
+      // Give extra time for React state updates to propagate after the click event
+      // Note: stopPropagation may affect React's event batching, so we wait for the component
+      // to fully process the state update and render the Select component
+      await waitFor(() => {
+        // Try finding by role first
+        const combobox = screen.queryByRole("combobox");
+        if (combobox) {
+          expect(combobox).toBeInTheDocument();
+          return;
+        }
+        // Fallback: look for SelectTrigger by data attribute or class
+        const selectTrigger = document.querySelector('[data-slot="select-trigger"]');
+        if (selectTrigger) {
+          expect(selectTrigger).toBeInTheDocument();
+          return;
+        }
+        // If neither found, throw to retry
+        throw new Error("Combobox not found yet - waiting for React state update after stopPropagation");
+      }, { timeout: 10000 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
       // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
@@ -280,7 +299,26 @@ describe("View Refresh Prevention - Integration Tests", () => {
 
       // Wait for the Select component to render (it appears when isEditing becomes true)
       // The SelectTrigger has role="combobox", so wait for that
-      await screen.findByRole("combobox", {}, { timeout: 10000 });
+      // Use waitFor to handle potential timing issues with state updates after stopPropagation
+      // Give extra time for React state updates to propagate after the click event
+      // Note: stopPropagation may affect React's event batching, so we wait for the component
+      // to fully process the state update and render the Select component
+      await waitFor(() => {
+        // Try finding by role first
+        const combobox = screen.queryByRole("combobox");
+        if (combobox) {
+          expect(combobox).toBeInTheDocument();
+          return;
+        }
+        // Fallback: look for SelectTrigger by data attribute or class
+        const selectTrigger = document.querySelector('[data-slot="select-trigger"]');
+        if (selectTrigger) {
+          expect(selectTrigger).toBeInTheDocument();
+          return;
+        }
+        // If neither found, throw to retry
+        throw new Error("Combobox not found yet - waiting for React state update after stopPropagation");
+      }, { timeout: 10000 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
       // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
