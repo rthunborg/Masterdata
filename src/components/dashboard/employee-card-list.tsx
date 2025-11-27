@@ -28,6 +28,7 @@ interface EmployeeCardListProps {
   onEdit?: (employee: Employee) => void;
   columnConfigs?: ColumnConfig[];
   onEmployeeUpdated?: () => void | Promise<void>;
+  onOptimisticUpdate?: (id: string, updates: Partial<Employee>) => () => void;
 }
 
 export function EmployeeCardList({
@@ -42,6 +43,7 @@ export function EmployeeCardList({
   onEdit,
   columnConfigs = [],
   onEmployeeUpdated,
+  onOptimisticUpdate,
 }: EmployeeCardListProps) {
   const tToasts = useTranslations('toasts');
   // Only enable pull-to-refresh on mobile devices (< 1024px)
@@ -169,7 +171,7 @@ export function EmployeeCardList({
           onChange={(e) => setLocalSearchValue(e.target.value)}
           className="pl-10 h-12"
           aria-label="Search employees by name, email, or rank"
-          // Mobile keyboard will show "Search" button when type="search"
+        // Mobile keyboard will show "Search" button when type="search"
         />
       </form>
 

@@ -183,10 +183,10 @@ export default function DashboardPage() {
   }), [includeArchived, includeTerminated, needsRepayment]);
 
   // Use the new real-time enabled hook with notifications
-  const { 
-    employees, 
-    isLoading: isLoadingEmployees, 
-    error, 
+  const {
+    employees,
+    isLoading: isLoadingEmployees,
+    error,
     refetch,
     updatedEmployeeId
   } = useEmployees({
@@ -270,7 +270,7 @@ export default function DashboardPage() {
             <>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
+                  <Button
                     onClick={() => setIsAddModalOpen(true)}
                     disabled={isPreviewMode}
                     className="w-full sm:w-auto min-h-11"
@@ -285,8 +285,8 @@ export default function DashboardPage() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    onClick={() => setIsImportModalOpen(true)} 
+                  <Button
+                    onClick={() => setIsImportModalOpen(true)}
                     variant="outline"
                     disabled={isPreviewMode}
                     className="w-full sm:w-auto min-h-11"
@@ -352,6 +352,7 @@ export default function DashboardPage() {
               onNeedsRepaymentChange={onNeedsRepaymentChange}
               updatedEmployeeId={updatedEmployeeId}
               onGlobalFilterChange={setGlobalFilter}
+              onOptimisticUpdate={updateEmployeeOptimistically}
             />
           </CardContent>
         </Card>

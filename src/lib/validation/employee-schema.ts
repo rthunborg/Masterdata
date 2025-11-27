@@ -4,16 +4,9 @@ import { z } from "zod";
  * Swedish SSN format validation
  * 
  * Accepts both formats:
- * - With dash: YYMMDD-XXXX or YYYYMMDD-XXXX (e.g., 850315-1234 or 19850315-1234)
- * - Without dash: YYMMDDXXXX or YYYYMMDDXXXX (e.g., 8503151234 or 198503151234)
- * 
- * Examples: 
- * - 850315-1234 (10 characters with dash)
- * - 8503151234 (10 digits without dash)
- * - 19850315-1234 (12 characters with dash)
- * - 198503151234 (12 digits without dash)
+ * - With space: YYMMDD XXXX or YYYYMMDD XXXX (e.g., 850315 1234 or 19850315 1234)
  */
-const ssnRegex = /^\d{10}$|^\d{12}$|^\d{6,8}-\d{4}$/;
+const ssnRegex = /^(?:\d{10}|\d{12}|\d{6,8}[- ]\d{4})$/;
 
 /**
  * Validation error messages
@@ -49,7 +42,7 @@ export const validationMessages = {
  * @param t Optional translation function to override default English messages
  */
 export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
-  const msg = (key: keyof typeof validationMessages) => 
+  const msg = (key: keyof typeof validationMessages) =>
     t ? t(validationMessages[key]) : validationMessages[key];
 
   return z.object({
@@ -89,7 +82,7 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
         // Check if it's a valid date format (YYYY-MM-DD)
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(date)) return false;
-        
+
         const parsed = Date.parse(date);
         return !isNaN(parsed);
       }, msg('hireDateInvalid'))
@@ -135,7 +128,7 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     is_archived: z.boolean().default(false),
     termination_date: z.string().nullable().default(null),
     termination_reason: z.string().nullable().default(null),
-    
+
     // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
     repayment_needed_omc: z.string().nullable().default(null),
     repayment_needed_pe3: z.string().nullable().default(null),
@@ -185,7 +178,7 @@ const baseEmployeeSchema = z.object({
       // Check if it's a valid date format (YYYY-MM-DD)
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(date)) return false;
-      
+
       const parsed = Date.parse(date);
       return !isNaN(parsed);
     }, "Invalid date format")
@@ -221,17 +214,17 @@ const baseEmployeeSchema = z.object({
   li: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
   passport: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
   kvitto_c17_18: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    c17: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    crewing_done: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    // Story 8.20: ÖMC Room Assignment fields
-    hotel_required: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    room_number_shared: z.number().int().nullable().default(null),
-    // System-managed fields with defaults
-    is_terminated: z.boolean().default(false),
+  c17: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  crewing_done: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  // Story 8.20: ÖMC Room Assignment fields
+  hotel_required: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  room_number_shared: z.number().int().nullable().default(null),
+  // System-managed fields with defaults
+  is_terminated: z.boolean().default(false),
   is_archived: z.boolean().default(false),
   termination_date: z.string().nullable().default(null),
   termination_reason: z.string().nullable().default(null),
-  
+
   // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
   repayment_needed_omc: z.string().nullable().default(null),
   repayment_needed_pe3: z.string().nullable().default(null),
@@ -243,32 +236,32 @@ const baseEmployeeSchema = z.object({
  * Story 8.4: Talmundo validation helper function
  * Validates that Talmundo can only be true if One field is green (>= 24 hours)
  */
-function validateTalmundoField(data: { 
-  talmundo?: boolean | null; 
-  one?: boolean | null; 
+function validateTalmundoField(data: {
+  talmundo?: boolean | null;
+  one?: boolean | null;
   one_marked_at?: string | null;
 }): boolean {
   // If talmundo is not true, no validation needed
   if (data.talmundo !== true) {
     return true;
   }
-  
+
   // Check if One field is true
   if (!data.one) {
     return false;
   }
-  
+
   // Check if one_marked_at timestamp exists and is >= 24 hours ago
   if (!data.one_marked_at) {
     return false;
   }
-  
+
   try {
     const markedAt = new Date(data.one_marked_at);
     const now = new Date();
     const elapsed = now.getTime() - markedAt.getTime();
     const twentyFourHours = 24 * 60 * 60 * 1000;
-    
+
     // Talmundo can only be true if One field has been true for >= 24 hours
     return elapsed >= twentyFourHours;
   } catch {
@@ -299,8 +292,8 @@ export const updateEmployeeSchema = baseEmployeeSchema
       message: "At least one field must be provided for update",
     }
   );
-  // Note: Talmundo validation is handled in the API route handler (PATCH /api/employees/[id])
-  // because it requires current employee data from the database to check the 24-hour rule
+// Note: Talmundo validation is handled in the API route handler (PATCH /api/employees/[id])
+// because it requires current employee data from the database to check the 24-hour rule
 
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 
@@ -308,9 +301,9 @@ export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
  * Create update employee schema with custom error messages
  */
 export function updateEmployeeSchemaWithMessages(t?: (key: string) => string) {
-  const msg = (key: keyof typeof validationMessages) => 
+  const msg = (key: keyof typeof validationMessages) =>
     t ? t(validationMessages[key]) : validationMessages[key];
-    
+
   return createEmployeeSchemaWithMessages(t)
     .partial()
     .refine((data) => Object.keys(data).length > 0, {
@@ -330,7 +323,7 @@ export const terminateEmployeeSchema = z.object({
       // Check if it's a valid date format (YYYY-MM-DD)
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(date)) return false;
-      
+
       const parsed = Date.parse(date);
       return !isNaN(parsed);
     }, "Invalid date format"),
@@ -346,7 +339,7 @@ export type TerminateEmployeeInput = z.infer<typeof terminateEmployeeSchema>;
  * Create terminate employee schema with custom error messages
  */
 export function terminateEmployeeSchemaWithMessages(t?: (key: string) => string) {
-  const msg = (key: keyof typeof validationMessages) => 
+  const msg = (key: keyof typeof validationMessages) =>
     t ? t(validationMessages[key]) : validationMessages[key];
 
   return z.object({
@@ -357,7 +350,7 @@ export function terminateEmployeeSchemaWithMessages(t?: (key: string) => string)
         // Check if it's a valid date format (YYYY-MM-DD)
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(date)) return false;
-        
+
         const parsed = Date.parse(date);
         return !isNaN(parsed);
       }, msg('terminationDateInvalid')),
@@ -414,7 +407,7 @@ export const csvImportEmployeeSchema = z.object({
       // Check if it's a valid date format (YYYY-MM-DD)
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(date)) return false;
-      
+
       const parsed = Date.parse(date);
       return !isNaN(parsed);
     }, "Invalid date format. Must be YYYY-MM-DD")
@@ -453,7 +446,7 @@ export const csvImportEmployeeSchema = z.object({
   is_archived: z.boolean().default(false).optional(),
   termination_date: z.string().nullable().default(null).optional(),
   termination_reason: z.string().nullable().default(null).optional(),
-  
+
   // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
   repayment_needed_omc: z.string().nullable().default(null).optional(),
   repayment_needed_pe3: z.string().nullable().default(null).optional(),

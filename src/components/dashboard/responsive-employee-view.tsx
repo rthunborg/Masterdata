@@ -36,6 +36,7 @@ interface ResponsiveEmployeeViewProps {
   onNeedsRepaymentChange?: (value: boolean) => void; // Story 8.13 AC 9
   updatedEmployeeId?: string | null;
   onGlobalFilterChange?: (value: string) => void;
+  onOptimisticUpdate?: (id: string, updates: Partial<Employee>) => () => void;
 }
 
 export function ResponsiveEmployeeView({
@@ -51,18 +52,19 @@ export function ResponsiveEmployeeView({
   onNeedsRepaymentChange, // Story 8.13 AC 9
   updatedEmployeeId = null,
   onGlobalFilterChange,
+  onOptimisticUpdate,
 }: ResponsiveEmployeeViewProps) {
   // Detect if we're on mobile (less than 1024px - lg breakpoint)
   const isMobile = useMediaQuery('(max-width: 1023px)');
-  
+
   // Get user and preview role for column filtering
   const { user } = useAuth();
   const { previewRole } = useUIStore();
   const effectiveRole = previewRole || user?.role;
-  
+
   // Fetch column configurations for mobile view
   const { columns: columnConfigs } = useColumns(effectiveRole);
-  
+
   // State for mobile card view dialogs
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
@@ -143,15 +145,15 @@ export function ResponsiveEmployeeView({
   // Filter employees based on search value for mobile view
   const filteredEmployees = searchValue
     ? employees.filter((emp) => {
-        const searchLower = searchValue.toLowerCase();
-        return (
-          emp.first_name?.toLowerCase().includes(searchLower) ||
-          emp.surname?.toLowerCase().includes(searchLower) ||
-          emp.email?.toLowerCase().includes(searchLower) ||
-          emp.mobile?.toLowerCase().includes(searchLower) ||
-          emp.rank?.toLowerCase().includes(searchLower)
-        );
-      })
+      const searchLower = searchValue.toLowerCase();
+      return (
+        emp.first_name?.toLowerCase().includes(searchLower) ||
+        emp.surname?.toLowerCase().includes(searchLower) ||
+        emp.email?.toLowerCase().includes(searchLower) ||
+        emp.mobile?.toLowerCase().includes(searchLower) ||
+        emp.rank?.toLowerCase().includes(searchLower)
+      );
+    })
     : employees;
 
   return (
@@ -169,6 +171,7 @@ export function ResponsiveEmployeeView({
           onEdit={handleEdit}
           columnConfigs={columnConfigs}
           onEmployeeUpdated={onEmployeeUpdated}
+          onOptimisticUpdate={onOptimisticUpdate}
         />
       ) : (
         <EmployeeTable
@@ -183,6 +186,7 @@ export function ResponsiveEmployeeView({
           onNeedsRepaymentChange={onNeedsRepaymentChange}
           updatedEmployeeId={updatedEmployeeId}
           onGlobalFilterChange={onGlobalFilterChange}
+          onOptimisticUpdate={onOptimisticUpdate}
         />
       )}
 

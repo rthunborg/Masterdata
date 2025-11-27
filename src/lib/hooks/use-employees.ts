@@ -37,6 +37,7 @@ interface UseEmployeesReturn {
   isConnected: boolean;
   refetch: () => Promise<void>;
   updatedEmployeeId: string | null;
+  updateEmployeeOptimistically: (id: string, updates: Partial<Employee>) => () => void;
 }
 
 /**
@@ -55,7 +56,7 @@ export function useEmployees({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [updatedEmployeeId, setUpdatedEmployeeId] = useState<string | null>(null);
-  
+
   // Notification batching
   const notificationBatchRef = useRef<NotificationMetadata[]>([]);
   const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -110,7 +111,7 @@ export function useEmployees({
       } else {
         // Online: fetch from API
         data = await employeeService.getAll(filters);
-        
+
         // Cache the data for offline use
         try {
           await offlineCacheService.cacheEmployeeList(data);
@@ -180,15 +181,15 @@ export function useEmployees({
         duration: 5000,
         action: batch[0].employeeId
           ? {
-              label: "View",
-              onClick: () => {
-                // Scroll to employee handled by parent component
-                const event = new CustomEvent("scrollToEmployee", {
-                  detail: { employeeId: batch[0].employeeId },
-                });
-                window.dispatchEvent(event);
-              },
-            }
+            label: "View",
+            onClick: () => {
+              // Scroll to employee handled by parent component
+              const event = new CustomEvent("scrollToEmployee", {
+                detail: { employeeId: batch[0].employeeId },
+              });
+              window.dispatchEvent(event);
+            },
+          }
           : undefined,
       });
     } else {
@@ -247,12 +248,12 @@ export function useEmployees({
       if (key === 'customData') {
         const oldCustomData = oldValue as Record<string, any> | undefined;
         const newCustomData = newValue as Record<string, any> | undefined;
-        
+
         // If both are undefined/null, they're the same
         if (!oldCustomData && !newCustomData) {
           continue;
         }
-        
+
         // If one is undefined/null and the other isn't, they're different
         if (!oldCustomData || !newCustomData) {
           return true;
@@ -297,7 +298,7 @@ export function useEmployees({
       if (event.eventType === "INSERT" && event.new) {
         // Add new employee to list
         const newEmployee = event.new as unknown as Employee;
-        
+
         // Fetch custom data if needed
         if (userRole && userRole !== "hr_admin") {
           try {
@@ -316,7 +317,7 @@ export function useEmployees({
           }
           return [...prev, newEmployee];
         });
-        
+
         setUpdatedEmployeeId(newEmployee.id);
         setTimeout(() => setUpdatedEmployeeId(null), 2000);
 
@@ -336,7 +337,7 @@ export function useEmployees({
         // Update existing employee
         const updatedEmployee = event.new as unknown as Employee;
         const oldEmployee = event.old as unknown as Employee | undefined;
-        
+
         // Fetch custom data if needed
         if (userRole && userRole !== "hr_admin") {
           try {
@@ -351,7 +352,7 @@ export function useEmployees({
         // Story 13.10: Only update state if data actually changed
         setEmployees((prev) => {
           const currentEmployee = prev.find((emp) => emp.id === updatedEmployee.id);
-          
+
           // If employee not found in current state, add it (shouldn't happen, but handle gracefully)
           if (!currentEmployee) {
             return prev;
@@ -375,14 +376,14 @@ export function useEmployees({
             emp.id === updatedEmployee.id ? mergedEmployee : emp
           );
         });
-        
+
         setUpdatedEmployeeId(updatedEmployee.id);
         setTimeout(() => setUpdatedEmployeeId(null), 2000);
 
         // Trigger notification if enabled
         if (enableNotifications && viewStateRef.current && oldEmployee) {
           const notificationType = detectViewImpact(oldEmployee, updatedEmployee, viewStateRef.current);
-          
+
           if (notificationType === "added") {
             addNotificationToBatch({
               type: "added",
@@ -413,7 +414,7 @@ export function useEmployees({
         if (!filters?.includeArchived && updatedEmployee.is_archived) {
           setEmployees((prev) => prev.filter((emp) => emp.id !== updatedEmployee.id));
         }
-        
+
         if (!filters?.includeTerminated && updatedEmployee.is_terminated) {
           setEmployees((prev) => prev.filter((emp) => emp.id !== updatedEmployee.id));
         }
@@ -453,18 +454,36 @@ export function useEmployees({
   useEffect(() => {
     return () => {
       debouncedHandleRealtimeEvent.cancel();
-      
+
       // Cleanup notification batch timeout
       if (batchTimeoutRef.current) {
         clearTimeout(batchTimeoutRef.current);
       }
-      
+
       // Flush any remaining notifications
       if (notificationBatchRef.current.length > 0) {
         flushNotificationBatch();
       }
     };
   }, [debouncedHandleRealtimeEvent, flushNotificationBatch]);
+
+  // Optimistic update function
+  const updateEmployeeOptimistically = useCallback((id: string, updates: Partial<Employee>) => {
+    // Store previous state for rollback
+    const previousEmployees = [...employees];
+
+    // Apply updates immediately
+    setEmployees((prev) =>
+      prev.map((emp) =>
+        emp.id === id ? { ...emp, ...updates } : emp
+      )
+    );
+
+    // Return rollback function
+    return () => {
+      setEmployees(previousEmployees);
+    };
+  }, [employees]);
 
   return {
     employees,
@@ -473,5 +492,6 @@ export function useEmployees({
     isConnected,
     refetch: fetchEmployees,
     updatedEmployeeId,
+    updateEmployeeOptimistically,
   };
 }

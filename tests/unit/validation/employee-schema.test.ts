@@ -104,7 +104,7 @@ describe("createEmployeeSchema", () => {
         "user.name@company.co.uk",
         "first+last@domain.org",
       ];
-      
+
       validEmails.forEach((email) => {
         const data = { ...validEmployeeData, email };
         const result = createEmployeeSchema.parse(data);
@@ -145,6 +145,10 @@ describe("createEmployeeSchema", () => {
         "19850315-1234", // Full year format
         "850315-1234",   // Short year format
         "20001225-5678", // Y2K+ format
+        "19850315 1234", // Full year with space
+        "850315 1234",   // Short year with space
+        "198503151234",  // Full year without separator
+        "8503151234",    // Short year without separator
       ];
 
       validSSNs.forEach((ssn) => {
@@ -198,7 +202,7 @@ describe("createEmployeeSchema", () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const futureDate = tomorrow.toISOString().split("T")[0];
-      
+
       const data = { ...validEmployeeData, hire_date: futureDate };
       expect(() => createEmployeeSchema.parse(data)).toThrow("Hire date cannot be in the future");
     });
@@ -446,11 +450,11 @@ describe("updateEmployeeSchema", () => {
   });
 
   it("should allow nullable fields to be set to null", () => {
-    const update = { 
+    const update = {
       mobile: null,
       comments: null,
     };
-    
+
     const result = updateEmployeeSchema.parse(update);
     expect(result.mobile).toBeNull();
     expect(result.comments).toBeNull();

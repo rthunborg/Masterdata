@@ -152,7 +152,7 @@ import { useColumns } from "@/lib/hooks/use-columns";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 
 
-import {} from "@/lib/utils/column-width-storage";
+import { } from "@/lib/utils/column-width-storage";
 
 
 import { ExportFieldSelectionDialog } from "./export-field-selection-dialog";
@@ -169,190 +169,96 @@ import { useTranslations } from "@/lib/i18n";
 
 
 interface EmployeeTableProps {
-
   employees: Employee[];
-
   isLoading: boolean;
-
   onEmployeeUpdated?: () => void;
-
   includeArchived?: boolean;
-
   onIncludeArchivedChange?: (value: boolean) => void;
-
   includeTerminated?: boolean;
-
   onIncludeTerminatedChange?: (value: boolean) => void;
-
   needsRepayment?: boolean; // Story 8.13 AC 9
-
   onNeedsRepaymentChange?: (value: boolean) => void; // Story 8.13 AC 9
-
   updatedEmployeeId?: string | null;
-
   onGlobalFilterChange?: (value: string) => void;
-
+  onOptimisticUpdate?: (id: string, updates: Partial<Employee>) => () => void;
 }
 
-
 // Custom global filter function for multi-column search
-
-
 const globalFilterFn = (row: Row<Employee>, columnId: string, filterValue: string) => {
-
-
   const searchableFields = [
-
     row.original.first_name,
-
     row.original.surname,
-
     row.original.ssn,
-
     row.original.email,
-
     row.original.mobile,
-
     row.original.rank,
-
     row.original.gender,
-
     row.original.town_district,
-
   ];
-
   const searchLower = filterValue.toLowerCase();
-
   return searchableFields.some((field) =>
-
     field?.toString().toLowerCase().includes(searchLower)
-
   );
-
 };
 
 export function EmployeeTable({
-
   employees,
-
   isLoading,
-
   onEmployeeUpdated,
-
   includeArchived = false,
-
   onIncludeArchivedChange,
-
   includeTerminated = false,
-
   onIncludeTerminatedChange,
-
   needsRepayment = false, // Story 8.13 AC 9
-
   onNeedsRepaymentChange, // Story 8.13 AC 9
-
   updatedEmployeeId = null,
-
   onGlobalFilterChange,
-
+  onOptimisticUpdate,
 }: EmployeeTableProps) {
-
   const { user } = useAuth();
-
-
   const isHRAdmin = user?.role === "hr_admin";
-
-
   const t = useTranslations("tooltips");
-
-
   const tDashboard = useTranslations("dashboard");
-
-
   const tModals = useTranslations("modals");
-
-
   const tAdmin = useTranslations("admin");
-
-
   const tToasts = useTranslations("toasts");
 
-
   // Get preview mode state and column visibility
-
-
   const { previewRole, isPreviewMode, initColumnVisibility, columnVisibility } = useUIStore();
 
-
   // Initialize column visibility preferences on mount
-
   React.useEffect(() => {
-
     if (user?.id) {
-
       initColumnVisibility(user.id);
-
     }
-
   }, [user?.id, initColumnVisibility]);
 
   // Determine effective role for column filtering
-
-
   const effectiveRole = previewRole || user?.role;
 
-
   // Fetch column configurations based on effective role (for preview mode)
-
-
   const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns(effectiveRole);
 
-
   // Fetch all Important Dates for resolving date field UUIDs
-
-
   const { dates: allImportantDates } = useImportantDates();
 
-
   const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
-
-
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = React.useState(false);
-
-
   const [terminateModalOpen, setTerminateModalOpen] = React.useState(false);
-
-
   const [reactivateDialogOpen, setReactivateDialogOpen] = React.useState(false);
-
-
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
-
-
   const [isArchiving, setIsArchiving] = React.useState(false);
-
-
   const [isReactivating, setIsReactivating] = React.useState(false);
 
-
   // Story 8.5: Crew-ready filter state
-
-
   const [crewReadyFilter, setCrewReadyFilter] = React.useState<'all' | 'ready' | 'not-ready'>('all');
 
-
   // Story 13.2: Employee selection state
-
-
   const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
-
   const [globalFilter, setGlobalFilter] = React.useState("");
-
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   // Story 13.2: Toggle employee selection
-
-
   const toggleEmployeeSelection = React.useCallback((id: string) => {
     setSelectedEmployeeIds((prev) => {
       const next = new Set(prev);
@@ -366,12 +272,8 @@ export function EmployeeTable({
   }, []);
 
   // Story 13.2: Check if employee is selected
-
-
   const isEmployeeSelected = React.useCallback((id: string) => {
-
     return selectedEmployeeIds.has(id);
-
   }, [selectedEmployeeIds]);
 
   // Story 13.3: Row click handler with event delegation
@@ -386,239 +288,135 @@ export function EmployeeTable({
     toggleEmployeeSelection(employeeId);
   }, [toggleEmployeeSelection]);
 
-  // Story 8.5: Calculate count of eligible employees for crew-ready exportReadyFilter, setCrewReadyFilter] = React.useState<'all' | 'ready' | 'not-ready'>('all');
-
-
   // Story 8.5: Calculate count of eligible employees for crew-ready export
-
-
   const eligibleCrewReadyCount = React.useMemo(() => {
-
     return employees.filter((emp) => {
-
       return canEditCrewingDone(emp) && emp.crewing_done !== true;
-
     }).length;
-
   }, [employees]);
 
   // Poll every 60 seconds to update One field badge statuses (Story 8.3)
-
-
   // The One field status is calculated based on one_marked_at timestamp vs current time
-
-
   // We need periodic re-renders to update the badge status as time passes
-
-
   const [, setRefreshTrigger] = React.useState(0);
-
   React.useEffect(() => {
-
     const interval = setInterval(() => {
-
-
       // Force table re-render to recalculate One field status badges
-
-
       // The state update triggers a re-render even though we don't read the value
-
       setRefreshTrigger((prev) => prev + 1);
-
     }, 60000); // 60 seconds
-
     return () => clearInterval(interval);
-
   }, []);
 
-
   // Row refs for scrolling
-
   const rowRefs = React.useRef<Map<string, HTMLTableRowElement>>(new Map());
 
-
   // Notify parent of global filter changes
-
   React.useEffect(() => {
-
     onGlobalFilterChange?.(globalFilter);
-
   }, [globalFilter, onGlobalFilterChange]);
 
   // Scroll to employee function
-
-
   const scrollToEmployee = React.useCallback((employeeId: string) => {
-
-
     const rowElement = rowRefs.current.get(employeeId);
-
     if (rowElement) {
-
       rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
-
       rowElement.classList.add("ring-2", "ring-blue-500", "ring-offset-2");
-
       setTimeout(() => {
-
         rowElement.classList.remove("ring-2", "ring-blue-500", "ring-offset-2");
-
       }, 3000);
-
     }
-
   }, []);
 
   // Listen for scroll-to-employee events from notifications
-
   React.useEffect(() => {
-
     const handleScrollToEmployee = (event: Event) => {
-
-
       const customEvent = event as CustomEvent<{ employeeId: string }>;
-
       scrollToEmployee(customEvent.detail.employeeId);
-
     };
-
     window.addEventListener("scrollToEmployee", handleScrollToEmployee as EventListener);
-
     return () => {
-
       window.removeEventListener("scrollToEmployee", handleScrollToEmployee as EventListener);
-
     };
-
   }, [scrollToEmployee]);
 
   // Network status for offline support (Story 12.3)
-
-
   const { isOnline } = useNetworkStatus();
 
-
   // Track pending mutations for visual indicators
-
-
   const [pendingMutations, setPendingMutations] = React.useState<Set<string>>(new Set());
 
-
   // Load pending mutations on mount and when employees change
-
   React.useEffect(() => {
-
     const loadPendingMutations = async () => {
-
-
       const mutations = await mutationQueueService.getPendingMutations();
-
-
       const employeeIds = new Set(
-
         mutations
-
           .filter((m) => m.employeeId)
-
           .map((m) => m.employeeId!)
-
       );
-
       setPendingMutations(employeeIds);
-
     };
-
     loadPendingMutations();
-
     // Refresh every 5 seconds to catch new mutations
-
-
     const interval = setInterval(loadPendingMutations, 5000);
-
     return () => clearInterval(interval);
-
   }, [employees]);
 
   // Handler for masterdata column updates (Story 12.3: offline support)
-
-
   const handleMasterdataUpdate = React.useCallback(async (
-
-    id: string, 
-
-    field: string, 
-
+    id: string,
+    field: string,
     value: string | number | boolean | null
-
   ) => {
+    let rollback: (() => void) | undefined;
 
     try {
-
       if (!isOnline) {
-
         // Offline: queue mutation
-
         await mutationQueueService.queueMutation("update", { [field]: value }, id);
-
         toast.info(tToasts("employees.changeSavedLocally"));
-
         // Update pending mutations set
-
         setPendingMutations((prev) => new Set(prev).add(id));
-
       } else {
-
         // Online: update immediately
 
+        // Optimistic update (Story 13.10)
+        if (onOptimisticUpdate) {
+          rollback = onOptimisticUpdate(id, { [field]: value });
+        }
+
         await employeeService.update(id, { [field]: value });
-
         toast.success(tToasts("employees.updatedSuccessfully"));
-
       }
-
       onEmployeeUpdated?.();
-
     } catch (error: unknown) {
-
       console.error("[EmployeeTable] Update failed:", error);
 
+      // Rollback optimistic update
+      if (rollback) {
+        rollback();
+      }
+
       const message = error instanceof Error ? error.message : tToasts("employees.updateFailed");
-
       throw new Error(message);
-
     }
-
-  }, [onEmployeeUpdated, isOnline]);
+  }, [onEmployeeUpdated, isOnline, onOptimisticUpdate]);
 
   // Handler for custom column updates
-
-
   const handleCustomDataUpdate = React.useCallback(async (
-
-    id: string, 
-
-    columnName: string, 
-
+    id: string,
+    columnName: string,
     value: string | number | boolean | null
-
   ) => {
-
     try {
-
       await customDataService.updateCustomData(id, { [columnName]: value });
-
       toast.success(tToasts("employees.customDataUpdated"));
-
       onEmployeeUpdated?.();
-
     } catch (error: unknown) {
-
       const message = error instanceof Error ? error.message : "Failed to update custom data";
-
       throw new Error(message);
-
     }
-
   }, [onEmployeeUpdated]);
 
   const handleArchiveClick = (employee: Employee) => {
@@ -908,24 +706,24 @@ export function EmployeeTable({
     const repaymentColumns = ['Återbetalningsskyldig ÖMC', 'Återbetalningsskyldig PE3'];
 
 
-    const terminatedFilteredColumns = includeTerminated 
+    const terminatedFilteredColumns = includeTerminated
 
-      ? roleFilteredColumns 
+      ? roleFilteredColumns
 
       : roleFilteredColumns.filter((config) => !repaymentColumns.includes(config.column_name));
 
     // Then apply visibility preferences (for HR Admin only)
 
 
-    const visibleColumns = isHRAdmin 
+    const visibleColumns = isHRAdmin
 
       ? terminatedFilteredColumns.filter((config) => {
 
-          const isVisible = columnVisibility[config.id] !== false;
+        const isVisible = columnVisibility[config.id] !== false;
 
-          return isVisible;
+        return isVisible;
 
-        })
+      })
 
       : terminatedFilteredColumns;
 
@@ -1104,16 +902,16 @@ export function EmployeeTable({
           // Choose the appropriate save handler based on column type
 
 
-          const handleSave = config.is_masterdata 
+          const handleSave = config.is_masterdata
 
-            ? handleMasterdataUpdate 
+            ? handleMasterdataUpdate
 
             : handleCustomDataUpdate;
 
           // Pass oneMarkedAt prop for One field (Story 8.3)
 
 
-          const oneMarkedAtProp = (config.column_name === "One" || fieldKey === "one") 
+          const oneMarkedAtProp = (config.column_name === "One" || fieldKey === "one")
 
             ? { oneMarkedAt: row.original.one_marked_at }
 
@@ -1124,13 +922,13 @@ export function EmployeeTable({
 
           const talmundoConditionalProps = (config.column_name === "Talmundo" || fieldKey === "talmundo")
 
-            ? { 
+            ? {
 
-                oneValue: row.original.one,
+              oneValue: row.original.one,
 
-                oneMarkedAt: row.original.one_marked_at 
+              oneMarkedAt: row.original.one_marked_at
 
-              }
+            }
 
             : {};
 
@@ -1233,19 +1031,17 @@ export function EmployeeTable({
 
                 column.getCanSort()
 
-                  ? `Sort by ${displayName}${
+                  ? `Sort by ${displayName}${column.getIsSorted() === "asc"
 
-                      column.getIsSorted() === "asc"
+                    ? ", currently sorted ascending"
 
-                        ? ", currently sorted ascending"
+                    : column.getIsSorted() === "desc"
 
-                        : column.getIsSorted() === "desc"
+                      ? ", currently sorted descending"
 
-                        ? ", currently sorted descending"
+                      : ""
 
-                        : ""
-
-                    }${!canEdit ? " (read-only)" : ""}`
+                  }${!canEdit ? " (read-only)" : ""}`
 
                   : !canEdit ? `${displayName} (read-only)` : displayName
 
@@ -1900,9 +1696,9 @@ export function EmployeeTable({
 
         <div className="text-center p-8 text-muted-foreground">
 
-          {includeArchived 
+          {includeArchived
 
-            ? "No arkiverade anställda hittades." 
+            ? "No arkiverade anställda hittades."
 
             : tDashboard('noEmployeesMessage')}
 
@@ -1916,422 +1712,422 @@ export function EmployeeTable({
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
 
-        <div className="relative flex-1 max-w-sm w-full">
+            <div className="relative flex-1 max-w-sm w-full">
 
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
-          <Input
+              <Input
 
-            placeholder={tDashboard("searchPlaceholder")}
+                placeholder={tDashboard("searchPlaceholder")}
 
-            value={globalFilter ?? ""}
+                value={globalFilter ?? ""}
 
-            onChange={(e) => setGlobalFilter(e.target.value)}
+                onChange={(e) => setGlobalFilter(e.target.value)}
 
-            className="pl-9 pr-9"
+                className="pl-9 pr-9"
 
-          />
+              />
 
-          {globalFilter && (
+              {globalFilter && (
 
-            <button
+                <button
 
-              onClick={() => setGlobalFilter("")}
+                  onClick={() => setGlobalFilter("")}
 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 
-              aria-label="Clear search"
-
-            >
-
-              <X className="h-4 w-4" />
-
-            </button>
-
-          )}
-
-        </div>
-
-        {/* Story 8.5: Crew-Ready Filter */}
-
-        <Select 
-
-          value={crewReadyFilter} 
-
-          onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
-
-        >
-
-          <SelectTrigger className="w-[180px]" aria-label="Crew Status" data-testid="crew-status-filter">
-
-            <SelectValue placeholder="Crew Status" />
-
-          </SelectTrigger>
-
-          <SelectContent>
-
-            <SelectItem value="all">Alla anställda</SelectItem>
-
-            <SelectItem value="ready">Crew Ready</SelectItem>
-
-            <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
-
-          </SelectContent>
-
-        </Select>
-
-        {/* Story 13.6: General Export Button with Field Selection (HR Admin only) */}
-        {isHRAdmin && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportClick}
-                disabled={selectedEmployeeIds.size === 0}
-                className="whitespace-nowrap"
-              >
-                {tDashboard("exportSelected") || "Exporta markerade anställda"}
-                {selectedEmployeeIds.size > 0 && ` (${selectedEmployeeIds.size})`}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {selectedEmployeeIds.size === 0
-                  ? tDashboard("noEmployeesSelected") || "No employees selected. Please select employees to export."
-                  : tDashboard("exportSelectedEmployees") || `Export ${selectedEmployeeIds.size} selected employee${selectedEmployeeIds.size === 1 ? '' : 's'}`}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {/* Story 8.5: Export Crew-Ready Employees (HR Admin only) */}
-
-        {isHRAdmin && (
-
-          <Tooltip>
-
-            <TooltipTrigger asChild>
-
-              <Button
-
-                variant="outline"
-
-                size="sm"
-
-                onClick={handleExportCrewReady}
-
-                disabled={eligibleCrewReadyCount === 0}
-
-                className="whitespace-nowrap"
-
-              >
-
-                {tDashboard("exportCrewReady")}
-
-                {eligibleCrewReadyCount > 0 && ` (${eligibleCrewReadyCount})`}
-
-              </Button>
-
-            </TooltipTrigger>
-
-            <TooltipContent>
-
-              <p>
-
-                {eligibleCrewReadyCount === 0 
-
-                  ? tDashboard("exportCrewReadyTooltipDisabled")
-
-                  : tDashboard(
-
-                      eligibleCrewReadyCount === 1 
-
-                        ? "exportCrewReadyTooltip" 
-
-                        : "exportCrewReadyTooltipPlural",
-
-                      { count: eligibleCrewReadyCount }
-
-                    )
-
-                }
-
-              </p>
-
-            </TooltipContent>
-
-          </Tooltip>
-
-        )}
-
-      </div>
-
-      <div className="rounded-md border">
-
-        <Table>
-
-          <TableHeader>
-
-            {table.getHeaderGroups().map((headerGroup) => (
-
-              <TableRow key={headerGroup.id}>
-
-                {headerGroup.headers.map((header) => {
-
-                  // Get column config for category color styling
-
-
-                  const columnId = header.column.id;
-
-
-                  const columnConfig = columnConfigs.find((c: ColumnConfig) => c.id === columnId);
-
-
-                  const categoryColor = columnConfig?.category_color;
-
-
-                  const categoryName = columnConfig?.category;
-
-
-                  // Calculate text color for accessibility
-
-
-                  const textColor = categoryColor 
-
-                    ? getReadableTextColor(categoryColor)
-
-                    : undefined;
-
-                  const headerContent = header.isPlaceholder ? null : flexRender(
-
-                    header.column.columnDef.header,
-
-                    header.getContext()
-
-                  );
-
-                  return (
-
-                    <TableHead 
-
-                      key={header.id}
-
-                      className="relative"
-
-                      style={{
-
-                        width: header.getSize(),
-
-                        backgroundColor: categoryColor || undefined,
-
-                        color: textColor === 'white' ? '#ffffff' : textColor === 'black' ? '#000000' : undefined,
-
-                      }}
-
-                    >
-
-                      {/* Header content with category label */}
-
-                      <div className="flex flex-col items-center justify-center leading-none pb-4">
-
-                        {/* Primary header text */}
-
-                        <div className="text-sm font-semibold leading-none">
-
-                          {headerContent}
-
-                        </div>
-
-                        {/* Category name as subtitle */}
-
-                        {categoryName && (
-
-                          <div className="text-xs text-gray-600 font-normal leading-none">
-
-                            {categoryName}
-
-                          </div>
-
-                        )}
-
-                      </div>
-
-                      {/* Resize handle (Story 9.4 - AC 3) */}
-
-                      {header.column.getCanResize() && (
-
-                        <div
-
-                          onMouseDown={header.getResizeHandler()}
-
-                          onTouchStart={header.getResizeHandler()}
-
-                          className={cn(
-
-                            "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none",
-
-                            "hover:bg-blue-500 bg-gray-300 opacity-0 hover:opacity-100 transition-opacity",
-
-                            header.column.getIsResizing() && "bg-blue-500 opacity-100"
-
-                          )}
-
-                        />
-
-                      )}
-
-                    </TableHead>
-
-                  );
-
-                })}
-
-              </TableRow>
-
-            ))}
-
-          </TableHeader>
-
-          <TableBody>
-
-            {filteredRowCount === 0 ? (
-
-              <TableRow>
-
-                <TableCell
-
-                  colSpan={columns.length}
-
-                  className="h-24 text-center text-muted-foreground"
+                  aria-label="Clear search"
 
                 >
 
-                  {globalFilter
+                  <X className="h-4 w-4" />
 
-                    ? tDashboard("noEmployeesMatchSearch")
+                </button>
 
-                    : tDashboard("noEmployeesToDisplay")}
+              )}
 
-                </TableCell>
+            </div>
 
-              </TableRow>
+            {/* Story 8.5: Crew-Ready Filter */}
 
-            ) : (
+            <Select
 
-              table.getRowModel().rows.map((row) => {
+              value={crewReadyFilter}
 
-                const isUpdatedRow = updatedEmployeeId === row.original.id;
+              onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
 
+            >
 
-                // Story 8.5: Visual indicator for crew-ready status
+              <SelectTrigger className="w-[180px]" aria-label="Crew Status" data-testid="crew-status-filter">
 
+                <SelectValue placeholder="Crew Status" />
 
-                const isCrewReady = row.original.crewing_done === true;
+              </SelectTrigger>
 
+              <SelectContent>
 
-                // Story 12.3: Check if employee has pending sync mutations
+                <SelectItem value="all">Alla anställda</SelectItem>
 
+                <SelectItem value="ready">Crew Ready</SelectItem>
 
-                const hasPendingSync = pendingMutations.has(row.original.id);
+                <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
 
-                return (
+              </SelectContent>
 
-                  <TableRow 
-                    key={row.id}
-                    data-state={isEmployeeSelected(row.original.id) ? "selected" : undefined}
-                    onClick={(e) => handleRowClick(e, row.original.id)}
-                    ref={(el) => {
+            </Select>
 
-                      if (el) {
+            {/* Story 13.6: General Export Button with Field Selection (HR Admin only) */}
+            {isHRAdmin && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportClick}
+                    disabled={selectedEmployeeIds.size === 0}
+                    className="whitespace-nowrap"
+                  >
+                    {tDashboard("exportSelected") || "Exporta markerade anställda"}
+                    {selectedEmployeeIds.size > 0 && ` (${selectedEmployeeIds.size})`}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {selectedEmployeeIds.size === 0
+                      ? tDashboard("noEmployeesSelected") || "No employees selected. Please select employees to export."
+                      : tDashboard("exportSelectedEmployees") || `Export ${selectedEmployeeIds.size} selected employee${selectedEmployeeIds.size === 1 ? '' : 's'}`}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-                        rowRefs.current.set(row.original.id, el);
+            {/* Story 8.5: Export Crew-Ready Employees (HR Admin only) */}
 
-                      } else {
+            {isHRAdmin && (
 
-                        rowRefs.current.delete(row.original.id);
+              <Tooltip>
 
-                      }
+                <TooltipTrigger asChild>
 
-                    }}
+                  <Button
 
-                    className={cn(
+                    variant="outline"
 
-                      row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
+                    size="sm"
 
-                      // Story 13.11: Status tints (priority: terminated > crew ready)
-                      // Override TableRow's default data-[state=selected]:bg-muted to allow status tints to show
-                      row.original.is_terminated && !row.original.is_archived && "bg-red-50 dark:bg-red-950/20 data-[state=selected]:!bg-red-50",
+                    onClick={handleExportCrewReady}
 
-                      isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20 data-[state=selected]:!bg-green-50/50",
+                    disabled={eligibleCrewReadyCount === 0}
 
-                      isUpdatedRow && "animate-pulse bg-blue-50 border-l-4 border-l-blue-400 transition-all duration-2000",
-
-                      // Story 12.3: Visual indicator for pending sync
-
-                      hasPendingSync && !row.original.is_archived && "border-l-2 border-l-yellow-400 bg-yellow-50/30",
-
-                      // Story 13.2 & 13.3: Row selection styling (combines with status tints using opacity)
-                      isEmployeeSelected(row.original.id) && "bg-gray-100/50 dark:bg-gray-800/50",
-
-                      // Story 13.3: Cursor pointer for clickable rows
-                      "cursor-pointer"
-
-                    )}
-
-                    data-testid={`employee-row-${row.original.id}`}
+                    className="whitespace-nowrap"
 
                   >
 
-                    {row.getVisibleCells().map((cell, cellIndex) => (
+                    {tDashboard("exportCrewReady")}
 
-                      <TableCell key={cell.id}>
+                    {eligibleCrewReadyCount > 0 && ` (${eligibleCrewReadyCount})`}
 
-                        <div className="flex items-center gap-2">
+                  </Button>
 
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TooltipTrigger>
 
-                          {/* Story 12.3: Pending sync indicator in first cell */}
+                <TooltipContent>
 
-                          {cellIndex === 0 && hasPendingSync && (
+                  <p>
 
-                            <Tooltip>
+                    {eligibleCrewReadyCount === 0
 
-                              <TooltipTrigger asChild>
+                      ? tDashboard("exportCrewReadyTooltipDisabled")
 
-                                <Clock className="h-3 w-3 text-yellow-600 animate-pulse" />
+                      : tDashboard(
 
-                              </TooltipTrigger>
+                        eligibleCrewReadyCount === 1
 
-                              <TooltipContent>
+                          ? "exportCrewReadyTooltip"
 
-                                <p>Pending sync - changes will sync when online</p>
+                          : "exportCrewReadyTooltipPlural",
 
-                              </TooltipContent>
+                        { count: eligibleCrewReadyCount }
 
-                            </Tooltip>
+                      )
 
-                          )}
+                    }
 
-                        </div>
+                  </p>
 
-                      </TableCell>
+                </TooltipContent>
 
-                    ))}
-
-                  </TableRow>
-
-                );
-
-              })
+              </Tooltip>
 
             )}
 
-          </TableBody>
+          </div>
 
-        </Table>
+          <div className="rounded-md border">
 
-      </div>
+            <Table>
+
+              <TableHeader>
+
+                {table.getHeaderGroups().map((headerGroup) => (
+
+                  <TableRow key={headerGroup.id}>
+
+                    {headerGroup.headers.map((header) => {
+
+                      // Get column config for category color styling
+
+
+                      const columnId = header.column.id;
+
+
+                      const columnConfig = columnConfigs.find((c: ColumnConfig) => c.id === columnId);
+
+
+                      const categoryColor = columnConfig?.category_color;
+
+
+                      const categoryName = columnConfig?.category;
+
+
+                      // Calculate text color for accessibility
+
+
+                      const textColor = categoryColor
+
+                        ? getReadableTextColor(categoryColor)
+
+                        : undefined;
+
+                      const headerContent = header.isPlaceholder ? null : flexRender(
+
+                        header.column.columnDef.header,
+
+                        header.getContext()
+
+                      );
+
+                      return (
+
+                        <TableHead
+
+                          key={header.id}
+
+                          className="relative"
+
+                          style={{
+
+                            width: header.getSize(),
+
+                            backgroundColor: categoryColor || undefined,
+
+                            color: textColor === 'white' ? '#ffffff' : textColor === 'black' ? '#000000' : undefined,
+
+                          }}
+
+                        >
+
+                          {/* Header content with category label */}
+
+                          <div className="flex flex-col items-center justify-center leading-none pb-4">
+
+                            {/* Primary header text */}
+
+                            <div className="text-sm font-semibold leading-none">
+
+                              {headerContent}
+
+                            </div>
+
+                            {/* Category name as subtitle */}
+
+                            {categoryName && (
+
+                              <div className="text-xs text-gray-600 font-normal leading-none">
+
+                                {categoryName}
+
+                              </div>
+
+                            )}
+
+                          </div>
+
+                          {/* Resize handle (Story 9.4 - AC 3) */}
+
+                          {header.column.getCanResize() && (
+
+                            <div
+
+                              onMouseDown={header.getResizeHandler()}
+
+                              onTouchStart={header.getResizeHandler()}
+
+                              className={cn(
+
+                                "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none",
+
+                                "hover:bg-blue-500 bg-gray-300 opacity-0 hover:opacity-100 transition-opacity",
+
+                                header.column.getIsResizing() && "bg-blue-500 opacity-100"
+
+                              )}
+
+                            />
+
+                          )}
+
+                        </TableHead>
+
+                      );
+
+                    })}
+
+                  </TableRow>
+
+                ))}
+
+              </TableHeader>
+
+              <TableBody>
+
+                {filteredRowCount === 0 ? (
+
+                  <TableRow>
+
+                    <TableCell
+
+                      colSpan={columns.length}
+
+                      className="h-24 text-center text-muted-foreground"
+
+                    >
+
+                      {globalFilter
+
+                        ? tDashboard("noEmployeesMatchSearch")
+
+                        : tDashboard("noEmployeesToDisplay")}
+
+                    </TableCell>
+
+                  </TableRow>
+
+                ) : (
+
+                  table.getRowModel().rows.map((row) => {
+
+                    const isUpdatedRow = updatedEmployeeId === row.original.id;
+
+
+                    // Story 8.5: Visual indicator for crew-ready status
+
+
+                    const isCrewReady = row.original.crewing_done === true;
+
+
+                    // Story 12.3: Check if employee has pending sync mutations
+
+
+                    const hasPendingSync = pendingMutations.has(row.original.id);
+
+                    return (
+
+                      <TableRow
+                        key={row.id}
+                        data-state={isEmployeeSelected(row.original.id) ? "selected" : undefined}
+                        onClick={(e) => handleRowClick(e, row.original.id)}
+                        ref={(el) => {
+
+                          if (el) {
+
+                            rowRefs.current.set(row.original.id, el);
+
+                          } else {
+
+                            rowRefs.current.delete(row.original.id);
+
+                          }
+
+                        }}
+
+                        className={cn(
+
+                          row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
+
+                          // Story 13.11: Status tints (priority: terminated > crew ready)
+                          // Override TableRow's default data-[state=selected]:bg-muted to allow status tints to show
+                          row.original.is_terminated && !row.original.is_archived && "bg-red-50 dark:bg-red-950/20 data-[state=selected]:!bg-red-50",
+
+                          isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20 data-[state=selected]:!bg-green-50/50",
+
+                          isUpdatedRow && "animate-pulse bg-blue-50 border-l-4 border-l-blue-400 transition-all duration-2000",
+
+                          // Story 12.3: Visual indicator for pending sync
+
+                          hasPendingSync && !row.original.is_archived && "border-l-2 border-l-yellow-400 bg-yellow-50/30",
+
+                          // Story 13.2 & 13.3: Row selection styling (combines with status tints using opacity)
+                          isEmployeeSelected(row.original.id) && "bg-gray-100/50 dark:bg-gray-800/50",
+
+                          // Story 13.3: Cursor pointer for clickable rows
+                          "cursor-pointer"
+
+                        )}
+
+                        data-testid={`employee-row-${row.original.id}`}
+
+                      >
+
+                        {row.getVisibleCells().map((cell, cellIndex) => (
+
+                          <TableCell key={cell.id}>
+
+                            <div className="flex items-center gap-2">
+
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+
+                              {/* Story 12.3: Pending sync indicator in first cell */}
+
+                              {cellIndex === 0 && hasPendingSync && (
+
+                                <Tooltip>
+
+                                  <TooltipTrigger asChild>
+
+                                    <Clock className="h-3 w-3 text-yellow-600 animate-pulse" />
+
+                                  </TooltipTrigger>
+
+                                  <TooltipContent>
+
+                                    <p>Pending sync - changes will sync when online</p>
+
+                                  </TooltipContent>
+
+                                </Tooltip>
+
+                              )}
+
+                            </div>
+
+                          </TableCell>
+
+                        ))}
+
+                      </TableRow>
+
+                    );
+
+                  })
+
+                )}
+
+              </TableBody>
+
+            </Table>
+
+          </div>
 
         </>
 
@@ -2347,9 +2143,9 @@ export function EmployeeTable({
 
             <AlertDialogDescription>
 
-              {tModals("archive.message", { 
+              {tModals("archive.message", {
 
-                name: `${selectedEmployee?.first_name} ${selectedEmployee?.surname}` 
+                name: `${selectedEmployee?.first_name} ${selectedEmployee?.surname}`
 
               })}
 

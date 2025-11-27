@@ -195,6 +195,41 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
         expect(screen.getByText("19900101-1234")).toBeInTheDocument();
     });
 
+    it("should display SSN and Hire Date when using Swedish column names (DB mismatch scenario)", () => {
+        // Mock useColumns to return Swedish column names as found in DB
+        (useColumnsModule.useColumns as Mock).mockReturnValue({
+            columns: [
+                {
+                    id: "ssn",
+                    column_name: "Social Security No.", // DB name
+                    column_type: "text",
+                    is_masterdata: true,
+                    is_visible: true,
+                    role_permissions: { hr_admin: { view: true, edit: true } },
+                    db_column_name: 'social_security_no.', // DB name
+                },
+                {
+                    id: "hire_date",
+                    column_name: "Anställningsdatum", // DB name
+                    column_type: "date",
+                    is_masterdata: true,
+                    is_visible: true,
+                    role_permissions: { hr_admin: { view: true, edit: true } },
+                    db_column_name: 'hire_date',
+                },
+            ],
+            isLoading: false,
+            error: null,
+            refetch: vi.fn(),
+        });
+
+        renderWithI18n(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
+
+        // Should display SSN and Hire Date because mapping handles Swedish names
+        expect(screen.getByText("19900101-1234")).toBeInTheDocument();
+        expect(screen.getByText("2023-01-01")).toBeInTheDocument();
+    });
+
     it("should not trigger update on no-op edit", async () => {
         renderWithI18n(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
 

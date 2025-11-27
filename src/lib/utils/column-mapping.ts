@@ -9,12 +9,14 @@ const COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "First Name": "first_name",
   "Surname": "surname",
   "SSN": "ssn",
+  "Social Security No.": "ssn", // Story 9.6: Fix SSN display
   "Email": "email",
   "Mobile": "mobile",
   "Town District": "town_district",
   "Rank": "rank",
   "Gender": "gender",
   "Hire Date": "hire_date",
+  "Anställningsdatum": "hire_date", // Story 9.6: Fix Hire Date display
   "Termination Date": "termination_date",
   "Termination Reason": "termination_reason",
   "Status": "_computed_status", // Special case: computed from is_archived/is_terminated
@@ -22,6 +24,12 @@ const COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "Stena Date": "stena_date",
   "ÖMC Date": "omc_date",
   "PE3 Date": "pe3_date",
+  "Lönenivå": "loneiva", // Story 8.6: Fix Lönenivå display
+  "Mail lön": "mail_lon",
+  "Kvitto C17/18": "kvitto_c17_18",
+  "Crewing/Done": "crewing_done",
+  "Hotel Required?": "hotel_required",
+  "Room Number (Shared)": "room_number_shared",
 };
 
 /**
