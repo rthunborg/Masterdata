@@ -30,9 +30,10 @@ const COLUMN_TO_FIELD_MAP: Record<string, string> = {
  * @returns The Employee field name (e.g., "first_name")
  */
 export function mapColumnToEmployeeField(columnName: string): string {
+  const trimmedName = columnName.trim();
   return (
-    COLUMN_TO_FIELD_MAP[columnName] ||
-    columnName.toLowerCase().replace(/ /g, "_")
+    COLUMN_TO_FIELD_MAP[trimmedName] ||
+    trimmedName.toLowerCase().replace(/ /g, "_")
   );
 }
 
@@ -71,10 +72,10 @@ export function getEmployeeFieldValue(
 
   // Get the raw value from the employee object
   const rawValue = employee[fieldName as keyof Employee] as string | number | boolean | null;
-  
+
   // Check if this is an Important Date field (by checking the actual field names)
   const isDateField = ["stena_date", "omc_date", "pe3_date"].includes(fieldName);
-  
+
   // If it's a date field and we have Important Dates available, resolve the UUID to description
   if (isDateField && allImportantDates && typeof rawValue === "string") {
     return resolveImportantDateId(rawValue, allImportantDates, dateDeletedText);

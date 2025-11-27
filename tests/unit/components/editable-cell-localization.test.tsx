@@ -1,0 +1,99 @@
+import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { EditableCell } from "@/components/dashboard/editable-cell";
+
+describe("EditableCell - Localization", () => {
+    const mockOnSave = vi.fn();
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it("displays localized error message for 'Invalid input data' error", async () => {
+        mockOnSave.mockRejectedValue(new Error("Invalid input data"));
+
+        renderWithI18n(
+            <EditableCell
+                value="Original Value"
+                employeeId="emp-1"
+                field="first_name"
+                type="text"
+                canEdit={true}
+                onSave={mockOnSave}
+            />
+        );
+
+        // Enter edit mode
+        const cell = screen.getByText("Original Value");
+        fireEvent.click(cell);
+
+        // Change value
+        const input = screen.getByDisplayValue("Original Value");
+        fireEvent.change(input, { target: { value: "New Value" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+
+        // Verify localized error message
+        await waitFor(() => {
+            expect(screen.getByText("Ogiltigt värde")).toBeInTheDocument();
+        });
+    });
+
+    it("displays localized error message for 'VALIDATION_ERROR' error", async () => {
+        mockOnSave.mockRejectedValue(new Error("VALIDATION_ERROR: Some detail"));
+
+        renderWithI18n(
+            <EditableCell
+                value="Original Value"
+                employeeId="emp-1"
+                field="first_name"
+                type="text"
+                canEdit={true}
+                onSave={mockOnSave}
+            />
+        );
+
+        // Enter edit mode
+        const cell = screen.getByText("Original Value");
+        fireEvent.click(cell);
+
+        // Change value
+        const input = screen.getByDisplayValue("Original Value");
+        fireEvent.change(input, { target: { value: "New Value" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+
+        // Verify localized error message
+        await waitFor(() => {
+            expect(screen.getByText("Ogiltigt värde")).toBeInTheDocument();
+        });
+    });
+
+    it("displays original error message for unknown errors", async () => {
+        mockOnSave.mockRejectedValue(new Error("Network error"));
+
+        renderWithI18n(
+            <EditableCell
+                value="Original Value"
+                employeeId="emp-1"
+                field="first_name"
+                type="text"
+                canEdit={true}
+                onSave={mockOnSave}
+            />
+        );
+
+        // Enter edit mode
+        const cell = screen.getByText("Original Value");
+        fireEvent.click(cell);
+
+        // Change value
+        const input = screen.getByDisplayValue("Original Value");
+        fireEvent.change(input, { target: { value: "New Value" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+
+        // Verify original error message
+        await waitFor(() => {
+            expect(screen.getByText("Network error")).toBeInTheDocument();
+        });
+    });
+});

@@ -63,7 +63,7 @@ describe("EditableCell - Permission States", () => {
 
       // Wait for tooltip to appear (Radix renders it twice - once visible, once for a11y)
       await waitFor(() => {
-        const tooltips = screen.getAllByText("This field is read-only. Contact HR to update.");
+        const tooltips = screen.getAllByText("Detta fält är skrivskyddat. Kontakta HR för att uppdatera.");
         expect(tooltips.length).toBeGreaterThan(0);
       });
     });

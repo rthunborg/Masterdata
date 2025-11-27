@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EditableCell } from '@/components/dashboard/editable-cell';
 
@@ -35,8 +35,8 @@ describe('Status Badges Integration', () => {
       );
 
       // Check that "Yes" text is displayed
-      expect(screen.getByText('Yes')).toBeInTheDocument();
-      
+      expect(screen.getByText('Klart')).toBeInTheDocument();
+
       // Check that status badge is present
       const badge = screen.getByTestId('status-badge');
       expect(badge).toBeInTheDocument();
@@ -57,8 +57,8 @@ describe('Status Badges Integration', () => {
       );
 
       // Check that "No" text is displayed
-      expect(screen.getByText('No')).toBeInTheDocument();
-      
+      expect(screen.getByText('Nej')).toBeInTheDocument();
+
       // Check that no badge is present
       expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
     });
@@ -95,7 +95,7 @@ describe('Status Badges Integration', () => {
         />
       );
 
-      expect(screen.getByText('Yes')).toBeInTheDocument();
+      expect(screen.getByText('Klart')).toBeInTheDocument();
       const badge = screen.getByTestId('status-badge');
       expect(badge).toBeInTheDocument();
     });
@@ -113,7 +113,7 @@ describe('Status Badges Integration', () => {
         />
       );
 
-      expect(screen.getByText('No')).toBeInTheDocument();
+      expect(screen.getByText('Nej')).toBeInTheDocument();
       expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
     });
   });
@@ -139,11 +139,14 @@ describe('Status Badges Integration', () => {
       expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
 
       // Click to edit
-      await user.click(screen.getByText('No'));
+      await user.click(screen.getByText('Nej'));
 
-      // Find and toggle checkbox
-      const checkbox = screen.getByRole('checkbox');
-      await user.click(checkbox);
+      // Find and toggle dropdown
+      const combobox = screen.getByRole('combobox');
+      await user.click(combobox);
+
+      const option = await screen.findByText("Klart");
+      fireEvent.click(option);
 
       // Wait for save to be called
       await waitFor(() => {

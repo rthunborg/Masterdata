@@ -35,7 +35,7 @@ describe("Talmundo Field - Component Tests", () => {
       const cell = screen.getByRole("gridcell");
       expect(cell).toHaveClass("bg-gray-100");
       expect(cell).toHaveClass("cursor-not-allowed");
-      
+
       // Field should be read-only
       fireEvent.click(cell);
       expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
@@ -59,7 +59,7 @@ describe("Talmundo Field - Component Tests", () => {
       fireEvent.click(cell);
 
       await waitFor(() => {
-        const tooltips = screen.getAllByText(/Can only be edited after One field completes 24-hour sync/i);
+        const tooltips = screen.getAllByText(/Kan endast redigeras efter One-fältet har slutfört 24-timmars synkronisering till Talmundo-systemet/i);
         expect(tooltips.length).toBeGreaterThan(0);
       });
     });
@@ -68,7 +68,7 @@ describe("Talmundo Field - Component Tests", () => {
   describe("when One field is true but <24h elapsed", () => {
     it("should show lock icon and disable editing", () => {
       const oneData = setOneDateWithTimer(12); // 12 hours ago
-      
+
       renderWithI18n(
         <EditableCell
           value={false}
@@ -85,7 +85,7 @@ describe("Talmundo Field - Component Tests", () => {
       const cell = screen.getByRole("gridcell");
       expect(cell).toHaveClass("bg-gray-100");
       expect(cell).toHaveClass("cursor-not-allowed");
-      
+
       // Field should be read-only
       fireEvent.click(cell);
       expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
@@ -93,7 +93,7 @@ describe("Talmundo Field - Component Tests", () => {
 
     it("should show tooltip with timer countdown message", async () => {
       const oneData = setOneDateWithTimer(12); // 12 hours ago
-      
+
       renderWithI18n(
         <EditableCell
           value={false}
@@ -111,7 +111,7 @@ describe("Talmundo Field - Component Tests", () => {
       fireEvent.click(cell);
 
       await waitFor(() => {
-        const tooltips = screen.getAllByText(/Can only be edited after One field completes 24-hour sync/i);
+        const tooltips = screen.getAllByText(/Kan endast redigeras efter One-fältet har slutfört 24-timmars synkronisering till Talmundo-systemet/i);
         expect(tooltips.length).toBeGreaterThan(0);
       });
     });
@@ -120,7 +120,7 @@ describe("Talmundo Field - Component Tests", () => {
   describe("when One field is true and ≥24h elapsed", () => {
     it("should enable editing", () => {
       const oneData = setOneDateWithTimer(25); // 25 hours ago
-      
+
       renderWithI18n(
         <EditableCell
           value={false}
@@ -136,15 +136,15 @@ describe("Talmundo Field - Component Tests", () => {
 
       const cell = screen.getByRole("gridcell");
       expect(cell).not.toHaveClass("bg-gray-50");
-      
+
       // Should be able to click and edit
       fireEvent.click(cell);
-      expect(screen.getByRole("checkbox")).toBeInTheDocument();
+      expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
 
     it("should allow value updates when editable", async () => {
       const oneData = setOneDateWithTimer(25); // 25 hours ago
-      
+
       renderWithI18n(
         <EditableCell
           value={false}
@@ -161,11 +161,11 @@ describe("Talmundo Field - Component Tests", () => {
       const cell = screen.getByRole("gridcell");
       fireEvent.click(cell);
 
-      const checkbox = await screen.findByRole("checkbox");
-      fireEvent.click(checkbox);
+      const combobox = screen.getByRole("combobox");
+      fireEvent.click(combobox);
 
-      // Press Enter to save
-      fireEvent.keyDown(checkbox, { key: "Enter" });
+      const option = await screen.findByText("Klart");
+      fireEvent.click(option);
 
       await waitFor(() => {
         expect(mockOnSave).toHaveBeenCalledWith("emp-1", "talmundo", true);

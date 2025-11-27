@@ -116,21 +116,21 @@ export function EditableDateCell({
 
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      
+
       // Check if click is inside the cell
       if (cellRef.current && cellRef.current.contains(target)) {
         return;
       }
-      
+
       // Check if click is inside a Select portal (SelectContent is rendered in a portal)
       // The portal has a data-radix-popper-content-wrapper attribute
-      const isInsideSelectPortal = (target as Element).closest?.('[role="listbox"]') || 
-                                    (target as Element).closest?.('[data-radix-popper-content-wrapper]');
-      
+      const isInsideSelectPortal = (target as Element).closest?.('[role="listbox"]') ||
+        (target as Element).closest?.('[data-radix-popper-content-wrapper]');
+
       if (isInsideSelectPortal) {
         return; // Don't cancel if clicking in the dropdown
       }
-      
+
       // Cancel editing
       setEditValue(value || "__NONE__");
       setError(null);
@@ -199,7 +199,7 @@ export function EditableDateCell({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>This field is read-only. Contact HR to update.</p>
+            <p>{t("readOnlyFieldTooltip")}</p>
           </TooltipContent>
         </Tooltip>
       );
@@ -270,7 +270,7 @@ export function EditableDateCell({
               // Check if value actually changed
               const normalizedCurrent = editValue === "__NONE__" ? null : editValue || null;
               const normalizedOriginal = value ?? null;
-              
+
               // If value hasn't changed, just exit edit mode (no API call)
               if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
                 setIsEditing(false);
@@ -285,21 +285,21 @@ export function EditableDateCell({
             console.log("[EditableDateCell] Save already in progress, ignoring duplicate call");
             return;
           }
-          
+
           setEditValue(newValue);
           setDropdownOpen(false);
-          
+
           // Story 13.10: Check if value actually changed before saving
           // Convert "__NONE__" placeholder to null for comparison
           const valueToSave = newValue === "__NONE__" ? null : newValue || null;
           const normalizedOriginal = value ?? null;
-          
+
           if (!hasValueChanged(normalizedOriginal, valueToSave)) {
             // Value hasn't changed, just exit edit mode without API call
             setIsEditing(false);
             return;
           }
-          
+
           // Auto-save on select (only if value changed)
           setTimeout(() => {
             setIsSaving(true);
@@ -333,10 +333,10 @@ export function EditableDateCell({
             const maxSpots = date.max_spots ?? 99;
             const isFull = remainingSpots === 0;
             const isAlmostFull = remainingSpots < 5 && remainingSpots > 0;
-            
+
             return (
-              <SelectItem 
-                key={date.id} 
+              <SelectItem
+                key={date.id}
                 value={date.id}
                 disabled={isFull}
                 className={cn(

@@ -37,7 +37,8 @@ describe("EditableDateCell", () => {
     remaining_spots: 0,
     assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",      };
+    updated_at: "2025-01-01T00:00:00Z",
+  };
 
   const mockFutureStenaDate: ImportantDate = {
     id: "stena-date-future",
@@ -55,7 +56,8 @@ describe("EditableDateCell", () => {
     remaining_spots: 0,
     assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",      };
+    updated_at: "2025-01-01T00:00:00Z",
+  };
 
   const mockPastStenaDate: ImportantDate = {
     id: "stena-date-past",
@@ -73,7 +75,8 @@ describe("EditableDateCell", () => {
     remaining_spots: 0,
     assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",      };
+    updated_at: "2025-01-01T00:00:00Z",
+  };
 
   const mockOmcDate: ImportantDate = {
     id: "omc-date-1",
@@ -91,7 +94,8 @@ describe("EditableDateCell", () => {
     remaining_spots: 0,
     assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",      };
+    updated_at: "2025-01-01T00:00:00Z",
+  };
 
   const mockPE3Date: ImportantDate = {
     id: "pe3-date-1",
@@ -109,7 +113,8 @@ describe("EditableDateCell", () => {
     remaining_spots: 0,
     assigned_employees: [],
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",      };
+    updated_at: "2025-01-01T00:00:00Z",
+  };
 
   const mockAllDates: ImportantDate[] = [
     mockStenaDate,
@@ -171,7 +176,7 @@ describe("EditableDateCell", () => {
 
       await waitFor(() => {
         const tooltips = screen.getAllByText(
-          "This field is read-only. Contact HR to update."
+          "Detta fält är skrivskyddat. Kontakta HR för att uppdatera."
         );
         expect(tooltips.length).toBeGreaterThan(0);
       });
@@ -461,7 +466,7 @@ describe("EditableDateCell", () => {
           expect(tooltipContent[0]).toBeInTheDocument();
         }
       }, { timeout: 500 });
-      
+
       // At minimum, verify the cell is present and doesn't crash
       expect(cell).toBeInTheDocument();
     });
@@ -551,7 +556,7 @@ describe("EditableDateCell", () => {
 
       fireEvent.click(screen.getByRole("gridcell"));
       expect(screen.getByRole("combobox")).toBeInTheDocument();
-      
+
       // Note: Full error testing requires triggering onValueChange
       // which needs proper Radix UI Select interaction
     });
@@ -672,10 +677,10 @@ describe("EditableDateCell", () => {
       );
 
       fireEvent.click(screen.getByRole("gridcell"));
-      
+
       // Verify dropdown opened without crash
       expect(screen.getByRole("combobox")).toBeInTheDocument();
-      
+
       // The component should initialize with "__NONE__" for null values
       // This prevents the Radix UI Select empty string error
     });
@@ -695,7 +700,7 @@ describe("EditableDateCell", () => {
       );
 
       fireEvent.click(screen.getByRole("gridcell"));
-      
+
       // Component should render without throwing the empty string error
       expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
@@ -769,7 +774,7 @@ describe("EditableDateCell", () => {
       futureDate2.setDate(futureDate2.getDate() + 35);
       const futureDate3 = new Date();
       futureDate3.setDate(futureDate3.getDate() + 40);
-      
+
       const datesWithDifferentSpots: ImportantDate[] = [
         { ...mockStenaDate, id: "date-1", date_value: futureDate1.toISOString().split('T')[0], remaining_spots: 0, max_spots: 20 },
         { ...mockStenaDate, id: "date-2", date_value: futureDate2.toISOString().split('T')[0], remaining_spots: 3, max_spots: 20 },

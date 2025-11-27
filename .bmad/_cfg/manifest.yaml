@@ -1,10 +1,12 @@
 installation:
   version: 6.0.0-alpha.12
-  installDate: '2025-11-21T12:40:15.492Z'
-  lastUpdated: '2025-11-21T12:40:15.493Z'
+  installDate: '2025-11-27T11:35:52.819Z'
+  lastUpdated: '2025-11-27T11:35:52.819Z'
 modules:
   - core
   - bmm
 ides:
   - cursor
   - github-copilot
+  - gemini
+  - antigravity

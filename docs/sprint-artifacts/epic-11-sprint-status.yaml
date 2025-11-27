@@ -152,19 +152,6 @@ stories:
     implemented_tests: 63
     passing_tests: 35
     dependencies: ['11.1', '11.6']
-    assignee: null
-    started_date: '2025-01-27'
-    completed_date: null
-    blockers: []
-    notes: 'Tests for database constraints and data consistency. 63 constraint tests implemented (exceeds requirement of 57). Code review 2025-01-28: Changes Requested - Fix Supabase mock chainable API implementation (22 tests failing due to mock issues).'
-    
-  - id: '11.10'
-    title: 'PE3 Validation & UI Component Tests'
-    priority: 'P1'
-    status: 'Review'
-    story_points: 3
-    estimated_tests: 30
-    implemented_tests: 38
     passing_tests: 17
     dependencies: ['8.10', '8.15', '9.5']  # External story dependencies
     assignee: null

@@ -92,7 +92,7 @@ describe("Field Validation - Component Display Tests", () => {
       await waitFor(() => {
         // Tooltip shows English text (hardcoded in editable-cell.tsx)
         // Using flexible matcher to catch the tooltip
-        const tooltips = screen.getAllByText(/Can only be edited after One field completes 24-hour sync/i);
+        const tooltips = screen.getAllByText(/Kan endast redigeras efter One-fältet har slutfört 24-timmars synkronisering till Talmundo-systemet/i);
         expect(tooltips.length).toBeGreaterThan(0);
       });
     });
@@ -122,7 +122,7 @@ describe("Field Validation - Component Display Tests", () => {
       // Note: This test would require mocking the dropdown component
       // For now, we verify the field accepts valid enum values
       const validGenders = ['Man', 'Woman', null];
-      
+
       validGenders.forEach((gender) => {
         const result = { gender };
         expect(['Man', 'Woman', null]).toContain(result.gender);
@@ -135,7 +135,7 @@ describe("Field Validation - Component Display Tests", () => {
       // Note: This test would require mocking the dropdown component
       // For now, we verify the field accepts valid enum values
       const validRanks = ['SEV', 'CHEF'];
-      
+
       validRanks.forEach((rank) => {
         const result = { rank };
         expect(['SEV', 'CHEF']).toContain(result.rank);
@@ -148,7 +148,7 @@ describe("Field Validation - Component Display Tests", () => {
       // Note: This test would require mocking the dropdown component
       // For now, we verify the field accepts valid range values
       const validLoneiva = [0, 1, 2, 3, 4, 5, 6, 7, null];
-      
+
       validLoneiva.forEach((loneiva) => {
         if (loneiva !== null) {
           expect(loneiva).toBeGreaterThanOrEqual(0);

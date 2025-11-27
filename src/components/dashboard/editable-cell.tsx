@@ -69,6 +69,7 @@ export function EditableCell({
   onError,
 }: EditableCellProps) {
   const tDashboard = useTranslations("dashboard");
+  const tErrors = useTranslations("errors");
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string | number | boolean>(
     value ?? (type === "boolean" ? false : type === "number" ? 0 : "")
@@ -97,31 +98,35 @@ export function EditableCell({
   if (isTalmundoField) {
     effectiveCanEdit = canEditTalmundo(oneValue ?? false, oneMarkedAt ?? null);
     if (!effectiveCanEdit) {
-      tooltipMessage = "Can only be edited after One field completes 24-hour sync to Talmundo system";
+      tooltipMessage = tDashboard("talmundoEditBlocked");
     }
-  } else if (isCrewingField && employeeData) {
-    // Calculate conditional editability for Crewing/Done field (Story 8.5)
-    effectiveCanEdit = canEditCrewingDone(employeeData);
-    if (!effectiveCanEdit) {
-      const incomplete = getIncompleteFields(employeeData);
-      tooltipMessage = tDashboard("missingPrerequisites", { fields: incomplete.join(', ') });
+  } else if (isCrewingField) {
+    // Story 8.5: Crewing/Done can only be edited when all 10 prerequisites are met
+    if (employeeData) {
+      effectiveCanEdit = canEditCrewingDone(employeeData as Employee);
+      if (!effectiveCanEdit) {
+        const incomplete = getIncompleteFields(employeeData as Employee);
+        tooltipMessage = tDashboard("missingPrerequisites", { fields: incomplete.join(', ') });
+      }
     }
+  } else if (!canEdit) {
+    tooltipMessage = tDashboard("readOnlyFieldTooltip");
   }
 
-  // Focus input when entering edit mode
+  // Focus input when editing starts
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select();
     }
   }, [isEditing]);
 
   const handleSave = async () => {
     // Check if value actually changed using proper change detection
     // Story 13.10: Prevent unnecessary view refreshes
-    const normalizedCurrent = editValue ?? null;
+    // Story 9.8: Normalize empty string to null to prevent no-op updates on empty fields
+    const normalizedCurrent = editValue === "" ? null : (editValue ?? null);
     const normalizedOriginal = value ?? null;
-    
+
     if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
       // Value hasn't changed, just exit edit mode without API call
       setIsEditing(false);
@@ -133,12 +138,19 @@ export function EditableCell({
     setError(null);
 
     try {
-      await onSave(employeeId, field, editValue || null);
+      await onSave(employeeId, field, normalizedCurrent);
       setIsEditing(false);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to update";
-      setError(message);
-      onError?.(message);
+      const message = err instanceof Error ? err.message : tErrors("updateFailed");
+      // Story 9.8: Localize validation errors
+      if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
+        const localizedMessage = tErrors("validation.invalidValue");
+        setError(localizedMessage);
+        onError?.(localizedMessage);
+      } else {
+        setError(message);
+        onError?.(message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -168,25 +180,33 @@ export function EditableCell({
 
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      
+
       // Check if click is outside this cell
       if (cellRef.current && !cellRef.current.contains(target)) {
         // Story 13.10: Use proper change detection to prevent unnecessary saves
-        const normalizedCurrent = editValue ?? null;
+        // Story 9.8: Normalize empty string to null
+        const normalizedCurrent = editValue === "" ? null : (editValue ?? null);
         const normalizedOriginal = value ?? null;
-        
+
         if (hasValueChanged(normalizedOriginal, normalizedCurrent)) {
           // Value changed, save it
           setIsLoading(true);
           setError(null);
-          onSave(employeeId, field, editValue || null)
+          onSave(employeeId, field, normalizedCurrent)
             .then(() => {
               setIsEditing(false);
             })
             .catch((err: unknown) => {
-              const message = err instanceof Error ? err.message : "Failed to update";
-              setError(message);
-              onError?.(message);
+              const message = err instanceof Error ? err.message : tErrors("updateFailed");
+              // Story 9.8: Localize validation errors
+              if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
+                const localizedMessage = tErrors("validation.invalidValue");
+                setError(localizedMessage);
+                onError?.(localizedMessage);
+              } else {
+                setError(message);
+                onError?.(message);
+              }
             })
             .finally(() => {
               setIsLoading(false);
@@ -200,38 +220,41 @@ export function EditableCell({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isEditing, editValue, showDatePicker, value, employeeId, field, onSave, onError]);
+  }, [isEditing, editValue, showDatePicker, value, employeeId, field, onSave, onError, tErrors]);
 
   if (!isEditing) {
     // Read-only cell - show tooltip on click
     if (!effectiveCanEdit) {
       // Story 8.9: Format ÖMC dates as two-day range in display mode
-      const displayValue = type === "boolean" 
-        ? (value ? "Yes" : "No")
+      // Story 9.9: Show Swedish labels for boolean fields
+      const displayValue = type === "boolean"
+        ? (value ? tDashboard("booleanTrue") : tDashboard("booleanFalse"))
         : field === "date_value" && category && isOMCDate(category) && value
-        ? formatOMCDate(String(value), 'sv-SE')
-        : value !== null && value !== undefined
-        ? String(value)
-        : null;
+          ? formatOMCDate(String(value), 'sv-SE')
+          : value !== null && value !== undefined
+            ? String(value)
+            : null;
 
-    // Calculate One field status for visual indicator (Story 8.3)
-    let badgeStatus: 'green' | 'yellow' | null = null;
-    let badgeTooltip: string | null = null;
-    
-    if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
-      badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
-      if (badgeStatus === 'yellow' && oneMarkedAt) {
-        badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
-      } else if (badgeStatus === 'green') {
-        badgeTooltip = 'Complete - 24-hour waiting period elapsed';
+      // Calculate One field status for visual indicator (Story 8.3)
+      let badgeStatus: 'green' | 'yellow' | null = null;
+      let badgeTooltip: string | null = null;
+
+      if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
+        badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
+        if (badgeStatus === 'yellow' && oneMarkedAt) {
+          badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
+        } else if (badgeStatus === 'green') {
+          badgeTooltip = 'Complete - 24-hour waiting period elapsed';
+        }
+      } else if (type === "boolean" && value === true) {
+        badgeStatus = 'green';
+      } else if (isLoneivaField && value !== null && value !== undefined) {
+        // Story 8.6: Show green badge for Lönenivå when value is set (0-7)
+        badgeStatus = 'green';
       }
-    } else if (type === "boolean" && value === true) {
-      badgeStatus = 'green';
-    } else if (isLoneivaField && value !== null && value !== undefined) {
-      // Story 8.6: Show green badge for Lönenivå when value is set (0-7)
-      badgeStatus = 'green';
-    }      // Use the calculated tooltipMessage or fallback to default (Story 8.4, 8.5)
-      const disabledTooltip = tooltipMessage || "This field is read-only. Contact HR to update.";
+
+      // Use the calculated tooltipMessage or fallback to default (Story 8.4, 8.5)
+      const disabledTooltip = tooltipMessage || tDashboard("readOnlyFieldTooltip");
 
       return (
         <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
@@ -280,13 +303,14 @@ export function EditableCell({
 
     // Editable cell - can click to edit
     // Story 8.9: Format ÖMC dates as two-day range in display mode
-    const displayValue = type === "boolean" 
-      ? (value ? "Yes" : "No")
+    // Story 9.9: Show Swedish labels for boolean fields
+    const displayValue = type === "boolean"
+      ? (value ? tDashboard("booleanTrue") : tDashboard("booleanFalse"))
       : field === "date_value" && category && isOMCDate(category) && value
-      ? formatOMCDate(String(value), 'sv-SE')
-      : value !== null && value !== undefined
-      ? String(value)
-      : null;
+        ? formatOMCDate(String(value), 'sv-SE')
+        : value !== null && value !== undefined
+          ? String(value)
+          : null;
 
     // Calculate One field status for visual indicator (Story 8.3)
     // Show green badge for Talmundo when true and enabled (Story 8.4)
@@ -294,7 +318,7 @@ export function EditableCell({
     // Show green badge for Lönenivå when value is set (Story 8.6)
     let badgeStatus: 'green' | 'yellow' | null = null;
     let badgeTooltip: string | null = null;
-    
+
     if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
       badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
       if (badgeStatus === 'yellow' && oneMarkedAt) {
@@ -357,28 +381,35 @@ export function EditableCell({
     <div ref={cellRef} className="relative">
       {isLoneivaField && (
         <Select
-          value={editValue !== null && editValue !== undefined ? String(editValue) : ""}
+          value={editValue !== null && editValue !== undefined ? String(editValue) : "null"}
           onValueChange={(selectedValue) => {
-            const parsedValue = selectedValue === "" ? null : parseInt(selectedValue, 10);
+            const parsedValue = selectedValue === "null" ? null : parseInt(selectedValue, 10);
             // Story 13.10: Check if value actually changed before saving
-            const normalizedCurrent = parsedValue ?? null;
+            const normalizedCurrent = parsedValue;
             const normalizedOriginal = (value !== null && value !== undefined) ? (typeof value === 'number' ? value : parseInt(String(value), 10)) : null;
-            
+
             if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
               // Value hasn't changed, just exit edit mode without API call
               setIsEditing(false);
               return;
             }
-            
+
             setEditValue(parsedValue ?? "");
             // Auto-save on select (only if value changed)
             setTimeout(() => {
               onSave(employeeId, field, parsedValue).then(() => {
                 setIsEditing(false);
               }).catch((err) => {
-                const message = err instanceof Error ? err.message : "Failed to update";
-                setError(message);
-                onError?.(message);
+                const message = err instanceof Error ? err.message : tErrors("updateFailed");
+                // Story 9.8: Localize validation errors
+                if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
+                  const localizedMessage = tErrors("validation.invalidValue");
+                  setError(localizedMessage);
+                  onError?.(localizedMessage);
+                } else {
+                  setError(message);
+                  onError?.(message);
+                }
               });
             }, 0);
           }}
@@ -388,7 +419,7 @@ export function EditableCell({
             <SelectValue placeholder={tDashboard('selectSalaryLevel') || 'Select salary level'} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{tDashboard('notSet') || 'Not Set'}</SelectItem>
+            <SelectItem value="null">{tDashboard('notSet') || 'Not Set'}</SelectItem>
             {[0, 1, 2, 3, 4, 5, 6, 7].map((level) => (
               <SelectItem key={level} value={level.toString()}>
                 {level}
@@ -397,7 +428,7 @@ export function EditableCell({
           </SelectContent>
         </Select>
       )}
-      
+
       {!isLoneivaField && type === "text" && (
         <>
           <Input
@@ -441,11 +472,9 @@ export function EditableCell({
             disabled={isLoading}
             inputMode="numeric"
             className={error ? "border-destructive" : ""}
-            aria-invalid={!!error}
-            aria-describedby={error ? `${field}-error` : undefined}
           />
           {error && (
-            <p id={`${field}-error`} className="text-xs text-destructive mt-1">
+            <p className="text-xs text-destructive mt-1">
               {error}
             </p>
           )}
@@ -453,44 +482,51 @@ export function EditableCell({
       )}
 
       {type === "boolean" && (
-        <div className="flex items-center space-x-2">
-          <input
-            ref={inputRef as React.RefObject<HTMLInputElement>}
-            type="checkbox"
-            checked={Boolean(editValue)}
-            onChange={(e) => {
-              const newValue = e.target.checked;
-              // Story 13.10: Check if value actually changed before saving
-              const normalizedCurrent = newValue;
-              const normalizedOriginal = Boolean(value);
-              
-              if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-                // Value hasn't changed, just exit edit mode without API call
-                setIsEditing(false);
-                return;
-              }
-              
-              setEditValue(newValue);
-              // Auto-save boolean changes (only if value changed)
-              setTimeout(() => {
-                onSave(employeeId, field, newValue)
-                  .then(() => {
-                    setIsEditing(false);
-                  })
-                  .catch((err) => {
-                    const message = err instanceof Error ? err.message : "Failed to update";
+        <Select
+          value={String(editValue)}
+          onValueChange={(selectedValue) => {
+            const newValue = selectedValue === "true";
+            // Story 9.9 & 13.10: Check if value actually changed before saving
+            const normalizedCurrent = newValue;
+            const normalizedOriginal = Boolean(value);
+
+            if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+              // Value hasn't changed, just exit edit mode without API call
+              setIsEditing(false);
+              return;
+            }
+
+            setEditValue(newValue);
+            // Auto-save on select (only if value changed)
+            setTimeout(() => {
+              onSave(employeeId, field, newValue)
+                .then(() => {
+                  setIsEditing(false);
+                })
+                .catch((err) => {
+                  const message = err instanceof Error ? err.message : tErrors("updateFailed");
+                  // Story 9.8: Localize validation errors
+                  if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
+                    const localizedMessage = tErrors("validation.invalidValue");
+                    setError(localizedMessage);
+                    onError?.(localizedMessage);
+                  } else {
                     setError(message);
                     onError?.(message);
-                  });
-              }, 0);
-            }}
-            disabled={isLoading}
-            className="h-4 w-4"
-          />
-          <label className="text-sm">
-            {Boolean(editValue) ? "Yes" : "No"}
-          </label>
-        </div>
+                  }
+                });
+            }, 0);
+          }}
+          disabled={isLoading}
+        >
+          <SelectTrigger className={error ? "border-destructive" : ""}>
+            <SelectValue placeholder={tDashboard("booleanFalse")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="true">{tDashboard("booleanTrue")}</SelectItem>
+            <SelectItem value="false">{tDashboard("booleanFalse")}</SelectItem>
+          </SelectContent>
+        </Select>
       )}
 
       {type === "date" && (
@@ -519,22 +555,29 @@ export function EditableCell({
                   // Story 13.10: Check if value actually changed before saving
                   const normalizedCurrent = dateStr;
                   const normalizedOriginal = value ?? null;
-                  
+
                   if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
                     // Value hasn't changed, just exit edit mode without API call
                     setShowDatePicker(false);
                     setIsEditing(false);
                     return;
                   }
-                  
+
                   setEditValue(dateStr);
                   setShowDatePicker(false);
                   // Trigger save after selecting date (only if value changed)
                   setTimeout(() => {
                     onSave(employeeId, field, dateStr).catch((err) => {
-                      const message = err instanceof Error ? err.message : "Failed to update";
-                      setError(message);
-                      onError?.(message);
+                      const message = err instanceof Error ? err.message : tErrors("updateFailed");
+                      // Story 9.8: Localize validation errors
+                      if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
+                        const localizedMessage = tErrors("validation.invalidValue");
+                        setError(localizedMessage);
+                        onError?.(localizedMessage);
+                      } else {
+                        setError(message);
+                        onError?.(message);
+                      }
                     });
                   }, 0);
                 }
@@ -552,22 +595,29 @@ export function EditableCell({
             // Story 13.10: Check if value actually changed before saving
             const normalizedCurrent = selectedValue;
             const normalizedOriginal = (value !== null && value !== undefined) ? String(value) : null;
-            
+
             if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
               // Value hasn't changed, just exit edit mode without API call
               setIsEditing(false);
               return;
             }
-            
+
             setEditValue(selectedValue);
             // Auto-save on select (only if value changed)
             setTimeout(() => {
               onSave(employeeId, field, selectedValue).then(() => {
                 setIsEditing(false);
               }).catch((err) => {
-                const message = err instanceof Error ? err.message : "Failed to update";
-                setError(message);
-                onError?.(message);
+                const message = err instanceof Error ? err.message : tErrors("updateFailed");
+                // Story 9.8: Localize validation errors
+                if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
+                  const localizedMessage = tErrors("validation.invalidValue");
+                  setError(localizedMessage);
+                  onError?.(localizedMessage);
+                } else {
+                  setError(message);
+                  onError?.(message);
+                }
               });
             }, 0);
           }}
