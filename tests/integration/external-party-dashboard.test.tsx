@@ -13,7 +13,20 @@ vi.mock("@/lib/hooks/use-auth", () => ({
 vi.mock("@/lib/services/employee-service", () => ({
   employeeService: {
     getAll: vi.fn().mockResolvedValue([]),
+    update: vi.fn(),
   },
+}));
+
+// Mock useEmployees
+vi.mock("@/lib/hooks/use-employees", () => ({
+  useEmployees: vi.fn().mockReturnValue({
+    employees: [],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+    updatedEmployeeId: null,
+    updateEmployeeOptimistically: vi.fn(),
+  }),
 }));
 
 // Mock the columns hook
@@ -61,7 +74,7 @@ describe("External Party Dashboard Access", () => {
       });
 
       renderWithI18n(<DashboardPage />);
-      
+
       // Wait for async state updates to complete
       await waitFor(() => {
         // Note: Role display is in server component layout, not tested here
@@ -252,11 +265,11 @@ describe("External Party Dashboard Access", () => {
       });
 
       renderWithI18n(<DashboardPage />);
-      
+
       // Sign-out button should NOT be in the dashboard page (it's in the header now)
       await waitFor(() => {
         const buttons = screen.getAllByRole('button');
-        const signOutButton = buttons.find(btn => 
+        const signOutButton = buttons.find(btn =>
           btn.textContent?.toLowerCase().includes('sign out')
         );
         expect(signOutButton).toBeUndefined();

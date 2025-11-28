@@ -188,7 +188,8 @@ export default function DashboardPage() {
     isLoading: isLoadingEmployees,
     error,
     refetch,
-    updatedEmployeeId
+    updatedEmployeeId,
+    updateEmployeeOptimistically
   } = useEmployees({
     filters, // Use memoized filters object
     enableRealtime: true,

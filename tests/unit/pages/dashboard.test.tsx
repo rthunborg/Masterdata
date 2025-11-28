@@ -45,7 +45,7 @@ describe('DashboardPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     vi.mocked(useEmployees).mockReturnValue({
       employees: [],
       isLoading: false,
@@ -53,6 +53,7 @@ describe('DashboardPage', () => {
       isConnected: true,
       refetch: vi.fn(),
       updatedEmployeeId: null,
+      updateEmployeeOptimistically: vi.fn(),
     });
   });
 
@@ -72,9 +73,9 @@ describe('DashboardPage', () => {
 
     // Get all buttons
     const buttons = screen.getAllByRole('button');
-    
+
     // Sign-out should NOT be in page body (moved to header)
-    const signOutButton = buttons.find(btn => 
+    const signOutButton = buttons.find(btn =>
       btn.textContent?.toLowerCase().includes('sign out')
     );
     expect(signOutButton).toBeUndefined();
