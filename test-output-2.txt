@@ -1,0 +1,89 @@
+≡ƒöº Setting up E2E test environment...
+[dotenv@17.2.3] injecting env (19) from .env.test -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+≡ƒôä Loaded environment from .env.test
+Γ£à Supabase environment variables loaded
+ΓÜá∩╕Å  NOTE: Ensure test users exist. Run: npx tsx scripts/apply-hr-admin-migration.ts
+≡ƒôª Seeding test data...
+Γ£à Test data seeded successfully
+≡ƒîÉ Verifying application at http://localhost:3000...
+Γ£à Application is accessible
+Γ£à E2E test environment setup complete
+
+Running 1 test using 1 worker
+
+BROWSER LOG: Image with src "/images/stena-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+BROWSER LOG: Failed to get pending mutations: NotFoundError: Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.
+    at MutationQueueService.getPendingMutations (webpack-internal:///(app-pages-browser)/./src/lib/services/mutation-queue.ts:123:36)
+    at async EmployeeTable.useEffect.loadPendingMutations (webpack-internal:///(app-pages-browser)/./src/components/dashboard/employee-table.tsx:270:39)
+BROWSER LOG: Failed to get pending mutations: NotFoundError: Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.
+    at MutationQueueService.getPendingMutations (webpack-internal:///(app-pages-browser)/./src/lib/services/mutation-queue.ts:123:36)
+    at async EmployeeTable.useEffect.loadPendingMutations (webpack-internal:///(app-pages-browser)/./src/components/dashboard/employee-table.tsx:270:39)
+BROWSER LOG: Failed to get pending mutations: NotFoundError: Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.
+    at MutationQueueService.getPendingMutations (webpack-internal:///(app-pages-browser)/./src/lib/services/mutation-queue.ts:123:36)
+    at async useEmployees.useCallback[fetchEmployees] (webpack-internal:///(app-pages-browser)/./src/lib/hooks/use-employees.ts:104:42)
+BROWSER LOG: Failed to get pending mutations: NotFoundError: Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.
+    at MutationQueueService.getPendingMutations (webpack-internal:///(app-pages-browser)/./src/lib/services/mutation-queue.ts:123:36)
+    at async EmployeeTable.useEffect.loadPendingMutations (webpack-internal:///(app-pages-browser)/./src/components/dashboard/employee-table.tsx:270:39)
+BROWSER LOG: Failed to get pending mutations: NotFoundError: Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.
+    at MutationQueueService.getPendingMutations (webpack-internal:///(app-pages-browser)/./src/lib/services/mutation-queue.ts:123:36)
+    at async useEmployees.useCallback[fetchEmployees] (webpack-internal:///(app-pages-browser)/./src/lib/hooks/use-employees.ts:104:42)
+BROWSER LOG: Failed to get pending mutations: NotFoundError: Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.
+    at MutationQueueService.getPendingMutations (webpack-internal:///(app-pages-browser)/./src/lib/services/mutation-queue.ts:123:36)
+    at async EmployeeTable.useEffect.loadPendingMutations (webpack-internal:///(app-pages-browser)/./src/components/dashboard/employee-table.tsx:270:39)
+BROWSER LOG: Failed to get pending mutations: NotFoundError: Failed to execute 'transaction' on 'IDBDatabase': One of the specified object stores was not found.
+    at MutationQueueService.getPendingMutations (webpack-internal:///(app-pages-browser)/./src/lib/services/mutation-queue.ts:123:36)
+    at async EmployeeTable.useEffect.loadPendingMutations (webpack-internal:///(app-pages-browser)/./src/components/dashboard/employee-table.tsx:270:39)
+BROWSER LOG: ≡ƒôè Performance Metrics - /dashboard
+BROWSER LOG: FCP: N/A Γ¥î
+BROWSER LOG: TTI: N/A Γ¥î
+BROWSER LOG: LCP: 2720ms Γ¥î
+BROWSER LOG: FID: 2ms Γ£à
+BROWSER LOG: CLS: 0.032 Γ£à
+BROWSER LOG: Page Load: 0ms Γ£à
+BROWSER LOG: ΓÜá∩╕Å Performance targets not met: [LCP: 2720ms > 2500ms target]
+BROWSER LOG: console.groupEnd
+  Γ£ÿ  1 [chromium] ΓÇ║ tests\e2e\inline-edit.spec.ts:50:10 ΓÇ║ Inline Editing E2E ΓÇ║ Inline edit dropdown field (Gender) (18.0s)
+≡ƒº╣ Cleaning up E2E test data...
+Γ£à Test data cleaned up successfully
+Γ£à E2E test teardown complete
+
+
+  1) [chromium] ΓÇ║ tests\e2e\inline-edit.spec.ts:50:10 ΓÇ║ Inline Editing E2E ΓÇ║ Inline edit dropdown field (Gender) 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('table tbody tr').first().locator('td').filter({ hasText: /^Man$|^Woman$/ }).first()
+    Expected: [32m"[7mWom[27man"[39m
+    Received: [31m"[7mM[27man"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for locator('table tbody tr').first().locator('td').filter({ hasText: /^Man$|^Woman$/ }).first()[22m
+    [2m    8 ├ù locator resolved to <td data-slot="table-cell" class="p-4 align-middle text-center whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">ΓÇª</td>[22m
+    [2m      - unexpected value "Man"[22m
+
+
+      85 |         // Verify update
+      86 |         // The cell should now show the new option
+    > 87 |         await expect(genderCell).toHaveText(newOption);
+         |                                  ^
+      88 |
+      89 |         // Revert
+      90 |         await genderCell.click();
+        at D:\Masterdata\hr-masterdata\tests\e2e\inline-edit.spec.ts:87:34
+
+    attachment #1: screenshot (image/png) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    test-results\inline-edit-Inline-Editing-4bf60-edit-dropdown-field-Gender--chromium\test-failed-1.png
+    ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    attachment #2: video (video/webm) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    test-results\inline-edit-Inline-Editing-4bf60-edit-dropdown-field-Gender--chromium\video.webm
+    ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error Context: test-results\inline-edit-Inline-Editing-4bf60-edit-dropdown-field-Gender--chromium\error-context.md
+
+  1 failed
+    [chromium] ΓÇ║ tests\e2e\inline-edit.spec.ts:50:10 ΓÇ║ Inline Editing E2E ΓÇ║ Inline edit dropdown field (Gender) 
+
+[36m  Serving HTML report at http://localhost:54833. Press Ctrl+C to quit.[39m

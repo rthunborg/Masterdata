@@ -70,7 +70,11 @@ export function EditableCell({
 }: EditableCellProps) {
   const tDashboard = useTranslations("dashboard");
   const tErrors = useTranslations("errors");
+
   const [isEditing, setIsEditing] = useState(false);
+
+  // Debug log to verify code update and state
+  console.log(`[EditableCell] Render ${field}`, { value, isEditing, options });
   const [editValue, setEditValue] = useState<string | number | boolean>(
     value ?? (type === "boolean" ? false : type === "number" ? 0 : "")
   );

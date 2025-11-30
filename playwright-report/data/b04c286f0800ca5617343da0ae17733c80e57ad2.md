@@ -1,0 +1,270 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - img "Stena Line" [ref=e6]
+          - heading "Säsongsrekrytering 2026" [level=1] [ref=e7]
+        - generic [ref=e8]:
+          - generic [ref=e9]: admin@test.com
+          - generic [ref=e10]: HR Administrator
+          - button "Logga ut" [ref=e11]:
+            - img
+            - generic [ref=e12]: Logga ut
+    - navigation [ref=e13]:
+      - generic [ref=e15]:
+        - link "Anställda" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+        - link "Viktiga datum" [ref=e17] [cursor=pointer]:
+          - /url: /dashboard/important-dates
+        - link "Användarhantering" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/admin/users
+        - link "Kolumninställningar" [ref=e19] [cursor=pointer]:
+          - /url: /dashboard/admin/columns
+    - main [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - heading "Personalhantering" [level=2] [ref=e24]
+          - generic [ref=e25]:
+            - generic [ref=e26]:
+              - generic [ref=e27]:
+                - img [ref=e28]
+                - text: "Visa som:"
+              - combobox "Visa som:" [ref=e31]:
+                - generic: HR Admin (Default)
+                - img
+            - button "Lägg till anställd" [ref=e32]:
+              - img
+              - text: Lägg till anställd
+            - button "Importera anställda" [ref=e33]:
+              - img
+              - text: Importera anställda
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]:
+              - checkbox "Visa arkiverade" [ref=e38]
+              - generic [ref=e39] [cursor=pointer]: Visa arkiverade
+            - generic [ref=e40]:
+              - checkbox "Visa uppsagda" [ref=e41]
+              - generic [ref=e42] [cursor=pointer]: Visa uppsagda
+            - generic [ref=e43]:
+              - checkbox "Återbetalningnskrav finns" [ref=e44]
+              - generic [ref=e45] [cursor=pointer]: Återbetalningnskrav finns
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - img [ref=e48]
+              - textbox "Sök anställda..." [ref=e51]
+            - combobox "Crew Status" [ref=e52]:
+              - generic: Alla anställda
+              - img
+            - button "Exportera markerade anställda" [disabled]
+            - button "Exportera & markera besättningsklar" [disabled]
+          - table [ref=e55]:
+            - rowgroup [ref=e56]:
+              - row "Sort by Stena Date Sort by ÖMC Date Sort by PE3 Date Sort by First Name Sort by Surname Sort by Town District Sort by Mobile Sort by Email Sort by Social Security No. Sort by Anställningsdatum Sort by Rank Sort by Gender Sort by Comments Sort by Talmundo Sort by One Sort by ISPS Sort by Photo Sort by Origo Sort by Lönenivå Sort by Mail lön Sort by Bankuppgifter Sort by LI Sort by Passport Sort by Kvitto C17/18 Sort by C17 Sort by Crewing/Done Sort by ÖMC betala Sort by PE3 betala Åtgärder" [ref=e57]:
+                - cell [ref=e58]
+                - cell "Sort by Stena Date" [ref=e61]:
+                  - button "Sort by Stena Date" [ref=e64] [cursor=pointer]:
+                    - generic [ref=e65]: Stena Date
+                    - img [ref=e67]
+                - cell "Sort by ÖMC Date" [ref=e73]:
+                  - button "Sort by ÖMC Date" [ref=e76] [cursor=pointer]:
+                    - generic [ref=e77]: ÖMC Date
+                    - img [ref=e79]
+                - cell "Sort by PE3 Date" [ref=e85]:
+                  - button "Sort by PE3 Date" [ref=e88] [cursor=pointer]:
+                    - generic [ref=e89]: PE3 Date
+                    - img [ref=e91]
+                - cell "Sort by First Name" [ref=e97]:
+                  - button "Sort by First Name" [ref=e100] [cursor=pointer]:
+                    - generic [ref=e101]: First Name
+                    - img [ref=e103]
+                - cell "Sort by Surname" [ref=e109]:
+                  - button "Sort by Surname" [ref=e112] [cursor=pointer]:
+                    - generic [ref=e113]: Surname
+                    - img [ref=e115]
+                - cell "Sort by Town District" [ref=e121]:
+                  - button "Sort by Town District" [ref=e124] [cursor=pointer]:
+                    - generic [ref=e125]: Town District
+                    - img [ref=e127]
+                - cell "Sort by Mobile" [ref=e133]:
+                  - button "Sort by Mobile" [ref=e136] [cursor=pointer]:
+                    - generic [ref=e137]: Mobile
+                    - img [ref=e139]
+                - cell "Sort by Email" [ref=e145]:
+                  - button "Sort by Email" [ref=e148] [cursor=pointer]:
+                    - generic [ref=e149]: Email
+                    - img [ref=e151]
+                - cell "Sort by Social Security No." [ref=e157]:
+                  - button "Sort by Social Security No." [ref=e160] [cursor=pointer]:
+                    - generic [ref=e161]: Social Security No.
+                    - img [ref=e163]
+                - cell "Sort by Anställningsdatum" [ref=e169]:
+                  - button "Sort by Anställningsdatum" [ref=e172] [cursor=pointer]:
+                    - generic [ref=e173]: Anställningsdatum
+                    - img [ref=e175]
+                - cell "Sort by Rank" [ref=e181]:
+                  - button "Sort by Rank" [ref=e184] [cursor=pointer]:
+                    - generic [ref=e185]: Rank
+                    - img [ref=e187]
+                - cell "Sort by Gender" [ref=e193]:
+                  - button "Sort by Gender" [ref=e196] [cursor=pointer]:
+                    - generic [ref=e197]: Gender
+                    - img [ref=e199]
+                - cell "Sort by Comments" [ref=e205]:
+                  - button "Sort by Comments" [ref=e208] [cursor=pointer]:
+                    - generic [ref=e209]: Comments
+                    - img [ref=e211]
+                - cell "Sort by Talmundo" [ref=e217]:
+                  - button "Sort by Talmundo" [ref=e220] [cursor=pointer]:
+                    - generic [ref=e221]: Talmundo
+                    - img [ref=e223]
+                - cell "Sort by One" [ref=e229]:
+                  - button "Sort by One" [ref=e232] [cursor=pointer]:
+                    - generic [ref=e233]: One
+                    - img [ref=e235]
+                - cell "Sort by ISPS" [ref=e241]:
+                  - button "Sort by ISPS" [ref=e244] [cursor=pointer]:
+                    - generic [ref=e245]: ISPS
+                    - img [ref=e247]
+                - cell "Sort by Photo" [ref=e253]:
+                  - button "Sort by Photo" [ref=e256] [cursor=pointer]:
+                    - generic [ref=e257]: Photo
+                    - img [ref=e259]
+                - cell "Sort by Origo" [ref=e265]:
+                  - button "Sort by Origo" [ref=e268] [cursor=pointer]:
+                    - generic [ref=e269]: Origo
+                    - img [ref=e271]
+                - cell "Sort by Lönenivå" [ref=e277]:
+                  - button "Sort by Lönenivå" [ref=e280] [cursor=pointer]:
+                    - generic [ref=e281]: Lönenivå
+                    - img [ref=e283]
+                - cell "Sort by Mail lön" [ref=e289]:
+                  - button "Sort by Mail lön" [ref=e292] [cursor=pointer]:
+                    - generic [ref=e293]: Mail lön
+                    - img [ref=e295]
+                - cell "Sort by Bankuppgifter" [ref=e301]:
+                  - button "Sort by Bankuppgifter" [ref=e304] [cursor=pointer]:
+                    - generic [ref=e305]: Bankuppgifter
+                    - img [ref=e307]
+                - cell "Sort by LI" [ref=e313]:
+                  - button "Sort by LI" [ref=e316] [cursor=pointer]:
+                    - generic [ref=e317]: LI
+                    - img [ref=e319]
+                - cell "Sort by Passport" [ref=e325]:
+                  - button "Sort by Passport" [ref=e328] [cursor=pointer]:
+                    - generic [ref=e329]: Passport
+                    - img [ref=e331]
+                - cell "Sort by Kvitto C17/18" [ref=e337]:
+                  - button "Sort by Kvitto C17/18" [ref=e340] [cursor=pointer]:
+                    - generic [ref=e341]: Kvitto C17/18
+                    - img [ref=e343]
+                - cell "Sort by C17" [ref=e349]:
+                  - button "Sort by C17" [ref=e352] [cursor=pointer]:
+                    - generic [ref=e353]: C17
+                    - img [ref=e355]
+                - cell "Sort by Crewing/Done" [ref=e361]:
+                  - button "Sort by Crewing/Done" [ref=e364] [cursor=pointer]:
+                    - generic [ref=e365]: Crewing/Done
+                    - img [ref=e367]
+                - cell "Sort by ÖMC betala" [ref=e373]:
+                  - button "Sort by ÖMC betala" [ref=e376] [cursor=pointer]:
+                    - generic [ref=e377]: ÖMC betala
+                    - img [ref=e379]
+                - cell "Sort by PE3 betala" [ref=e385]:
+                  - button "Sort by PE3 betala" [ref=e388] [cursor=pointer]:
+                    - generic [ref=e389]: PE3 betala
+                    - img [ref=e391]
+                - cell "Åtgärder" [ref=e397]:
+                  - generic [ref=e399]: Åtgärder
+            - rowgroup [ref=e401]:
+              - row "Select Eh Testss Edit stena_date Edit omc_date Edit pe3_date Edit first_name Edit surname Edit town_district Edit mobile Edit email Edit social_security_no. Edit hire_date Edit rank Edit gender Edit comments Edit talmundo Edit one Edit isps Edit photo Edit origo Edit lönenivå Edit mail_lön Edit bankuppgifter Edit li Edit passport Edit kvitto_c17/18 Edit c17 Edit crewing/done Edit repayment_needed_omc Edit repayment_needed_pe3" [ref=e402] [cursor=pointer]:
+                - cell "Select Eh Testss" [ref=e403]:
+                  - checkbox "Select Eh Testss" [ref=e406]
+                - cell "Edit stena_date" [ref=e407]:
+                  - gridcell "Edit stena_date" [ref=e409]: Test Stena Datum
+                - cell "Edit omc_date" [ref=e410]:
+                  - gridcell "Edit omc_date" [ref=e412]: 26-27 november
+                - cell "Edit pe3_date" [ref=e413]:
+                  - gridcell "Edit pe3_date" [ref=e415]: Fredag 28/11
+                - cell "Edit first_name" [ref=e416]:
+                  - gridcell "Edit first_name" [ref=e418]: Eh
+                - cell "Edit surname" [ref=e419]:
+                  - gridcell "Edit surname" [ref=e421]: Testss
+                - cell "Edit town_district" [ref=e422]:
+                  - gridcell "Edit town_district" [ref=e424]: Test
+                - cell "Edit mobile" [ref=e425]:
+                  - gridcell "Edit mobile" [ref=e427]: sadas
+                - cell "Edit email" [ref=e428]:
+                  - gridcell "Edit email" [ref=e430]: xxdsd@sdsd.se
+                - cell "Edit social_security_no." [ref=e431]:
+                  - gridcell "Edit social_security_no." [ref=e433]: 940717-4483
+                - cell "Edit hire_date" [ref=e434]:
+                  - gridcell "Edit hire_date" [ref=e436]: 2025-11-11
+                - cell "Edit rank" [ref=e437]:
+                  - gridcell "Edit rank" [ref=e439]: SEV
+                - cell "Edit gender" [ref=e440]:
+                  - gridcell "Edit gender" [ref=e442]: Woman
+                - cell "Edit comments" [ref=e443]:
+                  - gridcell "Edit comments" [ref=e445]: Test
+                - cell "Edit talmundo" [ref=e446]:
+                  - gridcell "Edit talmundo" [ref=e448]: Nej
+                - cell "Edit one" [ref=e449]:
+                  - gridcell "Edit one" [ref=e451]:
+                    - text: Klart
+                    - generic "Completed" [ref=e453]: ✓
+                - cell "Edit isps" [ref=e454]:
+                  - gridcell "Edit isps" [ref=e456]: Nej
+                - cell "Edit photo" [ref=e457]:
+                  - gridcell "Edit photo" [ref=e459]: Nej
+                - cell "Edit origo" [ref=e460]:
+                  - gridcell "Edit origo" [ref=e462]: Nej
+                - cell "Edit lönenivå" [ref=e463]:
+                  - gridcell "Edit lönenivå" [ref=e465]:
+                    - generic [ref=e466]: —
+                - cell "Edit mail_lön" [ref=e467]:
+                  - gridcell "Edit mail_lön" [ref=e469]: "false"
+                - cell "Edit bankuppgifter" [ref=e470]:
+                  - gridcell "Edit bankuppgifter" [ref=e472]: Nej
+                - cell "Edit li" [ref=e473]:
+                  - gridcell "Edit li" [ref=e475]: Nej
+                - cell "Edit passport" [ref=e476]:
+                  - gridcell "Edit passport" [ref=e478]: Nej
+                - cell "Edit kvitto_c17/18" [ref=e479]:
+                  - gridcell "Edit kvitto_c17/18" [ref=e481]: "false"
+                - cell "Edit c17" [ref=e482]:
+                  - gridcell "Edit c17" [ref=e484]: Nej
+                - cell "Edit crewing/done" [ref=e485]:
+                  - gridcell "Edit crewing/done" [ref=e487]: "false"
+                - cell "Edit repayment_needed_omc" [ref=e488]:
+                  - gridcell "Edit repayment_needed_omc" [ref=e490]:
+                    - generic [ref=e491]: —
+                - cell "Edit repayment_needed_pe3" [ref=e492]:
+                  - gridcell "Edit repayment_needed_pe3" [ref=e494]:
+                    - generic [ref=e495]: —
+                - cell [ref=e496]:
+                  - generic [ref=e498]:
+                    - button [ref=e499]:
+                      - img
+                    - button [ref=e500]:
+                      - img
+    - region "Notifications alt+T"
+  - region "Notifications alt+T"
+  - generic [ref=e505] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e506]:
+      - img [ref=e507]
+    - generic [ref=e511]:
+      - button "Open issues overlay" [ref=e512]:
+        - generic [ref=e513]:
+          - generic [ref=e514]: "3"
+          - generic [ref=e515]: "4"
+        - generic [ref=e516]:
+          - text: Issue
+          - generic [ref=e517]: s
+      - button "Collapse issues badge" [ref=e518]:
+        - img [ref=e519]
+  - alert [ref=e521]
+```
