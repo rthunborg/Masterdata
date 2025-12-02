@@ -169,33 +169,24 @@ function EmployeeCardComponent({
   // Handler for masterdata column updates
 
   const handleMasterdataUpdate = useCallback(async (
-
     id: string,
-
     field: string,
-
-    value: string | number | boolean | null
-
+    value: string | number | boolean | null,
   ) => {
-
     try {
-
       await employeeService.update(id, { [field]: value });
-
       toast.success(tToasts("employees.fieldUpdated"));
-
-      onEmployeeUpdated?.();
-
+      if (onEmployeeUpdated) {
+        onEmployeeUpdated();
+      }
     } catch (error: unknown) {
-
       const message = error instanceof Error ? error.message : "Failed to update field";
-
-      throw new Error(message);
-
+      // Optionally, show error to the user here instead of throwing
+      toast.error(message);
+      // throw new Error(message);   // Remove throw to avoid unhandled rejections in UI callbacks
     }
-
-  }, [onEmployeeUpdated]);
-
+  }, [onEmployeeUpdated, tToasts]);
+  
   // Handler for custom data column updates (party tables)
 
   const handleCustomDataUpdate = useCallback(async (
@@ -332,15 +323,11 @@ function EmployeeCardComponent({
   // Handle context menu actions
 
   const handleViewDetails = useCallback(() => {
-
     setExpanded(true);
-
-  }, []);
+  }, [setExpanded]);
 
   const handleCall = useCallback((phoneNumber: string) => {
-
     window.location.href = `tel:${phoneNumber}`;
-
   }, []);
 
   // Reset swipe position
@@ -509,26 +496,8 @@ function EmployeeCardComponent({
 
   }, [resetSwipe, onEdit, employee]);
 
-  // Story 13.3: Card click handler with event delegation
-
-  const handleCardClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-
-    // Check if click is on an interactive element
-
-    const target = event.target as HTMLElement;
-
-    if (target.closest('button, input, a, [role="button"], [role="menuitem"], [role="menu"]')) {
-
-      return; // Don't change selection
-
-    }
-
-
-    // Toggle selection
-
-    onToggleSelection?.(employee.id);
-
-  }, [onToggleSelection, employee.id]);
+  // Story 9.11: Card click selection removed - selection only via checkbox
+  // Card clicks do not trigger selection, allowing normal card interactions (buttons, links, inline editing)
 
   return (
 
@@ -688,8 +657,6 @@ function EmployeeCardComponent({
 
       <Card 
 
-        onClick={handleCardClick}
-
         className={cn(
 
           'w-full transition-transform duration-300 ease-out',
@@ -702,9 +669,7 @@ function EmployeeCardComponent({
           // Story 13.3: Visual feedback for selected cards (combines with status tints using opacity)
           isSelected && !employee.is_archived && 'bg-gray-100/50 dark:bg-gray-800/50',
 
-          // Story 13.3: Add cursor pointer for all cards (except archived)
-
-          !employee.is_archived && 'cursor-pointer',
+          // Removed cursor-pointer - cards are no longer clickable for selection (Story 9.11)
 
           className
 

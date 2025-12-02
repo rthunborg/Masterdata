@@ -36,8 +36,6 @@ import {
   type UpdateEmployeeInput,
 } from "@/lib/validation/employee-schema";
 import { employeeService } from "@/lib/services/employee-service";
-import { employeeServiceOffline } from "@/lib/services/employee-service-offline";
-import { useNetworkStatus } from "@/lib/hooks/use-network-status";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { formatImportantDateOption } from "@/lib/utils/format";
@@ -61,12 +59,10 @@ export function EditEmployeeModal({
 }: EditEmployeeModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
-  const { isOnline } = useNetworkStatus(); // Story 12.3: Offline support
   const t = useTranslations('forms');
   const tCommon = useTranslations('common');
   const tDashboard = useTranslations('dashboard');
   const tErrors = useTranslations('errors');
-  const tToasts = useTranslations('toasts');
 
   // Fetch Important Dates with real-time updates
   const { dates: stenaDates, isLoading: stenaLoading } =
@@ -165,14 +161,8 @@ export function EditEmployeeModal({
         email: data.email ?? null,
       };
       
-      // Story 12.3: Use offline service for offline support
-      if (!isOnline) {
-        await employeeServiceOffline.update(employee.id, normalizedData);
-        toast.info(tToasts("employees.savedLocally"));
-      } else {
-        await employeeService.update(employee.id, normalizedData);
-        toast.success(t('employeeUpdated'));
-      }
+      await employeeService.update(employee.id, normalizedData);
+      toast.success(t('employeeUpdated'));
       
       form.reset();
       onSuccess();

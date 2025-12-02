@@ -168,7 +168,6 @@ export class ImportantDateRepository {
           .update({ pe3_date: null })
           .eq("pe3_date", id);
 
-        console.log(`Cleared ${assignmentCount} employee assignments for date ${id}`);
       }
 
       // Now delete the date

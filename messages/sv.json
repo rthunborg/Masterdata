@@ -492,7 +492,7 @@
       "syncPendingFailed": "Kunde inte synkronisera väntande ändringar"
     },
     "dates": {
-      "dateDeleted": "Viktigt datum raderat",
+      "dateDeleted": "Datum raderat",
       "dateArchived": "Viktigt datum arkiverat",
       "dateRestored": "Viktigt datum återställt",
       "deleteFailed": "Kunde inte radera viktigt datum",

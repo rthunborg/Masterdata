@@ -295,10 +295,6 @@ export class EmployeeRepository {
       }
 
       // Story 8.14 AC 10: Audit logging
-      console.log(
-        `[Termination] Employee ${id}: Repayment captured (ÖMC=${repaymentDates.omc}, PE3=${repaymentDates.pe3}), ` +
-        `Cleared ${clearedDates.length} dates, Released ${releasedSpots} spots at ${new Date().toISOString()}`
-      );
 
       // Story 8.14 AC 6: Return termination summary for toast display
       return { employee, clearedDates, releasedSpots };
@@ -317,7 +313,6 @@ export class EmployeeRepository {
     
     // Log restoration results
     if (restored.omc || restored.pe3) {
-      console.log(`[Reactivation] Restored dates for employee ${id}: ÖMC=${restored.omc}, PE3=${restored.pe3}`);
     }
 
     const { data: employee, error } = await supabase

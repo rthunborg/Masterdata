@@ -17,7 +17,6 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
-    pathname === '/sw.js' ||
     pathname === '/manifest.json' ||
     pathname.includes('.')
   ) {

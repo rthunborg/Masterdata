@@ -2,10 +2,8 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toast';
-import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register';
-import { InstallPrompt } from '@/components/pwa/install-prompt';
-import { SplashScreen } from '@/components/pwa/splash-screen';
 import { PerformanceTracker } from '@/components/performance/performance-tracker';
+import { ServiceWorkerUnregister } from '@/components/pwa/service-worker-unregister';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -20,8 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'HR Masterdata | Stena Line',
   description: 'Stena Line HR Masterdata Management System - Centralized employee data management with role-based access control',
-  manifest: '/manifest.json',
-  themeColor: '#1e40af',
+  // manifest: '/manifest.json', // Removed for no-offline/no-PWA
   icons: {
     apple: '/icons/icon-192x192.png',
     icon: [
@@ -29,11 +26,7 @@ export const metadata: Metadata = {
       { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
   },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'HR Masterdata',
-  },
+  // appleWebApp removed
   openGraph: {
     title: 'HR Masterdata | Stena Line',
     description: 'Stena Line HR Masterdata Management System',
@@ -57,12 +50,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SplashScreen />
         <PerformanceTracker />
+        <ServiceWorkerUnregister />
         {children}
         <Toaster />
-        <ServiceWorkerRegister />
-        <InstallPrompt />
       </body>
     </html>
   );

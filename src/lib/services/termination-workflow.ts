@@ -8,6 +8,8 @@
  * Story 8.14: Date clearing with spot management
  */
 
+'use server';
+
 import { createClient } from '@/lib/supabase/server';
 import { assignEmployeeToDate } from './date-capacity';
 
@@ -73,9 +75,9 @@ export async function applyRepaymentCapture(
       .in('id', dateIds);
 
     omcDateValue =
-      dates?.find((d) => d.id === repaymentDates.omc)?.date_value ?? null;
+      dates?.find((d: { id: string; date_value: string }) => d.id === repaymentDates.omc)?.date_value ?? null;
     pe3DateValue =
-      dates?.find((d) => d.id === repaymentDates.pe3)?.date_value ?? null;
+      dates?.find((d: { id: string; date_value: string }) => d.id === repaymentDates.pe3)?.date_value ?? null;
   }
 
   // Update employee with repayment dates
@@ -91,11 +93,6 @@ export async function applyRepaymentCapture(
     console.error('Error applying repayment capture:', error);
     throw new Error('Failed to apply repayment capture');
   }
-
-  // Audit log
-  console.log(
-    `[Repayment Capture] Employee ${employeeId}: ÖMC=${omcDateValue}, PE3=${pe3DateValue}`
-  );
 }
 
 /**
@@ -171,10 +168,6 @@ export async function clearEmployeeDatesAndReleaseSpots(
     throw new Error('Failed to clear employee date assignments');
   }
 
-  console.log(
-    `[Date Clearing] Employee ${employeeId}: Cleared ${clearedDates.length} dates, released ${clearedDates.length} spots`
-  );
-
   return {
     clearedDates,
     releasedSpots: clearedDates.length,
@@ -228,12 +221,10 @@ export async function restoreRepaymentDates(
         warnings.push(
           `ÖMC Date ${employee.repayment_needed_omc} no longer exists, could not restore`
         );
-        console.log(
-          `[Reactivation] ÖMC date deleted, skipping restoration for employee ${employeeId}`
-        );
       } else if (omcDate && omcDate.remaining_spots > 0) {
         // Restore date assignment (assignEmployeeToDate handles spot decrement and assigned_employees)
-        await assignEmployeeToDate(employeeId, omcDate.id, null, 'omc_date');
+        // Pass server-side supabase client to avoid webpack bundling issues
+        await assignEmployeeToDate(employeeId, omcDate.id, null, 'omc_date', supabase);
 
         // Clear repayment field
         await supabase
@@ -242,9 +233,6 @@ export async function restoreRepaymentDates(
           .eq('id', employeeId);
 
         restored.omc = true;
-        console.log(
-          `[Reactivation] Restored ÖMC date for employee ${employeeId}`
-        );
       } else if (omcDate) {
         warnings.push(
           `Cannot restore ÖMC Date ${omcDate.date_description} - currently fully booked (0 spots remaining)`
@@ -272,12 +260,10 @@ export async function restoreRepaymentDates(
         warnings.push(
           `PE3 Date ${employee.repayment_needed_pe3} no longer exists, could not restore`
         );
-        console.log(
-          `[Reactivation] PE3 date deleted, skipping restoration for employee ${employeeId}`
-        );
       } else if (pe3Date && pe3Date.remaining_spots > 0) {
         // Restore date assignment
-        await assignEmployeeToDate(employeeId, pe3Date.id, null, 'pe3_date');
+        // Pass server-side supabase client to avoid webpack bundling issues
+        await assignEmployeeToDate(employeeId, pe3Date.id, null, 'pe3_date', supabase);
 
         // Clear repayment field
         await supabase
@@ -286,9 +272,6 @@ export async function restoreRepaymentDates(
           .eq('id', employeeId);
 
         restored.pe3 = true;
-        console.log(
-          `[Reactivation] Restored PE3 date for employee ${employeeId}`
-        );
       } else if (pe3Date) {
         warnings.push(
           `Cannot restore PE3 Date ${pe3Date.date_description} - currently fully booked (0 spots remaining)`

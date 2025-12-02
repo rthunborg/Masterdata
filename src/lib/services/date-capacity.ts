@@ -9,9 +9,18 @@
  * Story: 8.11 - Important Dates Deadline Columns (added deadline validation)
  */
 
-import { createClient as createClientClient } from '@/lib/supabase/client';
 import { isSubmissionOpen, isCancellationOpen } from '@/lib/utils/deadline-validator';
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+// Lazy import client to avoid bundling issues when used in server-only modules
+async function getClientClient(): Promise<SupabaseClient> {
+  if (typeof window === 'undefined') {
+    throw new Error('Cannot use client-side Supabase client in server context. Pass a server client instead.');
+  }
+  // Dynamic import to avoid bundling client code in server modules
+  const { createClient } = await import('@/lib/supabase/client');
+  return createClient();
+}
 
 /**
  * Get default max capacity for an important date based on its category.
@@ -54,7 +63,7 @@ export async function canAssignEmployeeToDate(
   dateId: string,
   supabaseClient?: SupabaseClient
 ): Promise<boolean> {
-  const supabase = supabaseClient || createClientClient();
+  const supabase = supabaseClient || await getClientClient();
   
   const { data: date, error } = await supabase
     .from('important_dates')
@@ -103,7 +112,7 @@ export async function assignEmployeeToDate(
   // Default to client-side for backward compatibility with tests and client components
   const supabase = supabaseClient 
     ? (supabaseClient instanceof Promise ? await supabaseClient : supabaseClient)
-    : createClientClient();
+    : await getClientClient();
 
   // Story 8.11: Check deadline constraints before assignment
   if (newDateId) {
@@ -226,8 +235,8 @@ export async function releaseDateCapacity(
   // Default to client-side for backward compatibility with tests and client components
   const supabase = supabaseClient 
     ? (supabaseClient instanceof Promise ? await supabaseClient : supabaseClient)
-    : createClientClient();
-
+    : await getClientClient();
+  
   const { error } = await supabase.rpc('release_date_capacity', {
     date_id: dateId,
     employee_id: employeeId,
@@ -275,13 +284,17 @@ export async function hasCapacityForBulkAssignment(
   requiredSpots: number,
   supabaseClient?: SupabaseClient
 ): Promise<boolean> {
-  const supabase = supabaseClient || createClientClient();
-  
-  const { data: date, error } = await supabase
+  const supabase = supabaseClient || getClientClient();
+
+  // Ensure supabase is always a client (not a Promise) for type safety
+  const resolvedSupabase = supabase instanceof Promise ? await supabase : supabase;
+
+  const { data: date, error } = await resolvedSupabase
     .from('important_dates')
     .select('remaining_spots')
     .eq('id', dateId)
     .single();
+
 
   if (error) {
     console.error('Error checking bulk capacity:', error);

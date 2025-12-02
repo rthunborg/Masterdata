@@ -390,7 +390,7 @@ describe("ImportantDatesTable", () => {
       await fireEvent.click(confirmButton);
 
       expect(importantDateService.delete).toHaveBeenCalledWith("date-1");
-      expect(toast.success).toHaveBeenCalledWith("Viktigt datum raderat");
+      expect(toast.success).toHaveBeenCalledWith("Datum raderat");
       expect(mockOnDateDeleted).toHaveBeenCalled();
     });
 

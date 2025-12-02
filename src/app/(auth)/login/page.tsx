@@ -3,12 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import LoginForm from "./login-form";
 
-export default async function LoginPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
+export default async function LoginPage() {
   // Create server-side Supabase client
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -45,7 +40,7 @@ export default async function LoginPage({
 
   // Redirect authenticated users to dashboard BEFORE rendering
   if (user) {
-    redirect(`/${locale}/dashboard`);
+    redirect('/dashboard');
   }
 
   // Only render login form for unauthenticated users

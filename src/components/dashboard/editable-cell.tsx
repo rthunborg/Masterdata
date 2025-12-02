@@ -42,6 +42,7 @@ const Calendar = dynamic(
 interface EditableCellProps {
   value: string | number | boolean | null;
   employeeId: string;
+
   field: string;
   type: "text" | "date" | "select" | "number" | "boolean";
   options?: string[]; // For select dropdowns (e.g., Gender)
@@ -73,17 +74,81 @@ export function EditableCell({
 
   const [isEditing, setIsEditing] = useState(false);
 
-  // Debug log to verify code update and state
-  console.log(`[EditableCell] Render ${field}`, { value, isEditing, options });
   const [editValue, setEditValue] = useState<string | number | boolean>(
     value ?? (type === "boolean" ? false : type === "number" ? 0 : "")
   );
+  
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Sync editValue when value prop changes (important for controlled Select component)
+  // Story 9.10: Don't reset editValue immediately after save - keep it until value prop updates
+  useEffect(() => {
+
+    if (!isEditing) {
+      // When not editing, sync editValue with value prop only if they match
+      // This allows editValue to persist after save until value prop catches up
+      const newEditValue = value ?? (type === "boolean" ? false : type === "number" ? 0 : "");
+      const currentEditValue = editValue;
+      
+      // Compare values based on type
+      let valuesMatch = false;
+      if (type === "boolean") {
+        valuesMatch = Boolean(newEditValue) === Boolean(currentEditValue);
+      } else if (type === "select" || type === "text") {
+        const newString = String(newEditValue);
+        const currentString = String(currentEditValue ?? "");
+        valuesMatch = newString === currentString;
+      } else {
+        valuesMatch = newEditValue === currentEditValue;
+      }
+      
+      
+      // Only sync if values match (save confirmed)
+      // This prevents resetting editValue immediately after save before value prop updates
+      // CRITICAL: If values don't match, keep editValue to show the updated value
+      if (valuesMatch) {
+        // Values match (save confirmed) - sync and clear the saved value ref
+        setEditValue(newEditValue);
+        // Only clear lastSavedValueRef if the value prop matches what we saved
+        // IMPORTANT: Don't clear if we're still waiting for the server to process our update
+        if (lastSavedValueRef.current !== null) {
+          const savedString = String(lastSavedValueRef.current);
+          const propString = String(newEditValue);
+          if (savedString === propString) {
+            lastSavedValueRef.current = null;
+          } else {
+            // If value prop doesn't match what we saved, it's likely a stale update
+            // Keep lastSavedValueRef so displayValue continues to show the correct value
+          }
+        }
+      } else {
+        // Values don't match - keep editValue as-is to show the updated value until parent catches up
+        // But if editValue was reset somehow, restore it from lastSavedValueRef
+
+        if (lastSavedValueRef.current !== null && String(editValue) === String(value)) {
+          setEditValue(lastSavedValueRef.current);
+        } else {
+        }
+      }
+    } else {
+      // When editing, sync editValue if value prop updates (e.g., from real-time)
+      const newEditValue = value ?? (type === "boolean" ? false : type === "number" ? 0 : "");
+      if (type === "select" && String(newEditValue) !== String(editValue) && !isLoading) {
+        // Value prop updated during edit (real-time sync) - update editValue
+        setEditValue(newEditValue);
+      }
+    }
+  }, [value, type, isEditing, isLoading, field, editValue]);
+  
   const [error, setError] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const cellRef = useRef<HTMLDivElement>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectOpen, setSelectOpen] = useState(false);
+  
+  // Track the last saved value to ensure displayValue shows it until value prop updates
+  const lastSavedValueRef = useRef<string | number | boolean | null>(null);
 
   // Determine if this is the Talmundo field (Story 8.4)
   const isTalmundoField = field.toLowerCase() === 'talmundo';
@@ -123,6 +188,29 @@ export function EditableCell({
       inputRef.current.focus();
     }
   }, [isEditing]);
+
+  // Auto-open Select dropdown when entering edit mode for boolean/select types
+  useEffect(() => {
+    if (isEditing && (type === "boolean" || type === "select") && !selectOpen) {
+      // Delay to ensure the Select component is fully rendered before opening
+      // Use a longer delay to ensure React has finished rendering
+      const timer = setTimeout(() => {
+        setSelectOpen(true);
+      }, 150);
+      
+      // Also try again after a short delay in case the first attempt didn't work
+      const retryTimer = setTimeout(() => {
+        if (isEditing && !selectOpen) {
+          setSelectOpen(true);
+        }
+      }, 300);
+      
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(retryTimer);
+      };
+    }
+  }, [isEditing, type, selectOpen, field]);
 
   const handleSave = async () => {
     // Check if value actually changed using proper change detection
@@ -187,6 +275,15 @@ export function EditableCell({
 
       // Check if click is outside this cell
       if (cellRef.current && !cellRef.current.contains(target)) {
+        // Check if click is inside a Portal (Select, Popover, etc.)
+        const isInsidePortal = (target as Element).closest?.('[data-radix-popper-content-wrapper]') ||
+          (target as Element).closest?.('[role="listbox"]') ||
+          (target as Element).closest?.('[role="dialog"]');
+
+        if (isInsidePortal) {
+          return; // Don't trigger click outside logic if clicking inside a portal
+        }
+
         // Story 13.10: Use proper change detection to prevent unnecessary saves
         // Story 9.8: Normalize empty string to null
         const normalizedCurrent = editValue === "" ? null : (editValue ?? null);
@@ -308,13 +405,49 @@ export function EditableCell({
     // Editable cell - can click to edit
     // Story 8.9: Format ÖMC dates as two-day range in display mode
     // Story 9.9: Show Swedish labels for boolean fields
-    const displayValue = type === "boolean"
-      ? (value ? tDashboard("booleanTrue") : tDashboard("booleanFalse"))
-      : field === "date_value" && category && isOMCDate(category) && value
-        ? formatOMCDate(String(value), 'sv-SE')
-        : value !== null && value !== undefined
-          ? String(value)
-          : null;
+    // Story 9.10: Use editValue for display when it differs from value prop (shows updated value immediately after save)
+    const getDisplayValue = () => {
+      
+      // For boolean fields, compare boolean values
+      if (type === "boolean") {
+        const editBool = Boolean(editValue);
+        const valueBool = Boolean(value);
+        const lastSavedBool = lastSavedValueRef.current !== null && lastSavedValueRef.current !== undefined ? Boolean(lastSavedValueRef.current) : null;
+        
+        // Priority: If we have a saved value that differs from the prop, show it (save in progress)
+        // Otherwise, if editValue differs from value, show editValue (transitioning state)
+        if (lastSavedBool !== null && lastSavedBool !== valueBool) {
+          return lastSavedBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+        }
+        if (editBool !== valueBool) {
+          return editBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+        }
+        return valueBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+      }
+      
+      // For date fields with ÖMC formatting
+      if (field === "date_value" && category && isOMCDate(category) && value) {
+        return formatOMCDate(String(value), 'sv-SE');
+      }
+      
+      // For select/text fields, compare string values
+      const editString = editValue !== null && editValue !== undefined ? String(editValue) : "";
+      const valueString = value !== null && value !== undefined ? String(value) : "";
+      const lastSavedString = lastSavedValueRef.current !== null && lastSavedValueRef.current !== undefined ? String(lastSavedValueRef.current) : "";
+      
+      // Priority: If we have a saved value that differs from the prop, show it (save in progress)
+      // Otherwise, if editValue differs from value, show editValue (transitioning state)
+      // This ensures we always show the most recent saved value until the prop updates
+      if (lastSavedString !== "" && lastSavedString !== valueString) {
+        return lastSavedString;
+      }
+      if (editString !== "" && editString !== valueString) {
+        return editString;
+      }
+      return valueString || null;
+    };
+    
+    const displayValue = getDisplayValue();
 
     // Calculate One field status for visual indicator (Story 8.3)
     // Show green badge for Talmundo when true and enabled (Story 8.4)
@@ -343,8 +476,13 @@ export function EditableCell({
       <div
         ref={cellRef}
         onClick={(e) => {
-          e.stopPropagation(); // Prevent row selection when clicking to edit
+          // Stop propagation to prevent row selection
+          e.stopPropagation();
           setIsEditing(true);
+          // Auto-open dropdown immediately for select/boolean types
+          if (type === "select" || type === "boolean") {
+            setSelectOpen(true);
+          }
         }}
         className={cn(
           "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
@@ -356,6 +494,10 @@ export function EditableCell({
             e.preventDefault();
             e.stopPropagation(); // Prevent row selection when using keyboard
             setIsEditing(true);
+            // Auto-open dropdown immediately for select/boolean types
+            if (type === "select" || type === "boolean") {
+              setSelectOpen(true);
+            }
           }
         }}
         role="gridcell"
@@ -487,39 +629,75 @@ export function EditableCell({
 
       {type === "boolean" && (
         <Select
-          value={String(editValue)}
-          onValueChange={(selectedValue) => {
+          value={editValue !== null && editValue !== undefined ? String(editValue) : "false"}
+          open={selectOpen}
+          onOpenChange={(open) => {
+            setSelectOpen(open);
+            // If dropdown is closed and we're not loading, exit edit mode
+            // This handles the case where user clicks outside without selecting
+            if (!open && !isLoading && isEditing) {
+              // Check if value changed
+              const normalizedCurrent = Boolean(editValue);
+              const normalizedOriginal = value !== null && value !== undefined ? Boolean(value) : false;
+              if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+                setIsEditing(false);
+              }
+            }
+          }}
+          onValueChange={async (selectedValue) => {
+
             const newValue = selectedValue === "true";
             // Story 9.9 & 13.10: Check if value actually changed before saving
             const normalizedCurrent = newValue;
-            const normalizedOriginal = Boolean(value);
+            const normalizedOriginal = value !== null && value !== undefined ? Boolean(value) : false;
 
-            if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+            const changed = hasValueChanged(normalizedOriginal, normalizedCurrent);
+
+            if (!changed) {
               // Value hasn't changed, just exit edit mode without API call
+              setSelectOpen(false);
               setIsEditing(false);
               return;
             }
 
+            // CRITICAL: Update local state FIRST, before any async operations
+            // This ensures displayValue shows the new value immediately
             setEditValue(newValue);
+            setSelectOpen(false);
+            
+            // Track saved value immediately for display
+            lastSavedValueRef.current = newValue;
+            
             // Auto-save on select (only if value changed)
-            setTimeout(() => {
-              onSave(employeeId, field, newValue)
-                .then(() => {
-                  setIsEditing(false);
-                })
-                .catch((err) => {
-                  const message = err instanceof Error ? err.message : tErrors("updateFailed");
-                  // Story 9.8: Localize validation errors
-                  if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
-                    const localizedMessage = tErrors("validation.invalidValue");
-                    setError(localizedMessage);
-                    onError?.(localizedMessage);
-                  } else {
-                    setError(message);
-                    onError?.(message);
-                  }
-                });
-            }, 0);
+            setIsLoading(true);
+            setError(null);
+            
+            try {
+              await onSave(employeeId, field, newValue);
+              // After successful save, ensure values are set
+              lastSavedValueRef.current = newValue;
+              setEditValue(newValue);
+              
+              // Exit edit mode - displayValue will show editValue/lastSavedValueRef until value prop updates
+              setIsEditing(false);
+            } catch (err) {
+              const message = err instanceof Error ? err.message : tErrors("updateFailed");
+              // Story 9.8: Localize validation errors
+              if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
+                const localizedMessage = tErrors("validation.invalidValue");
+                setError(localizedMessage);
+                onError?.(localizedMessage);
+              } else {
+                setError(message);
+                onError?.(message);
+              }
+              // Revert editValue on error - restore original value
+              setEditValue(value !== null && value !== undefined ? Boolean(value) : false);
+              lastSavedValueRef.current = null;
+              // Keep edit mode open on error so user can retry
+            } finally {
+              setIsLoading(false);
+            }
           }}
           disabled={isLoading}
         >
@@ -594,36 +772,76 @@ export function EditableCell({
 
       {type === "select" && options && (
         <Select
-          value={String(editValue)}
-          onValueChange={(selectedValue) => {
+          value={editValue !== null && editValue !== undefined ? String(editValue) : ""}
+          open={selectOpen}
+          onOpenChange={(open) => {
+            setSelectOpen(open);
+            // If dropdown is closed and we're not loading, exit edit mode
+            // This handles the case where user clicks outside without selecting
+            if (!open && !isLoading && isEditing) {
+              // Check if value changed
+              const normalizedCurrent = editValue !== null && editValue !== undefined ? String(editValue) : null;
+              const normalizedOriginal = (value !== null && value !== undefined) ? String(value) : null;
+              if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+                setIsEditing(false);
+              }
+            }
+          }}
+          onValueChange={async (selectedValue) => {
+
             // Story 13.10: Check if value actually changed before saving
             const normalizedCurrent = selectedValue;
             const normalizedOriginal = (value !== null && value !== undefined) ? String(value) : null;
 
-            if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
+            const changed = hasValueChanged(normalizedOriginal, normalizedCurrent);
+
+            if (!changed) {
               // Value hasn't changed, just exit edit mode without API call
+              setSelectOpen(false);
               setIsEditing(false);
               return;
             }
 
+            // CRITICAL: Update local state FIRST, before any async operations
+            // This ensures displayValue shows the new value immediately
             setEditValue(selectedValue);
+            setSelectOpen(false);
+            
+            // Track saved value immediately for display
+            lastSavedValueRef.current = selectedValue;
+            
             // Auto-save on select (only if value changed)
-            setTimeout(() => {
-              onSave(employeeId, field, selectedValue).then(() => {
-                setIsEditing(false);
-              }).catch((err) => {
-                const message = err instanceof Error ? err.message : tErrors("updateFailed");
-                // Story 9.8: Localize validation errors
-                if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
-                  const localizedMessage = tErrors("validation.invalidValue");
-                  setError(localizedMessage);
-                  onError?.(localizedMessage);
-                } else {
-                  setError(message);
-                  onError?.(message);
-                }
-              });
-            }, 0);
+            setIsLoading(true);
+            setError(null);
+            
+            try {
+
+              await onSave(employeeId, field, selectedValue);
+              
+              // After successful save, ensure values are set
+              lastSavedValueRef.current = selectedValue;
+              setEditValue(selectedValue);
+              
+              // Exit edit mode - displayValue will show editValue/lastSavedValueRef until value prop updates
+              setIsEditing(false);
+            } catch (err) {
+              const message = err instanceof Error ? err.message : tErrors("updateFailed");
+              // Story 9.8: Localize validation errors
+              if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
+                const localizedMessage = tErrors("validation.invalidValue");
+                setError(localizedMessage);
+                onError?.(localizedMessage);
+              } else {
+                setError(message);
+                onError?.(message);
+              }
+              // Revert editValue on error - restore original value
+              setEditValue(value !== null && value !== undefined ? String(value) : "");
+              lastSavedValueRef.current = null;
+              // Keep edit mode open on error so user can retry
+            } finally {
+              setIsLoading(false);
+            }
           }}
           disabled={isLoading}
         >

@@ -67,18 +67,5 @@ export const performanceTracker = {
     }
     
     return latency;
-  },
-
-  /**
-   * Tracks memory usage (if available in browser)
-   */
-  trackMemoryUsage(): void {
-    if ('memory' in performance) {
-      const memory = (performance as { memory?: { usedJSHeapSize: number } }).memory;
-      if (memory) {
-        const usage = memory.usedJSHeapSize / 1024 / 1024;
-        console.log(`Memory usage: ${usage.toFixed(2)}MB`);
-      }
-    }
   }
 };

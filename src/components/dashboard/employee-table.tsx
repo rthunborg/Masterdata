@@ -110,7 +110,7 @@ import {
 
 } from "@/components/ui/tooltip";
 
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Download } from "lucide-react";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock } from "lucide-react";
 
 
 import { EditableCell } from "./editable-cell";
@@ -136,10 +136,6 @@ import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 
 import { mutationQueueService } from "@/lib/services/mutation-queue";
 
-
-import { useNetworkStatus } from "@/lib/hooks/use-network-status";
-
-
 import { toast } from "sonner";
 
 
@@ -157,7 +153,7 @@ import { } from "@/lib/utils/column-width-storage";
 
 import { ExportFieldSelectionDialog } from "./export-field-selection-dialog";
 
-import { getEmployeeFieldValue } from "@/lib/utils/column-mapping";
+import { getEmployeeFieldValue, mapColumnToEmployeeField } from "@/lib/utils/column-mapping";
 
 import { cn } from "@/lib/utils";
 
@@ -276,17 +272,8 @@ export function EmployeeTable({
     return selectedEmployeeIds.has(id);
   }, [selectedEmployeeIds]);
 
-  // Story 13.3: Row click handler with event delegation
-  const handleRowClick = React.useCallback((event: React.MouseEvent<HTMLTableRowElement>, employeeId: string) => {
-    // Check if click is on an interactive element or editable cell
-    const target = event.target as HTMLElement;
-    if (target.closest('button, input, a, [role="button"], [role="menuitem"], [role="menu"], [role="gridcell"]')) {
-      return; // Don't change selection
-    }
-
-    // Toggle selection
-    toggleEmployeeSelection(employeeId);
-  }, [toggleEmployeeSelection]);
+  // Story 9.11: Row click selection removed - selection only via checkbox
+  // Row clicks do not trigger selection, allowing normal row interactions (inline editing, buttons)
 
   // Story 8.5: Calculate count of eligible employees for crew-ready export
   const eligibleCrewReadyCount = React.useMemo(() => {
@@ -340,9 +327,6 @@ export function EmployeeTable({
     };
   }, [scrollToEmployee]);
 
-  // Network status for offline support (Story 12.3)
-  const { isOnline } = useNetworkStatus();
-
   // Track pending mutations for visual indicators
   const [pendingMutations, setPendingMutations] = React.useState<Set<string>>(new Set());
 
@@ -363,7 +347,7 @@ export function EmployeeTable({
     return () => clearInterval(interval);
   }, [employees]);
 
-  // Handler for masterdata column updates (Story 12.3: offline support)
+  // Handler for masterdata column updates
   const handleMasterdataUpdate = React.useCallback(async (
     id: string,
     field: string,
@@ -372,27 +356,22 @@ export function EmployeeTable({
     let rollback: (() => void) | undefined;
 
     try {
-      if (!isOnline) {
-        // Offline: queue mutation
-        await mutationQueueService.queueMutation("update", { [field]: value }, id);
-        toast.info(tToasts("employees.changeSavedLocally"));
-        // Update pending mutations set
-        setPendingMutations((prev) => new Set(prev).add(id));
-      } else {
-        // Online: update immediately
-
-        // Optimistic update (Story 13.10)
         if (onOptimisticUpdate) {
           rollback = onOptimisticUpdate(id, { [field]: value });
+        } else {
         }
 
         await employeeService.update(id, { [field]: value });
         toast.success(tToasts("employees.updatedSuccessfully"));
-      }
-      onEmployeeUpdated?.();
+        
+        // Don't call onEmployeeUpdated immediately after optimistic update
+        // Real-time sync will handle the update, preventing race conditions
+        // where refetch overwrites the optimistic update before server processes it
+        // Only call onEmployeeUpdated if no optimistic update was performed
+        if (!onOptimisticUpdate) {
+          onEmployeeUpdated?.();
+        }
     } catch (error: unknown) {
-      console.error("[EmployeeTable] Update failed:", error);
-
       // Rollback optimistic update
       if (rollback) {
         rollback();
@@ -401,7 +380,7 @@ export function EmployeeTable({
       const message = error instanceof Error ? error.message : tToasts("employees.updateFailed");
       throw new Error(message);
     }
-  }, [onEmployeeUpdated, isOnline, onOptimisticUpdate]);
+  }, [onEmployeeUpdated, onOptimisticUpdate, tToasts]);
 
   // Handler for custom column updates
   const handleCustomDataUpdate = React.useCallback(async (
@@ -670,17 +649,29 @@ export function EmployeeTable({
 
       cell: ({ row }) => (
 
-        <div onClick={(e) => e.stopPropagation()}>
+        <div>
 
           <Checkbox
 
             checked={isEmployeeSelected(row.original.id)}
 
-            onCheckedChange={() => toggleEmployeeSelection(row.original.id)}
+            onCheckedChange={() => {
+              // Only toggle if this is a direct checkbox interaction
+              toggleEmployeeSelection(row.original.id);
+            }}
+
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent row click handlers
+              e.nativeEvent.stopImmediatePropagation(); // Stop all handlers
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation(); // Prevent row handlers
+              e.nativeEvent.stopImmediatePropagation(); // Stop all handlers
+            }}
 
             aria-label={`Select ${row.original.first_name} ${row.original.surname}`}
 
-            className="w-4 h-4"
+            className="w-4 h-4 cursor-pointer"
 
             data-testid={`employee-select-checkbox-${row.original.id}`}
 
@@ -773,10 +764,11 @@ export function EmployeeTable({
 
 
         // Get the field key for the employee object
-
-
-        const fieldKey = config.db_column_name.toLowerCase().replace(/ /g, "_");
-
+        // Use mapColumnToEmployeeField for masterdata to ensure correct DB field name (e.g. "Lönenivå" -> "loneiva")
+        // For custom columns, use db_column_name directly as fallback, but prefer consistent mapping
+        const fieldKey = config.is_masterdata 
+          ? mapColumnToEmployeeField(config.column_name)
+          : config.db_column_name.toLowerCase().replace(/ /g, "_");
 
         const DataCell = ({ row }: { row: Row<Employee> }) => {
 
@@ -1499,7 +1491,7 @@ export function EmployeeTable({
 
     getSortedRowModel: getSortedRowModel(),
 
-    enableRowSelection: true,
+    enableRowSelection: false, // Disabled - selection only via checkbox (Story 9.10)
 
     // Column resizing configuration (Story 9.4)
 
@@ -2036,7 +2028,6 @@ export function EmployeeTable({
                       <TableRow
                         key={row.id}
                         data-state={isEmployeeSelected(row.original.id) ? "selected" : undefined}
-                        onClick={(e) => handleRowClick(e, row.original.id)}
                         ref={(el) => {
 
                           if (el) {
@@ -2049,6 +2040,38 @@ export function EmployeeTable({
 
                           }
 
+                        }}
+
+                        // Story 9.11: Explicitly prevent row clicks from triggering selection
+                        // TanStack Table may still process clicks when rowSelection state exists,
+                        // so we add an explicit handler that prevents any selection behavior
+                        onClickCapture={(e) => {
+                          // Check if click is on checkbox or other interactive element
+                          const isCheckboxClick = (e.target as HTMLElement).closest('button[type="button"][role="checkbox"]');
+                          const isInteractiveElement = (e.target as HTMLElement).closest('button, input, a, [role="button"], [role="menuitem"], [role="gridcell"]');
+                          
+                          // If clicking on checkbox or other interactive element, let it handle the event
+                          if (isCheckboxClick || isInteractiveElement) {
+                            return; // Don't prevent, let the element handle it
+                          }
+                          
+                          // Prevent row clicks from triggering selection in capture phase
+                          e.stopPropagation();
+                        }}
+                        onClick={(e) => {
+                          // Check if click is on checkbox or other interactive element
+                          const isCheckboxClick = (e.target as HTMLElement).closest('button[type="button"][role="checkbox"]');
+                          const isInteractiveElement = (e.target as HTMLElement).closest('button, input, a, [role="button"], [role="menuitem"], [role="gridcell"]');
+                          
+                          // If clicking on checkbox or other interactive element, let it handle the event
+                          if (isCheckboxClick || isInteractiveElement) {
+                            return; // Don't prevent, let the element handle it
+                          }
+                          
+                          // Prevent row clicks from triggering selection
+                          // Only checkbox clicks should select/deselect employees
+                          e.stopPropagation();
+                          e.preventDefault();
                         }}
 
                         className={cn(
@@ -2070,8 +2093,7 @@ export function EmployeeTable({
                           // Story 13.2 & 13.3: Row selection styling (combines with status tints using opacity)
                           isEmployeeSelected(row.original.id) && "bg-gray-100/50 dark:bg-gray-800/50",
 
-                          // Story 13.3: Cursor pointer for clickable rows
-                          "cursor-pointer"
+                          // Removed cursor-pointer - rows are no longer clickable for selection (Story 9.11)
 
                         )}
 
@@ -2081,7 +2103,9 @@ export function EmployeeTable({
 
                         {row.getVisibleCells().map((cell, cellIndex) => (
 
-                          <TableCell key={cell.id}>
+                          <TableCell 
+                            key={cell.id}
+                          >
 
                             <div className="flex items-center gap-2">
 

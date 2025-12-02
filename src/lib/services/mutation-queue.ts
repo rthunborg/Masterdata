@@ -1,15 +1,15 @@
 /**
  * Mutation Queue Service
  * 
- * Manages queue of offline mutations (create, update, delete) for sync when online
+ * Manages queue of mutations (create, update, delete) for local caching
  * 
- * Story 12.3: Offline Support with Local Caching
+ * Story 12.3: Local Caching
  */
 
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 
 const DB_NAME = "hr-masterdata-cache";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const MUTATION_QUEUE_STORE = "mutation-queue";
 
 export type MutationType = "create" | "update" | "delete";
@@ -50,13 +50,24 @@ class MutationQueueService {
 
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-      request.onerror = () => {
-        reject(new Error(`Failed to open database: ${request.error}`));
+      request.onerror = (event) => {
+        reject((event.target as IDBOpenDBRequest).error);
         this.initPromise = null;
       };
 
-      request.onsuccess = () => {
-        this.db = request.result;
+      request.onblocked = () => {
+        // Blocked
+      };
+
+      request.onsuccess = (event) => {
+        this.db = (event.target as IDBOpenDBRequest).result;
+
+        // Handle version changes (e.g. other tabs trying to upgrade)
+        this.db.onversionchange = () => {
+          this.db?.close();
+          this.db = null;
+        };
+
         this.initPromise = null;
         resolve(this.db);
       };
@@ -77,7 +88,17 @@ class MutationQueueService {
       };
     });
 
-    return this.initPromise;
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise<IDBDatabase>((_, reject) => {
+      setTimeout(() => {
+        if (this.initPromise) {
+          this.initPromise = null;
+          reject(new Error("DB Open Timed Out"));
+        }
+      }, 2000);
+    });
+
+    return Promise.race([this.initPromise, timeoutPromise]);
   }
 
   /**
@@ -311,7 +332,35 @@ class MutationQueueService {
     const mutations = await this.getPendingMutations();
     return mutations.length;
   }
+  /**
+   * Close the database connection
+   */
+  close(): void {
+    if (this.db) {
+      console.log("[MutationQueue] Closing DB connection");
+      this.db.close();
+      this.db = null;
+    }
+  }
+}
+
+// Global singleton pattern to handle HMR and prevent DB deadlocks
+interface MutationQueueGlobal {
+  mutationQueueService?: MutationQueueService;
+}
+
+const mutationQueueGlobal = globalThis as MutationQueueGlobal;
+
+if (mutationQueueGlobal.mutationQueueService) {
+  console.log("[MutationQueue] Found existing instance. Closing connection...");
+  mutationQueueGlobal.mutationQueueService.close();
+} else {
+  console.log("[MutationQueue] No existing instance found.");
 }
 
 export const mutationQueueService = new MutationQueueService();
+
+if (process.env.NODE_ENV !== 'production') {
+  mutationQueueGlobal.mutationQueueService = mutationQueueService;
+}
 

@@ -126,7 +126,7 @@ vi.mock('@/lib/i18n', () => ({
   useTranslations: vi.fn((namespace: string) => (key: string) => `${namespace}.${key}`),
 }));
 
-describe('Story 13.3: Row Click Integration', () => {
+describe('Story 13.3: Row Click Integration (REMOVED in Story 9.11)', () => {
   const mockEmployees: Employee[] = [
     {
       id: '1',
@@ -154,8 +154,8 @@ describe('Story 13.3: Row Click Integration', () => {
     vi.clearAllMocks();
   });
 
-  describe('Task 1.2: Row Click Integration', () => {
-    it('row click updates selection state', { timeout: 15000 }, async () => {
+  describe('Task 1.2: Row Click Integration (REMOVED in Story 9.11)', () => {
+    it('row click does NOT update selection state (Story 9.11)', { timeout: 15000 }, async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -165,15 +165,16 @@ describe('Story 13.3: Row Click Integration', () => {
 
       const row = screen.getByTestId('employee-row-1');
       
-      // Click row to select
+      // Click row - should NOT select (row clicks removed)
       fireEvent.click(row);
       
+      // Row should NOT have selected styling
       await waitFor(() => {
-        expect(row.className).toContain('bg-gray-100/50');
+        expect(row.className).not.toContain('bg-gray-100/50');
       });
     });
 
-    it('row click updates checkbox state (when checkbox exists)', async () => {
+    it('row click does NOT update checkbox state (Story 9.11)', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -182,17 +183,19 @@ describe('Story 13.3: Row Click Integration', () => {
       );
 
       const row = screen.getByTestId('employee-row-1');
+      const checkbox = screen.getByTestId('employee-select-checkbox-1');
       
-      // Click row
+      // Initially unchecked
+      expect(checkbox).not.toBeChecked();
+      
+      // Click row - should NOT select
       fireEvent.click(row);
       
-      // Row should have selected styling
-      await waitFor(() => {
-        expect(row.className).toContain('bg-gray-100/50');
-      });
+      // Checkbox should still be unchecked
+      expect(checkbox).not.toBeChecked();
     });
 
-    it('row click updates visual tint', async () => {
+    it('row click does NOT update visual tint (Story 9.11)', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -205,16 +208,16 @@ describe('Story 13.3: Row Click Integration', () => {
       // Initially should not have tint
       expect(row.className).not.toContain('bg-gray-100/50');
       
-      // Click row
+      // Click row - should NOT add tint
       fireEvent.click(row);
       
-      // Should have tint
+      // Should still NOT have tint
       await waitFor(() => {
-        expect(row.className).toContain('bg-gray-100/50');
+        expect(row.className).not.toContain('bg-gray-100/50');
       });
     });
 
-    it('interactive elements still work correctly', async () => {
+    it('interactive elements still work correctly (Story 9.11)', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -224,20 +227,17 @@ describe('Story 13.3: Row Click Integration', () => {
 
       const row = screen.getByTestId('employee-row-1');
       
-      // Click row to select
-      fireEvent.click(row);
-      await waitFor(() => {
-        expect(row.className).toContain('bg-gray-100/50');
-      });
+      // Row should not be selected initially
+      expect(row.className).not.toContain('bg-gray-100/50');
       
       // Find and click a button (if available)
       const buttons = screen.queryAllByRole('button');
       if (buttons.length > 0) {
-        // Click button - selection should not change
+        // Click button - selection should not change (still not selected)
         fireEvent.click(buttons[0]);
         
-        // Row should still be selected
-        expect(row.className).toContain('bg-gray-100/50');
+        // Row should still NOT be selected
+        expect(row.className).not.toContain('bg-gray-100/50');
       }
     });
   });

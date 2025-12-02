@@ -282,7 +282,6 @@ export function EditableDateCell({
         onValueChange={(newValue) => {
           // Prevent double saves
           if (isSaving) {
-            console.log("[EditableDateCell] Save already in progress, ignoring duplicate call");
             return;
           }
 

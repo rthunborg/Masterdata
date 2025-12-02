@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -20,12 +19,8 @@ import { ResponsiveEmployeeView } from "@/components/dashboard/responsive-employ
 import { ManageColumnsDialog } from "@/components/dashboard/manage-columns-dropdown";
 import { RoleSelector } from "@/components/dashboard/role-selector";
 import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
-import { OfflineBanner } from "@/components/dashboard/offline-banner";
-import { CacheExpirationWarning } from "@/components/dashboard/cache-expiration-warning";
-import { useOfflineSync } from "@/lib/hooks/use-offline-sync";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Employee } from "@/lib/types/employee";
-import type { ConflictResolution } from "@/lib/services/offline-sync";
 import { Plus, Upload, Columns } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
 import dynamic from "next/dynamic";
@@ -49,10 +44,6 @@ const ImportEmployeesModal = dynamic(
   () => import("@/components/dashboard/import-employees-modal").then((mod) => ({ default: mod.ImportEmployeesModal })),
   { ssr: false }
 );
-const ConflictResolutionDialog = dynamic(
-  () => import("@/components/dashboard/conflict-resolution-dialog").then((mod) => ({ default: mod.ConflictResolutionDialog })),
-  { ssr: false }
-);
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -65,40 +56,32 @@ export default function DashboardPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  // Initialize filter state from session storage
-  const [includeArchived, setIncludeArchived] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('employeeFilters');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.includeArchived ?? false;
-      }
-    }
-    return false;
-  });
+  // Initialize filter state - defaulting to false to match server-side rendering
+  const [includeArchived, setIncludeArchived] = useState(false);
+  const [includeTerminated, setIncludeTerminated] = useState(false);
+  const [needsRepayment, setNeedsRepayment] = useState(false);
+  const [filtersLoaded, setFiltersLoaded] = useState(false);
 
-  const [includeTerminated, setIncludeTerminated] = useState(() => {
+  // Load filters from session storage on client mount to prevent hydration mismatch
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('employeeFilters');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.includeTerminated ?? false;
+      try {
+        const saved = sessionStorage.getItem('employeeFilters');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.includeArchived) setIncludeArchived(true);
+          if (parsed.includeTerminated) setIncludeTerminated(true);
+          if (parsed.needsRepayment) setNeedsRepayment(true);
+        }
+      } catch (e) {
+        console.error("Failed to load filters", e);
+      } finally {
+        setFiltersLoaded(true);
       }
+    } else {
+      setFiltersLoaded(true);
     }
-    return false;
-  });
-
-  // Story 8.13 AC 9: Add needsRepayment filter
-  const [needsRepayment, setNeedsRepayment] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('employeeFilters');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.needsRepayment ?? false;
-      }
-    }
-    return false;
-  });
+  }, []);
 
   const [globalFilter, setGlobalFilter] = useState("");
 
@@ -110,7 +93,7 @@ export default function DashboardPage() {
     localData: Partial<Employee>;
     serverData: Employee;
     employee: Employee | null;
-    resolvePromise: ((resolution: ConflictResolution) => void) | null;
+    resolvePromise: ((resolution: { mutationId: string; action: "keep-local" | "keep-server" | "merge" }) => void) | null;
   } | null>(null);
 
   // Handle conflict resolution from dialog
@@ -165,14 +148,14 @@ export default function DashboardPage() {
 
   // Save filter state to session storage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && filtersLoaded) {
       sessionStorage.setItem('employeeFilters', JSON.stringify({
         includeArchived,
         includeTerminated,
         needsRepayment, // Story 8.13 AC 9
       }));
     }
-  }, [includeArchived, includeTerminated, needsRepayment]);
+  }, [includeArchived, includeTerminated, needsRepayment, filtersLoaded]);
 
   // Memoize filters object to prevent infinite re-renders
   // This ensures the filters object reference only changes when filter values actually change
@@ -197,27 +180,6 @@ export default function DashboardPage() {
     enableNotifications: user?.role !== "hr_admin", // Only enable for external parties
     globalFilter,
   });
-
-  // Conflict resolver function for offline sync (must be after useEmployees to access employees)
-  const handleConflict = useCallback(async (conflict: {
-    mutationId: string;
-    employeeId: string;
-    localData: Partial<Employee>;
-    serverData: Employee;
-  }): Promise<ConflictResolution> => {
-    // Find the employee in the current list for display
-    const employee = employees.find((emp) => emp.id === conflict.employeeId) || null;
-
-    // Show dialog and wait for user resolution
-    return new Promise<ConflictResolution>((resolve) => {
-      setConflictData({
-        ...conflict,
-        employee,
-        resolvePromise: resolve,
-      });
-      setConflictDialogOpen(true);
-    });
-  }, [employees]);
 
   const handleEmployeeAdded = () => {
     refetch();
@@ -249,12 +211,6 @@ export default function DashboardPage() {
 
   return (
     <div className="px-4 sm:px-0">
-      {/* Offline Banner - Shows when offline (Story 12.3) */}
-      <OfflineBanner />
-
-      {/* Cache Expiration Warning (Story 12.3) */}
-      <CacheExpirationWarning />
-
       {/* Role Preview Banner - Shows at top when in preview mode */}
       <RolePreviewBanner />
 
@@ -374,28 +330,6 @@ export default function DashboardPage() {
       <AddColumnModal onColumnCreated={handleColumnCreated} />
 
       <EditColumnModal />
-
-      {/* Story 12.3: Conflict Resolution Dialog */}
-      {conflictData && (
-        <ConflictResolutionDialog
-          isOpen={conflictDialogOpen}
-          onClose={() => {
-            // If user closes without resolving, default to keep-server
-            if (conflictData.resolvePromise) {
-              conflictData.resolvePromise({
-                mutationId: conflictData.mutationId,
-                action: "keep-server",
-              });
-            }
-            setConflictDialogOpen(false);
-            setConflictData(null);
-          }}
-          employee={conflictData.employee}
-          localData={conflictData.localData}
-          serverData={conflictData.serverData}
-          onResolve={handleConflictResolve}
-        />
-      )}
 
       {/* Story 12.6: AC 4 - Floating Action Button for HR Admins on mobile */}
       {isMobile && user?.role === "hr_admin" && (

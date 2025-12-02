@@ -1,0 +1,82 @@
+schema: 1
+epic: 9
+epic_title: 'Dashboard Data Display and Inline Editing'
+epic_status: 'In Progress'
+epic_goal: 'Fix regressions and stabilize dashboard'
+
+sprint:
+  number: 1
+  start_date: 2025-11-30
+  end_date: 2025-12-14
+  duration_weeks: 2
+  team: []
+
+epic_metrics:
+  target_coverage_overall: 80
+  target_coverage_critical: 95
+  target_test_execution_time_seconds: 300
+  current_coverage_overall: 0
+  current_coverage_critical: 0
+  current_test_execution_time_seconds: null
+  total_tests_estimated: 10
+  total_tests_implemented: 0
+  total_tests_passing: 0
+
+stories:
+  - id: '9.10'
+    title: 'Fix Dropdown Inline Edit Regression & Stabilize E2E Tests'
+    priority: 'P0'
+    status: 'in-progress'
+    story_points: 3
+    estimated_tests: 1
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: []
+    assignee: null
+    started_date: 2025-11-30
+    completed_date: null
+    blockers: []
+    notes: 'Regression fix'
+  - id: '9.11'
+    title: 'Remove Row Click Selection - Checkbox Only'
+    priority: 'P1'
+    status: 'review'
+    story_points: 2
+    estimated_tests: 3
+    implemented_tests: 10
+    passing_tests: 10
+    dependencies: ['13.2', '13.3']
+    assignee: null
+    started_date: 2025-12-01
+    completed_date: null
+    blockers: ['Row clicks still select employees - AC1 failed']
+    notes: 'Remove row-click selection functionality, keep only checkbox-based selection. BLOCKED: Row clicks still trigger selection despite enableRowSelection: false'
+
+progress_summary:
+  total_stories: 2
+  stories_not_started: 1
+  stories_in_progress: 1
+  stories_completed: 0
+  stories_blocked: 0
+  total_story_points: 5
+  completed_story_points: 0
+  in_progress_story_points: 3
+  remaining_story_points: 5
+
+test_coverage_summary:
+  total_tests_estimated: 4
+  total_tests_implemented: 0
+  total_tests_passing: 0
+  implementation_percentage: 0
+  unit_tests: 0
+  integration_tests: 0
+  e2e_tests: 0
+  performance_tests: 0
+
+blockers: []
+known_issues: []
+external_dependencies: []
+risks: []
+next_actions: []
+last_updated: 2025-12-01
+updated_by: PM Agent

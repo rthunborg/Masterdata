@@ -34,6 +34,12 @@ This epic covers multiple UX and correctness issues on the dashboard:
 - **9.9 – Replace Dashboard Boolean Checkbox Inline Edit with Dropdown**  
   `docs/stories/9.9.replace-dashboard-boolean-checkbox-inline-edit-with-dropdown.md`
 
+- **9.10 – Fix Dropdown Inline Edit Regression & Stabilize E2E Tests**  
+  `docs/stories/9.10.fix-dropdown-inline-edit-regression.md`
+
+- **9.11 – Remove Row Click Selection - Checkbox Only**  
+  `docs/stories/9.11.remove-row-click-selection.md`
+
 ## Post-Review Follow-ups
 - [Story 9.7] [Medium] Replace hardcoded English tooltip "Can only be edited after..." with translation (AC4)
 - [Story 9.7] [Medium] Replace hardcoded English error fallback "Failed to update" with translation (AC4)

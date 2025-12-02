@@ -18,8 +18,6 @@ import {
   hasValueChanged,
 } from "@/lib/utils/change-detection";
 import { toast } from "sonner";
-import { useNetworkStatus } from "./use-network-status";
-import { offlineCacheService } from "@/lib/services/offline-cache";
 import { mutationQueueService } from "@/lib/services/mutation-queue";
 
 interface UseEmployeesOptions {
@@ -89,9 +87,6 @@ export function useEmployees({
     };
   }, [employees, filters, globalFilter]);
 
-  // Network status for offline support (Story 12.3)
-  const { isOnline } = useNetworkStatus();
-
   // Fetch employees from API or cache
   const fetchEmployees = useCallback(async () => {
     try {
@@ -99,26 +94,7 @@ export function useEmployees({
       setError(null);
 
       let data: Employee[];
-
-      if (!isOnline) {
-        // Offline: try to get from cache
-        const cachedData = await offlineCacheService.getCachedEmployeeList();
-        if (cachedData) {
-          data = cachedData;
-        } else {
-          throw new Error("No cached data available. Please connect to the internet to load data.");
-        }
-      } else {
-        // Online: fetch from API
-        data = await employeeService.getAll(filters);
-
-        // Cache the data for offline use
-        try {
-          await offlineCacheService.cacheEmployeeList(data);
-        } catch (cacheError) {
-          console.warn("Failed to cache employee data:", cacheError);
-        }
-      }
+      data = await employeeService.getAll(filters);
 
       // Apply pending mutations optimistically (Story 12.3)
       const pendingMutations = await mutationQueueService.getPendingMutations();
@@ -129,11 +105,11 @@ export function useEmployees({
             data[employeeIndex] = { ...data[employeeIndex], ...mutation.data };
           }
         } else if (mutation.type === "create" && mutation.tempId) {
-          // Add new employee with temp ID
+          // Add new employee with temp ID, explicitly typing without 'any'
           data.push({
-            ...(mutation.data as any),
+            ...(mutation.data as Omit<Employee, "id">),
             id: mutation.tempId,
-          } as Employee);
+          });
         } else if (mutation.type === "delete" && mutation.employeeId) {
           data = data.filter((e) => e.id !== mutation.employeeId);
         }
@@ -144,10 +120,6 @@ export function useEmployees({
         const employeesWithCustomData = await Promise.all(
           data.map(async (employee) => {
             try {
-              // Skip custom data fetch if offline
-              if (!isOnline) {
-                return { ...employee, customData: employee.customData || {} };
-              }
               const customData = await customDataService.getCustomData(employee.id);
               return { ...employee, customData };
             } catch (err) {
@@ -167,7 +139,7 @@ export function useEmployees({
     } finally {
       setIsLoading(false);
     }
-  }, [filters, userRole, isOnline]);
+  }, [filters, userRole]);
 
   // Notification batching function
   const flushNotificationBatch = useCallback(() => {
@@ -246,8 +218,8 @@ export function useEmployees({
 
       // Special handling for customData (deep comparison)
       if (key === 'customData') {
-        const oldCustomData = oldValue as Record<string, any> | undefined;
-        const newCustomData = newValue as Record<string, any> | undefined;
+        const oldCustomData = oldValue as Record<string, unknown> | undefined;
+        const newCustomData = newValue as Record<string, unknown> | undefined;
 
         // If both are undefined/null, they're the same
         if (!oldCustomData && !newCustomData) {
@@ -350,12 +322,72 @@ export function useEmployees({
         }
 
         // Story 13.10: Only update state if data actually changed
+        // Also check if we have a recent optimistic update that should be preserved
         setEmployees((prev) => {
           const currentEmployee = prev.find((emp) => emp.id === updatedEmployee.id);
 
           // If employee not found in current state, add it (shouldn't happen, but handle gracefully)
           if (!currentEmployee) {
             return prev;
+          }
+
+          // Check if we have a recent optimistic update for this employee
+          const recentUpdate = recentOptimisticUpdatesRef.current.get(updatedEmployee.id);
+          if (recentUpdate) {
+            const timeSinceUpdate = Date.now() - recentUpdate.timestamp;
+            // If optimistic update was less than 5 seconds ago, check if we should preserve it
+            if (timeSinceUpdate < 5000) {
+              
+              // Check if the real-time update matches the optimistic update for the fields we updated
+              // If it matches, the server has processed it - use the real-time update
+              // If it matches the PREVIOUS value, it's a stale update - ignore it and keep optimistic
+              // If it's different from both, someone else changed it - use real-time
+              const optimisticFields = Object.keys(recentUpdate.updates);
+              let allFieldsMatchOptimistic = true;
+              let allFieldsMatchPrevious = true;
+              
+              for (const field of optimisticFields) {
+                const optimisticValue = recentUpdate.updates[field as keyof Employee];
+                const previousValue = recentUpdate.previousValues[field as keyof Employee];
+                const realtimeValue = updatedEmployee[field as keyof Employee];
+                
+                const matchesOptimistic = optimisticValue === realtimeValue;
+                const matchesPrevious = previousValue === realtimeValue;
+                
+                
+                if (!matchesOptimistic) allFieldsMatchOptimistic = false;
+                if (!matchesPrevious) allFieldsMatchPrevious = false;
+              }
+              
+              if (allFieldsMatchOptimistic) {
+                // Server has processed the update - use real-time update and clear optimistic tracking
+                recentOptimisticUpdatesRef.current.delete(updatedEmployee.id);
+                // Continue with normal merge below - this will apply the real-time update
+              } else if (allFieldsMatchPrevious) {
+                // Real-time update matches previous value - this is a stale update, ignore it
+                // Don't update, keep the optimistic update that's already in prev state
+                return prev;
+              } else {
+                // Real-time update has different values - someone else changed it, but we still want our optimistic update
+                // Keep optimistic update for fields we changed, but merge other fields from real-time
+                const mergedEmployee: Employee = {
+                  ...currentEmployee,
+                  ...updatedEmployee, // Start with real-time update (has other changes)
+                  customData: updatedEmployee.customData || currentEmployee.customData,
+                };
+                // Override with our optimistic updates for the fields we changed
+                Object.assign(mergedEmployee, recentUpdate.updates);
+                
+                // Check if employee data actually changed
+                if (!hasEmployeeChanged(currentEmployee, mergedEmployee)) {
+                  return prev;
+                }
+                
+                return prev.map((emp) =>
+                  emp.id === updatedEmployee.id ? mergedEmployee : emp
+                );
+              }
+            }
           }
 
           // Merge updated employee with current employee to preserve customData
@@ -467,21 +499,70 @@ export function useEmployees({
     };
   }, [debouncedHandleRealtimeEvent, flushNotificationBatch]);
 
+  // Track recent optimistic updates to prevent real-time sync from overwriting them
+  // Stores: employeeId -> { timestamp, updates, previousValues }
+  const recentOptimisticUpdatesRef = useRef<Map<string, { 
+    timestamp: number; 
+    updates: Partial<Employee>;
+    previousValues: Partial<Employee>; // Values before the optimistic update
+  }>>(new Map());
+
   // Optimistic update function
   const updateEmployeeOptimistically = useCallback((id: string, updates: Partial<Employee>) => {
-    // Store previous state for rollback
-    const previousEmployees = [...employees];
+    const employeeToUpdate = employees.find(emp => emp.id === id);
+    
+    // Store previous values for the fields being updated
+    const previousValues: Partial<Employee> = {};
+    if (employeeToUpdate) {
+      Object.keys(updates).forEach(key => {
+        const fieldKey = key as keyof Employee;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (previousValues as any)[fieldKey] = employeeToUpdate[fieldKey];
+      });
+    }
+
+    // Track this optimistic update with timestamp and previous values
+    recentOptimisticUpdatesRef.current.set(id, {
+      timestamp: Date.now(),
+      updates,
+      previousValues
+    });
+    // Clear after 5 seconds (enough time for server to process and real-time sync to catch up)
+    setTimeout(() => {
+      recentOptimisticUpdatesRef.current.delete(id);
+    }, 5000);
 
     // Apply updates immediately
-    setEmployees((prev) =>
-      prev.map((emp) =>
-        emp.id === id ? { ...emp, ...updates } : emp
-      )
-    );
+    setEmployees((prev) => {
+      const updated = prev.map((emp) => {
+        if (emp.id === id) {
+          const merged = { ...emp, ...updates };
+          return merged;
+        }
+        return emp;
+      });
+      return updated;
+    });
 
     // Return rollback function
     return () => {
-      setEmployees(previousEmployees);
+      // Revert to previous state by removing the optimistic update
+      setEmployees((prev) => {
+        return prev.map((emp) => {
+          if (emp.id === id) {
+            // Revert the fields that were optimistically updated
+            const reverted = { ...emp };
+            Object.keys(updates).forEach(key => {
+              const fieldKey = key as keyof Employee;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (reverted as any)[fieldKey] = previousValues[fieldKey];
+            });
+            return reverted;
+          }
+          return emp;
+        });
+      });
+      recentOptimisticUpdatesRef.current.delete(id);
     };
   }, [employees]);
 

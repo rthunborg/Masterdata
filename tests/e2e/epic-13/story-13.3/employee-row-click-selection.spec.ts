@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Story 13.3: Row Click Selection Workflow', () => {
+test.describe('Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11)', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to dashboard (assuming login is handled)
     await page.goto('/dashboard');
@@ -12,7 +12,7 @@ test.describe('Story 13.3: Row Click Selection Workflow', () => {
     await page.waitForSelector('[data-testid^="employee-row-"]', { timeout: 10000 });
   });
 
-  test('user can click row to select employee', async ({ page }) => {
+  test('user can NOT click row to select employee (Story 9.11)', async ({ page }) => {
     // Find first employee row
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
     
@@ -22,28 +22,30 @@ test.describe('Story 13.3: Row Click Selection Workflow', () => {
     // Click on the row (not on a button or input)
     await firstRow.click();
     
-    // Verify row has selected styling (greyish tint)
-    await expect(firstRow).toHaveClass(/bg-gray-100/);
+    // Verify row does NOT have selected styling (row clicks removed in Story 9.11)
+    await expect(firstRow).not.toHaveClass(/bg-gray-100/);
   });
 
-  test('user can click selected row to deselect', async ({ page }) => {
+  test('row clicks do NOT change selection (Story 9.11)', async ({ page }) => {
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
     
-    // First click - select
-    await firstRow.click();
-    await expect(firstRow).toHaveClass(/bg-gray-100/);
+    // Initially not selected
+    await expect(firstRow).not.toHaveClass(/bg-gray-100/);
     
-    // Second click - deselect
+    // Click row - should NOT select
+    await firstRow.click();
+    await expect(firstRow).not.toHaveClass(/bg-gray-100/);
+    
+    // Click again - should still NOT select
     await firstRow.click();
     await expect(firstRow).not.toHaveClass(/bg-gray-100/);
   });
 
-  test('clicking Edit button does not change selection', async ({ page }) => {
+  test('clicking Edit button does not change selection (Story 9.11)', async ({ page }) => {
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
     
-    // Click row to select
-    await firstRow.click();
-    await expect(firstRow).toHaveClass(/bg-gray-100/);
+    // Row should not be selected initially
+    await expect(firstRow).not.toHaveClass(/bg-gray-100/);
     
     // Find and click Edit button (if available)
     const editButton = page.locator('button[aria-label*="Edit"], button:has-text("Edit")').first();
@@ -51,18 +53,16 @@ test.describe('Story 13.3: Row Click Selection Workflow', () => {
     if (await editButton.isVisible({ timeout: 1000 }).catch(() => false)) {
       await editButton.click();
       
-      // Row should still be selected (or selection should not change)
-      // Note: Edit button might open a modal, but selection should remain
-      await expect(firstRow).toHaveClass(/bg-gray-100/);
+      // Row should still NOT be selected (row clicks removed)
+      await expect(firstRow).not.toHaveClass(/bg-gray-100/);
     }
   });
 
-  test('clicking inline field does not change selection', async ({ page }) => {
+  test('clicking inline field does not change selection (Story 9.11)', async ({ page }) => {
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
     
-    // Click row to select
-    await firstRow.click();
-    await expect(firstRow).toHaveClass(/bg-gray-100/);
+    // Row should not be selected initially
+    await expect(firstRow).not.toHaveClass(/bg-gray-100/);
     
     // Find an input field in the row (if available)
     const input = firstRow.locator('input').first();
@@ -70,29 +70,29 @@ test.describe('Story 13.3: Row Click Selection Workflow', () => {
     if (await input.isVisible({ timeout: 1000 }).catch(() => false)) {
       await input.click();
       
-      // Row should still be selected
-      await expect(firstRow).toHaveClass(/bg-gray-100/);
+      // Row should still NOT be selected
+      await expect(firstRow).not.toHaveClass(/bg-gray-100/);
     }
   });
 
-  test('multiple rows can be selected via clicks', async ({ page }) => {
+  test('row clicks do NOT select multiple rows (Story 9.11)', async ({ page }) => {
     const rows = page.locator('[data-testid^="employee-row-"]');
     const firstRow = rows.first();
     const secondRow = rows.nth(1);
     
-    // Click first row
+    // Click first row - should NOT select
     await firstRow.click();
-    await expect(firstRow).toHaveClass(/bg-gray-100/);
+    await expect(firstRow).not.toHaveClass(/bg-gray-100/);
     
-    // Click second row
+    // Click second row - should NOT select
     await secondRow.click();
-    await expect(secondRow).toHaveClass(/bg-gray-100/);
+    await expect(secondRow).not.toHaveClass(/bg-gray-100/);
     
-    // First row should still be selected
-    await expect(firstRow).toHaveClass(/bg-gray-100/);
+    // First row should still NOT be selected
+    await expect(firstRow).not.toHaveClass(/bg-gray-100/);
   });
 
-  test('row click works on mobile cards', async ({ page }) => {
+  test('card click does NOT work on mobile (Story 9.11)', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     
@@ -103,11 +103,11 @@ test.describe('Story 13.3: Row Click Selection Workflow', () => {
     const card = page.locator('article, [role="article"]').first();
     
     if (await card.isVisible({ timeout: 5000 }).catch(() => false)) {
-      // Click on the card
+      // Click on the card - should NOT select (card clicks removed)
       await card.click();
       
-      // Card should have selected styling
-      await expect(card).toHaveClass(/bg-gray-100/);
+      // Card should NOT have selected styling
+      await expect(card).not.toHaveClass(/bg-gray-100/);
     }
   });
 });

@@ -407,7 +407,7 @@ export function AddImportantDateModal({
                       <FormControl>
                         {isOMC ? (
                           <OMCDatePicker
-                            value={field.value}
+                            value={field.value || ""}
                             onChange={(value) => {
                               field.onChange(value);
                               // Auto-calculate week number when date is selected
