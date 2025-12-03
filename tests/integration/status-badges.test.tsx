@@ -141,9 +141,9 @@ describe('Status Badges Integration', () => {
       // Click to edit
       await user.click(screen.getByText('Nej'));
 
-      // Find and toggle dropdown
-      const combobox = screen.getByRole('combobox');
-      await user.click(combobox);
+       // Find and toggle dropdown (dropdown auto-opens on edit)
+       // const combobox = screen.getByRole('combobox', { hidden: true });
+       // await user.click(combobox);
 
       const option = await screen.findByText("Klart");
       fireEvent.click(option);

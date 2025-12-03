@@ -123,6 +123,7 @@ export async function assignEmployeeToDate(
       .single();
 
     if (dateError) {
+      console.log('Date Error Debug:', dateError, newDateId);
       throw new Error('Failed to fetch date information');
     }
 

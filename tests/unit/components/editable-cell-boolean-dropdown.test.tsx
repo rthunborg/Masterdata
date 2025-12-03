@@ -29,7 +29,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
 
             // Should show dropdown (combobox role), NOT checkbox
             await waitFor(() => {
-                expect(screen.getByRole("combobox")).toBeInTheDocument();
+                expect(screen.getByRole("combobox", { hidden: true })).toBeInTheDocument();
             });
             expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
         });
@@ -51,7 +51,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             fireEvent.click(cell);
 
             await waitFor(() => {
-                const dropdown = screen.getByRole("combobox");
+                const dropdown = screen.getByRole("combobox", { hidden: true });
                 expect(dropdown).toHaveTextContent("Klart");
             });
         });
@@ -72,7 +72,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             fireEvent.click(cell);
 
             await waitFor(() => {
-                const dropdown = screen.getByRole("combobox");
+                const dropdown = screen.getByRole("combobox", { hidden: true });
                 expect(dropdown).toHaveTextContent("Nej");
             });
         });
@@ -94,8 +94,8 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             const cell = screen.getByRole("gridcell");
             fireEvent.click(cell);
 
-            const trigger = screen.getByRole("combobox");
-            fireEvent.click(trigger);
+             const trigger = screen.getByRole("combobox", { hidden: true });
+             fireEvent.click(trigger);
 
             await waitFor(() => {
                 const klartOptions = screen.getAllByText("Klart");
@@ -122,8 +122,8 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             const cell = screen.getByRole("gridcell");
             fireEvent.click(cell);
 
-            const trigger = screen.getByRole("combobox");
-            fireEvent.click(trigger);
+             const trigger = screen.getByRole("combobox", { hidden: true });
+             fireEvent.click(trigger);
 
             await waitFor(() => {
                 const nejOptions = screen.getAllByText("Nej");
@@ -152,7 +152,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             const cell = screen.getByRole("gridcell");
             fireEvent.click(cell);
 
-            const dropdown = screen.getByRole("combobox");
+            const dropdown = screen.getByRole("combobox", { hidden: true });
             dropdown.focus();
             expect(dropdown).toHaveFocus();
         });
@@ -173,7 +173,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             fireEvent.click(cell);
 
             await waitFor(() => {
-                const dropdown = screen.getByRole("combobox");
+                const dropdown = screen.getByRole("combobox", { hidden: true });
                 expect(dropdown).toBeInTheDocument();
                 expect(dropdown).toHaveAttribute("aria-expanded");
             });
@@ -196,8 +196,8 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             const cell = screen.getByRole("gridcell");
             fireEvent.click(cell);
 
-            const trigger = screen.getByRole("combobox");
-            fireEvent.click(trigger);
+             const trigger = screen.getByRole("combobox", { hidden: true });
+             fireEvent.click(trigger);
 
             await waitFor(() => {
                 const klartOptions = screen.getAllByText("Klart");
@@ -224,8 +224,8 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             const cell = screen.getByRole("gridcell");
             fireEvent.click(cell);
 
-            const trigger = screen.getByRole("combobox");
-            fireEvent.click(trigger);
+             const trigger = screen.getByRole("combobox", { hidden: true });
+             fireEvent.click(trigger);
 
             await waitFor(() => {
                 const nejOptions = screen.getAllByText("Nej");
@@ -252,8 +252,8 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             const cell = screen.getByRole("gridcell");
             fireEvent.click(cell);
 
-            const trigger = screen.getByRole("combobox");
-            fireEvent.click(trigger);
+             const trigger = screen.getByRole("combobox", { hidden: true });
+             fireEvent.click(trigger);
 
             await waitFor(() => {
                 const nejOptions = screen.getAllByText("Nej");
@@ -318,8 +318,8 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             const cell = screen.getByRole("gridcell");
             fireEvent.click(cell);
 
-            const trigger = screen.getByRole("combobox");
-            fireEvent.click(trigger);
+             const trigger = screen.getByRole("combobox", { hidden: true });
+             fireEvent.click(trigger);
 
             await waitFor(() => {
                 const nejOptions = screen.getAllByText("Nej");

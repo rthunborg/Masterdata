@@ -359,8 +359,9 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
       expect(row.className).toContain('bg-red-50');
       expect(row.className).not.toContain('bg-gray-100/50');
 
-      // Select the row
-      fireEvent.click(row);
+      // Select the row via checkbox
+      const checkbox = screen.getByRole('checkbox', { name: /Select John Doe/i });
+      fireEvent.click(checkbox);
 
       // Should have both tints - wait for state update
       await waitFor(() => {
@@ -427,8 +428,9 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
       expect(row.className).toContain('bg-green-50/50');
       expect(row.className).not.toContain('bg-gray-100/50');
 
-      // Select the row
-      fireEvent.click(row);
+      // Select the row via checkbox
+      const checkbox = screen.getByRole('checkbox', { name: /Select John Doe/i });
+      fireEvent.click(checkbox);
 
       // Should have both tints - wait for state update
       await waitFor(() => {

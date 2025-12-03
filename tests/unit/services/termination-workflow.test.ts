@@ -825,8 +825,8 @@ describe('Termination Workflow Service', () => {
 
       const result = await restoreRepaymentDates(employeeId);
 
-      expect(mockDateSelect).toHaveBeenCalledWith('id, date_description, remaining_spots');
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date');
+      expect(mockDateSelect).toHaveBeenCalledWith('id, date_description, remaining_spots');      
+      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date', expect.anything());
       expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
       expect(result.restored.omc).toBe(true);
       expect(result.restored.pe3).toBe(false);
@@ -1055,7 +1055,7 @@ describe('Termination Workflow Service', () => {
 
       const result = await restoreRepaymentDates(employeeId);
 
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, pe3DateId, null, 'pe3_date');
+      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, pe3DateId, null, 'pe3_date', expect.anything());
       expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: null });
       expect(result.restored.pe3).toBe(true);
       expect(result.restored.omc).toBe(false);

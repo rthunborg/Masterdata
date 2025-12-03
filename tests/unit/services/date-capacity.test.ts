@@ -642,15 +642,47 @@ describe("date-capacity service", () => {
 
   describe("Edge Cases and Integration", () => {
     it("should handle rapid consecutive calls without interference", async () => {
+      // Mock chaining carefully to handle multiple calls with interleaving
+      
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        const mockSingle = vi.fn();
+        const chainMock: any = {
+          single: mockSingle,
+        };
+        // Explicitly return chainMock instead of using mockReturnThis() to avoid 'this' context issues
+        chainMock.select = vi.fn().mockReturnValue(chainMock);
+        chainMock.eq = vi.fn().mockReturnValue(chainMock);
+
+        if (table === 'employees') {
+          // Mock employee data fetch
+          mockSingle.mockResolvedValue({
+            data: {
+              id: 'emp-123',
+              first_name: 'John',
+              surname: 'Doe',
+              email: 'john@example.com',
+            },
+            error: null,
+          });
+        } else {
+          // Default for important_dates (including deadline check)
+          mockSingle.mockResolvedValue({
+            data: { deadline_submit: null, deadline_cancel: null, remaining_spots: 10 },
+            error: null,
+          });
+        }
+        return chainMock;
+      });
+
       mockSupabaseRpc.mockResolvedValue({
         data: null,
         error: null,
       });
 
       const promises = [
-        assignEmployeeToDate("emp-1", "date-1", null, "omc_date"),
-        assignEmployeeToDate("emp-2", "date-1", null, "omc_date"),
-        assignEmployeeToDate("emp-3", "date-1", null, "omc_date"),
+        assignEmployeeToDate("emp-1", "date-1", null, "omc_date", mockSupabaseClient as any),
+        assignEmployeeToDate("emp-2", "date-1", null, "omc_date", mockSupabaseClient as any),
+        assignEmployeeToDate("emp-3", "date-1", null, "omc_date", mockSupabaseClient as any),
       ];
 
       const results = await Promise.all(promises);

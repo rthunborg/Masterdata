@@ -147,7 +147,7 @@ describe('Reactivation Workflow Service', () => {
       expect(mockDateSelect).toHaveBeenCalledWith('id, date_description, remaining_spots');
       expect(mockDateEq1).toHaveBeenCalledWith('date_value', omcDateValue);
       expect(mockDateEq2).toHaveBeenCalledWith('category', 'ÖMC Dates');
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date');
+      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date', expect.anything());
       expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
       expect(result.restored.omc).toBe(true);
       expect(result.warnings).toEqual([]);
@@ -299,7 +299,7 @@ describe('Reactivation Workflow Service', () => {
 
       const result = await restoreRepaymentDates(employeeId);
 
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, pe3DateId, null, 'pe3_date');
+      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, pe3DateId, null, 'pe3_date', expect.anything());
       expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: null });
       expect(result.restored.pe3).toBe(true);
       expect(result.warnings).toEqual([]);
@@ -583,7 +583,7 @@ describe('Reactivation Workflow Service', () => {
 
       const result = await restoreRepaymentDates(employeeId);
 
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date');
+      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date', expect.anything());
       expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
       expect(result.restored.omc).toBe(true);
     });
@@ -665,7 +665,7 @@ describe('Reactivation Workflow Service', () => {
 
       const result = await restoreRepaymentDates(employeeId);
 
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, pe3DateId, null, 'pe3_date');
+      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, pe3DateId, null, 'pe3_date', expect.anything());
       expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: null });
       expect(result.restored.pe3).toBe(true);
     });
@@ -750,7 +750,7 @@ describe('Reactivation Workflow Service', () => {
       await restoreRepaymentDates(employeeId);
 
       // assignEmployeeToDate handles spot decrement internally via RPC
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date');
+      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date', expect.anything());
     });
   });
 
@@ -833,7 +833,7 @@ describe('Reactivation Workflow Service', () => {
       await restoreRepaymentDates(employeeId);
 
       // assignEmployeeToDate handles assigned_employees array update via RPC
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date');
+      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date', expect.anything());
     });
   });
 

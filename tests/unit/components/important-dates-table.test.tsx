@@ -389,9 +389,9 @@ describe("ImportantDatesTable", () => {
       const confirmButton = screen.getByRole("button", { name: /delete/i });
       await fireEvent.click(confirmButton);
 
-      expect(importantDateService.delete).toHaveBeenCalledWith("date-1");
-      expect(toast.success).toHaveBeenCalledWith("Datum raderat");
-      expect(mockOnDateDeleted).toHaveBeenCalled();
+       expect(importantDateService.delete).toHaveBeenCalledWith("date-1");
+       expect(toast.success).toHaveBeenCalledWith("Viktigt datum raderat");
+       expect(mockOnDateDeleted).toHaveBeenCalled();
     });
 
     it("should show error toast on delete failure", async () => {

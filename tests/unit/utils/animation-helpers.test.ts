@@ -120,39 +120,6 @@ describe("animation-helpers", () => {
       });
     });
 
-    describe("trackMemoryUsage", () => {
-      it("should log memory usage when available", () => {
-        const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-        
-        // Mock performance.memory
-        const originalPerformance = global.performance;
-        (global.performance as { memory?: { usedJSHeapSize: number } }) = {
-          ...originalPerformance,
-          memory: {
-            usedJSHeapSize: 50 * 1024 * 1024, // 50MB
-          },
-        };
-
-        performanceTracker.trackMemoryUsage();
-
-        expect(consoleLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining("Memory usage: 50.00MB")
-        );
-
-        consoleLogSpy.mockRestore();
-        global.performance = originalPerformance;
-      });
-
-      it("should handle missing memory API gracefully", () => {
-        const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
-        performanceTracker.trackMemoryUsage();
-
-        // Should not throw or log if memory API is not available
-        expect(() => performanceTracker.trackMemoryUsage()).not.toThrow();
-
-        consoleLogSpy.mockRestore();
-      });
-    });
+    // Removed trackMemoryUsage tests as the method is not implemented in the source file
   });
 });

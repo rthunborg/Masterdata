@@ -1368,3 +1368,170 @@ This document provides the complete epic and story breakdown for hr-masterdata, 
 
 ---
 
+## Epic 15: Technical Debt Cleanup and Project Refactoring
+
+**Epic Goal:** Perform a comprehensive cleanup of the codebase to remove redundancy, consolidate service logic, improve type safety, and eliminate unused assets. This epic addresses the accumulated technical debt from the rapid development phase to ensure the project is maintainable, performant, and "clean" for future iterations.
+
+**FR Coverage:**
+- NFR: Code Maintainability
+- NFR: System Performance (via bundle size reduction)
+- NFR: Code Quality (Type safety)
+
+**Scope:**
+- Removal of unused components, hooks, utils, and services
+- Refactoring of overlapping service logic (e.g., column services)
+- Strict type checking and linting fixes
+- Dependency audit and removal of unused packages
+- Cleanup of test suite organization
+- Documentation updates to match current implementation
+
+**Suggested Sequencing:** Start with the audit (15.1), then proceed to refactoring (15.2) and cleanup (15.3, 15.4). Test optimization (15.5) should follow refactoring to ensure tests match the new structure.
+
+**Why This Grouping Makes Sense:**
+- All stories are focused on "internal quality" rather than user-facing features.
+- It's a "Spring Cleaning" epic that requires a holistic view of the codebase.
+- Grouping these changes reduces the risk of regression in feature development by isolating the refactoring phase.
+
+---
+
+### Story 15.1: Audit and Remove Unused Code
+
+**As a** developer,
+**I want** to identify and remove unused code (components, hooks, utils, api routes),
+**so that** the codebase remains lean and easier to navigate.
+
+**Acceptance Criteria:**
+
+**Given** the complete codebase
+**When** I run an analysis (using tools like `ts-prune` or manual audit)
+**Then** I identify files and exports that are never imported or used
+**And** I delete these files/exports
+**And** the application still builds and runs correctly (no regression)
+
+**Given** unused `utils` files
+**When** I review `src/utils`
+**Then** I remove any utility functions that are duplicative or unused
+
+**Given** legacy components (e.g., old versions of modals or tables)
+**When** I identify them
+**Then** they are removed from the repository
+
+**Technical Notes:**
+- Use tools: `npx ts-prune`, `npx unimported` to find unused files.
+- Manually check `src/components` for "V1", "Old", or commented-out code blocks.
+- Check `src/app/api` for unused routes.
+- Verify removal doesn't break dynamic imports or reflection-based usage (though unlikely in this stack).
+
+---
+
+### Story 15.2: Service Layer Refactoring and Consolidation
+
+**As a** developer,
+**I want** to consolidate overlapping service logic (e.g., column services),
+**so that** there is a single source of truth for business logic and reduced code duplication.
+
+**Acceptance Criteria:**
+
+**Given** multiple service files with similar responsibilities (e.g., `column-service.ts` vs `column-config-service.ts`)
+**When** I refactor them
+**Then** their functionality is merged into a logical structure (e.g., `services/columns/` or a single robust service)
+**And** duplicate methods are removed
+**And** all call sites are updated to use the new unified service
+
+**Given** `admin-service.ts`
+**When** I review its contents
+**Then** I ensure it doesn't duplicate logic found in domain-specific services (e.g., `employee-service.ts`)
+**And** move logic to domain services where appropriate
+
+**Technical Notes:**
+- Analyze `src/lib/services` for overlap.
+- Focus on: Column management, Employee updates, Date handling.
+- Ensure proper error handling and typing in the refactored services.
+- Update unit tests to reflect service changes.
+
+---
+
+### Story 15.3: Type Safety and Linting Improvements
+
+**As a** developer,
+**I want** to fix type errors, remove `any` types, and address linting warnings,
+**so that** the codebase is robust and self-documenting via types.
+
+**Acceptance Criteria:**
+
+**Given** the codebase
+**When** I run `npm run lint` and `tsc --noEmit`
+**Then** I see zero errors and reduced warnings
+**And** explicit `any` usage is minimized (replaced with proper interfaces or `unknown`)
+
+**Given** complex data structures (e.g., Employee, User)
+**When** I inspect their usage
+**Then** they are consistently typed across frontend and backend (API responses)
+
+**Technical Notes:**
+- focus on `src/types` definition correctness.
+- Check for `// @ts-ignore` or `// eslint-disable` comments and try to resolve the underlying issue.
+- Ensure Zod schemas (if used) match TypeScript interfaces.
+
+---
+
+### Story 15.4: Dependency Analysis and Cleanup
+
+**As a** developer,
+**I want** to remove unused npm packages and update critical dependencies,
+**so that** the project bundle size is optimized and security vulnerabilities are minimized.
+
+**Acceptance Criteria:**
+
+**Given** `package.json`
+**When** I analyze dependencies (using `npm audit`, `depcheck`)
+**Then** unused packages are uninstalled
+**And** `package-lock.json` is updated
+
+**Technical Notes:**
+- Use `npx depcheck` to find unused dependencies.
+- Be careful with "dev dependencies" that might be used in scripts but not imported in code.
+- Check for heavy libraries that can be replaced with lighter alternatives (e.g., date libraries, lodash functions).
+
+---
+
+### Story 15.5: Test Suite Optimization and Cleanup
+
+**As a** developer,
+**I want** to organize and clean up the test suite,
+**so that** tests are reliable, fast, and easy to maintain.
+
+**Acceptance Criteria:**
+
+**Given** the `tests` directory
+**When** I review the test files
+**Then** I remove any tests for features that no longer exist
+**And** I ensure test folder structure matches the new epic/story organization
+**And** I resolve any flaky tests identified during the cleanup
+
+**Technical Notes:**
+- Check `tests/unit`, `tests/integration`, `tests/e2e`.
+- Remove any `.skip` tests that are permanently obsolete.
+- Consolidate test utils if duplicated.
+
+---
+
+### Story 15.6: Documentation Update and Cleanup
+
+**As a** developer,
+**I want** to update project documentation (README, architecture docs),
+**so that** it accurately reflects the current state of the application after the cleanup.
+
+**Acceptance Criteria:**
+
+**Given** `README.md` and `docs/` folder
+**When** I update them
+**Then** obsolete instructions are removed
+**And** architecture diagrams (if any) are updated to reflect service consolidation
+**And** "Getting Started" guides are verified to work
+
+**Technical Notes:**
+- Review `docs/` for stale markdown files.
+- Ensure `epics.md` structure is preserved but updated with this new epic.
+
+---

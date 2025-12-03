@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { screen, fireEvent, act } from '@testing-library/react';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -162,6 +162,12 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock setInterval to prevent act warnings from polling
+    vi.spyOn(global, 'setInterval').mockImplementation(() => 0 as unknown as NodeJS.Timeout);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('Task 1.1: Selection State Management', () => {
@@ -198,7 +204,7 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
       expect(checkbox2).toHaveAttribute('data-state', 'unchecked');
     });
 
-    it('clicking row toggles selection and updates row styling', () => {
+    it('clicking checkbox toggles selection and updates row styling', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -213,16 +219,16 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
       expect(checkbox).toHaveAttribute('data-state', 'unchecked');
       expect(row).not.toHaveAttribute('data-state', 'selected');
 
-      // Click row directly (like story 13.3)
-      fireEvent.click(row);
+      // Click checkbox
+      await act(async () => {
+        fireEvent.click(checkbox);
+      });
 
       // Row should have tint (proves selection state updated)
       expect(row).toHaveAttribute('data-state', 'selected');
-      // Note: Checkbox state may not update immediately due to React rendering,
-      // but the selection state is working (proven by row styling)
     });
 
-    it('multiple employees can be selected by clicking their rows', () => {
+    it('multiple employees can be selected by clicking their checkboxes', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -230,14 +236,24 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
         />
       );
 
+      // Click first
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select John Doe/i }));
+      });
+
+      // Click second (re-query)
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select Jane Smith/i }));
+      });
+
+      // Click third (re-query)
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select Bob Johnson/i }));
+      });
+
       const row1 = screen.getByTestId('employee-row-1');
       const row2 = screen.getByTestId('employee-row-2');
       const row3 = screen.getByTestId('employee-row-3');
-
-      // Click each row to select
-      fireEvent.click(row1);
-      fireEvent.click(row2);
-      fireEvent.click(row3);
 
       // All rows should have tint (proves selection state updated)
       expect(row1).toHaveAttribute('data-state', 'selected');
@@ -245,7 +261,7 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
       expect(row3).toHaveAttribute('data-state', 'selected');
     });
 
-    it('selection can be toggled off by clicking row again', () => {
+    it('selection can be toggled off by clicking checkbox again', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -256,11 +272,15 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
       const row = screen.getByTestId('employee-row-1');
 
       // Select first
-      fireEvent.click(row);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select John Doe/i }));
+      });
       expect(row).toHaveAttribute('data-state', 'selected');
 
-      // Deselect by clicking row again
-      fireEvent.click(row);
+      // Deselect by clicking checkbox again (re-query)
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select John Doe/i }));
+      });
       expect(row).not.toHaveAttribute('data-state', 'selected');
     });
   });
@@ -298,7 +318,7 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
   });
 
   describe('Task 1.4: Visual Feedback', () => {
-    it('selected rows show greyish tint', () => {
+    it('selected rows show greyish tint', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -306,19 +326,22 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
         />
       );
 
+      const checkbox = screen.getByRole('checkbox', { name: /Select John Doe/i });
       const row = screen.getByTestId('employee-row-1');
 
       // Initially no tint
       expect(row).not.toHaveAttribute('data-state', 'selected');
 
-      // Select by clicking row
-      fireEvent.click(row);
+      // Select by clicking checkbox
+      await act(async () => {
+        fireEvent.click(checkbox);
+      });
 
       // Should have tint (proves selection state updated)
       expect(row).toHaveAttribute('data-state', 'selected');
     });
 
-    it('unselected rows do not show tint', () => {
+    it('unselected rows do not show tint', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -329,14 +352,18 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
       const row = screen.getByTestId('employee-row-1');
 
       // Select then deselect
-      fireEvent.click(row);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select John Doe/i }));
+      });
       expect(row).toHaveAttribute('data-state', 'selected');
 
-      fireEvent.click(row);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select John Doe/i }));
+      });
       expect(row).not.toHaveAttribute('data-state', 'selected');
     });
 
-    it('tint works in dark mode', () => {
+    it('tint works in dark mode', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={mockEmployees}
@@ -344,10 +371,13 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
         />
       );
 
+      const checkbox = screen.getByRole('checkbox', { name: /Select John Doe/i });
       const row = screen.getByTestId('employee-row-1');
 
-      // Select by clicking row
-      fireEvent.click(row);
+      // Select by clicking checkbox
+      await act(async () => {
+        fireEvent.click(checkbox);
+      });
 
       // Should have both light and dark mode classes
       expect(row).toHaveAttribute('data-state', 'selected');

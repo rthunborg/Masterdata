@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
@@ -163,7 +163,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
   });
 
   describe('Desktop Table View', () => {
-    it('selected rows show greyish tint', () => {
+    it('selected rows show greyish tint', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={[mockEmployee]}
@@ -178,14 +178,15 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
       expect(row.className).not.toContain('bg-gray-100/50');
       
       // Select
-      fireEvent.click(checkbox);
+      await act(async () => {
+        fireEvent.click(checkbox);
+      });
       
       // Should have tint
       expect(row.className).toContain('bg-gray-100/50');
     });
 
     it('unselected rows do not show tint', async () => {
-      const user = userEvent.setup();
       renderWithI18n(
         <EmployeeTable
           employees={[mockEmployee]}
@@ -193,17 +194,34 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
         />
       );
 
-      const row = screen.getByTestId('employee-row-1');
+      const table = screen.getByRole('table');
+      const rows = within(table).getAllByRole('row');
+      const row = rows[1]; // First data row
       
-      // Select then deselect by clicking the row
-      await user.click(row);
-      expect(row.className).toContain('bg-gray-100/50');
-      
-      await user.click(row);
-      expect(row.className).not.toContain('bg-gray-100/50');
+       // Select then deselect by clicking the checkbox
+       await act(async () => {
+         const checkbox = within(row).getByRole('checkbox');
+         fireEvent.click(checkbox);
+       });
+       expect(row.className).toContain('bg-gray-100/50');
+       
+       await act(async () => {
+         // Re-query as row might have re-rendered
+         const updatedTable = screen.getByRole('table');
+         const updatedRows = within(updatedTable).getAllByRole('row');
+         const updatedRow = updatedRows[1];
+         const checkbox = within(updatedRow).getByRole('checkbox');
+         fireEvent.click(checkbox);
+       });
+       
+       // Re-query for assertion
+       const finalTable = screen.getByRole('table');
+       const finalRows = within(finalTable).getAllByRole('row');
+       const finalRow = finalRows[1];
+       expect(finalRow.className).not.toContain('bg-gray-100/50');
     });
 
-    it('tint works in light mode', () => {
+    it('tint works in light mode', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={[mockEmployee]}
@@ -215,13 +233,15 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
       const row = screen.getByTestId('employee-row-1');
       
       // Select
-      fireEvent.click(checkbox);
+      await act(async () => {
+        fireEvent.click(checkbox);
+      });
       
       // Should have light mode tint
       expect(row.className).toContain('bg-gray-100/50');
     });
 
-    it('tint works in dark mode', () => {
+    it('tint works in dark mode', async () => {
       renderWithI18n(
         <EmployeeTable
           employees={[mockEmployee]}
@@ -233,7 +253,9 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
       const row = screen.getByTestId('employee-row-1');
       
       // Select
-      fireEvent.click(checkbox);
+      await act(async () => {
+        fireEvent.click(checkbox);
+      });
       
       // Should have dark mode tint (with opacity to combine with status tints)
       expect(row.className).toContain('dark:bg-gray-800/50');
@@ -279,4 +301,3 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
     });
   });
 });
-

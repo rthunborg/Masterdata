@@ -1,0 +1,35 @@
+name: Epic 15 Sprint Status
+status: Approved
+start_date: null
+end_date: null
+goals:
+  - Clean up technical debt
+  - Consolidate services
+  - Improve type safety
+stories:
+  - id: 15.1
+    title: Audit and Remove Unused Code
+    status: Approved
+    assigned_to: null
+  - id: 15.2
+    title: Service Layer Refactoring and Consolidation
+    status: Approved
+    assigned_to: null
+  - id: 15.3
+    title: Type Safety and Linting Improvements
+    status: Approved
+    assigned_to: null
+  - id: 15.4
+    title: Dependency Analysis and Cleanup
+    status: Approved
+    assigned_to: null
+  - id: 15.5
+    title: Test Suite Optimization and Cleanup
+    status: Approved
+    assigned_to: null
+  - id: 15.6
+    title: Documentation Update and Cleanup
+    status: Approved
+    assigned_to: null
+blockers: []
+notes: []

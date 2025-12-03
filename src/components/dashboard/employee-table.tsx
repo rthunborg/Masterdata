@@ -655,18 +655,13 @@ export function EmployeeTable({
 
             checked={isEmployeeSelected(row.original.id)}
 
-            onCheckedChange={() => {
+            onCheckedChange={(checked) => {
               // Only toggle if this is a direct checkbox interaction
               toggleEmployeeSelection(row.original.id);
             }}
-
             onClick={(e) => {
-              e.stopPropagation(); // Prevent row click handlers
-              e.nativeEvent.stopImmediatePropagation(); // Stop all handlers
-            }}
-            onMouseDown={(e) => {
-              e.stopPropagation(); // Prevent row handlers
-              e.nativeEvent.stopImmediatePropagation(); // Stop all handlers
+              // Explicitly stop propagation for checkbox click to be safe
+              e.stopPropagation();
             }}
 
             aria-label={`Select ${row.original.first_name} ${row.original.surname}`}
@@ -1319,6 +1314,7 @@ export function EmployeeTable({
   React.useEffect(() => {
     if (includeTerminated || includeArchived || needsRepayment) {
       setCrewReadyFilter('all');
+      setSelectedEmployeeIds(new Set()); // Explicitly clear selection when switching context
     }
   }, [includeTerminated, includeArchived, needsRepayment]);
 
@@ -1329,9 +1325,9 @@ export function EmployeeTable({
         .filter(emp => emp.crewing_done === true)
         .map(emp => emp.id);
       setSelectedEmployeeIds(new Set(readyEmployeeIds));
-    } else {
-      setSelectedEmployeeIds(new Set());
-    }
+    } 
+    // Removed else block to prevent clearing selection when employees list updates in 'all' mode
+    // or when switching filters, preserving user selection (Story 13.5 improvement)
   }, [crewReadyFilter, employees]);
 
   // Story 13.6: General export with field selection
@@ -2045,35 +2041,9 @@ export function EmployeeTable({
                         // Story 9.11: Explicitly prevent row clicks from triggering selection
                         // TanStack Table may still process clicks when rowSelection state exists,
                         // so we add an explicit handler that prevents any selection behavior
-                        onClickCapture={(e) => {
-                          // Check if click is on checkbox or other interactive element
-                          const isCheckboxClick = (e.target as HTMLElement).closest('button[type="button"][role="checkbox"]');
-                          const isInteractiveElement = (e.target as HTMLElement).closest('button, input, a, [role="button"], [role="menuitem"], [role="gridcell"]');
-                          
-                          // If clicking on checkbox or other interactive element, let it handle the event
-                          if (isCheckboxClick || isInteractiveElement) {
-                            return; // Don't prevent, let the element handle it
-                          }
-                          
-                          // Prevent row clicks from triggering selection in capture phase
-                          e.stopPropagation();
-                        }}
-                        onClick={(e) => {
-                          // Check if click is on checkbox or other interactive element
-                          const isCheckboxClick = (e.target as HTMLElement).closest('button[type="button"][role="checkbox"]');
-                          const isInteractiveElement = (e.target as HTMLElement).closest('button, input, a, [role="button"], [role="menuitem"], [role="gridcell"]');
-                          
-                          // If clicking on checkbox or other interactive element, let it handle the event
-                          if (isCheckboxClick || isInteractiveElement) {
-                            return; // Don't prevent, let the element handle it
-                          }
-                          
-                          // Prevent row clicks from triggering selection
-                          // Only checkbox clicks should select/deselect employees
-                          e.stopPropagation();
-                          e.preventDefault();
-                        }}
-
+                        // UPDATE: Removed onClickCapture and onClick as we want standard event propagation
+                        // and have disabled row selection logic. Checkbox interactions are handled directly.
+                        
                         className={cn(
 
                           row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
