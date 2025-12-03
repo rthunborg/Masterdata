@@ -1368,6 +1368,136 @@ This document provides the complete epic and story breakdown for hr-masterdata, 
 
 ---
 
+## Epic 16: Employee Data Change Notifications
+
+**Epic Goal:** Enable external party users (Sodexo, ÖMC, Payroll, Toplux) to be notified when masterdata fields they can view have been changed since their last login, preventing mistakes and time loss from missing updates to employees they are processing.
+
+**FR Coverage:** 
+- Enhances existing employee viewing functionality
+- Improves data awareness for external party users
+- Supports workflow efficiency
+
+**Scope:**
+- Database audit table for tracking column-level changes
+- API endpoint for change detection
+- Frontend change tracking hook
+- Dismissible notification banner
+- Visual field highlighting in employee table
+
+**Suggested Sequencing:** This epic should be executed in order: 16.1 (database) → 16.2 (API) → 16.3 (hook) → 16.4 & 16.5 (UI components, can be parallel)
+
+**Why This Grouping Makes Sense:**
+- All stories focus on change notification functionality
+- Stories build upon each other (database → API → frontend → UI)
+- Banner and highlighting are complementary UI features
+- Epic addresses a cohesive user need (awareness of data changes)
+
+**Test Organization Requirements:**
+- All new tests created for Epic 16 stories must be organized in folders named for the epic and story number
+- Test folder structure: `tests/{test-type}/epic-16/story-16.X/` (e.g., `tests/unit/epic-16/story-16.1/`, `tests/integration/epic-16/story-16.1/`, `tests/e2e/epic-16/story-16.1/`)
+- This organization ensures that when multiple developers work on different stories and push code/tests, it's easy to identify which tests belong to which story
+- If tests fail, developers can quickly locate and fix tests related to their specific story
+
+### Story 16.1: Create Employee Column Changes Audit Table
+
+**As a** system architect,  
+**I want** to create a database table and trigger to track column-level changes to masterdata fields,  
+**so that** we can detect which fields changed for which employees without storing duplicate data.
+
+**Acceptance Criteria:**
+- Audit table `employee_column_changes` created with proper schema
+- Indexes created for query performance
+- Trigger on `employees` table UPDATE detects masterdata column changes
+- Only masterdata columns tracked (custom columns excluded)
+- Change detection handles all data types (text, number, date, boolean, null)
+
+**Prerequisites:** Story 3.1 (Column Configuration Data Model), Story 2.3 (Edit Employee Masterdata Fields)
+
+### Story 16.2: API Endpoint for Change Detection
+
+**As a** developer,  
+**I want** an API endpoint that returns which employees and columns have changed since a user's last active timestamp,  
+**so that** the frontend can display change notifications.
+
+**Acceptance Criteria:**
+- `GET /api/employees/changes-since-last-active` endpoint created
+- Returns changed employees with changed column names
+- Filters by user's visible masterdata columns (permission-based)
+- Excludes archived employees
+- Performance: <500ms query time
+
+**Prerequisites:** Story 16.1 (Audit table must exist), Story 6.7 (Last Active Timestamp)
+
+### Story 16.3: Frontend Change Tracking Hook
+
+**As a** developer,  
+**I want** a React hook that manages change detection state and fetches changes on dashboard load,  
+**so that** components can access change information for displaying notifications and highlights.
+
+**Acceptance Criteria:**
+- `useEmployeeChanges()` hook created
+- Captures `last_active_at` as baseline on mount
+- Fetches changes from API endpoint
+- Provides `isColumnChanged(employeeId, columnName)` helper
+- Supports refresh functionality
+- Handles loading and error states
+
+**Prerequisites:** Story 16.2 (API endpoint must exist), Story 1.3 (Authentication System)
+
+### Story 16.4: Change Notification Banner Component
+
+**As an** external party user,  
+**I want** to see a dismissible banner showing how many employees have changes since my last login,  
+**so that** I'm aware of updates before I start working.
+
+**Acceptance Criteria:**
+- Banner displays change count and last login timestamp
+- Banner is dismissible (sessionStorage, not persistent)
+- Banner only shows when changes exist
+- Banner positioned above employee table
+- Responsive design (mobile/desktop)
+- Accessible (ARIA labels, keyboard navigation)
+
+**Prerequisites:** Story 16.3 (Hook must exist), Story 2.1 (Employee List Table View)
+
+### Story 16.5: Field Highlighting in Employee Table
+
+**As an** external party user,  
+**I want** changed fields to be visually highlighted in the employee table,  
+**so that** I can quickly identify which specific fields have been updated.
+
+**Acceptance Criteria:**
+- Changed fields have soft yellow/amber background highlight
+- Highlights map correctly from `db_column_name` to displayed columns
+- Highlights persist until next login or page refresh
+- Highlights work in both table and mobile card views
+- Highlights don't interfere with inline editing
+- Performance: <100ms rendering overhead
+
+**Prerequisites:** Story 16.3 (Hook must exist), Story 4.4 (Inline Editing), Story 2.1 (Employee Table)
+
+**Epic 16 Story Summary:**
+
+1. Story 16.1: Create Employee Column Changes Audit Table
+2. Story 16.2: API Endpoint for Change Detection
+3. Story 16.3: Frontend Change Tracking Hook
+4. Story 16.4: Change Notification Banner Component
+5. Story 16.5: Field Highlighting in Employee Table
+
+**Next Steps in BMad Method:**
+
+1. **UX Design** (if UI changes needed) - Run: `workflow ux-design`
+   → Will add interaction details to stories in epics.md
+
+2. **Architecture** - Run: `workflow create-architecture`
+   → Will add technical details to stories in epics.md
+
+3. **Phase 4 Implementation** - Stories ready for context assembly
+
+**Important:** This is a living document that will be updated as you progress through the workflow chain. The epics.md file will evolve with UX and Architecture inputs before implementation begins.
+
+---
+
 ## Epic 15: Technical Debt Cleanup and Project Refactoring
 
 **Epic Goal:** Perform a comprehensive cleanup of the codebase to remove redundancy, consolidate service logic, improve type safety, and eliminate unused assets. This epic addresses the accumulated technical debt from the rapid development phase to ensure the project is maintainable, performant, and "clean" for future iterations.
