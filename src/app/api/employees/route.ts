@@ -22,6 +22,9 @@ export async function GET(request: NextRequest) {
   try {
     // Verify authentication (all roles can view, but permissions handled by RLS and column config)
     const user = await requireAuthAPI();
+    
+    // Log for debugging (remove in production if needed)
+    console.log('[GET /api/employees] Authenticated user:', { id: user.id, role: user.role, email: user.email });
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -52,6 +55,12 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    // Enhanced error logging for debugging
+    console.error('[GET /api/employees] Error:', error);
+    if (error instanceof Error) {
+      console.error('[GET /api/employees] Error message:', error.message);
+      console.error('[GET /api/employees] Error stack:', error.stack);
+    }
     return createErrorResponse(error);
   }
 }
