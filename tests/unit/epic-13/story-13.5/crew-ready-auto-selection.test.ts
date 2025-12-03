@@ -11,8 +11,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getCrewReadyEmployeeIds } from '@/lib/services/crewing-validation';
+import { canEditCrewingDone } from '@/lib/services/crewing-validation';
 import type { Employee } from '@/lib/types/employee';
+
+// Helper function to replace getCrewReadyEmployeeIds
+function getCrewReadyEmployeeIds(employees: Employee[]): string[] {
+  return employees
+    .filter((employee) => canEditCrewingDone(employee))
+    .map((employee) => employee.id);
+}
 
 describe('Story 13.5: Crew Ready Auto-Selection', () => {
   describe('getCrewReadyEmployeeIds', () => {

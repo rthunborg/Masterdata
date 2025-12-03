@@ -16,7 +16,14 @@ import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
 import { UserRole } from '@/lib/types/user';
-import { getCrewReadyEmployeeIds } from '@/lib/services/crewing-validation';
+import { canEditCrewingDone } from '@/lib/services/crewing-validation';
+
+// Helper function to replace getCrewReadyEmployeeIds
+function getCrewReadyEmployeeIds(employees: Employee[]): string[] {
+  return employees
+    .filter((employee) => canEditCrewingDone(employee))
+    .map((employee) => employee.id);
+}
 
 // Mock services
 vi.mock('@/lib/services/employee-service', () => ({

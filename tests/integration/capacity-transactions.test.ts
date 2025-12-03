@@ -196,14 +196,9 @@ describe("Capacity Transaction Atomicity", () => {
 
       vi.mocked(employeeRepository.findById).mockResolvedValue(employeeWithDate);
       
-      // Simulate release failure
-      vi.mocked(dateCapacity.releaseDateCapacity).mockRejectedValue(
-        new Error("Database error during release")
-      );
-
-      // Note: Current implementation doesn't call releaseDateCapacity on PATCH with null
-      // This test documents expected behavior for future enhancement
-      // The RPC function should handle rollback atomically
+      // Note: releaseDateCapacity function was removed as unused
+      // The RPC function (update_date_spots) handles capacity management atomically
+      // This test is skipped as the removed function is no longer available
       
       const request = new NextRequest(
         "http://localhost:3000/api/employees/emp-1",
@@ -213,8 +208,8 @@ describe("Capacity Transaction Atomicity", () => {
         }
       );
 
-      // Current implementation may not call releaseDateCapacity
-      // This test verifies that if it did, rollback would occur
+      // The implementation uses assignEmployeeToDate with null newDateId to clear assignments
+      // This is handled atomically by the RPC function
       await PATCH(request, { params: Promise.resolve({ id: "emp-1" }) });
 
       // In real database transaction:

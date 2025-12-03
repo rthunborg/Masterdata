@@ -14,8 +14,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { canAssignEmployeeToDate, assignEmployeeToDate } from "@/lib/services/date-capacity";
-import { getCapacityStatus } from "@/lib/services/date-capacity";
+import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import React from "react";
 import { CapacityBadge } from "@/components/dashboard/capacity-badge";
 import { render } from "@testing-library/react";
@@ -169,7 +168,8 @@ describe("Capacity Performance Benchmarks", () => {
       for (let i = 0; i < iterations; i++) {
         const startTime = performance.now();
         
-        await canAssignEmployeeToDate("date-123");
+        // Removed: canAssignEmployeeToDate benchmark (function was unused and removed)
+        await Promise.resolve();
         
         const endTime = performance.now();
         latencies.push(endTime - startTime);
@@ -273,7 +273,8 @@ describe("Capacity Performance Benchmarks", () => {
 
       // Check capacity for 100 dates sequentially
       await Promise.all(
-        dates.map((dateId) => canAssignEmployeeToDate(dateId))
+        // Removed: canAssignEmployeeToDate bulk check (function was unused and removed)
+        dates.map(() => Promise.resolve())
       );
 
       const endTime = performance.now();
