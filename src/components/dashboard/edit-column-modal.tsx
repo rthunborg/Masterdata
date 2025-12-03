@@ -48,7 +48,7 @@ import {
   updateColumnSchema,
   type UpdateColumnInput,
 } from "@/lib/validation/column-validation";
-import { columnConfigService } from "@/lib/services/column-config-service";
+import { columnService } from "@/lib/services/column-service";
 import { useUIStore } from "@/lib/store/ui-store";
 import { useColumns } from "@/lib/hooks/use-columns";
 
@@ -132,7 +132,7 @@ export function EditColumnModal() {
         category: data.category && data.category.trim() ? data.category : undefined,
       };
 
-      const updatedColumn = await columnConfigService.updateCustomColumn(
+      const updatedColumn = await columnService.updateCustomColumn(
         editColumnId,
         submitData
       );

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { columnConfigService } from "@/lib/services/column-config-service";
+import { columnService } from "@/lib/services/column-service";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useRealtime } from "@/lib/hooks/use-realtime";
 import type { ColumnConfig } from "@/lib/types/column-config";
@@ -28,7 +28,7 @@ export function useColumns(effectiveRole?: UserRole) {
 
     try {
       setIsLoading(true);
-      const allColumns = await columnConfigService.getAll();
+      const allColumns = await columnService.getAll();
 
       // Filter columns by role permissions
       const visibleColumns = allColumns.filter((column) => {

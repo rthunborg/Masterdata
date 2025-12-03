@@ -4,7 +4,9 @@ import type {
   UpdateColumnConfigRequest,
   BulkUpdatePermissionsRequest,
   RolePermissions,
+  CreateCustomColumnInput,
 } from "@/lib/types/column-config";
+import type { UpdateColumnInput } from "@/lib/validation/column-validation";
 
 export interface ColumnListResponse {
   data: ColumnConfig[];
@@ -15,12 +17,91 @@ export interface ColumnResponse {
 }
 
 /**
- * Column Service
- * Frontend service layer for column configuration management
+ * Unified Column Service
+ * 
+ * Consolidates column configuration management for both admin and user operations.
+ * Handles:
+ * - Admin operations: permissions, visibility, reordering, category management
+ * - User operations: custom column CRUD
+ * 
+ * Story 15.2: Service consolidation - merged column-service.ts and column-config-service.ts
  */
 export const columnService = {
+  // ============================================
+  // User Operations (Custom Column CRUD)
+  // ============================================
+
   /**
-   * Get all column configurations with permissions
+   * Fetch all column configurations (user endpoint)
+   * Returns all columns with full permission structure
+   * @returns Array of column configurations
+   */
+  async getAll(): Promise<ColumnConfig[]> {
+    const response = await fetch("/api/columns");
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to fetch column configurations");
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
+
+  /**
+   * Create a new custom column
+   * @param data - Column data including name, type, and optional category
+   * @returns The created column configuration
+   */
+  async createCustomColumn(data: CreateCustomColumnInput): Promise<ColumnConfig> {
+    const response = await fetch("/api/columns", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to create column");
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
+
+  /**
+   * Update an existing custom column
+   * @param id - Column ID to update
+   * @param data - Updated column data (name, category)
+   * @returns The updated column configuration
+   */
+  async updateCustomColumn(id: string, data: UpdateColumnInput): Promise<ColumnConfig> {
+    const response = await fetch(`/api/columns/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to update column");
+    }
+
+    const json = await response.json();
+    return json.data;
+  },
+
+  // ============================================
+  // Admin Operations (Permissions & Management)
+  // ============================================
+
+  /**
+   * Get all column configurations with permissions (admin endpoint)
+   * @returns Array of column configurations
    */
   async getAllColumns(): Promise<ColumnConfig[]> {
     const response = await fetch("/api/admin/columns");
@@ -36,6 +117,9 @@ export const columnService = {
 
   /**
    * Update permissions for a specific column
+   * @param id - Column ID
+   * @param permissions - Permission update request
+   * @returns Updated column configuration
    */
   async updateColumnPermissions(
     id: string,
@@ -62,6 +146,7 @@ export const columnService = {
 
   /**
    * Bulk update permissions for multiple columns/roles
+   * @param request - Bulk update request with column IDs, roles, and permission values
    */
   async bulkUpdatePermissions(
     request: BulkUpdatePermissionsRequest

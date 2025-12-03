@@ -36,7 +36,7 @@ import {
   createCustomColumnSchema,
   type CreateCustomColumnInput,
 } from "@/lib/validation/column-validation";
-import { columnConfigService } from "@/lib/services/column-config-service";
+import { columnService } from "@/lib/services/column-service";
 import { useUIStore } from "@/lib/store/ui-store";
 import { useColumns } from "@/lib/hooks/use-columns";
 import {
@@ -118,7 +118,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
         category_color: data.category_color || undefined,
       };
 
-      const newColumn = await columnConfigService.createCustomColumn(submitData);
+      const newColumn = await columnService.createCustomColumn(submitData);
 
       toast.success(tModals('addColumn.columnCreated', { name: newColumn.column_name }));
 

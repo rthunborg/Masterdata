@@ -13,7 +13,7 @@ stories:
     assigned_to: null
   - id: 15.2
     title: Service Layer Refactoring and Consolidation
-    status: Approved
+    status: done
     assigned_to: null
   - id: 15.3
     title: Type Safety and Linting Improvements

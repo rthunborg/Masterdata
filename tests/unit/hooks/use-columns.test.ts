@@ -1,13 +1,13 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useColumns } from "@/lib/hooks/use-columns";
-import { columnConfigService } from "@/lib/services/column-config-service";
+import { columnService } from "@/lib/services/column-service";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { UserRole } from "@/lib/types/user";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 // Mock dependencies
-vi.mock("@/lib/services/column-config-service");
+vi.mock("@/lib/services/column-service");
 vi.mock("@/lib/hooks/use-auth");
 
 const mockColumnConfigs: ColumnConfig[] = [
@@ -110,7 +110,7 @@ describe("useColumns", () => {
       setLoading: vi.fn(),
     });
 
-    vi.mocked(columnConfigService.getAll).mockResolvedValue(mockColumnConfigs);
+    vi.mocked(columnService.getAll).mockResolvedValue(mockColumnConfigs);
 
     const { result } = renderHook(() => useColumns());
 
@@ -146,7 +146,7 @@ describe("useColumns", () => {
       setLoading: vi.fn(),
     });
 
-    vi.mocked(columnConfigService.getAll).mockResolvedValue(mockColumnConfigs);
+    vi.mocked(columnService.getAll).mockResolvedValue(mockColumnConfigs);
 
     const { result } = renderHook(() => useColumns());
 
@@ -181,7 +181,7 @@ describe("useColumns", () => {
       setLoading: vi.fn(),
     });
 
-    vi.mocked(columnConfigService.getAll).mockResolvedValue(mockColumnConfigs);
+    vi.mocked(columnService.getAll).mockResolvedValue(mockColumnConfigs);
 
     const { result } = renderHook(() => useColumns());
 
@@ -236,7 +236,7 @@ describe("useColumns", () => {
     });
 
     const errorMessage = "Network error";
-    vi.mocked(columnConfigService.getAll).mockRejectedValue(new Error(errorMessage));
+    vi.mocked(columnService.getAll).mockRejectedValue(new Error(errorMessage));
 
     const { result } = renderHook(() => useColumns());
 
@@ -267,7 +267,7 @@ describe("useColumns", () => {
       setLoading: vi.fn(),
     });
 
-    vi.mocked(columnConfigService.getAll).mockImplementation(
+    vi.mocked(columnService.getAll).mockImplementation(
       () => new Promise((resolve) => setTimeout(() => resolve(mockColumnConfigs), 100))
     );
 
