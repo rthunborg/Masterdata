@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import {
   requireHRAdminAPI,
+  requireAuthAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
 import { createEmployeeSchema } from "@/lib/validation/employee-schema";
@@ -19,8 +20,8 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify authentication (all roles can view, but permissions handled by RLS and column config)
+    const user = await requireAuthAPI();
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -28,9 +29,16 @@ export async function GET(request: NextRequest) {
     const includeTerminated = searchParams.get("includeTerminated") === "true";
     const needsRepayment = searchParams.get("needsRepayment") === "true"; // Story 8.13 AC 9
 
+    // External parties cannot view archived employees (enforced by RLS, but also restrict query param)
+    // HR Admin can view archived employees
+    const effectiveIncludeArchived = user.role === "hr_admin" ? includeArchived : false;
+
     // Fetch employees
+    // RLS policies will automatically filter based on user role:
+    // - HR Admin: sees all employees
+    // - External parties: sees only non-archived employees
     const employees = await employeeRepository.findAll({
-      includeArchived,
+      includeArchived: effectiveIncludeArchived,
       includeTerminated,
       needsRepayment, // Story 8.13 AC 9
     });
