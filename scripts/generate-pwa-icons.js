@@ -9,12 +9,15 @@
  * Usage: node scripts/generate-pwa-icons.js
  */
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- Build script using CommonJS
 const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- Build script using CommonJS
 const path = require('path');
 
 // Check if sharp is available
 let sharp;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- Build script using CommonJS
   sharp = require('sharp');
 } catch (e) {
   console.error('Error: sharp package is required. Install it with: pnpm add -D sharp');
@@ -40,7 +43,7 @@ if (!fs.existsSync(LOGO_PATH)) {
 async function generateIcon(size, outputPath, paddingPercent = 0.1) {
   const padding = Math.floor(size * paddingPercent);
   const logoSize = size - (padding * 2);
-  const backgroundColor = '#ffffff'; // White background (iOS requirement: no transparency)
+  // White background (iOS requirement: no transparency)
 
   try {
     await sharp(LOGO_PATH)

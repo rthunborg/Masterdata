@@ -1698,7 +1698,10 @@ export function EmployeeTable({
 
           {/* Search Input and Column Visibility */}
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
+          <div className={cn(
+            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4",
+            !isHRAdmin && "pt-4"
+          )}>
 
             <div className="relative flex-1 max-w-sm w-full">
 
@@ -1917,7 +1920,7 @@ export function EmployeeTable({
 
                           {/* Header content with category label */}
 
-                          <div className="flex flex-col items-center justify-center leading-none pb-4">
+                          <div className="flex flex-col items-center justify-center leading-none gap-0.5">
 
                             {/* Primary header text */}
 

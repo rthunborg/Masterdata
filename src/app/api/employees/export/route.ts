@@ -76,18 +76,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get all important dates for resolving date field UUIDs
-    const supabase = await createClient();
-    const { data: importantDates, error: datesError } = await supabase
-      .from('important_dates')
-      .select('*')
-      .eq('is_active', true);
-
-    if (datesError) {
-      console.error("Error fetching important dates:", datesError);
-    }
-
     // Get custom column data for selected employees
+    const supabase = await createClient();
     const { data: customDataRows, error: customDataError } = await supabase
       .from('custom_data')
       .select('*')
@@ -107,13 +97,7 @@ export async function POST(request: Request) {
 
     // Prepare CSV data with only selected fields
     const csvData = selectedEmployees.map((emp: Employee) => {
-      const row: Record<string, any> = {};
-
-      // Add custom data to employee object for field value extraction
-      const employeeWithCustomData = {
-        ...emp,
-        customData: customDataMap.get(emp.id) || {},
-      };
+      const row: Record<string, string> = {};
 
       fields.forEach((fieldKey) => {
         // Check if this is a masterdata field or custom column
@@ -122,7 +106,7 @@ export async function POST(request: Request) {
 
         // Try to get value from employee object first (masterdata)
         if (fieldKey in emp) {
-          const value = (emp as any)[fieldKey];
+          const value = emp[fieldKey as keyof Employee];
           // Format the value appropriately
           if (value === null || value === undefined) {
             row[fieldKey] = '';

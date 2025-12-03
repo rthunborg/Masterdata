@@ -14,20 +14,19 @@ export const t = translations;
 // Returns a stable function reference to avoid causing re-renders
 export function useTranslations(namespace: keyof typeof translations) {
   return useMemo(() => {
-    return (key: string, params?: Record<string, string | number>) => {
+    return (key: string, params?: Record<string, string | number>): string => {
       const keys = key.split('.');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let value: any = translations[namespace];
+      let value: unknown = translations[namespace];
       
       for (const k of keys) {
-        if (value && typeof value === 'object') {
-          value = value[k];
+        if (value && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          value = (value as Record<string, unknown>)[k];
         } else {
           return key; // Return key if translation not found
         }
       }
       
-      let result = value || key;
+      let result: string = typeof value === 'string' ? value : key;
       
       // Handle parameter substitution like {name}, {email}, etc.
       if (params && typeof result === 'string') {

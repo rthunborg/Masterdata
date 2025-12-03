@@ -91,8 +91,8 @@ export function PerformanceTracker() {
     try {
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            const layoutShift = entry as LayoutShift;
+          const layoutShift = entry as LayoutShift;
+          if (!('hadRecentInput' in layoutShift) || !layoutShift.hadRecentInput) {
             metrics.cls = (metrics.cls || 0) + layoutShift.value;
           }
         }
@@ -105,7 +105,7 @@ export function PerformanceTracker() {
     // Track Time to Interactive (TTI)
     // TTI is more complex - we approximate it as when the page is fully loaded
     // and the main thread is idle for 5 seconds
-    let ttiStartTime = performance.now();
+    const ttiStartTime = performance.now();
     let ttiIdleStart: number | null = null;
     const TTI_IDLE_THRESHOLD = 5000; // 5 seconds of idle time
 
@@ -113,18 +113,17 @@ export function PerformanceTracker() {
     const requestIdleCallbackPolyfill = (
       callback: (deadline: { timeRemaining: () => number; didTimeout: boolean }) => void,
       options?: { timeout?: number }
-    ) => {
+    ): number => {
       if ('requestIdleCallback' in window) {
         return window.requestIdleCallback(callback, options);
       } else {
         // Fallback: use setTimeout
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (setTimeout as any)(() => {
+        return Number(setTimeout(() => {
           callback({
             timeRemaining: () => 0,
             didTimeout: false,
           });
-        }, options?.timeout || 1);
+        }, options?.timeout || 1));
       }
     };
 

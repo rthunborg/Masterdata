@@ -17,7 +17,7 @@ stories:
     assigned_to: null
   - id: 15.3
     title: Type Safety and Linting Improvements
-    status: Approved
+    status: in-progress
     assigned_to: null
   - id: 15.4
     title: Dependency Analysis and Cleanup

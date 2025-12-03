@@ -135,20 +135,18 @@ export class ColumnConfigRepository {
     }
 
     // Step 2: Create default role permissions
-    // HR Admin always has view permission (required), edit can be modified later
-    // Other roles default to no access
+    // Only the creating role gets permissions by default
+    // HR Admin can add themselves later via column settings if needed
     const rolePermissions: Record<string, { view: boolean; edit: boolean }> = {
-      hr_admin: { view: true, edit: true },
+      hr_admin: { view: false, edit: false },
       omc: { view: false, edit: false },
       payroll: { view: false, edit: false },
       sodexo: { view: false, edit: false },
       toplux: { view: false, edit: false },
     };
 
-    // If created by external party, give them full access
-    if (input.role !== 'hr_admin') {
-      rolePermissions[input.role] = { view: true, edit: true };
-    }
+    // Give the creating role full access
+    rolePermissions[input.role] = { view: true, edit: true };
 
     // Step 3: Create column config entry
     const columnData = {

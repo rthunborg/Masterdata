@@ -516,8 +516,9 @@ export function useEmployees({
     if (employeeToUpdate) {
       Object.keys(updates).forEach(key => {
         const fieldKey = key as keyof Employee;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (previousValues as any)[fieldKey] = employeeToUpdate[fieldKey];
+        const value = employeeToUpdate[fieldKey];
+        // Type assertion needed because Partial<Employee> doesn't allow all value types directly
+        (previousValues as Record<string, unknown>)[fieldKey] = value;
       });
     }
 
@@ -525,7 +526,7 @@ export function useEmployees({
     recentOptimisticUpdatesRef.current.set(id, {
       timestamp: Date.now(),
       updates,
-      previousValues
+      previousValues: previousValues as Partial<Employee>
     });
     // Clear after 5 seconds (enough time for server to process and real-time sync to catch up)
     setTimeout(() => {
@@ -554,8 +555,12 @@ export function useEmployees({
             const reverted = { ...emp };
             Object.keys(updates).forEach(key => {
               const fieldKey = key as keyof Employee;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (reverted as any)[fieldKey] = previousValues[fieldKey];
+              if (fieldKey in previousValues) {
+                const previousValue = (previousValues as Record<string, unknown>)[fieldKey];
+                if (previousValue !== undefined) {
+                  (reverted as Record<string, unknown>)[fieldKey] = previousValue;
+                }
+              }
             });
             return reverted;
           }

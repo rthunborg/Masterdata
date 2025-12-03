@@ -78,6 +78,10 @@ export async function middleware(request: NextRequest) {
         .select('id, last_active_at')
         .eq('auth_user_id', user.id)
         .single();
+      
+      if (fetchError) {
+        console.error('Error fetching user activity:', fetchError);
+      }
 
       // Update activity asynchronously (fire-and-forget pattern)
       if (appUser && shouldUpdateActivity(appUser.last_active_at)) {

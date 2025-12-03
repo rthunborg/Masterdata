@@ -264,7 +264,7 @@ export default function DashboardPage() {
                 <TooltipTrigger asChild>
                   <Button onClick={() => openModal("addColumn")} variant="outline" className="w-full sm:w-auto">
                     <Columns className="h-4 w-4 mr-2" />
-                    {tCommon('add')} {tCommon('filter')}
+                    {t('addColumn')}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>

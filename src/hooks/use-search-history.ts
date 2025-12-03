@@ -10,21 +10,19 @@ const MAX_HISTORY_ITEMS = 5;
  * Story 12.6: AC 5 - Search history (last 5 searches)
  */
 export function useSearchHistory() {
-  const [history, setHistory] = useState<string[]>([]);
-
-  // Load history from localStorage on mount
-  useEffect(() => {
+  // Lazy initialization to avoid setState in effect
+  const [history, setHistory] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(SEARCH_HISTORY_KEY);
       if (stored) {
         const parsed = JSON.parse(stored) as string[];
-        setHistory(Array.isArray(parsed) ? parsed : []);
+        return Array.isArray(parsed) ? parsed : [];
       }
     } catch (error) {
       console.warn('Failed to load search history:', error);
-      setHistory([]);
     }
-  }, []);
+    return [];
+  });
 
   // Save search term to history
   const addToHistory = useCallback((searchTerm: string) => {

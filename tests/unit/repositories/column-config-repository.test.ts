@@ -260,7 +260,11 @@ describe("ColumnConfigRepository", () => {
         column_type: "text",
         is_masterdata: false,
         role_permissions: {
+          hr_admin: { view: false, edit: false },
           sodexo: { view: true, edit: true },
+          omc: { view: false, edit: false },
+          payroll: { view: false, edit: false },
+          toplux: { view: false, edit: false },
         },
         category: "Recruitment",
         display_order: 0,
@@ -295,10 +299,166 @@ describe("ColumnConfigRepository", () => {
 
       expect(result).toEqual(newColumn);
       expect(result.is_masterdata).toBe(false);
-      expect(result.role_permissions).toEqual({
-        sodexo: { view: true, edit: true },
-      });
+      // Verify only Sodexo has permissions (HR Admin should not have permissions by default)
+      expect(result.role_permissions.sodexo).toEqual({ view: true, edit: true });
+      expect(result.role_permissions.hr_admin).toEqual({ view: false, edit: false });
       expect(mockClient.insert).toHaveBeenCalled();
+    });
+
+    it("should create column with only creating role permissions (not HR Admin by default)", async () => {
+      const newColumn: ColumnConfig = {
+        id: "col-new",
+        column_name: "Sodexo Team",
+        column_type: "text",
+        is_masterdata: false,
+        role_permissions: {
+          hr_admin: { view: false, edit: false },
+          sodexo: { view: true, edit: true },
+          omc: { view: false, edit: false },
+          payroll: { view: false, edit: false },
+          toplux: { view: false, edit: false },
+        },
+        category: null,
+        display_order: 0,
+        is_visible: true,
+        db_column_name: "sodexo_team",
+        category_color: null,
+        created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
+      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: [], error: null })
+          }),
+        insert: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: newColumn, error: null }),
+        rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      const result = await repository.createCustomColumn({
+        column_name: "Sodexo Team",
+        column_type: "text",
+        role: UserRole.SODEXO,
+        db_column_name: "sodexo_team",
+        is_masterdata: false,
+      });
+
+      // Verify HR Admin does NOT have permissions by default
+      expect(result.role_permissions.hr_admin).toEqual({ view: false, edit: false });
+      // Verify only creating role (Sodexo) has permissions
+      expect(result.role_permissions.sodexo).toEqual({ view: true, edit: true });
+      // Verify other roles have no permissions
+      expect(result.role_permissions.omc).toEqual({ view: false, edit: false });
+      expect(result.role_permissions.payroll).toEqual({ view: false, edit: false });
+      expect(result.role_permissions.toplux).toEqual({ view: false, edit: false });
+    });
+
+    it("should create column with only ÖMC permissions when created by ÖMC user", async () => {
+      const newColumn: ColumnConfig = {
+        id: "col-new",
+        column_name: "ÖMC Column",
+        column_type: "text",
+        is_masterdata: false,
+        role_permissions: {
+          hr_admin: { view: false, edit: false },
+          sodexo: { view: false, edit: false },
+          omc: { view: true, edit: true },
+          payroll: { view: false, edit: false },
+          toplux: { view: false, edit: false },
+        },
+        category: null,
+        display_order: 0,
+        is_visible: true,
+        db_column_name: "omc_column",
+        category_color: null,
+        created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
+      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: [], error: null })
+          }),
+        insert: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: newColumn, error: null }),
+        rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      const result = await repository.createCustomColumn({
+        column_name: "ÖMC Column",
+        column_type: "text",
+        role: UserRole.OMC,
+        db_column_name: "omc_column",
+        is_masterdata: false,
+      });
+
+      // Verify HR Admin does NOT have permissions
+      expect(result.role_permissions.hr_admin).toEqual({ view: false, edit: false });
+      // Verify only ÖMC has permissions
+      expect(result.role_permissions.omc).toEqual({ view: true, edit: true });
+      // Verify other roles have no permissions
+      expect(result.role_permissions.sodexo).toEqual({ view: false, edit: false });
+    });
+
+    it("should create column with HR Admin permissions when created by HR Admin", async () => {
+      const newColumn: ColumnConfig = {
+        id: "col-new",
+        column_name: "HR Column",
+        column_type: "text",
+        is_masterdata: true,
+        role_permissions: {
+          hr_admin: { view: true, edit: true },
+          sodexo: { view: false, edit: false },
+          omc: { view: false, edit: false },
+          payroll: { view: false, edit: false },
+          toplux: { view: false, edit: false },
+        },
+        category: null,
+        display_order: 0,
+        is_visible: true,
+        db_column_name: "hr_column",
+        category_color: null,
+        created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",
+      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: [], error: null })
+          }),
+        insert: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: newColumn, error: null }),
+        rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      const result = await repository.createCustomColumn({
+        column_name: "HR Column",
+        column_type: "text",
+        role: UserRole.HR_ADMIN,
+        db_column_name: "hr_column",
+        is_masterdata: true,
+      });
+
+      // When HR Admin creates, they should have permissions
+      expect(result.role_permissions.hr_admin).toEqual({ view: true, edit: true });
+      // Other roles should not have permissions
+      expect(result.role_permissions.sodexo).toEqual({ view: false, edit: false });
     });
 
     it("should throw error when duplicate column name exists", async () => {
@@ -308,7 +468,11 @@ describe("ColumnConfigRepository", () => {
         column_type: "text",
         is_masterdata: false,
         role_permissions: {
+          hr_admin: { view: false, edit: false },
           sodexo: { view: true, edit: true },
+          omc: { view: false, edit: false },
+          payroll: { view: false, edit: false },
+          toplux: { view: false, edit: false },
         },
         category: null,
         display_order: 0,

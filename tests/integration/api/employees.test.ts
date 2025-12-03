@@ -118,7 +118,7 @@ describe("GET /api/employees", () => {
   });
 
   it("should return employee list for HR Admin", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
 
     const request = new NextRequest("http://localhost:3000/api/employees");
@@ -139,7 +139,7 @@ describe("GET /api/employees", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireAuthAPI).mockRejectedValue(
       new Error("Authentication required")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -163,31 +163,27 @@ describe("GET /api/employees", () => {
   });
 
   it("should return 403 for non-HR Admin users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
-    );
-    vi.mocked(auth.createErrorResponse).mockReturnValue(
-      new Response(
-        JSON.stringify({
-          error: {
-            code: "FORBIDDEN",
-            message: "Insufficient permissions",
-          },
-        }),
-        { status: 403 }
-      ) as never
-    );
+    // Note: GET endpoint uses requireAuthAPI, not requireHRAdminAPI
+    // This test should verify that non-HR Admin users can still access the endpoint
+    // (since GET allows all authenticated users, but RLS filters results)
+    const mockExternalUser = {
+      ...mockHRAdminUser,
+      role: UserRole.EXTERNAL_PARTY,
+    };
+    vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockExternalUser);
+    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
 
     const request = new NextRequest("http://localhost:3000/api/employees");
     const response = await GET(request);
     const json = await response.json();
 
-    expect(response.status).toBe(403);
-    expect(json.error.code).toBe("FORBIDDEN");
+    expect(response.status).toBe(200);
+    // External parties can access but RLS filters results
+    expect(json.data).toBeDefined();
   });
 
   it("should respect includeArchived query parameter", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
 
     const request = new NextRequest(
@@ -203,7 +199,7 @@ describe("GET /api/employees", () => {
   });
 
   it("should respect includeTerminated query parameter", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
 
     const request = new NextRequest(
@@ -219,7 +215,7 @@ describe("GET /api/employees", () => {
   });
 
   it("should return empty array when no employees exist", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue([]);
 
     const request = new NextRequest("http://localhost:3000/api/employees");

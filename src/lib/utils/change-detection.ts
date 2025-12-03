@@ -14,7 +14,7 @@ import type { ViewState, NotificationMetadata, FilterState } from "@/lib/types/n
  * @param current - The current/new value
  * @returns true if the value has changed, false otherwise
  */
-export function hasValueChanged(original: any, current: any): boolean {
+export function hasValueChanged(original: unknown, current: unknown): boolean {
   // Handle null/undefined cases - treat them as different values
   if (original === null && current === undefined) return true;
   if (original === undefined && current === null) return true;

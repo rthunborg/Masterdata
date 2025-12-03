@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 /**
  * Add Column Modal Component
@@ -61,11 +62,14 @@ import { cn } from "@/lib/utils";
 export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => void }) {
   const { modals, closeModal } = useUIStore();
   const { columns, refetch } = useColumns();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   
   const tModals = useTranslations('modals');
   const tCommon = useTranslations('common');
+  
+  const isHRAdmin = user?.role === "hr_admin";
 
   // Extract existing categories from columns with their colors
   const existingCategories = Array.from(
@@ -82,11 +86,18 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
       column_name: "",
       db_column_name: "",
       column_type: "text",
-      is_masterdata: false, // Default to External column
+      is_masterdata: false, // Default to External column (always false for non-HR Admin)
       category: "",
       category_color: null,
     },
   });
+  
+  // Ensure is_masterdata is always false for non-HR Admin users
+  useEffect(() => {
+    if (!isHRAdmin) {
+      form.setValue('is_masterdata', false);
+    }
+  }, [isHRAdmin, form]);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -112,8 +123,10 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
       setIsSubmitting(true);
 
       // Remove category if empty string
+      // Ensure is_masterdata is false for non-HR Admin users
       const submitData = {
         ...data,
+        is_masterdata: isHRAdmin ? data.is_masterdata : false, // Force false for non-HR Admin
         category: data.category && data.category.trim() ? data.category : undefined,
         category_color: data.category_color || undefined,
       };
@@ -198,45 +211,47 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
               )}
             />
 
-            {/* Column Category Selection (is_masterdata) */}
-            <FormField
-              control={form.control}
-              name="is_masterdata"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>{tModals('addColumn.columnTypeSelectionLabel')}</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={(value) => field.onChange(value === "true")}
-                      value={field.value ? "true" : "false"}
-                      className="flex flex-col space-y-1"
-                      disabled={isSubmitting}
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="false" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          {tModals('addColumn.columnTypeExternal')}
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="true" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">
-                          {tModals('addColumn.columnTypeMasterdata')}
-                        </FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormDescription className="text-xs text-muted-foreground">
-                    {tModals('addColumn.columnTypeSelectionDescription')}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Column Category Selection (is_masterdata) - Only show for HR Admin */}
+            {isHRAdmin && (
+              <FormField
+                control={form.control}
+                name="is_masterdata"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>{tModals('addColumn.columnTypeSelectionLabel')}</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={(value) => field.onChange(value === "true")}
+                        value={field.value ? "true" : "false"}
+                        className="flex flex-col space-y-1"
+                        disabled={isSubmitting}
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="false" />
+                          </FormControl>
+                          <FormLabel className="font-normal cursor-pointer">
+                            {tModals('addColumn.columnTypeExternal')}
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="true" />
+                          </FormControl>
+                          <FormLabel className="font-normal cursor-pointer">
+                            {tModals('addColumn.columnTypeMasterdata')}
+                          </FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormDescription className="text-xs text-muted-foreground">
+                      {tModals('addColumn.columnTypeSelectionDescription')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Column Type */}
             <FormField

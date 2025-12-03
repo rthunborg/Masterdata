@@ -143,7 +143,7 @@ export async function DELETE(
 ) {
   try {
     // Enforce HR Admin role
-    const user = await requireHRAdminAPI();
+    await requireHRAdminAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id: columnId } = await params;
@@ -181,8 +181,6 @@ export async function DELETE(
         { status: 403 }
       );
     }
-
-    const columnName = column.column_name;
 
     // Delete column definition from column_config
     // Note: This only removes the UI/config definition
