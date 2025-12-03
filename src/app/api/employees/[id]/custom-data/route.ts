@@ -80,7 +80,7 @@ export async function PATCH(
             error: {
               code: "VALIDATION_ERROR",
               message: "Invalid custom data format",
-              details: validationError.errors.reduce((acc, err) => {
+              details: validationError.issues.reduce((acc, err) => {
                 const field = err.path.join(".");
                 if (!acc[field]) acc[field] = [];
                 acc[field].push(err.message);

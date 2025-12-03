@@ -17,11 +17,11 @@ stories:
     assigned_to: null
   - id: 15.3
     title: Type Safety and Linting Improvements
-    status: in-progress
+    status: done
     assigned_to: null
   - id: 15.4
     title: Dependency Analysis and Cleanup
-    status: Approved
+    status: done
     assigned_to: null
   - id: 15.5
     title: Test Suite Optimization and Cleanup

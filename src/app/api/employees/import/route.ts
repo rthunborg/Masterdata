@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
         validEmployees.push(employeeData);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          const errorMessages = error.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join(", ");
+          const errorMessages = error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join(", ");
           validationErrors.push({
             row: rowNumber,
             error: errorMessages,

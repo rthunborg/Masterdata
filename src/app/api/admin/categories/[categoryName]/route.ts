@@ -89,7 +89,7 @@ export async function PATCH(
         {
           error: {
             code: "VALIDATION_ERROR",
-            message: error.errors[0]?.message || "Invalid input data",
+            message: error.issues[0]?.message || "Invalid input data",
           },
         },
         { status: 400 }

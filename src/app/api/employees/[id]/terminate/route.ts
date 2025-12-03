@@ -52,7 +52,7 @@ export async function POST(
           error: {
             code: "VALIDATION_ERROR",
             message: "Termination date and reason are required",
-            details: error.errors.reduce((acc, err) => {
+            details: error.issues.reduce((acc, err) => {
               acc[err.path.join(".")] = err.message;
               return acc;
             }, {} as Record<string, string>),
