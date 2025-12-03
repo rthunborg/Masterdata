@@ -58,7 +58,7 @@ export const createCustomColumnSchema = z.object({
   column_type: z.enum(["text", "number", "date", "boolean"], {
     errorMap: () => ({ message: "Invalid column type" }),
   }),
-  is_masterdata: z.boolean().default(false),
+  is_masterdata: z.boolean(),
   category: z.string().max(100).optional(),
   category_color: z
     .string()

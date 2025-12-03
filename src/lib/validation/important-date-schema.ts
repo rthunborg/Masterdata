@@ -5,19 +5,19 @@ import { validateDeadlines } from "@/lib/utils/deadline-validator";
 import { getDefaultMaxCapacity } from "@/lib/services/date-capacity";
 
 export const createImportantDateSchema = z.object({
-  week_number: z.number().int().min(1).max(53).nullable().default(null),
+  week_number: z.number().int().min(1).max(53).nullable(),
   year: z.number().int().min(2020).max(2100),
   category: z.enum(["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]),
-  date_description: z.string().optional().default(""),
+  date_description: z.string(),
   date_value: z.string().min(1, "Date value is required"),
   time_value: z.string().nullable().optional(),
   deadline_submit: z.string().nullable().optional(),
   deadline_cancel: z.string().nullable().optional(),
-  notes: z.string().nullable().default(null),
+  notes: z.string().nullable(),
   // Story 8.7: Capacity management fields (0 means unlimited/not tracked)
   // Defaults are set based on category in the transform below
-  max_spots: z.number().int().min(0).optional(),
-  remaining_spots: z.number().int().min(0).optional(),
+  max_spots: z.number().int().min(0),
+  remaining_spots: z.number().int().min(0),
 })
 .transform((data) => {
   // Set default max_spots and remaining_spots based on category if not provided

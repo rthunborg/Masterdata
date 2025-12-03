@@ -64,17 +64,16 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
       .optional()
       .nullable()
       .or(z.literal("")),
-    mobile: z.string().nullable().default(null),
+    mobile: z.string().nullable(),
     rank: z.enum(["SEV", "CHEF"], {
       errorMap: () => ({ message: msg('rankInvalid') })
-    }).nullable().default(null),
+    }).nullable(),
     gender: z
       .enum(["Man", "Woman"], {
         errorMap: () => ({ message: msg('genderInvalid') })
       })
-      .nullable()
-      .default(null),
-    town_district: z.string().nullable().default(null),
+      .nullable(),
+    town_district: z.string().nullable(),
     hire_date: z
       .string()
       .min(1, msg('hireDateRequired'))
@@ -93,47 +92,46 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
         today.setUTCHours(0, 0, 0, 0);
         return parsed <= today;
       }, msg('hireDateFuture')),
-    stena_date: z.string().nullable().default(null),
-    omc_date: z.string().nullable().default(null),
-    pe3_date: z.string().nullable().default(null),
-    comments: z.string().nullable().default(null),
+    stena_date: z.string().transform(val => val === "" ? null : val).nullable(),
+    omc_date: z.string().transform(val => val === "" ? null : val).nullable(),
+    pe3_date: z.string().nullable(),
+    comments: z.string().nullable(),
     // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
     // All boolean fields default to false and are not nullable
     // Accept null values and transform them to false for backward compatibility
-    one: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    one_marked_at: z.string().datetime().nullable().default(null), // Story 8.3: Timestamp when One field was set to true
-    talmundo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false), // Story 8.4: Talmundo completion (editable only when One is green)
-    isps: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    photo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    origo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+    one: z.boolean(),
+    one_marked_at: z.string().datetime().nullable().optional(), // Story 8.3: Timestamp when One field was set to true
+    talmundo: z.boolean(), // Story 8.4: Talmundo completion (editable only when One is green)
+    isps: z.boolean(),
+    photo: z.boolean(),
+    origo: z.boolean(),
     loneiva: z
       .number()
       .int('Lönenivå must be a whole number')
       .min(0, 'Lönenivå must be at least 0')
       .max(7, 'Lönenivå must be at most 7')
-      .nullable()
-      .default(null),
-    mail_lon: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    bankuppgifter: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    li: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    passport: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    kvitto_c17_18: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    c17: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    crewing_done: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+      .nullable(),
+    mail_lon: z.boolean(),
+    bankuppgifter: z.boolean(),
+    li: z.boolean(),
+    passport: z.boolean(),
+    kvitto_c17_18: z.boolean(),
+    c17: z.boolean(),
+    crewing_done: z.boolean(),
     // Story 8.20: ÖMC Room Assignment fields
-    hotel_required: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-    room_number_shared: z.number().int().nullable().default(null),
+    hotel_required: z.boolean(),
+    room_number_shared: z.number().int().nullable().optional(),
     // System-managed fields with defaults
-    is_terminated: z.boolean().default(false),
-    is_archived: z.boolean().default(false),
-    termination_date: z.string().nullable().default(null),
-    termination_reason: z.string().nullable().default(null),
+    is_terminated: z.boolean(),
+    is_archived: z.boolean(),
+    termination_date: z.string().nullable().optional(),
+    termination_reason: z.string().nullable().optional(),
 
     // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
-    repayment_needed_omc: z.string().nullable().default(null),
-    repayment_needed_pe3: z.string().nullable().default(null),
+    repayment_needed_omc: z.string().nullable().optional(),
+    repayment_needed_pe3: z.string().nullable().optional(),
     // Story 14.1: ÖMC Masterdata Reminder Notification
-    omc_masterdata_reminder_sent_at: z.string().datetime().nullable().default(null),
+    omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
   });
 }
 
@@ -160,17 +158,16 @@ const baseEmployeeSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("")),
-  mobile: z.string().nullable().default(null),
+  mobile: z.string().nullable(),
   rank: z.enum(["SEV", "CHEF"], {
     errorMap: () => ({ message: "Rank must be SEV or CHEF" })
-  }).nullable().default(null),
+  }).nullable(),
   gender: z
     .enum(["Man", "Woman"], {
       errorMap: () => ({ message: "Gender must be Man or Woman" })
     })
-    .nullable()
-    .default(null),
-  town_district: z.string().nullable().default(null),
+    .nullable(),
+  town_district: z.string().nullable(),
   hire_date: z
     .string()
     .min(1, "Hire date is required")
@@ -189,47 +186,46 @@ const baseEmployeeSchema = z.object({
       today.setUTCHours(0, 0, 0, 0);
       return parsed <= today;
     }, "Hire date cannot be in the future"),
-  stena_date: z.string().nullable().default(null),
-  omc_date: z.string().nullable().default(null),
-  pe3_date: z.string().nullable().default(null),
-  comments: z.string().nullable().default(null),
+  stena_date: z.string().transform(val => val === "" ? null : val).nullable(),
+  omc_date: z.string().transform(val => val === "" ? null : val).nullable(),
+  pe3_date: z.string().nullable(),
+  comments: z.string().nullable(),
   // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
   // All boolean fields default to false and are not nullable
   // Accept null values and transform them to false for backward compatibility
-  one: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  one_marked_at: z.string().datetime().nullable().default(null), // Story 8.3: Timestamp when One field was set to true
-  talmundo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false), // Story 8.4: Talmundo completion (editable only when One is green)
-  isps: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  photo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  origo: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
+  one: z.union([z.boolean(), z.null()]).transform(val => val ?? false).pipe(z.boolean()),
+    one_marked_at: z.string().datetime().nullable().optional(), // Story 8.3: Timestamp when One field was set to true
+    talmundo: z.boolean(), // Story 8.4: Talmundo completion (editable only when One is green)
+    isps: z.boolean(),
+    photo: z.boolean(),
+    origo: z.boolean(),
   loneiva: z
     .number()
     .int('Lönenivå must be a whole number')
     .min(0, 'Lönenivå must be at least 0')
     .max(7, 'Lönenivå must be at most 7')
-    .nullable()
-    .default(null),
-  mail_lon: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  bankuppgifter: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  li: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  passport: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  kvitto_c17_18: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  c17: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  crewing_done: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  // Story 8.20: ÖMC Room Assignment fields
-  hotel_required: z.union([z.boolean(), z.null()]).transform(val => val ?? false).default(false),
-  room_number_shared: z.number().int().nullable().default(null),
-  // System-managed fields with defaults
-  is_terminated: z.boolean().default(false),
-  is_archived: z.boolean().default(false),
-  termination_date: z.string().nullable().default(null),
-  termination_reason: z.string().nullable().default(null),
+    .nullable(),
+    mail_lon: z.boolean(),
+    bankuppgifter: z.boolean(),
+    li: z.boolean(),
+    passport: z.boolean(),
+    kvitto_c17_18: z.boolean(),
+    c17: z.boolean(),
+    crewing_done: z.boolean(),
+    // Story 8.20: ÖMC Room Assignment fields
+    hotel_required: z.boolean(),
+  room_number_shared: z.number().int().nullable().optional(),
+    // System-managed fields with defaults
+    is_terminated: z.boolean(),
+    is_archived: z.boolean(),
+  termination_date: z.string().nullable().optional(),
+  termination_reason: z.string().nullable().optional(),
 
   // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
-  repayment_needed_omc: z.string().nullable().default(null),
-  repayment_needed_pe3: z.string().nullable().default(null),
+  repayment_needed_omc: z.string().nullable().optional(),
+  repayment_needed_pe3: z.string().nullable().optional(),
   // Story 14.1: ÖMC Masterdata Reminder Notification
-  omc_masterdata_reminder_sent_at: z.string().datetime().nullable().default(null),
+  omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
 });
 
 /**

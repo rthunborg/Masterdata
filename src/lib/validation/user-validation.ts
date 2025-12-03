@@ -13,7 +13,7 @@ export const createUserSchema = z.object({
   ], { 
     errorMap: () => ({ message: "Invalid role" }) 
   }),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean(),
 });
 
 export const updateUserSchema = z.object({

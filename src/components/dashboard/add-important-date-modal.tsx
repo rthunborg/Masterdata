@@ -72,6 +72,8 @@ export function AddImportantDateModal({
       deadline_submit: null,
       deadline_cancel: null,
       notes: null,
+      max_spots: 0, // Will be set by schema transform based on category
+      remaining_spots: 0, // Will be set by schema transform based on category
     },
   });
 

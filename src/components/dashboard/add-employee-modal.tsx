@@ -114,6 +114,12 @@ export function AddEmployeeModal({
       is_archived: false,
       termination_date: null,
       termination_reason: null,
+      loneiva: null,
+      room_number_shared: null,
+      one_marked_at: null,
+      repayment_needed_omc: null,
+      repayment_needed_pe3: null,
+      omc_masterdata_reminder_sent_at: null,
     },
   });
 
@@ -132,6 +138,12 @@ export function AddEmployeeModal({
       const normalizedData = {
         ...data,
         email: data.email ?? null,
+        repayment_needed_omc: data.repayment_needed_omc ?? null,
+        repayment_needed_pe3: data.repayment_needed_pe3 ?? null,
+        termination_date: data.termination_date ?? null,
+        termination_reason: data.termination_reason ?? null,
+        room_number_shared: data.room_number_shared ?? null,
+        one_marked_at: data.one_marked_at ?? null,
       };
       
       await employeeService.create(normalizedData);
