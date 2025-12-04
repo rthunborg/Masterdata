@@ -65,10 +65,15 @@ describe('POST /api/important-dates - ÖMC Date Validation', () => {
         category: 'ÖMC Dates',
         date_description: 'Test ÖMC Date',
         date_value: '8-9/3',
+        notes: null,
       }),
     });
 
     const response = await POST(request);
+    if (response.status !== 201) {
+      const json = await response.json();
+      console.error("Validation error:", JSON.stringify(json, null, 2));
+    }
     expect(response.status).toBe(201);
   });
 
@@ -81,6 +86,7 @@ describe('POST /api/important-dates - ÖMC Date Validation', () => {
         category: 'ÖMC Dates',
         date_description: 'Test ÖMC Date',
         date_value: '8-10/3', // Non-consecutive (invalid)
+        notes: null,
       }),
     });
 
@@ -101,6 +107,7 @@ describe('POST /api/important-dates - ÖMC Date Validation', () => {
         category: 'ÖMC Dates',
         date_description: 'Test ÖMC Date',
         date_value: '8 mars', // Single day (invalid)
+        notes: null,
       }),
     });
 
@@ -213,8 +220,29 @@ describe('POST /api/employees - ÖMC Date Validation', () => {
       body: JSON.stringify({
         first_name: 'Test',
         surname: 'User',
+        ssn: '19900101-1234',
+        email: 'test@example.com',
+        hire_date: '2020-01-01',
+        rank: 'SEV',
         omc_date: '2025-03-08', // Valid ISO format
-        // ... other required fields
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
+        one: false,
+        talmundo: false,
+        isps: false,
+        photo: false,
+        origo: false,
+        mail_lon: false,
+        bankuppgifter: false,
+        li: false,
+        passport: false,
+        kvitto_c17_18: false,
+        c17: false,
+        crewing_done: false,
+        hotel_required: false,
+        is_terminated: false,
+        is_archived: false,
+        loneiva: null,
       }),
     });
 
@@ -249,6 +277,7 @@ describe('Error Messages in Swedish', () => {
         category: 'ÖMC Dates',
         date_description: 'Test ÖMC Date',
         date_value: '8 mars', // Invalid (single day)
+        notes: null,
       }),
     });
 

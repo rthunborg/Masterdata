@@ -16,8 +16,8 @@ export const createImportantDateSchema = z.object({
   notes: z.string().nullable(),
   // Story 8.7: Capacity management fields (0 means unlimited/not tracked)
   // Defaults are set based on category in the transform below
-  max_spots: z.number().int().min(0),
-  remaining_spots: z.number().int().min(0),
+  max_spots: z.number().int().min(0).optional(),
+  remaining_spots: z.number().int().min(0).optional(),
 })
 .transform((data) => {
   // Set default max_spots and remaining_spots based on category if not provided
@@ -46,38 +46,52 @@ export const createImportantDateSchema = z.object({
   (data) => {
     // PE3 dates require time field
     if (data.category === 'PE3 Dates') {
-      if (!data.time_value || data.time_value.trim() === '') {
+      if (!data.time_value || (typeof data.time_value === 'string' && data.time_value.trim() === '')) {
         return false;
       }
-      const result = validateTimeFormat(data.time_value);
-      return result.valid;
+      if (data.time_value) {
+        const result = validateTimeFormat(data.time_value);
+        return result.valid;
+      }
+      return false;
     }
     // For other categories, validate time format if provided
-    if (data.time_value && data.time_value.trim() !== '') {
+    if (data.time_value && typeof data.time_value === 'string' && data.time_value.trim() !== '') {
       const result = validateTimeFormat(data.time_value);
       return result.valid;
     }
     return true;
   },
   (data) => {
+    // Error callback is only called when validation fails
     // PE3 dates require time
     if (data.category === 'PE3 Dates') {
-      if (!data.time_value || data.time_value.trim() === '') {
+      // Check if time_value is missing or empty
+      if (data.time_value === null || data.time_value === undefined || 
+          (typeof data.time_value === 'string' && data.time_value.trim() === '')) {
         return {
           message: 'Time is required for PE3 dates',
           path: ['time_value'],
         };
       }
-      const result = validateTimeFormat(data.time_value);
-      if (!result.valid) {
-        return {
-          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-          path: ['time_value'],
-        };
+      // If time_value is provided, validate format
+      if (data.time_value && typeof data.time_value === 'string') {
+        const result = validateTimeFormat(data.time_value);
+        if (!result.valid) {
+          return {
+            message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+            path: ['time_value'],
+          };
+        }
       }
+      // Fallback for PE3 dates (shouldn't reach here)
+      return {
+        message: 'Time is required for PE3 dates',
+        path: ['time_value'],
+      };
     }
     // For other categories, validate format if provided
-    if (data.time_value && data.time_value.trim() !== '') {
+    if (data.time_value && typeof data.time_value === 'string' && data.time_value.trim() !== '') {
       const result = validateTimeFormat(data.time_value);
       if (!result.valid) {
         return {
@@ -86,8 +100,9 @@ export const createImportantDateSchema = z.object({
         };
       }
     }
+    // Fallback error (shouldn't reach here if validation logic is correct)
     return {
-      message: '',
+      message: 'Invalid time value',
       path: ['time_value'],
     };
   }

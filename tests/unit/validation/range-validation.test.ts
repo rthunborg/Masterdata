@@ -6,20 +6,14 @@
 
 import { describe, it, expect } from 'vitest';
 import { createEmployeeSchemaWithMessages } from '@/lib/validation/employee-schema';
+import { createMinimalEmployee } from '@/../tests/helpers/validation-test-helpers';
 
 describe('Range Validation - Lönenivå (loneiva)', () => {
   const schema = createEmployeeSchemaWithMessages();
 
   describe('valid lönenivå range values', () => {
     it('should accept 0 (minimum)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: 0,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: 0 }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.loneiva).toBe(0);
@@ -27,14 +21,7 @@ describe('Range Validation - Lönenivå (loneiva)', () => {
     });
 
     it('should accept 7 (maximum)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: 7,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: 7 }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.loneiva).toBe(7);
@@ -42,14 +29,7 @@ describe('Range Validation - Lönenivå (loneiva)', () => {
     });
 
     it('should accept 3 (middle value)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: 3,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: 3 }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.loneiva).toBe(3);
@@ -57,14 +37,7 @@ describe('Range Validation - Lönenivå (loneiva)', () => {
     });
 
     it('should accept null', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: null,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: null }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.loneiva).toBeNull();
@@ -74,81 +47,51 @@ describe('Range Validation - Lönenivå (loneiva)', () => {
 
   describe('invalid lönenivå range values', () => {
     it('should reject -1 (below minimum)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: -1,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: -1 }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('loneiva');
-        expect(result.error.errors[0].message).toContain('at least 0');
+        const loneivaError = result.error.errors.find(e => e.path.includes('loneiva'));
+        expect(loneivaError).toBeDefined();
+        expect(loneivaError?.message).toContain('at least 0');
       }
     });
 
     it('should reject 8 (above maximum)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: 8,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: 8 }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('loneiva');
-        expect(result.error.errors[0].message).toContain('at most 7');
+        const loneivaError = result.error.errors.find(e => e.path.includes('loneiva'));
+        expect(loneivaError).toBeDefined();
+        expect(loneivaError?.message).toContain('at most 7');
       }
     });
 
     it('should reject 3.5 (decimal)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: 3.5,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: 3.5 }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('loneiva');
-        expect(result.error.errors[0].message).toContain('whole number');
+        const loneivaError = result.error.errors.find(e => e.path.includes('loneiva'));
+        expect(loneivaError).toBeDefined();
+        expect(loneivaError?.message).toContain('whole number');
       }
     });
 
     it('should reject "3" (string)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: '3' as any,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: '3' as any }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('loneiva');
+        const loneivaError = result.error.errors.find(e => e.path.includes('loneiva'));
+        expect(loneivaError).toBeDefined();
       }
     });
 
     it('should reject 100 (way above maximum)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        loneiva: 100,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: 100 }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('loneiva');
-        expect(result.error.errors[0].message).toContain('at most 7');
+        const loneivaError = result.error.errors.find(e => e.path.includes('loneiva'));
+        expect(loneivaError).toBeDefined();
+        expect(loneivaError?.message).toContain('at most 7');
       }
     });
   });

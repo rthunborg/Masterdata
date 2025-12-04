@@ -6,20 +6,14 @@
 
 import { describe, it, expect } from 'vitest';
 import { createEmployeeSchemaWithMessages } from '@/lib/validation/employee-schema';
+import { createMinimalEmployee } from '@/../tests/helpers/validation-test-helpers';
 
 describe('Enum Validation - Gender', () => {
   const schema = createEmployeeSchemaWithMessages();
 
   describe('valid gender enum values', () => {
     it('should accept "Man"', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        gender: 'Man',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ gender: 'Man' }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.gender).toBe('Man');
@@ -27,14 +21,7 @@ describe('Enum Validation - Gender', () => {
     });
 
     it('should accept "Woman"', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        gender: 'Woman',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ gender: 'Woman' }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.gender).toBe('Woman');
@@ -42,14 +29,7 @@ describe('Enum Validation - Gender', () => {
     });
 
     it('should accept null', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        gender: null,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ gender: null }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.gender).toBeNull();
@@ -59,47 +39,29 @@ describe('Enum Validation - Gender', () => {
 
   describe('invalid gender enum values', () => {
     it('should reject "male" (English lowercase)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        gender: 'male',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ gender: 'male' }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('gender');
+        const genderError = result.error.errors.find(e => e.path.includes('gender'));
+        expect(genderError).toBeDefined();
       }
     });
 
     it('should reject "Other"', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        gender: 'Other',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ gender: 'Other' }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('gender');
+        const genderError = result.error.errors.find(e => e.path.includes('gender'));
+        expect(genderError).toBeDefined();
       }
     });
 
     it('should reject empty string', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-        gender: '',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ gender: '' }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('gender');
+        const genderError = result.error.errors.find(e => e.path.includes('gender'));
+        expect(genderError).toBeDefined();
       }
     });
   });
@@ -110,13 +72,7 @@ describe('Enum Validation - Rank', () => {
 
   describe('valid rank enum values', () => {
     it('should accept "SEV"', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'SEV',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ rank: 'SEV' }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.rank).toBe('SEV');
@@ -124,13 +80,7 @@ describe('Enum Validation - Rank', () => {
     });
 
     it('should accept "CHEF"', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'CHEF',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ rank: 'CHEF' }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.rank).toBe('CHEF');
@@ -140,41 +90,25 @@ describe('Enum Validation - Rank', () => {
 
   describe('invalid rank enum values', () => {
     it('should reject "sev" (lowercase)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'sev',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ rank: 'sev' as any }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('rank');
+        const rankError = result.error.errors.find(e => e.path.includes('rank'));
+        expect(rankError).toBeDefined();
       }
     });
 
     it('should reject "Manager"', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: 'Manager',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ rank: 'Manager' as any }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('rank');
+        const rankError = result.error.errors.find(e => e.path.includes('rank'));
+        expect(rankError).toBeDefined();
       }
     });
 
     it('should accept null (rank is optional)', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: null,
-      });
+      const result = schema.safeParse(createMinimalEmployee({ rank: null }));
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.rank).toBeNull();
@@ -182,16 +116,11 @@ describe('Enum Validation - Rank', () => {
     });
 
     it('should reject empty string', () => {
-      const result = schema.safeParse({
-        first_name: 'Test',
-        surname: 'Employee',
-        ssn: '19900101-1234',
-        hire_date: '2025-01-01',
-        rank: '',
-      });
+      const result = schema.safeParse(createMinimalEmployee({ rank: '' as any }));
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0].path).toContain('rank');
+        const rankError = result.error.errors.find(e => e.path.includes('rank'));
+        expect(rankError).toBeDefined();
       }
     });
   });

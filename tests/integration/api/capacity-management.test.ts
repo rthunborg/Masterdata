@@ -99,7 +99,7 @@ describe("Capacity Management API Integration Tests", () => {
     rank: "SEV",
     gender: "Man",
     town_district: "Stockholm",
-    hire_date: "2025-01-15",
+    hire_date: "2020-01-15", // Use past date to pass validation
     omc_date: null,
     stena_date: null,
     pe3_date: null,
@@ -109,21 +109,24 @@ describe("Capacity Management API Integration Tests", () => {
     is_archived: false,
     repayment_needed_omc: null,
     repayment_needed_pe3: null,
-    one: null,
+    one: false,
     one_marked_at: null,
-    talmundo: null,
-    isps: null,
-    photo: null,
-    origo: null,
+    talmundo: false,
+    isps: false,
+    photo: false,
+    origo: false,
     loneiva: null,
-    mail_lon: null,
-    bankuppgifter: null,
-    li: null,
-    passport: null,
-    kvitto_c17_18: null,
-    c17: null,
-    crewing_done: null,
+    mail_lon: false,
+    bankuppgifter: false,
+    li: false,
+    passport: false,
+    kvitto_c17_18: false,
+    c17: false,
+    crewing_done: false,
+    hotel_required: false,
     comments: null,
+    omc_masterdata_reminder_sent_at: null,
+    room_number_shared: null,
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",
   };
@@ -317,8 +320,12 @@ describe("Capacity Management API Integration Tests", () => {
       const dateData = {
         year: 2025,
         category: "ÖMC Dates",
+        date_description: "Test ÖMC Date",
         date_value: "8-9/3", // ÖMC format: two-day range
         max_spots: 20,
+        remaining_spots: 20,
+        deadline_submit: null,
+        deadline_cancel: null,
       };
 
       vi.mocked(importantDateRepository.create).mockResolvedValue({
@@ -347,7 +354,10 @@ describe("Capacity Management API Integration Tests", () => {
       const omcDateData = {
         year: 2025,
         category: "ÖMC Dates",
+        date_description: "Test ÖMC Date",
         date_value: "8-9/3", // ÖMC format: two-day range
+        deadline_submit: null,
+        deadline_cancel: null,
       };
 
       vi.mocked(importantDateRepository.create).mockResolvedValue({
@@ -371,7 +381,10 @@ describe("Capacity Management API Integration Tests", () => {
       const stenaDateData = {
         year: 2025,
         category: "Stena Dates",
+        date_description: "Test Stena Date",
         date_value: "2025-03-16",
+        deadline_submit: null,
+        deadline_cancel: null,
       };
 
       vi.mocked(importantDateRepository.create).mockResolvedValue({
@@ -396,8 +409,11 @@ describe("Capacity Management API Integration Tests", () => {
       const pe3DateData = {
         year: 2025,
         category: "PE3 Dates",
+        date_description: "Test PE3 Date",
         date_value: "2025-03-17",
         time_value: "14:00", // Required for PE3 dates
+        deadline_submit: null,
+        deadline_cancel: null,
       };
 
       vi.mocked(importantDateRepository.create).mockResolvedValue({

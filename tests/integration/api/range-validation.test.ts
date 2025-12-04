@@ -37,7 +37,7 @@ describe("API Range Validation - Lönenivå", () => {
     rank: "CHEF" as const,
     gender: 'Woman' as const,
     town_district: "Gothenburg",
-    hire_date: "2025-01-01",
+    hire_date: "2020-01-01", // Use past date to pass validation,
   };
 
   beforeEach(() => {

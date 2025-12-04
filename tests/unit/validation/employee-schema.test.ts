@@ -42,57 +42,67 @@ describe("createEmployeeSchema", () => {
     is_archived: false,
     termination_date: null,
     termination_reason: null,
+    omc_masterdata_reminder_sent_at: null,
+    room_number_shared: null,
   };
 
   describe("required fields validation", () => {
     it("should validate complete valid employee data", () => {
-      const result = createEmployeeSchema.parse(validEmployeeData);
-      expect(result.first_name).toBe("John");
-      expect(result.surname).toBe("Doe");
-      expect(result.ssn).toBe("19850315-1234");
-      expect(result.email).toBe("john.doe@example.com");
+      try {
+        const result = createEmployeeSchema.parse(validEmployeeData);
+        expect(result.first_name).toBe("John");
+        expect(result.surname).toBe("Doe");
+        expect(result.ssn).toBe("19850315-1234");
+        expect(result.email).toBe("john.doe@example.com");
+      } catch (error: any) {
+        console.log('Validation error:', JSON.stringify(error.errors || error.issues, null, 2));
+        console.log('validEmployeeData keys:', Object.keys(validEmployeeData));
+        console.log('validEmployeeData.mobile:', validEmployeeData.mobile);
+        console.log('validEmployeeData.gender:', validEmployeeData.gender);
+        throw error;
+      }
     });
 
     it("should reject missing first_name", () => {
-      const data = { ...validEmployeeData, first_name: "" };
+      const data = { ...validEmployeeData, first_name: "", omc_masterdata_reminder_sent_at: null };
       expect(() => createEmployeeSchema.parse(data)).toThrow("First name is required");
     });
 
     it("should reject missing surname", () => {
-      const data = { ...validEmployeeData, surname: "" };
+      const data = { ...validEmployeeData, surname: "", omc_masterdata_reminder_sent_at: null };
       expect(() => createEmployeeSchema.parse(data)).toThrow("Surname is required");
     });
 
     it("should reject missing ssn", () => {
-      const data = { ...validEmployeeData, ssn: "" };
+      const data = { ...validEmployeeData, ssn: "", omc_masterdata_reminder_sent_at: null };
       expect(() => createEmployeeSchema.parse(data)).toThrow("SSN is required");
     });
 
     it("should reject missing email", () => {
-      const data = { ...validEmployeeData, email: "" };
+      const data = { ...validEmployeeData, email: "", omc_masterdata_reminder_sent_at: null };
       // Email is now optional, so this should pass
       expect(() => createEmployeeSchema.parse(data)).not.toThrow();
     });
 
     it("should reject missing rank", () => {
-      const data = { ...validEmployeeData, rank: "" };
+      const data = { ...validEmployeeData, rank: "", omc_masterdata_reminder_sent_at: null };
       expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
 
     it("should allow null for stena_date (nullable field)", () => {
-      const data = { ...validEmployeeData, stena_date: null };
+      const data = { ...validEmployeeData, stena_date: null, omc_masterdata_reminder_sent_at: null };
       const result = createEmployeeSchema.parse(data);
       expect(result.stena_date).toBeNull();
     });
 
     it("should allow null for omc_date (nullable field)", () => {
-      const data = { ...validEmployeeData, omc_date: null };
+      const data = { ...validEmployeeData, omc_date: null, omc_masterdata_reminder_sent_at: null };
       const result = createEmployeeSchema.parse(data);
       expect(result.omc_date).toBeNull();
     });
 
     it("should reject missing hire_date", () => {
-      const data = { ...validEmployeeData, hire_date: "" };
+      const data = { ...validEmployeeData, hire_date: "", omc_masterdata_reminder_sent_at: null };
       expect(() => createEmployeeSchema.parse(data)).toThrow("Hire date is required");
     });
   });
@@ -257,6 +267,7 @@ describe("createEmployeeSchema", () => {
         stena_date: "uuid-stena",
         omc_date: "uuid-omc",
         mobile: null,
+        omc_masterdata_reminder_sent_at: null,
         gender: null,
         town_district: null,
         pe3_date: null,
@@ -283,6 +294,7 @@ describe("createEmployeeSchema", () => {
         is_archived: false,
         termination_date: null,
         termination_reason: null,
+        room_number_shared: null,
       };
 
       const result = createEmployeeSchema.parse(data);
@@ -314,6 +326,33 @@ describe("createEmployeeSchema", () => {
         rank: "CHEF", // Required field
         stena_date: "uuid-stena", // Required field
         omc_date: "uuid-omc", // Required field
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
+        // All required nullable fields must be present (even if null)
+        mobile: null,
+        gender: null,
+        town_district: null,
+        pe3_date: null,
+        comments: null,
+        // All required boolean fields
+        one: false,
+        talmundo: false,
+        isps: false,
+        photo: false,
+        origo: false,
+        mail_lon: false,
+        bankuppgifter: false,
+        li: false,
+        passport: false,
+        kvitto_c17_18: false,
+        c17: false,
+        crewing_done: false,
+        hotel_required: false,
+        is_terminated: false,
+        is_archived: false,
+        loneiva: null,
+        termination_date: null,
+        termination_reason: null,
       };
 
       const result = createEmployeeSchema.parse(minimalData);
