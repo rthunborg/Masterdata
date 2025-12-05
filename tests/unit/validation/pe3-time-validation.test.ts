@@ -245,17 +245,53 @@ describe('PE3 Time Field Mandatory Validation', () => {
       }
     });
 
-    it('should allow updating other fields without changing time for PE3', () => {
+    it('should require time_value when category is PE3 Dates in update', () => {
+      // If category is set to PE3 Dates, time_value must be provided
+      // This prevents changing category to PE3 without providing a valid time
       const updateResult = updateImportantDateSchema.safeParse({
         category: 'PE3 Dates',
         date_description: 'Updated description',
-        // time_value not provided, but category is PE3 - should fail if time is cleared
+        // time_value not provided - should fail
       });
 
-      // If category is PE3 and time_value is undefined, it should not fail
-      // because update schema allows partial updates
-      // But if time_value is explicitly set to null, it should fail
+      expect(updateResult.success).toBe(false);
+      if (!updateResult.success) {
+        const timeError = updateResult.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toBe('Time is required for PE3 dates');
+      }
+    });
+
+    it('should allow updating other fields for PE3 when time_value is provided', () => {
+      // If updating a PE3 date, time_value must be included in the update
+      const updateResult = updateImportantDateSchema.safeParse({
+        category: 'PE3 Dates',
+        date_description: 'Updated description',
+        time_value: '15:30', // Must provide time when category is PE3
+      });
+
       expect(updateResult.success).toBe(true);
+    });
+
+    it('should reject changing category to PE3 Dates without providing time_value', () => {
+      // This test verifies the bug fix: changing category to PE3 Dates without
+      // providing time_value should fail, preventing invalid data where a PE3
+      // date exists with time_value: null
+      const updateResult = updateImportantDateSchema.safeParse({
+        category: 'PE3 Dates',
+        // time_value not provided - should fail
+      });
+
+      expect(updateResult.success).toBe(false);
+      if (!updateResult.success) {
+        const timeError = updateResult.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toBe('Time is required for PE3 dates');
+      }
     });
   });
 });

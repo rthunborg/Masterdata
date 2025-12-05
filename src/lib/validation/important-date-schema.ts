@@ -152,8 +152,13 @@ export const updateImportantDateSchema = z.object({
 )
 .refine(
   (data) => {
-    // PE3 dates require time field (only if category is PE3 Dates and time_value is provided)
-    if (data.category === 'PE3 Dates' && data.time_value !== undefined) {
+    // PE3 dates require time field - if category is PE3 Dates, time_value must be provided and valid
+    if (data.category === 'PE3 Dates') {
+      // If time_value is undefined, it means it wasn't provided in the update
+      // This is invalid for PE3 dates - they must have a time
+      if (data.time_value === undefined) {
+        return false;
+      }
       // Reject null or empty string
       if (data.time_value === null || (typeof data.time_value === 'string' && data.time_value.trim() === '')) {
         return false;
@@ -174,7 +179,15 @@ export const updateImportantDateSchema = z.object({
   },
   (data) => {
     // PE3 dates require time
-    if (data.category === 'PE3 Dates' && data.time_value !== undefined) {
+    if (data.category === 'PE3 Dates') {
+      // If time_value is undefined, it means it wasn't provided in the update
+      // This is invalid for PE3 dates - they must have a time
+      if (data.time_value === undefined) {
+        return {
+          message: 'Time is required for PE3 dates',
+          path: ['time_value'],
+        };
+      }
       // Check if time_value is null or empty
       if (data.time_value === null || (typeof data.time_value === 'string' && data.time_value.trim() === '')) {
         return {
