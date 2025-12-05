@@ -41,7 +41,10 @@ import { OMCDatePicker } from "./omc-date-picker";
 import { TimePicker } from "./time-picker";
 import { z } from "zod";
 
-type CreateImportantDateInput = z.infer<typeof createImportantDateSchema>;
+// Use z.input for form type (before transform) to match zodResolver expectations
+type CreateImportantDateInput = z.input<typeof createImportantDateSchema>;
+// Use z.infer for the transformed output type (after transform)
+type CreateImportantDateOutput = z.infer<typeof createImportantDateSchema>;
 
 interface AddImportantDateModalProps {
   isOpen: boolean;
@@ -271,12 +274,16 @@ export function AddImportantDateModal({
     try {
       setIsSubmitting(true);
       
+      // Parse and transform the data using the schema to get the output type
+      // This applies the transform that sets default max_spots and remaining_spots
+      const parsedData = createImportantDateSchema.parse(data);
+      
       // Normalize optional fields to ensure null instead of undefined
       const normalizedData = {
-        ...data,
-        time_value: data.time_value ?? null,
-        deadline_submit: data.deadline_submit ?? null,
-        deadline_cancel: data.deadline_cancel ?? null,
+        ...parsedData,
+        time_value: parsedData.time_value ?? null,
+        deadline_submit: parsedData.deadline_submit ?? null,
+        deadline_cancel: parsedData.deadline_cancel ?? null,
       };
       
       const newDate = await importantDateService.create(normalizedData);

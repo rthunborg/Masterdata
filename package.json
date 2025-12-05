@@ -5,8 +5,8 @@
   "packageManager": "pnpm@10.19.0",
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build",
-    "build:analyze": "cross-env ANALYZE=true next build --webpack",
+    "build": "cross-env NODE_OPTIONS=\"--no-warnings\" next build",
+    "build:analyze": "cross-env ANALYZE=true NODE_OPTIONS=\"--no-warnings\" next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
