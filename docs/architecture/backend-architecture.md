@@ -6,6 +6,32 @@
 
 Each API route is a standalone serverless function deployed on Vercel. Functions are organized by resource (employees, columns, etc.) with nested routes for specific actions.
 
+### Service Layer Organization
+
+**Location:** `src/lib/services/`
+
+Services are organized by domain responsibility. As part of Epic 15 (Technical Debt Cleanup), service consolidation was performed to eliminate duplication and create a single source of truth for business logic.
+
+**Key Services:**
+
+- **`column-service.ts`** - Unified column configuration management (consolidated from `column-service.ts` and `column-config-service.ts` in Story 15.2)
+  - Handles both admin operations (permissions, visibility, reordering, category management) and user operations (custom column CRUD)
+  - Single service for all column-related operations
+
+- **`employee-service.ts`** - Employee data management and business logic
+- **`important-date-service.ts`** - Important dates calendar management
+- **`custom-data-service.ts`** - External party custom column data operations
+- **`auth-service.ts`** - Authentication and session management
+- **`admin-service.ts`** - Admin-specific operations (user management, etc.)
+
+**Service Consolidation (Epic 15.2):**
+
+Prior to Epic 15, column management was split across multiple services (`column-service.ts` and `column-config-service.ts`). These were consolidated into a single unified `column-service.ts` to:
+- Eliminate code duplication
+- Provide a single source of truth for column operations
+- Simplify maintenance and reduce cognitive load
+- Ensure consistent behavior across admin and user operations
+
 **Function Template:**
 
 ```typescript

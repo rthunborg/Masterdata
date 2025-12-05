@@ -29,7 +29,7 @@ stories:
     assigned_to: null
   - id: 15.6
     title: Documentation Update and Cleanup
-    status: Approved
+    status: done
     assigned_to: null
 blockers: []
 notes: []
