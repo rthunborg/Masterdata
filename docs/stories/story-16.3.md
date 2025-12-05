@@ -2,7 +2,7 @@
 
 **Story:** As a developer, I want a React hook that manages change detection state and fetches changes on dashboard load, so that components can access change information for displaying notifications and highlights.
 
-**Status:** pending  
+**Status:** Approved  
 **Epic:** Epic 16: Employee Data Change Notifications
 
 ---
@@ -23,9 +23,11 @@
 ### Criterion 2: Baseline Capture
 - **Given** the dashboard loads
 - **When** the hook initializes
-- **Then** it captures the current `user.last_active_at` as `changesBaseline`
+- **Then** it captures the current `user.last_active_at` as `changesBaseline` once per session
 - **And** stores it in component state or sessionStorage
 - **And** uses this baseline for the initial fetch
+- **And** if `user.last_active_at` is null (first-time user), it returns empty results (no changes to highlight)
+- **And** the same baseline is used across all tabs in the same session (not per-tab)
 
 ### Criterion 3: Change Fetching
 - **Given** the hook is mounted
@@ -77,14 +79,23 @@ export function useEmployeeChanges() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch changes on mount
+  // Fetch changes on mount - baseline captured once per session
   useEffect(() => {
+    // First-time users: no changes to show (this is their first view)
     if (!user?.last_active_at) {
       setIsLoading(false);
+      setChangedEmployees([]);
       return;
     }
 
-    const baseline = user.last_active_at;
+    // Check sessionStorage for existing baseline (same session, multiple tabs)
+    const sessionBaseline = sessionStorage.getItem('employee-changes-baseline');
+    const baseline = sessionBaseline || user.last_active_at;
+    
+    if (!sessionBaseline) {
+      sessionStorage.setItem('employee-changes-baseline', baseline);
+    }
+    
     setChangesBaseline(baseline);
     fetchChanges(baseline);
   }, [user?.last_active_at]);
@@ -157,9 +168,11 @@ interface UseEmployeeChangesReturn {
 
 ### State Persistence
 
-- Store `changesBaseline` in component state (not persisted across page refreshes)
-- On page refresh, capture new baseline and re-fetch
-- Consider storing in sessionStorage if needed for cross-page persistence
+- Store `changesBaseline` in sessionStorage to ensure it's consistent across all tabs in the same session
+- Baseline is captured once per session (first dashboard load)
+- On page refresh within the same session, reuse the same baseline (don't re-capture)
+- On new login (new session), capture new baseline
+- First-time users (null `last_active_at`): Return empty results - no changes to highlight since this is their first view
 
 ### Error Handling
 

@@ -2,7 +2,7 @@
 
 **Story:** As an external party user, I want to see a dismissible banner showing how many employees have changes since my last login, so that I'm aware of updates before I start working.
 
-**Status:** pending  
+**Status:** Approved  
 **Epic:** Epic 16: Employee Data Change Notifications
 
 ---
@@ -23,13 +23,15 @@
 - **Then** the banner is hidden
 - **And** the dismissal state is stored in sessionStorage
 - **And** the banner remains hidden for the current session
-- **And** the banner reappears on next login (new session)
+- **And** once dismissed, there is no way to re-show the banner in the same session
+- **And** the banner reappears on next login (new session) if there are new changes
 
 ### Criterion 3: No Changes State
-- **Given** a user has no changes since last login
+- **Given** a user has no changes since last login OR is a first-time user (null `last_active_at`)
 - **When** they view the dashboard
 - **Then** the banner does not appear
 - **And** no empty/zero-count banner is shown
+- **And** first-time users see no banner (this is their first view, so no "changes" to show)
 
 ### Criterion 4: Date/Time Formatting
 - **Given** the `changesBaseline` timestamp

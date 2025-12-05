@@ -2,7 +2,7 @@
 
 **Story:** As an external party user, I want changed fields to be visually highlighted in the employee table, so that I can quickly identify which specific fields have been updated.
 
-**Status:** pending  
+**Status:** Approved  
 **Epic:** Epic 16: Employee Data Change Notifications
 
 ---
@@ -25,10 +25,10 @@
 
 ### Criterion 3: Highlight Persistence
 - **Given** highlights are applied
-- **When** the user interacts with the table (scrolls, filters, sorts)
+- **When** the user interacts with the table (scrolls, filters, sorts, or refreshes the page)
 - **Then** highlights persist (don't disappear)
-- **And** highlights remain until next login or page refresh
-- **And** highlights update if changes are refreshed
+- **And** highlights remain for the entire session (until next login, not on page refresh)
+- **And** highlights update if changes are refreshed during the session
 
 ### Criterion 4: Multiple Column Highlights
 - **Given** an employee has multiple changed columns
