@@ -47,7 +47,7 @@ describe("POST /api/employees/export-crew-ready", () => {
     rank: "SEV",
     gender: "Man",
     town_district: "Stockholm",
-    hire_date: "2025-01-15",
+    hire_date: "2020-01-01", // Use past date to pass validation,
     stena_date: null,
     omc_date: null,
     pe3_date: null,

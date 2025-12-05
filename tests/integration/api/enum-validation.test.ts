@@ -36,7 +36,7 @@ describe("API Enum Validation - Gender", () => {
     mobile: "+46701234567",
     rank: "CHEF" as const,
     town_district: "Gothenburg",
-    hire_date: "2025-01-01",
+    hire_date: "2020-01-01", // Use past date to pass validation,
   };
 
   beforeEach(() => {
@@ -88,7 +88,7 @@ describe("API Enum Validation - Rank", () => {
       surname: "Doe",
       ssn: "19900101-1234",
       email: "john@example.com",
-      hire_date: "2025-01-01",
+      hire_date: "2020-01-01", // Use past date to pass validation,
       rank: 'sev' as any, // Invalid enum value (lowercase)
     };
 

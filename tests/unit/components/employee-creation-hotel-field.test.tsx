@@ -145,6 +145,11 @@ describe("Employee Creation Hotel Field", () => {
       await user.type(screen.getByLabelText(/surname|efternamn/i), "Employee");
       await user.type(screen.getByLabelText(/ssn|personnummer/i), "19900101-1234");
       
+      // Select gender (required field)
+      const genderSelect = screen.getByRole("combobox", { name: /Kön|gender/i });
+      await user.click(genderSelect);
+      await user.click(screen.getByRole("option", { name: /Man/i }));
+      
       // Set hotel field to true - find checkbox by role
       const checkbox = screen.getByRole('checkbox', { name: /hotel|hotell/i });
       expect(checkbox).toBeInTheDocument();
@@ -196,6 +201,11 @@ describe("Employee Creation Hotel Field", () => {
       await user.type(screen.getByLabelText(/first name|förnamn/i), "Test");
       await user.type(screen.getByLabelText(/surname|efternamn/i), "Employee");
       await user.type(screen.getByLabelText(/ssn|personnummer/i), "19900101-1234");
+      
+      // Select gender (required field)
+      const genderSelect = screen.getByRole("combobox", { name: /Kön|gender/i });
+      await user.click(genderSelect);
+      await user.click(screen.getByRole("option", { name: /Man/i }));
       
       // Ensure hotel field is false (default)
       const hotelField = screen.queryByLabelText(/hotel|hotell/i);

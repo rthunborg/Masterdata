@@ -43,7 +43,7 @@ describe("GET /api/employees", () => {
       rank: "SEV",
       gender: 'Man',
       town_district: "Stockholm",
-      hire_date: "2025-01-15",
+      hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -70,6 +70,8 @@ describe("GET /api/employees", () => {
         crewing_done: false,
         hotel_required: false,
         comments: null,
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
         created_at: "2025-01-01T00:00:00Z",
       updated_at: "2025-01-01T00:00:00Z",      },
     {
@@ -109,6 +111,8 @@ describe("GET /api/employees", () => {
         crewing_done: false,
         hotel_required: false,
         comments: null,
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
         created_at: "2020-01-01T00:00:00Z",
       updated_at: "2020-01-01T00:00:00Z",      },
   ];
@@ -248,33 +252,34 @@ describe("POST /api/employees", () => {
     rank: "CHEF",
     gender: 'Woman',
     town_district: "Gothenburg",
-    hire_date: "2025-01-01",
-  stena_date: null,
-  omc_date: null,
-  pe3_date: null,
-  termination_date: null,
+    hire_date: "2020-01-01", // Use past date to pass validation
+    stena_date: null,
+    omc_date: null,
+    pe3_date: null,
+    termination_date: null,
     termination_reason: null,
     is_terminated: false,
     is_archived: false,
-    
-        repayment_needed_omc: null,
-        repayment_needed_pe3: null,
-        one: false,
-        one_marked_at: null,
-        talmundo: false,
-        isps: false,
-        photo: false,
-        origo: false,
-        loneiva: null,
-        mail_lon: false,
-        bankuppgifter: false,
-        li: false,
-        passport: false,
-        kvitto_c17_18: false,
-        c17: false,
-        crewing_done: false,
-        hotel_required: false,
-        comments: "New employee",
+    repayment_needed_omc: null,
+    repayment_needed_pe3: null,
+    one: false,
+    one_marked_at: null,
+    talmundo: false,
+    isps: false,
+    photo: false,
+    origo: false,
+    loneiva: null,
+    mail_lon: false,
+    bankuppgifter: false,
+    li: false,
+    passport: false,
+    kvitto_c17_18: false,
+    c17: false,
+    crewing_done: false,
+    hotel_required: false,
+    comments: "New employee",
+    omc_masterdata_reminder_sent_at: null,
+    room_number_shared: null,
   };
 
   const mockCreatedEmployee: Employee = {
@@ -484,8 +489,35 @@ describe("POST /api/employees", () => {
       surname: "User",
       ssn: "19950101-1234",
       email: "test@example.com",
-      hire_date: "2024-01-01",
+      mobile: null,
+      hire_date: "2020-01-01", // Use past date to pass validation
       rank: "SEV" as const,
+      gender: null,
+      town_district: null,
+      stena_date: null,
+      omc_date: null,
+      pe3_date: null,
+      comments: null,
+      omc_masterdata_reminder_sent_at: null,
+      room_number_shared: null,
+      one: false,
+      talmundo: false,
+      isps: false,
+      photo: false,
+      origo: false,
+      mail_lon: false,
+      bankuppgifter: false,
+      li: false,
+      passport: false,
+      kvitto_c17_18: false,
+      c17: false,
+      crewing_done: false,
+      hotel_required: false,
+      is_terminated: false,
+      is_archived: false,
+      termination_date: null,
+      termination_reason: null,
+      loneiva: null,
     };
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -496,6 +528,9 @@ describe("POST /api/employees", () => {
     const response = await POST(request);
     const json = await response.json();
 
+    if (response.status !== 201) {
+      console.error("Validation error:", JSON.stringify(json, null, 2));
+    }
     expect(response.status).toBe(201);
     expect(json.data).toBeDefined();
     expect(employeeRepository.create).toHaveBeenCalledWith(
@@ -539,7 +574,7 @@ describe("PATCH /api/employees/[id]", () => {
     rank: "CHEF",
     gender: 'Man',
     town_district: "Stockholm",
-    hire_date: "2025-01-15",
+    hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -818,7 +853,7 @@ describe("POST /api/employees/[id]/terminate", () => {
     rank: "SEV",
     gender: 'Man',
     town_district: "Stockholm",
-    hire_date: "2025-01-15",
+    hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -1049,7 +1084,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
     rank: "SEV",
     gender: 'Man',
     town_district: "Stockholm",
-    hire_date: "2025-01-15",
+    hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -1200,7 +1235,7 @@ describe("SSN Normalization Tests", () => {
         rank: 'SEV',
         gender: null,
         town_district: null,
-        hire_date: "2025-01-15",
+        hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -1227,14 +1262,19 @@ describe("SSN Normalization Tests", () => {
         crewing_done: false,
         hotel_required: false,
         comments: null,
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
       };
 
       const mockCreatedEmployee: Employee = {
         id: "emp-123",
         ...employeeWithDashlessSSN,
         ssn: "850315-1234", // Normalized with dash
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
         created_at: "2025-10-27T12:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",      };
+        updated_at: "2025-10-27T12:00:00Z",
+      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
@@ -1266,7 +1306,7 @@ describe("SSN Normalization Tests", () => {
         rank: 'SEV',
         gender: null,
         town_district: null,
-        hire_date: "2025-01-15",
+        hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -1293,13 +1333,18 @@ describe("SSN Normalization Tests", () => {
         crewing_done: false,
         hotel_required: false,
         comments: null,
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
       };
 
       const mockCreatedEmployee: Employee = {
         id: "emp-124",
         ...employeeWithDashedSSN,
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
         created_at: "2025-10-27T12:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",      };
+        updated_at: "2025-10-27T12:00:00Z",
+      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
@@ -1331,7 +1376,7 @@ describe("SSN Normalization Tests", () => {
         rank: 'SEV',
         gender: null,
         town_district: null,
-        hire_date: "2025-01-15",
+        hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -1358,14 +1403,19 @@ describe("SSN Normalization Tests", () => {
         crewing_done: false,
         hotel_required: false,
         comments: null,
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
       };
 
       const mockCreatedEmployee: Employee = {
         id: "emp-125",
         ...employeeWith12DigitSSN,
         ssn: "850315-1234", // Normalized (century stripped)
+        omc_masterdata_reminder_sent_at: null,
+        room_number_shared: null,
         created_at: "2025-10-27T12:00:00Z",
-        updated_at: "2025-10-27T12:00:00Z",      };
+        updated_at: "2025-10-27T12:00:00Z",
+      };
 
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
@@ -1404,7 +1454,7 @@ describe("SSN Normalization Tests", () => {
         rank: 'SEV',
         gender: null,
         town_district: null,
-        hire_date: "2025-01-15",
+        hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -1476,7 +1526,7 @@ describe("SSN Normalization Tests", () => {
         rank: 'SEV',
         gender: null,
         town_district: null,
-        hire_date: "2025-01-15",
+        hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -1549,7 +1599,7 @@ describe("SSN Normalization Tests", () => {
         rank: 'SEV',
         gender: null,
         town_district: null,
-        hire_date: "2025-01-15",
+        hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
   pe3_date: null,
@@ -1641,7 +1691,7 @@ describe("POST /api/employees - Capacity Management", () => {
       rank: "CHEF",
       gender: "Woman",
       town_district: "Gothenburg",
-      hire_date: "2025-01-01",
+      hire_date: "2020-01-01", // Use past date to pass validation
       stena_date: null,
       omc_date: "omc-date-1",
       pe3_date: null,
@@ -1651,21 +1701,24 @@ describe("POST /api/employees - Capacity Management", () => {
       is_archived: false,
       repayment_needed_omc: null,
       repayment_needed_pe3: null,
-      one: null,
+      one: false,
       one_marked_at: null,
-      talmundo: null,
-      isps: null,
-      photo: null,
-      origo: null,
+      talmundo: false,
+      isps: false,
+      photo: false,
+      origo: false,
       loneiva: null,
-      mail_lon: null,
-      bankuppgifter: null,
-      li: null,
-      passport: null,
-      kvitto_c17_18: null,
-      c17: null,
-      crewing_done: null,
+      mail_lon: false,
+      bankuppgifter: false,
+      li: false,
+      passport: false,
+      kvitto_c17_18: false,
+      c17: false,
+      crewing_done: false,
       comments: null,
+      hotel_required: false,
+      omc_masterdata_reminder_sent_at: null,
+      room_number_shared: null,
     };
 
     const mockCreatedEmployee: Employee = {
@@ -1707,7 +1760,7 @@ describe("POST /api/employees - Capacity Management", () => {
       rank: "CHEF",
       gender: "Woman",
       town_district: "Gothenburg",
-      hire_date: "2025-01-01",
+      hire_date: "2020-01-01", // Use past date to pass validation
       stena_date: null,
       omc_date: "omc-date-1",
       pe3_date: null,
@@ -1717,22 +1770,24 @@ describe("POST /api/employees - Capacity Management", () => {
       is_archived: false,
       repayment_needed_omc: null,
       repayment_needed_pe3: null,
-      one: null,
+      one: false,
       one_marked_at: null,
-      talmundo: null,
-      isps: null,
-      photo: null,
-      origo: null,
+      talmundo: false,
+      isps: false,
+      photo: false,
+      origo: false,
       loneiva: null,
-      mail_lon: null,
-      bankuppgifter: null,
-      li: null,
-      passport: null,
-      kvitto_c17_18: null,
-      c17: null,
-      crewing_done: null,
+      mail_lon: false,
+      bankuppgifter: false,
+      li: false,
+      passport: false,
+      kvitto_c17_18: false,
+      c17: false,
+      crewing_done: false,
       comments: null,
       hotel_required: true,
+      omc_masterdata_reminder_sent_at: null,
+      room_number_shared: null,
     };
 
     const mockCreatedEmployee: Employee = {
@@ -1791,7 +1846,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
     rank: "CHEF",
     gender: "Man",
     town_district: "Stockholm",
-    hire_date: "2025-01-15",
+    hire_date: "2020-01-15", // Use past date to pass validation
     stena_date: null,
     omc_date: null,
     pe3_date: null,
@@ -1801,21 +1856,24 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
     is_archived: false,
     repayment_needed_omc: null,
     repayment_needed_pe3: null,
-    one: null,
+    one: false,
     one_marked_at: null,
-    talmundo: null,
-    isps: null,
-    photo: null,
-    origo: null,
+    talmundo: false,
+    isps: false,
+    photo: false,
+    origo: false,
     loneiva: null,
-    mail_lon: null,
-    bankuppgifter: null,
-    li: null,
-    passport: null,
-    kvitto_c17_18: null,
-    c17: null,
-    crewing_done: null,
+    mail_lon: false,
+    bankuppgifter: false,
+    li: false,
+    passport: false,
+    kvitto_c17_18: false,
+    c17: false,
+    crewing_done: false,
+    hotel_required: false,
     comments: null,
+    omc_masterdata_reminder_sent_at: null,
+    room_number_shared: null,
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",
   };
@@ -1945,7 +2003,7 @@ describe("DELETE /api/employees/[id]", () => {
     rank: "CHEF",
     gender: "Man",
     town_district: "Stockholm",
-    hire_date: "2025-01-15",
+    hire_date: "2020-01-15", // Use past date to pass validation
     stena_date: null,
     omc_date: "omc-date-1",
     pe3_date: null,

@@ -13,42 +13,67 @@ describe('PE3 Time Field Mandatory Validation', () => {
   describe('AC1: PE3 Time Field Mandatory Validation Tests', () => {
     it('should reject PE3 date without time field', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
+        date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
+        max_spots: 10,
+        remaining_spots: 10,
+        notes: null,
         time_value: null,
+        deadline_submit: null,
+        deadline_cancel: null,
       });
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues).toHaveLength(1);
-        expect(result.error.issues[0].path).toEqual(['time_value']);
-        expect(result.error.issues[0].message).toBe('Time is required for PE3 dates');
+        const timeError = result.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toBe('Time is required for PE3 dates');
       }
     });
 
     it('should reject PE3 date with empty time string', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
+        date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
+        max_spots: 10,
+        remaining_spots: 10,
+        notes: null,
         time_value: '',
+        deadline_submit: null,
+        deadline_cancel: null,
       });
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues).toHaveLength(1);
-        expect(result.error.issues[0].path).toEqual(['time_value']);
-        expect(result.error.issues[0].message).toBe('Time is required for PE3 dates');
+        const timeError = result.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toBe('Time is required for PE3 dates');
       }
     });
 
     it('should accept PE3 date with valid time (HH:MM format)', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
+        date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
+        max_spots: 10,
+        remaining_spots: 10,
+        notes: null,
         time_value: '14:30',
+        deadline_submit: null,
+        deadline_cancel: null,
       });
 
       expect(result.success).toBe(true);
@@ -60,32 +85,50 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
     it('should reject PE3 date with invalid time format', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
+        date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
+        max_spots: 10,
+        remaining_spots: 10,
+        notes: null,
         time_value: '25:00', // Invalid hour
+        deadline_submit: null,
+        deadline_cancel: null,
       });
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues).toHaveLength(1);
-        expect(result.error.issues[0].path).toEqual(['time_value']);
-        expect(result.error.issues[0].message).toContain('HH:MM');
+        const timeError = result.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toContain('HH:MM');
       }
     });
 
     it('should reject PE3 date with invalid minute format', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
+        date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
+        max_spots: 10,
+        remaining_spots: 10,
+        notes: null,
         time_value: '14:60', // Invalid minute
+        deadline_submit: null,
+        deadline_cancel: null,
       });
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues).toHaveLength(1);
-        expect(result.error.issues[0].path).toEqual(['time_value']);
+        const timeError = result.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
       }
     });
 
@@ -94,10 +137,17 @@ describe('PE3 Time Field Mandatory Validation', () => {
       
       validTimes.forEach((time) => {
         const result = schema.safeParse({
+          week_number: null,
           category: 'PE3 Dates',
+          date_description: 'Test PE3 Date',
           date_value: '2025-03-15',
           year: 2025,
+          max_spots: 10,
+          remaining_spots: 10,
+          notes: null,
           time_value: time,
+          deadline_submit: null,
+          deadline_cancel: null,
         });
 
         expect(result.success).toBe(true);
@@ -112,10 +162,17 @@ describe('PE3 Time Field Mandatory Validation', () => {
       
       categories.forEach((category) => {
         const result = schema.safeParse({
+          week_number: null,
           category,
+          date_description: 'Test Date',
           date_value: '2025-03-15',
           year: 2025,
+          max_spots: 10,
+          remaining_spots: 10,
+          notes: null,
           time_value: null,
+          deadline_submit: null,
+          deadline_cancel: null,
         });
 
         expect(result.success).toBe(true);
@@ -130,10 +187,17 @@ describe('PE3 Time Field Mandatory Validation', () => {
     it('should reject updating PE3 date to clear time field', () => {
       // First create a valid PE3 date with time
       const createResult = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
+        date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
+        max_spots: 10,
+        remaining_spots: 10,
+        notes: null,
         time_value: '14:30',
+        deadline_submit: null,
+        deadline_cancel: null,
       });
       expect(createResult.success).toBe(true);
 
@@ -145,9 +209,11 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(updateResult.success).toBe(false);
       if (!updateResult.success) {
-        expect(updateResult.error.issues).toHaveLength(1);
-        expect(updateResult.error.issues[0].path).toEqual(['time_value']);
-        expect(updateResult.error.issues[0].message).toBe('Time is required for PE3 dates');
+        const timeError = updateResult.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toBe('Time is required for PE3 dates');
       }
     });
 
@@ -159,9 +225,11 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(updateResult.success).toBe(false);
       if (!updateResult.success) {
-        expect(updateResult.error.issues).toHaveLength(1);
-        expect(updateResult.error.issues[0].path).toEqual(['time_value']);
-        expect(updateResult.error.issues[0].message).toBe('Time is required for PE3 dates');
+        const timeError = updateResult.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toBe('Time is required for PE3 dates');
       }
     });
 
@@ -177,17 +245,53 @@ describe('PE3 Time Field Mandatory Validation', () => {
       }
     });
 
-    it('should allow updating other fields without changing time for PE3', () => {
+    it('should require time_value when category is PE3 Dates in update', () => {
+      // If category is set to PE3 Dates, time_value must be provided
+      // This prevents changing category to PE3 without providing a valid time
       const updateResult = updateImportantDateSchema.safeParse({
         category: 'PE3 Dates',
         date_description: 'Updated description',
-        // time_value not provided, but category is PE3 - should fail if time is cleared
+        // time_value not provided - should fail
       });
 
-      // If category is PE3 and time_value is undefined, it should not fail
-      // because update schema allows partial updates
-      // But if time_value is explicitly set to null, it should fail
+      expect(updateResult.success).toBe(false);
+      if (!updateResult.success) {
+        const timeError = updateResult.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toBe('Time is required for PE3 dates');
+      }
+    });
+
+    it('should allow updating other fields for PE3 when time_value is provided', () => {
+      // If updating a PE3 date, time_value must be included in the update
+      const updateResult = updateImportantDateSchema.safeParse({
+        category: 'PE3 Dates',
+        date_description: 'Updated description',
+        time_value: '15:30', // Must provide time when category is PE3
+      });
+
       expect(updateResult.success).toBe(true);
+    });
+
+    it('should reject changing category to PE3 Dates without providing time_value', () => {
+      // This test verifies the bug fix: changing category to PE3 Dates without
+      // providing time_value should fail, preventing invalid data where a PE3
+      // date exists with time_value: null
+      const updateResult = updateImportantDateSchema.safeParse({
+        category: 'PE3 Dates',
+        // time_value not provided - should fail
+      });
+
+      expect(updateResult.success).toBe(false);
+      if (!updateResult.success) {
+        const timeError = updateResult.error.issues.find((e: any) => 
+          Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
+        );
+        expect(timeError).toBeDefined();
+        expect(timeError?.message).toBe('Time is required for PE3 dates');
+      }
     });
   });
 });

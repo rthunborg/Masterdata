@@ -180,6 +180,10 @@ describe("AddEmployeeModal", () => {
     await user.type(screen.getByLabelText(/Förnamn/i), "Jane");
     await user.type(screen.getByLabelText(/Efternamn/i), "Smith");
     await user.type(screen.getByLabelText(/Personnummer/i), "19900101-1234");
+    // Select gender (required field)
+    const genderSelect = screen.getByRole("combobox", { name: /Kön/i });
+    await user.click(genderSelect);
+    await user.click(screen.getByRole("option", { name: /Man/i }));
     // Rank is a select, skip for now or click to select
     await user.type(
       screen.getByLabelText(/E-post/i),
@@ -240,6 +244,10 @@ describe("AddEmployeeModal", () => {
     await user.type(screen.getByLabelText(/Förnamn/i), "Jane");
     await user.type(screen.getByLabelText(/Efternamn/i), "Smith");
     await user.type(screen.getByLabelText(/Personnummer/i), "19900101-1234");
+    // Select gender (required field)
+    const genderSelect = screen.getByRole("combobox", { name: /Kön/i });
+    await user.click(genderSelect);
+    await user.click(screen.getByRole("option", { name: /Man/i }));
     // Rank is a select, skip for now
     await user.type(
       screen.getByLabelText(/E-post/i),
@@ -278,6 +286,10 @@ describe("AddEmployeeModal", () => {
     await user.type(screen.getByLabelText(/Förnamn/i), "Jane");
     await user.type(screen.getByLabelText(/Efternamn/i), "Smith");
     await user.type(screen.getByLabelText(/Personnummer/i), "19900101-1234");
+    // Select gender (required field)
+    const genderSelect = screen.getByRole("combobox", { name: /Kön/i });
+    await user.click(genderSelect);
+    await user.click(screen.getByRole("option", { name: /Man/i }));
     // Rank is a select, skip for now
     await user.type(
       screen.getByLabelText(/E-post/i),
