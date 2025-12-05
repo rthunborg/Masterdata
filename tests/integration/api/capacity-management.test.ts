@@ -318,10 +318,12 @@ describe("Capacity Management API Integration Tests", () => {
   describe("POST /api/important-dates - Default capacity setup", () => {
     it("should set default capacity when creating important date", async () => {
       const dateData = {
+        week_number: null,
         year: 2025,
         category: "ÖMC Dates",
         date_description: "Test ÖMC Date",
         date_value: "8-9/3", // ÖMC format: two-day range
+        notes: null,
         max_spots: 20,
         remaining_spots: 20,
         deadline_submit: null,
@@ -352,10 +354,12 @@ describe("Capacity Management API Integration Tests", () => {
     it("should set default capacity by category (ÖMC=20, Stena=99, PE3=1)", async () => {
       // Test ÖMC default
       const omcDateData = {
+        week_number: null,
         year: 2025,
         category: "ÖMC Dates",
         date_description: "Test ÖMC Date",
         date_value: "8-9/3", // ÖMC format: two-day range
+        notes: null,
         deadline_submit: null,
         deadline_cancel: null,
       };
@@ -379,10 +383,12 @@ describe("Capacity Management API Integration Tests", () => {
 
       // Test Stena default
       const stenaDateData = {
+        week_number: null,
         year: 2025,
         category: "Stena Dates",
         date_description: "Test Stena Date",
         date_value: "2025-03-16",
+        notes: null,
         deadline_submit: null,
         deadline_cancel: null,
       };
@@ -407,11 +413,13 @@ describe("Capacity Management API Integration Tests", () => {
 
       // Test PE3 default
       const pe3DateData = {
+        week_number: null,
         year: 2025,
         category: "PE3 Dates",
         date_description: "Test PE3 Date",
         date_value: "2025-03-17",
         time_value: "14:00", // Required for PE3 dates
+        notes: null,
         deadline_submit: null,
         deadline_cancel: null,
       };

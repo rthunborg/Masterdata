@@ -322,6 +322,7 @@ describe("POST /api/important-dates", () => {
       date_value: "10/4",
       max_spots: 99, // Required by schema, transform will use this or default
       remaining_spots: 99, // Required by schema, transform will use this or default
+      notes: null,
       deadline_submit: null,
       deadline_cancel: null,
     };
@@ -365,6 +366,7 @@ describe("POST /api/important-dates", () => {
       category: "ÖMC Dates",
       date_description: "Invalid ÖMC",
       date_value: "8/3", // Invalid: not two-day format
+      notes: null,
       max_spots: 20,
       remaining_spots: 20,
       deadline_submit: null,
@@ -394,6 +396,7 @@ describe("POST /api/important-dates", () => {
       date_description: "PE3 without time",
       date_value: "2025-03-15",
       time_value: null, // Missing required time for PE3
+      notes: null,
       max_spots: 1,
       remaining_spots: 1,
       deadline_submit: null,
@@ -424,6 +427,7 @@ describe("POST /api/important-dates", () => {
       date_description: "PE3 with empty time",
       date_value: "2025-03-15",
       time_value: "", // Empty time string
+      notes: null,
       max_spots: 1,
       remaining_spots: 1,
       deadline_submit: null,
@@ -452,6 +456,7 @@ describe("POST /api/important-dates", () => {
       date_description: "PE3 with time",
       date_value: "2025-03-15",
       time_value: "14:30", // Valid time
+      notes: null,
       max_spots: 1,
       remaining_spots: 1,
       deadline_submit: null,
@@ -495,6 +500,7 @@ describe("POST /api/important-dates", () => {
       category: "ÖMC Dates",
       date_description: "Valid ÖMC",
       date_value: "8-9/3", // Valid two-day format
+      notes: null,
       max_spots: 20,
       remaining_spots: 20,
       deadline_submit: null,

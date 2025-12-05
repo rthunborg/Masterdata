@@ -492,6 +492,12 @@ describe("POST /api/employees", () => {
       mobile: null,
       hire_date: "2020-01-01", // Use past date to pass validation
       rank: "SEV" as const,
+      gender: null,
+      town_district: null,
+      stena_date: null,
+      omc_date: null,
+      pe3_date: null,
+      comments: null,
       omc_masterdata_reminder_sent_at: null,
       room_number_shared: null,
       one: false,
@@ -509,6 +515,8 @@ describe("POST /api/employees", () => {
       hotel_required: false,
       is_terminated: false,
       is_archived: false,
+      termination_date: null,
+      termination_reason: null,
       loneiva: null,
     };
 

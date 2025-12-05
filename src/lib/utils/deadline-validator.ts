@@ -37,7 +37,18 @@ export function validateDeadlines(
   }
 
   try {
+    // Try to parse eventDate as ISO format
+    // If it's not ISO format (e.g., "8-9/3" for ÖMC dates, "10/4" for Stena dates),
+    // skip deadline validation since we can't compare dates properly
     const event = parseISO(eventDate);
+    
+    // Check if parseISO actually parsed a valid date
+    // parseISO returns Invalid Date for non-ISO formats, but doesn't throw
+    if (isNaN(event.getTime())) {
+      // Date is not in ISO format, skip deadline validation
+      // This allows non-ISO date formats (like "8-9/3" for ÖMC) to pass
+      return { valid: true };
+    }
 
     // Validate deadline_submit <= deadline_cancel
     if (submitDate && cancelDate) {

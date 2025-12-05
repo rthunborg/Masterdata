@@ -13,12 +13,14 @@ describe('PE3 Time Field Mandatory Validation', () => {
   describe('AC1: PE3 Time Field Mandatory Validation Tests', () => {
     it('should reject PE3 date without time field', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
         date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
         max_spots: 10,
         remaining_spots: 10,
+        notes: null,
         time_value: null,
         deadline_submit: null,
         deadline_cancel: null,
@@ -36,12 +38,14 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
     it('should reject PE3 date with empty time string', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
         date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
         max_spots: 10,
         remaining_spots: 10,
+        notes: null,
         time_value: '',
         deadline_submit: null,
         deadline_cancel: null,
@@ -59,12 +63,14 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
     it('should accept PE3 date with valid time (HH:MM format)', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
         date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
         max_spots: 10,
         remaining_spots: 10,
+        notes: null,
         time_value: '14:30',
         deadline_submit: null,
         deadline_cancel: null,
@@ -79,12 +85,14 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
     it('should reject PE3 date with invalid time format', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
         date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
         max_spots: 10,
         remaining_spots: 10,
+        notes: null,
         time_value: '25:00', // Invalid hour
         deadline_submit: null,
         deadline_cancel: null,
@@ -102,12 +110,14 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
     it('should reject PE3 date with invalid minute format', () => {
       const result = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
         date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
         max_spots: 10,
         remaining_spots: 10,
+        notes: null,
         time_value: '14:60', // Invalid minute
         deadline_submit: null,
         deadline_cancel: null,
@@ -127,12 +137,14 @@ describe('PE3 Time Field Mandatory Validation', () => {
       
       validTimes.forEach((time) => {
         const result = schema.safeParse({
+          week_number: null,
           category: 'PE3 Dates',
           date_description: 'Test PE3 Date',
           date_value: '2025-03-15',
           year: 2025,
           max_spots: 10,
           remaining_spots: 10,
+          notes: null,
           time_value: time,
           deadline_submit: null,
           deadline_cancel: null,
@@ -150,12 +162,14 @@ describe('PE3 Time Field Mandatory Validation', () => {
       
       categories.forEach((category) => {
         const result = schema.safeParse({
+          week_number: null,
           category,
           date_description: 'Test Date',
           date_value: '2025-03-15',
           year: 2025,
           max_spots: 10,
           remaining_spots: 10,
+          notes: null,
           time_value: null,
           deadline_submit: null,
           deadline_cancel: null,
@@ -173,12 +187,14 @@ describe('PE3 Time Field Mandatory Validation', () => {
     it('should reject updating PE3 date to clear time field', () => {
       // First create a valid PE3 date with time
       const createResult = schema.safeParse({
+        week_number: null,
         category: 'PE3 Dates',
         date_description: 'Test PE3 Date',
         date_value: '2025-03-15',
         year: 2025,
         max_spots: 10,
         remaining_spots: 10,
+        notes: null,
         time_value: '14:30',
         deadline_submit: null,
         deadline_cancel: null,

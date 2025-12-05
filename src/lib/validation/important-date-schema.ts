@@ -42,71 +42,63 @@ export const createImportantDateSchema = z.object({
     path: ['date_value'],
   }
 )
-.refine(
-  (data) => {
-    // PE3 dates require time field
-    if (data.category === 'PE3 Dates') {
-      if (!data.time_value || (typeof data.time_value === 'string' && data.time_value.trim() === '')) {
-        return false;
-      }
-      if (data.time_value) {
-        const result = validateTimeFormat(data.time_value);
-        return result.valid;
-      }
-      return false;
+.superRefine((data, ctx) => {
+  // PE3 dates require time field validation
+  if (data.category === 'PE3 Dates') {
+    // Check if time_value is null, undefined, or empty string
+    if (data.time_value === null || data.time_value === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Time is required for PE3 dates',
+        path: ['time_value'],
+      });
+      return;
     }
+    
+    // Check if time_value is a non-empty string
+    if (typeof data.time_value === 'string') {
+      if (data.time_value.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Time is required for PE3 dates',
+          path: ['time_value'],
+        });
+        return;
+      }
+      
+      // Validate time format
+      const result = validateTimeFormat(data.time_value);
+      if (!result.valid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+          path: ['time_value'],
+        });
+        return;
+      }
+    } else {
+      // time_value is not a string and not null/undefined - invalid type
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Time is required for PE3 dates',
+        path: ['time_value'],
+      });
+      return;
+    }
+  } else {
     // For other categories, validate time format if provided
     if (data.time_value && typeof data.time_value === 'string' && data.time_value.trim() !== '') {
       const result = validateTimeFormat(data.time_value);
-      return result.valid;
-    }
-    return true;
-  },
-  (data) => {
-    // Error callback is only called when validation fails
-    // PE3 dates require time
-    if (data.category === 'PE3 Dates') {
-      // Check if time_value is missing or empty
-      if (data.time_value === null || data.time_value === undefined || 
-          (typeof data.time_value === 'string' && data.time_value.trim() === '')) {
-        return {
-          message: 'Time is required for PE3 dates',
-          path: ['time_value'],
-        };
-      }
-      // If time_value is provided, validate format
-      if (data.time_value && typeof data.time_value === 'string') {
-        const result = validateTimeFormat(data.time_value);
-        if (!result.valid) {
-          return {
-            message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-            path: ['time_value'],
-          };
-        }
-      }
-      // Fallback for PE3 dates (shouldn't reach here)
-      return {
-        message: 'Time is required for PE3 dates',
-        path: ['time_value'],
-      };
-    }
-    // For other categories, validate format if provided
-    if (data.time_value && typeof data.time_value === 'string' && data.time_value.trim() !== '') {
-      const result = validateTimeFormat(data.time_value);
       if (!result.valid) {
-        return {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
           message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
           path: ['time_value'],
-        };
+        });
       }
     }
-    // Fallback error (shouldn't reach here if validation logic is correct)
-    return {
-      message: 'Invalid time value',
-      path: ['time_value'],
-    };
   }
-)
+})
 .refine(
   (data) => {
     // Validate deadline constraints
@@ -160,16 +152,21 @@ export const updateImportantDateSchema = z.object({
 )
 .refine(
   (data) => {
-    // PE3 dates require time field (only if category is PE3 Dates)
+    // PE3 dates require time field (only if category is PE3 Dates and time_value is provided)
     if (data.category === 'PE3 Dates' && data.time_value !== undefined) {
-      if (!data.time_value || data.time_value.trim() === '') {
+      // Reject null or empty string
+      if (data.time_value === null || (typeof data.time_value === 'string' && data.time_value.trim() === '')) {
         return false;
       }
-      const result = validateTimeFormat(data.time_value);
-      return result.valid;
+      // Validate format if provided
+      if (data.time_value && typeof data.time_value === 'string') {
+        const result = validateTimeFormat(data.time_value);
+        return result.valid;
+      }
+      return false;
     }
     // For other categories, validate time format if provided
-    if (data.time_value && data.time_value.trim() !== '') {
+    if (data.time_value && typeof data.time_value === 'string' && data.time_value.trim() !== '') {
       const result = validateTimeFormat(data.time_value);
       return result.valid;
     }
@@ -178,22 +175,26 @@ export const updateImportantDateSchema = z.object({
   (data) => {
     // PE3 dates require time
     if (data.category === 'PE3 Dates' && data.time_value !== undefined) {
-      if (!data.time_value || data.time_value.trim() === '') {
+      // Check if time_value is null or empty
+      if (data.time_value === null || (typeof data.time_value === 'string' && data.time_value.trim() === '')) {
         return {
           message: 'Time is required for PE3 dates',
           path: ['time_value'],
         };
       }
-      const result = validateTimeFormat(data.time_value);
-      if (!result.valid) {
-        return {
-          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-          path: ['time_value'],
-        };
+      // Validate format if provided
+      if (data.time_value && typeof data.time_value === 'string') {
+        const result = validateTimeFormat(data.time_value);
+        if (!result.valid) {
+          return {
+            message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
+            path: ['time_value'],
+          };
+        }
       }
     }
     // For other categories, validate format if provided
-    if (data.time_value && data.time_value.trim() !== '') {
+    if (data.time_value && typeof data.time_value === 'string' && data.time_value.trim() !== '') {
       const result = validateTimeFormat(data.time_value);
       if (!result.valid) {
         return {
@@ -202,6 +203,7 @@ export const updateImportantDateSchema = z.object({
         };
       }
     }
+    // Return empty error if validation passes (shouldn't reach here)
     return {
       message: '',
       path: ['time_value'],

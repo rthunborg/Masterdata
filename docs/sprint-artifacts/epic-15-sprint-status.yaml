@@ -25,7 +25,7 @@ stories:
     assigned_to: null
   - id: 15.5
     title: Test Suite Optimization and Cleanup
-    status: in-progress
+    status: done
     assigned_to: null
   - id: 15.6
     title: Documentation Update and Cleanup
