@@ -21,47 +21,28 @@
 
 ## CI/CD Pipeline
 
-```yaml
-# .github/workflows/ci.yml
-name: CI
+The project uses GitHub Actions to automatically run tests and checks on every pull request and push to main. This ensures that no failing tests are deployed to production.
 
-on:
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches: [main, develop]
+**Workflow File:** `.github/workflows/test-check.yml`
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+**What it does:**
+- Runs on every pull request targeting `main`
+- Runs on every push to `main`
+- Executes type checking (`pnpm type-check`)
+- Runs linting (`pnpm lint`)
+- Runs unit tests (`pnpm test:silent`)
+- Runs integration tests (if GitHub secrets are configured)
+- **Blocks PR merge and deployment if any check fails**
 
-    steps:
-      - uses: actions/checkout@v4
+**Required GitHub Secrets (for integration tests):**
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
+- `NEXT_PUBLIC_APP_URL` (optional) - Defaults to `http://localhost:3000`
+- `TEST_HR_ADMIN_EMAIL` (optional) - Defaults to `admin@test.com`
+- `TEST_HR_ADMIN_PASSWORD` (optional) - Defaults to `Test123!`
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Type check
-        run: pnpm type-check
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Run tests
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
-```
+See `docs/CI_CD_SETUP.md` for detailed setup instructions.
 
 ## Environments
 
