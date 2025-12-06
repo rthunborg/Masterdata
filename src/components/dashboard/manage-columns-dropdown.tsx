@@ -29,6 +29,7 @@ export function ManageColumnsDialog() {
   const { columns } = useColumns();
   const { openEditColumnModal } = useUIStore();
   const t = useTranslations("tooltips");
+  const tModals = useTranslations("modals");
   const [open, setOpen] = useState(false);
 
   // Filter to only show custom columns (is_masterdata = false)
@@ -56,14 +57,14 @@ export function ManageColumnsDialog() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Settings className="h-4 w-4 mr-2" />
-          Manage Columns
+          {t("manageColumns")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Manage Custom Columns</DialogTitle>
+          <DialogTitle>{tModals("manageCustomColumns")}</DialogTitle>
           <DialogDescription>
-            Edit your custom column names and categories
+            {tModals("editCustomColumnsDescription")}
           </DialogDescription>
         </DialogHeader>
         
@@ -72,7 +73,7 @@ export function ManageColumnsDialog() {
             <div key={category}>
               {/* Category Header */}
               <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-                {category}
+                {category === "Uncategorized" ? tModals("uncategorized") : category}
               </h3>
               
               {/* Columns in this category */}

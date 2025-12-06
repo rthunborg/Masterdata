@@ -272,9 +272,9 @@ describe('AddUserModal', () => {
     await user.type(screen.getByLabelText('Lösenord'), 'testPass123');
     await user.click(screen.getByRole('button', { name: /skapa användare/i }));
 
-    // Check loading state - button text changes to "skapar" (creating) during submission
+    // Check loading state - button text changes to "Skapar..." (creating) during submission
     await waitFor(() => {
-      const loadingButton = screen.queryByRole('button', { name: /skapar/i });
+      const loadingButton = screen.queryByRole('button', { name: /skapar\.\.\./i });
       expect(loadingButton).toBeInTheDocument();
     }, { timeout: 3000 });
   });
@@ -295,10 +295,10 @@ describe('AddUserModal', () => {
     await user.click(submitButton);
 
     // Check submit button is disabled while loading
-    // The button should be disabled and show "skapar" text
+    // The button should be disabled and show "Skapar..." text
     await waitFor(() => {
       // Find the button with loading text (it's the same button, just text changed)
-      const loadingButton = screen.queryByRole('button', { name: /skapar/i });
+      const loadingButton = screen.queryByRole('button', { name: /skapar\.\.\./i });
       if (loadingButton) {
         // Button should be disabled while loading
         expect(loadingButton).toBeDisabled();

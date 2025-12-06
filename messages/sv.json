@@ -116,6 +116,10 @@
     "columnNameLabel": "Kolumnnamn",
     "columnType": "Kolumntyp",
     "category": "Kategori",
+    "title": "Titel",
+    "description": "Beskrivning",
+    "selectOrTypeCategory": "Välj eller skriv en kategori",
+    "save": "Spara",
     "weekNumber": "Veckonummer",
     "year": "År",
     "dateDescription": "Datumbeskrivning",
@@ -252,6 +256,9 @@
       "updateFailed": "Kunde inte uppdatera kolumn",
       "noColumnSelected": "Ingen kolumn vald för redigering"
     },
+    "manageCustomColumns": "Hantera anpassade kolumner",
+    "editCustomColumnsDescription": "Redigera dina anpassade kolumnnamn och kategorier",
+    "uncategorized": "Okategoriserad",
     "addImportantDate": {
       "title": "Lägg till viktigt datum",
       "description": "Skapa en ny viktig datumpost för operativ planering.",
@@ -480,7 +487,8 @@
     "editColumn": "Redigera kolumnnamn och kategori",
     "deleteColumn": "Ta bort anpassad kolumn",
     "hideColumn": "Dölj kolumn från tabell",
-    "showColumn": "Visa kolumn i tabell"
+    "showColumn": "Visa kolumn i tabell",
+    "manageColumns": "Hantera kolumner"
   },
   "toasts": {
     "offlineSync": {

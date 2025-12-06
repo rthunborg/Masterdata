@@ -106,7 +106,7 @@ export function EditColumnModal() {
 
   const onSubmit = async (data: UpdateColumnInput) => {
     if (!editColumnId) {
-      toast.error(t('noColumnSelected'));
+      toast.error(t('editColumn.noColumnSelected'));
       return;
     }
 
@@ -137,7 +137,7 @@ export function EditColumnModal() {
         submitData
       );
 
-      toast.success(t('columnUpdated', { name: updatedColumn.column_name }));
+      toast.success(t('editColumn.columnUpdated', { name: updatedColumn.column_name }));
 
       // Refetch columns to update the table
       refetch();
@@ -146,7 +146,7 @@ export function EditColumnModal() {
       closeEditColumnModal();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : t('updateFailed');
+        error instanceof Error ? error.message : t('editColumn.updateFailed');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -157,9 +157,9 @@ export function EditColumnModal() {
     <Dialog open={modals.editColumn} onOpenChange={closeEditColumnModal}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogTitle>{t('editColumn.title')}</DialogTitle>
           <DialogDescription>
-            {t('description')}
+            {t('editColumn.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -171,7 +171,7 @@ export function EditColumnModal() {
               name="column_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tForms('columnName')} *</FormLabel>
+                  <FormLabel>{tForms('title')} *</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g., Recruitment Team"
@@ -202,7 +202,7 @@ export function EditColumnModal() {
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">
-                  {t('columnTypeHint')}
+                  {t('editColumn.columnTypeHint')}
                 </p>
               </FormItem>
             )}
@@ -227,7 +227,7 @@ export function EditColumnModal() {
                           )}
                           disabled={isSubmitting}
                         >
-                          {field.value || "Select or type a category"}
+                          {field.value || tForms('selectOrTypeCategory')}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
@@ -284,7 +284,7 @@ export function EditColumnModal() {
                 {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t('saving') : t('saveButton')}
+                {isSubmitting ? t('editColumn.saving') : tForms('save')}
               </Button>
             </DialogFooter>
           </form>
