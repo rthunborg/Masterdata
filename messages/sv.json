@@ -259,6 +259,15 @@
     "manageCustomColumns": "Hantera anpassade kolumner",
     "editCustomColumnsDescription": "Redigera dina anpassade kolumnnamn och kategorier",
     "uncategorized": "Okategoriserad",
+    "deleteColumn": {
+      "title": "Ta bort kolumn",
+      "message": "Är du säker på att du vill ta bort kolumnen \"{name}\"? Denna åtgärd kan inte ångras.",
+      "confirm": "Ta bort",
+      "cancel": "Avbryt",
+      "deleting": "Tar bort...",
+      "success": "Kolumnen har tagits bort",
+      "failed": "Kunde inte ta bort kolumnen"
+    },
     "addImportantDate": {
       "title": "Lägg till viktigt datum",
       "description": "Skapa en ny viktig datumpost för operativ planering.",

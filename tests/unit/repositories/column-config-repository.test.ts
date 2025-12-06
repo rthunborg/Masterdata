@@ -620,7 +620,7 @@ describe("ColumnConfigRepository", () => {
   });
 
   describe("deleteColumn", () => {
-    it("should delete a custom column", async () => {
+    it("should delete a custom column when user has edit permission", async () => {
       const customColumn: ColumnConfig = {
         id: "col-custom",
         column_name: "Team Assignment",
@@ -650,7 +650,72 @@ describe("ColumnConfigRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.deleteColumn("col-custom")).resolves.toBeUndefined();
+      await expect(
+        repository.deleteColumn("col-custom", "user-id", "sodexo")
+      ).resolves.toBeUndefined();
+    });
+
+    it("should allow HR Admin to delete any custom column", async () => {
+      const customColumn: ColumnConfig = {
+        id: "col-custom",
+        column_name: "Team Assignment",
+        column_type: "text",
+        is_masterdata: false,
+        role_permissions: { sodexo: { view: true, edit: true } },
+        category: null,
+        display_order: 0,
+        is_visible: true,
+        db_column_name: "team_assignment",
+        category_color: null,
+        created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: customColumn, error: null }),
+        delete: vi.fn().mockReturnThis(),
+      };
+
+      mockClient.delete.mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      });
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      await expect(
+        repository.deleteColumn("col-custom", "admin-id", "hr_admin")
+      ).resolves.toBeUndefined();
+    });
+
+    it("should throw error when user lacks edit permission", async () => {
+      const customColumn: ColumnConfig = {
+        id: "col-custom",
+        column_name: "Team Assignment",
+        column_type: "text",
+        is_masterdata: false,
+        role_permissions: { sodexo: { view: true, edit: false } }, // No edit permission
+        category: null,
+        display_order: 0,
+        is_visible: true,
+        db_column_name: "team_assignment",
+        category_color: null,
+        created_at: "2025-10-28T00:00:00Z",
+        updated_at: "2025-10-28T00:00:00Z",      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: customColumn, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      await expect(
+        repository.deleteColumn("col-custom", "user-id", "sodexo")
+      ).rejects.toThrow("You do not have permission to delete this column");
     });
 
     it("should throw error when deleting masterdata column", async () => {
@@ -677,9 +742,9 @@ describe("ColumnConfigRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.deleteColumn("col-master")).rejects.toThrow(
-        "Cannot delete masterdata column"
-      );
+      await expect(
+        repository.deleteColumn("col-master", "user-id", "sodexo")
+      ).rejects.toThrow("Cannot delete masterdata column");
     });
 
     it("should throw error when column not found", async () => {
@@ -695,7 +760,9 @@ describe("ColumnConfigRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.deleteColumn("nonexistent")).rejects.toThrow("Column not found");
+      await expect(
+        repository.deleteColumn("nonexistent", "user-id", "sodexo")
+      ).rejects.toThrow("Column not found");
     });
 
     it("should throw error on database delete failure", async () => {
@@ -728,9 +795,9 @@ describe("ColumnConfigRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.deleteColumn("col-custom")).rejects.toThrow(
-        "Failed to delete column"
-      );
+      await expect(
+        repository.deleteColumn("col-custom", "user-id", "sodexo")
+      ).rejects.toThrow("Failed to delete column");
     });
   });
 });

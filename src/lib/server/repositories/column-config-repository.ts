@@ -246,8 +246,10 @@ export class ColumnConfigRepository {
   /**
    * Delete a custom column
    * Only allows deleting custom columns (is_masterdata = false)
+   * For external users: Only allows deleting columns they have edit permission for (ownership check)
+   * For HR Admin: Can delete any custom column
    */
-  async deleteColumn(id: string): Promise<void> {
+  async deleteColumn(id: string, userId: string, userRole: UserRole): Promise<void> {
     const supabase = await this.getSupabaseClient();
 
     // Verify column exists and is not masterdata
@@ -259,6 +261,14 @@ export class ColumnConfigRepository {
 
     if (column.is_masterdata) {
       throw new Error("Cannot delete masterdata column");
+    }
+
+    // For external users, check ownership (must have edit permission)
+    if (userRole !== "hr_admin") {
+      const rolePerms = column.role_permissions[userRole];
+      if (!rolePerms || !rolePerms.edit) {
+        throw new Error("You do not have permission to delete this column");
+      }
     }
 
     const { error } = await supabase.from("column_config").delete().eq("id", id);

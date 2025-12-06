@@ -105,3 +105,80 @@ export async function PATCH(
     return createErrorResponse(error);
   }
 }
+
+/**
+ * DELETE /api/columns/[id]
+ * Delete a custom column
+ * Authorization: External party users can only delete columns they have edit permission for (their own columns)
+ * HR Admin cannot use this endpoint (403) - must use admin endpoint
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Await params (Next.js 15 requirement)
+    const { id } = await params;
+    
+    // Verify authentication and get user
+    const user = await requireAuthAPI();
+
+    // Verify user is NOT hr_admin (use admin endpoint for admin operations)
+    if (user.role === "hr_admin") {
+      return createForbiddenResponse(
+        "HR Admin cannot use this endpoint. Use admin panel to delete columns."
+      );
+    }
+
+    // Delete column via repository (includes ownership check)
+    await columnConfigRepository.deleteColumn(id, user.id, user.role);
+
+    return NextResponse.json({ 
+      data: { 
+        id,
+        message: "Column deleted successfully" 
+      } 
+    });
+  } catch (error) {
+    // Handle permission errors
+    if (error instanceof Error && error.message.includes("permission")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: error.message,
+          },
+        },
+        { status: 403 }
+      );
+    }
+
+    // Handle not found errors
+    if (error instanceof Error && error.message.includes("not found")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "NOT_FOUND",
+            message: error.message,
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    // Handle masterdata column deletion attempt
+    if (error instanceof Error && error.message.includes("masterdata")) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: error.message,
+          },
+        },
+        { status: 403 }
+      );
+    }
+
+    return createErrorResponse(error);
+  }
+}

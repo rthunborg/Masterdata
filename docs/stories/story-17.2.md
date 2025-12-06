@@ -2,7 +2,7 @@
 
 **Story:** As an external party user, I want to delete my own custom columns, so that I can remove columns I no longer need.
 
-**Status:** Approved  
+**Status:** Done
 **Epic:** Epic 17: External User UX Improvements
 
 ---
@@ -148,17 +148,17 @@ Use existing dialog component or create simple confirmation:
 
 ## Tasks
 
-- [ ] Create DELETE API endpoint `/api/columns/:columnId`
-- [ ] Add permission check in API endpoint
-- [ ] Add `deleteColumn` method to column service
-- [ ] Add Delete button to manage columns modal
-- [ ] Implement delete handler with confirmation
-- [ ] Add success/error toast messages
-- [ ] Test delete functionality
-- [ ] Test permission restrictions
-- [ ] Test error handling
-- [ ] Add Swedish translations for delete messages
-- [ ] Update column list after deletion
+- [x] Create DELETE API endpoint `/api/columns/:columnId`
+- [x] Add permission check in API endpoint
+- [x] Add `deleteColumn` method to column service
+- [x] Add Delete button to manage columns modal
+- [x] Implement delete handler with confirmation
+- [x] Add success/error toast messages
+- [x] Test delete functionality
+- [x] Test permission restrictions
+- [x] Test error handling
+- [x] Add Swedish translations for delete messages
+- [x] Update column list after deletion
 
 ---
 
@@ -208,4 +208,90 @@ Use existing dialog component or create simple confirmation:
 - Consider data migration if column has existing data
 - May need to handle cascading deletes for related data
 - Ensure delete is permanent (no undo) - make this clear in UI
+
+---
+
+## Dev Agent Record
+
+### Agent Model Used
+Claude Sonnet 4.5 (via Cursor)
+
+### Debug Log
+- Added DELETE endpoint to `/api/columns/[id]/route.ts`:
+  - Verifies user authentication
+  - Blocks HR Admin from using user endpoint (must use admin endpoint)
+  - Checks column ownership via repository (user must have edit permission)
+  - Returns appropriate error responses (403 for permission denied, 404 for not found)
+- Updated `columnConfigRepository.deleteColumn()`:
+  - Added userId and userRole parameters for ownership verification
+  - External users can only delete columns they have edit permission for
+  - HR Admin can delete any custom column
+- Added `deleteCustomColumn()` method to `column-service.ts`:
+  - User-facing delete method that calls `/api/columns/:id` endpoint
+  - Separated from admin `deleteColumn()` method
+- Updated `manage-columns-dropdown.tsx`:
+  - Added delete button with Trash icon next to each column
+  - Added AlertDialog confirmation dialog with Swedish translations
+  - Implemented delete handler with error handling
+  - Added aria-label for accessibility
+  - Refetches columns after successful deletion
+- Added Swedish translations to `messages/sv.json`:
+  - `modals.deleteColumn.title`: "Ta bort kolumn"
+  - `modals.deleteColumn.message`: Confirmation message with column name
+  - `modals.deleteColumn.confirm`: "Ta bort"
+  - `modals.deleteColumn.cancel`: "Avbryt"
+  - `modals.deleteColumn.deleting`: "Tar bort..."
+  - `modals.deleteColumn.success`: "Kolumnen har tagits bort"
+  - `modals.deleteColumn.failed`: "Kunde inte ta bort kolumnen"
+- Created unit tests:
+  - `tests/unit/components/manage-columns-dropdown.test.tsx`: 6 new tests for delete functionality
+  - `tests/unit/repositories/column-config-repository.test.ts`: Updated with ownership checks
+  - All tests passing (12/12)
+
+### Completion Notes
+
+**Implementation Summary:**
+- All acceptance criteria satisfied
+- Delete functionality implemented with proper ownership checks
+- Swedish translations added for all delete-related UI text
+- Confirmation dialog prevents accidental deletions
+- Error handling implemented with user-friendly messages
+- Unit tests created and passing
+
+**Key Features:**
+- External users can only delete columns they own (have edit permission for)
+- HR Admin cannot use user endpoint (must use admin endpoint)
+- Confirmation dialog uses Swedish translations
+- Column list automatically refreshes after deletion
+- Proper error handling with toast notifications
+
+**Files Modified:**
+- `src/app/api/columns/[id]/route.ts` - Added DELETE endpoint
+- `src/lib/server/repositories/column-config-repository.ts` - Added ownership check to deleteColumn
+- `src/lib/services/column-service.ts` - Added deleteCustomColumn method
+- `src/components/dashboard/manage-columns-dropdown.tsx` - Added delete button and confirmation dialog
+- `messages/sv.json` - Added Swedish translations
+- `tests/unit/components/manage-columns-dropdown.test.tsx` - Added delete functionality tests
+- `tests/unit/repositories/column-config-repository.test.ts` - Updated with ownership checks
+
+### File List
+
+**Modified:**
+- `src/app/api/columns/[id]/route.ts` - Added DELETE endpoint with ownership verification
+- `src/lib/server/repositories/column-config-repository.ts` - Updated deleteColumn with ownership check
+- `src/lib/services/column-service.ts` - Added deleteCustomColumn method
+- `src/components/dashboard/manage-columns-dropdown.tsx` - Added delete button and confirmation dialog
+- `messages/sv.json` - Added Swedish translations for delete functionality
+- `tests/unit/components/manage-columns-dropdown.test.tsx` - Added 6 delete functionality tests
+- `tests/unit/repositories/column-config-repository.test.ts` - Updated deleteColumn tests with ownership checks
+- `docs/stories/story-17.2.md` - Updated tasks and added Dev Agent Record
+
+## Change Log
+
+| Date       | Description                                    | Author    |
+| ---------- | ---------------------------------------------- | --------- |
+| 2025-12-05 | Added delete functionality for custom columns  | Dev Agent |
+| 2025-12-05 | Added ownership verification for delete operations | Dev Agent |
+| 2025-12-05 | Added Swedish translations for delete UI       | Dev Agent |
+| 2025-12-05 | Created unit tests for delete functionality    | Dev Agent |
 
