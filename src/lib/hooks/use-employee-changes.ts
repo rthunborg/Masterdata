@@ -95,6 +95,7 @@ export function useEmployeeChanges(): UseEmployeeChangesReturn {
   /**
    * Initializes baseline and fetches changes on mount
    * Baseline is captured once per session and stored in sessionStorage
+   * Detects new logins by comparing user.last_active_at with sessionStorage
    */
   useEffect(() => {
     // First-time users: no changes to show (this is their first view)
@@ -107,12 +108,16 @@ export function useEmployeeChanges(): UseEmployeeChangesReturn {
 
     // Check sessionStorage for existing baseline (same session, multiple tabs)
     const sessionBaseline = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    const baseline = sessionBaseline || user.last_active_at;
     
-    // Store baseline in sessionStorage if not already present
-    if (!sessionBaseline) {
-      sessionStorage.setItem(SESSION_STORAGE_KEY, baseline);
-    }
+    // If user.last_active_at differs from sessionStorage, it's a new login
+    // Use the new last_active_at as baseline (user logged out and back in)
+    // Otherwise, use sessionStorage value to maintain same baseline across page refreshes
+    const baseline = (sessionBaseline && sessionBaseline === user.last_active_at) 
+      ? sessionBaseline 
+      : user.last_active_at;
+    
+    // Update sessionStorage with current baseline
+    sessionStorage.setItem(SESSION_STORAGE_KEY, baseline);
     
     setChangesBaseline(baseline);
     fetchChanges(baseline);

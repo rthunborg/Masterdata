@@ -157,8 +157,8 @@ describe("useEmployeeChanges", () => {
       );
     });
 
-    it("should use existing baseline from sessionStorage if present", async () => {
-      const existingBaseline = "2025-01-05T00:00:00Z";
+    it("should use existing baseline from sessionStorage if it matches user.last_active_at (same session)", async () => {
+      const existingBaseline = "2025-01-10T08:00:00Z"; // Match mockUser.last_active_at
       sessionStorageMock.setItem("employee-changes-baseline", existingBaseline);
 
       mockFetch.mockResolvedValueOnce({
@@ -177,10 +177,39 @@ describe("useEmployeeChanges", () => {
       });
 
       expect(result.current.changesBaseline).toBe(existingBaseline);
-      // Should use existing baseline, not user's last_active_at
+      // Should use existing baseline when it matches user.last_active_at (same session)
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining(`baseline=${encodeURIComponent(existingBaseline)}`)
       );
+    });
+
+    it("should use new user.last_active_at when it differs from sessionStorage (new login)", async () => {
+      const oldBaseline = "2025-01-05T00:00:00Z";
+      const newLastActive = "2025-01-10T08:00:00Z"; // mockUser.last_active_at
+      sessionStorageMock.setItem("employee-changes-baseline", oldBaseline);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          changedEmployees: [],
+          totalCount: 0,
+          userLastActive: newLastActive,
+        }),
+      });
+
+      const { result } = renderHook(() => useEmployeeChanges());
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      // Should use new user.last_active_at when it differs (detects new login)
+      expect(result.current.changesBaseline).toBe(newLastActive);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining(`baseline=${encodeURIComponent(newLastActive)}`)
+      );
+      // SessionStorage should be updated with new baseline
+      expect(sessionStorageMock.getItem("employee-changes-baseline")).toBe(newLastActive);
     });
 
     it("should return empty results for first-time users (null last_active_at)", async () => {

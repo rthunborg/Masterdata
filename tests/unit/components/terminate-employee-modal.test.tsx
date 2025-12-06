@@ -291,8 +291,10 @@ describe('TerminateEmployeeModal', () => {
 
     await user.click(submitButton);
 
-    // Button should be disabled during submission
-    expect(submitButton).toBeDisabled();
+    // Button should be disabled during submission - wait for form state to update
+    await waitFor(() => {
+      expect(submitButton).toBeDisabled();
+    });
   });
 
   it('should display error messages on failure', async () => {

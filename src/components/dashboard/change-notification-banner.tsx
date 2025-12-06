@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 
 const SESSION_STORAGE_KEY = "employee-changes-banner-dismissed";
+const BASELINE_TRACKING_KEY = "employee-changes-banner-last-baseline";
 
 /**
  * Change Notification Banner Component
@@ -44,14 +45,21 @@ export function ChangeNotificationBanner({
   }, []);
 
   // Clear dismissal state when baseline changes (new login)
+  // Track the baseline we've seen before in a separate key to detect changes
   useEffect(() => {
     if (changesBaseline && typeof window !== "undefined") {
-      const lastBaseline = sessionStorage.getItem("employee-changes-baseline");
-      // If baseline changed, clear dismissal state
-      if (lastBaseline && lastBaseline !== changesBaseline) {
+      const lastSeenBaseline = sessionStorage.getItem(BASELINE_TRACKING_KEY);
+      // If baseline changed (different from what we've seen before), it's a new login
+      // Clear dismissal state so banner shows again
+      if (lastSeenBaseline && lastSeenBaseline !== changesBaseline) {
         sessionStorage.removeItem(SESSION_STORAGE_KEY);
         setIsDismissed(false);
       }
+      // Update tracking key with current baseline
+      sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
+    } else if (!changesBaseline && typeof window !== "undefined") {
+      // Clear tracking key if baseline is null (first-time user)
+      sessionStorage.removeItem(BASELINE_TRACKING_KEY);
     }
   }, [changesBaseline]);
 
