@@ -44,9 +44,27 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const baselineParam = searchParams.get("baseline");
     
-    // Use provided baseline or user's last_active_at
-    // If user has no last_active_at (first-time user), use null
-    const baseline = baselineParam || user.last_active_at || null;
+    // Validate baseline parameter if provided
+    let baseline: string | null = null;
+    if (baselineParam) {
+      const baselineDate = new Date(baselineParam);
+      if (isNaN(baselineDate.getTime())) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "INVALID_PARAMETER",
+              message: "Invalid baseline timestamp format. Expected ISO 8601 format (e.g., 2025-01-10T08:00:00Z)",
+            },
+          },
+          { status: 400 }
+        );
+      }
+      baseline = baselineDate.toISOString();
+    } else {
+      // Use provided baseline or user's last_active_at
+      // If user has no last_active_at (first-time user), use null
+      baseline = user.last_active_at || null;
+    }
 
     // Get changes since last active
     const changedEmployees = await employeeRepository.getChangesSinceLastActive(

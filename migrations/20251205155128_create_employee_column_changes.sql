@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS public.employee_column_changes (
   changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   changed_by UUID REFERENCES public.users(id) ON DELETE SET NULL,  -- Optional for GDPR
   CONSTRAINT unique_change_per_column UNIQUE(employee_id, column_name, changed_at)
+  -- NOTE: Unique constraint includes changed_at to prevent duplicates.
+  -- Edge case: If multiple changes to same column happen within same millisecond,
+  -- ON CONFLICT DO NOTHING will silently ignore some changes. This is acceptable for MVP.
 );
 
 -- Indexes for query performance
@@ -32,7 +35,7 @@ COMMENT ON COLUMN public.employee_column_changes.changed_by IS
   'User who made the change (nullable for GDPR compliance, set via session context if available)';
 
 -- Trigger function to track employee column changes
--- For MVP: Uses hardcoded list of masterdata columns (must be updated when new masterdata columns are added)
+-- For MVP: Uses hardcoded list of masterdata columns (28 columns total, must be updated when new masterdata columns are added)
 CREATE OR REPLACE FUNCTION track_employee_column_changes()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -42,7 +45,7 @@ DECLARE
     'email', 'mobile', 'rank', 'gender', 'town_district',
     'hire_date', 'termination_date', 'termination_reason',
     'comments',
-    'one', 'isps', 'photo', 'origo', 'loneiva',
+    'one', 'talmundo', 'isps', 'photo', 'origo', 'loneiva',
     'mail_lon', 'bankuppgifter', 'li', 'passport',
     'kvitto_c17_18', 'c17', 'crewing_done'
   ];
@@ -54,7 +57,9 @@ DECLARE
   new_json JSONB;
 BEGIN
   -- Try to get user ID from session context (if available)
-  -- For MVP: This may not be available, so changed_by will be NULL
+  -- NOTE: Session context (app.user_id) is not currently implemented in the codebase.
+  -- For MVP: changed_by will be NULL. This is acceptable per AC3 which states "if available".
+  -- Future enhancement: Implement session context setting in employee update API routes.
   BEGIN
     user_id_val := NULLIF(current_setting('app.user_id', true), '')::UUID;
   EXCEPTION WHEN OTHERS THEN
@@ -69,6 +74,9 @@ BEGIN
   FOREACH col_name IN ARRAY masterdata_columns
   LOOP
     -- Extract values from JSONB (handles NULL automatically)
+    -- NOTE: JSONB ->> operator returns TEXT, so all values (boolean, number, date) are compared as text.
+    -- This works correctly with IS DISTINCT FROM for null handling, but values are stringified.
+    -- Example: boolean false becomes 'false', number 5 becomes '5', null stays null.
     old_val := old_json->>col_name;
     new_val := new_json->>col_name;
 
@@ -101,6 +109,9 @@ COMMENT ON FUNCTION track_employee_column_changes() IS
    See migration file for list of tracked columns.';
 
 -- Create trigger on employees table
+-- Drop trigger if it exists (allows migration to be re-run safely)
+DROP TRIGGER IF EXISTS employee_column_changes_trigger ON public.employees;
+
 CREATE TRIGGER employee_column_changes_trigger
   AFTER UPDATE ON public.employees
   FOR EACH ROW

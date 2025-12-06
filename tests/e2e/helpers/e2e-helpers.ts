@@ -1086,3 +1086,24 @@ export async function waitForRealtimeUpdate(page: Page, expectedText: string, ti
   ).toContainText(expectedText, { timeout });
 }
 
+/**
+ * Setup test user (placeholder - can be extended for test user creation)
+ * Currently a no-op, but can be used for test user setup if needed
+ */
+export async function setupTestUser() {
+  // Placeholder for test user setup
+  // Can be extended to create test users, set permissions, etc.
+  return Promise.resolve();
+}
+
+/**
+ * Login as HR Admin user
+ * 
+ * @param page - Playwright page object
+ */
+export async function loginAsHRAdmin(page: Page) {
+  const adminEmail = process.env.E2E_HR_ADMIN_EMAIL || 'admin@test.com';
+  const adminPassword = process.env.E2E_HR_ADMIN_PASSWORD || 'Test123!';
+  await loginAsUser(page, adminEmail, adminPassword);
+}
+

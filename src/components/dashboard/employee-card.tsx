@@ -32,6 +32,8 @@ import { getEmployeeFieldValue } from '@/lib/utils/column-mapping';
 
 import { useImportantDates } from '@/lib/hooks/use-important-dates';
 
+import { useEmployeeChanges } from '@/lib/hooks/use-employee-changes';
+
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { useLongPress } from '@/hooks/use-long-press';
@@ -108,6 +110,9 @@ function EmployeeCardComponent({
   const [expanded, setExpanded] = useState(false);
 
   const { dates: allImportantDates } = useImportantDates();
+
+  // Story 16.5: Get change detection hook for field highlighting
+  const { isColumnChanged } = useEmployeeChanges();
 
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
@@ -976,6 +981,8 @@ function EmployeeCardComponent({
 
                   canEdit={true}
 
+                  isChanged={isColumnChanged(employee.id, 'stena_date')} // Story 16.5: Pass highlight flag
+
                   onSave={handleMasterdataUpdate}
 
                   onError={(error) => toast.error(error)}
@@ -1006,6 +1013,8 @@ function EmployeeCardComponent({
 
                   canEdit={true}
 
+                  isChanged={isColumnChanged(employee.id, 'omc_date')} // Story 16.5: Pass highlight flag
+
                   onSave={handleMasterdataUpdate}
 
                   onError={(error) => toast.error(error)}
@@ -1035,6 +1044,8 @@ function EmployeeCardComponent({
                   allDates={allImportantDates}
 
                   canEdit={true}
+
+                  isChanged={isColumnChanged(employee.id, 'pe3_date')} // Story 16.5: Pass highlight flag
 
                   onSave={handleMasterdataUpdate}
 
@@ -1157,6 +1168,8 @@ function EmployeeCardComponent({
 
                             canEdit={canEdit}
 
+                            isChanged={isColumnChanged(employee.id, col.db_column_name)} // Story 16.5: Pass highlight flag
+
                             onSave={handleMasterdataUpdate}
 
                             onError={(error) => toast.error(error)}
@@ -1192,6 +1205,8 @@ function EmployeeCardComponent({
                           options={selectOptions}
 
                           canEdit={canEdit}
+
+                          isChanged={isColumnChanged(employee.id, col.db_column_name)} // Story 16.5: Pass highlight flag
 
                           onSave={col.is_masterdata ? handleMasterdataUpdate : handleCustomDataUpdate}
 

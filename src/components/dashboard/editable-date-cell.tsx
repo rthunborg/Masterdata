@@ -28,6 +28,7 @@ interface EditableDateCellProps {
   dateCategory: string; // "Stena Dates", "ÖMC Dates", or "PE3 Dates"
   allDates: ImportantDate[];
   canEdit?: boolean;
+  isChanged?: boolean; // Story 16.5: Flag for field highlighting
   onSave: (id: string, field: string, value: string | null) => Promise<void>;
   onError?: (error: string) => void;
 }
@@ -40,6 +41,7 @@ export function EditableDateCell({
   dateCategory,
   allDates,
   canEdit = true,
+  isChanged = false, // Story 16.5: Default to false for backward compatibility
   onSave,
   onError,
 }: EditableDateCellProps) {
@@ -188,7 +190,9 @@ export function EditableDateCell({
               className={cn(
                 "px-3 py-2 rounded min-h-10 flex items-center select-text cursor-default bg-gray-50",
                 "focus:outline-none focus:ring-2 focus:ring-ring",
-                displayValue === t("dateDeleted") && "text-amber-600"
+                displayValue === t("dateDeleted") && "text-amber-600",
+                // Story 16.5: Apply highlight styling for changed fields
+                isChanged && "bg-amber-50 dark:bg-amber-950/20"
               )}
               tabIndex={0}
               role="gridcell"
@@ -222,7 +226,9 @@ export function EditableDateCell({
             className={cn(
               "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
               "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center bg-white",
-              displayValue === t("dateDeleted") && "text-amber-600"
+              displayValue === t("dateDeleted") && "text-amber-600",
+              // Story 16.5: Apply highlight styling for changed fields
+              isChanged && "bg-amber-50 dark:bg-amber-950/20"
             )}
             tabIndex={0}
             onKeyDown={(e) => {

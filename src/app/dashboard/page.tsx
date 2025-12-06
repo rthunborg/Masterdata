@@ -19,6 +19,7 @@ import { ResponsiveEmployeeView } from "@/components/dashboard/responsive-employ
 import { ManageColumnsDialog } from "@/components/dashboard/manage-columns-dropdown";
 import { RoleSelector } from "@/components/dashboard/role-selector";
 import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
+import { ChangeNotificationBanner } from "@/components/dashboard/change-notification-banner";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Employee } from "@/lib/types/employee";
 import { Plus, Upload, Columns } from "lucide-react";
@@ -296,6 +297,7 @@ export default function DashboardPage() {
       ) : (
         <Card>
           <CardContent>
+            <ChangeNotificationBanner />
             <ResponsiveEmployeeView
               employees={employees}
               isLoading={isLoadingEmployees}

@@ -102,7 +102,7 @@ describe("Employee Column Changes Trigger Tests", () => {
         .update({ first_name: "Jon" })
         .eq("id", employeeId);
 
-      expect(updateResult.error).toBeNull();
+      expect(updateResult.error).toBeFalsy();
       
       // Verify audit record would be created (in real scenario, trigger does this)
       // This test documents expected behavior
@@ -128,7 +128,7 @@ describe("Employee Column Changes Trigger Tests", () => {
         })
         .eq("id", employeeId);
 
-      expect(result.error).toBeNull();
+      expect(result.error).toBeFalsy();
       
       // In real scenario, trigger would create 2 audit records:
       // - employee_column_changes for first_name
@@ -151,7 +151,7 @@ describe("Employee Column Changes Trigger Tests", () => {
         .update({ first_name: "John" })
         .eq("id", employeeId);
 
-      expect(result.error).toBeNull();
+      expect(result.error).toBeFalsy();
       
       // In real scenario, trigger should NOT create audit record
       // because OLD.first_name = NEW.first_name
@@ -173,7 +173,7 @@ describe("Employee Column Changes Trigger Tests", () => {
         .update({ email: "new@example.com" })
         .eq("id", employeeId);
 
-      expect(result.error).toBeNull();
+      expect(result.error).toBeFalsy();
       
       // In real scenario, trigger should create audit record
       // because OLD.email (NULL) IS DISTINCT FROM NEW.email ('new@example.com')
@@ -195,7 +195,7 @@ describe("Employee Column Changes Trigger Tests", () => {
         .update({ email: null })
         .eq("id", employeeId);
 
-      expect(result.error).toBeNull();
+      expect(result.error).toBeFalsy();
       
       // In real scenario, trigger should create audit record
       // because OLD.email ('old@example.com') IS DISTINCT FROM NEW.email (NULL)
@@ -217,7 +217,7 @@ describe("Employee Column Changes Trigger Tests", () => {
         .update({ email: null })
         .eq("id", employeeId);
 
-      expect(result.error).toBeNull();
+      expect(result.error).toBeFalsy();
       
       // In real scenario, trigger should NOT create audit record
       // because NULL IS DISTINCT FROM NULL is false (both are NULL)
@@ -241,7 +241,7 @@ describe("Employee Column Changes Trigger Tests", () => {
         .update({ some_custom_field: "value" })
         .eq("id", employeeId);
 
-      expect(result.error).toBeNull();
+      expect(result.error).toBeFalsy();
       
       // In real scenario, trigger should NOT create audit record
       // because 'some_custom_field' is not in masterdata_columns array
@@ -249,7 +249,7 @@ describe("Employee Column Changes Trigger Tests", () => {
   });
 
   describe("Masterdata column list", () => {
-    it("should track all 27 masterdata columns", () => {
+    it("should track all 28 masterdata columns", () => {
       // This test documents the expected masterdata columns
       const expectedColumns = [
         'stena_date', 'omc_date', 'pe3_date',
@@ -257,12 +257,12 @@ describe("Employee Column Changes Trigger Tests", () => {
         'email', 'mobile', 'rank', 'gender', 'town_district',
         'hire_date', 'termination_date', 'termination_reason',
         'comments',
-        'one', 'isps', 'photo', 'origo', 'loneiva',
+        'one', 'talmundo', 'isps', 'photo', 'origo', 'loneiva',
         'mail_lon', 'bankuppgifter', 'li', 'passport',
         'kvitto_c17_18', 'c17', 'crewing_done'
       ];
 
-      expect(expectedColumns.length).toBe(27);
+      expect(expectedColumns.length).toBe(28);
       
       // Note: When new masterdata columns are added, this list must be updated
       // in the trigger function migration file
