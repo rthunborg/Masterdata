@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
-import { useEmployeeChanges } from "@/lib/hooks/use-employee-changes";
 
 const SESSION_STORAGE_KEY = "employee-changes-banner-dismissed";
 
@@ -19,8 +18,19 @@ const SESSION_STORAGE_KEY = "employee-changes-banner-dismissed";
  * since the user's last login. Banner is hidden when dismissed and persists
  * dismissal state in sessionStorage for the current session.
  */
-export function ChangeNotificationBanner() {
-  const { totalCount, changesBaseline, isLoading, error } = useEmployeeChanges();
+interface ChangeNotificationBannerProps {
+  totalCount: number;
+  changesBaseline: string | null;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+export function ChangeNotificationBanner({
+  totalCount,
+  changesBaseline,
+  isLoading,
+  error,
+}: ChangeNotificationBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false);
 
   // Check sessionStorage on mount to restore dismissal state

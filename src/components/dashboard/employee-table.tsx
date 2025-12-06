@@ -148,7 +148,6 @@ import { useColumns } from "@/lib/hooks/use-columns";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 
 
-import { useEmployeeChanges } from "@/lib/hooks/use-employee-changes";
 
 
 import { } from "@/lib/utils/column-width-storage";
@@ -180,6 +179,7 @@ interface EmployeeTableProps {
   updatedEmployeeId?: string | null;
   onGlobalFilterChange?: (value: string) => void;
   onOptimisticUpdate?: (id: string, updates: Partial<Employee>) => () => void;
+  isColumnChanged?: (employeeId: string, columnName: string) => boolean; // Story 16.5: Change detection function
 }
 
 // Custom global filter function for multi-column search
@@ -213,6 +213,7 @@ export function EmployeeTable({
   updatedEmployeeId = null,
   onGlobalFilterChange,
   onOptimisticUpdate,
+  isColumnChanged, // Story 16.5: Change detection function
 }: EmployeeTableProps) {
   const { user } = useAuth();
   const isHRAdmin = user?.role === "hr_admin";
@@ -241,8 +242,9 @@ export function EmployeeTable({
   // Fetch all Important Dates for resolving date field UUIDs
   const { dates: allImportantDates } = useImportantDates();
 
-  // Story 16.5: Get change detection hook for field highlighting
-  const { isColumnChanged } = useEmployeeChanges();
+  // Story 16.5: Use isColumnChanged from props (passed from dashboard page to avoid duplicate API calls)
+  // Default to no-op function if not provided for backward compatibility
+  const checkColumnChanged = isColumnChanged || (() => false);
 
   const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = React.useState(false);
@@ -828,7 +830,7 @@ export function EmployeeTable({
             // Story 16.5: Check if this date column has changed for highlighting
             // Map column_name to db_column_name for change detection
             const dateColumnDbName = config.db_column_name;
-            const isDateChanged = isColumnChanged(row.original.id, dateColumnDbName);
+            const isDateChanged = checkColumnChanged(row.original.id, dateColumnDbName);
 
             return (
 
@@ -943,7 +945,7 @@ export function EmployeeTable({
 
           // Story 16.5: Check if this column has changed for highlighting
           const columnNameForChangeCheck = config.db_column_name;
-          const isChanged = isColumnChanged(row.original.id, columnNameForChangeCheck);
+          const isChanged = checkColumnChanged(row.original.id, columnNameForChangeCheck);
 
           return (
 

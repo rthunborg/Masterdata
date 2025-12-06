@@ -27,6 +27,7 @@ import { useUIStore } from "@/lib/store/ui-store";
 import dynamic from "next/dynamic";
 import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useEmployeeChanges } from "@/lib/hooks/use-employee-changes";
 
 // Lazy load heavy modals for better initial bundle size (Story 12.5: Performance optimization)
 const AddEmployeeModal = dynamic(
@@ -182,6 +183,9 @@ export default function DashboardPage() {
     globalFilter,
   });
 
+  // Story 16.5: Call useEmployeeChanges once at dashboard level to avoid N+2 duplicate API requests
+  const { isColumnChanged, totalCount, changesBaseline, isLoading: isLoadingChanges, error: changesError } = useEmployeeChanges();
+
   const handleEmployeeAdded = () => {
     refetch();
   };
@@ -297,7 +301,12 @@ export default function DashboardPage() {
       ) : (
         <Card>
           <CardContent>
-            <ChangeNotificationBanner />
+            <ChangeNotificationBanner
+              totalCount={totalCount}
+              changesBaseline={changesBaseline}
+              isLoading={isLoadingChanges}
+              error={changesError}
+            />
             <ResponsiveEmployeeView
               employees={employees}
               isLoading={isLoadingEmployees}
@@ -312,6 +321,7 @@ export default function DashboardPage() {
               updatedEmployeeId={updatedEmployeeId}
               onGlobalFilterChange={setGlobalFilter}
               onOptimisticUpdate={updateEmployeeOptimistically}
+              isColumnChanged={isColumnChanged}
             />
           </CardContent>
         </Card>
