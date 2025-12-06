@@ -448,6 +448,141 @@ export class EmployeeRepository {
       throw new Error("Failed to delete employee");
     }
   }
+
+  /**
+   * Get employee column changes since a specific timestamp
+   * 
+   * Story: 16.2 - API Endpoint for Change Detection
+   * 
+   * Returns changes grouped by employee, filtered by:
+   * - changed_at > lastActiveAt
+   * - Only masterdata columns
+   * - Only columns the user has view permission for
+   * - Only non-archived employees
+   * 
+   * @param userId - User ID making the request
+   * @param userRole - User role for permission filtering
+   * @param lastActiveAt - Timestamp to compare against (null for first-time users)
+   * @returns Array of changed employees with their changed columns
+   */
+  async getChangesSinceLastActive(
+    userId: string,
+    userRole: string,
+    lastActiveAt: string | null
+  ): Promise<Array<{
+    employeeId: string;
+    changedColumns: string[];
+    lastChangeAt: string;
+  }>> {
+    try {
+      const supabase = await this.getSupabaseClient();
+
+      // First-time users: return empty results (no changes to highlight)
+      if (!lastActiveAt) {
+        return [];
+      }
+
+      // Get masterdata columns that the user has view permission for
+      const { columnConfigRepository } = await import("./column-config-repository");
+      const allColumns = await columnConfigRepository.findAll();
+      const visibleMasterdataColumns = allColumns
+        .filter(col => {
+          // Only masterdata columns
+          if (!col.is_masterdata) return false;
+          
+          // Check if user role has view permission
+          const rolePerms = col.role_permissions[userRole as keyof typeof col.role_permissions];
+          return rolePerms?.view === true;
+        })
+        .map(col => col.db_column_name);
+
+      // If user has no visible masterdata columns, return empty
+      if (visibleMasterdataColumns.length === 0) {
+        return [];
+      }
+
+      // Query employee_column_changes for changes after lastActiveAt
+      // Filter by visible masterdata columns
+      const { data: changes, error } = await supabase
+        .from("employee_column_changes")
+        .select("employee_id, column_name, changed_at")
+        .gt("changed_at", lastActiveAt)
+        .in("column_name", visibleMasterdataColumns)
+        .order("changed_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching employee column changes:", error);
+        return [];
+      }
+
+      if (!changes || changes.length === 0) {
+        return [];
+      }
+
+      // Get unique employee IDs from changes
+      const employeeIds = Array.from(new Set(changes.map(c => c.employee_id)));
+
+      // Query employees to filter out archived ones
+      const { data: employees, error: employeesError } = await supabase
+        .from("employees")
+        .select("id, is_archived")
+        .in("id", employeeIds)
+        .eq("is_archived", false);
+
+      if (employeesError) {
+        console.error("Error fetching employees for change filtering:", employeesError);
+        return [];
+      }
+
+      // Create set of non-archived employee IDs for fast lookup
+      const nonArchivedEmployeeIds = new Set(
+        (employees || []).map(emp => emp.id)
+      );
+
+      // Group changes by employee_id, filtering out archived employees
+      const changesByEmployee = new Map<string, {
+        changedColumns: Set<string>;
+        lastChangeAt: Date;
+      }>();
+
+      for (const change of changes) {
+        const employeeId = change.employee_id;
+        
+        // Skip archived employees
+        if (!nonArchivedEmployeeIds.has(employeeId)) {
+          continue;
+        }
+
+        const columnName = change.column_name;
+        const changedAt = new Date(change.changed_at);
+
+        if (!changesByEmployee.has(employeeId)) {
+          changesByEmployee.set(employeeId, {
+            changedColumns: new Set(),
+            lastChangeAt: changedAt,
+          });
+        }
+
+        const employeeChanges = changesByEmployee.get(employeeId)!;
+        employeeChanges.changedColumns.add(columnName);
+        
+        // Track most recent change timestamp
+        if (changedAt > employeeChanges.lastChangeAt) {
+          employeeChanges.lastChangeAt = changedAt;
+        }
+      }
+
+      // Convert to response format
+      return Array.from(changesByEmployee.entries()).map(([employeeId, data]) => ({
+        employeeId,
+        changedColumns: Array.from(data.changedColumns),
+        lastChangeAt: data.lastChangeAt.toISOString(),
+      }));
+    } catch (error) {
+      console.error("Unexpected error fetching changes since last active:", error);
+      return [];
+    }
+  }
 }
 
 export const employeeRepository = new EmployeeRepository();

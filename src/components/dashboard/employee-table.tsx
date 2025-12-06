@@ -148,6 +148,8 @@ import { useColumns } from "@/lib/hooks/use-columns";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 
 
+
+
 import { } from "@/lib/utils/column-width-storage";
 
 
@@ -177,6 +179,7 @@ interface EmployeeTableProps {
   updatedEmployeeId?: string | null;
   onGlobalFilterChange?: (value: string) => void;
   onOptimisticUpdate?: (id: string, updates: Partial<Employee>) => () => void;
+  isColumnChanged?: (employeeId: string, columnName: string) => boolean; // Story 16.5: Change detection function
 }
 
 // Custom global filter function for multi-column search
@@ -210,6 +213,7 @@ export function EmployeeTable({
   updatedEmployeeId = null,
   onGlobalFilterChange,
   onOptimisticUpdate,
+  isColumnChanged, // Story 16.5: Change detection function
 }: EmployeeTableProps) {
   const { user } = useAuth();
   const isHRAdmin = user?.role === "hr_admin";
@@ -237,6 +241,10 @@ export function EmployeeTable({
 
   // Fetch all Important Dates for resolving date field UUIDs
   const { dates: allImportantDates } = useImportantDates();
+
+  // Story 16.5: Use isColumnChanged from props (passed from dashboard page to avoid duplicate API calls)
+  // Default to no-op function if not provided for backward compatibility
+  const checkColumnChanged = isColumnChanged || (() => false);
 
   const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = React.useState(false);
@@ -819,6 +827,11 @@ export function EmployeeTable({
 
             const dateValue = row.original[dateField] as string | null;
 
+            // Story 16.5: Check if this date column has changed for highlighting
+            // Map column_name to db_column_name for change detection
+            const dateColumnDbName = config.db_column_name;
+            const isDateChanged = checkColumnChanged(row.original.id, dateColumnDbName);
+
             return (
 
               <EditableDateCell
@@ -836,6 +849,8 @@ export function EmployeeTable({
                 allDates={allImportantDates}
 
                 canEdit={canEdit}
+
+                isChanged={isDateChanged} // Story 16.5: Pass highlight flag
 
                 onSave={handleMasterdataUpdate}
 
@@ -928,6 +943,10 @@ export function EmployeeTable({
 
             : {};
 
+          // Story 16.5: Check if this column has changed for highlighting
+          const columnNameForChangeCheck = config.db_column_name;
+          const isChanged = checkColumnChanged(row.original.id, columnNameForChangeCheck);
+
           return (
 
             <EditableCell
@@ -943,6 +962,8 @@ export function EmployeeTable({
               options={options}
 
               canEdit={canEdit} // Pass permission flag
+
+              isChanged={isChanged} // Story 16.5: Pass highlight flag
 
               {...oneMarkedAtProp} // Conditionally pass oneMarkedAt for One field
 

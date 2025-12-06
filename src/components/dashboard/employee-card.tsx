@@ -32,6 +32,7 @@ import { getEmployeeFieldValue } from '@/lib/utils/column-mapping';
 
 import { useImportantDates } from '@/lib/hooks/use-important-dates';
 
+
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { useLongPress } from '@/hooks/use-long-press';
@@ -71,6 +72,10 @@ interface EmployeeCardProps {
 
   onToggleSelection?: (employeeId: string) => void;
 
+  // Story 16.5: Change detection function
+
+  isColumnChanged?: (employeeId: string, columnName: string) => boolean;
+
 }
 
 
@@ -102,12 +107,18 @@ function EmployeeCardComponent({
 
   onToggleSelection,
 
+  isColumnChanged, // Story 16.5: Change detection function
+
 }: EmployeeCardProps) {
   const tToasts = useTranslations('toasts');
 
   const [expanded, setExpanded] = useState(false);
 
   const { dates: allImportantDates } = useImportantDates();
+
+  // Story 16.5: Use isColumnChanged from props (passed from dashboard page to avoid duplicate API calls)
+  // Default to no-op function if not provided for backward compatibility
+  const checkColumnChanged = isColumnChanged || (() => false);
 
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
@@ -976,6 +987,8 @@ function EmployeeCardComponent({
 
                   canEdit={true}
 
+                  isChanged={checkColumnChanged(employee.id, 'stena_date')} // Story 16.5: Pass highlight flag
+
                   onSave={handleMasterdataUpdate}
 
                   onError={(error) => toast.error(error)}
@@ -1006,6 +1019,8 @@ function EmployeeCardComponent({
 
                   canEdit={true}
 
+                  isChanged={checkColumnChanged(employee.id, 'omc_date')} // Story 16.5: Pass highlight flag
+
                   onSave={handleMasterdataUpdate}
 
                   onError={(error) => toast.error(error)}
@@ -1035,6 +1050,8 @@ function EmployeeCardComponent({
                   allDates={allImportantDates}
 
                   canEdit={true}
+
+                  isChanged={checkColumnChanged(employee.id, 'pe3_date')} // Story 16.5: Pass highlight flag
 
                   onSave={handleMasterdataUpdate}
 
@@ -1157,6 +1174,8 @@ function EmployeeCardComponent({
 
                             canEdit={canEdit}
 
+                            isChanged={checkColumnChanged(employee.id, col.db_column_name)} // Story 16.5: Pass highlight flag
+
                             onSave={handleMasterdataUpdate}
 
                             onError={(error) => toast.error(error)}
@@ -1192,6 +1211,8 @@ function EmployeeCardComponent({
                           options={selectOptions}
 
                           canEdit={canEdit}
+
+                          isChanged={checkColumnChanged(employee.id, col.db_column_name)} // Story 16.5: Pass highlight flag
 
                           onSave={col.is_masterdata ? handleMasterdataUpdate : handleCustomDataUpdate}
 

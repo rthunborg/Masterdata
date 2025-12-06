@@ -29,6 +29,7 @@ interface EmployeeCardListProps {
   columnConfigs?: ColumnConfig[];
   onEmployeeUpdated?: () => void | Promise<void>;
   onOptimisticUpdate?: (id: string, updates: Partial<Employee>) => () => void;
+  isColumnChanged?: (employeeId: string, columnName: string) => boolean; // Story 16.5: Change detection function
 }
 
 export function EmployeeCardList({
@@ -44,6 +45,7 @@ export function EmployeeCardList({
   columnConfigs = [],
   onEmployeeUpdated,
   onOptimisticUpdate,
+  isColumnChanged, // Story 16.5: Change detection function
 }: EmployeeCardListProps) {
   const tToasts = useTranslations('toasts');
   // Only enable pull-to-refresh on mobile devices (< 1024px)
@@ -297,6 +299,7 @@ export function EmployeeCardList({
                         totalCards={employees.length}
                         isSelected={isEmployeeSelected(employee.id)}
                         onToggleSelection={toggleEmployeeSelection}
+                        isColumnChanged={isColumnChanged}
                       />
                     </div>
                   </div>
@@ -330,6 +333,7 @@ export function EmployeeCardList({
                   onEmployeeUpdated={onEmployeeUpdated}
                   cardIndex={index + 1}
                   totalCards={employees.length}
+                  isColumnChanged={isColumnChanged}
                   isSelected={isEmployeeSelected(employee.id)}
                   onToggleSelection={() => toggleEmployeeSelection(employee.id)}
                 />

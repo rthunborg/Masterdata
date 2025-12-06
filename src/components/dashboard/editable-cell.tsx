@@ -47,6 +47,7 @@ interface EditableCellProps {
   type: "text" | "date" | "select" | "number" | "boolean";
   options?: string[]; // For select dropdowns (e.g., Gender)
   canEdit?: boolean; // Permission flag for edit access
+  isChanged?: boolean; // Story 16.5: Flag for field highlighting
   oneMarkedAt?: string | null; // Timestamp for One field (Story 8.3)
   oneValue?: boolean | null; // One field value for Talmundo conditional editability (Story 8.4)
   employeeData?: Partial<Employee>; // For Crewing/Done field conditional editability (Story 8.5)
@@ -62,6 +63,7 @@ export function EditableCell({
   type,
   options,
   canEdit = true, // Default to true for backward compatibility
+  isChanged = false, // Story 16.5: Default to false for backward compatibility
   oneMarkedAt, // Timestamp for One field (Story 8.3)
   oneValue, // One field value for Talmundo conditional editability (Story 8.4)
   employeeData, // Employee data for Crewing/Done conditional editability (Story 8.5)
@@ -486,7 +488,9 @@ export function EditableCell({
         }}
         className={cn(
           "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
-          "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center gap-2 bg-white"
+          "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center gap-2 bg-white",
+          // Story 16.5: Apply highlight styling for changed fields
+          isChanged && "bg-amber-50 dark:bg-amber-950/20"
         )}
         tabIndex={0}
         onKeyDown={(e) => {

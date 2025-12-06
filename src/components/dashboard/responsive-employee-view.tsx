@@ -37,6 +37,7 @@ interface ResponsiveEmployeeViewProps {
   updatedEmployeeId?: string | null;
   onGlobalFilterChange?: (value: string) => void;
   onOptimisticUpdate?: (id: string, updates: Partial<Employee>) => () => void;
+  isColumnChanged?: (employeeId: string, columnName: string) => boolean; // Story 16.5: Change detection function
 }
 
 export function ResponsiveEmployeeView({
@@ -53,6 +54,7 @@ export function ResponsiveEmployeeView({
   updatedEmployeeId = null,
   onGlobalFilterChange,
   onOptimisticUpdate,
+  isColumnChanged, // Story 16.5: Change detection function
 }: ResponsiveEmployeeViewProps) {
   // Detect if we're on mobile (less than 1024px - lg breakpoint)
   const isMobile = useMediaQuery('(max-width: 1023px)');
@@ -172,6 +174,7 @@ export function ResponsiveEmployeeView({
           columnConfigs={columnConfigs}
           onEmployeeUpdated={onEmployeeUpdated}
           onOptimisticUpdate={onOptimisticUpdate}
+          isColumnChanged={isColumnChanged}
         />
       ) : (
         <EmployeeTable
@@ -187,6 +190,7 @@ export function ResponsiveEmployeeView({
           updatedEmployeeId={updatedEmployeeId}
           onGlobalFilterChange={onGlobalFilterChange}
           onOptimisticUpdate={onOptimisticUpdate}
+          isColumnChanged={isColumnChanged}
         />
       )}
 

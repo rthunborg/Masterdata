@@ -2,7 +2,7 @@
 
 ## Status
 
-**In Planning**
+**Approved**
 
 ---
 
@@ -44,7 +44,7 @@ This epic implements a change tracking system that:
 - Highlights persist until next login or page refresh
 - Banner is dismissible (session-based, not persistent)
 - System does not store duplicate data (GDPR compliant)
-- Performance is acceptable: change detection completes in <500ms on login
+- Performance is acceptable: change detection completes in <500ms on login (not required to be instantaneous - changes may appear within a few minutes after being made)
 
 ---
 
@@ -88,7 +88,7 @@ Stories 16.4 and 16.5 can be developed in parallel once 16.3 is complete.
 
 ## Non-Functional Requirements
 
-- **Performance:** Change detection query should complete in <500ms for typical user (10-50 visible columns, 100-1000 employees)
+- **Performance:** Change detection query should complete in <500ms for typical user (10-50 visible columns, 100-1000 employees). Changes do not need to be instantaneous - it's acceptable if changes appear within a few minutes after being made. No performance monitoring/alerting required for this feature.
 - **GDPR Compliance:** No duplicate data storage - only change events are tracked, not field values
 - **Scalability:** Audit table should handle high change frequency without performance degradation
 - **Privacy:** Only show changes for columns user has view permission for
@@ -116,24 +116,27 @@ Stories 16.4 and 16.5 can be developed in parallel once 16.3 is complete.
 
 ### Frontend Flow
 
-1. **On Dashboard Load:**
-   - Capture current `user.last_active_at` as `changesBaseline`
-   - Fetch changes via API endpoint
+1. **On Dashboard Load (First Time in Session):**
+   - Capture current `user.last_active_at` as `changesBaseline` once per session
+   - Store baseline in sessionStorage (shared across all tabs in same session)
+   - If `last_active_at` is null (first-time user), return empty results (no highlights)
+   - Fetch changes via API endpoint using baseline
    - Store changes in React state/hook
 
 2. **Banner Display:**
    - Show dismissible banner with count: "Changes made to X employees since your last login on [date]"
    - Banner dismissible via sessionStorage (persists during session, resets on new login)
+   - Once dismissed, banner stays hidden for the session (no way to re-show it)
 
 3. **Field Highlighting:**
    - Map `db_column_name` from changes to displayed columns
    - Apply soft yellow/amber background to changed fields
-   - Highlights persist until next login or page refresh
+   - Highlights persist for the entire session (survive page refreshes, cleared on next login)
 
-4. **On Page Refresh:**
-   - Update `changesBaseline` to current `last_active_at`
-   - Re-fetch changes
-   - Update highlights
+4. **On Page Refresh (Same Session):**
+   - Reuse existing `changesBaseline` from sessionStorage (don't re-capture)
+   - Re-fetch changes with same baseline
+   - Update highlights (maintains session persistence)
 
 ---
 
