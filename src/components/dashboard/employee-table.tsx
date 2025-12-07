@@ -1790,33 +1790,35 @@ export function EmployeeTable({
 
             </div>
 
-            {/* Story 8.5: Crew-Ready Filter */}
+            {/* Story 8.5: Crew-Ready Filter - HR Admin only */}
+            {/* Story 17.5: Hide premade filters dropdown for external users */}
+            {isHRAdmin && (
+              <Select
 
-            <Select
+                value={crewReadyFilter}
 
-              value={crewReadyFilter}
+                onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
 
-              onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
+              >
 
-            >
+                <SelectTrigger className="w-[180px]" aria-label="Crew Status" data-testid="crew-status-filter">
 
-              <SelectTrigger className="w-[180px]" aria-label="Crew Status" data-testid="crew-status-filter">
+                  <SelectValue placeholder="Crew Status" />
 
-                <SelectValue placeholder="Crew Status" />
+                </SelectTrigger>
 
-              </SelectTrigger>
+                <SelectContent>
 
-              <SelectContent>
+                  <SelectItem value="all">Alla anställda</SelectItem>
 
-                <SelectItem value="all">Alla anställda</SelectItem>
+                  <SelectItem value="ready">Crew Ready</SelectItem>
 
-                <SelectItem value="ready">Crew Ready</SelectItem>
+                  <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
 
-                <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
+                </SelectContent>
 
-              </SelectContent>
-
-            </Select>
+              </Select>
+            )}
 
             {/* Story 13.6: General Export Button with Field Selection */}
             {/* Story 17.4: Export Button for External Users - visible to all users */}
