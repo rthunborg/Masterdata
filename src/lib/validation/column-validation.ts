@@ -84,6 +84,11 @@ export const updateColumnSchema = z.object({
     .optional(),
   column_type: z.enum(["text", "number", "date", "boolean"]).optional(),
   category: z.string().max(100).optional(),
+  category_color: z
+    .string()
+    .regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, "Invalid hex color format (use #RGB or #RRGGBB)")
+    .nullable()
+    .optional(),
 });
 
 /**

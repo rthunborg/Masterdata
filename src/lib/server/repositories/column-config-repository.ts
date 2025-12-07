@@ -224,6 +224,101 @@ export class ColumnConfigRepository {
       safeUpdates.category_color = updates.category_color;
     }
 
+    // Determine the category to use for shared color updates
+    // Use the new category if provided, otherwise use the existing category
+    const targetCategory = updates.category !== undefined ? updates.category : existing.category;
+
+    // If category_color is being updated and we have a category, update all columns with that category
+    // (AC4: "the color is applied to all columns sharing that category")
+    if (updates.category_color !== undefined && targetCategory) {
+      // First, find all columns with the same category that the user has edit permission for
+      const allColumns = await this.findAll();
+      const columnsToUpdate = allColumns.filter((col) => {
+        // Only update custom columns (not masterdata)
+        if (col.is_masterdata) return false;
+        
+        // Only update columns with the same category (the target category after update)
+        if (col.category !== targetCategory) return false;
+        
+        // Only update columns the user has edit permission for
+        const colRolePerms = col.role_permissions[userRole];
+        if (!colRolePerms || !colRolePerms.edit) return false;
+        
+        return true;
+      });
+
+      // Always include the original column in the update (it might be changing category)
+      const columnIdsToUpdate = columnsToUpdate
+        .map((col) => col.id)
+        .filter((colId) => colId !== id); // Remove original if already in list
+      
+      // Add the original column ID to ensure it's updated
+      columnIdsToUpdate.push(id);
+      
+      if (columnIdsToUpdate.length > 0) {
+        // Update all columns with the same category (including the original column)
+        // First update category_color for all matching columns
+        const { error: bulkError } = await supabase
+          .from("column_config")
+          .update({ category_color: updates.category_color })
+          .in("id", columnIdsToUpdate);
+
+        if (bulkError) {
+          console.error("Error updating category color for multiple columns:", bulkError);
+          throw new Error(`Failed to update category color: ${bulkError.message}`);
+        }
+      }
+
+      // Now apply other updates (column_name, category) to the original column if needed
+      const otherUpdates: Partial<ColumnConfig> = {};
+      if (updates.column_name !== undefined) {
+        otherUpdates.column_name = updates.column_name;
+      }
+      if (updates.category !== undefined) {
+        otherUpdates.category = updates.category;
+      }
+
+      // If we have other updates, apply them to the original column
+      if (Object.keys(otherUpdates).length > 0) {
+        const { data: finalData, error: finalError } = await supabase
+          .from("column_config")
+          .update(otherUpdates)
+          .eq("id", id)
+          .select()
+          .single();
+
+        if (finalError) {
+          console.error("Error applying other updates:", finalError);
+          throw new Error(`Failed to update column: ${finalError.message}`);
+        }
+
+        if (!finalData) {
+          throw new Error("Failed to update column: No data returned");
+        }
+
+        return finalData;
+      }
+
+      // If no other updates, just fetch and return the updated original column
+      const { data, error } = await supabase
+        .from("column_config")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching updated column:", error);
+        throw new Error(`Failed to fetch updated column: ${error.message}`);
+      }
+
+      if (!data) {
+        throw new Error("Failed to fetch updated column: No data returned");
+      }
+
+      return data;
+    }
+
+    // If not updating category_color with a category, or if no category exists, update only the single column
     const { data, error } = await supabase
       .from("column_config")
       .update(safeUpdates)

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
+import { requireAuthAPI, createErrorResponse, createUnauthorizedResponse } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
+import { columnConfigRepository } from "@/lib/server/repositories/column-config-repository";
 import Papa from "papaparse";
 import type { Employee } from "@/lib/types/employee";
 import { createClient } from "@/lib/supabase/server";
+import type { UserRole } from "@/lib/types/user";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -14,11 +16,12 @@ export const runtime = 'nodejs';
  * Export selected employees with custom field selection.
  * 
  * Story 13.6: General Export Button with Field Selection
+ * Story 17.4: Export Functionality for External Users - permission-based field filtering
  */
 export async function POST(request: Request) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify authentication (all authenticated users can export)
+    const user = await requireAuthAPI();
 
     // Parse request body
     const body = await request.json();
@@ -51,6 +54,76 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // Story 17.4: Verify user has view permission for all selected fields
+    const userRole = user.role as UserRole;
+    const allColumns = await columnConfigRepository.findAll();
+    
+    // Filter fields based on permissions
+    const permittedFields: string[] = [];
+    const deniedFields: string[] = [];
+
+    for (const fieldKey of fields) {
+      // Check if this is a masterdata field or custom column
+      // Find matching column config
+      const matchingColumn = allColumns.find((col) => {
+        if (col.is_masterdata) {
+          // For masterdata, match db_column_name (snake_case) with fieldKey
+          return col.db_column_name.toLowerCase().replace(/ /g, "_") === fieldKey.toLowerCase();
+        } else {
+          // For custom columns, match db_column_name exactly
+          return col.db_column_name === fieldKey;
+        }
+      });
+
+      if (!matchingColumn) {
+        // Field not found in column config - deny access (security: fail closed)
+        deniedFields.push(fieldKey);
+        continue;
+      }
+
+      // Check view permission for user's role
+      const rolePerms = matchingColumn.role_permissions[userRole];
+      if (rolePerms && rolePerms.view === true) {
+        permittedFields.push(fieldKey);
+      } else {
+        deniedFields.push(fieldKey);
+      }
+    }
+
+    // If any fields were denied, return error
+    if (deniedFields.length > 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "PERMISSION_DENIED",
+            message: `You do not have permission to export the following fields: ${deniedFields.join(", ")}`,
+            details: {
+              deniedFields: deniedFields,
+            },
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 403 }
+      );
+    }
+
+    // If no permitted fields after filtering, return error
+    if (permittedFields.length === 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "NO_PERMITTED_FIELDS",
+            message: "No fields selected that you have permission to export.",
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 403 }
+      );
+    }
+
+    // Use only permitted fields for export
+    const fieldsToExport = permittedFields;
 
     // Fetch selected employees (excluding archived and terminated)
     const allEmployees = await employeeRepository.findAll({
@@ -95,11 +168,11 @@ export async function POST(request: Request) {
       });
     }
 
-    // Prepare CSV data with only selected fields
+    // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {
       const row: Record<string, string> = {};
 
-      fields.forEach((fieldKey) => {
+      fieldsToExport.forEach((fieldKey) => {
         // Check if this is a masterdata field or custom column
         // Masterdata fields use field names like "first_name", "surname"
         // Custom columns use db_column_name
@@ -151,14 +224,14 @@ export async function POST(request: Request) {
       'loneiva': 'Lönenivå',
     };
 
-    const headers = fields.map((fieldKey: string) => {
+    const headers = fieldsToExport.map((fieldKey: string) => {
       return fieldLabels[fieldKey] || fieldKey;
     });
 
     // Generate CSV
     const csv = Papa.unparse({
       fields: headers,
-      data: csvData.map((row) => fields.map((fieldKey: string) => row[fieldKey] || '')),
+      data: csvData.map((row) => fieldsToExport.map((fieldKey: string) => row[fieldKey] || '')),
     });
 
     // Return CSV file
@@ -173,6 +246,10 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Export employees error:", error);
+    // Handle authentication errors specifically
+    if (error instanceof Error && error.message === "Authentication required") {
+      return createUnauthorizedResponse(error.message);
+    }
     return createErrorResponse(error);
   }
 }

@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ColorPicker } from "@/components/ui/color-picker";
 import {
   updateColumnSchema,
   type UpdateColumnInput,
@@ -84,6 +85,7 @@ export function EditColumnModal() {
     defaultValues: {
       column_name: "",
       category: "",
+      category_color: null,
     },
   });
 
@@ -93,6 +95,7 @@ export function EditColumnModal() {
       form.reset({
         column_name: editingColumn.column_name,
         category: editingColumn.category || "",
+        category_color: editingColumn.category_color || null,
       });
     }
   }, [editingColumn, form]);
@@ -201,9 +204,6 @@ export function EditColumnModal() {
                     <SelectItem value="boolean">Boolean</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">
-                  {t('editColumn.columnTypeHint')}
-                </p>
               </FormItem>
             )}
 
@@ -269,6 +269,25 @@ export function EditColumnModal() {
                       </Command>
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Category Color */}
+            <FormField
+              control={form.control}
+              name="category_color"
+              render={({ field }) => (
+                <FormItem>
+                  <ColorPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isSubmitting || !form.watch('category')}
+                    label={tForms('categoryColor') || 'Kategorifärg (Valfritt)'}
+                    placeholder={tForms('selectOrEnterColor') || 'Välj eller ange färg'}
+                    allowClear={true}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

@@ -1421,7 +1421,37 @@ export function EmployeeTable({
 
         const errorData = await response.json();
 
-        throw new Error(errorData.error?.message || 'Failed to export employees');
+        // Story 17.4: Translate error codes to Swedish for external users
+        const errorCode = errorData.error?.code;
+        let errorMessage = errorData.error?.message || 'Failed to export employees';
+        
+        if (errorCode) {
+          switch (errorCode) {
+            case 'NO_EMPLOYEES_SELECTED':
+              errorMessage = tDashboard("noEmployeesSelected") || errorMessage;
+              break;
+            case 'NO_FIELDS_SELECTED':
+              errorMessage = tDashboard("noFieldsSelected") || errorMessage;
+              break;
+            case 'PERMISSION_DENIED':
+              // Extract field names from details or message
+              const deniedFields = errorData.error?.details?.deniedFields?.join(", ") || 
+                                   errorData.error?.message?.match(/following fields: (.+)/)?.[1] || '';
+              errorMessage = tDashboard("exportPermissionDenied", { fields: deniedFields }) || errorMessage;
+              break;
+            case 'NO_PERMITTED_FIELDS':
+              errorMessage = tDashboard("exportNoPermittedFields") || errorMessage;
+              break;
+            case 'NO_EMPLOYEES_FOUND':
+              errorMessage = tDashboard("exportNoEmployeesFound") || errorMessage;
+              break;
+            default:
+              // Use original message or fallback
+              errorMessage = errorMessage;
+          }
+        }
+
+        throw new Error(errorMessage);
 
       }
 
@@ -1788,30 +1818,29 @@ export function EmployeeTable({
 
             </Select>
 
-            {/* Story 13.6: General Export Button with Field Selection (HR Admin only) */}
-            {isHRAdmin && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleExportClick}
-                    disabled={selectedEmployeeIds.size === 0}
-                    className="whitespace-nowrap"
-                  >
-                    {tDashboard("exportSelected") || "Exporta markerade anställda"}
-                    {selectedEmployeeIds.size > 0 && ` (${selectedEmployeeIds.size})`}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    {selectedEmployeeIds.size === 0
-                      ? tDashboard("noEmployeesSelected") || "No employees selected. Please select employees to export."
-                      : tDashboard("exportSelectedEmployees") || `Export ${selectedEmployeeIds.size} selected employee${selectedEmployeeIds.size === 1 ? '' : 's'}`}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+            {/* Story 13.6: General Export Button with Field Selection */}
+            {/* Story 17.4: Export Button for External Users - visible to all users */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportClick}
+                  disabled={selectedEmployeeIds.size === 0}
+                  className="whitespace-nowrap"
+                >
+                  {tDashboard("exportSelected") || "Exportera markerade anställda"}
+                  {selectedEmployeeIds.size > 0 && ` (${selectedEmployeeIds.size})`}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {selectedEmployeeIds.size === 0
+                    ? tDashboard("noEmployeesSelected") || "Inga anställda valda"
+                    : tDashboard("exportSelectedEmployees") || `Exportera ${selectedEmployeeIds.size} markerade anställda`}
+                </p>
+              </TooltipContent>
+            </Tooltip>
 
             {/* Story 8.5: Export Crew-Ready Employees (HR Admin only) */}
 

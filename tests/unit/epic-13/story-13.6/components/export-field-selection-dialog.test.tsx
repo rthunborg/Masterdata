@@ -8,6 +8,28 @@ vi.mock("@/lib/i18n", () => ({
   useTranslations: () => (key: string) => key,
 }));
 
+// Mock useAuth
+vi.mock("@/lib/hooks/use-auth", () => ({
+  useAuth: () => ({
+    user: {
+      id: "user-1",
+      email: "test@example.com",
+      role: "hr_admin",
+      is_active: true,
+      created_at: "2025-01-01T00:00:00Z",
+      last_active_at: null,
+      auth_id: "auth-1",
+    },
+  }),
+}));
+
+// Mock useUIStore
+vi.mock("@/lib/store/ui-store", () => ({
+  useUIStore: () => ({
+    previewRole: null,
+  }),
+}));
+
 // Mock constants
 vi.mock("@/lib/constants/export-fields", () => ({
   EXPORTABLE_EMPLOYEE_FIELDS: [
@@ -61,12 +83,14 @@ describe("ExportFieldSelectionDialog", () => {
       id: "col1",
       column_name: "Custom Field 1",
       db_column_name: "custom_field_1",
+      column_type: "text",
       is_masterdata: false,
       category: "Category A",
+      category_color: null,
       is_visible: true,
-      table_name: "employees",
-      data_type: "text",
-      is_editable: true,
+      role_permissions: {
+        hr_admin: { view: true, edit: true },
+      },
       display_order: 1,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -75,12 +99,14 @@ describe("ExportFieldSelectionDialog", () => {
       id: "col2",
       column_name: "Custom Field 2",
       db_column_name: "custom_field_2",
+      column_type: "text",
       is_masterdata: false,
       category: "Category B",
+      category_color: null,
       is_visible: false,
-      table_name: "employees",
-      data_type: "text",
-      is_editable: true,
+      role_permissions: {
+        hr_admin: { view: true, edit: true },
+      },
       display_order: 2,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -89,11 +115,14 @@ describe("ExportFieldSelectionDialog", () => {
       id: "col3",
       column_name: "First Name",
       db_column_name: "first_name",
+      column_type: "text",
       is_masterdata: true,
+      category: null,
+      category_color: null,
       is_visible: true,
-      table_name: "employees",
-      data_type: "text",
-      is_editable: true,
+      role_permissions: {
+        hr_admin: { view: true, edit: true },
+      },
       display_order: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

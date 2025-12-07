@@ -25,6 +25,20 @@ import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
+vi.mock("@/lib/server/repositories/column-config-repository", () => ({
+  columnConfigRepository: {
+    findAll: vi.fn().mockResolvedValue([
+      // Mock common masterdata fields with hr_admin view permission
+      { id: "col-1", column_name: "First Name", db_column_name: "first_name", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 0, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+      { id: "col-2", column_name: "Surname", db_column_name: "surname", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 1, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+      { id: "col-3", column_name: "Email", db_column_name: "email", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 2, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+      { id: "col-4", column_name: "Mobile", db_column_name: "mobile", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 3, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+      { id: "col-5", column_name: "Town District", db_column_name: "town_district", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 4, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+      { id: "col-6", column_name: "Comments", db_column_name: "comments", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 5, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+      { id: "col-7", column_name: "Hire Date", db_column_name: "hire_date", column_type: "date", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 6, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+    ]),
+  },
+}));
 vi.mock("@/lib/supabase/server");
 vi.mock("@/lib/services/crewing-validation");
 vi.mock("papaparse");
@@ -90,6 +104,7 @@ describe("Story 13.7: Export Edge Cases", () => {
       const emp1 = createMockEmployee({ id: "emp-1" });
       const allEmployees = [emp1];
 
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
 
@@ -127,6 +142,7 @@ describe("Story 13.7: Export Edge Cases", () => {
         createMockEmployee({ id: `emp-${i + 1}` })
       );
 
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue(employees);
 
@@ -176,6 +192,7 @@ describe("Story 13.7: Export Edge Cases", () => {
       );
       const allEmployees = [...page1Employees, ...page2Employees];
 
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
 
@@ -226,6 +243,7 @@ describe("Story 13.7: Export Edge Cases", () => {
       });
       const allEmployees = [emp1];
 
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
 
@@ -266,6 +284,7 @@ describe("Story 13.7: Export Edge Cases", () => {
       });
       const allEmployees = [emp1];
 
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
 
@@ -306,6 +325,7 @@ describe("Story 13.7: Export Edge Cases", () => {
       });
       const allEmployees = [emp1];
 
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
 
@@ -354,6 +374,7 @@ describe("Story 13.7: Export Edge Cases", () => {
         createMockEmployee({ id: `emp-${i + 1}` })
       );
 
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue(employees);
 
@@ -396,6 +417,7 @@ describe("Story 13.7: Export Edge Cases", () => {
         createMockEmployee({ id: `emp-${i + 1}`, crewing_done: false })
       );
 
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue(employees);
       vi.mocked(canEditCrewingDone).mockReturnValue(true);

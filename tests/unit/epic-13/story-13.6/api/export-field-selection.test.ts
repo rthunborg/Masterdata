@@ -4,13 +4,72 @@ import { NextResponse } from "next/server";
 
 // Mock dependencies
 vi.mock("@/lib/server/auth", () => ({
-  requireHRAdminAPI: vi.fn().mockResolvedValue(undefined),
+  requireAuthAPI: vi.fn().mockResolvedValue({
+    id: "user-1",
+    email: "test@example.com",
+    role: "hr_admin",
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
+    auth_id: "auth-1",
+  }),
+  requireHRAdminAPI: vi.fn().mockResolvedValue({
+    id: "user-1",
+    email: "test@example.com",
+    role: "hr_admin",
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
+    auth_id: "auth-1",
+  }),
   createErrorResponse: vi.fn((error) => NextResponse.json({ error: error.message }, { status: 500 })),
 }));
 
 vi.mock("@/lib/server/repositories/employee-repository", () => ({
   employeeRepository: {
     findAll: vi.fn(),
+  },
+}));
+
+vi.mock("@/lib/server/repositories/column-config-repository", () => ({
+  columnConfigRepository: {
+    findAll: vi.fn().mockResolvedValue([
+      {
+        id: "col-1",
+        column_name: "First Name",
+        db_column_name: "first_name",
+        column_type: "text",
+        is_masterdata: true,
+        role_permissions: {
+          hr_admin: { view: true, edit: true },
+          sodexo: { view: true, edit: false },
+        },
+        category: null,
+        category_color: null,
+        display_order: 0,
+        is_visible: true,
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-01-01T00:00:00Z",
+      },
+      // Add mock for custom_field_1 (custom column)
+      {
+        id: "col-custom-1",
+        column_name: "Custom Field 1",
+        db_column_name: "custom_field_1",
+        column_type: "text",
+        is_masterdata: false,
+        role_permissions: {
+          hr_admin: { view: true, edit: true },
+          sodexo: { view: true, edit: false },
+        },
+        category: null,
+        category_color: null,
+        display_order: 100,
+        is_visible: true,
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-01-01T00:00:00Z",
+      },
+    ]),
   },
 }));
 

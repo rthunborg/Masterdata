@@ -17,10 +17,20 @@ import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { UserRole } from "@/lib/types/user";
 import { createClient } from "@/lib/supabase/server";
-import { createErrorResponse } from "@/lib/server/auth";
+import { createErrorResponse, createUnauthorizedResponse } from "@/lib/server/auth";
 
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
+vi.mock("@/lib/server/repositories/column-config-repository", () => ({
+  columnConfigRepository: {
+    findAll: vi.fn().mockResolvedValue([
+      // Mock common masterdata fields with hr_admin view permission
+      { id: "col-1", column_name: "First Name", db_column_name: "first_name", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 0, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+      { id: "col-2", column_name: "Surname", db_column_name: "surname", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 1, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+      { id: "col-3", column_name: "Email", db_column_name: "email", column_type: "text", is_masterdata: true, role_permissions: { hr_admin: { view: true, edit: true } }, category: null, category_color: null, display_order: 2, is_visible: true, created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z" },
+    ]),
+  },
+}));
 vi.mock("@/lib/supabase/server");
 vi.mock("papaparse");
 
@@ -48,6 +58,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
   describe("API handles database errors gracefully", () => {
     it("should handle database error when fetching employees", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockRejectedValue(new Error("Database connection failed"));
 
@@ -72,6 +83,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
      * This ensures export functionality is resilient to partial data failures.
      */
     it("should handle database error when fetching custom data", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue([
         { id: "emp-1", first_name: "John" } as any,
@@ -104,6 +116,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should handle database error in export-crew-ready", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockRejectedValue(new Error("Database connection failed"));
 
@@ -121,6 +134,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
   describe("API handles invalid request body", () => {
     it("should handle malformed JSON in request body", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
@@ -136,6 +150,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should handle null request body", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
@@ -149,6 +164,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should handle request body with wrong data types", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
@@ -169,6 +185,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
   describe("API handles missing required fields", () => {
     it("should return error when employeeIds is missing", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
@@ -186,6 +203,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should return error when fields is missing", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
@@ -203,6 +221,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should return error when selectedEmployeeIds is missing in export-crew-ready", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
@@ -220,6 +239,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
   describe("API returns appropriate error messages", () => {
     it("should return descriptive error message for no employees selected", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
@@ -240,6 +260,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should return descriptive error message for no fields selected", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
@@ -260,6 +281,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should return descriptive error message for no employees found", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue([]);
 
@@ -281,6 +303,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should return descriptive error message for no eligible employees in export-crew-ready", async () => {
+      vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue([]);
 
@@ -299,8 +322,8 @@ describe("Story 13.7: Export Error Handling Integration", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(new Error("Authentication required"));
-      vi.mocked(createErrorResponse).mockReturnValue(
+      vi.mocked(auth.requireAuthAPI).mockRejectedValue(new Error("Authentication required"));
+      vi.mocked(createUnauthorizedResponse).mockReturnValue(
         new Response(
           JSON.stringify({
             error: {

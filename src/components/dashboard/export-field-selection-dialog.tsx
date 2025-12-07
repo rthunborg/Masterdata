@@ -35,6 +35,8 @@ import { EXPORTABLE_EMPLOYEE_FIELDS } from "@/lib/constants/export-fields";
 
 
 import { useTranslations } from "@/lib/i18n";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { useUIStore } from "@/lib/store/ui-store";
 
 
 export interface ExportField {
@@ -83,37 +85,48 @@ export function ExportFieldSelectionDialog({
 
   const tDashboard = useTranslations("dashboard");
   const tCommon = useTranslations("common");
+  const { user } = useAuth();
+  const { previewRole } = useUIStore();
 
+  // Determine effective role for permission filtering (for preview mode)
+  const effectiveRole = previewRole || user?.role;
 
   // Get all available fields: masterdata fields + custom columns
-
-
+  // Story 17.4: Filter fields based on user role permissions
   const availableFields = React.useMemo<ExportField[]>(() => {
 
 
     const fields: ExportField[] = [];
 
-
-    // Add masterdata fields from EXPORTABLE_EMPLOYEE_FIELDS
-
+    // Story 17.4: Add masterdata fields only if user has view permission
+    // Check if there's a column config with view permission for each masterdata field
     EXPORTABLE_EMPLOYEE_FIELDS.forEach((field) => {
+      // Find matching masterdata column config
+      const matchingColumn = columnConfigs.find(
+        (config) =>
+          config.is_masterdata &&
+          config.db_column_name.toLowerCase().replace(/ /g, "_") === field.key
+      );
 
-      fields.push({
+      // Only include if user has view permission (matchingColumn exists means permission check passed)
+      // For HR Admin, include all fields (no matchingColumn check needed)
+      if (effectiveRole === "hr_admin" || matchingColumn) {
+        fields.push({
 
-        id: `masterdata_${field.key}`,
+          id: `masterdata_${field.key}`,
 
-        label: field.label,
+          label: field.label,
 
-        fieldKey: field.key,
+          fieldKey: field.key,
 
-        isMasterdata: true,
+          isMasterdata: true,
 
-      });
-
+        });
+      }
     });
 
     // Add custom columns from columnConfigs
-
+    // columnConfigs is already filtered by useColumns to only include columns with view permission
     columnConfigs
 
       .filter((config) => !config.is_masterdata)
@@ -138,7 +151,7 @@ export function ExportFieldSelectionDialog({
 
     return fields;
 
-  }, [columnConfigs]);
+  }, [columnConfigs, effectiveRole]);
 
   // Initialize selected fields with visible columns
 

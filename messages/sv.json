@@ -77,11 +77,17 @@
     "export": {
       "selectFields": "Välj fält att exportera",
       "selectFieldsDescription": "Välj vilka fält som ska inkluderas i exporten. Synliga kolumner är förvalda.",
-      "masterdataFields": "Masterdatafält"
+      "masterdataFields": "Masterdatafält",
+      "customFields": "Anpassade fält"
     },
+    "exportSelectedEmployees": "Exportera {count} markerade anställda",
     "noEmployeesSelected": "Inga anställda valda. Välj anställda att exportera.",
     "noFieldsSelected": "Inga fält valda. Välj minst ett fält att exportera.",
-    "exportSuccess": "Exporterade {count} anställda"
+    "exportSuccess": "Exporterade {count} anställda",
+    "exportFailed": "Kunde inte exportera anställda",
+    "exportPermissionDenied": "Du saknar behörighet att exportera följande fält: {fields}",
+    "exportNoPermittedFields": "Inga fält valda som du har behörighet att exportera.",
+    "exportNoEmployeesFound": "Inga anställda hittades som matchar de valda ID:na."
   },
   "forms": {
     "firstName": "Förnamn",
@@ -116,6 +122,8 @@
     "columnNameLabel": "Kolumnnamn",
     "columnType": "Kolumntyp",
     "category": "Kategori",
+    "categoryColor": "Kategorifärg (Valfritt)",
+    "selectOrEnterColor": "Välj eller ange färg",
     "title": "Titel",
     "description": "Beskrivning",
     "selectOrTypeCategory": "Välj eller skriv en kategori",
