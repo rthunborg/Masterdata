@@ -20,43 +20,39 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      {/* Navigation - hidden on mobile, visible on desktop */}
-      <nav className="bg-gray-100 border-b hidden lg:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            <Link
-              href="/dashboard"
-              className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            >
-              {t.navigation.employees}
-            </Link>
-            {user.role === "hr_admin" && (
+      {/* Navigation - hidden on mobile, visible on desktop - HR Admin only */}
+      {user.role === "hr_admin" && (
+        <nav className="bg-gray-100 border-b hidden lg:block">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex space-x-8">
+              <Link
+                href="/dashboard"
+                className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              >
+                {t.navigation.employees}
+              </Link>
               <Link
                 href="/dashboard/important-dates"
                 className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
               >
                 {t.navigation.importantDates}
               </Link>
-            )}
-            {user.role === "hr_admin" && (
               <Link
                 href="/dashboard/admin/users"
                 className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
               >
                 {t.admin.userManagement}
               </Link>
-            )}
-            {user.role === "hr_admin" && (
               <Link
                 href="/dashboard/admin/columns"
                 className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
               >
                 {t.admin.columnSettings}
               </Link>
-            )}
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      )}
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {children}

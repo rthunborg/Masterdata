@@ -29,10 +29,12 @@ export function Header() {
     <header className="border-b bg-white">
       <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 min-w-0">
-          {/* Mobile Navigation - visible on mobile only */}
-          <div className="lg:hidden shrink-0">
-            <MobileNav user={user} />
-          </div>
+          {/* Mobile Navigation - visible on mobile only - HR Admin only */}
+          {user.role === 'hr_admin' && (
+            <div className="lg:hidden shrink-0">
+              <MobileNav user={user} />
+            </div>
+          )}
           
           <Image
             src="/images/stena-logo.png"
