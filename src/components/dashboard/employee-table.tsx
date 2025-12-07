@@ -1908,7 +1908,7 @@ export function EmployeeTable({
 
           <div className="rounded-md border">
 
-            <Table>
+            <Table className="table-fixed">
 
               <TableHeader>
 
@@ -2130,6 +2130,9 @@ export function EmployeeTable({
 
                           <TableCell 
                             key={cell.id}
+                            style={{
+                              width: cell.column.getSize(),
+                            }}
                           >
 
                             <div className="flex items-center gap-2">
