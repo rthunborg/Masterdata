@@ -2132,10 +2132,13 @@ export function EmployeeTable({
                             key={cell.id}
                             style={{
                               width: cell.column.getSize(),
+                              minWidth: cell.column.getSize(),
+                              maxWidth: cell.column.getSize(),
                             }}
+                            className="overflow-hidden"
                           >
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-full">
 
                               {flexRender(cell.column.columnDef.cell, cell.getContext())}
 

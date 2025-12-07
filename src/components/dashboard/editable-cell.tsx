@@ -488,9 +488,10 @@ export function EditableCell({
         }}
         className={cn(
           "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
-          "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center gap-2 bg-white",
+          "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center gap-2",
           // Story 16.5: Apply highlight styling for changed fields
-          isChanged && "bg-amber-50 dark:bg-amber-950/20"
+          // Use highlight background when changed, otherwise use white background
+          isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-white"
         )}
         tabIndex={0}
         onKeyDown={(e) => {

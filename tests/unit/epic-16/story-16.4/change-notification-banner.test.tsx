@@ -52,9 +52,9 @@ describe("ChangeNotificationBanner", () => {
       );
 
       const banner = screen.getByRole("alert");
-      expect(banner.textContent).toMatch(/Changes made to 5 employees/i);
-      expect(banner.textContent).toMatch(/since your last login/i);
-      expect(banner.textContent).toMatch(/See highlighted fields below/i);
+      expect(banner.textContent).toMatch(/Ändringar gjorda i 5 anställda/i);
+      expect(banner.textContent).toMatch(/sedan din senaste inloggning/i);
+      expect(banner.textContent).toMatch(/Se markerade fält nedan/i);
     });
 
     it("displays correct singular form for single employee", () => {
@@ -68,7 +68,7 @@ describe("ChangeNotificationBanner", () => {
       );
 
       const banner = screen.getByRole("alert");
-      expect(banner.textContent).toMatch(/Changes made to 1 employee/i);
+      expect(banner.textContent).toMatch(/Ändringar gjorda i 1 anställd/i);
     });
 
     it("displays formatted date in banner", () => {

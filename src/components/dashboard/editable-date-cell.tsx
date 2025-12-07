@@ -188,11 +188,12 @@ export function EditableDateCell({
                 }, 2000);
               }}
               className={cn(
-                "px-3 py-2 rounded min-h-10 flex items-center select-text cursor-default bg-gray-50",
+                "px-3 py-2 rounded min-h-10 flex items-center select-text cursor-default",
                 "focus:outline-none focus:ring-2 focus:ring-ring",
                 displayValue === t("dateDeleted") && "text-amber-600",
                 // Story 16.5: Apply highlight styling for changed fields
-                isChanged && "bg-amber-50 dark:bg-amber-950/20"
+                // Use highlight background when changed, otherwise use gray background
+                isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-gray-50"
               )}
               tabIndex={0}
               role="gridcell"
@@ -225,10 +226,11 @@ export function EditableDateCell({
             }}
             className={cn(
               "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
-              "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center bg-white",
+              "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center",
               displayValue === t("dateDeleted") && "text-amber-600",
               // Story 16.5: Apply highlight styling for changed fields
-              isChanged && "bg-amber-50 dark:bg-amber-950/20"
+              // Use highlight background when changed, otherwise use white background
+              isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-white"
             )}
             tabIndex={0}
             onKeyDown={(e) => {

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
+import { useTranslations } from "@/lib/i18n";
 
 const SESSION_STORAGE_KEY = "employee-changes-banner-dismissed";
 const BASELINE_TRACKING_KEY = "employee-changes-banner-last-baseline";
@@ -33,6 +34,7 @@ export function ChangeNotificationBanner({
   error,
 }: ChangeNotificationBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false);
+  const tDashboard = useTranslations('dashboard');
 
   // Check sessionStorage on mount to restore dismissal state
   useEffect(() => {
@@ -105,16 +107,18 @@ export function ChangeNotificationBanner({
 
   return (
     <Alert
-      className="mb-4 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800"
+      className="mb-4 pt-2 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800"
       role="alert"
       aria-live="polite"
       aria-atomic="true"
     >
       <div className="flex items-start justify-between gap-4">
         <AlertDescription className="flex-1 text-sm text-blue-900 dark:text-blue-100">
-          Changes made to <strong>{totalCount}</strong>{" "}
-          {totalCount === 1 ? "employee" : "employees"} since your last login
-          on {formattedDate}. See highlighted fields below.
+          {tDashboard('changeNotification.changesMadeTo')} <strong>{totalCount}</strong>{" "}
+          {totalCount === 1 
+            ? tDashboard('changeNotification.employee') 
+            : tDashboard('changeNotification.employees')} {tDashboard('changeNotification.sinceLastLogin')}{" "}
+          {formattedDate}. {tDashboard('changeNotification.seeHighlightedFields')}
         </AlertDescription>
         <Button
           variant="ghost"

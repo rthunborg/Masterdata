@@ -2,7 +2,7 @@
 
 ## Status
 
-**Approved**
+**Testing**
 
 ---
 
@@ -60,6 +60,7 @@ This epic addresses all these issues to create a better, more localized experien
 ## Suggested Sequencing
 
 **Recommended Order:**
+
 1. Story 17.1 (Translations) - Foundation for UI improvements
 2. Story 17.2 (Delete) - Core functionality enhancement
 3. Story 17.3 (Category color) - Additional edit modal feature
@@ -99,15 +100,18 @@ Stories 17.1-17.3 can be developed in parallel. Stories 17.5-17.7 are independen
 ## Technical Architecture
 
 ### Translation System
+
 - Use existing `useTranslations` hook from `@/lib/i18n`
 - Add Swedish translations to `messages/sv.json`
 - Ensure proper namespace usage (e.g., `modals`, `forms`, `tooltips`)
 
 ### Permission-Based Filtering
+
 - Export field selection must filter based on `column_config.role_permissions[userRole].view`
 - Only show fields user has view access for in export dialog
 
 ### Role-Based UI Rendering
+
 - Use `user.role !== "hr_admin"` checks to conditionally render/hide UI elements
 - Navigation area: Hide entire `<nav>` element for external users
 - Filter dropdown: Conditionally render based on user role
@@ -138,4 +142,3 @@ Stories 17.1-17.3 can be developed in parallel. Stories 17.5-17.7 are independen
 - More granular export permissions
 - Custom filter creation for external users
 - Enhanced column management features
-

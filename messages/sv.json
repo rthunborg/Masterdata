@@ -87,7 +87,14 @@
     "exportFailed": "Kunde inte exportera anställda",
     "exportPermissionDenied": "Du saknar behörighet att exportera följande fält: {fields}",
     "exportNoPermittedFields": "Inga fält valda som du har behörighet att exportera.",
-    "exportNoEmployeesFound": "Inga anställda hittades som matchar de valda ID:na."
+    "exportNoEmployeesFound": "Inga anställda hittades som matchar de valda ID:na.",
+    "changeNotification": {
+      "changesMadeTo": "Ändringar gjorda i",
+      "employee": "anställd",
+      "employees": "anställda",
+      "sinceLastLogin": "sedan din senaste inloggning",
+      "seeHighlightedFields": "Se markerade fält nedan."
+    }
   },
   "forms": {
     "firstName": "Förnamn",
