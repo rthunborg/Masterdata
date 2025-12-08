@@ -185,7 +185,25 @@ export default function DashboardPage() {
 
   // Story 16.5: Call useEmployeeChanges once at dashboard level to avoid N+2 duplicate API requests
   // Only fetch changes for external users (not HR admin) - Epic 16 is for external users only
-  const { isColumnChanged, totalCount, changesBaseline, isLoading: isLoadingChanges, error: changesError } = useEmployeeChanges();
+  // For HR admins, provide no-op functions and empty state
+  const isExternalUser = user?.role !== "hr_admin";
+  const employeeChangesResult = useEmployeeChanges();
+  const { 
+    isColumnChanged: rawIsColumnChanged, 
+    totalCount, 
+    changesBaseline, 
+    isLoading: isLoadingChanges, 
+    error: changesError 
+  } = employeeChangesResult;
+  
+  // For HR admins, provide a no-op isColumnChanged function that always returns false
+  // This prevents highlighting from appearing for HR admins
+  const isColumnChanged = useMemo(() => {
+    if (!isExternalUser) {
+      return () => false; // No-op for HR admins
+    }
+    return rawIsColumnChanged;
+  }, [isExternalUser, rawIsColumnChanged]);
 
   const handleEmployeeAdded = () => {
     refetch();
