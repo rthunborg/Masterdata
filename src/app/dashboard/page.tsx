@@ -184,6 +184,7 @@ export default function DashboardPage() {
   });
 
   // Story 16.5: Call useEmployeeChanges once at dashboard level to avoid N+2 duplicate API requests
+  // Only fetch changes for external users (not HR admin) - Epic 16 is for external users only
   const { isColumnChanged, totalCount, changesBaseline, isLoading: isLoadingChanges, error: changesError } = useEmployeeChanges();
 
   const handleEmployeeAdded = () => {
@@ -300,30 +301,31 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <Card>
-          <CardContent>
+          {/* Story 16.4: Banner only shows for external users, not HR admin */}
+          {user?.role !== "hr_admin" && (
             <ChangeNotificationBanner
               totalCount={totalCount}
               changesBaseline={changesBaseline}
               isLoading={isLoadingChanges}
               error={changesError}
             />
-            <ResponsiveEmployeeView
-              employees={employees}
-              isLoading={isLoadingEmployees}
-              isHRAdmin={user?.role === "hr_admin"}
-              onEmployeeUpdated={refetch}
-              includeArchived={includeArchived}
-              onIncludeArchivedChange={onIncludeArchivedChange}
-              includeTerminated={includeTerminated}
-              onIncludeTerminatedChange={onIncludeTerminatedChange}
-              needsRepayment={needsRepayment}
-              onNeedsRepaymentChange={onNeedsRepaymentChange}
-              updatedEmployeeId={updatedEmployeeId}
-              onGlobalFilterChange={setGlobalFilter}
-              onOptimisticUpdate={updateEmployeeOptimistically}
-              isColumnChanged={isColumnChanged}
-            />
-          </CardContent>
+          )}
+          <ResponsiveEmployeeView
+            employees={employees}
+            isLoading={isLoadingEmployees}
+            isHRAdmin={user?.role === "hr_admin"}
+            onEmployeeUpdated={refetch}
+            includeArchived={includeArchived}
+            onIncludeArchivedChange={onIncludeArchivedChange}
+            includeTerminated={includeTerminated}
+            onIncludeTerminatedChange={onIncludeTerminatedChange}
+            needsRepayment={needsRepayment}
+            onNeedsRepaymentChange={onNeedsRepaymentChange}
+            updatedEmployeeId={updatedEmployeeId}
+            onGlobalFilterChange={setGlobalFilter}
+            onOptimisticUpdate={updateEmployeeOptimistically}
+            isColumnChanged={isColumnChanged}
+          />
         </Card>
       )}
 

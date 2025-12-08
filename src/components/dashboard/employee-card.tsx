@@ -987,7 +987,7 @@ function EmployeeCardComponent({
 
                   canEdit={true}
 
-                  isChanged={checkColumnChanged(employee.id, 'stena_date')} // Story 16.5: Pass highlight flag
+                  isChanged={checkColumnChanged(employee.id, 'stena_date'.toLowerCase().trim())} // Story 16.5: Pass highlight flag
 
                   onSave={handleMasterdataUpdate}
 
@@ -1019,7 +1019,7 @@ function EmployeeCardComponent({
 
                   canEdit={true}
 
-                  isChanged={checkColumnChanged(employee.id, 'omc_date')} // Story 16.5: Pass highlight flag
+                  isChanged={checkColumnChanged(employee.id, 'omc_date'.toLowerCase().trim())} // Story 16.5: Pass highlight flag
 
                   onSave={handleMasterdataUpdate}
 
@@ -1051,7 +1051,7 @@ function EmployeeCardComponent({
 
                   canEdit={true}
 
-                  isChanged={checkColumnChanged(employee.id, 'pe3_date')} // Story 16.5: Pass highlight flag
+                  isChanged={checkColumnChanged(employee.id, 'pe3_date'.toLowerCase().trim())} // Story 16.5: Pass highlight flag
 
                   onSave={handleMasterdataUpdate}
 
@@ -1174,7 +1174,7 @@ function EmployeeCardComponent({
 
                             canEdit={canEdit}
 
-                            isChanged={checkColumnChanged(employee.id, col.db_column_name)} // Story 16.5: Pass highlight flag
+                            isChanged={checkColumnChanged(employee.id, col.db_column_name?.toLowerCase().trim() || '')} // Story 16.5: Pass highlight flag
 
                             onSave={handleMasterdataUpdate}
 
@@ -1212,7 +1212,7 @@ function EmployeeCardComponent({
 
                           canEdit={canEdit}
 
-                          isChanged={checkColumnChanged(employee.id, col.db_column_name)} // Story 16.5: Pass highlight flag
+                            isChanged={checkColumnChanged(employee.id, col.db_column_name?.toLowerCase().trim() || '')} // Story 16.5: Pass highlight flag
 
                           onSave={col.is_masterdata ? handleMasterdataUpdate : handleCustomDataUpdate}
 

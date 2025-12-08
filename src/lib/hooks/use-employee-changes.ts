@@ -139,11 +139,50 @@ export function useEmployeeChanges(): UseEmployeeChangesReturn {
   /**
    * Checks if a specific column changed for a specific employee
    * Memoized to prevent unnecessary re-computations
+   * 
+   * Note: Column name matching is now case-insensitive. Both API and frontend
+   * normalize to lowercase for consistent matching, handling any potential
+   * case mismatches between trigger, column_config, and frontend.
    */
   const isColumnChanged = useCallback(
     (employeeId: string, columnName: string): boolean => {
-      const employee = changedEmployees.find((e) => e.employeeId === employeeId);
-      return employee?.changedColumns.includes(columnName) ?? false;
+      if (!columnName) return false;
+      
+      // Normalize employee ID and column name for consistent matching
+      const normalizedEmployeeId = employeeId?.trim();
+      const normalizedColumnName = columnName.toLowerCase().trim();
+      
+      if (!normalizedEmployeeId || !normalizedColumnName) return false;
+      
+      // Debug logging in development (reduced verbosity)
+      // Only log when there's a mismatch or when column is changed
+      
+      const employee = changedEmployees.find((e) => {
+        // Normalize both IDs for comparison (handle any whitespace or case issues)
+        return e.employeeId?.trim() === normalizedEmployeeId;
+      });
+      
+      if (!employee) {
+        // Employee not found in changedEmployees - no changes for this employee
+        return false;
+      }
+      
+      // Normalize column names to lowercase for case-insensitive matching
+      const isChanged = employee.changedColumns.some(
+        (changedCol) => changedCol.toLowerCase().trim() === normalizedColumnName
+      );
+      
+      // Debug logging only for mismatches (reduced verbosity for normal operation)
+      if (process.env.NODE_ENV === 'development' && !isChanged && employee.changedColumns.length > 0) {
+        // Only log when we expect a match but don't find one (potential bug)
+        console.debug('[useEmployeeChanges] Column not matched:', {
+          employeeId: normalizedEmployeeId,
+          columnName: normalizedColumnName,
+          availableColumns: employee.changedColumns.map(c => c.toLowerCase().trim()),
+        });
+      }
+      
+      return isChanged;
     },
     [changedEmployees]
   );

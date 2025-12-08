@@ -1,7 +1,7 @@
 # HR Masterdata Application - Features & Capabilities
 
-**Document Version:** 1.0  
-**Last Updated:** 2025-01-29  
+**Document Version:** 2.0  
+**Last Updated:** 2025-01-30  
 **Target Audience:** Stakeholders, Business Users, Management
 
 ---
@@ -325,6 +325,67 @@ This document provides a comprehensive overview of all features and capabilities
 
 ---
 
+## Epic 16: Employee Data Change Notifications
+
+### Change Detection System
+- **Column-Level Change Tracking**: System tracks changes to individual masterdata fields at the column level
+- **Audit Table**: Database audit table records all masterdata field changes without storing duplicate data (GDPR compliant)
+- **Permission-Based Filtering**: Only shows changes for columns the user has view permission for
+- **Masterdata Only**: Change tracking applies only to masterdata fields (custom columns excluded)
+
+### Change Notification Banner
+- **Login Notifications**: Dismissible banner appears on login showing how many employees have changes since last login
+- **Change Summary**: Banner displays count of affected employees and last login timestamp
+- **Session-Based Dismissal**: Banner can be dismissed for the current session (stored in sessionStorage)
+- **Clear Action Items**: Banner provides clear indication of what has changed
+
+### Visual Field Highlighting
+- **Changed Field Indicators**: Changed fields are highlighted with soft yellow/amber background color in the employee table
+- **Persistent Highlights**: Highlights persist for the entire session (survive page refreshes, cleared on next login)
+- **Column Mapping**: System correctly maps database column names to displayed columns for accurate highlighting
+- **Multi-View Support**: Highlights work in both desktop table view and mobile card view
+- **Non-Intrusive Design**: Highlights are noticeable but don't interfere with inline editing or readability
+
+### Change Detection Performance
+- **Fast Query Performance**: Change detection completes in <500ms on login
+- **Efficient Filtering**: Only queries changes for visible masterdata columns and non-archived employees
+- **Scalable Architecture**: Audit table handles high change frequency without performance degradation
+
+---
+
+## Epic 17: External User UX Improvements
+
+### Localization Enhancements
+- **Swedish Custom Column Management**: All custom column management UI text is localized to Swedish for external users
+- **Consistent Language**: External party users see Swedish interface for all custom column operations
+- **Translation Coverage**: Complete Swedish translation coverage for create, edit, delete, and category management
+
+### Custom Column Management Improvements
+- **Delete Functionality**: External users can delete their own custom columns with dedicated delete button
+- **Category Color Editing**: External users can edit category colors when editing custom columns
+- **Enhanced Edit Modal**: Improved edit column modal with full category color editing capabilities
+- **Column Type Simplification**: Removed unnecessary column type hints for cleaner interface
+
+### Export Functionality for External Users
+- **Permission-Based Export**: External users can export employees with field selection limited to their view permissions
+- **Field Selection Dialog**: Export dialog shows only fields the user has view access for
+- **Selected-Only Export**: Export includes only selected employees (if selection is implemented)
+- **Professional CSV Format**: Exports generate properly formatted CSV files with appropriate field names
+
+### UI Simplification
+- **Removed Premade Filters**: Premade filter dropdown is hidden for external users (search functionality still available)
+- **Removed Navigation Area**: Navigation bar is hidden for external users (they only have dashboard access)
+- **Streamlined Interface**: Cleaner, more focused interface for external party users
+- **Column Alignment Fix**: Fixed vertical alignment issue for external users with limited viewable fields
+
+### User Experience Benefits
+- **Reduced Clutter**: External users see only relevant UI elements for their workflow
+- **Improved Focus**: Simplified interface helps external users focus on their core tasks
+- **Better Localization**: Swedish interface improves usability for Swedish-speaking external users
+- **Enhanced Functionality**: Delete and export capabilities give external users more control
+
+---
+
 ## Cross-Epic Features
 
 ### Data Management
@@ -363,6 +424,8 @@ The HR Masterdata application provides a comprehensive solution for managing sea
 - **Mobile-First Experience** with full mobile support
 - **Automated Workflows** including room assignment and email notifications
 - **Flexible Data Management** with custom columns and exports
+- **Change Notifications** for external users to track masterdata updates
+- **Localized External User Experience** with Swedish interface and streamlined UI
 - **Professional Branding** matching Stena Line standards
 
 The application is production-ready and designed to scale with your seasonal recruitment needs.

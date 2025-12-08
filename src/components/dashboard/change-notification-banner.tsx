@@ -107,7 +107,7 @@ export function ChangeNotificationBanner({
 
   return (
     <Alert
-      className="mb-4 pt-2 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800"
+      className="mb-4 p-4 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800"
       role="alert"
       aria-live="polite"
       aria-atomic="true"
