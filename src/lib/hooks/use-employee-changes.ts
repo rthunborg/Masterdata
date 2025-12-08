@@ -154,11 +154,20 @@ export function useEmployeeChanges(): UseEmployeeChangesReturn {
     
     let baseline: string;
     
-    if (isNewLogin || !sessionBaseline) {
-      // New login session - use current user.last_active_at as baseline
-      // Note: last_active_at might not be updated immediately if <5 min since last update.
-      // Refresh user object after a short delay to get updated last_active_at from middleware
-      baseline = user.last_active_at;
+    // CRITICAL: If we already have a baseline in sessionStorage for this user, use it
+    // This prevents the baseline from changing when the user object is refreshed
+    // (e.g., by checkAuth() or getCurrentUser() which don't have previous_last_active_at)
+    if (sessionBaseline && sessionUserId === currentUserId) {
+      // We already have a baseline for this user - keep using it
+      // This prevents the baseline from changing when user object is refreshed
+      baseline = sessionBaseline;
+    } else if (isNewLogin || !sessionBaseline) {
+      // New login session - use PREVIOUS last_active_at as baseline (not the new one)
+      // The previous_last_active_at is stored by authService.login() before updating last_active_at
+      // This ensures we find changes that happened between the previous login and this login
+      const userWithPrevious = user as typeof user & { previous_last_active_at?: string | null };
+      const previousLastActiveAt = userWithPrevious.previous_last_active_at;
+      baseline = previousLastActiveAt || user.last_active_at;
     } else if (sessionBaseline === user.last_active_at) {
       // Same session, page refresh - maintain baseline
       baseline = sessionBaseline;
@@ -168,6 +177,7 @@ export function useEmployeeChanges(): UseEmployeeChangesReturn {
     }
     
     // Update sessionStorage with current baseline and user ID
+    // This ensures the baseline persists even when user object is refreshed
     if (typeof window !== "undefined") {
       sessionStorage.setItem(SESSION_STORAGE_KEY, baseline);
       sessionStorage.setItem(SESSION_USER_ID_KEY, currentUserId);
@@ -179,16 +189,11 @@ export function useEmployeeChanges(): UseEmployeeChangesReturn {
     setChangesBaseline(baseline);
     fetchChanges(baseline);
     
-    // If this is a new login, refresh user object after a delay to get updated last_active_at
-    // This ensures we get the timestamp updated by middleware (even if <5 min rule applies)
-    // Return cleanup function to clear timeout if component unmounts or user changes
-    if (isNewLogin && checkAuth) {
-      const refreshTimeout = setTimeout(() => {
-        checkAuth();
-      }, 1000); // 1 second delay to allow middleware to complete
-      
-      return () => clearTimeout(refreshTimeout);
-    }
+    // NOTE: We no longer refresh the user object after login because:
+    // 1. The baseline is already set correctly using previous_last_active_at
+    // 2. Refreshing the user object would lose previous_last_active_at
+    // 3. The baseline is stored in sessionStorage, so it persists across user object refreshes
+    // 4. This prevents the banner/highlights from disappearing when user object is refreshed
   }, [user, user?.id, user?.last_active_at, user?.role, fetchChanges, checkAuth]);
 
   /**

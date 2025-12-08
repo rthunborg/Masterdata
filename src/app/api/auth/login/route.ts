@@ -74,14 +74,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Return successful login response
+    // Update last_active_at immediately on login (regardless of 5-minute rule)
+    // This ensures the timestamp is always current when user logs in
+    await userRepository.updateLastActive(userData.id);
+
+    // Fetch updated user data to include the new last_active_at timestamp
+    const updatedUserData = await userRepository.findByAuthId(authData.user.id);
+    
+    // Return successful login response with updated user data
+    const finalUserData = updatedUserData || userData;
     const response: APIResponse<LoginResponse> = {
       data: {
         user: {
-          id: userData.id,
-          email: userData.email,
-          role: userData.role,
-          is_active: userData.is_active,
+          id: finalUserData.id,
+          email: finalUserData.email,
+          role: finalUserData.role,
+          is_active: finalUserData.is_active,
         },
         session: {
           access_token: authData.session?.access_token || "",

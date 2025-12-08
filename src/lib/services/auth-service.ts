@@ -21,6 +21,7 @@ class AuthService {
       }
 
       // Get user record from users table with role
+      // IMPORTANT: Fetch BEFORE updating last_active_at so we can use the previous value as baseline
       const { data: userData, error: userError } = await this.supabase
         .from("users")
         .select("id, email, role, is_active, created_at, last_active_at")
@@ -35,10 +36,44 @@ class AuthService {
         throw new Error("Account has been deactivated");
       }
 
+      // Store the PREVIOUS last_active_at before updating it
+      // This will be used as the baseline for change detection
+      const previousLastActiveAt = userData.last_active_at;
+
+      // Update last_active_at immediately on login (regardless of 5-minute rule)
+      // This ensures the timestamp is always current when user logs in
+      // Use fire-and-forget pattern - don't block login if update fails
+      try {
+        await this.supabase
+          .from("users")
+          .update({ last_active_at: new Date().toISOString() })
+          .eq("id", userData.id);
+      } catch (error) {
+        // Silently fail - login should succeed even if activity update fails
+        console.error('[AuthService] Failed to update last_active_at on login:', error);
+      }
+
+      // Fetch updated user data to include the new last_active_at timestamp
+      const { data: updatedUserData } = await this.supabase
+        .from("users")
+        .select("id, email, role, is_active, created_at, last_active_at")
+        .eq("id", userData.id)
+        .single();
+
+      const finalUserData = updatedUserData || userData;
+      
+      // Store previous last_active_at in a custom property for change detection
+      // The hook will use this as the baseline instead of the new last_active_at
+      // Type assertion needed because SessionUser doesn't include this temporary property
+      if (!authData.user) {
+        throw new Error("Invalid email or password");
+      }
+      
       return {
-        ...userData,
+        ...finalUserData,
         auth_id: authData.user.id,
-      };
+        previous_last_active_at: previousLastActiveAt,
+      } as SessionUser & { previous_last_active_at?: string | null };
     } catch (error) {
       if (error instanceof Error) {
         throw error;
