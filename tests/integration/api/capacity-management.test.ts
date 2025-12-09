@@ -396,8 +396,8 @@ describe("Capacity Management API Integration Tests", () => {
       vi.mocked(importantDateRepository.create).mockResolvedValue({
         ...mockOMCDate,
         category: "Stena Dates",
-        max_spots: 99,
-        remaining_spots: 99,
+        max_spots: 25,
+        remaining_spots: 25,
       });
 
       const stenaRequest = new NextRequest("http://localhost:3000/api/important-dates", {
@@ -408,8 +408,8 @@ describe("Capacity Management API Integration Tests", () => {
       const stenaResponse = await POST_IMPORTANT_DATE(stenaRequest);
       const stenaJson = await stenaResponse.json();
 
-      expect(stenaJson.data.max_spots).toBe(99);
-      expect(stenaJson.data.remaining_spots).toBe(99);
+      expect(stenaJson.data.max_spots).toBe(25);
+      expect(stenaJson.data.remaining_spots).toBe(25);
 
       // Test PE3 default
       const pe3DateData = {

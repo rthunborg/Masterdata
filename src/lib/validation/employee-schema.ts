@@ -221,9 +221,10 @@ const baseEmployeeSchema = z.object({
   termination_date: z.string().nullable().optional(),
   termination_reason: z.string().nullable().optional(),
 
-  // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
-  repayment_needed_omc: z.string().nullable().optional(),
-  repayment_needed_pe3: z.string().nullable().optional(),
+  // Story 13.9: Repayment tracking fields (read-only, auto-managed by termination workflow)
+  // Changed to boolean (flag only)
+  repayment_needed_omc: z.boolean().nullable().optional(),
+  repayment_needed_pe3: z.boolean().nullable().optional(),
   // Story 14.1: ÖMC Masterdata Reminder Notification
   omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
 });
@@ -443,9 +444,10 @@ export const csvImportEmployeeSchema = z.object({
   termination_date: z.string().nullable().default(null).optional(),
   termination_reason: z.string().nullable().default(null).optional(),
 
-  // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
-  repayment_needed_omc: z.string().nullable().default(null).optional(),
-  repayment_needed_pe3: z.string().nullable().default(null).optional(),
+  // Story 13.9: Repayment tracking fields (read-only, auto-managed by termination workflow)
+  // Changed to boolean (flag only)
+  repayment_needed_omc: z.union([z.boolean(), z.string(), z.null()]).nullable().default(null).optional(),
+  repayment_needed_pe3: z.union([z.boolean(), z.string(), z.null()]).nullable().default(null).optional(),
 });
 
 export type CSVImportEmployeeInput = z.infer<typeof csvImportEmployeeSchema>;

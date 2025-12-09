@@ -14,7 +14,7 @@ import { UserRole } from "@/lib/types/user";
 const mockUser: SessionUser = {
   id: "user-1",
   email: "test@example.com",
-  role: UserRole.HR_ADMIN,
+  role: UserRole.SODEXO,
   is_active: true,
   created_at: "2025-01-01T00:00:00Z",
   last_active_at: "2025-01-10T08:00:00Z",

@@ -27,7 +27,7 @@ async function getClientClient(): Promise<SupabaseClient> {
  * 
  * Business rules:
  * - ÖMC Dates: 20 spots
- * - Stena Dates: 99 spots
+ * - Stena Dates: 25 spots
  * - PE3 Dates: 1 spot
  * - Other: 99 spots (default)
  * 
@@ -39,7 +39,7 @@ export function getDefaultMaxCapacity(category: string): number {
     case 'ÖMC Dates':
       return 20;
     case 'Stena Dates':
-      return 99;
+      return 25;
     case 'PE3 Dates':
       return 1;
     default:

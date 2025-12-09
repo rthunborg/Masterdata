@@ -216,10 +216,10 @@ describe("AddImportantDateModal", () => {
             notes: "Test notes",
           time_value: null,
       deadline_submit: null,
-      deadline_cancel: null,
-      max_spots: 99,
-      remaining_spots: 99,
-    })
+            deadline_cancel: null,
+            max_spots: 25,
+            remaining_spots: 25,
+          })
         );
       });
 

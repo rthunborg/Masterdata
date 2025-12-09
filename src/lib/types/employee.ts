@@ -22,20 +22,20 @@ export interface Employee {
   
   // Story 8.13: Repayment tracking fields (auto-managed by termination workflow)
   /**
-   * ÖMC date requiring repayment after termination.
+   * Flag indicating if ÖMC repayment is needed after termination.
    * Auto-populated when employee is terminated.
    * Cleared when employee is reactivated and date is restored.
    * Read-only - managed by termination workflow.
    */
-  repayment_needed_omc: string | null;
+  repayment_needed_omc: boolean | null;
   
   /**
-   * PE3 date requiring repayment after termination.
+   * Flag indicating if PE3 repayment is needed after termination.
    * Auto-populated when employee is terminated.
    * Cleared when employee is reactivated and date is restored.
    * Read-only - managed by termination workflow.
    */
-  repayment_needed_pe3: string | null;
+  repayment_needed_pe3: boolean | null;
   
   comments: string | null;
   // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)
