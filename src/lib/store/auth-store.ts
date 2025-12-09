@@ -37,6 +37,12 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: true, 
             isLoading: false 
           });
+          
+          // NOTE: We no longer refresh user data after login because:
+          // 1. The user object from login already has the updated last_active_at
+          // 2. It also has previous_last_active_at which is needed for change detection
+          // 3. Refreshing would lose previous_last_active_at and cause the baseline to change
+          // 4. This prevents the banner/highlights from disappearing after login
         } catch (error) {
           set({ 
             user: null, 

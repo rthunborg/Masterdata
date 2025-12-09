@@ -372,7 +372,12 @@ export function EditableCell({
               className={cn(
                 "px-3 py-2 rounded min-h-10 flex items-center gap-2 select-text",
                 "focus:outline-none focus:ring-2 focus:ring-ring",
-                (isTalmundoField || isCrewingField) ? "cursor-not-allowed opacity-50 bg-gray-100" : "cursor-default bg-gray-50"
+                // Story 16.5: Apply highlight styling for changed fields in read-only mode too
+                (isTalmundoField || isCrewingField) 
+                  ? "cursor-not-allowed opacity-50 bg-gray-100" 
+                  : isChanged 
+                    ? "cursor-default bg-amber-50 dark:bg-amber-950/20" 
+                    : "cursor-default bg-gray-50"
               )}
               tabIndex={0}
               role="gridcell"

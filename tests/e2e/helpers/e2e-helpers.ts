@@ -996,12 +996,73 @@ export async function loginAsUser(page: Page, email: string, password: string) {
   await page.waitForSelector('#email', { timeout: 10000 });
   await page.waitForSelector('#password', { timeout: 10000 });
   
-  // Clear and fill login form
-  await page.fill('#email', email);
-  await page.fill('#password', password);
+  // Clear and fill login form - react-hook-form requires proper event triggering
+  // First, ensure fields are visible and ready
+  const emailField = page.locator('#email');
+  const passwordField = page.locator('#password');
+  
+  await emailField.waitFor({ state: 'visible', timeout: 10000 });
+  await passwordField.waitFor({ state: 'visible', timeout: 10000 });
+  
+  // Fill email - react-hook-form will handle the onChange
+  await emailField.clear();
+  await emailField.fill(email);
+  await emailField.blur(); // Trigger blur to validate
+  await page.waitForTimeout(200);
+  
+  // Fill password - react-hook-form needs proper event triggering
+  // First try the evaluate method to set value and trigger events
+  const passwordFilled = await passwordField.evaluate((el, pwd) => {
+    const input = el as HTMLInputElement;
+    // Get the native value setter
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+    if (nativeInputValueSetter) {
+      nativeInputValueSetter.call(input, pwd);
+    } else {
+      input.value = pwd;
+    }
+    
+    // Create and dispatch input event (react-hook-form listens to this)
+    const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+    input.dispatchEvent(inputEvent);
+    
+    // Also dispatch change event
+    const changeEvent = new Event('change', { bubbles: true, cancelable: true });
+    input.dispatchEvent(changeEvent);
+    
+    // Return the actual value
+    return input.value;
+  }, password);
+  
+  await page.waitForTimeout(400);
+  
+  // Verify password was actually filled
+  const passwordValue = await passwordField.inputValue();
+  if (passwordValue !== password && passwordFilled !== password) {
+    // Fallback: clear and type character by character to ensure react-hook-form detects it
+    await passwordField.click();
+    await passwordField.press('Control+a');
+    await passwordField.press('Delete');
+    await page.waitForTimeout(100);
+    
+    // Type each character with small delay to trigger validation
+    for (const char of password) {
+      await passwordField.type(char, { delay: 20 });
+      await page.waitForTimeout(10);
+    }
+    
+    await page.waitForTimeout(300);
+    
+    const passwordValue2 = await passwordField.inputValue();
+    if (passwordValue2 !== password) {
+      // Last resort: log what we got for debugging
+      console.error(`Password fill failed. Expected: "${password}" (${password.length} chars), Got: "${passwordValue2}" (${passwordValue2.length} chars)`);
+      throw new Error(`Failed to fill password field. Expected: "${password}" (${password.length} chars), Got: "${passwordValue2}" (${passwordValue2.length} chars)`);
+    }
+  }
   
   // Wait a moment for form validation
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(500);
   
   // Submit - wait for button to be enabled and visible
   const submitButton = page.locator('button[type="submit"]').first();
@@ -1011,7 +1072,16 @@ export async function loginAsUser(page: Page, email: string, password: string) {
   const isDisabled = await submitButton.isDisabled().catch(() => false);
   if (isDisabled) {
     // Wait a bit more for form validation to complete
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
+    // Check again
+    const stillDisabled = await submitButton.isDisabled().catch(() => false);
+    if (stillDisabled) {
+      // Get validation error if any
+      const errorText = await page.locator('[role="alert"], .text-red-600, .text-red-700').first().textContent().catch(() => '');
+      const emailValue = await page.locator('#email').inputValue();
+      const passwordValueCheck = await page.locator('#password').inputValue();
+      throw new Error(`Login form validation failed. Button is disabled. Error: ${errorText || 'Unknown validation error'}. Email: "${emailValue}", Password length: ${passwordValueCheck?.length || 0}`);
+    }
   }
   
   // Click submit button and wait for navigation or dashboard content
@@ -1105,5 +1175,66 @@ export async function loginAsHRAdmin(page: Page) {
   const adminEmail = process.env.E2E_HR_ADMIN_EMAIL || 'admin@test.com';
   const adminPassword = process.env.E2E_HR_ADMIN_PASSWORD || 'Test123!';
   await loginAsUser(page, adminEmail, adminPassword);
+}
+
+/**
+ * Logout current user
+ * 
+ * @param page - Playwright page object
+ */
+export async function logout(page: Page) {
+  // First, try to call logout API to properly clear session
+  try {
+    const response = await page.request.post('/api/auth/logout');
+    if (!response.ok()) {
+      console.warn('Logout API returned non-OK status:', response.status());
+    }
+  } catch (error) {
+    // API call might fail if already logged out, continue anyway
+    console.warn('Logout API call failed (might already be logged out):', error);
+  }
+  
+  // Wait a moment for API to process
+  await page.waitForTimeout(500);
+  
+  // Clear all cookies to ensure clean state
+  await page.context().clearCookies();
+  
+  // Clear local storage and session storage
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  
+  // Navigate to login page with a fresh navigation
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('load');
+  await page.waitForTimeout(1500); // Give time for any redirects or cleanup to complete
+  
+  // Verify we're on login page - if not, force navigation
+  const currentUrl = page.url();
+  if (!currentUrl.includes('/login')) {
+    // Force navigation to login
+    await page.goto('/login', { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('load');
+    await page.waitForTimeout(1000);
+  }
+  
+  // Wait for login form to be ready and ensure page is fully loaded
+  try {
+    await page.waitForSelector('#email', { timeout: 5000, state: 'visible' });
+    await page.waitForSelector('#password', { timeout: 5000, state: 'visible' });
+    
+    // Wait for any React hydration to complete
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(500);
+  } catch (error) {
+    console.warn('Login form not ready after logout, reloading page:', error);
+    // Reload page to ensure clean state
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForSelector('#email', { timeout: 10000, state: 'visible' });
+    await page.waitForSelector('#password', { timeout: 10000, state: 'visible' });
+    await page.waitForTimeout(500);
+  }
 }
 

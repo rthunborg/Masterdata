@@ -184,7 +184,26 @@ export default function DashboardPage() {
   });
 
   // Story 16.5: Call useEmployeeChanges once at dashboard level to avoid N+2 duplicate API requests
-  const { isColumnChanged, totalCount, changesBaseline, isLoading: isLoadingChanges, error: changesError } = useEmployeeChanges();
+  // Only fetch changes for external users (not HR admin) - Epic 16 is for external users only
+  // For HR admins, provide no-op functions and empty state
+  const isExternalUser = user?.role !== "hr_admin";
+  const employeeChangesResult = useEmployeeChanges();
+  const { 
+    isColumnChanged: rawIsColumnChanged, 
+    totalCount, 
+    changesBaseline, 
+    isLoading: isLoadingChanges, 
+    error: changesError 
+  } = employeeChangesResult;
+  
+  // For HR admins, provide a no-op isColumnChanged function that always returns false
+  // This prevents highlighting from appearing for HR admins
+  const isColumnChanged = useMemo(() => {
+    if (!isExternalUser) {
+      return () => false; // No-op for HR admins
+    }
+    return rawIsColumnChanged;
+  }, [isExternalUser, rawIsColumnChanged]);
 
   const handleEmployeeAdded = () => {
     refetch();
@@ -300,30 +319,31 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <Card>
-          <CardContent>
+          {/* Story 16.4: Banner only shows for external users, not HR admin */}
+          {user?.role !== "hr_admin" && (
             <ChangeNotificationBanner
               totalCount={totalCount}
               changesBaseline={changesBaseline}
               isLoading={isLoadingChanges}
               error={changesError}
             />
-            <ResponsiveEmployeeView
-              employees={employees}
-              isLoading={isLoadingEmployees}
-              isHRAdmin={user?.role === "hr_admin"}
-              onEmployeeUpdated={refetch}
-              includeArchived={includeArchived}
-              onIncludeArchivedChange={onIncludeArchivedChange}
-              includeTerminated={includeTerminated}
-              onIncludeTerminatedChange={onIncludeTerminatedChange}
-              needsRepayment={needsRepayment}
-              onNeedsRepaymentChange={onNeedsRepaymentChange}
-              updatedEmployeeId={updatedEmployeeId}
-              onGlobalFilterChange={setGlobalFilter}
-              onOptimisticUpdate={updateEmployeeOptimistically}
-              isColumnChanged={isColumnChanged}
-            />
-          </CardContent>
+          )}
+          <ResponsiveEmployeeView
+            employees={employees}
+            isLoading={isLoadingEmployees}
+            isHRAdmin={user?.role === "hr_admin"}
+            onEmployeeUpdated={refetch}
+            includeArchived={includeArchived}
+            onIncludeArchivedChange={onIncludeArchivedChange}
+            includeTerminated={includeTerminated}
+            onIncludeTerminatedChange={onIncludeTerminatedChange}
+            needsRepayment={needsRepayment}
+            onNeedsRepaymentChange={onNeedsRepaymentChange}
+            updatedEmployeeId={updatedEmployeeId}
+            onGlobalFilterChange={setGlobalFilter}
+            onOptimisticUpdate={updateEmployeeOptimistically}
+            isColumnChanged={isColumnChanged}
+          />
         </Card>
       )}
 

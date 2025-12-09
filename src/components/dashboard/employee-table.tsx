@@ -653,7 +653,9 @@ export function EmployeeTable({
 
       enableSorting: false,
 
-      size: 40,
+      enableResizing: false, // Story 16.6: Disable resize for checkbox column to prevent alignment issues
+
+      size: 40, // Story 16.6: Match checkbox cell width (40px for checkbox + minimal padding)
 
       cell: ({ row }) => (
 
@@ -774,7 +776,13 @@ export function EmployeeTable({
           : config.db_column_name.toLowerCase().replace(/ /g, "_");
 
         const DataCell = ({ row }: { row: Row<Employee> }) => {
-
+          // Story 16.5: Re-compute isChanged on every render to ensure it's reactive
+          // This ensures the cell updates when checkColumnChanged function changes
+          const columnNameForChangeCheck = config.db_column_name?.toLowerCase().trim() || '';
+          const isChanged = React.useMemo(
+            () => checkColumnChanged(row.original.id, columnNameForChangeCheck),
+            [checkColumnChanged, row.original.id, columnNameForChangeCheck]
+          );
 
           // Story 13.9: Hide repayment columns for non-terminated employees
           const isRepaymentColumn = repaymentColumns.includes(config.column_name);
@@ -943,9 +951,7 @@ export function EmployeeTable({
 
             : {};
 
-          // Story 16.5: Check if this column has changed for highlighting
-          const columnNameForChangeCheck = config.db_column_name;
-          const isChanged = checkColumnChanged(row.original.id, columnNameForChangeCheck);
+          // Story 16.5: isChanged is now computed above using useMemo for reactivity
 
           return (
 
@@ -1310,7 +1316,7 @@ export function EmployeeTable({
 
     return [selectionColumn, ...dataColumns];
 
-  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates, includeTerminated, isEmployeeSelected, toggleEmployeeSelection]);
+  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates, includeTerminated, isEmployeeSelected, toggleEmployeeSelection, checkColumnChanged]); // Story 16.5: Include checkColumnChanged so columns re-render when highlighting state changes
 
   // Story 8.5: Apply crew-ready filter to employees
 
@@ -1950,17 +1956,28 @@ export function EmployeeTable({
 
                       );
 
+                      // Check if this is the checkbox column (empty header)
+                      const isCheckboxColumn = header.column.id === "select";
+                      
                       return (
 
                         <TableHead
 
                           key={header.id}
 
-                          className="relative"
+                          className={cn(
+                            "relative",
+                            // Story 16.6: For checkbox column, remove all padding to match cell structure
+                            isCheckboxColumn && "!p-0"
+                          )}
 
                           style={{
 
                             width: header.getSize(),
+
+                            minWidth: header.getSize(), // Story 16.6: Ensure consistent width
+
+                            maxWidth: header.getSize(), // Story 16.6: Prevent width expansion
 
                             backgroundColor: categoryColor || undefined,
 
@@ -1971,30 +1988,36 @@ export function EmployeeTable({
                         >
 
                           {/* Header content with category label */}
-
-                          <div className="flex flex-col items-center justify-center leading-none gap-0.5">
-
-                            {/* Primary header text */}
-
-                            <div className="text-sm font-semibold leading-none">
-
-                              {headerContent}
-
+                          {/* For checkbox column, match the cell structure exactly (empty div to match cell wrapper) */}
+                          {isCheckboxColumn ? (
+                            <div className="flex items-center justify-center w-full h-full gap-2">
+                              {/* Empty - matches the structure of checkbox cell which has a div wrapper with gap-2 */}
                             </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center leading-none gap-0.5">
 
-                            {/* Category name as subtitle */}
+                              {/* Primary header text */}
 
-                            {categoryName && (
+                              <div className="text-sm font-semibold leading-none">
 
-                              <div className="text-xs text-gray-600 font-normal leading-none">
-
-                                {categoryName}
+                                {headerContent}
 
                               </div>
 
-                            )}
+                              {/* Category name as subtitle */}
 
-                          </div>
+                              {categoryName && (
+
+                                <div className="text-xs text-gray-600 font-normal leading-none">
+
+                                  {categoryName}
+
+                                </div>
+
+                              )}
+
+                            </div>
+                          )}
 
                           {/* Resize handle (Story 9.4 - AC 3) */}
 
@@ -2126,8 +2149,11 @@ export function EmployeeTable({
 
                       >
 
-                        {row.getVisibleCells().map((cell, cellIndex) => (
-
+                        {row.getVisibleCells().map((cell, cellIndex) => {
+                          // Story 16.6: Check if this is the checkbox column to match header padding
+                          const isCheckboxCell = cell.column.id === "select";
+                          
+                          return (
                           <TableCell 
                             key={cell.id}
                             style={{
@@ -2135,10 +2161,18 @@ export function EmployeeTable({
                               minWidth: cell.column.getSize(),
                               maxWidth: cell.column.getSize(),
                             }}
-                            className="overflow-hidden"
+                            className={cn(
+                              "overflow-hidden",
+                              // Story 16.6: Remove all padding for checkbox column to match header alignment
+                              isCheckboxCell && "!p-0"
+                            )}
                           >
 
-                            <div className="flex items-center gap-2 w-full">
+                            <div className={cn(
+                              "flex items-center gap-2 w-full",
+                              // Story 16.6: Center all cell content to match header alignment
+                              "justify-center"
+                            )}>
 
                               {flexRender(cell.column.columnDef.cell, cell.getContext())}
 
@@ -2167,8 +2201,8 @@ export function EmployeeTable({
                             </div>
 
                           </TableCell>
-
-                        ))}
+                          );
+                        })}
 
                       </TableRow>
 

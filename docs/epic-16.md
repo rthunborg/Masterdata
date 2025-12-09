@@ -15,11 +15,13 @@ Enable external party users (Sodexo, ÖMC, Payroll, Toplux) to be notified when 
 ## Background
 
 Currently, external party users often miss when HR admins update employee information (e.g., email, name, or other masterdata fields). This leads to:
+
 - Time lost processing outdated information
 - Mistakes made due to working with incorrect data
 - Frustration when changes aren't discovered until later
 
 This epic implements a change tracking system that:
+
 1. Tracks column-level changes to masterdata fields
 2. Notifies users on login about changes to fields they have view access to
 3. Highlights changed fields visually in the employee table
@@ -55,19 +57,22 @@ This epic implements a change tracking system that:
 3. [Story 16.3: Frontend Change Tracking Hook](./stories/story-16.3.md) - React hook and state management
 4. [Story 16.4: Change Notification Banner Component](./stories/story-16.4.md) - Dismissible banner UI
 5. [Story 16.5: Field Highlighting in Employee Table](./stories/story-16.5.md) - Visual field highlighting
+   pp6. [Story 16.6: Comprehensive Test Coverage for Change Notifications](./stories/story-16.6.md) - Integration and E2E tests to prevent production issues
 
 ---
 
 ## Suggested Sequencing
 
 **Recommended Order:**
+
 1. Story 16.1 (Database schema) - Foundation for all other stories
 2. Story 16.2 (API endpoint) - Backend service layer
 3. Story 16.3 (Frontend hook) - State management layer
 4. Story 16.4 (Banner component) - User-facing notification
 5. Story 16.5 (Field highlighting) - Visual change indicators
+6. Story 16.6 (Comprehensive test coverage) - Integration and E2E tests
 
-Stories 16.4 and 16.5 can be developed in parallel once 16.3 is complete.
+Stories 16.4 and 16.5 can be developed in parallel once 16.3 is complete. Story 16.6 should be implemented after 16.4 and 16.5 are complete to ensure comprehensive test coverage.
 
 ---
 
@@ -169,4 +174,3 @@ Stories 16.4 and 16.5 can be developed in parallel once 16.3 is complete.
 - Change tracking for custom columns
 - Per-user notification preferences
 - Change analytics dashboard for HR admins
-

@@ -7,8 +7,9 @@
  * Automatically fetches changes on mount using user's last_active_at as baseline.
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "./use-auth";
+import { isHRAdmin } from "@/lib/types/user";
 
 /**
  * Represents an employee with changed columns
@@ -42,6 +43,7 @@ export interface UseEmployeeChangesReturn {
 }
 
 const SESSION_STORAGE_KEY = 'employee-changes-baseline';
+const SESSION_USER_ID_KEY = 'employee-changes-user-id';
 
 /**
  * Hook for managing employee change detection state
@@ -55,11 +57,12 @@ const SESSION_STORAGE_KEY = 'employee-changes-baseline';
  * @returns Change data, loading state, and helper functions
  */
 export function useEmployeeChanges(): UseEmployeeChangesReturn {
-  const { user } = useAuth();
+  const { user, checkAuth } = useAuth();
   const [changesBaseline, setChangesBaseline] = useState<string | null>(null);
   const [changedEmployees, setChangedEmployees] = useState<ChangedEmployee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const previousUserIdRef = useRef<string | null>(null);
 
   /**
    * Fetches changes from the API using the provided baseline timestamp
@@ -95,33 +98,103 @@ export function useEmployeeChanges(): UseEmployeeChangesReturn {
   /**
    * Initializes baseline and fetches changes on mount
    * Baseline is captured once per session and stored in sessionStorage
-   * Detects new logins by comparing user.last_active_at with sessionStorage
+   * Detects new logins by tracking user ID changes
+   * 
+   * Note: This feature is only for external users (Epic 16). HR admins should not see
+   * change notifications or highlights, so we skip all logic for them.
    */
   useEffect(() => {
+    // Skip all logic for HR admins - this feature is only for external users
+    if (user && isHRAdmin(user.role)) {
+      setIsLoading(false);
+      setChangedEmployees([]);
+      setChangesBaseline(null);
+      // Clear sessionStorage for HR admins to prevent any leftover state
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        sessionStorage.removeItem(SESSION_USER_ID_KEY);
+      }
+      previousUserIdRef.current = null;
+      return;
+    }
+
     // First-time users: no changes to show (this is their first view)
     if (!user?.last_active_at) {
       setIsLoading(false);
       setChangedEmployees([]);
       setChangesBaseline(null);
+      // Clear sessionStorage when user becomes null (logout)
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        sessionStorage.removeItem(SESSION_USER_ID_KEY);
+      }
+      previousUserIdRef.current = null;
       return;
     }
 
+    const currentUserId = user.id;
+    const previousUserId = previousUserIdRef.current;
+    const sessionUserId = typeof window !== "undefined" 
+      ? sessionStorage.getItem(SESSION_USER_ID_KEY) 
+      : null;
+    
     // Check sessionStorage for existing baseline (same session, multiple tabs)
-    const sessionBaseline = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const sessionBaseline = typeof window !== "undefined"
+      ? sessionStorage.getItem(SESSION_STORAGE_KEY)
+      : null;
     
-    // If user.last_active_at differs from sessionStorage, it's a new login
-    // Use the new last_active_at as baseline (user logged out and back in)
-    // Otherwise, use sessionStorage value to maintain same baseline across page refreshes
-    const baseline = (sessionBaseline && sessionBaseline === user.last_active_at) 
-      ? sessionBaseline 
-      : user.last_active_at;
+    // Detect new login:
+    // 1. User ID changed (different user logged in)
+    // 2. User ID is null/undefined in ref but now has a user (transition from logout to login)
+    // 3. SessionStorage has different user ID (new login in same browser session)
+    const isNewLogin = 
+      (previousUserId !== null && previousUserId !== currentUserId) ||
+      (previousUserId === null && currentUserId !== null) ||
+      (sessionUserId !== null && sessionUserId !== currentUserId);
     
-    // Update sessionStorage with current baseline
-    sessionStorage.setItem(SESSION_STORAGE_KEY, baseline);
+    let baseline: string;
+    
+    // CRITICAL: If we already have a baseline in sessionStorage for this user, use it
+    // This prevents the baseline from changing when the user object is refreshed
+    // (e.g., by checkAuth() or getCurrentUser() which don't have previous_last_active_at)
+    if (sessionBaseline && sessionUserId === currentUserId) {
+      // We already have a baseline for this user - keep using it
+      // This prevents the baseline from changing when user object is refreshed
+      baseline = sessionBaseline;
+    } else if (isNewLogin || !sessionBaseline) {
+      // New login session - use PREVIOUS last_active_at as baseline (not the new one)
+      // The previous_last_active_at is stored by authService.login() before updating last_active_at
+      // This ensures we find changes that happened between the previous login and this login
+      const userWithPrevious = user as typeof user & { previous_last_active_at?: string | null };
+      const previousLastActiveAt = userWithPrevious.previous_last_active_at;
+      baseline = previousLastActiveAt || user.last_active_at;
+    } else if (sessionBaseline === user.last_active_at) {
+      // Same session, page refresh - maintain baseline
+      baseline = sessionBaseline;
+    } else {
+      // user.last_active_at has changed (middleware updated it) - use new value
+      baseline = user.last_active_at;
+    }
+    
+    // Update sessionStorage with current baseline and user ID
+    // This ensures the baseline persists even when user object is refreshed
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(SESSION_STORAGE_KEY, baseline);
+      sessionStorage.setItem(SESSION_USER_ID_KEY, currentUserId);
+    }
+    
+    // Update ref for next render
+    previousUserIdRef.current = currentUserId;
     
     setChangesBaseline(baseline);
     fetchChanges(baseline);
-  }, [user?.last_active_at, fetchChanges]);
+    
+    // NOTE: We no longer refresh the user object after login because:
+    // 1. The baseline is already set correctly using previous_last_active_at
+    // 2. Refreshing the user object would lose previous_last_active_at
+    // 3. The baseline is stored in sessionStorage, so it persists across user object refreshes
+    // 4. This prevents the banner/highlights from disappearing when user object is refreshed
+  }, [user, user?.id, user?.last_active_at, user?.role, fetchChanges, checkAuth]);
 
   /**
    * Refreshes changes by updating baseline to current user.last_active_at
@@ -139,11 +212,50 @@ export function useEmployeeChanges(): UseEmployeeChangesReturn {
   /**
    * Checks if a specific column changed for a specific employee
    * Memoized to prevent unnecessary re-computations
+   * 
+   * Note: Column name matching is now case-insensitive. Both API and frontend
+   * normalize to lowercase for consistent matching, handling any potential
+   * case mismatches between trigger, column_config, and frontend.
    */
   const isColumnChanged = useCallback(
     (employeeId: string, columnName: string): boolean => {
-      const employee = changedEmployees.find((e) => e.employeeId === employeeId);
-      return employee?.changedColumns.includes(columnName) ?? false;
+      if (!columnName) return false;
+      
+      // Normalize employee ID and column name for consistent matching
+      const normalizedEmployeeId = employeeId?.trim();
+      const normalizedColumnName = columnName.toLowerCase().trim();
+      
+      if (!normalizedEmployeeId || !normalizedColumnName) return false;
+      
+      // Debug logging in development (reduced verbosity)
+      // Only log when there's a mismatch or when column is changed
+      
+      const employee = changedEmployees.find((e) => {
+        // Normalize both IDs for comparison (handle any whitespace or case issues)
+        return e.employeeId?.trim() === normalizedEmployeeId;
+      });
+      
+      if (!employee) {
+        // Employee not found in changedEmployees - no changes for this employee
+        return false;
+      }
+      
+      // Normalize column names to lowercase for case-insensitive matching
+      const isChanged = employee.changedColumns.some(
+        (changedCol) => changedCol.toLowerCase().trim() === normalizedColumnName
+      );
+      
+      // Debug logging only for mismatches (reduced verbosity for normal operation)
+      if (process.env.NODE_ENV === 'development' && !isChanged && employee.changedColumns.length > 0) {
+        // Only log when we expect a match but don't find one (potential bug)
+        console.debug('[useEmployeeChanges] Column not matched:', {
+          employeeId: normalizedEmployeeId,
+          columnName: normalizedColumnName,
+          availableColumns: employee.changedColumns.map(c => c.toLowerCase().trim()),
+        });
+      }
+      
+      return isChanged;
     },
     [changedEmployees]
   );

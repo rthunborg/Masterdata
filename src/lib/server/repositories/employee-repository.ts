@@ -494,7 +494,7 @@ export class EmployeeRepository {
           const rolePerms = col.role_permissions[userRole as keyof typeof col.role_permissions];
           return rolePerms?.view === true;
         })
-        .map(col => col.db_column_name);
+        .map(col => col.db_column_name.toLowerCase().trim()); // Normalize to lowercase for consistent matching
 
       // If user has no visible masterdata columns, return empty
       if (visibleMasterdataColumns.length === 0) {
@@ -553,7 +553,9 @@ export class EmployeeRepository {
           continue;
         }
 
-        const columnName = change.column_name;
+        // Normalize column name to lowercase for consistent matching
+        // This ensures case-insensitive matching between trigger and column_config
+        const columnName = change.column_name.toLowerCase().trim();
         const changedAt = new Date(change.changed_at);
 
         if (!changesByEmployee.has(employeeId)) {
