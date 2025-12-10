@@ -1,4 +1,4 @@
-import { UserRole } from "./user";
+import { UserRole } from "@/lib/types/user";
 
 export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
