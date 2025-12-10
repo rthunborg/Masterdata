@@ -83,7 +83,7 @@ export function ImportantDatesTable({
   onDateDeleted,
 }: ImportantDatesTableProps) {
   const { user } = useAuth();
-  const isHRAdmin = userRole === "hr_admin";
+  const isHRAdmin = userRole === "hr_admin" || userRole === "recruiter";
   const t = useTranslations("tooltips");
   const tDates = useTranslations("dates");
   const tToasts = useTranslations("toasts");

@@ -95,7 +95,7 @@ describe('UserManagementTable', () => {
     // Check role display
     expect(screen.getByText('Sodexo')).toBeInTheDocument();
     expect(screen.getByText('ÖMC')).toBeInTheDocument();
-    expect(screen.getByText('HR Administrator')).toBeInTheDocument();
+    expect(screen.getByText('HR Superuser')).toBeInTheDocument();
   });
 
   it('displays "Deactivate" button for active users', () => {

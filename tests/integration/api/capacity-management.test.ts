@@ -34,6 +34,7 @@ vi.mock("@/lib/server/auth", async () => {
   return {
     ...actual,
     requireHRAdminAPI: vi.fn(),
+    requireRoleAPI: vi.fn(),
     createErrorResponse: vi.fn((error: unknown) => {
       const message = error instanceof Error ? error.message : "Internal server error";
       return new Response(
@@ -134,6 +135,7 @@ describe("Capacity Management API Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     // Mock Supabase client
     vi.mocked(createClient).mockResolvedValue({
       from: vi.fn(() => ({

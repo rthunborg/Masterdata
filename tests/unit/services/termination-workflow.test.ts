@@ -207,7 +207,7 @@ describe('Termination Workflow Service', () => {
   });
 
   describe('applyRepaymentCapture', () => {
-    it('should populate repayment_needed_omc with ÖMC date value', async () => {
+    it('should populate repayment_needed_omc with boolean true', async () => {
       const employeeId = 'emp-123';
       const omcDateId = 'omc-date-1';
       const omcDateValue = '2025-03-08';
@@ -248,28 +248,19 @@ describe('Termination Workflow Service', () => {
 
       await applyRepaymentCapture(employeeId, { omc: omcDateId, pe3: null });
 
-      expect(mockDatesSelect).toHaveBeenCalledWith('id, date_value');
+      // No longer need to fetch date value since we just set boolean
+      // expect(mockDatesSelect).toHaveBeenCalledWith('id, date_value'); 
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: omcDateValue,
-        repayment_needed_pe3: null,
+        repayment_needed_omc: true,
+        repayment_needed_pe3: false,
       });
       expect(mockUpdateEq).toHaveBeenCalledWith('id', employeeId);
     });
 
-    it('should populate repayment_needed_pe3 with PE3 date value', async () => {
+    it('should populate repayment_needed_pe3 with boolean true', async () => {
       const employeeId = 'emp-123';
       const pe3DateId = 'pe3-date-1';
-      const pe3DateValue = '2025-04-20';
       
-      const mockDatesIn = vi.fn().mockResolvedValue({
-        data: [{ id: pe3DateId, date_value: pe3DateValue }],
-        error: null,
-      });
-
-      const mockDatesSelect = vi.fn().mockReturnValue({
-        in: mockDatesIn,
-      });
-
       const mockUpdateEq = vi.fn().mockResolvedValue({
         data: null,
         error: null,
@@ -280,11 +271,6 @@ describe('Termination Workflow Service', () => {
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'important_dates') {
-          return {
-            select: mockDatesSelect,
-          };
-        }
         if (table === 'employees') {
           return {
             update: mockUpdate,
@@ -296,8 +282,8 @@ describe('Termination Workflow Service', () => {
       await applyRepaymentCapture(employeeId, { omc: null, pe3: pe3DateId });
 
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: null,
-        repayment_needed_pe3: pe3DateValue,
+        repayment_needed_omc: false,
+        repayment_needed_pe3: true,
       });
     });
 
@@ -305,21 +291,7 @@ describe('Termination Workflow Service', () => {
       const employeeId = 'emp-123';
       const omcDateId = 'omc-date-1';
       const pe3DateId = 'pe3-date-1';
-      const omcDateValue = '2025-03-08';
-      const pe3DateValue = '2025-04-20';
       
-      const mockDatesIn = vi.fn().mockResolvedValue({
-        data: [
-          { id: omcDateId, date_value: omcDateValue },
-          { id: pe3DateId, date_value: pe3DateValue },
-        ],
-        error: null,
-      });
-
-      const mockDatesSelect = vi.fn().mockReturnValue({
-        in: mockDatesIn,
-      });
-
       const mockUpdateEq = vi.fn().mockResolvedValue({
         data: null,
         error: null,
@@ -330,11 +302,6 @@ describe('Termination Workflow Service', () => {
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'important_dates') {
-          return {
-            select: mockDatesSelect,
-          };
-        }
         if (table === 'employees') {
           return {
             update: mockUpdate,
@@ -346,8 +313,8 @@ describe('Termination Workflow Service', () => {
       await applyRepaymentCapture(employeeId, { omc: omcDateId, pe3: pe3DateId });
 
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: omcDateValue,
-        repayment_needed_pe3: pe3DateValue,
+        repayment_needed_omc: true,
+        repayment_needed_pe3: true,
       });
     });
 
@@ -392,27 +359,19 @@ describe('Termination Workflow Service', () => {
       // When date lookup fails, it sets values to null and still updates
       await applyRepaymentCapture(employeeId, { omc: omcDateId, pe3: null });
       
-      // Verify that update was called (with null values since date lookup failed)
+      // Verify that update was called (with boolean values since dates exist but lookup failed logic was removed)
+      // Actually applyRepaymentCapture NO LONGER DOES LOOKUP. It just uses the IDs.
+      // So if IDs are present, it sets true.
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: null,
-        repayment_needed_pe3: null,
+        repayment_needed_omc: true,
+        repayment_needed_pe3: false,
       });
     });
 
     it('should throw error when employee update fails', async () => {
       const employeeId = 'emp-123';
       const omcDateId = 'omc-date-1';
-      const omcDateValue = '2025-03-08';
       
-      const mockDatesIn = vi.fn().mockResolvedValue({
-        data: [{ id: omcDateId, date_value: omcDateValue }],
-        error: null,
-      });
-
-      const mockDatesSelect = vi.fn().mockReturnValue({
-        in: mockDatesIn,
-      });
-
       const mockUpdateEq = vi.fn().mockResolvedValue({
         data: null,
         error: { message: 'Update failed' },
@@ -423,11 +382,6 @@ describe('Termination Workflow Service', () => {
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'important_dates') {
-          return {
-            select: mockDatesSelect,
-          };
-        }
         if (table === 'employees') {
           return {
             update: mockUpdate,
@@ -744,10 +698,8 @@ describe('Termination Workflow Service', () => {
   });
 
   describe('restoreRepaymentDates', () => {
-    it('should restore ÖMC date when spots available', async () => {
+    it('should clear ÖMC flag when present', async () => {
       const employeeId = 'emp-123';
-      const omcDateValue = '2025-03-08';
-      const omcDateId = 'omc-date-1';
       
       // Mock employee fetch
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
@@ -755,8 +707,8 @@ describe('Termination Workflow Service', () => {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: omcDateValue,
-          repayment_needed_pe3: null,
+          repayment_needed_omc: true,
+          repayment_needed_pe3: false,
         },
         error: null,
       });
@@ -767,35 +719,6 @@ describe('Termination Workflow Service', () => {
 
       const mockEmployeeSelect = vi.fn().mockReturnValue({
         eq: mockEmployeeEq,
-      });
-
-      // Mock date lookup
-      const mockDateSingle = vi.fn().mockResolvedValue({
-        data: {
-          id: omcDateId,
-          date_description: 'ÖMC Training',
-          remaining_spots: 5,
-        },
-        error: null,
-      });
-
-      // Support chained .eq() calls
-      const mockDateEq2 = vi.fn().mockReturnValue({
-        single: mockDateSingle,
-      });
-
-      const mockDateEq1 = vi.fn().mockReturnValue({
-        eq: mockDateEq2,
-      });
-
-      const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq1,
-      });
-
-      // Mock assignEmployeeToDate
-      vi.mocked(assignEmployeeToDate).mockResolvedValue({
-        success: true,
-        message: 'Assigned',
       });
 
       // Mock repayment field clear
@@ -815,36 +738,29 @@ describe('Termination Workflow Service', () => {
             update: mockUpdate,
           };
         }
-        if (table === 'important_dates') {
-          return {
-            select: mockDateSelect,
-          };
-        }
         return {};
       });
 
       const result = await restoreRepaymentDates(employeeId);
 
-      expect(mockDateSelect).toHaveBeenCalledWith('id, date_description, remaining_spots');      
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, omcDateId, null, 'omc_date', expect.anything());
-      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
+      expect(assignEmployeeToDate).not.toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: false });
       expect(result.restored.omc).toBe(true);
       expect(result.restored.pe3).toBe(false);
       expect(result.warnings).toEqual([]);
     });
 
-    it('should warn when ÖMC date spots unavailable', async () => {
+    it('should clear PE3 flag when present', async () => {
       const employeeId = 'emp-123';
-      const omcDateValue = '2025-03-08';
-      const omcDateId = 'omc-date-1';
       
+      // Mock employee fetch
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
         data: {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: omcDateValue,
-          repayment_needed_pe3: null,
+          repayment_needed_omc: false,
+          repayment_needed_pe3: true,
         },
         error: null,
       });
@@ -857,178 +773,7 @@ describe('Termination Workflow Service', () => {
         eq: mockEmployeeEq,
       });
 
-      const mockDateSingle = vi.fn().mockResolvedValue({
-        data: {
-          id: omcDateId,
-          date_description: 'ÖMC Training',
-          remaining_spots: 0, // Fully booked
-        },
-        error: null,
-      });
-
-      // Support chained .eq() calls
-      const mockDateEq2 = vi.fn().mockReturnValue({
-        single: mockDateSingle,
-      });
-
-      const mockDateEq1 = vi.fn().mockReturnValue({
-        eq: mockDateEq2,
-      });
-
-      const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq1,
-      });
-
-      mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'employees') {
-          return {
-            select: mockEmployeeSelect,
-          };
-        }
-        if (table === 'important_dates') {
-          return {
-            select: mockDateSelect,
-          };
-        }
-        return {};
-      });
-
-      const result = await restoreRepaymentDates(employeeId);
-
-      expect(assignEmployeeToDate).not.toHaveBeenCalled();
-      expect(result.restored.omc).toBe(false);
-      // The warning might be a generic error if the mock chain fails, or the specific message if it works
-      expect(result.warnings.length).toBeGreaterThan(0);
-      // Check for either the specific message or the error message
-      const warningText = result.warnings[0];
-      expect(
-        warningText.includes('Cannot restore ÖMC Date') || 
-        warningText.includes('fully booked') ||
-        warningText.includes('Failed to restore ÖMC date')
-      ).toBe(true);
-    });
-
-    it('should warn when ÖMC date deleted', async () => {
-      const employeeId = 'emp-123';
-      const omcDateValue = '2025-03-08';
-      
-      const mockEmployeeSingle = vi.fn().mockResolvedValue({
-        data: {
-          id: employeeId,
-          first_name: 'John',
-          surname: 'Doe',
-          repayment_needed_omc: omcDateValue,
-          repayment_needed_pe3: null,
-        },
-        error: null,
-      });
-
-      const mockEmployeeEq = vi.fn().mockReturnValue({
-        single: mockEmployeeSingle,
-      });
-
-      const mockEmployeeSelect = vi.fn().mockReturnValue({
-        eq: mockEmployeeEq,
-      });
-
-      const mockDateSingle = vi.fn().mockResolvedValue({
-        data: null,
-        error: { code: 'PGRST116', message: 'No rows found' },
-      });
-
-      // Support chained .eq() calls
-      const mockDateEq2 = vi.fn().mockReturnValue({
-        single: mockDateSingle,
-      });
-
-      const mockDateEq1 = vi.fn().mockReturnValue({
-        eq: mockDateEq2,
-      });
-
-      const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq1,
-      });
-
-      mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'employees') {
-          return {
-            select: mockEmployeeSelect,
-          };
-        }
-        if (table === 'important_dates') {
-          return {
-            select: mockDateSelect,
-          };
-        }
-        return {};
-      });
-
-      const result = await restoreRepaymentDates(employeeId);
-
-      expect(assignEmployeeToDate).not.toHaveBeenCalled();
-      expect(result.restored.omc).toBe(false);
-      // The warning might be a generic error if the mock chain fails, or the specific message if it works
-      expect(result.warnings.length).toBeGreaterThan(0);
-      // Check for either the specific message or the error message
-      const warningText = result.warnings[0];
-      expect(
-        warningText.includes('ÖMC Date') || 
-        warningText.includes('no longer exists') ||
-        warningText.includes('Failed to restore ÖMC date')
-      ).toBe(true);
-    });
-
-    it('should restore PE3 date when spots available', async () => {
-      const employeeId = 'emp-123';
-      const pe3DateValue = '2025-04-20';
-      const pe3DateId = 'pe3-date-1';
-      
-      const mockEmployeeSingle = vi.fn().mockResolvedValue({
-        data: {
-          id: employeeId,
-          first_name: 'John',
-          surname: 'Doe',
-          repayment_needed_omc: null,
-          repayment_needed_pe3: pe3DateValue,
-        },
-        error: null,
-      });
-
-      const mockEmployeeEq = vi.fn().mockReturnValue({
-        single: mockEmployeeSingle,
-      });
-
-      const mockEmployeeSelect = vi.fn().mockReturnValue({
-        eq: mockEmployeeEq,
-      });
-
-      const mockDateSingle = vi.fn().mockResolvedValue({
-        data: {
-          id: pe3DateId,
-          date_description: 'PE3 Training',
-          remaining_spots: 3,
-        },
-        error: null,
-      });
-
-      // Support chained .eq() calls
-      const mockDateEq2 = vi.fn().mockReturnValue({
-        single: mockDateSingle,
-      });
-
-      const mockDateEq1 = vi.fn().mockReturnValue({
-        eq: mockDateEq2,
-      });
-
-      const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq1,
-      });
-
-      vi.mocked(assignEmployeeToDate).mockResolvedValue({
-        success: true,
-        message: 'Assigned',
-      });
-
+      // Mock repayment field clear
       const mockUpdateEq = vi.fn().mockResolvedValue({
         data: null,
         error: null,
@@ -1045,9 +790,56 @@ describe('Termination Workflow Service', () => {
             update: mockUpdate,
           };
         }
-        if (table === 'important_dates') {
+        return {};
+      });
+
+      const result = await restoreRepaymentDates(employeeId);
+
+      expect(assignEmployeeToDate).not.toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: false });
+      expect(result.restored.pe3).toBe(true);
+      expect(result.restored.omc).toBe(false);
+      expect(result.warnings).toEqual([]);
+    });
+
+    it('should handle both flags present', async () => {
+      const employeeId = 'emp-123';
+      
+      // Mock employee fetch
+      const mockEmployeeSingle = vi.fn().mockResolvedValue({
+        data: {
+          id: employeeId,
+          first_name: 'John',
+          surname: 'Doe',
+          repayment_needed_omc: true,
+          repayment_needed_pe3: true,
+        },
+        error: null,
+      });
+
+      const mockEmployeeEq = vi.fn().mockReturnValue({
+        single: mockEmployeeSingle,
+      });
+
+      const mockEmployeeSelect = vi.fn().mockReturnValue({
+        eq: mockEmployeeEq,
+      });
+
+      // Mock repayment field clear
+      const mockUpdateEq = vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
+      });
+
+      const mockUpdate = vi.fn().mockReturnValue({
+        eq: mockUpdateEq,
+      });
+
+      mockSupabaseFrom.mockImplementation((table: string) => {
+        if (table === 'employees') {
           return {
-            select: mockDateSelect,
+            select: mockEmployeeSelect,
+            update: mockUpdate,
           };
         }
         return {};
@@ -1055,13 +847,13 @@ describe('Termination Workflow Service', () => {
 
       const result = await restoreRepaymentDates(employeeId);
 
-      expect(assignEmployeeToDate).toHaveBeenCalledWith(employeeId, pe3DateId, null, 'pe3_date', expect.anything());
-      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: null });
+      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: false });
+      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: false });
+      expect(result.restored.omc).toBe(true);
       expect(result.restored.pe3).toBe(true);
-      expect(result.restored.omc).toBe(false);
     });
 
-    it('should handle employee with no repayment dates (clean reactivation)', async () => {
+    it('should handle employee with no repayment needed', async () => {
       const employeeId = 'emp-123';
       
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
@@ -1069,8 +861,8 @@ describe('Termination Workflow Service', () => {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: null,
-          repayment_needed_pe3: null,
+          repayment_needed_omc: false,
+          repayment_needed_pe3: false,
         },
         error: null,
       });
@@ -1098,72 +890,6 @@ describe('Termination Workflow Service', () => {
       expect(result.restored.omc).toBe(false);
       expect(result.restored.pe3).toBe(false);
       expect(result.warnings).toEqual([]);
-    });
-
-    it('should handle both dates unavailable (full warning)', async () => {
-      const employeeId = 'emp-123';
-      const omcDateValue = '2025-03-08';
-      const pe3DateValue = '2025-04-20';
-      
-      const mockEmployeeSingle = vi.fn().mockResolvedValue({
-        data: {
-          id: employeeId,
-          first_name: 'John',
-          surname: 'Doe',
-          repayment_needed_omc: omcDateValue,
-          repayment_needed_pe3: pe3DateValue,
-        },
-        error: null,
-      });
-
-      const mockEmployeeEq = vi.fn().mockReturnValue({
-        single: mockEmployeeSingle,
-      });
-
-      const mockEmployeeSelect = vi.fn().mockReturnValue({
-        eq: mockEmployeeEq,
-      });
-
-      const mockDateSingle = vi.fn()
-        .mockResolvedValueOnce({
-          data: { id: 'omc-1', date_description: 'ÖMC', remaining_spots: 0 },
-          error: null,
-        })
-        .mockResolvedValueOnce({
-          data: { id: 'pe3-1', date_description: 'PE3', remaining_spots: 0 },
-          error: null,
-        });
-
-      const mockDateEq = vi.fn().mockReturnValue({
-        single: mockDateSingle,
-      });
-
-      const mockDateSelect = vi.fn().mockReturnValue({
-        eq: mockDateEq,
-      });
-
-      mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'employees') {
-          return {
-            select: mockEmployeeSelect,
-          };
-        }
-        if (table === 'important_dates') {
-          return {
-            select: mockDateSelect,
-          };
-        }
-        return {};
-      });
-
-      const result = await restoreRepaymentDates(employeeId);
-
-      expect(assignEmployeeToDate).not.toHaveBeenCalled();
-      expect(result.restored.omc).toBe(false);
-      expect(result.restored.pe3).toBe(false);
-      expect(result.warnings).toHaveLength(2);
-      expect(result.warnings[0]).toContain('ÖMC');
-      expect(result.warnings[1]).toContain('PE3');
     });
   });
 });

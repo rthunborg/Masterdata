@@ -882,7 +882,10 @@ export function EmployeeTable({
 
           let options: string[] | undefined;
 
-          if (config.column_type === "date") {
+          // Force boolean type for repayment fields (Story 13.9 fix)
+          if (["repayment_needed_omc", "repayment_needed_pe3"].includes(config.db_column_name)) {
+            cellType = "boolean";
+          } else if (config.column_type === "date") {
 
             cellType = "date";
 

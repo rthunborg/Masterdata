@@ -19,18 +19,30 @@ vi.mock('next/image', () => ({
 }));
 
 // Mock i18n
-vi.mock('@/lib/i18n', () => ({
-  t: {
-    navigation: {
-      employees: 'Employees',
-      importantDates: 'Important Dates',
+vi.mock('@/lib/i18n', () => {
+  const translations: Record<string, any> = {
+    dashboard: {
+      navigation: {
+        employees: 'Employees',
+        importantDates: 'Important Dates',
+      },
+      admin: {
+        userManagement: 'User Management',
+        columnSettings: 'Column Settings',
+      },
     },
-    admin: {
-      userManagement: 'User Management',
-      columnSettings: 'Column Settings',
+  };
+
+  return {
+    useTranslations: (namespace: string) => {
+      // Return a function that behaves like t(key) or a nested object if needed
+      // Simple implementation for test purposes
+      const t = translations[namespace] || {};
+      return t;
     },
-  },
-}));
+    t: translations.dashboard, // Export 't' object matching dashboard namespace structure used in component
+  };
+});
 
 // Mock navigation Link
 vi.mock('@/lib/navigation', () => ({
@@ -204,4 +216,3 @@ describe('MobileNav - Branding', () => {
     });
   });
 });
-

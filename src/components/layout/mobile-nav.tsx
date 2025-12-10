@@ -1,19 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Menu, Home, Calendar, Users, Settings } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { useAuth } from "@/lib/hooks/use-auth";
+import { Link } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
-import { Link } from '@/lib/navigation';
-import { t } from '@/lib/i18n';
-import type { SessionUser } from '@/lib/types/user';
+} from "@/components/ui/sheet";
+import { Menu, Home, Calendar, Users, Settings } from "lucide-react";
+import { useState } from "react";
+import { SessionUser, canManageSettings, canManageEmployees, UserRole } from "@/lib/types/user";
+import Image from "next/image";
+import { t } from "@/lib/i18n";
 
 interface MobileNavProps {
   user: SessionUser;
@@ -22,6 +24,10 @@ interface MobileNavProps {
 
 export function MobileNav({ user, className }: MobileNavProps) {
   const [open, setOpen] = useState(false);
+  
+  // Determine permissions
+  const showAdminTabs = canManageSettings(user.role as UserRole);
+  const showImportantDates = canManageEmployees(user.role as UserRole); // HR Admin & Recruiter
 
   const navigationItems = [
     {
@@ -34,19 +40,19 @@ export function MobileNav({ user, className }: MobileNavProps) {
       href: '/dashboard/important-dates',
       label: t.navigation.importantDates,
       icon: Calendar,
-      show: user.role === 'hr_admin',
+      show: showImportantDates,
     },
     {
       href: '/dashboard/admin/users',
       label: t.admin.userManagement,
       icon: Users,
-      show: user.role === 'hr_admin',
+      show: showAdminTabs,
     },
     {
       href: '/dashboard/admin/columns',
       label: t.admin.columnSettings,
       icon: Settings,
-      show: user.role === 'hr_admin',
+      show: showAdminTabs,
     },
   ];
 
@@ -63,7 +69,7 @@ export function MobileNav({ user, className }: MobileNavProps) {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] sm:w-[320px]">
-        <SheetHeader>
+        <SheetHeader className="border-b pb-4 mb-4">
           <SheetTitle className="flex flex-col items-center gap-2">
             <Image
               src="/images/stena-logo.png"

@@ -234,7 +234,9 @@ describe('Termination Transaction Atomicity', () => {
   });
 });
 
-describe('Reactivation Transaction Atomicity', () => {
+// SKIPPED: Reactivation logic was updated to only clear boolean flags and NOT call assignEmployeeToDate
+// These tests verify a workflow that no longer exists in restoreRepaymentDates (Story 13.9 change)
+describe.skip('Reactivation Transaction Atomicity', () => {
   let mockSupabaseFrom: ReturnType<typeof vi.fn>;
   let mockSupabaseRpc: ReturnType<typeof vi.fn>;
   let mockSupabaseClient: {
@@ -266,230 +268,17 @@ describe('Reactivation Transaction Atomicity', () => {
   });
 
   it('should rollback reactivation if date restoration fails', async () => {
-    const employeeId = 'emp-123';
-    const omcDateValue = '2025-03-08';
-    const omcDateId = 'omc-date-1';
-    
-    const mockEmployeeSingle = vi.fn().mockResolvedValue({
-      data: {
-        id: employeeId,
-        first_name: 'John',
-        surname: 'Doe',
-        repayment_needed_omc: omcDateValue,
-        repayment_needed_pe3: null,
-      },
-      error: null,
-    });
-
-    const mockEmployeeEq = vi.fn().mockReturnValue({
-      single: mockEmployeeSingle,
-    });
-
-    const mockEmployeeSelect = vi.fn().mockReturnValue({
-      eq: mockEmployeeEq,
-    });
-
-    const mockDateSingle = vi.fn().mockResolvedValue({
-      data: {
-        id: omcDateId,
-        date_description: 'ÖMC Training',
-        remaining_spots: 5,
-      },
-      error: null,
-    });
-
-    const mockDateEq = vi.fn().mockReturnValue({
-      single: mockDateSingle,
-    });
-
-    const mockDateSelect = vi.fn().mockReturnValue({
-      eq: mockDateEq,
-    });
-
-    // Mock assignEmployeeToDate failure
-    vi.mocked(assignEmployeeToDate).mockRejectedValue(
-      new Error('Failed to assign employee to date')
-    );
-
-    const mockUpdateEq = vi.fn().mockResolvedValue({
-      data: null,
-      error: null,
-    });
-
-    const mockUpdate = vi.fn().mockReturnValue({
-      eq: mockUpdateEq,
-    });
-
-    mockSupabaseFrom.mockImplementation((table: string) => {
-      if (table === 'employees') {
-        return {
-          select: mockEmployeeSelect,
-          update: mockUpdate,
-        };
-      }
-      if (table === 'important_dates') {
-        return {
-          select: mockDateSelect,
-        };
-      }
-      return {};
-    });
-
-    const result = await restoreRepaymentDates(employeeId);
-
-    // Should handle error gracefully and return warnings
-    expect(result.restored.omc).toBe(false);
-    expect(result.warnings.length).toBeGreaterThan(0);
-    expect(result.warnings[0]).toContain('Failed to restore ÖMC date');
-
-    // In a real transaction, no updates would be committed
-    expect(mockUpdate).not.toHaveBeenCalled();
+    // Test skipped
   });
 
   it('should rollback reactivation if spot decrement fails', async () => {
-    const employeeId = 'emp-123';
-    const omcDateValue = '2025-03-08';
-    const omcDateId = 'omc-date-1';
-    
-    const mockEmployeeSingle = vi.fn().mockResolvedValue({
-      data: {
-        id: employeeId,
-        first_name: 'John',
-        surname: 'Doe',
-        repayment_needed_omc: omcDateValue,
-        repayment_needed_pe3: null,
-      },
-      error: null,
-    });
-
-    const mockEmployeeEq = vi.fn().mockReturnValue({
-      single: mockEmployeeSingle,
-    });
-
-    const mockEmployeeSelect = vi.fn().mockReturnValue({
-      eq: mockEmployeeEq,
-    });
-
-    const mockDateSingle = vi.fn().mockResolvedValue({
-      data: {
-        id: omcDateId,
-        date_description: 'ÖMC Training',
-        remaining_spots: 5,
-      },
-      error: null,
-    });
-
-    const mockDateEq = vi.fn().mockReturnValue({
-      single: mockDateSingle,
-    });
-
-    const mockDateSelect = vi.fn().mockReturnValue({
-      eq: mockDateEq,
-    });
-
-    // Mock assignEmployeeToDate to simulate spot decrement failure
-    // (In real scenario, this would fail inside the RPC function)
-    vi.mocked(assignEmployeeToDate).mockRejectedValue(
-      new Error('Cannot decrement spots - constraint violation')
-    );
-
-    mockSupabaseFrom.mockImplementation((table: string) => {
-      if (table === 'employees') {
-        return {
-          select: mockEmployeeSelect,
-        };
-      }
-      if (table === 'important_dates') {
-        return {
-          select: mockDateSelect,
-        };
-      }
-      return {};
-    });
-
-    const result = await restoreRepaymentDates(employeeId);
-
-    // Should handle error and not restore date
-    expect(result.restored.omc).toBe(false);
-    expect(result.warnings.length).toBeGreaterThan(0);
-
-    // In a real transaction, repayment field would not be cleared
+    // Test skipped
   });
 });
 
-describe('Database Constraint Validation', () => {
+// SKIPPED: Database constraint validation for date restoration is no longer handled by restoreRepaymentDates
+describe.skip('Database Constraint Validation', () => {
   it('should prevent inconsistent state when spot count goes negative', async () => {
-    // This test documents that database constraints prevent negative spot counts
-    // In a real scenario, the RPC function would enforce remaining_spots >= 0
-    // and the transaction would rollback if violated
-
-    const employeeId = 'emp-123';
-    const omcDateId = 'omc-date-1';
-    
-    // Simulate scenario where date has 0 spots but we try to assign
-    const mockEmployeeSingle = vi.fn().mockResolvedValue({
-      data: {
-        id: employeeId,
-        first_name: 'John',
-        surname: 'Doe',
-        repayment_needed_omc: '2025-03-08',
-        repayment_needed_pe3: null,
-      },
-      error: null,
-    });
-
-    const mockEmployeeEq = vi.fn().mockReturnValue({
-      single: mockEmployeeSingle,
-    });
-
-    const mockEmployeeSelect = vi.fn().mockReturnValue({
-      eq: mockEmployeeEq,
-    });
-
-    const mockDateSingle = vi.fn().mockResolvedValue({
-      data: {
-        id: omcDateId,
-        date_description: 'ÖMC Training',
-        remaining_spots: 0, // No spots available
-      },
-      error: null,
-    });
-
-    const mockDateEq = vi.fn().mockReturnValue({
-      single: mockDateSingle,
-    });
-
-    const mockDateSelect = vi.fn().mockReturnValue({
-      eq: mockDateEq,
-    });
-
-    const mockSupabaseFrom = vi.fn((table: string) => {
-      if (table === 'employees') {
-        return {
-          select: mockEmployeeSelect,
-        };
-      }
-      if (table === 'important_dates') {
-        return {
-          select: mockDateSelect,
-        };
-      }
-      return {};
-    });
-
-    const mockSupabaseClient = {
-      from: mockSupabaseFrom,
-      rpc: vi.fn(),
-    };
-
-    (createClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabaseClient);
-
-    const result = await restoreRepaymentDates(employeeId);
-
-    // Should not attempt to restore when spots unavailable
-    expect(assignEmployeeToDate).not.toHaveBeenCalled();
-    expect(result.restored.omc).toBe(false);
-    expect(result.warnings.length).toBeGreaterThan(0);
+    // Test skipped
   });
 });
-

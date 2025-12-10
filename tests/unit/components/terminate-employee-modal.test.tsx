@@ -174,8 +174,8 @@ describe('TerminateEmployeeModal', () => {
     // Mock employee with repayment dates set (for repayment preview)
     const employeeWithRepayment = {
       ...mockEmployee,
-      repayment_needed_omc: '2025-03-08',
-      repayment_needed_pe3: '2025-04-20',
+      repayment_needed_omc: true,
+      repayment_needed_pe3: true,
     };
 
     const mockSingle = vi.fn()

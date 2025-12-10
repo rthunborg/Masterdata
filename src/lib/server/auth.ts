@@ -91,7 +91,7 @@ export async function requireHRAdminAPI(): Promise<SessionUser> {
 
 // Error Response Utilities
 
-export function createUnauthorizedResponse(message: string = "Authentication required") {
+export function createUnauthorizedResponse(message: string = "Inloggning krävs") {
   return NextResponse.json({
     error: {
       code: "UNAUTHORIZED",
@@ -100,7 +100,7 @@ export function createUnauthorizedResponse(message: string = "Authentication req
   }, { status: 401 });
 }
 
-export function createForbiddenResponse(message: string = "Insufficient permissions") {
+export function createForbiddenResponse(message: string = "Du saknar behörighet för denna åtgärd") {
   return NextResponse.json({
     error: {
       code: "FORBIDDEN", 

@@ -15,7 +15,7 @@ CREATE TABLE public.users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   auth_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('hr_admin', 'sodexo', 'omc', 'payroll', 'toplux')),
+  role TEXT NOT NULL CHECK (role IN ('hr_admin', 'recruiter', 'crewing', 'sodexo', 'omc', 'payroll', 'toplux')),
   is_active BOOLEAN NOT NULL DEFAULT true,
   last_active_at TIMESTAMPTZ, -- Automatically updated by middleware on authenticated requests
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -214,13 +214,13 @@ CREATE POLICY "HR Admin can update users" ON public.users
   FOR UPDATE USING (get_user_role() = 'hr_admin');
 
 -- Employees table policies
-CREATE POLICY "HR Admin can do anything with employees" ON public.employees
-  FOR ALL USING (get_user_role() = 'hr_admin');
+CREATE POLICY "HR Admin and Recruiter can manage employees" ON public.employees
+  FOR ALL USING (get_user_role() IN ('hr_admin', 'recruiter'));
 
 CREATE POLICY "External parties can view active employees" ON public.employees
   FOR SELECT USING (
     is_archived = false AND
-    (get_user_role() IN ('sodexo', 'omc', 'payroll', 'toplux'))
+    (get_user_role() IN ('sodexo', 'omc', 'payroll', 'toplux', 'crewing'))
   );
 
 -- Column config policies
@@ -240,8 +240,8 @@ CREATE POLICY "External parties can create their custom columns" ON public.colum
 CREATE POLICY "Everyone can read important dates" ON public.important_dates
   FOR SELECT USING (true);
 
-CREATE POLICY "HR Admin can manage important dates" ON public.important_dates
-  FOR ALL USING (get_user_role() = 'hr_admin');
+CREATE POLICY "HR Admin and Recruiter can manage important dates" ON public.important_dates
+  FOR ALL USING (get_user_role() IN ('hr_admin', 'recruiter'));
 
 -- Sodexo data policies
 CREATE POLICY "Sodexo can manage their own data" ON public.sodexo_data
@@ -362,7 +362,7 @@ Application user accounts that link to Supabase authentication.
 - `id` (UUID, PK): Unique identifier for the user
 - `auth_user_id` (UUID, FK → auth.users): Links to Supabase auth user
 - `email` (TEXT, UNIQUE): User's email address
-- `role` (TEXT): User role enum - one of: `hr_admin`, `sodexo`, `omc`, `payroll`, `toplux`
+- `role` (TEXT): User role enum - one of: `hr_admin`, `recruiter`, `crewing`, `sodexo`, `omc`, `payroll`, `toplux`
 - `is_active` (BOOLEAN): Whether the user account is active (default: true)
 - `last_active_at` (TIMESTAMPTZ, nullable): Timestamp of last authenticated request
   - **Purpose**: Track user activity for account lifecycle management

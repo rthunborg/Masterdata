@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
 import {
-  requireHRAdminAPI,
+  requireRoleAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
+import { UserRole } from "@/lib/types/user";
 import { createImportantDateSchema } from "@/lib/validation/important-date-schema";
 import { z } from "zod";
 
@@ -13,8 +14,8 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify HR Admin role - Important Dates are internal operational data
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -33,8 +34,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
 
     // Parse and validate request body
     const body = await request.json();

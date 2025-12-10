@@ -360,7 +360,7 @@ describe("EmployeeRepository", () => {
           termination_reason: "Resigned",
           is_terminated: true,
           is_archived: false,
-          repayment_needed_omc: "2025-11-01",
+          repayment_needed_omc: true,
           repayment_needed_pe3: null,
           comments: null,
           one: false,
@@ -389,8 +389,8 @@ describe("EmployeeRepository", () => {
 
       expect(result).toEqual(mockRepaymentEmployees);
       expect(result.length).toBe(1);
-      expect(result[0].repayment_needed_omc).toBe("2025-11-01");
-      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
+      expect(result[0].repayment_needed_omc).toBe(true);
+      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.is.true,repayment_needed_pe3.is.true");
     });
 
     it("should apply multiple filters correctly", async () => {
@@ -413,7 +413,7 @@ describe("EmployeeRepository", () => {
           termination_reason: "Resigned",
           is_terminated: true,
           is_archived: false,
-          repayment_needed_omc: "2025-11-01",
+          repayment_needed_omc: true,
           repayment_needed_pe3: null,
           comments: null,
           one: false,
@@ -445,7 +445,7 @@ describe("EmployeeRepository", () => {
 
       expect(result).toEqual(mockFilteredEmployees);
       expect(chainMock.eq).toHaveBeenCalledWith("is_terminated", true);
-      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
+      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.is.true,repayment_needed_pe3.is.true");
     });
   });
 
