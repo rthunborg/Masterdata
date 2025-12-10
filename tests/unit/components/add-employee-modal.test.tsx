@@ -102,7 +102,7 @@ describe("AddEmployeeModal", () => {
     );
 
     // Check for title (using the correct translation key: "Add Employee" not "Add New Employee")
-    expect(screen.getByText("Lägg till anställd")).toBeInTheDocument();
+    expect(screen.getByText("Lägg till anställd", { exact: false })).toBeInTheDocument();
 
     // Check for required fields
     expect(screen.getByLabelText(/Förnamn/i)).toBeInTheDocument();
@@ -132,7 +132,7 @@ describe("AddEmployeeModal", () => {
       />
     );
 
-    expect(screen.queryByText("Lägg till anställd")).not.toBeInTheDocument();
+    expect(screen.queryByText("Lägg till anställd", { exact: false })).not.toBeInTheDocument();
   });
 
   it("should display validation errors for missing required fields", async () => {

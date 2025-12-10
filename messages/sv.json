@@ -39,9 +39,11 @@
   "dashboard": {
     "title": "Personalhantering",
     "employeeList": "Anställda",
-    "addEmployee": "Lägg till anställd",
-    "addColumn": "Lägg till kolumn",
-    "importEmployees": "Importera anställda",
+    "actions": {
+      "addEmployee": "Lägg till anställd",
+      "addColumn": "Lägg till kolumn",
+      "importEmployees": "Importera anställda"
+    },
     "searchPlaceholder": "Sök anställda...",
     "filterByRole": "Filtrera efter roll",
     "filterByStatus": "Filtrera efter status",

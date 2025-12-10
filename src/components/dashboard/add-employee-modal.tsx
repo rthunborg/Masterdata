@@ -231,7 +231,7 @@ export function AddEmployeeModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{tDashboard('addEmployee')}</DialogTitle>
+          <DialogTitle>{tDashboard('actions.addEmployee')}</DialogTitle>
           <DialogDescription>
             {t('createEmployeeDescription')}
           </DialogDescription>

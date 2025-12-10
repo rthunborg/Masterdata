@@ -35,9 +35,9 @@ vi.mock("@/lib/i18n", () => ({
   useTranslations: () => (key: string) => {
     const translations: Record<string, string> = {
       title: "Dashboard",
-      addEmployee: "Lägg till anställd",
-      importEmployees: "Importera",
-      addColumn: "Lägg till kolumn",
+      "actions.addEmployee": "Lägg till anställd",
+      "actions.importEmployees": "Importera",
+      "actions.addColumn": "Lägg till kolumn",
       employeeList: "Employee List",
     };
     return translations[key] || key;

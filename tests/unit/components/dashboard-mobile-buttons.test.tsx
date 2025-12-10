@@ -4,7 +4,7 @@
  * Tests the mobile floating action button (FAB) functionality.
  */
 
-import { screen, fireEvent, render } from "@testing-library/react";
+import { screen, fireEvent, render, within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import DashboardPage from "@/app/dashboard/page";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -25,9 +25,9 @@ vi.mock("@/lib/i18n", () => ({
   useTranslations: () => (key: string) => {
     const translations: Record<string, string> = {
       title: "Dashboard",
-      addEmployee: "Lägg till anställd",
-      importEmployees: "Importera",
-      addColumn: "Lägg till kolumn",
+      "actions.addEmployee": "Lägg till anställd",
+      "actions.importEmployees": "Importera",
+      "actions.addColumn": "Lägg till kolumn",
       employeeList: "Employee List",
     };
     return translations[key] || key;
@@ -121,6 +121,45 @@ describe("Dashboard Mobile Button Tests (AC1)", () => {
       // Let's verify that the desktop specific buttons are NOT present or hidden
       // The desktop buttons typically have "hidden lg:inline-flex" or similar
       // Since useMediaQuery returns true, our component logic should render mobile specific elements
+    });
+
+    it("should NOT render FAB for external users on mobile", () => {
+      (useAuth as any).mockReturnValue({
+        user: { role: UserRole.SODEXO },
+        isLoading: false,
+      });
+      (useMediaQuery as any).mockReturnValue(true); // Mobile view
+
+      render(<DashboardPage />);
+
+      const fab = screen.queryByTestId("floating-action-button");
+      expect(fab).not.toBeInTheDocument();
+    });
+
+    it("should render FAB for Recruiter on mobile", () => {
+      (useAuth as any).mockReturnValue({
+        user: { role: UserRole.RECRUITER },
+        isLoading: false,
+      });
+      (useMediaQuery as any).mockReturnValue(true); // Mobile view
+
+      render(<DashboardPage />);
+
+      const fab = screen.getByTestId("floating-action-button");
+      expect(fab).toBeInTheDocument();
+    });
+
+    it("should render Quick Search button in FAB menu", async () => {
+      (useMediaQuery as any).mockReturnValue(true);
+      
+      render(<DashboardPage />);
+      
+      const fab = screen.getByTestId("floating-action-button");
+      // Open menu (click the button inside FAB)
+      const toggleButton = within(fab).getByRole('button', { name: /Open quick actions menu/i });
+      fireEvent.click(toggleButton);
+      
+      expect(screen.getByRole('button', { name: /Quick Search/i })).toBeInTheDocument();
     });
   });
 });

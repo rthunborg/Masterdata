@@ -10,19 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ResponsiveEmployeeView } from "@/components/dashboard/responsive-employee-view";
 import { ManageColumnsDialog } from "@/components/dashboard/manage-columns-dropdown";
 import { RoleSelector } from "@/components/dashboard/role-selector";
 import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
 import { ChangeNotificationBanner } from "@/components/dashboard/change-notification-banner";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { Employee } from "@/lib/types/employee";
-import { Plus, Upload, Columns } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
 import dynamic from "next/dynamic";
 import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
@@ -50,12 +44,10 @@ const ImportEmployeesModal = dynamic(
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { openModal, isPreviewMode } = useUIStore();
+  const { openModal } = useUIStore();
   const t = useTranslations('dashboard');
   const isMobile = useMediaQuery('(max-width: 1023px)');
-  const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
-  const tTooltips = useTranslations('tooltips');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
@@ -87,29 +79,6 @@ export default function DashboardPage() {
   }, []);
 
   const [globalFilter, setGlobalFilter] = useState("");
-
-  // Story 12.3: Conflict resolution state
-  const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
-  const [conflictData, setConflictData] = useState<{
-    employeeId: string;
-    serverVersion: Employee;
-    clientVersion: Employee;
-  } | null>(null);
-
-  // Handlers for conflict resolution
-  const handleConflict = useCallback((conflict: {
-    employeeId: string;
-    serverVersion: Employee;
-    clientVersion: Employee;
-  }) => {
-    setConflictData(conflict);
-    setConflictDialogOpen(true);
-  }, []);
-
-  const handleConflictResolved = useCallback(() => {
-    setConflictDialogOpen(false);
-    setConflictData(null);
-  }, []);
 
   const onIncludeArchivedChange = (checked: boolean) => {
     setIncludeArchived(checked);
@@ -199,6 +168,14 @@ export default function DashboardPage() {
     refetch();
   };
 
+  const handleQuickSearch = useCallback(() => {
+    // Focus the search input in the mobile view
+    const searchInput = document.getElementById('employee-search');
+    if (searchInput) {
+      searchInput.focus();
+    }
+  }, []);
+
   if (authLoading || !filtersLoaded) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
@@ -220,9 +197,9 @@ export default function DashboardPage() {
       {isExternalUser && (
         <ChangeNotificationBanner 
           totalCount={totalCount}
-          baseline={changesBaseline}
+          changesBaseline={changesBaseline}
           isLoading={isLoadingChanges}
-          role={user?.role as UserRole}
+          error={changesError}
         />
       )}
 
@@ -238,18 +215,18 @@ export default function DashboardPage() {
             <>
               <Button onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                {t('addEmployee')}
+                {t('actions.addEmployee')}
               </Button>
               <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
                 <Upload className="mr-2 h-4 w-4" />
-                {t('importEmployees')}
+                {t('actions.importEmployees')}
               </Button>
             </>
           ) : (
             <div className="flex gap-2">
               <Button onClick={() => openModal('addColumn')}>
                 <Plus className="mr-2 h-4 w-4" />
-                {t('addColumn')}
+                {t('actions.addColumn')}
               </Button>
               <ManageColumnsDialog />
             </div>
@@ -270,15 +247,15 @@ export default function DashboardPage() {
             <ResponsiveEmployeeView
               employees={employees}
               isLoading={isLoadingEmployees}
-              userRole={user?.role}
+              isHRAdmin={isHRAdminUser}
               onIncludeArchivedChange={onIncludeArchivedChange}
               onIncludeTerminatedChange={onIncludeTerminatedChange}
               onNeedsRepaymentChange={onNeedsRepaymentChange}
               includeArchived={includeArchived}
               includeTerminated={includeTerminated}
               needsRepayment={needsRepayment}
-              globalFilter={globalFilter}
-              onConflict={handleConflict} // Pass conflict handler
+              updatedEmployeeId={updatedEmployeeId}
+              onOptimisticUpdate={updateEmployeeOptimistically}
               isColumnChanged={isColumnChanged} // Pass change detection function
             />
           )}
@@ -287,8 +264,8 @@ export default function DashboardPage() {
 
       {/* Modals */}
       <AddEmployeeModal
-        open={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
         onSuccess={handleEmployeeAdded}
       />
       <ImportEmployeesModal
@@ -301,8 +278,14 @@ export default function DashboardPage() {
       <AddColumnModal />
       <EditColumnModal />
       
-      {/* Floating Action Button for Mobile */}
-      {isMobile && <FloatingActionButton />}
+      {/* Floating Action Button for Mobile - Only for Admins */}
+      {isMobile && isAdmin && (
+        <FloatingActionButton 
+          onAddEmployee={() => setIsAddModalOpen(true)}
+          onImportCSV={() => setIsImportModalOpen(true)}
+          onQuickSearch={handleQuickSearch}
+        />
+      )}
     </div>
   );
 }
