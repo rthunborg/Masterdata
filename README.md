@@ -80,13 +80,15 @@ We replaced the Excel workflow with a secure, real-time web application:
 
 The system implements a strict **Role-Based Access Control (RBAC)** model. Users are assigned one of five roles, determining both their feature access and data visibility:
 
-| Role         | Access Level             | Description                                                                                                                                              |
-| :----------- | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **HR Admin** | **Full System Access**   | Can manage all employees, users, and system configurations. Has exclusive access to the Admin Panel to configure column permissions and view audit logs. |
-| **Sodexo**   | **Partner (Restricted)** | Access to employee masterdata relevant for uniform and meal services. Manages their own private custom columns (e.g., "Uniform Size").                   |
-| **ÖMC**      | **Partner (Restricted)** | Access to occupational health data. Manages ÖMC-specific training dates and health checks.                                                               |
-| **Payroll**  | **Partner (Restricted)** | Access to salary-relevant data. Manages payroll-specific notes and custom fields.                                                                        |
-| **Toplux**   | **Partner (Restricted)** | Access to housing/cleaning data. Manages room cleaning schedules and housing requests.                                                                   |
+| Role           | Access Level             | Description                                                                                                                                                     |
+| :------------- | :----------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **HR Admin**   | **Full System Access**   | Can manage all employees, dates, users, and system configurations. Has exclusive access to the Admin Panel to configure column permissions and view audit logs. |
+| **Recruiters** | **Limited Access**       | Can manage all employees and dates.                                                                                                                             |
+| **Sodexo**     | **Partner (Restricted)** | Access to employee's data relevant for uniform and meal services.                                                                                               |
+| **ÖMC**        | **Partner (Restricted)** | Access to employee's relevant occupational health data. Manages ÖMC-specific training dates and health checks.                                                  |
+| **Payroll**    | **Partner (Restricted)** | Access to employees' salary-relevant data. Manages payroll-specific notes and custom fields.                                                                    |
+| **Toplux**     | **Partner (Restricted)** | Access to employees requiring housing/cleaning services. Manages room cleaning schedules and housing requests.                                                  |
+| **Crewing**    | **Partner (Restricted)** | Access to employees about to join a crew. Manages room cleaning schedules and housing requests.                                                                 |
 
 > **Security Note:** Data isolation is enforced at the database level via RLS policies. Partners cannot access or modify each other's custom data.
 
@@ -130,7 +132,7 @@ The application uses PostgreSQL with a hybrid schema:
 - **`users`**: RBAC and profile data.
 - **`employees`**: Core masterdata (Relational).
 - **`column_config`**: Meta-definition of all columns and their permissions.
-- **`*_data` tables**: Separate tables for each external party (e.g., `sodexo_data`) storing custom field values in JSONB format.
+- **other tables**: Other tables containing tracking of updated fields, important dates, notifications, etc
 
 ## Setup & Development
 
@@ -169,5 +171,5 @@ The application uses PostgreSQL with a hybrid schema:
 
 ## Contact
 
-**Technical Lead:** Development Team  
+**Technical Lead:** Enhancior AB
 **Project Owner:** HR Department
