@@ -59,10 +59,22 @@ refactor-summary.txt
 vercel-deployment-logs.txt
 playwright-report/
 test-results/
+success-results.txt
 
 # Client Assets
 stena/
 
-# Internal Documentation (Keep only README.md)
+# Internal Documentation & Redundant Files
 /docs/
 !/docs/screenshots/
+.manual-tests/
+migrations/
+MANUAL_TESTING_5.9.md
+QA-FAILURE-SUMMARY.md
+PRODUCTION_SETUP.md
+QUICK_PRODUCTION_START.md
+
+# Scratchpad Scripts
+apply-policy-now.js
+check-policy.js
+check-users.ts
