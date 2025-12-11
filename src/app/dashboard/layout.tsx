@@ -27,7 +27,7 @@ export default async function DashboardLayout({
       
       {/* Navigation - hidden on mobile, visible on desktop */}
       <nav className="bg-gray-100 border-b hidden lg:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             <Link
               href="/dashboard"
@@ -66,7 +66,7 @@ export default async function DashboardLayout({
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <main className="w-full py-6 px-4 sm:px-6 lg:px-8">
         {children}
       </main>
 

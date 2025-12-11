@@ -7,8 +7,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Prevent Unnecessary View Refreshes", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to dashboard and login as HR Admin
-    await page.goto("/");
+    // Navigate to login (redirects to dashboard if already logged in, but we assume clean state here)
+    await page.goto("/login");
     await page.fill('input[type="email"]', "hr@example.com");
     await page.fill('input[type="password"]', "password");
     await page.click('button[type="submit"]');

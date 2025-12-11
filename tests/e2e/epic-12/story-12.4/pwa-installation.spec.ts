@@ -7,7 +7,7 @@ test.describe('PWA Installation E2E', () => {
   });
 
   test('should register service worker on page load', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/login');
 
     // Wait for service worker to register
     await page.waitForTimeout(2000);
@@ -25,7 +25,7 @@ test.describe('PWA Installation E2E', () => {
     await context.setGeolocation({ latitude: 59.3293, longitude: 18.0686 });
     await page.setViewportSize({ width: 375, height: 667 });
 
-    await page.goto('/');
+    await page.goto('/login');
 
     // Simulate beforeinstallprompt event
     await page.evaluate(() => {
@@ -45,7 +45,7 @@ test.describe('PWA Installation E2E', () => {
   });
 
   test('should cache static assets', async ({ page, context }) => {
-    await page.goto('/');
+    await page.goto('/login');
 
     // Wait for service worker to register and cache assets
     await page.waitForTimeout(3000);
@@ -58,14 +58,14 @@ test.describe('PWA Installation E2E', () => {
     await context.setOffline(true);
 
     // Try to navigate back - should work from cache
-    await page.goto('/');
+    await page.goto('/login');
     
     // Page should still load (from cache)
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/login');
   });
 
   test('should handle service worker updates', async ({ page, context }) => {
-    await page.goto('/');
+    await page.goto('/login');
 
     // Wait for initial service worker registration
     await page.waitForTimeout(2000);
@@ -98,7 +98,7 @@ test.describe('PWA Installation E2E', () => {
       });
     });
 
-    await page.goto('/');
+    await page.goto('/login');
 
     // Install prompt should not appear in standalone mode
     const installPrompt = page.getByText('Install HR Masterdata App');
@@ -106,21 +106,21 @@ test.describe('PWA Installation E2E', () => {
   });
 
   test('should have manifest.json linked in page head', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/login');
 
     const manifestLink = page.locator('link[rel="manifest"]');
     await expect(manifestLink).toHaveAttribute('href', '/manifest.json');
   });
 
   test('should have theme color meta tag', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/login');
 
     const themeColor = page.locator('meta[name="theme-color"]');
     await expect(themeColor).toHaveAttribute('content', '#1e40af');
   });
 
   test('should have apple touch icon', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/login');
 
     const appleIcon = page.locator('link[rel="apple-touch-icon"]');
     await expect(appleIcon).toHaveAttribute('href', '/icons/icon-192x192.png');
