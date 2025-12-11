@@ -4,9 +4,11 @@ on:
   pull_request:
     branches:
       - main
+      - staging
   push:
     branches:
       - main
+      - staging
 
 jobs:
   test:
@@ -54,5 +56,5 @@ jobs:
           NODE_ENV: test
         run: pnpm test:integration
         continue-on-error: false
-        if: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' }}
-
+        # Remove the expression syntax ${{ }} as 'if' is already an expression context
+        if: secrets.NEXT_PUBLIC_SUPABASE_URL != ''
