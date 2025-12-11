@@ -74,7 +74,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       const mockSupabase = {
         from: vi.fn(() => ({
           select: vi.fn(() => ({
-            eq: vi.fn(() => ({
+            in: vi.fn(() => ({
               not: vi.fn(() => ({
                 eq: vi.fn().mockResolvedValue({
                   data: mockHrAdmins,
@@ -98,7 +98,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       const mockSupabase = {
         from: vi.fn(() => ({
           select: vi.fn(() => ({
-            eq: vi.fn(() => ({
+            in: vi.fn(() => ({
               not: vi.fn(() => ({
                 eq: vi.fn().mockResolvedValue({
                   data: [],
@@ -121,7 +121,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       const mockSupabase = {
         from: vi.fn(() => ({
           select: vi.fn(() => ({
-            eq: vi.fn(() => ({
+            in: vi.fn(() => ({
               not: vi.fn(() => ({
                 eq: vi.fn().mockResolvedValue({
                   data: null,
@@ -138,6 +138,31 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       const emails = await getHrAdminEmails();
 
       expect(emails).toEqual([]);
+    });
+
+    it('should query for both hr_admin and recruiter roles', async () => {
+      const inSpy = vi.fn(() => ({
+        not: vi.fn(() => ({
+          eq: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
+        })),
+      }));
+
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          select: vi.fn(() => ({
+            in: inSpy,
+          })),
+        })),
+      };
+
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+
+      await getHrAdminEmails();
+
+      expect(inSpy).toHaveBeenCalledWith('role', ['hr_admin', 'recruiter']);
     });
   });
 
@@ -158,7 +183,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
           if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: mockHrAdmins,
@@ -214,7 +239,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
           if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: mockHrAdmins,
@@ -258,18 +283,23 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       const omcDateValue = '2025-01-01';
 
       const mockSupabase = {
-        from: vi.fn(() => ({
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              not: vi.fn(() => ({
-                eq: vi.fn().mockResolvedValue({
-                  data: [],
-                  error: null,
-                }),
+        from: vi.fn((table: string) => {
+          if (table === 'users') {
+            return {
+              select: vi.fn(() => ({
+                in: vi.fn(() => ({
+                  not: vi.fn(() => ({
+                    eq: vi.fn().mockResolvedValue({
+                      data: [],
+                      error: null,
+                    }),
+                  })),
+                })),
               })),
-            })),
-          })),
-        })),
+            };
+          }
+          return {};
+        }),
       };
 
       vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
@@ -292,7 +322,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
           if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: mockHrAdmins,
@@ -329,7 +359,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
           if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: mockHrAdmins,
@@ -376,7 +406,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
           if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: mockHrAdmins,
@@ -418,4 +448,3 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
     });
   });
 });
-

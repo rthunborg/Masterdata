@@ -70,7 +70,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }, { email: 'admin2@example.com' }],
@@ -154,7 +154,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }],
@@ -241,7 +241,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }],
@@ -330,7 +330,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }],
@@ -412,7 +412,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [],
@@ -463,7 +463,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }],
@@ -489,4 +489,3 @@ describe('PE3 Deadline Notification Service', () => {
     });
   });
 });
-
