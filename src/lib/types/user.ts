@@ -1,5 +1,7 @@
 export enum UserRole {
   HR_ADMIN = "hr_admin",
+  RECRUITER = "recruiter",
+  CREWING = "crewing",
   SODEXO = "sodexo",
   OMC = "omc",
   PAYROLL = "payroll",
@@ -10,8 +12,10 @@ export const USER_ROLES = Object.values(UserRole);
 
 // Role Permission Constants
 export const ADMIN_ROLES: UserRole[] = [UserRole.HR_ADMIN];
-export const EXTERNAL_PARTY_ROLES: UserRole[] = [UserRole.SODEXO, UserRole.OMC, UserRole.PAYROLL, UserRole.TOPLUX];
-export const ALL_ROLES: UserRole[] = [...ADMIN_ROLES, ...EXTERNAL_PARTY_ROLES];
+// Recruiter has admin-like privileges but is distinct
+export const INTERNAL_ROLES: UserRole[] = [UserRole.HR_ADMIN, UserRole.RECRUITER];
+export const EXTERNAL_PARTY_ROLES: UserRole[] = [UserRole.SODEXO, UserRole.OMC, UserRole.PAYROLL, UserRole.TOPLUX, UserRole.CREWING];
+export const ALL_ROLES: UserRole[] = [...INTERNAL_ROLES, ...EXTERNAL_PARTY_ROLES];
 
 // Role Utility Functions
 export function isHRAdmin(role: UserRole): boolean {
@@ -26,9 +30,19 @@ export function hasAdminAccess(role: UserRole): boolean {
   return ADMIN_ROLES.includes(role);
 }
 
+export function canManageSettings(role: UserRole): boolean {
+  return role === UserRole.HR_ADMIN;
+}
+
+export function canManageEmployees(role: UserRole): boolean {
+  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+}
+
 export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
-    case UserRole.HR_ADMIN: return "HR Administrator";
+    case UserRole.HR_ADMIN: return "HR Superuser";
+    case UserRole.RECRUITER: return "Recruiter";
+    case UserRole.CREWING: return "Crewing";
     case UserRole.SODEXO: return "Sodexo";
     case UserRole.OMC: return "ÖMC";
     case UserRole.PAYROLL: return "Payroll";

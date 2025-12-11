@@ -59,7 +59,11 @@ export function FloatingActionButton({
   };
 
   return (
-    <div ref={menuRef} className={cn('fixed bottom-6 right-6 z-50', className)}>
+    <div 
+      ref={menuRef} 
+      className={cn('fixed bottom-6 right-6 z-50', className)}
+      data-testid="floating-action-button"
+    >
       {/* Menu items - Story 12.6: AC 4 - Order: Add Employee, Import CSV, Quick Search */}
       {isOpen && (
         <div className="absolute bottom-20 right-0 mb-2 space-y-2 animate-in fade-in-0 zoom-in-95 flex flex-col-reverse">
@@ -121,4 +125,3 @@ export function FloatingActionButton({
     </div>
   );
 }
-

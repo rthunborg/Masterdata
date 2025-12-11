@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
 import {
-  requireHRAdminAPI,
+  requireRoleAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
+import { UserRole } from "@/lib/types/user";
 import { updateImportantDateSchema } from "@/lib/validation/important-date-schema";
 import { z } from "zod";
 
@@ -15,8 +16,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
 
     const { id } = await params;
 
@@ -82,8 +83,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
 
     const { id } = await params;
 

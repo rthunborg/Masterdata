@@ -40,6 +40,7 @@ export default function ImportantDatesPage() {
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const t = useTranslations('dates');
   const tErrors = useTranslations('errors');
+  const tCommon = useTranslations('common');
   const tNavigation = useTranslations('navigation');
   const [dates, setDates] = useState<ImportantDate[]>([]);
   const [isLoadingDates, setIsLoadingDates] = useState(true);
@@ -100,34 +101,31 @@ export default function ImportantDatesPage() {
 
   return (
     <div className="px-4 sm:px-0">
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {tNavigation('dashboard')}
-            </Button>
-          </Link>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            {t('title')}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t('description')}
+          </p>
         </div>
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">{t('importantDates')}</h2>
-          </div>
-          {user?.role === "hr_admin" && (
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button onClick={() => setIsCategoryExportModalOpen(true)} variant="outline" className="w-full sm:w-auto min-h-11">
-                <FileDown className="h-4 w-4 mr-2" />
-                Exporta datum
-              </Button>
-              <Button onClick={() => setIsImportModalOpen(true)} variant="outline" className="w-full sm:w-auto min-h-11">
-                <Upload className="h-4 w-4 mr-2" />
-                {t('importPE3Dates')}
-              </Button>
-              <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto min-h-11">
-                <Plus className="h-4 w-4 mr-2" />
+        <div className="flex flex-wrap items-center gap-2">
+          {(user.role === 'hr_admin' || user.role === 'recruiter') && (
+            <>
+              <Button onClick={() => setIsAddModalOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
                 {t('addDate')}
               </Button>
-            </div>
+              <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                {t('importDates')}
+              </Button>
+              <Button variant="outline" onClick={() => setIsCategoryExportModalOpen(true)}>
+                <FileDown className="mr-2 h-4 w-4" />
+                {t('exportByCategory')}
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -144,7 +142,7 @@ export default function ImportantDatesPage() {
               variant="outline"
               className="mt-4"
             >
-              Retry
+              {tCommon('retry')}
             </Button>
           </CardContent>
         </Card>
@@ -155,7 +153,7 @@ export default function ImportantDatesPage() {
               <ImportantDateCardList
                 dates={dates}
                 isLoading={isLoadingDates}
-                isHRAdmin={user.role === 'hr_admin'}
+                isHRAdmin={user.role === 'hr_admin' || user.role === 'recruiter'}
                 onDateDeleted={handleDateDeleted}
               />
             ) : (

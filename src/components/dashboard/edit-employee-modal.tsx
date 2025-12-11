@@ -684,9 +684,9 @@ export function EditEmployeeModal({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            type="date"
+                            type="text"
                             {...field}
-                            value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                            value={field.value ? 'Yes' : 'No'}
                             disabled={true}
                             className="h-12 md:h-10 bg-muted cursor-not-allowed"
                           />
@@ -710,9 +710,9 @@ export function EditEmployeeModal({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            type="date"
+                            type="text"
                             {...field}
-                            value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                            value={field.value ? 'Yes' : 'No'}
                             disabled={true}
                             className="h-12 md:h-10 bg-muted cursor-not-allowed"
                           />

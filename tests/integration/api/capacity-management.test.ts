@@ -34,6 +34,7 @@ vi.mock("@/lib/server/auth", async () => {
   return {
     ...actual,
     requireHRAdminAPI: vi.fn(),
+    requireRoleAPI: vi.fn(),
     createErrorResponse: vi.fn((error: unknown) => {
       const message = error instanceof Error ? error.message : "Internal server error";
       return new Response(
@@ -134,6 +135,7 @@ describe("Capacity Management API Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     // Mock Supabase client
     vi.mocked(createClient).mockResolvedValue({
       from: vi.fn(() => ({
@@ -396,8 +398,8 @@ describe("Capacity Management API Integration Tests", () => {
       vi.mocked(importantDateRepository.create).mockResolvedValue({
         ...mockOMCDate,
         category: "Stena Dates",
-        max_spots: 99,
-        remaining_spots: 99,
+        max_spots: 25,
+        remaining_spots: 25,
       });
 
       const stenaRequest = new NextRequest("http://localhost:3000/api/important-dates", {
@@ -408,8 +410,8 @@ describe("Capacity Management API Integration Tests", () => {
       const stenaResponse = await POST_IMPORTANT_DATE(stenaRequest);
       const stenaJson = await stenaResponse.json();
 
-      expect(stenaJson.data.max_spots).toBe(99);
-      expect(stenaJson.data.remaining_spots).toBe(99);
+      expect(stenaJson.data.max_spots).toBe(25);
+      expect(stenaJson.data.remaining_spots).toBe(25);
 
       // Test PE3 default
       const pe3DateData = {

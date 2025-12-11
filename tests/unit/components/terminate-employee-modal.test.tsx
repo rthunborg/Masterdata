@@ -174,8 +174,8 @@ describe('TerminateEmployeeModal', () => {
     // Mock employee with repayment dates set (for repayment preview)
     const employeeWithRepayment = {
       ...mockEmployee,
-      repayment_needed_omc: '2025-03-08',
-      repayment_needed_pe3: '2025-04-20',
+      repayment_needed_omc: true,
+      repayment_needed_pe3: true,
     };
 
     const mockSingle = vi.fn()
@@ -269,8 +269,12 @@ describe('TerminateEmployeeModal', () => {
 
   it('should show loading state during async operations', async () => {
     const user = userEvent.setup();
+    let resolveTermination: (value: any) => void;
+    
     vi.mocked(employeeService.terminate).mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 100))
+      () => new Promise((resolve) => {
+        resolveTermination = resolve;
+      })
     );
 
     renderWithI18n(
@@ -291,9 +295,20 @@ describe('TerminateEmployeeModal', () => {
 
     await user.click(submitButton);
 
-    // Button should be disabled during submission - wait for form state to update
+    // Button should be disabled during submission
     await waitFor(() => {
       expect(submitButton).toBeDisabled();
+    });
+    
+    // Complete the operation
+    resolveTermination!({
+      employee: mockEmployee,
+      clearedDates: [],
+      releasedSpots: 0,
+    });
+
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
     });
   });
 

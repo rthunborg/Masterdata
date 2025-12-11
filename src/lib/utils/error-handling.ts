@@ -6,50 +6,50 @@ export function mapSupabaseAuthError(error: AuthError | Error): string {
   // Handle Supabase-specific auth errors
   if (message.includes("invalid login credentials") || 
       message.includes("invalid email or password")) {
-    return "Invalid email or password";
+    return "Ogiltig e-post eller lösenord";
   }
 
   if (message.includes("email not confirmed")) {
-    return "Please check your email and confirm your account";
+    return "Vänligen kontrollera din e-post och bekräfta ditt konto";
   }
 
   if (message.includes("too many requests")) {
-    return "Too many login attempts. Please try again later";
+    return "För många inloggningsförsök. Försök igen senare";
   }
 
   if (message.includes("signup is disabled")) {
-    return "Account registration is currently disabled";
+    return "Kontoregistrering är för närvarande inaktiverad";
   }
 
   if (message.includes("email address is invalid")) {
-    return "Please enter a valid email address";
+    return "Vänligen ange en giltig e-postadress";
   }
 
   if (message.includes("password is too short")) {
-    return "Password must be at least 8 characters long";
+    return "Lösenordet måste vara minst 8 tecken långt";
   }
 
   if (message.includes("user not found")) {
-    return "Invalid email or password";
+    return "Ogiltig e-post eller lösenord";
   }
 
   if (message.includes("user already registered")) {
-    return "An account with this email already exists";
+    return "Ett konto med denna e-postadress finns redan";
   }
 
   // Default fallback
-  return "Invalid email or password";
+  return "Ogiltig e-post eller lösenord";
 }
 
 export const AUTH_ERROR_MESSAGES = {
-  INVALID_CREDENTIALS: "Invalid email or password",
-  ACCOUNT_DEACTIVATED: "Account has been deactivated",
-  USER_NOT_FOUND: "User account not found",
-  VALIDATION_ERROR: "Please check your email format",
-  NETWORK_ERROR: "Network error. Please check your connection and try again",
-  INTERNAL_ERROR: "Something went wrong. Please try again",
-  SESSION_EXPIRED: "Your session has expired. Please log in again",
-  TOO_MANY_REQUESTS: "Too many login attempts. Please try again later",
+  INVALID_CREDENTIALS: "Ogiltig e-post eller lösenord",
+  ACCOUNT_DEACTIVATED: "Kontot har inaktiverats",
+  USER_NOT_FOUND: "Användarkonto hittades inte",
+  VALIDATION_ERROR: "Vänligen kontrollera e-postformatet",
+  NETWORK_ERROR: "Nätverksfel. Kontrollera din anslutning och försök igen",
+  INTERNAL_ERROR: "Något gick fel. Försök igen",
+  SESSION_EXPIRED: "Din session har gått ut. Logga in igen",
+  TOO_MANY_REQUESTS: "För många inloggningsförsök. Försök igen senare",
 } as const;
 
 export function getErrorMessage(code: string): string {

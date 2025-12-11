@@ -241,7 +241,7 @@ describe("Auth Helper Functions", () => {
         expect(data).toMatchObject({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required"
+            message: "Inloggning krävs"
           }
         });
       });
@@ -270,7 +270,7 @@ describe("Auth Helper Functions", () => {
         expect(data).toMatchObject({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions"
+            message: "Du saknar behörighet för denna åtgärd"
           }
         });
       });

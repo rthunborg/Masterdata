@@ -7,13 +7,16 @@ The system revolves around four core entities: **Users** (authentication and rol
 **Purpose:** Manages authentication credentials and role-based access control for all system users (HR Admin and external parties).
 
 **Key Attributes:**
+
 - id: UUID (Primary Key) - Unique identifier for user
 - email: Text (Unique) - User's email address (login username)
-- ole: Enum - One of: hr_admin, sodexo, omc, payroll, 	oplux
+-
+- role: Enum - One of: hr_admin, recruiter, crewing, sodexo, omc, payroll, toplux
 - is_active: Boolean - Whether user can log in
 - created_at: Timestamp - Account creation date
 
 **Relationships:**
+
 - Links to Supabase Auth uth.users table via user ID
 - No direct foreign key to employees (users manage employees, not own them)
 
@@ -22,10 +25,12 @@ The system revolves around four core entities: **Users** (authentication and rol
 ```typescript
 export enum UserRole {
   HR_ADMIN = 'hr_admin',
+  RECRUITER = 'recruiter',
+  CREWING = 'crewing',
   SODEXO = 'sodexo',
   OMC = 'omc',
   PAYROLL = 'payroll',
-  TOPLUX = 'toplux'
+  TOPLUX = 'toplux',
 }
 
 export interface User {
@@ -47,18 +52,19 @@ export interface SessionUser extends User {
 **Purpose:** Core masterdata entity representing employees or candidates, managed exclusively by HR Admin. Contains all HR-controlled fields referenced by external parties.
 
 **Key Attributes:**
+
 - id: UUID (Primary Key) - Unique employee identifier
-- irst_name: Text - Employee first name (required)
+- irst_name: Text - Employee first name (required)
 - surname: Text - Employee surname (required)
 - ssn: Text (Unique) - Social Security Number (required, sensitive)
 - email: Text - Employee email address (optional)
 - mobile: Text - Mobile phone number (optional)
-- ank: Text - Job rank/position (e.g., "SEV", "CHEF")
+- ank: Text - Job rank/position (e.g., "SEV", "CHEF")
 - gender: Text - Gender (e.g., "Male", "Female", "Other", "Prefer not to say")
-- 	own_district: Text - Employee's town or district
+-     own_district: Text - Employee's town or district
 - hire_date: Date - Date employee was hired (required)
-- 	ermination_date: Date (Nullable) - Date employee was terminated
-- 	ermination_reason: Text (Nullable) - Reason for termination
+-     ermination_date: Date (Nullable) - Date employee was terminated
+-     ermination_reason: Text (Nullable) - Reason for termination
 - is_terminated: Boolean - Whether employee is marked as terminated
 - is_archived: Boolean - Whether employee is soft-deleted/archived
 - comments: Text (Nullable) - HR internal comments
@@ -66,7 +72,8 @@ export interface SessionUser extends User {
 - updated_at: Timestamp - Last modification date
 
 **Relationships:**
-- Referenced by sodexo_data, omc_data, payroll_data, 	oplux_data (one-to-many)
+
+- Referenced by sodexo_data, omc_data, payroll_data, oplux_data (one-to-many)
 
 ### TypeScript Interface
 
@@ -92,7 +99,10 @@ export interface Employee {
 }
 
 // Form data for creating/updating employees
-export type EmployeeFormData = Omit<Employee, 'id' | 'created_at' | 'updated_at'>;
+export type EmployeeFormData = Omit<
+  Employee,
+  'id' | 'created_at' | 'updated_at'
+>;
 
 // List view employee (subset of fields)
 export interface EmployeeListItem {
@@ -113,16 +123,18 @@ export interface EmployeeListItem {
 **Purpose:** Defines available columns (both masterdata and custom) and their role-based view/edit permissions. Enables dynamic column management by HR Admin and external parties.
 
 **Key Attributes:**
+
 - id: UUID (Primary Key) - Unique column identifier
 - column_name: Text - Display name of column (e.g., "First Name", "Sodexo Team")
-- column_type: Text - Data type: 	ext, 
-umber, date, oolean
-- ole_permissions: JSONB - Permissions object with structure: { role: { view: boolean, edit: boolean } }
+- column_type: Text - Data type: ext,
+  umber, date, oolean
+- ole_permissions: JSONB - Permissions object with structure: { role: { view: boolean, edit: boolean } }
 - is_masterdata: Boolean - True for HR-controlled masterdata columns, false for custom columns
 - category: Text (Nullable) - Category for organizing columns (e.g., "Recruitment Team")
 - created_at: Timestamp - Column creation date
 
 **Relationships:**
+
 - Referenced when rendering table columns and enforcing permissions
 - Custom columns (is_masterdata = false) map to JSONB keys in party-specific data tables
 
@@ -158,18 +170,19 @@ export interface ColumnPermission {
 **Purpose:** Shared reference calendar of operational dates (Stena dates, ÖMC dates by week) visible to all users, editable only by HR Admin.
 
 **Key Attributes:**
+
 - id: UUID (Primary Key) - Unique date entry identifier
 - week_number: Integer (Nullable) - ISO week number (1-53)
 - year: Integer - Year of the date
 - category: Text - Category grouping (e.g., "Stena Dates", "ÖMC Dates")
 - date_description: Text - Human-readable description (e.g., "Fredag 14/2")
 - date_value: Text - Flexible date value (e.g., "15-16/2" for ranges)
-- 
-otes: Text (Nullable) - Additional notes
+- otes: Text (Nullable) - Additional notes
 - created_at: Timestamp - Record creation date
 - updated_at: Timestamp - Last modification date
 
 **Relationships:**
+
 - No foreign keys, standalone reference data
 
 ### TypeScript Interface
@@ -188,7 +201,10 @@ export interface ImportantDate {
 }
 
 // Form data for creating dates
-export type ImportantDateFormData = Omit<ImportantDate, 'id' | 'created_at' | 'updated_at'>;
+export type ImportantDateFormData = Omit<
+  ImportantDate,
+  'id' | 'created_at' | 'updated_at'
+>;
 ```
 
 ## External Party Data (Sodexo, ÖMC, Payroll, Toplux)
@@ -196,6 +212,7 @@ export type ImportantDateFormData = Omit<ImportantDate, 'id' | 'created_at' | 'u
 **Purpose:** Stores custom column data for each external party using JSONB for schema flexibility.
 
 **Key Attributes:**
+
 - id: UUID (Primary Key)
 - employee_id: UUID (Foreign Key to employees.id)
 - data: JSONB - Key-value pairs where keys are column names and values are data
@@ -203,6 +220,7 @@ export type ImportantDateFormData = Omit<ImportantDate, 'id' | 'created_at' | 'u
 - updated_at: Timestamp
 
 **Relationships:**
+
 - Many-to-one with Employee (employee_id foreign key)
 - CASCADE DELETE on employee removal
 

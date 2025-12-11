@@ -1,101 +1,128 @@
-import { screen } from '@testing-library/react';
-import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import DashboardPage from '@/app/dashboard/page';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { useEmployees } from '@/lib/hooks/use-employees';
-import { UserRole } from '@/lib/types/user';
-import type { SessionUser } from '@/lib/types/user';
+/**
+ * Unit tests for Dashboard Page
+ * 
+ * Story 11.8: Performance & Concurrency Tests
+ * AC: Component rendering tests
+ */
 
-// Mock hooks
-vi.mock('@/lib/hooks/use-auth', () => ({
-  useAuth: vi.fn(),
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { screen, waitFor, act } from "@testing-library/react";
+import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
+import DashboardPage from "@/app/dashboard/page";
+import { UserRole } from "@/lib/types/user";
+
+// Mock dependencies
+const mockUseAuth = vi.fn();
+vi.mock("@/lib/hooks/use-auth", () => ({
+  useAuth: () => mockUseAuth(),
 }));
 
-vi.mock('@/lib/hooks/use-employees', () => ({
-  useEmployees: vi.fn(),
+const mockUseEmployees = vi.fn();
+vi.mock("@/lib/hooks/use-employees", () => ({
+  useEmployees: () => mockUseEmployees(),
 }));
 
-vi.mock('@/lib/store/ui-store', () => ({
-  useUIStore: vi.fn(() => ({
+const mockUseEmployeeChanges = vi.fn();
+vi.mock("@/lib/hooks/use-employee-changes", () => ({
+  useEmployeeChanges: () => mockUseEmployeeChanges(),
+}));
+
+vi.mock("@/hooks/use-media-query", () => ({
+  useMediaQuery: () => false,
+}));
+
+vi.mock("@/lib/i18n", () => ({
+  useTranslations: () => (key: string) => {
+    const translations: Record<string, string> = {
+      title: "Dashboard",
+      "actions.addEmployee": "Lägg till anställd",
+      "actions.importEmployees": "Importera",
+      "actions.addColumn": "Lägg till kolumn",
+      employeeList: "Employee List",
+    };
+    return translations[key] || key;
+  },
+}));
+
+vi.mock("@/lib/store/ui-store", () => ({
+  useUIStore: () => ({
     openModal: vi.fn(),
     isPreviewMode: false,
     modals: {
+      addEmployee: false,
+      importEmployees: false,
+      manageColumns: false,
       addColumn: false,
-      editColumn: null,
     },
-    columnVisibility: {},
-    initColumnVisibility: vi.fn(),
-    toggleColumnVisibility: vi.fn(),
-    resetColumnVisibility: vi.fn(),
-    getVisibleColumns: vi.fn((columns) => columns),
-  })),
+  }),
 }));
 
-describe('DashboardPage', () => {
-  const mockHRAdminUser: SessionUser = {
-    id: '1',
-    email: 'hr@example.com',
-    role: UserRole.HR_ADMIN,
-    is_active: true,
-    created_at: '2025-01-01',
-    auth_id: 'auth-1',
-    last_active_at: null,
-  };
+// Mock components
+vi.mock("@/components/dashboard/responsive-employee-view", () => ({
+  ResponsiveEmployeeView: () => <div data-testid="responsive-employee-view">Responsive View</div>,
+}));
 
+vi.mock("@/components/dashboard/manage-columns-dropdown", () => ({
+  ManageColumnsDialog: () => <button>Manage Columns</button>,
+}));
+
+vi.mock("@/components/dashboard/role-selector", () => ({
+  RoleSelector: () => <div>Role Selector</div>,
+}));
+
+describe("DashboardPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
 
-    vi.mocked(useEmployees).mockReturnValue({
+  it("does NOT render sign-out button in page body", async () => {
+    mockUseAuth.mockReturnValue({
+      user: { role: UserRole.HR_ADMIN },
+      isLoading: false,
+    });
+
+    mockUseEmployees.mockReturnValue({
       employees: [],
       isLoading: false,
-      error: null,
-      isConnected: true,
       refetch: vi.fn(),
-      updatedEmployeeId: null,
-      updateEmployeeOptimistically: vi.fn(),
     });
+
+    mockUseEmployeeChanges.mockReturnValue({
+      isColumnChanged: vi.fn(),
+      totalCount: 0,
+      isLoading: false,
+    });
+
+    await act(async () => {
+      renderWithI18n(<DashboardPage />);
+    });
+
+    expect(screen.queryByText("Sign Out")).not.toBeInTheDocument();
   });
 
-  it('does NOT render sign-out button in page body', () => {
-    vi.mocked(useAuth).mockReturnValue({
-      user: mockHRAdminUser,
-      logout: vi.fn(),
+  it("renders Add Employee and Import buttons for HR Admin", async () => {
+    mockUseAuth.mockReturnValue({
+      user: { role: UserRole.HR_ADMIN },
       isLoading: false,
-      isAuthenticated: true,
-      login: vi.fn(),
-      setUser: vi.fn(),
-      checkAuth: vi.fn(),
-      setLoading: vi.fn(),
     });
 
-    renderWithI18n(<DashboardPage />);
-
-    // Get all buttons
-    const buttons = screen.getAllByRole('button');
-
-    // Sign-out should NOT be in page body (moved to header)
-    const signOutButton = buttons.find(btn =>
-      btn.textContent?.toLowerCase().includes('sign out')
-    );
-    expect(signOutButton).toBeUndefined();
-  });
-
-  it('renders Add Employee and Import buttons for HR Admin', () => {
-    vi.mocked(useAuth).mockReturnValue({
-      user: mockHRAdminUser,
-      logout: vi.fn(),
+    mockUseEmployees.mockReturnValue({
+      employees: [],
       isLoading: false,
-      isAuthenticated: true,
-      login: vi.fn(),
-      setUser: vi.fn(),
-      checkAuth: vi.fn(),
-      setLoading: vi.fn(),
+      refetch: vi.fn(),
     });
 
-    renderWithI18n(<DashboardPage />);
+    mockUseEmployeeChanges.mockReturnValue({
+      isColumnChanged: vi.fn(),
+      totalCount: 0,
+      isLoading: false,
+    });
 
-    expect(screen.getByRole('button', { name: /Lägg till anställd/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Importera anställda/i })).toBeInTheDocument();
+    await act(async () => {
+      renderWithI18n(<DashboardPage />);
+    });
+
+    expect(screen.getByText("Lägg till anställd")).toBeInTheDocument();
+    expect(screen.getByText("Importera")).toBeInTheDocument();
   });
 });

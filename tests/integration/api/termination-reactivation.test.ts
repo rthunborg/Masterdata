@@ -125,7 +125,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'End of contract',
       is_terminated: true,
-      repayment_needed_omc: '2025-03-08',
+      repayment_needed_omc: true,
       stena_date: null,
       pe3_date: null,
     });
@@ -149,7 +149,7 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_omc).toBe('2025-03-08');
+    expect(json.data.employee.repayment_needed_omc).toBe(true);
     expect(json.data.employee.omc_date).toBeNull();
     expect(json.data.clearedDates).toContain(omcDateId);
     expect(json.data.releasedSpots).toBe(1);
@@ -162,7 +162,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'Retirement',
       is_terminated: true,
-      repayment_needed_pe3: '2025-04-20',
+      repayment_needed_pe3: true,
       stena_date: null,
       omc_date: null,
     });
@@ -186,7 +186,7 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_pe3).toBe('2025-04-20');
+    expect(json.data.employee.repayment_needed_pe3).toBe(true);
     expect(json.data.employee.pe3_date).toBeNull();
     expect(json.data.clearedDates).toContain(pe3DateId);
   });
@@ -200,8 +200,8 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'End of contract',
       is_terminated: true,
-      repayment_needed_omc: '2025-03-08',
-      repayment_needed_pe3: '2025-04-20',
+      repayment_needed_omc: true,
+      repayment_needed_pe3: true,
       stena_date: null,
     });
 
@@ -224,8 +224,8 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_omc).toBe('2025-03-08');
-    expect(json.data.employee.repayment_needed_pe3).toBe('2025-04-20');
+    expect(json.data.employee.repayment_needed_omc).toBe(true);
+    expect(json.data.employee.repayment_needed_pe3).toBe(true);
     expect(json.data.clearedDates).toHaveLength(2);
     expect(json.data.releasedSpots).toBe(2);
   });
@@ -434,7 +434,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
       is_terminated: false,
       termination_date: null,
       omc_date: null,
-      repayment_needed_omc: '2025-03-08',
+      repayment_needed_omc: true,
     });
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
@@ -454,7 +454,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
 
     expect(response.status).toBe(200);
     expect(json.data.omc_date).toBeNull();
-    expect(json.data.repayment_needed_omc).toBe('2025-03-08');
+    expect(json.data.repayment_needed_omc).toBe(true);
     expect(json.warnings).toHaveLength(1);
     expect(json.warnings[0]).toContain('fully booked');
   });
@@ -464,7 +464,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
       is_terminated: false,
       termination_date: null,
       omc_date: null,
-      repayment_needed_omc: '2025-03-08',
+      repayment_needed_omc: true,
     });
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);

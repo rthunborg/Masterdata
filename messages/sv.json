@@ -15,6 +15,7 @@
     "close": "Stäng",
     "confirm": "Bekräfta",
     "loading": "Laddar...",
+    "retry": "Försök igen",
     "noResults": "Inga resultat hittades",
     "actions": "Åtgärder",
     "yes": "Ja",
@@ -37,9 +38,12 @@
   },
   "dashboard": {
     "title": "Personalhantering",
-    "addEmployee": "Lägg till anställd",
-    "addColumn": "Lägg till kolumn",
-    "importEmployees": "Importera anställda",
+    "employeeList": "Anställda",
+    "actions": {
+      "addEmployee": "Lägg till anställd",
+      "addColumn": "Lägg till kolumn",
+      "importEmployees": "Importera anställda"
+    },
     "searchPlaceholder": "Sök anställda...",
     "filterByRole": "Filtrera efter roll",
     "filterByStatus": "Filtrera efter status",
@@ -350,6 +354,9 @@
     }
   },
   "dates": {
+    "title": "Viktiga datum",
+    "description": "Hantera viktiga datum och deadlines för säsongsrekryteringen.",
+    "exportByCategory": "Exportera per kategori",
     "importantDates": "Viktiga datum",
     "addDate": "Nytt datum",
     "editDate": "Redigera datum",

@@ -36,6 +36,26 @@ vi.mock('@/lib/hooks/use-offline-sync', () => ({
   useOfflineSync: vi.fn(),
 }));
 
+vi.mock('@/lib/hooks/use-employee-changes', () => ({
+  useEmployeeChanges: vi.fn(() => ({
+    isColumnChanged: vi.fn(),
+    totalCount: 0,
+    changesBaseline: null,
+    isLoading: false,
+    error: null,
+  })),
+}));
+
+vi.mock('@/lib/i18n', () => ({
+  useTranslations: () => (key: string) => key,
+  t: {
+    dashboard: {},
+    common: {},
+    errors: {},
+    tooltips: {},
+  },
+}));
+
 vi.mock('@/hooks/use-media-query', () => ({
   useMediaQuery: vi.fn(() => false),
 }));
@@ -67,6 +87,9 @@ vi.mock('@/components/dashboard/role-selector', () => ({
 }));
 vi.mock('@/components/dashboard/role-preview-banner', () => ({
   RolePreviewBanner: () => null,
+}));
+vi.mock('@/components/dashboard/change-notification-banner', () => ({
+  ChangeNotificationBanner: () => null,
 }));
 vi.mock('@/components/dashboard/offline-banner', () => ({
   OfflineBanner: () => null,

@@ -63,7 +63,7 @@ describe("GET /api/important-dates", () => {
   });
 
   it("should return important dates for HR Admin users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findAll).mockResolvedValue(mockImportantDates);
 
     const request = new NextRequest("http://localhost:3000/api/important-dates");
@@ -77,7 +77,7 @@ describe("GET /api/important-dates", () => {
 
   it("should filter important dates by category for HR Admin", async () => {
     const stenaDates = [mockImportantDates[0]];
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findAll).mockResolvedValue(stenaDates);
 
     const request = new NextRequest(
@@ -92,7 +92,7 @@ describe("GET /api/important-dates", () => {
   });
 
   it("should return 403 for external party users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireRoleAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -117,7 +117,7 @@ describe("GET /api/important-dates", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireRoleAPI).mockRejectedValue(
       new Error("Authentication required")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -141,7 +141,7 @@ describe("GET /api/important-dates", () => {
   });
 
   it("should handle repository errors gracefully", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findAll).mockRejectedValue(
       new Error("Database connection failed")
     );
@@ -205,7 +205,7 @@ describe("POST /api/important-dates", () => {
   });
 
   it("should create important date for HR Admin", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.create).mockResolvedValue(mockCreatedDate);
 
     const request = new NextRequest("http://localhost:3000/api/important-dates", {
@@ -222,7 +222,7 @@ describe("POST /api/important-dates", () => {
   });
 
   it("should return 403 for external party users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireRoleAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -250,7 +250,7 @@ describe("POST /api/important-dates", () => {
   });
 
   it("should return 400 for invalid data (missing required fields)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       week_number: 15,
@@ -271,7 +271,7 @@ describe("POST /api/important-dates", () => {
   });
 
   it("should return 400 for invalid week_number range", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       ...validFormData,
@@ -291,7 +291,7 @@ describe("POST /api/important-dates", () => {
   });
 
   it("should accept null week_number", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.create).mockResolvedValue({
       ...mockCreatedDate,
       week_number: null,
@@ -342,7 +342,7 @@ describe("POST /api/important-dates", () => {
       updated_at: "2025-01-01T00:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.create).mockResolvedValue(mockCreatedWithDefaults);
 
     const request = new NextRequest("http://localhost:3000/api/important-dates", {
@@ -358,7 +358,7 @@ describe("POST /api/important-dates", () => {
   });
 
   it("should validate ÖMC two-day format (400)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidOMCData = {
       week_number: 10,
@@ -387,7 +387,7 @@ describe("POST /api/important-dates", () => {
   });
 
   it("should reject PE3 date without time field (400)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidPE3Data = {
       week_number: 10,
@@ -418,7 +418,7 @@ describe("POST /api/important-dates", () => {
   });
 
   it("should reject PE3 date with empty time string (400)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidPE3Data = {
       week_number: 10,
@@ -477,7 +477,7 @@ describe("POST /api/important-dates", () => {
       updated_at: "2025-01-01T00:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.create).mockResolvedValue(mockCreatedPE3);
 
     const request = new NextRequest("http://localhost:3000/api/important-dates", {
@@ -522,7 +522,7 @@ describe("POST /api/important-dates", () => {
       updated_at: "2025-01-01T00:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.create).mockResolvedValue(mockCreatedOMC);
 
     const request = new NextRequest("http://localhost:3000/api/important-dates", {
@@ -572,7 +572,7 @@ describe("PATCH /api/important-dates/[id]", () => {
   });
 
   it("should update important date for HR Admin", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.update).mockResolvedValue(mockUpdatedDate);
 
     const updateData = {
@@ -596,7 +596,7 @@ describe("PATCH /api/important-dates/[id]", () => {
   });
 
   it("should return 403 for external party users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireRoleAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -626,7 +626,7 @@ describe("PATCH /api/important-dates/[id]", () => {
   });
 
   it("should return 404 for non-existent date", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.update).mockRejectedValue(
       new Error("Important date not found")
     );
@@ -646,7 +646,7 @@ describe("PATCH /api/important-dates/[id]", () => {
   });
 
   it("should return 400 for invalid update data", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       week_number: 100, // Invalid: max is 53
@@ -678,7 +678,7 @@ describe("PATCH /api/important-dates/[id]", () => {
       remaining_spots: 5,
     } as any;
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findById).mockResolvedValue(mockDate);
 
     const invalidData = {
@@ -717,7 +717,7 @@ describe("DELETE /api/important-dates/[id]", () => {
   });
 
   it("should delete important date for HR Admin", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.delete).mockResolvedValue();
 
     const request = new NextRequest(
@@ -735,7 +735,7 @@ describe("DELETE /api/important-dates/[id]", () => {
   });
 
   it("should return 403 for external party users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireRoleAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -764,7 +764,7 @@ describe("DELETE /api/important-dates/[id]", () => {
   });
 
   it("should return 404 for non-existent date", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.delete).mockRejectedValue(
       new Error("Important date not found")
     );
@@ -785,7 +785,7 @@ describe("DELETE /api/important-dates/[id]", () => {
   it("should update assigned employees when date is deleted", async () => {
     // Note: The repository delete method handles updating assigned employees
     // by clearing date references in the employees table
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.delete).mockResolvedValue();
 
     const request = new NextRequest(

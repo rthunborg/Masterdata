@@ -2,6 +2,7 @@ import { getUserFromSession } from "@/lib/server/auth";
 import { Link, redirect } from "@/lib/navigation";
 import { Toaster } from "sonner";
 import { Header } from "@/components/layout/header";
+import { canManageSettings, canManageEmployees, UserRole } from "@/lib/types/user";
 import { t } from "@/lib/i18n";
 
 export default async function DashboardLayout({
@@ -16,43 +17,54 @@ export default async function DashboardLayout({
     return null; // TypeScript guard - this line is never reached due to redirect
   }
 
+  // Determine permissions
+  const showAdminTabs = canManageSettings(user.role as UserRole);
+  const showImportantDates = canManageEmployees(user.role as UserRole); // HR Admin & Recruiter
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      {/* Navigation - hidden on mobile, visible on desktop - HR Admin only */}
-      {user.role === "hr_admin" && (
-        <nav className="bg-gray-100 border-b hidden lg:block">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex space-x-8">
-              <Link
-                href="/dashboard"
-                className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              >
-                {t.navigation.employees}
-              </Link>
+      {/* Navigation - hidden on mobile, visible on desktop */}
+      <nav className="bg-gray-100 border-b hidden lg:block">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            <Link
+              href="/dashboard"
+              className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            >
+              {t.navigation.employees}
+            </Link>
+            
+            {showImportantDates && (
               <Link
                 href="/dashboard/important-dates"
                 className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
               >
                 {t.navigation.importantDates}
               </Link>
-              <Link
-                href="/dashboard/admin/users"
-                className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              >
-                {t.admin.userManagement}
-              </Link>
-              <Link
-                href="/dashboard/admin/columns"
-                className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              >
-                {t.admin.columnSettings}
-              </Link>
-            </div>
+            )}
+            
+            {/* Admin tabs only for HR Superusers */}
+            {showAdminTabs && (
+              <>
+                <Link
+                  href="/dashboard/admin/users"
+                  className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                >
+                  {t.admin.userManagement}
+                </Link>
+                <Link
+                  href="/dashboard/admin/columns"
+                  className="border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                >
+                  {t.admin.columnSettings}
+                </Link>
+              </>
+            )}
           </div>
-        </nav>
-      )}
+        </div>
+      </nav>
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {children}

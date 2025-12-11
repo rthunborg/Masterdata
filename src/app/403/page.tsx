@@ -18,68 +18,44 @@ export default function ForbiddenPage() {
         <div className="text-center">
           <ShieldX className="mx-auto h-16 w-16 text-red-500" />
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900">
-403 - Access Forbidden          </h1>
+            403 - Åtkomst nekad
+          </h1>
           <p className="mt-2 text-base text-gray-600">
-            You don&apos;t have permission to access this resource.
+            Du saknar behörighet att se denna sida.
           </p>
         </div>
 
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle className="text-center">Access Denied</CardTitle>
-            <CardDescription className="text-center">
-              This area requires higher privileges than your current role allows.
+            <CardTitle>Användarinformation</CardTitle>
+            <CardDescription>
+              Du är inloggad som:
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {user && (
-              <div className="bg-gray-50 rounded-md p-4">
-                <div className="text-sm">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-gray-700">Current User:</span>
-                    <span className="text-gray-600">{user.email}</span>
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <span className="font-medium text-gray-700">Role:</span>
-                    <span className="text-gray-600">{getRoleDisplayName(user.role)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-              <h3 className="text-sm font-medium text-blue-800 mb-2">
-                Need Access?
-              </h3>
-              <p className="text-sm text-blue-700">
-                Contact your HR administrator to request elevated permissions or role changes.
-              </p>
+            <div className="bg-gray-50 p-3 rounded-md">
+              <p className="text-sm font-medium text-gray-500">Email</p>
+              <p className="text-sm text-gray-900">{user?.email}</p>
             </div>
-
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-              <Button
-                onClick={() => router.back()}
-                variant="outline"
-                className="flex-1"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Go Back
-              </Button>
-              <Link href="/dashboard" className="flex-1">
-                <Button className="w-full">
+            <div className="bg-gray-50 p-3 rounded-md">
+              <p className="text-sm font-medium text-gray-500">Roll</p>
+              <p className="text-sm text-gray-900">{user?.role ? getRoleDisplayName(user.role) : '-'}</p>
+            </div>
+            
+            <div className="flex flex-col gap-2 mt-4">
+              <Button asChild className="w-full">
+                <Link href="/dashboard">
                   <Home className="mr-2 h-4 w-4" />
-                  Dashboard
-                </Button>
-              </Link>
+                  Gå till Dashboard
+                </Link>
+              </Button>
+              <Button variant="outline" onClick={() => router.back()} className="w-full">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Gå tillbaka
+              </Button>
             </div>
           </CardContent>
         </Card>
-
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500">
-            Error Code: 403 | HR Masterdata Management System
-          </p>
-        </div>
       </div>
     </div>
   );
