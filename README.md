@@ -583,7 +583,12 @@ Key architectural decisions documented in `docs/architecture/`:
 
 ## License
 
-Proprietary - All rights reserved. Internal use only for HR masterdata management.
+This project is a showcase portfolio piece and is NOT available for public use or distribution. All rights reserved.
+
+## Status
+
+**Project Status:** Completed MVP Showcase
+**Live Demo:** [Available upon request]
 
 ## Contact
 

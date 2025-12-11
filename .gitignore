@@ -30,7 +30,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
 !.env.example
 
@@ -44,9 +44,25 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Data files from parent repo
-/2025 Candidate Masterdata20250527.csv
-/2025 Candidate Masterdata20250527.pdf
-/2025 Candidate Masterdata20250527.xls
-/2025 Candidate Masterdata20250527.xlsx
-/2025 Candidate Masterdata20250527.xlsx - Masterdata.csv
+# Internal Tooling & AI Context (Portfolio Cleanup)
+.bmad/
+.cursor/
+.agent/
+.ai/
+.claude/
+.gemini/
+web-bundles/
+
+# Backups & Logs
+v4-backup/
+refactor-summary.txt
+vercel-deployment-logs.txt
+playwright-report/
+test-results/
+
+# Client Assets
+stena/
+
+# Internal Documentation (Keep only README.md)
+/docs/
+!/docs/screenshots/
