@@ -56,5 +56,4 @@ jobs:
           NODE_ENV: test
         run: pnpm test:integration
         continue-on-error: false
-        # Remove the expression syntax ${{ }} as 'if' is already an expression context
-        if: secrets.NEXT_PUBLIC_SUPABASE_URL != ''
+        if: ${{ env.NEXT_PUBLIC_SUPABASE_URL != '' }}
