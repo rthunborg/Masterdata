@@ -58,8 +58,11 @@ async function setBranchProtection(owner: string, repo: string, branch: string) 
     });
     
     console.log(`✅ Branch protection enabled for "${branch}".`);
-  } catch (error: any) {
-    console.error(`❌ Error setting branch protection for ${branch}:`, error.response?.data?.message || error.message);
+  } catch (error) {
+    // Explicitly cast error to unknown first, then check properties safely
+    const err = error as { response?: { data?: { message?: string } }, message?: string };
+    const errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+    console.error(`❌ Error setting branch protection for ${branch}:`, errorMessage);
   }
 }
 
@@ -73,8 +76,9 @@ async function main() {
     try {
       await octokit.repos.getBranch({ owner, repo, branch: 'staging' });
       console.log('✅ Branch "staging" already exists.');
-    } catch (e: any) {
-      if (e.status === 404) {
+    } catch (e: unknown) {
+      const err = e as { status?: number };
+      if (err.status === 404) {
         console.log('✨ Branch "staging" not found. Creating it from "main"...');
         const mainRef = await octokit.git.getRef({ owner, repo, ref: 'heads/main' });
         await octokit.git.createRef({
@@ -101,8 +105,10 @@ async function main() {
       default_branch: 'staging'
     });
     console.log('✅ Default branch set to "staging".');
-  } catch (error: any) {
-     console.error('❌ Error setting default branch:', error.response?.data?.message || error.message);
+  } catch (error) {
+     const err = error as { response?: { data?: { message?: string } }, message?: string };
+     const errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+     console.error('❌ Error setting default branch:', errorMessage);
   }
 
   // 3. Set Branch Protection

@@ -11,6 +11,7 @@
  */
 
 import { test, expect } from "@playwright/test";
+import fs from 'fs';
 
 test.describe("Story 13.7: Export Workflow E2E", () => {
   test.beforeEach(async ({ page }) => {
@@ -54,7 +55,6 @@ test.describe("Story 13.7: Export Workflow E2E", () => {
     // Verify CSV content (basic check - contains employee data)
     const path = await download.path();
     if (path) {
-      const fs = require('fs');
       const csvContent = fs.readFileSync(path, 'utf-8');
       // CSV should have header row + 2 data rows (for 2 selected employees)
       const lines = csvContent.split('\n').filter((line: string) => line.trim());
@@ -105,7 +105,6 @@ test.describe("Story 13.7: Export Workflow E2E", () => {
     // Verify CSV content (should not contain Email or Mobile columns)
     const path = await download.path();
     if (path) {
-      const fs = require('fs');
       const csvContent = fs.readFileSync(path, 'utf-8');
       const headerLine = csvContent.split('\n')[0];
       // Note: This is a basic check - actual implementation may vary
@@ -209,7 +208,6 @@ test.describe("Story 13.7: Export Workflow E2E", () => {
     // Verify CSV content
     const path = await download.path();
     if (path) {
-      const fs = require('fs');
       const csvContent = fs.readFileSync(path, 'utf-8');
       const lines = csvContent.split('\n').filter((line: string) => line.trim());
       // Should have header + selected employees (at least 2 if they meet criteria)
@@ -229,4 +227,3 @@ test.describe("Story 13.7: Export Workflow E2E", () => {
     await expect(page.locator('text=No employees selected')).toBeVisible({ timeout: 5000 });
   });
 });
-
