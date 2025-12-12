@@ -28,7 +28,7 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const timeError = result.error.issues.find((e: any) => 
+        const timeError = result.error.issues.find((e) => 
           Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
         );
         expect(timeError).toBeDefined();
@@ -53,7 +53,7 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const timeError = result.error.issues.find((e: any) => 
+        const timeError = result.error.issues.find((e) => 
           Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
         );
         expect(timeError).toBeDefined();
@@ -100,7 +100,7 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const timeError = result.error.issues.find((e: any) => 
+        const timeError = result.error.issues.find((e) => 
           Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
         );
         expect(timeError).toBeDefined();
@@ -125,7 +125,7 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const timeError = result.error.issues.find((e: any) => 
+        const timeError = result.error.issues.find((e) => 
           Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
         );
         expect(timeError).toBeDefined();
@@ -209,7 +209,7 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(updateResult.success).toBe(false);
       if (!updateResult.success) {
-        const timeError = updateResult.error.issues.find((e: any) => 
+        const timeError = updateResult.error.issues.find((e) => 
           Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
         );
         expect(timeError).toBeDefined();
@@ -225,7 +225,7 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(updateResult.success).toBe(false);
       if (!updateResult.success) {
-        const timeError = updateResult.error.issues.find((e: any) => 
+        const timeError = updateResult.error.issues.find((e) => 
           Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
         );
         expect(timeError).toBeDefined();
@@ -256,7 +256,7 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(updateResult.success).toBe(false);
       if (!updateResult.success) {
-        const timeError = updateResult.error.issues.find((e: any) => 
+        const timeError = updateResult.error.issues.find((e) => 
           Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
         );
         expect(timeError).toBeDefined();
@@ -286,7 +286,7 @@ describe('PE3 Time Field Mandatory Validation', () => {
 
       expect(updateResult.success).toBe(false);
       if (!updateResult.success) {
-        const timeError = updateResult.error.issues.find((e: any) => 
+        const timeError = updateResult.error.issues.find((e) => 
           Array.isArray(e.path) && e.path.length > 0 && e.path[e.path.length - 1] === 'time_value'
         );
         expect(timeError).toBeDefined();

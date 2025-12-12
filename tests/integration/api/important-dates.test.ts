@@ -676,7 +676,7 @@ describe("PATCH /api/important-dates/[id]", () => {
       date_value: "2025-03-08",
       max_spots: 10,
       remaining_spots: 5,
-    } as any;
+    } as unknown as ImportantDate;
 
     vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findById).mockResolvedValue(mockDate);

@@ -95,15 +95,15 @@ vi.mock("@/lib/hooks/use-employee-changes", () => ({
 describe("Dashboard Mobile Button Tests (AC1)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useAuth as any).mockReturnValue({
+    vi.mocked(useAuth).mockReturnValue({
       user: { role: UserRole.HR_ADMIN },
       isLoading: false,
-    });
+    } as unknown as ReturnType<typeof useAuth>);
   });
 
   describe("AC1: FAB is visible on mobile (<1024px) and desktop buttons are hidden", () => {
     it("should render FAB and hide desktop buttons on mobile", () => {
-      (useMediaQuery as any).mockReturnValue(true); // Mobile view
+      vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile view
 
       render(<DashboardPage />);
 
@@ -124,11 +124,11 @@ describe("Dashboard Mobile Button Tests (AC1)", () => {
     });
 
     it("should NOT render FAB for external users on mobile", () => {
-      (useAuth as any).mockReturnValue({
+      vi.mocked(useAuth).mockReturnValue({
         user: { role: UserRole.SODEXO },
         isLoading: false,
-      });
-      (useMediaQuery as any).mockReturnValue(true); // Mobile view
+      } as unknown as ReturnType<typeof useAuth>);
+      vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile view
 
       render(<DashboardPage />);
 
@@ -137,11 +137,11 @@ describe("Dashboard Mobile Button Tests (AC1)", () => {
     });
 
     it("should render FAB for Recruiter on mobile", () => {
-      (useAuth as any).mockReturnValue({
+      vi.mocked(useAuth).mockReturnValue({
         user: { role: UserRole.RECRUITER },
         isLoading: false,
-      });
-      (useMediaQuery as any).mockReturnValue(true); // Mobile view
+      } as unknown as ReturnType<typeof useAuth>);
+      vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile view
 
       render(<DashboardPage />);
 
@@ -150,7 +150,7 @@ describe("Dashboard Mobile Button Tests (AC1)", () => {
     });
 
     it("should render Quick Search button in FAB menu", async () => {
-      (useMediaQuery as any).mockReturnValue(true);
+      vi.mocked(useMediaQuery).mockReturnValue(true);
       
       render(<DashboardPage />);
       

@@ -10,19 +10,19 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { expectConstraintViolation } from "../../helpers/constraint-test-helpers";
 
 vi.mock("@supabase/supabase-js");
 
 describe("Capacity Constraint Tests", () => {
-  let mockSupabase: any;
+  let mockSupabase: SupabaseClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
     
     // Create chainable mock builder
-    const createChainableMock = (resolvedValue: { data: any; error: any }) => {
+    const createChainableMock = (resolvedValue: { data: unknown; error: unknown }) => {
       const chainMock = {
         select: vi.fn().mockReturnThis(),
         update: vi.fn().mockReturnThis(),
@@ -40,9 +40,9 @@ describe("Capacity Constraint Tests", () => {
     // Create mock Supabase client
     mockSupabase = {
       from: vi.fn((table: string) => createChainableMock({ data: null, error: null })),
-    };
+    } as unknown as SupabaseClient;
     
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
   });
 
   describe("remaining_spots >= 0 constraint", () => {
@@ -227,4 +227,3 @@ describe("Capacity Constraint Tests", () => {
     });
   });
 });
-

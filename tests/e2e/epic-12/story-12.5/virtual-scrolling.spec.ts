@@ -99,7 +99,8 @@ test.describe('Virtual Scrolling Performance (Story 12.5)', () => {
     // Test that virtual scrolling handles large lists without performance degradation
     
     const performanceMetrics = await page.evaluate(() => {
-      const startMemory = (performance as any).memory?.usedJSHeapSize || 0;
+      const performanceObj = performance as unknown as { memory?: { usedJSHeapSize: number } };
+      const startMemory = performanceObj.memory?.usedJSHeapSize || 0;
       const startTime = performance.now();
 
       // Simulate scrolling through large list
@@ -108,7 +109,7 @@ test.describe('Virtual Scrolling Performance (Story 12.5)', () => {
       }
 
       const endTime = performance.now();
-      const endMemory = (performance as any).memory?.usedJSHeapSize || 0;
+      const endMemory = performanceObj.memory?.usedJSHeapSize || 0;
 
       return {
         scrollTime: endTime - startTime,
@@ -126,4 +127,3 @@ test.describe('Virtual Scrolling Performance (Story 12.5)', () => {
     }
   });
 });
-

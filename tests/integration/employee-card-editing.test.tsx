@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Tests for Employee Card Inline Editing
  * Story 11.12: Employee Card Expansion Tests

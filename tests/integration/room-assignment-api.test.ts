@@ -74,7 +74,7 @@ describe("Room Assignment API Integration Tests", () => {
   });
 
   // Shared mock Supabase client that can be accessed in tests
-  let mockSupabaseClient: any;
+  let mockSupabaseClient: ReturnType<typeof createClient>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -93,8 +93,8 @@ describe("Room Assignment API Integration Tests", () => {
         single: vi.fn().mockResolvedValue({ data: null, error: null }),
       })),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    };
-    (createClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabaseClient as any);
+    } as unknown as ReturnType<typeof createClient>;
+    (createClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabaseClient);
   });
 
   describe("POST /api/employees - Room assignment on creation", () => {
@@ -181,7 +181,7 @@ describe("Room Assignment API Integration Tests", () => {
           });
         }),
       };
-      vi.mocked(mockSupabaseClient.from).mockReturnValue(mockFromChain as any);
+      vi.mocked(mockSupabaseClient.from).mockReturnValue(mockFromChain as unknown as ReturnType<typeof mockSupabaseClient.from>);
       
       // Mock RPC function to return room 1 for first employee
       vi.mocked(mockSupabaseClient.rpc).mockResolvedValue({ 

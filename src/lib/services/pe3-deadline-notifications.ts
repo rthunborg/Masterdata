@@ -316,25 +316,25 @@ export function generatePe3CancelDeadlineEmailHtml(
 }
 
 /**
- * Get HR admin email addresses
+ * Get HR admin and Recruiter email addresses
  * Reuses function from omc-masterdata-reminder service
  */
 async function getHrAdminEmails(): Promise<string[]> {
   const supabase = createServiceRoleClient();
   
-  const { data: hrAdmins, error } = await supabase
+  const { data: recipients, error } = await supabase
     .from('users')
     .select('email')
-    .eq('role', 'hr_admin')
+    .in('role', ['hr_admin', 'recruiter'])
     .not('email', 'is', null)
     .eq('is_active', true);
 
   if (error) {
-    console.error('[PE3 Notifications] Failed to fetch HR admin emails:', error);
+    console.error('[PE3 Notifications] Failed to fetch HR admin/recruiter emails:', error);
     return [];
   }
 
-  return (hrAdmins || []).map(user => user.email).filter(Boolean);
+  return (recipients || []).map(user => user.email).filter(Boolean);
 }
 
 /**

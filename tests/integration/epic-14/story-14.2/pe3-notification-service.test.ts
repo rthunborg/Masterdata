@@ -6,13 +6,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   sendPe3SubmitDeadlineNotification,
-  sendPe3CancelDeadlineNotification,
-  getPe3EntriesForSubmitDeadline,
-  getPe3EntriesForCancelDeadline,
+  sendPe3CancelDeadlineNotification
 } from '@/lib/services/pe3-deadline-notifications';
 import * as supabaseServer from '@/lib/supabase/server';
 import * as emailService from '@/lib/services/email-service';
 import { Pe3EntryWithEmployee } from '@/lib/services/pe3-deadline-notifications';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 vi.mock('@/lib/supabase/server');
 vi.mock('@/lib/services/email-service');
@@ -45,7 +44,6 @@ describe('PE3 Deadline Notification Service', () => {
       const today = '2025-02-10';
 
       // Mock notification not already sent
-      let notificationCheckCount = 0;
       const mockSupabase = {
         from: vi.fn((table: string) => {
           if (table === 'pe3_notifications_log') {
@@ -70,7 +68,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }, { email: 'admin2@example.com' }],
@@ -107,7 +105,7 @@ describe('PE3 Deadline Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
         { success: true, messageId: 'msg-2' },
@@ -154,7 +152,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }],
@@ -189,7 +187,7 @@ describe('PE3 Deadline Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);
@@ -210,7 +208,7 @@ describe('PE3 Deadline Notification Service', () => {
       const today = '2025-02-10';
 
       let insertCalled = false;
-      const mockInsert = vi.fn((data: any) => {
+      const mockInsert = vi.fn((data: { deadline_type: string; deadline_date: string }) => {
         insertCalled = true;
         expect(data.deadline_type).toBe('submit');
         expect(data.deadline_date).toBe(today);
@@ -241,7 +239,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }],
@@ -256,7 +254,7 @@ describe('PE3 Deadline Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);
@@ -292,7 +290,7 @@ describe('PE3 Deadline Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
 
       const result = await sendPe3SubmitDeadlineNotification(entries, today);
 
@@ -305,7 +303,7 @@ describe('PE3 Deadline Notification Service', () => {
       const cancelEntries = [createMockPe3Entry({ deadline_cancel: '2025-02-10' })];
       const today = '2025-02-10';
 
-      let callCount = 0;
+      const callCount = 0;
       const mockSupabase = {
         from: vi.fn((table: string) => {
           if (table === 'pe3_notifications_log') {
@@ -330,7 +328,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }],
@@ -371,7 +369,7 @@ describe('PE3 Deadline Notification Service', () => {
         return originalFrom(table);
       });
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);
@@ -412,7 +410,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [],
@@ -427,7 +425,7 @@ describe('PE3 Deadline Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
 
       const result = await sendPe3SubmitDeadlineNotification(entries, today);
 
@@ -463,7 +461,7 @@ describe('PE3 Deadline Notification Service', () => {
           } else if (table === 'users') {
             return {
               select: vi.fn(() => ({
-                eq: vi.fn(() => ({
+                in: vi.fn(() => ({
                   not: vi.fn(() => ({
                     eq: vi.fn().mockResolvedValue({
                       data: [{ email: 'admin1@example.com' }],
@@ -478,7 +476,7 @@ describe('PE3 Deadline Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: false, error: 'SMTP error' },
       ]);
@@ -489,4 +487,3 @@ describe('PE3 Deadline Notification Service', () => {
     });
   });
 });
-

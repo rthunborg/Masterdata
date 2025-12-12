@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Tests: Lazy Loading Functionality
  * Story 12.5: Mobile Performance Optimizations - AC4
@@ -69,7 +70,7 @@ vi.mock('next/dynamic', () => ({
     // Track the call
     dynamicCalls.push([loader, options || {}]);
     
-    const Component = vi.fn(() => null) as any;
+    const Component = vi.fn(() => null) as unknown as React.ComponentType;
     Component.displayName = 'DynamicComponent';
     return Component;
   },

@@ -203,8 +203,7 @@ describe('GET /api/admin/users', () => {
     mockUserRepository.findAll.mockResolvedValue(dbMockUsers);
     
     // Reset Supabase mock to return users list
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockReturnValue({
+    vi.mocked(mockSupabaseClient.from).mockReturnValue({
       select: vi.fn(() => ({
         order: vi.fn(() => Promise.resolve({
           data: dbMockUsers,
@@ -267,8 +266,7 @@ describe('POST /api/admin/users', () => {
     vi.clearAllMocks();
     
     // Setup Service Role client mocks for POST operations (used by admin routes)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockServiceRoleClient.from as any).mockImplementation((table: string) => {
+    vi.mocked(mockServiceRoleClient.from).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
           select: vi.fn(() => ({
@@ -390,8 +388,7 @@ describe('POST /api/admin/users', () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
     
     // Override mock to return existing user (use mockServiceRoleClient)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockServiceRoleClient.from as any).mockReturnValue({
+    vi.mocked(mockServiceRoleClient.from).mockReturnValue({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
           single: vi.fn(() => Promise.resolve({
@@ -462,8 +459,7 @@ describe('PATCH /api/admin/users/[id]', () => {
     vi.clearAllMocks();
     
     // Setup Supabase mocks for PATCH operations
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockImplementation((table: string) => {
+    vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
           select: vi.fn(() => ({
@@ -515,8 +511,7 @@ describe('PATCH /api/admin/users/[id]', () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
     
     // Override mock to return deactivated user
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockImplementation((table: string) => {
+    vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
           select: vi.fn(() => ({
@@ -573,8 +568,7 @@ describe('PATCH /api/admin/users/[id]', () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
     
     // Override mock to return activated user
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockImplementation((table: string) => {
+    vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
           select: vi.fn(() => ({
@@ -647,8 +641,7 @@ describe('PATCH /api/admin/users/[id]', () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
     
     // Override mock to return user not found
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockReturnValue({
+    vi.mocked(mockSupabaseClient.from).mockReturnValue({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
           single: vi.fn(() => Promise.resolve({
@@ -713,8 +706,7 @@ describe('DELETE /api/admin/users/[id]', () => {
     vi.clearAllMocks();
     
     // Setup regular Supabase client mocks for SELECT operations (checking user)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockImplementation((table: string) => {
+    vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
           select: vi.fn(() => ({
@@ -739,8 +731,7 @@ describe('DELETE /api/admin/users/[id]', () => {
     });
     
     // Setup Service Role client mocks for DELETE operations
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockServiceRoleClient.from as any).mockImplementation((table: string) => {
+    vi.mocked(mockServiceRoleClient.from).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
           delete: vi.fn(() => ({
@@ -794,8 +785,7 @@ describe('DELETE /api/admin/users/[id]', () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
     
     // Mock to return HR admin user with proper chaining for count query
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockImplementation((table: string) => {
+    vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
       if (table === 'users') {
         return {
           select: vi.fn((columns: string, options?: { count?: string; head?: boolean }) => {
@@ -849,8 +839,7 @@ describe('DELETE /api/admin/users/[id]', () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
     
     // Override mock to return user not found
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockReturnValue({
+    vi.mocked(mockSupabaseClient.from).mockReturnValue({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
           single: vi.fn(() => Promise.resolve({

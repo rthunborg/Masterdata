@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/important-dates/available-pe3/route";
 import { mockUsers } from "../../utils/role-test-utils";

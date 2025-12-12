@@ -216,26 +216,26 @@ export async function evaluateOmcMasterdataCompletion(
 }
 
 /**
- * Get HR admin email addresses
+ * Get HR admin and Recruiter email addresses
  * 
- * @returns Array of email addresses for hr_admin users
+ * @returns Array of email addresses for hr_admin and recruiter users
  */
 export async function getHrAdminEmails(): Promise<string[]> {
   const supabase = createServiceRoleClient();
   
-  const { data: hrAdmins, error } = await supabase
+  const { data: recipients, error } = await supabase
     .from('users')
     .select('email')
-    .eq('role', 'hr_admin')
+    .in('role', ['hr_admin', 'recruiter'])
     .not('email', 'is', null)
     .eq('is_active', true);
 
   if (error) {
-    console.error('Failed to fetch HR admin emails:', error);
+    console.error('Failed to fetch HR admin/recruiter emails:', error);
     return [];
   }
 
-  return (hrAdmins || []).map(user => user.email).filter(Boolean);
+  return (recipients || []).map(user => user.email).filter(Boolean);
 }
 
 /**

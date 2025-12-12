@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+interface BeforeInstallPromptEvent extends Event {
+  preventDefault: () => void;
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 test.describe('PWA Installation E2E', () => {
   test.beforeEach(async ({ page, context }) => {
     // Clear service workers before each test
@@ -29,10 +35,12 @@ test.describe('PWA Installation E2E', () => {
 
     // Simulate beforeinstallprompt event
     await page.evaluate(() => {
-      const event = new Event('beforeinstallprompt') as any;
+      const event = new Event('beforeinstallprompt') as BeforeInstallPromptEvent;
       event.preventDefault = () => {};
       event.prompt = () => Promise.resolve();
-      event.userChoice = Promise.resolve({ outcome: 'accepted' });
+      Object.defineProperty(event, 'userChoice', {
+        value: Promise.resolve({ outcome: 'accepted' })
+      });
       window.dispatchEvent(event);
     });
 
@@ -126,4 +134,3 @@ test.describe('PWA Installation E2E', () => {
     await expect(appleIcon).toHaveAttribute('href', '/icons/icon-192x192.png');
   });
 });
-

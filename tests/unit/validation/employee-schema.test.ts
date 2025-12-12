@@ -54,7 +54,7 @@ describe("createEmployeeSchema", () => {
         expect(result.surname).toBe("Doe");
         expect(result.ssn).toBe("19850315-1234");
         expect(result.email).toBe("john.doe@example.com");
-      } catch (error: any) {
+      } catch (error) {
         console.log('Validation error:', JSON.stringify(error.errors || error.issues, null, 2));
         console.log('validEmployeeData keys:', Object.keys(validEmployeeData));
         console.log('validEmployeeData.mobile:', validEmployeeData.mobile);
@@ -250,7 +250,7 @@ describe("createEmployeeSchema", () => {
 
     it("should reject invalid gender values", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = { ...validEmployeeData, gender: 'Male' as any }; // Invalid - should be 'Man' or 'Woman'
+      const data = { ...validEmployeeData, gender: 'Male' as unknown as 'Man' }; // Invalid - should be 'Man' or 'Woman'
       expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
   });
@@ -433,7 +433,7 @@ describe("createEmployeeSchema", () => {
 
     it("should reject invalid rank values", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = { ...validEmployeeData, rank: 'INVALID_RANK' as any }; // Invalid - should be 'SEV' or 'CHEF'
+      const data = { ...validEmployeeData, rank: 'INVALID_RANK' as unknown as 'SEV' }; // Invalid - should be 'SEV' or 'CHEF'
       expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
   });

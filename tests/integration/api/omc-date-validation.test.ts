@@ -7,8 +7,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { POST } from '@/app/api/important-dates/route';
 import { PATCH } from '@/app/api/important-dates/[id]/route';
-import { POST as POSTEmployee } from '@/app/api/employees/route';
-import { PATCH as PATCHEmployee } from '@/app/api/employees/[id]/route';
 import { NextRequest } from 'next/server';
 import * as auth from '@/lib/server/auth';
 import { importantDateRepository } from '@/lib/server/repositories/important-date-repository';
@@ -211,9 +209,9 @@ describe('POST /api/employees - ÖMC Date Validation', () => {
       surname: 'User',
       omc_date: '2025-03-08',
       // ... other required fields
-    };
+    } as unknown as import("@/lib/types/employee").Employee;
 
-    vi.mocked(employeeRepository.create).mockResolvedValue(mockEmployee as any);
+    vi.mocked(employeeRepository.create).mockResolvedValue(mockEmployee);
 
     const request = new NextRequest('http://localhost:3000/api/employees', {
       method: 'POST',
@@ -289,4 +287,3 @@ describe('Error Messages in Swedish', () => {
     expect(JSON.stringify(json)).toContain('två på varandra följande dagar');
   });
 });
-

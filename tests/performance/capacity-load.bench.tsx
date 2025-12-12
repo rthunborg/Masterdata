@@ -294,7 +294,7 @@ describe("Capacity Performance Benchmarks", () => {
   describe("Memory and Resource Usage", () => {
     it("should not leak memory during repeated operations", async () => {
       const iterations = 1000;
-      const initialMemory = (performance as any).memory?.usedJSHeapSize || 0;
+      const initialMemory = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0;
 
       for (let i = 0; i < iterations; i++) {
         await assignEmployeeToDate(
@@ -310,7 +310,7 @@ describe("Capacity Performance Benchmarks", () => {
         global.gc();
       }
 
-      const finalMemory = (performance as any).memory?.usedJSHeapSize || 0;
+      const finalMemory = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0;
       const memoryIncrease = finalMemory - initialMemory;
 
       // Memory increase should be reasonable (not a massive leak)

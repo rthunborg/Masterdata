@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Tests: PE3 Deadline Notifications Scheduled Job
  * Story: 14.2 - PE3 Deadline Notifications (Submit / Cancel)

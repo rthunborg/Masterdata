@@ -28,7 +28,7 @@ export interface CreateEmployeesOptions {
   hotel_required?: boolean;
   room_number_shared?: number | null;
   hire_date?: string;
-  [key: string]: any; // Allow additional fields
+  [key: string]: unknown; // Allow additional fields with unknown type
 }
 
 /**
@@ -326,4 +326,3 @@ export function getRoomOccupancySummary(employees: EmployeeWithRoom[]): Map<numb
   
   return summary;
 }
-

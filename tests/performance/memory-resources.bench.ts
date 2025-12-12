@@ -103,7 +103,7 @@ describe("Memory & Resource Benchmarks", () => {
         const employees = generateEmployees(100);
         return {
           channel: "employees",
-          callback: (payload: any) => {
+          callback: (payload: unknown) => {
             // Process update
             return payload;
           },

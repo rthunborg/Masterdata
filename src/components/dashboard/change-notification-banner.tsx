@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -10,6 +10,10 @@ import { useTranslations } from "@/lib/i18n";
 
 const SESSION_STORAGE_KEY = "employee-changes-banner-dismissed";
 const BASELINE_TRACKING_KEY = "employee-changes-banner-last-baseline";
+
+// Use useLayoutEffect to avoid flash of content when restoring dismissal state
+// but fallback to useEffect on server to avoid warnings
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 /**
  * Change Notification Banner Component
@@ -34,34 +38,45 @@ export function ChangeNotificationBanner({
   error,
 }: ChangeNotificationBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false);
+  const [prevBaseline, setPrevBaseline] = useState(changesBaseline);
   const tDashboard = useTranslations('dashboard');
 
-  // Check sessionStorage on mount to restore dismissal state
-  useEffect(() => {
-    if (typeof window !== "undefined") {
+  // Handle baseline changes (Derived State Pattern)
+  // This avoids "setState in useEffect" for resetting state when props change
+  if (changesBaseline !== prevBaseline) {
+    setPrevBaseline(changesBaseline);
+    setIsDismissed(false);
+  }
+
+  // Handle side effects (Storage Sync) and initial restore
+  useIsomorphicLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const storedBaseline = sessionStorage.getItem(BASELINE_TRACKING_KEY);
+
+    // Case 1: Baseline changed since last session (or new login)
+    // We detect this by comparing prop to storage
+    // NOTE: We only reset if we have a stored baseline to compare against.
+    // If storedBaseline is null (first tracking), we assume existing dismissal state is valid/relevant
+    // (or just respect the current session state).
+    if (changesBaseline && storedBaseline && storedBaseline !== changesBaseline) {
+      sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      // isDismissed is already false (default or reset via derived state)
+    } 
+    // Case 2: Same baseline as stored OR first time tracking this baseline
+    // We update tracking key and restore dismissal state
+    else {
+      if (changesBaseline) {
+        sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
+      } else {
+        sessionStorage.removeItem(BASELINE_TRACKING_KEY);
+      }
+
       const dismissed = sessionStorage.getItem(SESSION_STORAGE_KEY);
       if (dismissed === "true") {
         setIsDismissed(true);
       }
-    }
-  }, []);
-
-  // Clear dismissal state when baseline changes (new login)
-  // Track the baseline we've seen before in a separate key to detect changes
-  useEffect(() => {
-    if (changesBaseline && typeof window !== "undefined") {
-      const lastSeenBaseline = sessionStorage.getItem(BASELINE_TRACKING_KEY);
-      // If baseline changed (different from what we've seen before), it's a new login
-      // Clear dismissal state so banner shows again
-      if (lastSeenBaseline && lastSeenBaseline !== changesBaseline) {
-        sessionStorage.removeItem(SESSION_STORAGE_KEY);
-        setIsDismissed(false);
-      }
-      // Update tracking key with current baseline
-      sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
-    } else if (!changesBaseline && typeof window !== "undefined") {
-      // Clear tracking key if baseline is null (first-time user)
-      sessionStorage.removeItem(BASELINE_TRACKING_KEY);
     }
   }, [changesBaseline]);
 
@@ -133,4 +148,3 @@ export function ChangeNotificationBanner({
     </Alert>
   );
 }
-

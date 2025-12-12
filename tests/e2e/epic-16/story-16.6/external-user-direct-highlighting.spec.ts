@@ -14,6 +14,16 @@
 import { test, expect } from '@playwright/test';
 import { loginAsUser } from '../../helpers/e2e-helpers';
 
+interface EmployeeChange {
+  employeeId: string;
+  changedColumns: string[];
+}
+
+interface ChangeDetectionResponse {
+  changedEmployees?: EmployeeChange[];
+  error?: string;
+}
+
 test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
   test('External user should see highlights for existing changes', async ({ page }) => {
     // Log in directly as external user (Sodexo) - Production test user
@@ -54,7 +64,7 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
     // Check if any highlights exist (amber/yellow background)
     // This test verifies that if changes exist, they are highlighted
     const highlightedCells = page.locator('[class*="amber"], [class*="bg-amber"]');
-    const highlightCount = await highlightedCells.count();
+    // const highlightCount = await highlightedCells.count(); // Unused variable
     
     // Also check specifically in table rows
     const tableHighlightedCells = page.locator('table [class*="amber"], table [class*="bg-amber"], [data-testid^="employee-row-"] [class*="amber"], [data-testid^="employee-row-"] [class*="bg-amber"]');
@@ -100,13 +110,13 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
             try {
               const response = await fetch(`/api/employees/changes-since-last-active?baseline=${encodeURIComponent(baseline)}`);
               if (!response.ok) return { error: `HTTP ${response.status}` };
-              return await response.json();
+              return await response.json() as ChangeDetectionResponse;
             } catch (err) {
               return { error: err instanceof Error ? err.message : 'Unknown error' };
             }
           });
           
-          if (apiResponse && !apiResponse.error && apiResponse.changedEmployees?.length > 0) {
+          if (apiResponse && !apiResponse.error && apiResponse.changedEmployees && apiResponse.changedEmployees.length > 0) {
             const firstChange = apiResponse.changedEmployees[0];
             const changedEmployeeId = firstChange.employeeId;
             const changedColumns = firstChange.changedColumns;
@@ -152,8 +162,8 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
                 // Call the API directly to get changes
                 return fetch(`/api/employees/changes-since-last-active?baseline=${encodeURIComponent(baseline)}`)
                   .then(r => r.json())
-                  .then(data => {
-                    const employee = data.changedEmployees?.find((e: any) => e.employeeId === employeeId);
+                  .then((data: ChangeDetectionResponse) => {
+                    const employee = data.changedEmployees?.find((e: EmployeeChange) => e.employeeId === employeeId);
                     if (!employee) return { found: false, employeeId, changedColumns };
                     
                     // Test matching for each changed column
@@ -165,7 +175,7 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
                     
                     return { found: true, employeeId, matches, employee };
                   })
-                  .catch(err => ({ error: err.message }));
+                  .catch((err: Error) => ({ error: err.message }));
               }, { employeeId: changedEmployeeId, changedColumns });
               
               console.warn('   Manual API test result:', JSON.stringify(testResult, null, 2));
@@ -326,4 +336,3 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
     }
   });
 });
-

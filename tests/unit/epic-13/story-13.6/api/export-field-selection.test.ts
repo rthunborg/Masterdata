@@ -99,8 +99,7 @@ interface Employee {
   first_name: string;
   surname?: string;
   email?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 describe("POST /api/employees/export", () => {
@@ -169,8 +168,7 @@ describe("POST /api/employees/export", () => {
         }),
       }),
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",
@@ -187,8 +185,7 @@ describe("POST /api/employees/export", () => {
     expect(Papa.unparse).toHaveBeenCalled();
     
     // Verify Papa.unparse was called with correct data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as any;
+    const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     expect(unparseCall.fields).toEqual(["First Name", "custom_field_1"]);
     expect(unparseCall.data).toEqual([
       ["John", "Value 1"],
@@ -211,8 +208,7 @@ describe("POST /api/employees/export", () => {
         }),
       }),
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",
@@ -224,8 +220,7 @@ describe("POST /api/employees/export", () => {
 
     await POST(request);
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as any;
+    const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     expect(unparseCall.data).toEqual([
       ["John", ""], // custom_field_1 should be empty string
     ]);

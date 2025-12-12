@@ -19,6 +19,7 @@ import { TerminateEmployeeModal } from '@/components/dashboard/terminate-employe
 import { employeeService } from '@/lib/services/employee-service';
 import { createClient } from '@/lib/supabase/client';
 import type { Employee } from '@/lib/types/employee';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 
 // Mock dependencies
@@ -82,9 +83,9 @@ describe('TerminateEmployeeModal', () => {
     updated_at: '2025-01-01T00:00:00Z',
   };
 
-  const mockSupabaseClient: any = {
+  const mockSupabaseClient = {
     from: vi.fn(),
-  };
+  } as unknown as SupabaseClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -269,7 +270,7 @@ describe('TerminateEmployeeModal', () => {
 
   it('should show loading state during async operations', async () => {
     const user = userEvent.setup();
-    let resolveTermination: (value: any) => void;
+    let resolveTermination: (value: { employee: Employee; clearedDates: string[]; releasedSpots: number }) => void;
     
     vi.mocked(employeeService.terminate).mockImplementation(
       () => new Promise((resolve) => {

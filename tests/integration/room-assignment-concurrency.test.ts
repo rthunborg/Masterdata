@@ -111,7 +111,7 @@ describe("Room Assignment Concurrency Tests", () => {
         };
       }),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("Concurrent first employee assignment", () => {
