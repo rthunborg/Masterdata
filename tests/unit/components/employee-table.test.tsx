@@ -1000,7 +1000,7 @@ describe("EmployeeTable", () => {
         mobile: null,
         rank: "CHEF",
         gender: 'Man',
-        town_district: "Göteborg",
+        town_district: "Halmstad",
         hire_date: "2024-03-20",
         termination_date: null,
         termination_reason: null,
