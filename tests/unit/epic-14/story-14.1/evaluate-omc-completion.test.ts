@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Unit Tests: ÖMC Masterdata Completion Evaluation
  * Story: 14.1 - ÖMC + Masterdata Completion Follow-up

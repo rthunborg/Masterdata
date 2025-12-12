@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Tests: Lazy Loading Functionality
  * Story 12.5: Mobile Performance Optimizations - AC4

@@ -6,9 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   sendPe3SubmitDeadlineNotification,
-  sendPe3CancelDeadlineNotification,
-  getPe3EntriesForSubmitDeadline,
-  getPe3EntriesForCancelDeadline,
+  sendPe3CancelDeadlineNotification
 } from '@/lib/services/pe3-deadline-notifications';
 import * as supabaseServer from '@/lib/supabase/server';
 import * as emailService from '@/lib/services/email-service';
@@ -46,7 +44,6 @@ describe('PE3 Deadline Notification Service', () => {
       const today = '2025-02-10';
 
       // Mock notification not already sent
-      let notificationCheckCount = 0;
       const mockSupabase = {
         from: vi.fn((table: string) => {
           if (table === 'pe3_notifications_log') {
@@ -306,7 +303,7 @@ describe('PE3 Deadline Notification Service', () => {
       const cancelEntries = [createMockPe3Entry({ deadline_cancel: '2025-02-10' })];
       const today = '2025-02-10';
 
-      let callCount = 0;
+      const callCount = 0;
       const mockSupabase = {
         from: vi.fn((table: string) => {
           if (table === 'pe3_notifications_log') {

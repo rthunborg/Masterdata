@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Unit Tests: Notification Idempotency
  * Story: 14.2 - PE3 Deadline Notifications (Submit / Cancel)

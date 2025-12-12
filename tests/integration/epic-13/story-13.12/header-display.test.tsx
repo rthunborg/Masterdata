@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Tests for Header Display
  * Story 13.12: Update Header Text to "Säsongsrekrytering 2026"

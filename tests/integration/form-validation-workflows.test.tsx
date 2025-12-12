@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Tests for Form Validation Workflows
  * Story 11.10: PE3 Validation & UI Component Tests

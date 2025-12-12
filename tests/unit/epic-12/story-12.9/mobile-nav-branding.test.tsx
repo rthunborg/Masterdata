@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Story 12.9: Mobile Header and Navigation UI Improvements
  * Unit tests for mobile navigation branding (logo and text)

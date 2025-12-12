@@ -146,7 +146,6 @@ describe("useAvailablePE3Dates", () => {
 
     mockOn.mockImplementation((type: unknown, config: { table: string; event?: string }, handler: (payload: unknown) => void) => {
       if (config.table === "employees" && config.event === "UPDATE") {
-        // @ts-ignore - Mock handler argument type mismatch for testing
         employeeHandler = handler;
       }
       return mockChannel;
