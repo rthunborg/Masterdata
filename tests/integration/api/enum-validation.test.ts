@@ -10,7 +10,6 @@ import { PATCH } from "@/app/api/employees/[id]/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
-import type { Employee } from "@/lib/types/employee";
 import { UserRole } from "@/lib/types/user";
 import { createTestEmployee } from "@/../tests/helpers/validation-test-helpers";
 
@@ -48,7 +47,7 @@ describe("API Enum Validation - Gender", () => {
 
     const invalidData = {
       ...baseEmployeeData,
-      gender: 'male' as any, // Invalid enum value
+      gender: 'male' as unknown as import("@/lib/types/employee").Gender, // Invalid enum value
     };
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -89,7 +88,7 @@ describe("API Enum Validation - Rank", () => {
       ssn: "19900101-1234",
       email: "john@example.com",
       hire_date: "2020-01-01", // Use past date to pass validation,
-      rank: 'sev' as any, // Invalid enum value (lowercase)
+      rank: 'sev' as unknown as import("@/lib/types/employee").Rank, // Invalid enum value (lowercase)
     };
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -112,7 +111,7 @@ describe("API Enum Validation - Rank", () => {
 
     const request = new NextRequest("http://localhost:3000/api/employees/emp-1", {
       method: "PATCH",
-      body: JSON.stringify({ rank: 'Manager' as any }),
+      body: JSON.stringify({ rank: 'Manager' as unknown as import("@/lib/types/employee").Rank }),
     });
 
     const response = await PATCH(request, { params: Promise.resolve({ id: "emp-1" }) });
@@ -123,4 +122,3 @@ describe("API Enum Validation - Rank", () => {
     expect(json.error.details.rank).toBeDefined();
   });
 });
-
