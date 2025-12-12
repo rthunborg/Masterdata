@@ -11,6 +11,7 @@ import {
 import { Employee } from '@/lib/types/employee';
 import * as supabaseServer from '@/lib/supabase/server';
 import * as emailService from '@/lib/services/email-service';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 vi.mock('@/lib/supabase/server');
 vi.mock('@/lib/services/email-service');
@@ -86,7 +87,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         })),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
 
       const emails = await getHrAdminEmails();
 
@@ -110,7 +111,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         })),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
 
       const emails = await getHrAdminEmails();
 
@@ -133,7 +134,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         })),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
 
       const emails = await getHrAdminEmails();
 
@@ -158,7 +159,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         })),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
 
       await getHrAdminEmails();
 
@@ -207,7 +208,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
 
       // Mock email service
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
@@ -251,7 +252,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
             };
           } else if (table === 'employees') {
             return {
-              update: vi.fn((data: any) => {
+              update: vi.fn((data: { omc_masterdata_reminder_sent_at: string }) => {
                 updateCalled = true;
                 expect(data.omc_masterdata_reminder_sent_at).toBeDefined();
                 return {
@@ -267,7 +268,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);
@@ -302,7 +303,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
 
       const result = await sendOmcMasterdataReminder(employee, missingFields, omcDateValue);
 
@@ -337,7 +338,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: false, error: 'SMTP error' },
       ]);
@@ -383,7 +384,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);
@@ -430,7 +431,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         }),
       };
 
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as any);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);

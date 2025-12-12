@@ -137,8 +137,7 @@ describe("GET /api/admin/columns", () => {
     vi.clearAllMocks();
 
     // Reset Supabase mock to return columns list
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockReturnValue({
+    vi.mocked(mockSupabaseClient.from).mockReturnValue({
       select: vi.fn(() => ({
         order: vi.fn(() => ({
           order: vi.fn(() =>
@@ -219,8 +218,7 @@ describe("PATCH /api/admin/columns/[id]", () => {
     };
 
     // Mock Supabase update
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockReturnValue({
+    vi.mocked(mockSupabaseClient.from).mockReturnValue({
       update: vi.fn(() => ({
         eq: vi.fn(() => ({
           select: vi.fn(() => ({
@@ -302,8 +300,7 @@ describe("PATCH /api/admin/columns/[id]", () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
 
     // Mock Supabase returning not found error
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockSupabaseClient.from as any).mockReturnValue({
+    vi.mocked(mockSupabaseClient.from).mockReturnValue({
       update: vi.fn(() => ({
         eq: vi.fn(() => ({
           select: vi.fn(() => ({

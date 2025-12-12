@@ -5,13 +5,14 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import React from 'react';
 import { MobileNav } from '@/components/layout/mobile-nav';
 import { UserRole } from '@/lib/types/user';
 import type { SessionUser } from '@/lib/types/user';
 
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
-  default: (props: any) => {
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement> & { priority?: boolean }) => {
     // eslint-disable-next-line @next/next/no-img-element
     const { priority, ...imgProps } = props;
     return <img {...imgProps} />;
@@ -46,7 +47,7 @@ vi.mock('@/lib/i18n', () => {
 
 // Mock navigation Link
 vi.mock('@/lib/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
     <a href={href} {...props}>
       {children}
     </a>
