@@ -11,6 +11,7 @@ import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
 import { employeeService } from "@/lib/services/employee-service";
 import { toast } from "sonner";
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
+import type { Employee } from "@/lib/types/employee";
 
 // Mock the employee service
 vi.mock("@/lib/services/employee-service", () => ({
@@ -130,7 +131,7 @@ describe("Employee Creation Hotel Field", () => {
         hotel_required: true,
         room_number_shared: 101,
         // ... other required fields
-      } as any);
+      } as unknown as Employee);
 
       renderWithI18n(
         <AddEmployeeModal
@@ -187,7 +188,7 @@ describe("Employee Creation Hotel Field", () => {
         hotel_required: false,
         room_number_shared: null,
         // ... other required fields
-      } as any);
+      } as unknown as Employee);
 
       renderWithI18n(
         <AddEmployeeModal

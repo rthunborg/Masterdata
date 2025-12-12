@@ -86,7 +86,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
       vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findAll).mockResolvedValue([
-        { id: "emp-1", first_name: "John" } as any,
+        { id: "emp-1", first_name: "John" } as unknown as Employee,
       ]);
 
       const mockSupabase = {
@@ -155,7 +155,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
-        body: null as any,
+        body: null as unknown as string,
       });
 
       const response = await POST(request);

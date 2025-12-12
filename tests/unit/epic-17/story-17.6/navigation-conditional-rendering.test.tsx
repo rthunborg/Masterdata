@@ -21,6 +21,8 @@ vi.mock("@/lib/hooks/use-auth", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
+import React from "react";
+
 // Mock Next.js router
 vi.mock("@/lib/navigation", () => ({
   useRouter: () => ({
@@ -32,7 +34,7 @@ vi.mock("@/lib/navigation", () => ({
 
 // Mock Next.js Image component
 vi.mock("next/image", () => ({
-  default: ({ src, alt, ...props }: any) => (
+  default: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
     <img src={src} alt={alt} {...props} />
   ),
 }));

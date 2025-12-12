@@ -374,7 +374,7 @@ describe("Story 13.7: CSV Format Validation", () => {
     });
 
     it("should handle undefined values as empty strings", async () => {
-      const emp1 = createMockEmployee({ id: "emp-1", first_name: "John", mobile: undefined as any });
+      const emp1 = createMockEmployee({ id: "emp-1", first_name: "John", mobile: undefined as unknown as string });
       const allEmployees = [emp1];
 
       vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);

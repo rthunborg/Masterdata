@@ -114,7 +114,7 @@ describe("Room Assignment Edge Case Tests", () => {
         };
       }),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("100 employees on same date", () => {

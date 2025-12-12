@@ -313,7 +313,7 @@ describe("useEmployeeChanges", () => {
       // Ensure sessionStorage is clear for this test
       sessionStorageMock.removeItem("employee-changes-baseline");
       
-      let resolveFetch: (value: any) => void;
+      let resolveFetch: (value: unknown) => void;
       const fetchPromise = new Promise((resolve) => {
         resolveFetch = resolve;
       });

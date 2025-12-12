@@ -150,7 +150,7 @@ describe("Date Capacity Concurrency Integration", () => {
         })),
       })),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("Concurrent Assignment to Last Spot", () => {

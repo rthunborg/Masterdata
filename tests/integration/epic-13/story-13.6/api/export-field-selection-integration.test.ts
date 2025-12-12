@@ -188,7 +188,7 @@ describe("Export Field Selection Integration", () => {
       },
     ];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees as any);
+    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees as unknown as import("@/lib/types/employee").Employee[]);
 
     const mockCustomData = [
       { 
@@ -209,7 +209,7 @@ describe("Export Field Selection Integration", () => {
       }),
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
 
     // Execute request
     const request = new Request("http://localhost/api/employees/export", {
@@ -227,7 +227,7 @@ describe("Export Field Selection Integration", () => {
     
     // Verify CSV generation
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as any;
+    const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
     // Check headers
     expect(unparseCall.fields).toEqual(["First Name", "Surname", "shoe_size", "t_shirt_size"]);
@@ -247,7 +247,7 @@ describe("Export Field Selection Integration", () => {
       },
     ];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees as any);
+    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees as unknown as import("@/lib/types/employee").Employee[]);
 
     const mockSupabase = {
       from: vi.fn().mockReturnValue({
@@ -258,7 +258,7 @@ describe("Export Field Selection Integration", () => {
       }),
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",
@@ -271,7 +271,7 @@ describe("Export Field Selection Integration", () => {
     await POST(request);
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as any;
+    const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
     // Check data row
     // boolean -> "Yes"/"No" (based on implementation)

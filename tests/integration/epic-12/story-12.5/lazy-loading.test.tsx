@@ -69,7 +69,7 @@ vi.mock('next/dynamic', () => ({
     // Track the call
     dynamicCalls.push([loader, options || {}]);
     
-    const Component = vi.fn(() => null) as any;
+    const Component = vi.fn(() => null) as unknown as React.ComponentType;
     Component.displayName = 'DynamicComponent';
     return Component;
   },

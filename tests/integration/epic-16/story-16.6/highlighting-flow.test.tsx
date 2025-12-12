@@ -59,7 +59,7 @@ vi.mock("@/lib/store/ui-store", () => ({
 
 // Mock components
 vi.mock("@/components/dashboard/responsive-employee-view", () => ({
-  ResponsiveEmployeeView: ({ isColumnChanged }: any) => (
+  ResponsiveEmployeeView: ({ isColumnChanged }: { isColumnChanged: (id: string, col: string) => boolean }) => (
     <div data-testid="responsive-employee-view">
       Responsive View
       {isColumnChanged('123', 'first_name') ? <span data-testid="highlight-123-first_name">Highlighted</span> : null}
@@ -154,7 +154,7 @@ describe("Change Notification Full Flow", () => {
             isLoading: false,
           });
     
-          let rerender: any;
+          let rerender: (ui: React.ReactNode) => void;
           await act(async () => {
             const result = renderWithI18n(<DashboardPage />);
             rerender = result.rerender;
