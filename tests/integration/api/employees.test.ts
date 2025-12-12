@@ -6,7 +6,6 @@ import { POST as REACTIVATE } from "@/app/api/employees/[id]/reactivate/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
-import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber, recalculateRoomsForDate, recalculateRoomsForEmployee } from "@/lib/services/room-assignment";
 import { createClient } from "@/lib/supabase/server";
@@ -1678,7 +1677,7 @@ describe("POST /api/employees - Capacity Management", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
   });
 
   it("should decrement capacity on date assignment", async () => {
@@ -1730,7 +1729,7 @@ describe("POST /api/employees - Capacity Management", () => {
 
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
-    vi.mocked(assignEmployeeToDate).mockResolvedValue();
+    vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
       method: "POST",
@@ -1801,7 +1800,7 @@ describe("POST /api/employees - Capacity Management", () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(calculateRoomNumber).mockResolvedValue(5);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
-    vi.mocked(assignEmployeeToDate).mockResolvedValue();
+    vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
       method: "POST",
@@ -1880,7 +1879,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
   });
 
   it("should recalculate capacity on date change", async () => {
@@ -1893,7 +1892,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
-    vi.mocked(assignEmployeeToDate).mockResolvedValue();
+    vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -1933,7 +1932,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
     vi.mocked(recalculateRoomsForEmployee).mockResolvedValue();
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -1967,7 +1966,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
     vi.mocked(employeeRepository.findById).mockResolvedValue(employeeWithDate);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
     vi.mocked(recalculateRoomsForDate).mockResolvedValue();
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -2035,7 +2034,7 @@ describe("DELETE /api/employees/[id]", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
   });
 
   it("should delete employee successfully", async () => {

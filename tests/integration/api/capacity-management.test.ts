@@ -149,7 +149,7 @@ describe("Capacity Management API Integration Tests", () => {
         })),
       })),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("POST /api/employees - Spot decrement on date assignment", () => {
@@ -542,4 +542,3 @@ describe("Capacity Management API Integration Tests", () => {
     });
   });
 });
-
