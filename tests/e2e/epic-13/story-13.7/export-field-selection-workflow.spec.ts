@@ -11,7 +11,7 @@
  */
 
 import { test, expect } from "@playwright/test";
-import fs from 'fs';
+import * as fs from 'fs';
 
 test.describe("Story 13.7: Export Field Selection Workflow E2E", () => {
   test.beforeEach(async ({ page }) => {
@@ -138,7 +138,6 @@ test.describe("Story 13.7: Export Field Selection Workflow E2E", () => {
     // Verify CSV content
     const path = await download.path();
     if (path) {
-      const fs = require('fs');
       const csvContent = fs.readFileSync(path, 'utf-8');
       const headerLine = csvContent.split('\n')[0];
       
