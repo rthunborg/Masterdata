@@ -14,6 +14,14 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
+      TEST_HR_ADMIN_EMAIL: ${{ secrets.TEST_HR_ADMIN_EMAIL || 'admin@test.com' }}
+      TEST_HR_ADMIN_PASSWORD: ${{ secrets.TEST_HR_ADMIN_PASSWORD || 'Test123!' }}
+      NODE_ENV: test
     
     steps:
       - name: Checkout code
@@ -46,14 +54,6 @@ jobs:
         continue-on-error: false
 
       - name: Run integration tests
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
-          TEST_HR_ADMIN_EMAIL: ${{ secrets.TEST_HR_ADMIN_EMAIL || 'admin@test.com' }}
-          TEST_HR_ADMIN_PASSWORD: ${{ secrets.TEST_HR_ADMIN_PASSWORD || 'Test123!' }}
-          NODE_ENV: test
         run: pnpm test:integration
         continue-on-error: false
-        if: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' }}
+        if: ${{ env.NEXT_PUBLIC_SUPABASE_URL != '' }}
