@@ -10,22 +10,22 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { expectConstraintViolation } from "../../helpers/constraint-test-helpers";
 
 vi.mock("@supabase/supabase-js");
 
 describe("Enum Constraint Tests", () => {
-  let mockSupabase: any;
+  let mockSupabase: SupabaseClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
     
     mockSupabase = {
       from: vi.fn(),
-    };
+    } as unknown as SupabaseClient;
     
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase);
   });
 
   describe("Gender enum constraint", () => {
@@ -54,7 +54,7 @@ describe("Enum Constraint Tests", () => {
               surname: "Doe",
               ssn: "123456-7890",
               hire_date: "2025-01-01",
-              gender: "male", // Invalid value
+              gender: "male" as unknown as "Man", // Invalid value
             });
           
           if (result.error) {
@@ -89,7 +89,7 @@ describe("Enum Constraint Tests", () => {
               surname: "Doe",
               ssn: "123456-7891",
               hire_date: "2025-01-01",
-              gender: "Other", // Invalid value
+              gender: "Other" as unknown as "Man", // Invalid value
             });
           
           if (result.error) {
@@ -173,7 +173,7 @@ describe("Enum Constraint Tests", () => {
               surname: "Doe",
               ssn: "123456-7894",
               hire_date: "2025-01-01",
-              rank: "sev", // Invalid value (lowercase)
+              rank: "sev" as unknown as "SEV", // Invalid value (lowercase)
             });
           
           if (result.error) {
@@ -208,7 +208,7 @@ describe("Enum Constraint Tests", () => {
               surname: "Doe",
               ssn: "123456-7895",
               hire_date: "2025-01-01",
-              rank: "Manager", // Invalid value
+              rank: "Manager" as unknown as "SEV", // Invalid value
             });
           
           if (result.error) {

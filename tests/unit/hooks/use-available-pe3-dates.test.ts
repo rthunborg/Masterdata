@@ -85,8 +85,7 @@ describe("useAvailablePE3Dates", () => {
   it("should refetch when important_dates table changes", async () => {
     let importantDatesHandler: (() => void) | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockOn.mockImplementation((type: any, config: any, handler: any) => {
+    mockOn.mockImplementation((type: unknown, config: { table: string }, handler: () => void) => {
       if (config.table === "important_dates") {
         importantDatesHandler = handler;
       }
@@ -145,9 +144,9 @@ describe("useAvailablePE3Dates", () => {
   it("should refetch when employee pe3_date changes", async () => {
     let employeeHandler: ((payload: { old: { pe3_date?: string | null }, new: { pe3_date?: string | null } }) => void) | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockOn.mockImplementation((type: any, config: any, handler: any) => {
+    mockOn.mockImplementation((type: unknown, config: { table: string; event?: string }, handler: (payload: unknown) => void) => {
       if (config.table === "employees" && config.event === "UPDATE") {
+        // @ts-ignore - Mock handler argument type mismatch for testing
         employeeHandler = handler;
       }
       return mockChannel;
@@ -195,8 +194,7 @@ describe("useAvailablePE3Dates", () => {
   it("should debounce multiple rapid changes", async () => {
     let handler: (() => void) | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockOn.mockImplementation((type: any, config: any, h: any) => {
+    mockOn.mockImplementation((type: unknown, config: { table: string }, h: () => void) => {
       if (config.table === "important_dates") {
         handler = h;
       }

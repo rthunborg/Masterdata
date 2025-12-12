@@ -13,22 +13,22 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { expectNotNullViolation } from "../../helpers/constraint-test-helpers";
 
 vi.mock("@supabase/supabase-js");
 
 describe("Null Constraint Tests", () => {
-  let mockSupabase: any;
+  let mockSupabase: SupabaseClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
     
     mockSupabase = {
       from: vi.fn(),
-    };
+    } as unknown as SupabaseClient;
     
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase);
   });
 
   describe("NOT NULL constraints", () => {
@@ -53,7 +53,7 @@ describe("Null Constraint Tests", () => {
           const result = await supabase
             .from("employees")
             .insert({
-              first_name: null as any,
+              first_name: null as unknown as string,
               surname: "Doe",
               ssn: "123456-7890",
               hire_date: "2025-01-01",
@@ -87,7 +87,7 @@ describe("Null Constraint Tests", () => {
             .from("employees")
             .insert({
               first_name: "John",
-              surname: null as any,
+              surname: null as unknown as string,
               ssn: "123456-7891",
               hire_date: "2025-01-01",
             });
@@ -121,7 +121,7 @@ describe("Null Constraint Tests", () => {
             .insert({
               first_name: "John",
               surname: "Doe",
-              ssn: null as any,
+              ssn: null as unknown as string,
               hire_date: "2025-01-01",
             });
           

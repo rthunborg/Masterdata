@@ -16,18 +16,18 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { runBenchmark } from "./helpers/performance-helpers";
 import { generateEmployees } from "./helpers/performance-helpers";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, SupabaseClient } from "@/lib/supabase/client";
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: vi.fn(),
 }));
 
 describe("Database Query Performance Benchmarks", () => {
-  let mockSupabaseClient: any;
+  let mockSupabaseClient: SupabaseClient;
 
   // Helper function to log EXPLAIN ANALYZE results
   // In production, this would execute EXPLAIN ANALYZE before the actual query
-  const logExplainAnalyze = (query: string, queryPlan?: any) => {
+  const logExplainAnalyze = (query: string, queryPlan?: unknown) => {
     console.log(`EXPLAIN ANALYZE for: ${query}`);
     if (queryPlan) {
       console.log(`Query Plan:`, JSON.stringify(queryPlan, null, 2));
@@ -61,9 +61,9 @@ describe("Database Query Performance Benchmarks", () => {
         limit: vi.fn(),
       })),
       rpc: vi.fn(),
-    };
+    } as unknown as SupabaseClient;
 
-    vi.mocked(createClient).mockReturnValue(mockSupabaseClient as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabaseClient);
   });
 
   describe("Select All Employees (1000 rows)", () => {
