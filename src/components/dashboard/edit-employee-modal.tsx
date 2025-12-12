@@ -42,6 +42,7 @@ import { formatImportantDateOption } from "@/lib/utils/format";
 import { UnsavedChangesDialog } from "@/components/dashboard/unsaved-changes-dialog";
 import { CapacityBadge } from "@/components/dashboard/capacity-badge";
 import { cn } from "@/lib/utils";
+import { TOWN_DISTRICTS } from "@/lib/constants/options";
 import type { Employee } from "@/lib/types/employee";
 
 interface EditEmployeeModalProps {
@@ -394,16 +395,23 @@ export function EditEmployeeModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('townDistrict')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Stockholm"
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) =>
-                          field.onChange(e.target.value || null)
-                        }
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? undefined}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('selectTownDistrict') || "Select district"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {TOWN_DISTRICTS.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

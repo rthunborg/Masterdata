@@ -70,7 +70,7 @@ export function createTestEmployee(
     mobile: "+46701234567",
     rank: "SEV",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2025-01-01",
     stena_date: null,
     omc_date: null,

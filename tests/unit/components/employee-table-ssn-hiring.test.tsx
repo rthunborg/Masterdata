@@ -107,7 +107,7 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
         mobile: "0701234567",
         rank: "SEV",
         gender: 'Man',
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2023-01-01",
         termination_date: null,
         termination_reason: null,

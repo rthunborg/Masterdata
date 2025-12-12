@@ -41,7 +41,7 @@ describe("GET /api/employees", () => {
       mobile: "+46701234567",
       rank: "SEV",
       gender: 'Man',
-      town_district: "Stockholm",
+      town_district: "Göteborg",
       hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
@@ -250,7 +250,7 @@ describe("POST /api/employees", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: 'Woman',
-    town_district: "Gothenburg",
+    town_district: "Göteborg",
     hire_date: "2020-01-01", // Use past date to pass validation
     stena_date: null,
     omc_date: null,
@@ -572,7 +572,7 @@ describe("PATCH /api/employees/[id]", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: 'Man',
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
@@ -851,7 +851,7 @@ describe("POST /api/employees/[id]/terminate", () => {
     mobile: "+46701234567",
     rank: "SEV",
     gender: 'Man',
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
@@ -1082,7 +1082,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
     mobile: "+46701234567",
     rank: "SEV",
     gender: 'Man',
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-15", // Use past date to pass validation
   stena_date: null,
   omc_date: null,
@@ -1689,7 +1689,7 @@ describe("POST /api/employees - Capacity Management", () => {
       mobile: "+46701234567",
       rank: "CHEF",
       gender: "Woman",
-      town_district: "Gothenburg",
+      town_district: "Göteborg",
       hire_date: "2020-01-01", // Use past date to pass validation
       stena_date: null,
       omc_date: "omc-date-1",
@@ -1758,7 +1758,7 @@ describe("POST /api/employees - Capacity Management", () => {
       mobile: "+46701234567",
       rank: "CHEF",
       gender: "Woman",
-      town_district: "Gothenburg",
+      town_district: "Göteborg",
       hire_date: "2020-01-01", // Use past date to pass validation
       stena_date: null,
       omc_date: "omc-date-1",
@@ -1844,7 +1844,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-15", // Use past date to pass validation
     stena_date: null,
     omc_date: null,
@@ -2001,7 +2001,7 @@ describe("DELETE /api/employees/[id]", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-15", // Use past date to pass validation
     stena_date: null,
     omc_date: "omc-date-1",

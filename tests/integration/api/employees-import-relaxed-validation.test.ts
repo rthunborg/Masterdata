@@ -204,7 +204,7 @@ John,Doe,19850315-1234,SEV,2025-01-15`;
 
   it("should accept employee with mixed empty and populated optional fields", async () => {
     const csvContent = `First Name,Surname,SSN,Email,Mobile,Gender,Town District,Rank,Hire Date,Comments
-Jane,Smith,19900520-5678,,+46709876543,,Stockholm,CHEF,2024-06-01,`;
+Jane,Smith,19900520-5678,,+46709876543,,Göteborg,CHEF,2024-06-01,`;
 
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: [{
@@ -216,7 +216,7 @@ Jane,Smith,19900520-5678,,+46709876543,,Stockholm,CHEF,2024-06-01,`;
         mobile: "+46709876543",
         rank: 'SEV',
         gender: null,
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-01", // Use past date to pass validation,
         termination_date: null,
         termination_reason: null,

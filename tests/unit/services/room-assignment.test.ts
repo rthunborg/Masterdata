@@ -125,7 +125,7 @@ describe("room-assignment service", () => {
       mobile: "+46701234567",
       rank: "SEV",
       gender: "Man",
-      town_district: "Stockholm",
+      town_district: "Göteborg",
       hire_date: "2025-01-01",
       omc_date: null,
       stena_date: null,

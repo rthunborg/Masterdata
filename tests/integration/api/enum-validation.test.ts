@@ -34,7 +34,7 @@ describe("API Enum Validation - Gender", () => {
     email: "jane.smith@example.com",
     mobile: "+46701234567",
     rank: "CHEF" as const,
-    town_district: "Gothenburg",
+    town_district: "Göteborg",
     hire_date: "2020-01-01", // Use past date to pass validation,
   };
 

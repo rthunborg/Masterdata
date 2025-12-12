@@ -225,7 +225,7 @@ describe('csvImportEmployeeSchema - Complete Validation', () => {
       mobile: '+46701234567',
       rank: 'CHEF',
       gender: 'Man',
-      town_district: 'Gothenburg',
+      town_district: 'Göteborg',
       hire_date: '2025-01-15',
       stena_date: '2025-01-01',
       omc_date: '2025-01-02',
@@ -247,7 +247,7 @@ describe('csvImportEmployeeSchema - Complete Validation', () => {
       email: '', // Empty
       mobile: '+46709876543', // Populated
       gender: '', // Empty
-      town_district: 'Stockholm', // Populated
+      town_district: 'Göteborg', // Populated
       comments: '', // Empty
     };
 

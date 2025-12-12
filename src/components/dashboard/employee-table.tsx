@@ -164,6 +164,7 @@ import { useUIStore } from "@/lib/store/ui-store";
 
 
 import { useTranslations } from "@/lib/i18n";
+import { TOWN_DISTRICTS } from "@/lib/constants/options";
 
 
 interface EmployeeTableProps {
@@ -908,6 +909,12 @@ export function EmployeeTable({
             cellType = "select";
 
             options = ["SEV", "CHEF"];
+
+          } else if (config.column_name === "Town District" || config.db_column_name === "town_district") {
+
+            cellType = "select";
+
+            options = [...TOWN_DISTRICTS];
 
           }
 

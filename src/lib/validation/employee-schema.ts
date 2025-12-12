@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TOWN_DISTRICTS } from "@/lib/constants/options";
 
 /**
  * Swedish SSN format validation
@@ -73,7 +74,9 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
         errorMap: () => ({ message: msg('genderInvalid') })
       })
       .nullable(),
-    town_district: z.string().nullable(),
+    town_district: z.enum(TOWN_DISTRICTS, {
+      errorMap: () => ({ message: "Invalid Town District" }) // Add translation key if needed
+    }).nullable(),
     hire_date: z
       .string()
       .min(1, msg('hireDateRequired'))
@@ -167,7 +170,9 @@ const baseEmployeeSchema = z.object({
       errorMap: () => ({ message: "Gender must be Man or Woman" })
     })
     .nullable(),
-  town_district: z.string().nullable(),
+  town_district: z.enum(TOWN_DISTRICTS, {
+    errorMap: () => ({ message: "Invalid Town District" })
+  }).nullable(),
   hire_date: z
     .string()
     .min(1, "Hire date is required")
@@ -396,7 +401,7 @@ export const csvImportEmployeeSchema = z.object({
     .nullable()
     .optional()
     .or(z.literal("")),
-  town_district: z.string().nullable().optional().or(z.literal("")),
+  town_district: z.enum(TOWN_DISTRICTS).nullable().optional().or(z.literal("")),
   hire_date: z
     .string()
     .min(1, "Hire date is required")

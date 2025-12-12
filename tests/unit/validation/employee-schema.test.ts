@@ -14,7 +14,7 @@ describe("createEmployeeSchema", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2024-01-15",
     stena_date: "uuid-stena-date-123",
     omc_date: "uuid-omc-date-456",
@@ -310,7 +310,7 @@ describe("createEmployeeSchema", () => {
       const result = createEmployeeSchema.parse(validEmployeeData);
       expect(result.mobile).toBe("+46701234567");
       expect(result.rank).toBe("CHEF");
-      expect(result.town_district).toBe("Stockholm");
+      expect(result.town_district).toBe("Göteborg");
       expect(result.comments).toBe("New hire");
     });
   });
