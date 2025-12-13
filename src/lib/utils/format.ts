@@ -34,19 +34,9 @@ export function formatImportantDateOption(date: ImportantDate): string {
   }
   // Story 8.10: Format PE3 dates with time if available
   else if (date.category === 'PE3 Dates' && date.time_value) {
-    // Extract day/month from date_description or date_value
-    // Format: "15/3 14:30"
-    try {
-      const dateObj = new Date(date.date_value + 'T00:00:00');
-      const day = dateObj.getDate();
-      const month = dateObj.getMonth() + 1;
-      const formattedTime = formatTimeDisplay(date.time_value);
-      displayText = `${day}/${month} ${formattedTime}`;
-    } catch {
-      // Fall back to description + time if date parsing fails
-      const formattedTime = formatTimeDisplay(date.time_value);
-      displayText = `${date.date_description} ${formattedTime}`;
-    }
+    // Display description + time (e.g., "Fredag 15/3 14:30")
+    const formattedTime = formatTimeDisplay(date.time_value);
+    displayText = `${date.date_description} ${formattedTime}`;
   }
   
   if (date.week_number !== null && date.week_number !== undefined) {

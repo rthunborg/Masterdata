@@ -21,7 +21,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { calculateRoomNumber, recalculateRoomsForDate } from "@/lib/services/room-assignment";
+import { calculateRoomNumber } from "@/lib/services/room-assignment";
 import { createClient } from "@/lib/supabase/client";
 import type { Employee } from "@/lib/types/employee";
 
@@ -58,7 +58,7 @@ describe("room-assignment service", () => {
       return chain;
     };
 
-    mockSupabaseFrom = vi.fn((table: string) => createChainMock());
+    mockSupabaseFrom = vi.fn((_table: string) => createChainMock());
     
     // Mock RPC function - return error to force fallback to TypeScript implementation
     // (which is what these tests are actually validating)
@@ -76,6 +76,16 @@ describe("room-assignment service", () => {
     (createClient as ReturnType<typeof vi.fn>).mockReturnValue(
       mockSupabaseClient
     );
+
+    // Suppress specific console.error about RPC availability to keep test output clean
+    // This error is expected as we're testing the fallback logic
+    const originalConsoleError = console.error;
+    vi.spyOn(console, 'error').mockImplementation((...args) => {
+      if (typeof args[0] === 'string' && args[0].includes('RPC function not available in test environment')) {
+        return;
+      }
+      originalConsoleError(...args);
+    });
   });
 
   afterEach(() => {
@@ -112,51 +122,6 @@ describe("room-assignment service", () => {
     mockSupabaseFrom.mockReturnValue({
       select: mockSelect,
     });
-  }
-
-  // Helper to create mock employee with room assignment fields
-  function createMockEmployee(overrides: Partial<Employee & { hotel_required?: boolean; room_number_shared?: number | null }>): Employee & { hotel_required?: boolean; room_number_shared?: number | null } {
-    return {
-      id: `emp-${Math.random().toString(36).substr(2, 9)}`,
-      first_name: "Test",
-      surname: "Employee",
-      ssn: "19900101-1234",
-      email: "test@example.com",
-      mobile: "+46701234567",
-      rank: "SEV",
-      gender: "Man",
-      town_district: "Göteborg",
-      hire_date: "2025-01-01",
-      omc_date: null,
-      stena_date: null,
-      pe3_date: null,
-      termination_date: null,
-      termination_reason: null,
-      is_terminated: false,
-      is_archived: false,
-      repayment_needed_omc: null,
-      repayment_needed_pe3: null,
-      one: null,
-      one_marked_at: null,
-      talmundo: null,
-      isps: null,
-      photo: null,
-      origo: null,
-      loneiva: null,
-      mail_lon: null,
-      bankuppgifter: null,
-      li: null,
-      passport: null,
-      kvitto_c17_18: null,
-      c17: null,
-      crewing_done: null,
-      comments: null,
-      created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",
-      hotel_required: true,
-      room_number_shared: null,
-      ...overrides,
-    };
   }
 
   describe("calculateRoomNumber", () => {
