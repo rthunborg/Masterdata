@@ -1,3 +1,5 @@
+import { TownDistrict } from "@/lib/constants/options";
+
 export interface Employee {
   id: string;
   first_name: string;
@@ -7,7 +9,7 @@ export interface Employee {
   mobile: string | null;
   rank: 'SEV' | 'CHEF' | null;
   gender: 'Man' | 'Woman' | null;
-  town_district: string | null;
+  town_district: TownDistrict | null;
   hire_date: string;
   /** UUID reference to Stena Dates (important_dates.id) */
   stena_date: string | null;
