@@ -98,6 +98,8 @@ export function AddEmployeeModal({
       omc_date: "",
       pe3_date: null,
       comments: null,
+      special_diet: false,
+      diet_details: null,
       // All boolean fields default to false
       one: false,
       talmundo: false,
@@ -130,6 +132,9 @@ export function AddEmployeeModal({
   // Hook for screen reader announcements of validation errors
   const announcementRef = useAriaAnnouncements(errors);
 
+  // Watch special_diet for conditional rendering
+  const specialDiet = form.watch("special_diet");
+
   const onSubmit = async (data: CreateEmployeeInput) => {
     try {
       setIsSubmitting(true);
@@ -145,6 +150,7 @@ export function AddEmployeeModal({
         termination_reason: data.termination_reason ?? null,
         room_number_shared: data.room_number_shared ?? null,
         one_marked_at: data.one_marked_at ?? null,
+        diet_details: data.diet_details ?? null,
       };
       
       await employeeService.create(normalizedData);
@@ -686,6 +692,56 @@ export function AddEmployeeModal({
                 )}
               />
             </div>
+
+            {/* Special Diet */}
+            <FormField
+              control={form.control}
+              name="special_diet"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      {t('specialDiet')}
+                    </FormLabel>
+                    <FormDescription>
+                      {t('specialDietDescription')}
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            {/* Diet Details - Conditional */}
+            {specialDiet && (
+              <FormField
+                control={form.control}
+                name="diet_details"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <FormLabel>
+                      {t('dietDetails')} <span className="text-red-500" aria-label="required">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t('dietDetailsPlaceholder')}
+                        className="resize-none"
+                        rows={3}
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Comments */}
             <FormField

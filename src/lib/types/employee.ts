@@ -38,6 +38,10 @@ export interface Employee {
    * Read-only - managed by termination workflow.
    */
   repayment_needed_pe3: boolean | null;
+
+  // Story 8.17: Dietary Requirements
+  special_diet: boolean;
+  diet_details: string | null;
   
   comments: string | null;
   // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)

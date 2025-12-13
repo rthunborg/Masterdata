@@ -133,6 +133,11 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
     repayment_needed_omc: z.boolean().nullable().optional(),
     repayment_needed_pe3: z.boolean().nullable().optional(),
+
+    // Story 8.17: Dietary Requirements
+    special_diet: z.boolean().default(false),
+    diet_details: z.string().nullable().optional(),
+
     // Story 14.1: ÖMC Masterdata Reminder Notification
     omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
   });
@@ -230,6 +235,11 @@ const baseEmployeeSchema = z.object({
   // Changed to boolean (flag only)
   repayment_needed_omc: z.boolean().nullable().optional(),
   repayment_needed_pe3: z.boolean().nullable().optional(),
+  
+  // Story 8.17: Dietary Requirements
+  special_diet: z.boolean().default(false),
+  diet_details: z.string().nullable().optional(),
+
   // Story 14.1: ÖMC Masterdata Reminder Notification
   omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
 });
@@ -276,6 +286,18 @@ export const createEmployeeSchema = baseEmployeeSchema.refine(
   {
     message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
     path: ['talmundo'],
+  }
+).refine(
+  (data) => {
+    // Story 8.17: Diet details are mandatory if special_diet is true
+    if (data.special_diet && (!data.diet_details || data.diet_details.trim() === '')) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Diet details are required when special diet is selected",
+    path: ["diet_details"],
   }
 );
 
@@ -453,6 +475,10 @@ export const csvImportEmployeeSchema = z.object({
   // Changed to boolean (flag only)
   repayment_needed_omc: z.union([z.boolean(), z.string(), z.null()]).nullable().default(null).optional(),
   repayment_needed_pe3: z.union([z.boolean(), z.string(), z.null()]).nullable().default(null).optional(),
+
+  // Story 8.17: Dietary Requirements
+  special_diet: z.union([z.boolean(), z.string(), z.null()]).nullable().default(false).optional(),
+  diet_details: z.string().nullable().optional(),
 });
 
 export type CSVImportEmployeeInput = z.infer<typeof csvImportEmployeeSchema>;
