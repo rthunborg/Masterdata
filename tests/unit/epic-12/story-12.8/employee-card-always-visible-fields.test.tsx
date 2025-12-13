@@ -84,7 +84,7 @@ describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
       first_name: 'John',
       surname: 'Doe',
       rank: 'SEV',
-      town_district: 'Stockholm',
+      town_district: 'Göteborg',
       email: 'john.doe@example.com',
       mobile: '+46701234567',
       stena_date: null,

@@ -125,7 +125,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
       hire_date: "2020-01-15",
       gender: 'Man',
       rank: 'SEV',
-      town_district: "Downtown",
+      town_district: "Trelleborg",
       stena_date: null,
       omc_date: null,
       pe3_date: null,

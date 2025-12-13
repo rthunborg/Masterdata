@@ -297,7 +297,7 @@ describe("POST /api/employees - PE3 Uniqueness", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: "Woman",
-    town_district: "Gothenburg",
+    town_district: "Göteborg",
     hire_date: "2020-01-01", // Use past date to pass validation
     stena_date: null,
     omc_date: null,
@@ -401,7 +401,7 @@ describe("PATCH /api/employees/[id] - PE3 Uniqueness", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-01", // Use past date to pass validation,
     stena_date: null,
     omc_date: null,

@@ -58,7 +58,7 @@ export function createEmployeesForDate(
       mobile: `+4670123456${i}`,
       rank: options.rank || 'SEV',
       gender: options.gender !== undefined ? options.gender : (i % 2 === 0 ? 'Man' : 'Woman'),
-      town_district: 'Stockholm',
+      town_district: 'Göteborg',
       hire_date: options.hire_date || `2025-01-${String(i + 1).padStart(2, '0')}`,
       omc_date: dateId,
       stena_date: null,

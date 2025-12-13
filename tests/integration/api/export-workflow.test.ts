@@ -46,7 +46,7 @@ describe("POST /api/employees/export-crew-ready", () => {
     mobile: "+46701234567",
     rank: "SEV",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-01", // Use past date to pass validation,
     stena_date: null,
     omc_date: null,

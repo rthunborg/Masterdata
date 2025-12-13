@@ -14,7 +14,7 @@ const mockEmployees: Employee[] = [
     mobile: "1234567890",
     rank: 'SEV',
     gender: 'Man',
-    town_district: "District 1",
+    town_district: "Göteborg",
     hire_date: "2020-01-01",
     stena_date: null,
     omc_date: null,

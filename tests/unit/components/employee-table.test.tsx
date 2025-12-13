@@ -356,7 +356,7 @@ describe("EmployeeTable", () => {
       mobile: "+46701234567",
       rank: "SEV",
       gender: 'Man',
-      town_district: "Stockholm",
+      town_district: "Göteborg",
       hire_date: "2025-01-15",
       termination_date: null,
       termination_reason: null,
@@ -648,7 +648,7 @@ describe("EmployeeTable", () => {
       renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
       const searchInput = screen.getByPlaceholderText("Sök anställda...");
-      fireEvent.change(searchInput, { target: { value: "Stockholm" } });
+      fireEvent.change(searchInput, { target: { value: "Göteborg" } });
 
       expect(screen.getByText("John")).toBeInTheDocument();
       expect(screen.queryByText("Jane")).not.toBeInTheDocument();
@@ -729,7 +729,7 @@ describe("EmployeeTable", () => {
         mobile: null,
         rank: "SEV",
         gender: 'Man',
-        town_district: "Gothenburg",
+        town_district: "Göteborg",
         hire_date: "2023-03-15",
         termination_date: null,
         termination_reason: null,
@@ -766,7 +766,7 @@ describe("EmployeeTable", () => {
         mobile: null,
         rank: "SEV",
         gender: 'Woman',
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-10",
         termination_date: null,
         termination_reason: null,
@@ -803,7 +803,7 @@ describe("EmployeeTable", () => {
         mobile: null,
         rank: "CHEF",
         gender: 'Man',
-        town_district: "Malmö",
+        town_district: "Halmstad",
         hire_date: "2021-06-20",
         termination_date: null,
         termination_reason: null,
@@ -926,7 +926,7 @@ describe("EmployeeTable", () => {
         mobile: null,
         rank: "SEV",
         gender: 'Man',
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2023-01-15",
         termination_date: null,
         termination_reason: null,
@@ -963,7 +963,7 @@ describe("EmployeeTable", () => {
         mobile: null,
         rank: "SEV",
         gender: 'Woman',
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-02-10",
         termination_date: null,
         termination_reason: null,
@@ -1000,7 +1000,7 @@ describe("EmployeeTable", () => {
         mobile: null,
         rank: "CHEF",
         gender: 'Man',
-        town_district: "Gothenburg",
+        town_district: "Halmstad",
         hire_date: "2024-03-20",
         termination_date: null,
         termination_reason: null,
@@ -1035,7 +1035,7 @@ describe("EmployeeTable", () => {
 
       // Search for employees in Stockholm
       const searchInput = screen.getByPlaceholderText("Sök anställda...");
-      fireEvent.change(searchInput, { target: { value: "Stockholm" } });
+      fireEvent.change(searchInput, { target: { value: "Göteborg" } });
 
       // Only John and Jane should be visible
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -1061,7 +1061,7 @@ describe("EmployeeTable", () => {
 
       // Then search for "Stockholm" (should match John and Jane only, not Bob)
       const searchInput = screen.getByPlaceholderText("Sök anställda...");
-      fireEvent.change(searchInput, { target: { value: "Stockholm" } });
+      fireEvent.change(searchInput, { target: { value: "Göteborg" } });
 
       // Should show John and Jane, sorted by hire date (John: 2023, Jane: 2025)
       expect(screen.getByText("John")).toBeInTheDocument();
@@ -1100,7 +1100,7 @@ describe("EmployeeTable", () => {
 
       // Search for "Stockholm"
       const searchInput = screen.getByPlaceholderText("Sök anställda...");
-      fireEvent.change(searchInput, { target: { value: "Stockholm" } });
+      fireEvent.change(searchInput, { target: { value: "Göteborg" } });
 
       // Should show John and Jane
       expect(screen.getByText("John")).toBeInTheDocument();

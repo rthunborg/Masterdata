@@ -21,7 +21,7 @@ function generateEmployees(count: number): Employee[] {
     mobile: `+4670123456${String(i).padStart(2, '0')}`,
     rank: i % 2 === 0 ? 'SEV' : 'CHEF',
     gender: i % 2 === 0 ? 'Man' : 'Woman',
-    town_district: 'Stockholm',
+    town_district: 'Göteborg',
     hire_date: '2025-01-01',
     stena_date: null,
     omc_date: i < 20 ? '2025-03-08' : null,
