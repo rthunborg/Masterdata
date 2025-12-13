@@ -40,10 +40,47 @@ export const validationMessages = {
 };
 
 /**
- * Create validation schema with custom error messages
- * @param t Optional translation function to override default English messages
+ * Story 8.4: Talmundo validation helper function
+ * Validates that Talmundo can only be true if One field is green (>= 24 hours)
  */
-export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
+function validateTalmundoField(data: {
+  talmundo?: boolean | null;
+  one?: boolean | null;
+  one_marked_at?: string | null;
+}): boolean {
+  // If talmundo is not true, no validation needed
+  if (data.talmundo !== true) {
+    return true;
+  }
+
+  // Check if One field is true
+  if (!data.one) {
+    return false;
+  }
+
+  // Check if one_marked_at timestamp exists and is >= 24 hours ago
+  if (!data.one_marked_at) {
+    return false;
+  }
+
+  try {
+    const markedAt = new Date(data.one_marked_at);
+    const now = new Date();
+    const elapsed = now.getTime() - markedAt.getTime();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    // Talmundo can only be true if One field has been true for >= 24 hours
+    return elapsed >= twentyFourHours;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Returns the base employee schema object (without refinements).
+ * This allows .partial() to be called on it for update schemas.
+ */
+function getBaseEmployeeSchemaObject(t?: (key: string) => string) {
   const msg = (key: keyof typeof validationMessages) =>
     t ? t(validationMessages[key]) : validationMessages[key];
 
@@ -141,7 +178,24 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
 
     // Story 14.1: ÖMC Masterdata Reminder Notification
     omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
-  }).refine(
+  });
+}
+
+/**
+ * Create validation schema with custom error messages
+ * @param t Optional translation function to override default English messages
+ */
+export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
+  const msg = (key: keyof typeof validationMessages) =>
+    t ? t(validationMessages[key]) : validationMessages[key];
+
+  return getBaseEmployeeSchemaObject(t).refine(
+    validateTalmundoField,
+    {
+      message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
+      path: ['talmundo'],
+    }
+  ).refine(
     (data) => {
       // Story 8.17: Diet details are mandatory if special_diet is true
       if (data.special_diet && (!data.diet_details || data.diet_details.trim() === '')) {
@@ -257,43 +311,6 @@ const baseEmployeeSchema = z.object({
   omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
 });
 
-/**
- * Story 8.4: Talmundo validation helper function
- * Validates that Talmundo can only be true if One field is green (>= 24 hours)
- */
-function validateTalmundoField(data: {
-  talmundo?: boolean | null;
-  one?: boolean | null;
-  one_marked_at?: string | null;
-}): boolean {
-  // If talmundo is not true, no validation needed
-  if (data.talmundo !== true) {
-    return true;
-  }
-
-  // Check if One field is true
-  if (!data.one) {
-    return false;
-  }
-
-  // Check if one_marked_at timestamp exists and is >= 24 hours ago
-  if (!data.one_marked_at) {
-    return false;
-  }
-
-  try {
-    const markedAt = new Date(data.one_marked_at);
-    const now = new Date();
-    const elapsed = now.getTime() - markedAt.getTime();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
-    // Talmundo can only be true if One field has been true for >= 24 hours
-    return elapsed >= twentyFourHours;
-  } catch {
-    return false;
-  }
-}
-
 export const createEmployeeSchema = baseEmployeeSchema.refine(
   validateTalmundoField,
   {
@@ -341,7 +358,7 @@ export function updateEmployeeSchemaWithMessages(t?: (key: string) => string) {
   const msg = (key: keyof typeof validationMessages) =>
     t ? t(validationMessages[key]) : validationMessages[key];
 
-  return createEmployeeSchemaWithMessages(t)
+  return getBaseEmployeeSchemaObject(t)
     .partial()
     .refine((data) => Object.keys(data).length > 0, {
       message: msg('updateFieldRequired'),
