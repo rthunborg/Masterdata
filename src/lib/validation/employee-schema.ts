@@ -36,6 +36,7 @@ export const validationMessages = {
   terminationReasonRequired: "errors.validation.terminationReasonRequired",
   terminationReasonMaxLength: "errors.validation.terminationReasonMaxLength",
   updateFieldRequired: "errors.validation.updateFieldRequired",
+  dietDetailsRequired: "errors.validation.dietDetailsRequired",
 };
 
 /**
@@ -140,7 +141,19 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
 
     // Story 14.1: ÖMC Masterdata Reminder Notification
     omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
-  });
+  }).refine(
+    (data) => {
+      // Story 8.17: Diet details are mandatory if special_diet is true
+      if (data.special_diet && (!data.diet_details || data.diet_details.trim() === '')) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: msg('dietDetailsRequired'),
+      path: ["diet_details"],
+    }
+  );
 }
 
 /**

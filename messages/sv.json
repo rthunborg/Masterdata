@@ -490,6 +490,7 @@
       "terminationReasonRequired": "Uppsägningsorsak krävs",
       "terminationReasonMaxLength": "Uppsägningsorsak måste vara 500 tecken eller mindre",
       "updateFieldRequired": "Minst ett fält måste anges för uppdatering",
+      "dietDetailsRequired": "Dietdetaljer krävs när specialkost har valts",
       "invalidColorFormat": "Ogiltigt färgformat. Använd hex-kod (t.ex. #3B82F6)",
       "poorColorContrast": "Vald färg har dålig kontrast. Välj en mörkare eller ljusare färg.",
       "invalidValue": "Ogiltigt värde"
