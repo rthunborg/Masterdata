@@ -101,6 +101,10 @@ export async function POST(request: NextRequest) {
             "comments": "comments",
             "notes": "comments",
             "remarks": "comments",
+            "special_diet": "special_diet",
+            "specialkost": "special_diet",
+            "diet": "diet_details",
+            "diet_details": "diet_details",
           };
 
           return mappings[normalized] || normalized;
@@ -166,6 +170,8 @@ export async function POST(request: NextRequest) {
           is_archived: false,
           termination_date: null,
           termination_reason: null,
+          special_diet: row.special_diet || null,
+          diet_details: row.diet_details || null,
         };
 
         // Validate using Zod schema
@@ -193,6 +199,9 @@ export async function POST(request: NextRequest) {
           // Repayment tracking fields (Story 8.13)
           repayment_needed_omc: null,
           repayment_needed_pe3: null,
+          // Story 8.17: Dietary Requirements
+          special_diet: validated.special_diet === true || validated.special_diet === "true" || validated.special_diet === "1" || validated.special_diet === "yes" ? true : false,
+          diet_details: validated.diet_details === "" || !validated.diet_details ? null : validated.diet_details,
           // Masterdata columns (Story 7.1) - all boolean fields default to false
           one: validated.one === true || validated.one === "true" || validated.one === "1" || validated.one === "yes" ? true : false,
           one_marked_at: null, // Story 8.3 - will be set if one is true during creation
