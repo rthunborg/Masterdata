@@ -27,6 +27,10 @@ interface UIStore {
   
   // Column visibility preferences (for HR Admin)
   columnVisibility: Record<string, boolean>; // columnId -> visible boolean
+
+  // Density preference
+  density: 'default' | 'compact';
+  setDensity: (density: 'default' | 'compact') => void;
   
   openModal: (modal: keyof UIStore["modals"]) => void;
   closeModal: (modal: keyof UIStore["modals"]) => void;
@@ -62,7 +66,21 @@ export const useUIStore = create<UIStore>((set, get) => ({
   // Column visibility state
   columnVisibility: {},
   
-  openModal: (modal) => 
+  // Density state
+  density: 'default',
+  setDensity: (density) => {
+    set({ density });
+    // Persist to localStorage
+    if (typeof window !== "undefined") {
+      const userId = localStorage.getItem("currentUserId");
+      if (userId) {
+        const storageKey = `hr_masterdata_density_${userId}`;
+        localStorage.setItem(storageKey, density);
+      }
+    }
+  },
+
+  openModal: (modal) =>  
     set((state) => ({ 
       modals: { ...state.modals, [modal]: true } 
     })),
@@ -133,22 +151,32 @@ export const useUIStore = create<UIStore>((set, get) => ({
     // Store userId for persistence operations
     localStorage.setItem("currentUserId", userId);
     
-    // Load from localStorage
-    const storageKey = `hr_masterdata_column_visibility_${userId}`;
-    const stored = localStorage.getItem(storageKey);
+    // Load column visibility from localStorage
+    const visibilityKey = `hr_masterdata_column_visibility_${userId}`;
+    const storedVisibility = localStorage.getItem(visibilityKey);
     
-    if (stored) {
+    // Load density from localStorage
+    const densityKey = `hr_masterdata_density_${userId}`;
+    const storedDensity = localStorage.getItem(densityKey);
+    
+    const updates: Partial<UIStore> = {};
+    
+    if (storedVisibility) {
       try {
-        const parsed = JSON.parse(stored);
-        set({ columnVisibility: parsed });
+        const parsed = JSON.parse(storedVisibility);
+        updates.columnVisibility = parsed;
       } catch (error) {
         console.error("Failed to parse column visibility preferences:", error);
-        // Reset to empty on parse error
-        set({ columnVisibility: {} });
+        updates.columnVisibility = {};
       }
-    } else {
-      // No stored preferences, initialize with empty
-      set({ columnVisibility: {} });
+    }
+
+    if (storedDensity && (storedDensity === 'default' || storedDensity === 'compact')) {
+      updates.density = storedDensity as 'default' | 'compact';
+    }
+    
+    if (Object.keys(updates).length > 0) {
+      set(updates as Partial<UIStore>);
     }
   },
   

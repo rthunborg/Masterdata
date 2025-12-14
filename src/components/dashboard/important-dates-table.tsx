@@ -44,13 +44,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Trash2, Archive, ArchiveRestore } from "lucide-react";
+import { Trash2, Archive, ArchiveRestore, Maximize2, Minimize2 } from "lucide-react";
 import { EditableCell } from "./editable-cell";
 import { CapacityBadge } from "./capacity-badge";
 import { AssignedEmployeesBadge } from "./assigned-employees-badge";
 import { AssignedEmployeesModal } from "./assigned-employees-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
+import { useUIStore } from "@/lib/store/ui-store";
 import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -61,8 +62,7 @@ import { sv } from "date-fns/locale";
 import { hasValueChanged } from "@/lib/utils/change-detection";
 import { 
   loadColumnWidths, 
-  saveColumnWidths, 
-  clearColumnWidths 
+  saveColumnWidths
 } from "@/lib/utils/column-width-storage";
 import { getDeadlineStatus } from "@/lib/utils/deadline-validator";
 import { Badge } from "@/components/ui/badge";
@@ -83,11 +83,11 @@ export function ImportantDatesTable({
   onDateDeleted,
 }: ImportantDatesTableProps) {
   const { user } = useAuth();
+  const { density, setDensity } = useUIStore();
   const isHRAdmin = userRole === "hr_admin" || userRole === "recruiter";
   const t = useTranslations("tooltips");
   const tDates = useTranslations("dates");
   const tToasts = useTranslations("toasts");
-  const tDashboard = useTranslations("dashboard");
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [selectedDate, setSelectedDate] = React.useState<ImportantDate | null>(null);
   const [selectedDateForEmployees, setSelectedDateForEmployees] = React.useState<ImportantDate | null>(null);
@@ -248,6 +248,13 @@ export function ImportantDatesTable({
   }, [onDateUpdated, tToasts]);
 
   const columns: ColumnDef<ImportantDate>[] = React.useMemo(() => {
+    // Define styles based on density
+    const isCompact = density === 'compact';
+    const cellPaddingClass = isCompact ? 'px-2 py-1' : 'px-3 py-2';
+    const cellHeightClass = isCompact ? 'min-h-8' : 'min-h-10';
+    const fontSizeClass = isCompact ? 'text-xs' : 'text-sm';
+    const iconSizeClass = isCompact ? 'h-3 w-3' : 'h-4 w-4';
+
     const cols: ColumnDef<ImportantDate>[] = [
       {
         accessorKey: "week_number",
@@ -261,6 +268,8 @@ export function ImportantDatesTable({
               employeeId={row.original.id}
               field="week_number"
               type="text"
+              className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+              isCompact={isCompact}
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />
@@ -288,6 +297,8 @@ export function ImportantDatesTable({
               field="category"
               type="select"
               options={["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]}
+              className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+              isCompact={isCompact}
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />
@@ -308,6 +319,8 @@ export function ImportantDatesTable({
               employeeId={row.original.id}
               field="date_description"
               type="text"
+              className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+              isCompact={isCompact}
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />
@@ -351,6 +364,8 @@ export function ImportantDatesTable({
               field="date_value"
               type="text"
               category={row.original.category}
+              className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+              isCompact={isCompact}
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />
@@ -432,6 +447,8 @@ export function ImportantDatesTable({
               employeeId={row.original.id}
               field="notes"
               type="text"
+              className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+              isCompact={isCompact}
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />
@@ -453,6 +470,8 @@ export function ImportantDatesTable({
               employeeId={row.original.id}
               field="max_spots"
               type="number"
+              className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+              isCompact={isCompact}
               onSave={handleCellUpdate}
               onError={(error) => toast.error(error)}
             />
@@ -523,8 +542,9 @@ export function ImportantDatesTable({
                         onClick={() => handleArchiveClick(row.original)}
                         disabled={isArchiving}
                         aria-label="Archive important date"
+                        className={isCompact ? "h-6 w-6 p-0" : ""}
                       >
-                        <Archive className="h-4 w-4 text-amber-600" />
+                        <Archive className={cn(iconSizeClass, "text-amber-600")} />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -538,8 +558,9 @@ export function ImportantDatesTable({
                         size="sm"
                         onClick={() => handleDeleteClick(row.original)}
                         aria-label="Delete important date"
+                        className={isCompact ? "h-6 w-6 p-0" : ""}
                       >
-                        <Trash2 className="h-4 w-4 text-red-600" />
+                        <Trash2 className={cn(iconSizeClass, "text-red-600")} />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -550,17 +571,18 @@ export function ImportantDatesTable({
               ) : (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRestoreClick(row.original)}
-                      disabled={isArchiving}
-                      aria-label="Restore important date"
-                    >
-                      <ArchiveRestore className="h-4 w-4 text-green-600" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRestoreClick(row.original)}
+                        disabled={isArchiving}
+                        aria-label="Restore important date"
+                        className={isCompact ? "h-6 w-6 p-0" : ""}
+                      >
+                        <ArchiveRestore className={cn(iconSizeClass, "text-green-600")} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
                     <p>{t("restoreDate")}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -572,7 +594,7 @@ export function ImportantDatesTable({
     }
 
     return cols;
-  }, [isHRAdmin, handleCellUpdate, handleArchiveClick, handleRestoreClick, isArchiving, t, tDates]);
+  }, [isHRAdmin, handleCellUpdate, handleArchiveClick, handleRestoreClick, isArchiving, t, tDates, density]);
 
   // Filter dates by category and sort with archived dates at the bottom
   const filteredDates = React.useMemo(() => {
@@ -610,7 +632,8 @@ export function ImportantDatesTable({
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     defaultColumn: {
-      minSize: 80,
+      minSize: density === 'compact' ? 40 : 80,
+      size: density === 'compact' ? 100 : 150,
       maxSize: 500,
     },
   });
@@ -626,7 +649,8 @@ export function ImportantDatesTable({
   return (
     <div className="space-y-4">
       {/* Category Filter */}
-      <div className="flex items-center gap-4 pt-4">
+      <div className="flex items-center gap-4 pt-4 justify-between">
+        <div className="flex items-center gap-4">
         <Label htmlFor="category-filter" className="whitespace-nowrap">
           {tDates('filterByCategory')}:
         </Label>
@@ -642,6 +666,24 @@ export function ImportantDatesTable({
             <SelectItem value="Other">Other</SelectItem>
           </SelectContent>
         </Select>
+        </div>
+
+        {/* Density Toggle */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setDensity(density === 'compact' ? 'default' : 'compact')}
+              aria-label={density === 'compact' ? "Switch to comfortable view" : "Switch to compact view"}
+            >
+              {density === 'compact' ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{density === 'compact' ? "Switch to comfortable view" : "Switch to compact view"}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Table */}
@@ -650,10 +692,20 @@ export function ImportantDatesTable({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map((header) => {
+                  const isActionColumn = header.column.id === "actions";
+                  const isCompact = density === "compact";
+                  
+                  return (
                   <TableHead 
                     key={header.id}
-                    className="relative"
+                    className={cn(
+                      "relative",
+                      // Compact mode adjustments
+                      isCompact ? "h-8 px-2 text-xs" : "h-12 px-4 text-sm",
+                      // Sticky action column
+                      isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
+                    )}
                     style={{
                       width: header.getSize(),
                     }}
@@ -678,7 +730,8 @@ export function ImportantDatesTable({
                       />
                     )}
                   </TableHead>
-                ))}
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -689,16 +742,35 @@ export function ImportantDatesTable({
                 return (
                   <TableRow 
                     key={row.id}
-                    className={cn(isArchived && "bg-gray-50 opacity-60")}
+                    className={cn(
+                      // Base background to ensure sticky columns are opaque
+                      "bg-background",
+                      isArchived && "bg-gray-50 opacity-60"
+                    )}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().map((cell) => {
+                      const isActionColumn = cell.column.id === "actions";
+                      const isCompact = density === "compact";
+                      
+                      return (
                       <TableCell 
                         key={cell.id}
-                        className={cn(isArchived && "text-gray-500")}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
+                        className={cn(
+                          isArchived && "text-gray-500",
+                          // Compact mode padding
+                          isCompact ? "p-2" : "p-4",
+                      // Sticky action column
+                      isActionColumn && "sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
+                      // Ensure opacity for sticky column by inheriting row background
+                      isActionColumn && "bg-inherit",
+                      // Compact mode font size for cell content
+                      !isActionColumn && isCompact && "text-xs"
+                    )}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                    );
+                    })}
                   </TableRow>
                 );
               })

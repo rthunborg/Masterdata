@@ -52,6 +52,8 @@ interface EditableCellProps {
   oneValue?: boolean | null; // One field value for Talmundo conditional editability (Story 8.4)
   employeeData?: Partial<Employee>; // For Crewing/Done field conditional editability (Story 8.5)
   category?: string; // For formatting ÖMC dates (Story 8.9)
+  className?: string;
+  isCompact?: boolean;
   onSave: (id: string, field: string, value: string | number | boolean | null) => Promise<void>;
   onError?: (error: string) => void;
 }
@@ -68,6 +70,8 @@ export function EditableCell({
   oneValue, // One field value for Talmundo conditional editability (Story 8.4)
   employeeData, // Employee data for Crewing/Done conditional editability (Story 8.5)
   category, // Category for formatting ÖMC dates (Story 8.9)
+  className,
+  isCompact,
   onSave,
   onError,
 }: EditableCellProps) {
@@ -377,7 +381,8 @@ export function EditableCell({
                   ? "cursor-not-allowed opacity-50 bg-gray-100" 
                   : isChanged 
                     ? "cursor-default bg-amber-50 dark:bg-amber-950/20" 
-                    : "cursor-default bg-gray-50"
+                    : "cursor-default bg-gray-50",
+                className
               )}
               tabIndex={0}
               role="gridcell"
@@ -496,7 +501,8 @@ export function EditableCell({
           "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center gap-2",
           // Story 16.5: Apply highlight styling for changed fields
           // Use highlight background when changed, otherwise use white background
-          isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-white"
+          isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-white",
+          className
         )}
         tabIndex={0}
         onKeyDown={(e) => {
@@ -571,7 +577,7 @@ export function EditableCell({
           }}
           disabled={isLoading}
         >
-          <SelectTrigger className={error ? "border-destructive" : ""}>
+          <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
             <SelectValue placeholder={tDashboard('selectSalaryLevel') || 'Select salary level'} />
           </SelectTrigger>
           <SelectContent>
@@ -594,7 +600,7 @@ export function EditableCell({
             onKeyDown={handleKeyDown}
             disabled={isLoading}
             inputMode="text"
-            className={error ? "border-destructive" : ""}
+            className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}
             aria-invalid={!!error}
             aria-describedby={error ? `${field}-error` : undefined}
           />
@@ -627,7 +633,7 @@ export function EditableCell({
             onKeyDown={handleKeyDown}
             disabled={isLoading}
             inputMode="numeric"
-            className={error ? "border-destructive" : ""}
+            className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}
           />
           {error && (
             <p className="text-xs text-destructive mt-1">
@@ -711,7 +717,7 @@ export function EditableCell({
           }}
           disabled={isLoading}
         >
-          <SelectTrigger className={error ? "border-destructive" : ""}>
+          <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
             <SelectValue placeholder={tDashboard("booleanFalse")} />
           </SelectTrigger>
           <SelectContent>
@@ -726,10 +732,10 @@ export function EditableCell({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal"
+              className={cn("w-full justify-start text-left font-normal", isCompact && "h-8 text-xs")}
               disabled={isLoading}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className={cn("mr-2", isCompact ? "h-3 w-3" : "h-4 w-4")} />
               {editValue ? (
                 format(new Date(editValue + "T00:00:00"), "PPP")
               ) : (
@@ -855,7 +861,7 @@ export function EditableCell({
           }}
           disabled={isLoading}
         >
-          <SelectTrigger className={error ? "border-destructive" : ""}>
+          <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
             <SelectValue placeholder="Select..." />
           </SelectTrigger>
           <SelectContent>
