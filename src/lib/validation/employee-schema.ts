@@ -509,6 +509,22 @@ export const csvImportEmployeeSchema = z.object({
   // Story 8.17: Dietary Requirements
   special_diet: z.union([z.boolean(), z.string(), z.null()]).nullable().default(false).optional(),
   diet_details: z.string().nullable().optional(),
-});
+}).refine(
+  (data) => {
+    // Story 8.17: Diet details are mandatory if special_diet is true
+    // Handle boolean or string "true"/"yes"/etc.
+    const isSpecialDiet = data.special_diet === true || 
+      (typeof data.special_diet === 'string' && ['true', 'yes', '1'].includes(data.special_diet.toLowerCase()));
+      
+    if (isSpecialDiet && (!data.diet_details || data.diet_details.trim() === '')) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Diet details are required when special diet is selected",
+    path: ["diet_details"],
+  }
+);
 
 export type CSVImportEmployeeInput = z.infer<typeof csvImportEmployeeSchema>;
