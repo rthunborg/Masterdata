@@ -116,9 +116,9 @@ describe('PE3 Deadline Notification Service', () => {
       expect(result).toBe(true);
       expect(emailService.sendEmailToMultiple).toHaveBeenCalledWith(
         ['admin1@example.com', 'admin2@example.com'],
-        'PE3 deadline today – last date to submit spots',
+        'Stena Season: PE3 deadline idag – sista dagen att skicka in platser',
         expect.stringContaining('2025-02-10'),
-        expect.stringContaining('submit')
+        expect.stringContaining('skicka in')
       );
     });
 
@@ -197,9 +197,9 @@ describe('PE3 Deadline Notification Service', () => {
       expect(result).toBe(true);
       expect(emailService.sendEmailToMultiple).toHaveBeenCalledWith(
         ['admin1@example.com'],
-        'PE3 deadline today – last date to cancel spots',
+        'Stena Season: PE3 deadline idag – sista dagen att avboka platser',
         expect.stringContaining('2025-02-12'),
-        expect.stringContaining('cancel')
+        expect.stringContaining('avboka')
       );
     });
 
