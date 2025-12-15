@@ -135,6 +135,9 @@ export async function sendEmailToMultiple(
       html,
     });
     results.push(result);
+    
+    // Add a small delay between emails to avoid rate limiting (especially with Gmail)
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   return results;

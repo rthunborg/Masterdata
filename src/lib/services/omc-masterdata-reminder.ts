@@ -249,7 +249,7 @@ function formatFieldName(field: string): string {
  * Generate email subject for ÖMC reminder
  */
 export function generateOmcReminderEmailSubject(employeeName: string): string {
-  return `ÖMC completed 3 days ago – masterdata still incomplete for ${employeeName}`;
+  return `Stena Season: ÖMC genomförd för 3 dagar sedan – masterdata fortfarande ofullständig för ${employeeName}`;
 }
 
 /**
@@ -261,27 +261,29 @@ export function generateOmcReminderEmailBody(
   missingFields: string[]
 ): string {
   const employeeName = `${employee.first_name} ${employee.surname}`;
-  const employeeId = employee.id;
   const formattedDate = format(parseISO(omcDateValue), 'yyyy-MM-dd');
   
   const missingFieldsList = missingFields
     .map(field => {
       const displayName = formatFieldName(field);
       if (field === 'loneiva') {
-        return `- ${displayName} (empty)`;
+        return `- ${displayName} (tom)`;
       }
-      return `- ${displayName} (false)`;
+      return `- ${displayName} (saknas)`;
     })
     .join('\n');
 
-  return `3 days have passed since ${employeeName} completed ÖMC on ${formattedDate}.
+  return `Det har gått 3 dagar sedan ÖMC genomfördes den ${formattedDate}.
 
-The following required fields are still incomplete:
+Anställd: ${employeeName}
+
+Följande obligatoriska fält saknas fortfarande:
 ${missingFieldsList}
 
-Employee ID: ${employeeId}
+Vänligen följ upp för att säkerställa att masterdata kompletteras.
 
-Please follow up to ensure masterdata completion.`;
+---
+Detta är ett automatiskt genererat meddelande, vänligen svara inte på detta mail.`;
 }
 
 /**
@@ -314,17 +316,19 @@ export async function sendOmcMasterdataReminder(
     const html = `
       <html>
         <body>
-          <p>3 days have passed since <strong>${employee.first_name} ${employee.surname}</strong> completed ÖMC on <strong>${format(parseISO(omcDateValue), 'yyyy-MM-dd')}</strong>.</p>
-          <p>The following required fields are still incomplete:</p>
+          <p>Det har gått 3 dagar sedan ÖMC genomfördes den <strong>${format(parseISO(omcDateValue), 'yyyy-MM-dd')}</strong>.</p>
+          <p><strong>Anställd: ${employee.first_name} ${employee.surname}</strong></p>
+          <p>Följande obligatoriska fält saknas fortfarande:</p>
           <ul>
             ${missingFields.map(field => {
               const displayName = formatFieldName(field);
-              const status = field === 'loneiva' ? 'empty' : 'false';
+              const status = field === 'loneiva' ? 'tom' : 'saknas';
               return `<li><strong>${displayName}</strong> (${status})</li>`;
             }).join('\n')}
           </ul>
-          <p>Employee ID: ${employee.id}</p>
-          <p>Please follow up to ensure masterdata completion.</p>
+          <p>Vänligen följ upp för att säkerställa att masterdata kompletteras.</p>
+          <hr />
+          <p style="color: #666; font-size: 12px;">Detta är ett automatiskt genererat meddelande, vänligen svara inte på detta mail.</p>
         </body>
       </html>
     `;
