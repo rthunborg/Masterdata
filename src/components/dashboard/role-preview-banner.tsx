@@ -1,5 +1,6 @@
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
 import { Button } from "@/components/ui/button";
 import { getRoleDisplayName } from "@/lib/types/user";

@@ -29,6 +29,8 @@ interface EditableDateCellProps {
   allDates: ImportantDate[];
   canEdit?: boolean;
   isChanged?: boolean; // Story 16.5: Flag for field highlighting
+  className?: string; // Support for styling props
+  isCompact?: boolean; // Support for density preference
   onSave: (id: string, field: string, value: string | null) => Promise<void>;
   onError?: (error: string) => void;
 }
@@ -42,6 +44,8 @@ export function EditableDateCell({
   allDates,
   canEdit = true,
   isChanged = false, // Story 16.5: Default to false for backward compatibility
+  className,
+  isCompact,
   onSave,
   onError,
 }: EditableDateCellProps) {
@@ -193,7 +197,8 @@ export function EditableDateCell({
                 displayValue === t("dateDeleted") && "text-amber-600",
                 // Story 16.5: Apply highlight styling for changed fields
                 // Use highlight background when changed, otherwise use gray background
-                isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-gray-50"
+                isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-gray-50",
+                className
               )}
               tabIndex={0}
               role="gridcell"
@@ -230,7 +235,8 @@ export function EditableDateCell({
               displayValue === t("dateDeleted") && "text-amber-600",
               // Story 16.5: Apply highlight styling for changed fields
               // Use highlight background when changed, otherwise use white background
-              isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-white"
+              isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-white",
+              className
             )}
             tabIndex={0}
             onKeyDown={(e) => {
@@ -330,7 +336,7 @@ export function EditableDateCell({
         }}
         disabled={isLoading || (dateCategory === "PE3 Dates" && pe3Loading)}
       >
-        <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-11 touch-manipulation")}>
+        <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-11 touch-manipulation", isCompact && "min-h-8 h-8 text-xs")}>
           <SelectValue placeholder="Select a date..." />
         </SelectTrigger>
         <SelectContent>
@@ -349,6 +355,7 @@ export function EditableDateCell({
                 className={cn(
                   "min-h-11 touch-manipulation",
                   isFull && "opacity-50 cursor-not-allowed",
+                  isCompact && "min-h-8 h-8 text-xs"
                 )}
               >
                 <div className="flex items-center justify-between gap-2 w-full">

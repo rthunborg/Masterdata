@@ -21,6 +21,7 @@ import { employeeService } from '@/lib/services/employee-service';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useColumns } from '@/lib/hooks/use-columns';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from '@/lib/store/ui-store';
 
 interface ResponsiveEmployeeViewProps {
