@@ -38,19 +38,26 @@ export function ChangeNotificationBanner({
   error,
 }: ChangeNotificationBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false);
-  const [prevBaseline, setPrevBaseline] = useState(changesBaseline);
+  // Fix: Initialize with null to avoid stale closure from prop
+  const [prevBaseline, setPrevBaseline] = useState<string | null>(null);
   const tDashboard = useTranslations('dashboard');
 
   // Handle baseline changes (Derived State Pattern)
-  // This avoids "setState in useEffect" for resetting state when props change
-  if (changesBaseline !== prevBaseline) {
-    setPrevBaseline(changesBaseline);
-    setIsDismissed(false);
-  }
+  // Store computed values in regular variables or use useEffect with proper dependency handling
+  // Here we use useEffect to sync state when prop changes
+  useEffect(() => {
+    if (changesBaseline !== prevBaseline) {
+      setPrevBaseline(changesBaseline);
+      setIsDismissed(false);
+    }
+  }, [changesBaseline, prevBaseline]);
 
   // Handle side effects (Storage Sync) and initial restore
   useIsomorphicLayoutEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Prevent race condition: Don't process storage if baseline isn't loaded yet
+    if (!changesBaseline) return;
 
     const storedBaseline = sessionStorage.getItem(BASELINE_TRACKING_KEY);
 
@@ -59,7 +66,7 @@ export function ChangeNotificationBanner({
     // NOTE: We only reset if we have a stored baseline to compare against.
     // If storedBaseline is null (first tracking), we assume existing dismissal state is valid/relevant
     // (or just respect the current session state).
-    if (changesBaseline && storedBaseline && storedBaseline !== changesBaseline) {
+    if (storedBaseline && storedBaseline !== changesBaseline) {
       sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
       // isDismissed is already false (default or reset via derived state)
@@ -69,11 +76,8 @@ export function ChangeNotificationBanner({
     else {
       if (changesBaseline) {
         sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
-      } else {
-        sessionStorage.removeItem(BASELINE_TRACKING_KEY);
-        sessionStorage.removeItem(SESSION_STORAGE_KEY);
       }
-
+      
       const dismissed = sessionStorage.getItem(SESSION_STORAGE_KEY);
       if (dismissed === "true") {
         setIsDismissed(true);

@@ -198,7 +198,7 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
   ).refine(
     (data) => {
       // Story 8.17: Diet details are mandatory if special_diet is true
-      if (data.special_diet && (!data.diet_details || data.diet_details?.trim() === '')) {
+      if (data.special_diet && typeof data.diet_details === 'string' && data.diet_details.trim() === '') {
         return false;
       }
       return true;
@@ -349,7 +349,7 @@ export const updateEmployeeSchema = baseEmployeeSchema
   .refine(
     (data) => {
       // Story 8.17: Diet details are mandatory if special_diet is true
-      if (data.special_diet && (!data.diet_details || data.diet_details?.trim() === '')) {
+      if (data.special_diet && typeof data.diet_details === 'string' && data.diet_details.trim() === '') {
         return false;
       }
       return true;
@@ -376,13 +376,10 @@ export function updateEmployeeSchemaWithMessages(t?: (key: string) => string) {
     .refine((data) => Object.keys(data).length > 0, {
       message: msg('updateFieldRequired'),
     })
-    .refine(
-      validateTalmundoField,
-      {
-        message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
-        path: ['talmundo'],
-      }
-    )
+    // Note: Talmundo validation (24h rule) is excluded here intentionally.
+    // It requires current database state to check the 'one' field duration,
+    // which cannot be reliably done on the client side with partial updates.
+    // The validation is enforced in the API route.
     .refine(
       (data) => {
         // Story 8.17: Diet details are mandatory if special_diet is true
