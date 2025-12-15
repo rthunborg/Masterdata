@@ -524,7 +524,9 @@
     "deleteColumn": "Ta bort anpassad kolumn",
     "hideColumn": "Dölj kolumn från tabell",
     "showColumn": "Visa kolumn i tabell",
-    "manageColumns": "Hantera kolumner"
+    "manageColumns": "Hantera kolumner",
+    "switchToCompact": "Byt till kompakt vy",
+    "switchToComfortable": "Byt till standardvy"
   },
   "toasts": {
     "offlineSync": {

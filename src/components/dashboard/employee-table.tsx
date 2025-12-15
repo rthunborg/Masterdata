@@ -1897,13 +1897,13 @@ export function EmployeeTable({
                   variant="outline"
                   size="icon"
                   onClick={() => setDensity(density === 'compact' ? 'default' : 'compact')}
-                  aria-label={density === 'compact' ? "Switch to comfortable view" : "Switch to compact view"}
+                  aria-label={density === 'compact' ? t("switchToComfortable") : t("switchToCompact")}
                 >
                   {density === 'compact' ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{density === 'compact' ? "Switch to comfortable view" : "Switch to compact view"}</p>
+                <p>{density === 'compact' ? t("switchToComfortable") : t("switchToCompact")}</p>
               </TooltipContent>
             </Tooltip>
 
