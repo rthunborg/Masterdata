@@ -71,6 +71,7 @@ export function ChangeNotificationBanner({
         sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
       } else {
         sessionStorage.removeItem(BASELINE_TRACKING_KEY);
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
       }
 
       const dismissed = sessionStorage.getItem(SESSION_STORAGE_KEY);

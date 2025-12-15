@@ -198,7 +198,7 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
   ).refine(
     (data) => {
       // Story 8.17: Diet details are mandatory if special_diet is true
-      if (data.special_diet && (!data.diet_details || data.diet_details.trim() === '')) {
+      if (data.special_diet && (!data.diet_details || data.diet_details?.trim() === '')) {
         return false;
       }
       return true;
@@ -345,6 +345,19 @@ export const updateEmployeeSchema = baseEmployeeSchema
     {
       message: "At least one field must be provided for update",
     }
+  )
+  .refine(
+    (data) => {
+      // Story 8.17: Diet details are mandatory if special_diet is true
+      if (data.special_diet && (!data.diet_details || data.diet_details?.trim() === '')) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Diet details are required when special diet is selected",
+      path: ["diet_details"],
+    }
   );
 // Note: Talmundo validation is handled in the API route handler (PATCH /api/employees/[id])
 // because it requires current employee data from the database to check the 24-hour rule
@@ -362,7 +375,27 @@ export function updateEmployeeSchemaWithMessages(t?: (key: string) => string) {
     .partial()
     .refine((data) => Object.keys(data).length > 0, {
       message: msg('updateFieldRequired'),
-    });
+    })
+    .refine(
+      validateTalmundoField,
+      {
+        message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
+        path: ['talmundo'],
+      }
+    )
+    .refine(
+      (data) => {
+        // Story 8.17: Diet details are mandatory if special_diet is true
+        if (data.special_diet && (!data.diet_details || data.diet_details?.trim() === '')) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message: msg('dietDetailsRequired'),
+        path: ["diet_details"],
+      }
+    );
 }
 
 /**
@@ -516,7 +549,7 @@ export const csvImportEmployeeSchema = z.object({
     const isSpecialDiet = data.special_diet === true || 
       (typeof data.special_diet === 'string' && ['true', 'yes', '1'].includes(data.special_diet.toLowerCase()));
       
-    if (isSpecialDiet && (!data.diet_details || data.diet_details.trim() === '')) {
+    if (isSpecialDiet && (!data.diet_details || data.diet_details?.trim() === '')) {
       return false;
     }
     return true;
