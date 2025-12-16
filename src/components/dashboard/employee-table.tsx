@@ -188,6 +188,7 @@ import { cn } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { BulkActionsBar } from "./bulk-actions-bar";
+import { EmployeeStatsBar } from "./employee-stats-bar";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
@@ -289,6 +290,11 @@ export function EmployeeTable({
   const [isArchiving, setIsArchiving] = React.useState(false);
   const [isReactivating, setIsReactivating] = React.useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = React.useState(false);
+  const [statsRefreshToken, setStatsRefreshToken] = React.useState(0);
+
+  const bumpStats = React.useCallback(() => {
+    setStatsRefreshToken((v) => v + 1);
+  }, []);
 
   // Story 8.5: Crew-ready filter state
   const [crewReadyFilter, setCrewReadyFilter] = React.useState<'all' | 'ready' | 'not-ready'>('all');
@@ -415,6 +421,9 @@ export function EmployeeTable({
         if (!onOptimisticUpdate) {
           onEmployeeUpdated?.();
         }
+
+        // Stats are DB-sourced and need explicit refresh
+        bumpStats();
     } catch (error: unknown) {
       // Rollback optimistic update
       if (rollback) {
@@ -424,7 +433,7 @@ export function EmployeeTable({
       const message = error instanceof Error ? error.message : tToasts("employees.updateFailed");
       throw new Error(message);
     }
-  }, [onEmployeeUpdated, onOptimisticUpdate, tToasts]);
+  }, [bumpStats, onEmployeeUpdated, onOptimisticUpdate, tToasts]);
 
   // Handler for custom column updates
   const handleCustomDataUpdate = React.useCallback(async (
@@ -436,11 +445,12 @@ export function EmployeeTable({
       await customDataService.updateCustomData(id, { [columnName]: value });
       toast.success(tToasts("employees.customDataUpdated"));
       onEmployeeUpdated?.();
+      bumpStats();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to update custom data";
       throw new Error(message);
     }
-  }, [onEmployeeUpdated]);
+  }, [bumpStats, onEmployeeUpdated]);
 
   const handleArchiveClick = (employee: Employee) => {
 
@@ -477,6 +487,7 @@ export function EmployeeTable({
       setArchiveDialogOpen(false);
 
       onEmployeeUpdated?.();
+      bumpStats();
 
     } catch (error: unknown) {
 
@@ -511,6 +522,7 @@ export function EmployeeTable({
       setUnarchiveDialogOpen(false);
 
       onEmployeeUpdated?.();
+      bumpStats();
 
     } catch (error: unknown) {
 
@@ -554,6 +566,7 @@ export function EmployeeTable({
 
       setSelectedEmployeeIds(new Set());
       onEmployeeUpdated?.();
+      bumpStats();
     } catch (error) {
       toast.error('Failed to update employees');
       console.error(error);
@@ -615,6 +628,7 @@ export function EmployeeTable({
       setReactivateDialogOpen(false);
 
       onEmployeeUpdated?.();
+      bumpStats();
 
     } catch (error: unknown) {
 
@@ -697,6 +711,7 @@ export function EmployeeTable({
       // Refresh the table to show updated crewing_done values
 
       onEmployeeUpdated?.();
+      bumpStats();
 
     } catch (error: unknown) {
 
@@ -1891,6 +1906,8 @@ export function EmployeeTable({
       ) : (
 
         <>
+
+          <EmployeeStatsBar refreshToken={statsRefreshToken} className="mb-4" />
 
           {/* Search Input and Column Visibility */}
 

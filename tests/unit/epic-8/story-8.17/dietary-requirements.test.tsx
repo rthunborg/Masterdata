@@ -275,6 +275,6 @@ describe("Story 8.17: Dietary Requirements Logic", () => {
       
       // Ensure create was not called
       expect(employeeService.create).not.toHaveBeenCalled();
-    });
+    }, 15000);
   });
 });

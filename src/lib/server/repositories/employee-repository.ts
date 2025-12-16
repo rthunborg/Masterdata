@@ -13,6 +13,16 @@ export interface EmployeeFilters {
   needsRepayment?: boolean; // Story 8.13 AC 9
 }
 
+export interface EmployeeSystemStats {
+  totalActive: number;
+  crewedActive: number;
+  /**
+   * Percentage of crewedActive / totalActive, rounded to 1 decimal.
+   * Null when totalActive is 0.
+   */
+  crewedPercent: number | null;
+}
+
 export class EmployeeRepository {
   private async getSupabaseClient() {
     return await createClient();
@@ -63,6 +73,55 @@ export class EmployeeRepository {
     } catch (error) {
       console.error("Unexpected error fetching employees:", error);
       return [];
+    }
+  }
+
+  /**
+   * Whole-system tallies for dashboard stats.
+   *
+   * Requirements:
+   * - Do NOT count archived employees
+   * - Terminated employees should be included in the total tally
+   * - "Crewed" means crewing_done === true
+   *
+   * Note: RLS still applies per user role.
+   */
+  async getSystemStats(): Promise<EmployeeSystemStats> {
+    try {
+      const supabase = await this.getSupabaseClient();
+
+      const { count: totalActiveCount, error: totalError } = await supabase
+        .from("employees")
+        .select("id", { count: "exact", head: true })
+        .eq("is_archived", false);
+
+      if (totalError) {
+        console.error("Error counting active employees:", totalError);
+        throw new Error("Failed to count active employees");
+      }
+
+      const { count: crewedActiveCount, error: crewedError } = await supabase
+        .from("employees")
+        .select("id", { count: "exact", head: true })
+        .eq("is_archived", false)
+        .eq("crewing_done", true);
+
+      if (crewedError) {
+        console.error("Error counting crewed employees:", crewedError);
+        throw new Error("Failed to count crewed employees");
+      }
+
+      const totalActive = totalActiveCount ?? 0;
+      const crewedActive = crewedActiveCount ?? 0;
+      const crewedPercent =
+        totalActive > 0
+          ? Math.round((crewedActive / totalActive) * 1000) / 10
+          : null;
+
+      return { totalActive, crewedActive, crewedPercent };
+    } catch (error) {
+      console.error("Unexpected error fetching employee system stats:", error);
+      throw error instanceof Error ? error : new Error("Failed to fetch employee system stats");
     }
   }
 
