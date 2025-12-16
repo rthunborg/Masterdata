@@ -349,8 +349,11 @@ export const updateEmployeeSchema = baseEmployeeSchema
   .refine(
     (data) => {
       // Story 8.17: Diet details are mandatory if special_diet is true
-      if (data.special_diet && data.diet_details !== undefined && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
-        return false;
+      // Only validate if diet_details is present in the update payload.
+      if (data.special_diet && data.diet_details !== undefined) {
+         if (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === '')) {
+            return false;
+         }
       }
       return true;
     },
@@ -383,8 +386,14 @@ export function updateEmployeeSchemaWithMessages(t?: (key: string) => string) {
     .refine(
       (data) => {
         // Story 8.17: Diet details are mandatory if special_diet is true
-        if (data.special_diet && data.diet_details !== undefined && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
-          return false;
+        // Only validate if diet_details is present in the update payload.
+        // If special_diet is true but diet_details is missing, we assume 
+        // the API will handle validation against current DB state (similar to Talmundo),
+        // or that diet_details already exists in the DB.
+        if (data.special_diet && data.diet_details !== undefined) {
+           if (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === '')) {
+             return false;
+           }
         }
         return true;
       },
