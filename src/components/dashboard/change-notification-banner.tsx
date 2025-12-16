@@ -57,9 +57,10 @@ export function ChangeNotificationBanner({
     if (typeof window === "undefined") return;
 
     // Prevent race condition: Don't process storage if baseline isn't loaded yet
-    if (!changesBaseline) return;
-
+    // BUT allow restoring dismissal state if we have a stored baseline
     const storedBaseline = sessionStorage.getItem(BASELINE_TRACKING_KEY);
+    
+    if (!changesBaseline && !storedBaseline) return;
 
     // Case 1: Baseline changed since last session (or new login)
     // We detect this by comparing prop to storage

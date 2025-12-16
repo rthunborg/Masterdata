@@ -383,7 +383,7 @@ export function updateEmployeeSchemaWithMessages(t?: (key: string) => string) {
     .refine(
       (data) => {
         // Story 8.17: Diet details are mandatory if special_diet is true
-        if (data.special_diet && (!data.diet_details || data.diet_details?.trim() === '')) {
+        if (data.special_diet && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
           return false;
         }
         return true;
@@ -546,7 +546,7 @@ export const csvImportEmployeeSchema = z.object({
     const isSpecialDiet = data.special_diet === true || 
       (typeof data.special_diet === 'string' && ['true', 'yes', '1'].includes(data.special_diet.toLowerCase()));
       
-    if (isSpecialDiet && (!data.diet_details || data.diet_details?.trim() === '')) {
+    if (isSpecialDiet && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
       return false;
     }
     return true;

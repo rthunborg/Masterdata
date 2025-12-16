@@ -12,6 +12,10 @@ interface UIStore {
   setPreviewRole: (role: UserRole | null) => void;
   isPreviewMode: boolean;
   
+  // Current user ID (for persistence)
+  currentUserId: string | null;
+  setCurrentUserId: (userId: string | null) => void;
+  
   // Modal states
   modals: {
     addEmployee: boolean;
@@ -50,6 +54,15 @@ export const useUIStore = create<UIStore>((set, get) => ({
   isPreviewMode: false,
   setPreviewRole: (role) => set({ previewRole: role, isPreviewMode: !!role }),
   
+  // Current user ID
+  currentUserId: null,
+  setCurrentUserId: (userId) => {
+      set({ currentUserId: userId });
+      if (typeof window !== "undefined" && userId) {
+          localStorage.setItem("currentUserId", userId);
+      }
+  },
+
   // Modal states
   modals: {
     addEmployee: false,
@@ -72,7 +85,9 @@ export const useUIStore = create<UIStore>((set, get) => ({
     set({ density });
     // Persist to localStorage
     if (typeof window !== "undefined") {
-      const userId = localStorage.getItem("currentUserId");
+      const { currentUserId } = get();
+      const userId = currentUserId || localStorage.getItem("currentUserId");
+      
       if (userId) {
         const storageKey = `hr_masterdata_density_${userId}`;
         localStorage.setItem(storageKey, density);
@@ -149,7 +164,7 @@ export const useUIStore = create<UIStore>((set, get) => ({
     if (typeof window === "undefined") return;
     
     // Store userId for persistence operations
-    localStorage.setItem("currentUserId", userId);
+    get().setCurrentUserId(userId);
     
     // Load column visibility from localStorage
     const visibilityKey = `hr_masterdata_column_visibility_${userId}`;
