@@ -50,6 +50,7 @@ import {
   type UpdateColumnInput,
 } from "@/lib/validation/column-validation";
 import { columnService } from "@/lib/services/column-service";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
 import { useColumns } from "@/lib/hooks/use-columns";
 

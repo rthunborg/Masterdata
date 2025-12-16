@@ -149,7 +149,7 @@ const createCrewReadyEmployee = (id: string, overrides: Partial<Employee> = {}):
   mobile: '+46701234567',
   rank: 'SEV',
   gender: 'Man',
-  town_district: 'Stockholm',
+  town_district: 'Göteborg',
   hire_date: '2025-01-15',
   stena_date: null,
   omc_date: null,

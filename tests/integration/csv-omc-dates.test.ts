@@ -3,7 +3,7 @@
  * Story 11.5: Date Format & Parsing Tests
  * AC2: Integration Test Coverage (CSV Import/Export)
  */
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { exportImportantDates } from '@/lib/services/export-service';
 import { validateImportantDatesCSV } from '@/lib/utils/important-dates-csv-validator';

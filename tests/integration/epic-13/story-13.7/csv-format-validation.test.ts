@@ -65,7 +65,7 @@ describe("Story 13.7: CSV Format Validation", () => {
     mobile: "+46701234567",
     rank: "SEV",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2025-01-15",
     stena_date: null,
     omc_date: null,
@@ -374,7 +374,7 @@ describe("Story 13.7: CSV Format Validation", () => {
     });
 
     it("should handle undefined values as empty strings", async () => {
-      const emp1 = createMockEmployee({ id: "emp-1", first_name: "John", mobile: undefined as any });
+      const emp1 = createMockEmployee({ id: "emp-1", first_name: "John", mobile: undefined as unknown as string });
       const allEmployees = [emp1];
 
       vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);

@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, fireEvent, within } from "@testing-library/react";
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { ImportantDatesTable } from "@/components/dashboard/important-dates-table";

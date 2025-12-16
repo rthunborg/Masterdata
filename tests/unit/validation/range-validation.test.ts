@@ -77,7 +77,7 @@ describe('Range Validation - Lönenivå (loneiva)', () => {
     });
 
     it('should reject "3" (string)', () => {
-      const result = schema.safeParse(createMinimalEmployee({ loneiva: '3' as any }));
+      const result = schema.safeParse(createMinimalEmployee({ loneiva: '3' as unknown as number }));
       expect(result.success).toBe(false);
       if (!result.success) {
         const loneivaError = result.error.errors.find(e => e.path.includes('loneiva'));

@@ -74,7 +74,7 @@ describe("Room Assignment API Integration Tests", () => {
   });
 
   // Shared mock Supabase client that can be accessed in tests
-  let mockSupabaseClient: any;
+  let mockSupabaseClient: ReturnType<typeof createClient>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -93,8 +93,8 @@ describe("Room Assignment API Integration Tests", () => {
         single: vi.fn().mockResolvedValue({ data: null, error: null }),
       })),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    };
-    (createClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabaseClient as any);
+    } as unknown as ReturnType<typeof createClient>;
+    (createClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabaseClient);
   });
 
   describe("POST /api/employees - Room assignment on creation", () => {
@@ -107,7 +107,7 @@ describe("Room Assignment API Integration Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-01", // Use past date
         omc_date: mockOMCDate.id,
         hotel_required: true, // Required for room assignment
@@ -181,7 +181,7 @@ describe("Room Assignment API Integration Tests", () => {
           });
         }),
       };
-      vi.mocked(mockSupabaseClient.from).mockReturnValue(mockFromChain as any);
+      vi.mocked(mockSupabaseClient.from).mockReturnValue(mockFromChain as unknown as ReturnType<typeof mockSupabaseClient.from>);
       
       // Mock RPC function to return room 1 for first employee
       vi.mocked(mockSupabaseClient.rpc).mockResolvedValue({ 
@@ -222,7 +222,7 @@ describe("Room Assignment API Integration Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: oldDate.id,
         stena_date: null,
@@ -302,7 +302,7 @@ describe("Room Assignment API Integration Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockOMCDate.id,
         stena_date: null,
@@ -377,7 +377,7 @@ describe("Room Assignment API Integration Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockOMCDate.id,
         stena_date: null,
@@ -459,7 +459,7 @@ describe("Room Assignment API Integration Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockOMCDate.id,
         stena_date: null,
@@ -638,7 +638,7 @@ describe("Room Assignment API Integration Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-01", // Use past date
         omc_date: mockOMCDate.id,
         stena_date: null,

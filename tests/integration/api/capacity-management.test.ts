@@ -99,7 +99,7 @@ describe("Capacity Management API Integration Tests", () => {
     mobile: "+46701234567",
     rank: "SEV",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-15", // Use past date to pass validation
     omc_date: null,
     stena_date: null,
@@ -149,7 +149,7 @@ describe("Capacity Management API Integration Tests", () => {
         })),
       })),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("POST /api/employees - Spot decrement on date assignment", () => {
@@ -542,4 +542,3 @@ describe("Capacity Management API Integration Tests", () => {
     });
   });
 });
-

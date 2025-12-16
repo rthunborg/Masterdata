@@ -22,7 +22,7 @@ import React from "react";
 // Mock Next.js navigation
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
-  Link: ({ href, children, ...props }: any) => (
+  Link: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
     <a href={href} {...props}>
       {children}
     </a>

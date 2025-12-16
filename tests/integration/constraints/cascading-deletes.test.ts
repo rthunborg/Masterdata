@@ -14,18 +14,18 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 vi.mock("@supabase/supabase-js");
 
 describe("Cascading Delete Tests", () => {
-  let mockSupabase: any;
+  let mockSupabase: SupabaseClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
     
     // Create chainable mock builder
-    const createChainableMock = (resolvedValue: { data: any; error: any }) => {
+    const createChainableMock = (resolvedValue: { data: unknown; error: unknown }) => {
       const chainMock = {
         select: vi.fn().mockReturnThis(),
         update: vi.fn().mockReturnThis(),
@@ -42,9 +42,9 @@ describe("Cascading Delete Tests", () => {
     mockSupabase = {
       from: vi.fn((table: string) => createChainableMock({ data: null, error: null })),
       rpc: vi.fn(),
-    };
+    } as unknown as SupabaseClient;
     
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
   });
 
   describe("Delete important_date", () => {
@@ -68,7 +68,7 @@ describe("Cascading Delete Tests", () => {
       const selectResponse = { data: [{ id: "date-1", assigned_employees: [] }], error: null };
 
       let callCount = 0;
-      mockSupabase.from.mockImplementation((table: string) => {
+      mockSupabase.from = vi.fn((table: string) => {
         if (table === "important_dates") {
           callCount++;
           if (callCount === 1) {
@@ -133,7 +133,7 @@ describe("Cascading Delete Tests", () => {
       const deleteResponse = { data: [{ id: "date-1" }], error: null };
       const selectResponse = { data: { id: "emp-1", omc_date: null }, error: null };
 
-      mockSupabase.from.mockImplementation((table: string) => {
+      mockSupabase.from = vi.fn((table: string) => {
         if (table === "important_dates") {
           return {
             delete: vi.fn().mockReturnThis(),
@@ -192,7 +192,7 @@ describe("Cascading Delete Tests", () => {
       const deleteResponse = { data: [{ id: "emp-1" }], error: null };
       const selectResponse = { data: { id: "date-1", assigned_employees: [] }, error: null };
 
-      mockSupabase.from.mockImplementation((table: string) => {
+      mockSupabase.from = vi.fn((table: string) => {
         if (table === "employees") {
           return {
             delete: vi.fn().mockReturnThis(),
@@ -249,7 +249,7 @@ describe("Cascading Delete Tests", () => {
       const deleteResponse = { data: [{ id: "emp-1" }], error: null };
       const selectResponse = { data: { id: "date-1", remaining_spots: 11 }, error: null };
 
-      mockSupabase.from.mockImplementation((table: string) => {
+      mockSupabase.from = vi.fn((table: string) => {
         if (table === "employees") {
           return {
             delete: vi.fn().mockReturnThis(),
@@ -337,7 +337,7 @@ describe("Cascading Delete Tests", () => {
       const deleteResponse = { data: [{ id: "date-1" }], error: null };
       const selectResponse = { data: [], error: null };
 
-      mockSupabase.from.mockImplementation((table: string) => {
+      mockSupabase.from = vi.fn((table: string) => {
         if (table === "important_dates") {
           return {
             delete: vi.fn().mockReturnThis(),

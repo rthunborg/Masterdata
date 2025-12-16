@@ -202,6 +202,69 @@ describe('csvImportEmployeeSchema - Date Fields', () => {
   });
 });
 
+describe('csvImportEmployeeSchema - Dietary Requirements', () => {
+  const validBaseData = {
+    first_name: 'John',
+    surname: 'Doe',
+    ssn: '19900101-1234',
+    rank: 'SEV',
+    hire_date: '2025-01-15',
+  };
+
+  it('allows boolean special_diet', () => {
+    const data = {
+      ...validBaseData,
+      special_diet: true,
+      diet_details: 'Vegetarian',
+    };
+
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it('allows string special_diet (true)', () => {
+    const data = {
+      ...validBaseData,
+      special_diet: 'true',
+      diet_details: 'Gluten free',
+    };
+
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it('allows string special_diet (false)', () => {
+    const data = {
+      ...validBaseData,
+      special_diet: 'false',
+      diet_details: '',
+    };
+
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it('allows empty special_diet', () => {
+    const data = {
+      ...validBaseData,
+      special_diet: '',
+    };
+
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it('allows populated diet_details', () => {
+    const data = {
+      ...validBaseData,
+      diet_details: 'Some details',
+    };
+
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+});
+
 describe('csvImportEmployeeSchema - Complete Validation', () => {
   it('accepts employee with only required fields', () => {
     const data = {
@@ -225,12 +288,14 @@ describe('csvImportEmployeeSchema - Complete Validation', () => {
       mobile: '+46701234567',
       rank: 'CHEF',
       gender: 'Man',
-      town_district: 'Gothenburg',
+      town_district: 'Göteborg',
       hire_date: '2025-01-15',
       stena_date: '2025-01-01',
       omc_date: '2025-01-02',
       pe3_date: '2025-01-03',
       comments: 'Test employee',
+      special_diet: true,
+      diet_details: 'Vegan',
     };
 
     const result = csvImportEmployeeSchema.safeParse(data);
@@ -247,8 +312,10 @@ describe('csvImportEmployeeSchema - Complete Validation', () => {
       email: '', // Empty
       mobile: '+46709876543', // Populated
       gender: '', // Empty
-      town_district: 'Stockholm', // Populated
+      town_district: 'Göteborg', // Populated
       comments: '', // Empty
+      special_diet: 'false',
+      diet_details: '',
     };
 
     const result = csvImportEmployeeSchema.safeParse(data);

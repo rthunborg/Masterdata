@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Tests: ÖMC Masterdata Reminder Scheduled Job
  * Story: 14.1 - ÖMC + Masterdata Completion Follow-up

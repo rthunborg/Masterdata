@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,6 +44,7 @@ import { formatImportantDateOption } from "@/lib/utils/format";
 import { UnsavedChangesDialog } from "@/components/dashboard/unsaved-changes-dialog";
 import { CapacityBadge } from "@/components/dashboard/capacity-badge";
 import { cn } from "@/lib/utils";
+import { TOWN_DISTRICTS } from "@/lib/constants/options";
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
@@ -81,7 +83,8 @@ export function AddEmployeeModal({
   );
 
   const form = useForm<CreateEmployeeInput>({
-    resolver: zodResolver(createEmployeeSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(createEmployeeSchema) as any,
     defaultValues: {
       first_name: "",
       surname: "",
@@ -97,6 +100,8 @@ export function AddEmployeeModal({
       omc_date: "",
       pe3_date: null,
       comments: null,
+      special_diet: false,
+      diet_details: null,
       // All boolean fields default to false
       one: false,
       talmundo: false,
@@ -129,6 +134,9 @@ export function AddEmployeeModal({
   // Hook for screen reader announcements of validation errors
   const announcementRef = useAriaAnnouncements(errors);
 
+  // Watch special_diet for conditional rendering
+  const specialDiet = form.watch("special_diet");
+
   const onSubmit = async (data: CreateEmployeeInput) => {
     try {
       setIsSubmitting(true);
@@ -144,6 +152,7 @@ export function AddEmployeeModal({
         termination_reason: data.termination_reason ?? null,
         room_number_shared: data.room_number_shared ?? null,
         one_marked_at: data.one_marked_at ?? null,
+        diet_details: data.diet_details ?? null,
       };
       
       await employeeService.create(normalizedData);
@@ -238,7 +247,8 @@ export function AddEmployeeModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
             {/* Live region for validation error announcements */}
             <div 
               ref={announcementRef}
@@ -251,7 +261,7 @@ export function AddEmployeeModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* First Name */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="first_name"
                 render={({ field, fieldState }) => (
                   <FormItem>
@@ -274,7 +284,7 @@ export function AddEmployeeModal({
 
               {/* Surname */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="surname"
                 render={({ field, fieldState }) => (
                   <FormItem>
@@ -297,7 +307,7 @@ export function AddEmployeeModal({
 
               {/* SSN */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="ssn"
                 render={({ field, fieldState }) => (
                   <FormItem>
@@ -321,7 +331,7 @@ export function AddEmployeeModal({
 
               {/* Email */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -345,7 +355,7 @@ export function AddEmployeeModal({
 
               {/* Mobile */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="mobile"
                 render={({ field }) => (
                   <FormItem>
@@ -369,7 +379,7 @@ export function AddEmployeeModal({
 
               {/* Rank */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="rank"
                 render={({ field, fieldState }) => (
                   <FormItem>
@@ -397,21 +407,28 @@ export function AddEmployeeModal({
 
               {/* Town District */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="town_district"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('townDistrict')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Stockholm"
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) =>
-                          field.onChange(e.target.value || null)
-                        }
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? undefined}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('selectTownDistrict') || "Select district"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {TOWN_DISTRICTS.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -419,7 +436,7 @@ export function AddEmployeeModal({
 
               {/* Hotel Required */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="hotel_required"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0">
@@ -444,7 +461,7 @@ export function AddEmployeeModal({
 
               {/* Gender */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="gender"
                 render={({ field, fieldState }) => (
                   <FormItem>
@@ -472,7 +489,7 @@ export function AddEmployeeModal({
 
               {/* Hire Date */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="hire_date"
                 render={({ field }) => (
                   <FormItem>
@@ -489,7 +506,7 @@ export function AddEmployeeModal({
 
               {/* Stena Date */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="stena_date"
                 render={({ field }) => (
                   <FormItem>
@@ -544,7 +561,7 @@ export function AddEmployeeModal({
 
               {/* ÖMC Date */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="omc_date"
                 render={({ field }) => (
                   <FormItem>
@@ -599,7 +616,7 @@ export function AddEmployeeModal({
 
               {/* PE3 Date */}
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="pe3_date"
                 render={({ field }) => (
                   <FormItem>
@@ -679,9 +696,59 @@ export function AddEmployeeModal({
               />
             </div>
 
+            {/* Special Diet */}
+            <FormField
+              control={form.control as any}
+              name="special_diet"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      {t('specialDiet')}
+                    </FormLabel>
+                    <FormDescription>
+                      {t('specialDietDescription')}
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            {/* Diet Details - Conditional */}
+            {specialDiet && (
+              <FormField
+                control={form.control as any}
+                name="diet_details"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <FormLabel>
+                      {t('dietDetails')} <span className="text-red-500" aria-label="required">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t('dietDetailsPlaceholder')}
+                        className="resize-none"
+                        rows={3}
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             {/* Comments */}
             <FormField
-              control={form.control}
+              control={form.control as any}
               name="comments"
               render={({ field }) => (
                 <FormItem>

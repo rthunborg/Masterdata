@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { vi } from 'vitest';
 
 /**
@@ -5,7 +6,7 @@ import { vi } from 'vitest';
  * for testing. Supports chaining and all common operations.
  */
 export function createMockSupabaseClient(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   resolvedData: { data: any; error: any } | null = null
 ) {
   // Create a chainable mock that supports all Supabase operations
@@ -53,7 +54,7 @@ export function createMockSupabaseClient(
   // Special handling for methods that should resolve to promises
   Object.keys(chainMock).forEach((key) => {
     if (key !== 'then' && key !== 'catch') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       (chainMock as any)[key].mockReturnValue(chainMock);
     }
   });
@@ -114,11 +115,11 @@ export function createMockSupabaseClient(
  * Creates a mock Supabase client with custom responses for specific operations
  */
 export function createMockSupabaseClientWithOverrides(overrides: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   from?: (table: string) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   rpc?: (fn: string, params?: any) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   auth?: any;
 }) {
   const { mockSupabaseClient, chainMock } = createMockSupabaseClient();

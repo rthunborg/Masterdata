@@ -104,6 +104,8 @@ vi.mock('@/lib/store/ui-store', () => ({
     initColumnVisibility: vi.fn(),
     toggleColumnVisibility: vi.fn(),
     resetColumnVisibility: vi.fn(),
+    density: 'default',
+    setDensity: vi.fn(),
   })),
 }));
 

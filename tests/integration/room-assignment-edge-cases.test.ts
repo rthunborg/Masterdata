@@ -114,7 +114,7 @@ describe("Room Assignment Edge Case Tests", () => {
         };
       }),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("100 employees on same date", () => {
@@ -314,7 +314,7 @@ describe("Room Assignment Edge Case Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-01", // Use past date to pass validation
         omc_date: null, // No ÖMC date
         stena_date: null,
@@ -380,7 +380,7 @@ describe("Room Assignment Edge Case Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-01", // Use past date to pass validation
         omc_date: mockOMCDate.id,
         hotel_required: false, // No hotel required

@@ -90,7 +90,7 @@ describe('Enum Validation - Rank', () => {
 
   describe('invalid rank enum values', () => {
     it('should reject "sev" (lowercase)', () => {
-      const result = schema.safeParse(createMinimalEmployee({ rank: 'sev' as any }));
+      const result = schema.safeParse(createMinimalEmployee({ rank: 'sev' as unknown as 'SEV' }));
       expect(result.success).toBe(false);
       if (!result.success) {
         const rankError = result.error.errors.find(e => e.path.includes('rank'));
@@ -99,7 +99,7 @@ describe('Enum Validation - Rank', () => {
     });
 
     it('should reject "Manager"', () => {
-      const result = schema.safeParse(createMinimalEmployee({ rank: 'Manager' as any }));
+      const result = schema.safeParse(createMinimalEmployee({ rank: 'Manager' as unknown as 'SEV' }));
       expect(result.success).toBe(false);
       if (!result.success) {
         const rankError = result.error.errors.find(e => e.path.includes('rank'));
@@ -116,7 +116,7 @@ describe('Enum Validation - Rank', () => {
     });
 
     it('should reject empty string', () => {
-      const result = schema.safeParse(createMinimalEmployee({ rank: '' as any }));
+      const result = schema.safeParse(createMinimalEmployee({ rank: '' as unknown as 'SEV' }));
       expect(result.success).toBe(false);
       if (!result.success) {
         const rankError = result.error.errors.find(e => e.path.includes('rank'));

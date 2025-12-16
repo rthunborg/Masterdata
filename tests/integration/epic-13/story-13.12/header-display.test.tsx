@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Integration Tests for Header Display
  * Story 13.12: Update Header Text to "Säsongsrekrytering 2026"
@@ -33,7 +34,7 @@ vi.mock('@/lib/i18n', () => ({
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
   default: (props: any) => {
-    // eslint-disable-next-line @next/next/no-img-element
+     
     const { priority, ...imgProps } = props;
     return <img {...imgProps} />;
   },

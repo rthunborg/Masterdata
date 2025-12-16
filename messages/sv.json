@@ -161,6 +161,10 @@
     "rankCHEF": "Chef",
     "selectRank": "Välj grad",
     "commentsPlaceholder": "Ytterligare anteckningar om den anställde...",
+    "specialDiet": "Specialkost",
+    "specialDietDescription": "Ange om anställd har speciella kostbehov",
+    "dietDetails": "Diet",
+    "dietDetailsPlaceholder": "Beskriv kostbehoven (t.ex. glutenfri, laktosfri, vegetarian)...",
     "duplicateSSN": "En anställd med detta personnummer finns redan",
     "duplicatePE3Date": "Detta PE3-datum är redan tilldelat en annan anställd",
     "pe3DateAlreadyAssigned": "PE3-datum redan tilldelat. Välj ett annat.",
@@ -486,6 +490,7 @@
       "terminationReasonRequired": "Uppsägningsorsak krävs",
       "terminationReasonMaxLength": "Uppsägningsorsak måste vara 500 tecken eller mindre",
       "updateFieldRequired": "Minst ett fält måste anges för uppdatering",
+      "dietDetailsRequired": "Dietdetaljer krävs när specialkost har valts",
       "invalidColorFormat": "Ogiltigt färgformat. Använd hex-kod (t.ex. #3B82F6)",
       "poorColorContrast": "Vald färg har dålig kontrast. Välj en mörkare eller ljusare färg.",
       "invalidValue": "Ogiltigt värde"
@@ -519,7 +524,9 @@
     "deleteColumn": "Ta bort anpassad kolumn",
     "hideColumn": "Dölj kolumn från tabell",
     "showColumn": "Visa kolumn i tabell",
-    "manageColumns": "Hantera kolumner"
+    "manageColumns": "Hantera kolumner",
+    "switchToCompact": "Byt till kompakt vy",
+    "switchToComfortable": "Byt till standardvy"
   },
   "toasts": {
     "offlineSync": {

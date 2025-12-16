@@ -27,7 +27,7 @@ import type { ImportantDate } from "@/lib/types/important-date";
 import { UserRole } from "@/lib/types/user";
 import { setupRealTimeSubscription, waitFor } from "../../helpers/api-test-helpers";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, SupabaseClient } from "@/lib/supabase/server";
 
 vi.mock("@/lib/services/date-capacity");
 vi.mock("@/lib/supabase/server");
@@ -55,7 +55,7 @@ describe("Real-time Sync - Employee CRUD", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: "Woman",
-    town_district: "Gothenburg",
+    town_district: "Göteborg",
     hire_date: "2020-01-01", // Use past date to pass validation
     stena_date: null,
     omc_date: null,
@@ -101,7 +101,7 @@ describe("Real-time Sync - Employee CRUD", () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as SupabaseClient);
 
     // Setup real-time subscription (mocked for integration tests)
     const updates: unknown[] = [];
@@ -162,7 +162,7 @@ describe("Real-time Sync - Employee CRUD", () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as SupabaseClient);
 
     // Setup real-time subscription (mocked for integration tests)
     const updates: unknown[] = [];
@@ -217,7 +217,7 @@ describe("Real-time Sync - Employee CRUD", () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.delete).mockResolvedValue();
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as SupabaseClient);
 
     // Setup real-time subscription (mocked for integration tests)
     const updates: unknown[] = [];
@@ -367,7 +367,7 @@ describe("Real-time Sync - Multiple Clients", () => {
       mobile: "+46701234567",
       rank: "CHEF",
       gender: "Woman",
-      town_district: "Gothenburg",
+      town_district: "Göteborg",
       hire_date: "2020-01-01", // Use past date to pass validation,
       stena_date: null,
       omc_date: null,
@@ -400,7 +400,7 @@ describe("Real-time Sync - Multiple Clients", () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as SupabaseClient);
 
     // Setup multiple client subscriptions (mocked for integration tests)
     const client1Updates: unknown[] = [];
@@ -524,7 +524,7 @@ describe("Real-time Sync - Latency Requirements", () => {
       mobile: "+46701234567",
       rank: "CHEF",
       gender: "Woman",
-      town_district: "Gothenburg",
+      town_district: "Göteborg",
       hire_date: "2020-01-01", // Use past date to pass validation,
       stena_date: null,
       omc_date: null,
@@ -564,7 +564,7 @@ describe("Real-time Sync - Latency Requirements", () => {
       updates.push(payload);
     });
     // Store callback reference for manual triggering in mocked tests
-    subscriptionCallback = (subscription as any).callback || ((payload: unknown) => {
+    subscriptionCallback = (subscription as unknown as { callback: (payload: unknown) => void }).callback || ((payload: unknown) => {
       updates.push(payload);
     });
 

@@ -10,22 +10,22 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { expectUniqueViolation } from "../../helpers/constraint-test-helpers";
 
 vi.mock("@supabase/supabase-js");
 
 describe("PE3 Uniqueness Constraint Tests", () => {
-  let mockSupabase: any;
+  let mockSupabase: SupabaseClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
     
     mockSupabase = {
       from: vi.fn(),
-    };
+    } as unknown as SupabaseClient;
     
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase);
   });
 
   describe("PE3 date uniqueness enforcement", () => {

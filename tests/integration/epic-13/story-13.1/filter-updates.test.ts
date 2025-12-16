@@ -29,8 +29,8 @@ describe('Story 13.1: Filter Integration with useEmployees', () => {
 
     it('filters object reflects current state values', () => {
       let includeArchived = false;
-      let includeTerminated = false;
-      let needsRepayment = false;
+      const includeTerminated = false;
+      const needsRepayment = false;
 
       const filters1 = {
         includeArchived,
@@ -122,8 +122,8 @@ describe('Story 13.1: Filter Integration with useEmployees', () => {
   describe('Filter State Transitions', () => {
     it('unchecking a filter sets it to false without affecting others', () => {
       let includeArchived = true;
-      let includeTerminated = false;
-      let needsRepayment = false;
+      const includeTerminated = false;
+      const needsRepayment = false;
 
       // Uncheck archived
       includeArchived = false;

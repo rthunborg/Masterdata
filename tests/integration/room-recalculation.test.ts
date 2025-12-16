@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Recalculation Tests for Room Assignment
  * 
@@ -133,7 +134,7 @@ describe("Room Recalculation Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockDate1.id,
         stena_date: null,
@@ -213,7 +214,7 @@ describe("Room Recalculation Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockDate1.id,
         stena_date: null,
@@ -276,7 +277,7 @@ describe("Room Recalculation Tests", () => {
         mobile: "+46701234567",
         rank: "CHEF",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockDate1.id,
         stena_date: null,
@@ -351,7 +352,7 @@ describe("Room Recalculation Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockDate1.id,
         stena_date: null,
@@ -426,7 +427,7 @@ describe("Room Recalculation Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockDate1.id,
         stena_date: null,
@@ -488,7 +489,7 @@ describe("Room Recalculation Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2025-01-01",
         omc_date: mockDate1.id,
         stena_date: null,

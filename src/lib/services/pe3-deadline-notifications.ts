@@ -194,22 +194,22 @@ export function formatPe3DateIdentifier(entry: Pe3EntryWithEmployee): string {
  */
 export function getEmployeeNameForPe3Entry(entry: Pe3EntryWithEmployee): string {
   if (!entry.assigned_employees || entry.assigned_employees.length === 0) {
-    return 'Unassigned';
+    return 'Ej tilldelad';
   }
 
   // If multiple employees assigned, list them all
   const names = entry.assigned_employees
-    .map(emp => emp.name || 'Unknown')
+    .map(emp => emp.name || 'Okänd')
     .filter(Boolean);
 
-  return names.length > 0 ? names.join(', ') : 'Unassigned';
+  return names.length > 0 ? names.join(', ') : 'Ej tilldelad';
 }
 
 /**
  * Generate email subject for PE3 submit deadline
  */
 export function generatePe3SubmitDeadlineEmailSubject(): string {
-  return 'PE3 deadline today – last date to submit spots';
+  return 'Stena Season: PE3 deadline idag – sista dagen att skicka in platser';
 }
 
 /**
@@ -224,14 +224,16 @@ export function generatePe3SubmitDeadlineEmailBody(
 ): string {
   const formattedDate = format(parseISO(today), 'yyyy-MM-dd');
   
-  let body = `Today (${formattedDate}) is the last date to submit PE3 spots.\n\n`;
-  body += 'Affected PE3 dates:\n';
+  let body = `Idag (${formattedDate}) är sista dagen att skicka in PE3-platser.\n\n`;
+  body += 'Berörda PE3-datum:\n';
 
   for (const entry of entries) {
     const dateIdentifier = formatPe3DateIdentifier(entry);
     const employeeName = getEmployeeNameForPe3Entry(entry);
-    body += `- ${dateIdentifier} – Assigned: ${employeeName}\n`;
+    body += `- ${dateIdentifier} – Tilldelad: ${employeeName}\n`;
   }
+
+  body += '\n---\nDetta är ett automatiskt genererat meddelande, vänligen svara inte på detta mail.';
 
   return body;
 }
@@ -246,17 +248,20 @@ export function generatePe3SubmitDeadlineEmailHtml(
   const formattedDate = format(parseISO(today), 'yyyy-MM-dd');
   
   let html = `<html><body>`;
-  html += `<p>Today (<strong>${formattedDate}</strong>) is the last date to submit PE3 spots.</p>`;
-  html += `<p>Affected PE3 dates:</p>`;
+  html += `<p>Idag (<strong>${formattedDate}</strong>) är sista dagen att skicka in PE3-platser.</p>`;
+  html += `<p>Berörda PE3-datum:</p>`;
   html += `<ul>`;
 
   for (const entry of entries) {
     const dateIdentifier = formatPe3DateIdentifier(entry);
     const employeeName = getEmployeeNameForPe3Entry(entry);
-    html += `<li><strong>${dateIdentifier}</strong> – Assigned: ${employeeName}</li>`;
+    html += `<li><strong>${dateIdentifier}</strong> – Tilldelad: ${employeeName}</li>`;
   }
 
-  html += `</ul></body></html>`;
+  html += `</ul>`;
+  html += `<hr />`;
+  html += `<p style="color: #666; font-size: 12px;">Detta är ett automatiskt genererat meddelande, vänligen svara inte på detta mail.</p>`;
+  html += `</body></html>`;
   return html;
 }
 
@@ -264,7 +269,7 @@ export function generatePe3SubmitDeadlineEmailHtml(
  * Generate email subject for PE3 cancel deadline
  */
 export function generatePe3CancelDeadlineEmailSubject(): string {
-  return 'PE3 deadline today – last date to cancel spots';
+  return 'Stena Season: PE3 deadline idag – sista dagen att avboka platser';
 }
 
 /**
@@ -279,14 +284,16 @@ export function generatePe3CancelDeadlineEmailBody(
 ): string {
   const formattedDate = format(parseISO(today), 'yyyy-MM-dd');
   
-  let body = `Today (${formattedDate}) is the last date to cancel PE3 spots.\n\n`;
-  body += 'Affected PE3 dates:\n';
+  let body = `Idag (${formattedDate}) är sista dagen att avboka PE3-platser.\n\n`;
+  body += 'Berörda PE3-datum:\n';
 
   for (const entry of entries) {
     const dateIdentifier = formatPe3DateIdentifier(entry);
     const employeeName = getEmployeeNameForPe3Entry(entry);
-    body += `- ${dateIdentifier} – Assigned: ${employeeName}\n`;
+    body += `- ${dateIdentifier} – Tilldelad: ${employeeName}\n`;
   }
+
+  body += '\n---\nDetta är ett automatiskt genererat meddelande, vänligen svara inte på detta mail.';
 
   return body;
 }
@@ -301,40 +308,43 @@ export function generatePe3CancelDeadlineEmailHtml(
   const formattedDate = format(parseISO(today), 'yyyy-MM-dd');
   
   let html = `<html><body>`;
-  html += `<p>Today (<strong>${formattedDate}</strong>) is the last date to cancel PE3 spots.</p>`;
-  html += `<p>Affected PE3 dates:</p>`;
+  html += `<p>Idag (<strong>${formattedDate}</strong>) är sista dagen att avboka PE3-platser.</p>`;
+  html += `<p>Berörda PE3-datum:</p>`;
   html += `<ul>`;
 
   for (const entry of entries) {
     const dateIdentifier = formatPe3DateIdentifier(entry);
     const employeeName = getEmployeeNameForPe3Entry(entry);
-    html += `<li><strong>${dateIdentifier}</strong> – Assigned: ${employeeName}</li>`;
+    html += `<li><strong>${dateIdentifier}</strong> – Tilldelad: ${employeeName}</li>`;
   }
 
-  html += `</ul></body></html>`;
+  html += `</ul>`;
+  html += `<hr />`;
+  html += `<p style="color: #666; font-size: 12px;">Detta är ett automatiskt genererat meddelande, vänligen svara inte på detta mail.</p>`;
+  html += `</body></html>`;
   return html;
 }
 
 /**
- * Get HR admin email addresses
+ * Get HR admin and Recruiter email addresses
  * Reuses function from omc-masterdata-reminder service
  */
 async function getHrAdminEmails(): Promise<string[]> {
   const supabase = createServiceRoleClient();
   
-  const { data: hrAdmins, error } = await supabase
+  const { data: recipients, error } = await supabase
     .from('users')
     .select('email')
-    .eq('role', 'hr_admin')
+    .in('role', ['hr_admin', 'recruiter'])
     .not('email', 'is', null)
     .eq('is_active', true);
 
   if (error) {
-    console.error('[PE3 Notifications] Failed to fetch HR admin emails:', error);
+    console.error('[PE3 Notifications] Failed to fetch HR admin/recruiter emails:', error);
     return [];
   }
 
-  return (hrAdmins || []).map(user => user.email).filter(Boolean);
+  return (recipients || []).map(user => user.email).filter(Boolean);
 }
 
 /**

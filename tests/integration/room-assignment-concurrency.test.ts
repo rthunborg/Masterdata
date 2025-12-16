@@ -111,7 +111,7 @@ describe("Room Assignment Concurrency Tests", () => {
         };
       }),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("Concurrent first employee assignment", () => {
@@ -125,7 +125,7 @@ describe("Room Assignment Concurrency Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-01", // Use past date to pass validation
         omc_date: mockOMCDate.id,
         hotel_required: true, // Required for room assignment
@@ -245,7 +245,7 @@ describe("Room Assignment Concurrency Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-01", // Use past date to pass validation
         omc_date: mockOMCDate.id,
         stena_date: null,
@@ -285,7 +285,7 @@ describe("Room Assignment Concurrency Tests", () => {
         mobile: "+46701234568",
         rank: "SEV",
         gender: "Man", // Same gender
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-02", // Use past date to pass validation
         omc_date: mockOMCDate.id,
         hotel_required: true, // Required for room assignment
@@ -743,7 +743,7 @@ describe("Room Assignment Concurrency Tests", () => {
         mobile: "+46701234567",
         rank: "SEV",
         gender: "Man",
-        town_district: "Stockholm",
+        town_district: "Göteborg",
         hire_date: "2020-01-01", // Use past date to pass validation
         omc_date: mockOMCDate.id,
         stena_date: null,

@@ -28,7 +28,7 @@ export interface CreateEmployeesOptions {
   hotel_required?: boolean;
   room_number_shared?: number | null;
   hire_date?: string;
-  [key: string]: any; // Allow additional fields
+  [key: string]: unknown; // Allow additional fields with unknown type
 }
 
 /**
@@ -58,7 +58,7 @@ export function createEmployeesForDate(
       mobile: `+4670123456${i}`,
       rank: options.rank || 'SEV',
       gender: options.gender !== undefined ? options.gender : (i % 2 === 0 ? 'Man' : 'Woman'),
-      town_district: 'Stockholm',
+      town_district: 'Göteborg',
       hire_date: options.hire_date || `2025-01-${String(i + 1).padStart(2, '0')}`,
       omc_date: dateId,
       stena_date: null,
@@ -326,4 +326,3 @@ export function getRoomOccupancySummary(employees: EmployeeWithRoom[]): Map<numb
   
   return summary;
 }
-

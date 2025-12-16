@@ -28,6 +28,7 @@ import {
 import { Settings, Edit, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { useColumns } from "@/lib/hooks/use-columns";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
 import { groupColumnsByCategory } from "@/lib/utils/column-grouping";
 import { useTranslations } from "@/lib/i18n";

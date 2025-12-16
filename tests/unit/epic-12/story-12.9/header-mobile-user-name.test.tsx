@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Story 12.9: Mobile Header and Navigation UI Improvements
  * Unit tests for mobile header user name/email display
@@ -26,7 +27,7 @@ vi.mock('@/lib/i18n', () => ({
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
   default: (props: any) => {
-    // eslint-disable-next-line @next/next/no-img-element
+     
     const { priority, ...imgProps } = props;
     return <img {...imgProps} />;
   },

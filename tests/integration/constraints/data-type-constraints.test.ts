@@ -13,22 +13,22 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { expectConstraintViolation } from "../../helpers/constraint-test-helpers";
 
 vi.mock("@supabase/supabase-js");
 
 describe("Data Type Constraint Tests", () => {
-  let mockSupabase: any;
+  let mockSupabase: SupabaseClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
     
     mockSupabase = {
       from: vi.fn(),
-    };
+    } as unknown as SupabaseClient;
     
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase);
   });
 
   describe("SSN data type (TEXT)", () => {
@@ -79,7 +79,7 @@ describe("Data Type Constraint Tests", () => {
             .insert({
               first_name: "John",
               surname: "Doe",
-              ssn: 1234567890 as any, // Invalid: number instead of string
+              ssn: 1234567890 as unknown as string, // Invalid: number instead of string
               hire_date: "2025-01-01",
             });
           
@@ -140,7 +140,7 @@ describe("Data Type Constraint Tests", () => {
               first_name: "John",
               surname: "Doe",
               ssn: "123456-7892",
-              hire_date: "invalid-date" as any,
+              hire_date: "invalid-date" as unknown as string,
             });
           
           if (result.error) {
@@ -204,7 +204,7 @@ describe("Data Type Constraint Tests", () => {
               category: "ÖMC Dates",
               date_description: "Test",
               date_value: "2025-03-08",
-              max_spots: "twenty" as any, // Invalid: string instead of integer
+              max_spots: "twenty" as unknown as number, // Invalid: string instead of integer
             });
           
           if (result.error) {
@@ -266,7 +266,7 @@ describe("Data Type Constraint Tests", () => {
               surname: "Doe",
               ssn: "123456-7894",
               hire_date: "2025-01-01",
-              is_terminated: "yes" as any, // Invalid: string instead of boolean
+              is_terminated: "yes" as unknown as boolean, // Invalid: string instead of boolean
             });
           
           if (result.error) {
@@ -328,7 +328,7 @@ describe("Data Type Constraint Tests", () => {
               surname: "Doe",
               ssn: "123456-7896",
               hire_date: "2025-01-01",
-              created_at: "invalid-timestamp" as any,
+              created_at: "invalid-timestamp" as unknown as string,
             });
           
           if (result.error) {

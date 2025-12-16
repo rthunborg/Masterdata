@@ -42,6 +42,7 @@ import { formatImportantDateOption } from "@/lib/utils/format";
 import { UnsavedChangesDialog } from "@/components/dashboard/unsaved-changes-dialog";
 import { CapacityBadge } from "@/components/dashboard/capacity-badge";
 import { cn } from "@/lib/utils";
+import { TOWN_DISTRICTS } from "@/lib/constants/options";
 import type { Employee } from "@/lib/types/employee";
 
 interface EditEmployeeModalProps {
@@ -98,6 +99,9 @@ export function EditEmployeeModal({
       omc_date: "",
       pe3_date: null,
       comments: null,
+      // Story 8.17: Dietary Requirements
+      special_diet: false,
+      diet_details: null,
       // Story 13.9: Repayment fields (read-only, auto-managed)
       repayment_needed_omc: null,
       repayment_needed_pe3: null,
@@ -122,6 +126,8 @@ export function EditEmployeeModal({
         omc_date: employee.omc_date || "",
         pe3_date: employee.pe3_date || null,
         comments: employee.comments || null,
+        special_diet: employee.special_diet || false,
+        diet_details: employee.diet_details || null,
         // Story 13.9: Include repayment fields for terminated employees
         repayment_needed_omc: employee.repayment_needed_omc || null,
         repayment_needed_pe3: employee.repayment_needed_pe3 || null,
@@ -149,6 +155,9 @@ export function EditEmployeeModal({
   // Extract isDirty from formState for unsaved changes tracking
   const { isDirty } = form.formState;
 
+  // Watch special_diet for conditional rendering
+  const specialDiet = form.watch("special_diet");
+
   const onSubmit = async (data: UpdateEmployeeInput) => {
     if (!employee) return;
 
@@ -159,6 +168,7 @@ export function EditEmployeeModal({
       const normalizedData = {
         ...data,
         email: data.email ?? null,
+        diet_details: data.diet_details ?? null,
       };
       
       await employeeService.update(employee.id, normalizedData);
@@ -394,16 +404,23 @@ export function EditEmployeeModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('townDistrict')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Stockholm"
-                        {...field}
-                        value={field.value ?? ""}
-                        onChange={(e) =>
-                          field.onChange(e.target.value || null)
-                        }
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? undefined}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('selectTownDistrict') || "Select district"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {TOWN_DISTRICTS.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -727,6 +744,56 @@ export function EditEmployeeModal({
                 </>
               )}
             </div>
+
+            {/* Special Diet */}
+            <FormField
+              control={form.control}
+              name="special_diet"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mb-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      {t('specialDiet')}
+                    </FormLabel>
+                    <FormDescription>
+                      {t('specialDietDescription')}
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            {/* Diet Details - Conditional */}
+            {specialDiet && (
+              <FormField
+                control={form.control}
+                name="diet_details"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <FormLabel>
+                      {t('dietDetails')} <span className="text-red-500" aria-label="required">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t('dietDetailsPlaceholder')}
+                        className="resize-none"
+                        rows={3}
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Comments */}
             <FormField

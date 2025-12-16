@@ -75,7 +75,7 @@ describe("column-mapping", () => {
       mobile: "+1234567890",
       rank: 'SEV',
       gender: 'Man',
-      town_district: "Downtown",
+      town_district: "Trelleborg",
       hire_date: "2020-01-15",
     stena_date: null,
     omc_date: null,

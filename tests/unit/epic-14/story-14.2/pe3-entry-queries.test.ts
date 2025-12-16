@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Unit Tests: PE3 Entry Queries
  * Story: 14.2 - PE3 Deadline Notifications (Submit / Cancel)

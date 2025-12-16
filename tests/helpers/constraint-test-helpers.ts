@@ -10,6 +10,10 @@
 
 import { expect } from "vitest";
 
+interface PostgresError extends Error {
+  code?: string;
+}
+
 /**
  * Expect a constraint violation when executing an operation
  * 
@@ -17,16 +21,17 @@ import { expect } from "vitest";
  * @param constraintName - Name of the constraint (e.g., "remaining_spots_non_negative")
  */
 export async function expectConstraintViolation(
-  operation: () => Promise<any>,
+  operation: () => Promise<unknown>,
   constraintName: string
 ): Promise<void> {
   try {
     await operation();
     throw new Error('Expected constraint violation but operation succeeded');
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const error = err as PostgresError;
     // Check for constraint violation in error message or code
-    const errorMessage = err?.message || '';
-    const errorCode = err?.code || '';
+    const errorMessage = error?.message || '';
+    const errorCode = error?.code || '';
     
     // PostgreSQL constraint violation codes
     const constraintCodes = ['23514', '23505', '23503', '23502'];
@@ -50,14 +55,15 @@ export async function expectConstraintViolation(
  * @param operation - Async function that should trigger unique violation
  */
 export async function expectUniqueViolation(
-  operation: () => Promise<any>
+  operation: () => Promise<unknown>
 ): Promise<void> {
   try {
     await operation();
     throw new Error('Expected unique violation but operation succeeded');
-  } catch (err: any) {
-    const errorCode = err?.code || '';
-    const errorMessage = err?.message || '';
+  } catch (err: unknown) {
+    const error = err as PostgresError;
+    const errorCode = error?.code || '';
+    const errorMessage = error?.message || '';
     
     // PostgreSQL unique violation code
     if (errorCode === '23505' || 
@@ -78,7 +84,7 @@ export async function expectUniqueViolation(
  * @param verifyRollback - Async function to verify rollback occurred (no partial changes)
  */
 export async function testTransactionRollback(
-  operation: () => Promise<any>,
+  operation: () => Promise<unknown>,
   verifyRollback: () => Promise<void>
 ): Promise<void> {
   try {
@@ -98,7 +104,7 @@ export async function testTransactionRollback(
  * @returns Object with succeeded and failed counts
  */
 export async function testConcurrentWrites(
-  operation: () => Promise<any>,
+  operation: () => Promise<unknown>,
   concurrency: number
 ): Promise<{ succeeded: number; failed: number }> {
   const results = await Promise.allSettled(
@@ -117,14 +123,15 @@ export async function testConcurrentWrites(
  * @param operation - Async function that should trigger FK violation
  */
 export async function expectForeignKeyViolation(
-  operation: () => Promise<any>
+  operation: () => Promise<unknown>
 ): Promise<void> {
   try {
     await operation();
     throw new Error('Expected foreign key violation but operation succeeded');
-  } catch (err: any) {
-    const errorCode = err?.code || '';
-    const errorMessage = err?.message || '';
+  } catch (err: unknown) {
+    const error = err as PostgresError;
+    const errorCode = error?.code || '';
+    const errorMessage = error?.message || '';
     
     if (errorCode === '23503' || 
         errorMessage.toLowerCase().includes('foreign key') ||
@@ -143,14 +150,15 @@ export async function expectForeignKeyViolation(
  * @param operation - Async function that should trigger NOT NULL violation
  */
 export async function expectNotNullViolation(
-  operation: () => Promise<any>
+  operation: () => Promise<unknown>
 ): Promise<void> {
   try {
     await operation();
     throw new Error('Expected NOT NULL violation but operation succeeded');
-  } catch (err: any) {
-    const errorCode = err?.code || '';
-    const errorMessage = err?.message || '';
+  } catch (err: unknown) {
+    const error = err as PostgresError;
+    const errorCode = error?.code || '';
+    const errorMessage = error?.message || '';
     
     if (errorCode === '23502' || 
         errorMessage.toLowerCase().includes('not null') ||
@@ -162,4 +170,3 @@ export async function expectNotNullViolation(
     throw err;
   }
 }
-

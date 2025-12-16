@@ -63,7 +63,7 @@ describe("Capacity Transaction Atomicity", () => {
     mobile: "+46701234567",
     rank: "SEV",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2025-01-15",
     omc_date: null,
     stena_date: null,
@@ -109,14 +109,14 @@ describe("Capacity Transaction Atomicity", () => {
         })),
       })),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("Assignment Rollback", () => {
     it("should rollback spot decrement if assignment fails mid-operation", async () => {
       // Track state changes
       let spotDecremented = false;
-      let employeeAssigned = false;
+      const employeeAssigned = false;
 
       vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
       vi.mocked(employeeRepository.update).mockResolvedValue({

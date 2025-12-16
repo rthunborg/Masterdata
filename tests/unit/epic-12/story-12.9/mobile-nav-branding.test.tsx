@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Story 12.9: Mobile Header and Navigation UI Improvements
  * Unit tests for mobile navigation branding (logo and text)
@@ -5,14 +6,15 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import React from 'react';
 import { MobileNav } from '@/components/layout/mobile-nav';
 import { UserRole } from '@/lib/types/user';
 import type { SessionUser } from '@/lib/types/user';
 
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
-  default: (props: any) => {
-    // eslint-disable-next-line @next/next/no-img-element
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement> & { priority?: boolean }) => {
+     
     const { priority, ...imgProps } = props;
     return <img {...imgProps} />;
   },
@@ -46,7 +48,7 @@ vi.mock('@/lib/i18n', () => {
 
 // Mock navigation Link
 vi.mock('@/lib/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
     <a href={href} {...props}>
       {children}
     </a>

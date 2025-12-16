@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Column Settings Mobile Tests
  * Story 11.11: Mobile Responsive UI Tests

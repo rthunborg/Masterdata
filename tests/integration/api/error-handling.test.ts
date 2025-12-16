@@ -219,6 +219,7 @@ describe("Error Handling - 409 Conflict", () => {
 
   it("should return 409 when capacity is full", async () => {
     vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    // Use unknown for type assertion to fix lint error
     const mockCreatedEmployee = {
       id: "emp-123",
       first_name: "John",
@@ -227,12 +228,12 @@ describe("Error Handling - 409 Conflict", () => {
       email: "john@example.com",
       hire_date: "2020-01-01", // Use past date to pass validation,
       omc_date: "omc-date-full",
-    } as any;
+    } as unknown as import("@/lib/types/employee").Employee;
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockRejectedValue(
       new Error("ÖMC-datum 8-9 mars 2025 är fullbokat")
     );
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
 
     const employeeData = {
       first_name: "John",
@@ -296,11 +297,11 @@ describe("Error Handling - 409 Conflict", () => {
       email: "john@example.com",
       hire_date: "2020-01-01", // Use past date to pass validation,
       pe3_date: "pe3-date-1",
-    } as any;
+    } as unknown as import("@/lib/types/employee").Employee;
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     const duplicateError = new Error("PE3 date pe3-date-1 is already assigned to another employee");
     vi.mocked(assignEmployeeToDate).mockRejectedValue(duplicateError);
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
 
     const employeeData = {
       first_name: "John",
@@ -456,12 +457,12 @@ describe("Error Handling - Error Response Format", () => {
       email: "john@example.com",
       hire_date: "2020-01-01", // Use past date to pass validation,
       omc_date: "omc-date-full",
-    } as any;
+    } as unknown as import("@/lib/types/employee").Employee;
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockRejectedValue(
       new Error("ÖMC-datum 8-9 mars 2025 är fullbokat")
     );
-    vi.mocked(createClient).mockResolvedValue({} as any);
+    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
 
     const employeeData = {
       first_name: "John",
@@ -513,4 +514,3 @@ describe("Error Handling - Error Response Format", () => {
     expect(json.error.message).toContain("fullbokat"); // Swedish message
   });
 });
-

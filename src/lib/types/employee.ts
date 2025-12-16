@@ -1,3 +1,5 @@
+import { TownDistrict } from "@/lib/constants/options";
+
 export interface Employee {
   id: string;
   first_name: string;
@@ -7,7 +9,7 @@ export interface Employee {
   mobile: string | null;
   rank: 'SEV' | 'CHEF' | null;
   gender: 'Man' | 'Woman' | null;
-  town_district: string | null;
+  town_district: TownDistrict | null;
   hire_date: string;
   /** UUID reference to Stena Dates (important_dates.id) */
   stena_date: string | null;
@@ -36,6 +38,10 @@ export interface Employee {
    * Read-only - managed by termination workflow.
    */
   repayment_needed_pe3: boolean | null;
+
+  // Story 8.17: Dietary Requirements
+  special_diet: boolean;
+  diet_details: string | null;
   
   comments: string | null;
   // New masterdata columns (Story 7.1) - Converted to boolean for completion tracking (Story 8.2)

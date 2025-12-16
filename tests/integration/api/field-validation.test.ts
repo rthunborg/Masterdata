@@ -10,9 +10,9 @@ import { PATCH } from "@/app/api/employees/[id]/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
-import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 import { UserRole } from "@/lib/types/user";
-import { createEmployeeWithPrerequisites, setOneDateWithTimer, createTestEmployee } from "@/../tests/helpers/validation-test-helpers";
+import type { EmployeeFormData } from "@/lib/types/employee";
+import { setOneDateWithTimer, createTestEmployee } from "@/../tests/helpers/validation-test-helpers";
 
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
@@ -36,7 +36,7 @@ describe("API Field Validation - POST /api/employees", () => {
     mobile: "+46701234567",
     rank: "CHEF",
     gender: 'Woman',
-    town_district: "Gothenburg",
+    town_district: "Göteborg",
     hire_date: "2020-01-01", // Use past date to pass validation,
     stena_date: null,
     omc_date: null,
@@ -62,6 +62,9 @@ describe("API Field Validation - POST /api/employees", () => {
     c17: null,
     crewing_done: null,
     comments: "New employee",
+    omc_masterdata_reminder_sent_at: null,
+    room_number_shared: null,
+    hotel_required: false,
   };
 
   beforeEach(() => {
@@ -74,7 +77,7 @@ describe("API Field Validation - POST /api/employees", () => {
 
       const invalidData = {
         ...validEmployeeData,
-        gender: 'male' as any, // Invalid enum value
+        gender: 'male' as unknown as import("@/lib/types/employee").Gender, // Invalid enum value
       };
 
       const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -95,7 +98,7 @@ describe("API Field Validation - POST /api/employees", () => {
 
       const invalidData = {
         ...validEmployeeData,
-        rank: 'sev' as any, // Invalid enum value (lowercase)
+        rank: 'sev' as unknown as import("@/lib/types/employee").Rank, // Invalid enum value (lowercase)
       };
 
       const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -235,7 +238,7 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
 
       const request = new NextRequest("http://localhost:3000/api/employees/emp-1", {
         method: "PATCH",
-        body: JSON.stringify({ gender: 'Other' as any }),
+        body: JSON.stringify({ gender: 'Other' as unknown as import("@/lib/types/employee").Gender }),
       });
 
       const response = await PATCH(request, { params: Promise.resolve({ id: "emp-1" }) });
@@ -253,7 +256,7 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
 
       const request = new NextRequest("http://localhost:3000/api/employees/emp-1", {
         method: "PATCH",
-        body: JSON.stringify({ rank: 'Manager' as any }),
+        body: JSON.stringify({ rank: 'Manager' as unknown as import("@/lib/types/employee").Rank }),
       });
 
       const response = await PATCH(request, { params: Promise.resolve({ id: "emp-1" }) });
@@ -285,4 +288,3 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
     });
   });
 });
-

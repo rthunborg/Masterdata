@@ -70,7 +70,7 @@ export function createTestEmployee(
     mobile: "+46701234567",
     rank: "SEV",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2025-01-01",
     stena_date: null,
     omc_date: null,
@@ -81,6 +81,8 @@ export function createTestEmployee(
     is_archived: false,
     repayment_needed_omc: null,
     repayment_needed_pe3: null,
+    special_diet: false,
+    diet_details: null,
     one: false,
     one_marked_at: null,
     talmundo: false,
@@ -112,7 +114,7 @@ export function createTestEmployee(
  * @param overrides - Optional field overrides
  * @returns Object with all required schema fields for validation
  */
-export const createMinimalEmployee = (overrides: Record<string, any> = {}) => ({
+export const createMinimalEmployee = (overrides: Record<string, unknown> = {}) => ({
   first_name: 'Test',
   surname: 'Employee',
   ssn: '19900101-1234',

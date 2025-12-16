@@ -92,7 +92,7 @@ describe("Date Capacity Concurrency Integration", () => {
     mobile: "+46701234567",
     rank: "SEV",
     gender: "Man",
-    town_district: "Stockholm",
+    town_district: "Göteborg",
     hire_date: "2020-01-15", // Use past date to pass validation
     stena_date: null,
     omc_date: null,
@@ -150,7 +150,7 @@ describe("Date Capacity Concurrency Integration", () => {
         })),
       })),
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-    } as any);
+    } as unknown as ReturnType<typeof createClient>);
   });
 
   describe("Concurrent Assignment to Last Spot", () => {
