@@ -187,6 +187,10 @@ import { cn } from "@/lib/utils";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { BulkActionsBar } from "./bulk-actions-bar";
+import { EmployeeStatsBar } from "./employee-stats-bar";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
 
 
@@ -285,6 +289,12 @@ export function EmployeeTable({
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
   const [isArchiving, setIsArchiving] = React.useState(false);
   const [isReactivating, setIsReactivating] = React.useState(false);
+  const [isBulkProcessing, setIsBulkProcessing] = React.useState(false);
+  const [statsRefreshToken, setStatsRefreshToken] = React.useState(0);
+
+  const bumpStats = React.useCallback(() => {
+    setStatsRefreshToken((v) => v + 1);
+  }, []);
 
   // Story 8.5: Crew-ready filter state
   const [crewReadyFilter, setCrewReadyFilter] = React.useState<'all' | 'ready' | 'not-ready'>('all');
@@ -411,6 +421,9 @@ export function EmployeeTable({
         if (!onOptimisticUpdate) {
           onEmployeeUpdated?.();
         }
+
+        // Stats are DB-sourced and need explicit refresh
+        bumpStats();
     } catch (error: unknown) {
       // Rollback optimistic update
       if (rollback) {
@@ -420,7 +433,7 @@ export function EmployeeTable({
       const message = error instanceof Error ? error.message : tToasts("employees.updateFailed");
       throw new Error(message);
     }
-  }, [onEmployeeUpdated, onOptimisticUpdate, tToasts]);
+  }, [bumpStats, onEmployeeUpdated, onOptimisticUpdate, tToasts]);
 
   // Handler for custom column updates
   const handleCustomDataUpdate = React.useCallback(async (
@@ -432,11 +445,12 @@ export function EmployeeTable({
       await customDataService.updateCustomData(id, { [columnName]: value });
       toast.success(tToasts("employees.customDataUpdated"));
       onEmployeeUpdated?.();
+      bumpStats();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to update custom data";
       throw new Error(message);
     }
-  }, [onEmployeeUpdated]);
+  }, [bumpStats, onEmployeeUpdated]);
 
   const handleArchiveClick = (employee: Employee) => {
 
@@ -473,6 +487,7 @@ export function EmployeeTable({
       setArchiveDialogOpen(false);
 
       onEmployeeUpdated?.();
+      bumpStats();
 
     } catch (error: unknown) {
 
@@ -507,6 +522,7 @@ export function EmployeeTable({
       setUnarchiveDialogOpen(false);
 
       onEmployeeUpdated?.();
+      bumpStats();
 
     } catch (error: unknown) {
 
@@ -520,6 +536,43 @@ export function EmployeeTable({
 
     }
 
+  };
+
+  const handleBulkAction = async (action: 'archive' | 'restore') => {
+    const selectedIds = Array.from(selectedEmployeeIds);
+    if (selectedIds.length === 0) return;
+
+    try {
+      setIsBulkProcessing(true);
+
+      const response = await fetch('/api/employees/bulk-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          employeeIds: selectedIds,
+          action: action === 'restore' ? 'restore' : 'archive'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to perform bulk action');
+      }
+
+      toast.success(
+        action === 'archive' 
+          ? `Archived ${selectedIds.length} employees` 
+          : `Restored ${selectedIds.length} employees`
+      );
+
+      setSelectedEmployeeIds(new Set());
+      onEmployeeUpdated?.();
+      bumpStats();
+    } catch (error) {
+      toast.error('Failed to update employees');
+      console.error(error);
+    } finally {
+      setIsBulkProcessing(false);
+    }
   };
 
   const handleTerminateClick = (employee: Employee) => {
@@ -575,6 +628,7 @@ export function EmployeeTable({
       setReactivateDialogOpen(false);
 
       onEmployeeUpdated?.();
+      bumpStats();
 
     } catch (error: unknown) {
 
@@ -657,6 +711,7 @@ export function EmployeeTable({
       // Refresh the table to show updated crewing_done values
 
       onEmployeeUpdated?.();
+      bumpStats();
 
     } catch (error: unknown) {
 
@@ -667,6 +722,17 @@ export function EmployeeTable({
     }
 
   };
+
+  // Story 8.5: Apply crew-ready filter to employees
+  const filteredEmployees = React.useMemo(() => {
+    if (crewReadyFilter === 'ready') {
+      return employees.filter(emp => emp.crewing_done === true);
+    } else if (crewReadyFilter === 'not-ready') {
+      return employees.filter(emp => emp.crewing_done !== true);
+    }
+
+    return employees; // 'all'
+  }, [employees, crewReadyFilter]);
 
   // Build dynamic columns from column configs
 
@@ -688,7 +754,32 @@ export function EmployeeTable({
 
       id: "select",
 
-      header: () => null,
+      header: () => {
+        const allVisibleIds = filteredEmployees.map(e => e.id);
+        const allSelected = allVisibleIds.length > 0 && allVisibleIds.every(id => selectedEmployeeIds.has(id));
+        const someSelected = allVisibleIds.some(id => selectedEmployeeIds.has(id));
+        
+        return (
+          <div className="flex items-center justify-center w-full h-full gap-2">
+            <Checkbox
+              checked={allSelected ? true : someSelected ? "indeterminate" : false}
+              onCheckedChange={(value) => {
+                setSelectedEmployeeIds((prev) => {
+                  const next = new Set(prev);
+                  if (value === true) {
+                    allVisibleIds.forEach((id) => next.add(id));
+                  } else {
+                    allVisibleIds.forEach((id) => next.delete(id));
+                  }
+                  return next;
+                });
+              }}
+              aria-label="Select all"
+              className="w-4 h-4 cursor-pointer"
+            />
+          </div>
+        );
+      },
 
       enableSorting: false,
 
@@ -1376,26 +1467,27 @@ export function EmployeeTable({
 
     return [selectionColumn, ...dataColumns];
 
-  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates, includeTerminated, isEmployeeSelected, toggleEmployeeSelection, checkColumnChanged, density]); // Story 16.5: Include checkColumnChanged so columns re-render when highlighting state changes
-
-  // Story 8.5: Apply crew-ready filter to employees
-
-
-  const filteredEmployees = React.useMemo(() => {
-
-    if (crewReadyFilter === 'ready') {
-
-      return employees.filter(emp => emp.crewing_done === true);
-
-    } else if (crewReadyFilter === 'not-ready') {
-
-      return employees.filter(emp => emp.crewing_done !== true);
-
-    }
-
-    return employees; // 'all'
-
-  }, [employees, crewReadyFilter]);
+  }, [
+    columnConfigs,
+    isHRAdmin,
+    handleMasterdataUpdate,
+    handleCustomDataUpdate,
+    effectiveRole,
+    isPreviewMode,
+    t,
+    tAdmin,
+    tDashboard,
+    columnVisibility,
+    allImportantDates,
+    includeTerminated,
+    isEmployeeSelected,
+    toggleEmployeeSelection,
+    checkColumnChanged,
+    density,
+    // Keep select-all checkbox reactive (avoid stale closures)
+    filteredEmployees,
+    selectedEmployeeIds,
+  ]); // Story 16.5: Include checkColumnChanged so columns re-render when highlighting state changes
 
   // Story 13.5: Reset Crew Ready filter when Terminated filter is enabled
   React.useEffect(() => {
@@ -1815,6 +1907,8 @@ export function EmployeeTable({
 
         <>
 
+          <EmployeeStatsBar refreshToken={statsRefreshToken} className="mb-4" />
+
           {/* Search Input and Column Visibility */}
 
           <div className={cn(
@@ -2051,7 +2145,7 @@ export function EmployeeTable({
                           className={cn(
                             "relative",
                             // Story 16.6: For checkbox column, remove all padding to match cell structure
-                            isCheckboxColumn && "!p-0",
+                            isCheckboxColumn && "p-0!",
                             // Compact mode adjustments
                             isCompact ? "h-8 px-2" : "h-12 px-4",
                             // Sticky action column
@@ -2221,9 +2315,9 @@ export function EmployeeTable({
 
                           // Story 13.11: Status tints (priority: terminated > crew ready)
                           // Override TableRow's default data-[state=selected]:bg-muted to allow status tints to show
-                          row.original.is_terminated && !row.original.is_archived && "bg-red-50 dark:bg-red-950/20 data-[state=selected]:!bg-red-50",
+                          row.original.is_terminated && !row.original.is_archived && "bg-red-50 dark:bg-red-950/20 data-[state=selected]:bg-red-50!",
 
-                          isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20 data-[state=selected]:!bg-green-50/50",
+                          isCrewReady && !row.original.is_archived && !row.original.is_terminated && "bg-green-50/50 dark:bg-green-950/20 data-[state=selected]:bg-green-50/50!",
 
                           isUpdatedRow && "animate-pulse bg-blue-50 border-l-4 border-l-blue-400 transition-all duration-2000",
 
@@ -2259,7 +2353,7 @@ export function EmployeeTable({
                             className={cn(
                               "overflow-hidden",
                               // Story 16.6: Remove all padding for checkbox column to match header alignment
-                              isCheckboxCell && "!p-0",
+                              isCheckboxCell && "p-0!",
                               // Compact mode padding
                               !isCheckboxCell && (isCompact ? "p-2" : "p-4"),
                               // Sticky action column
@@ -2463,6 +2557,15 @@ export function EmployeeTable({
         onExport={handleExportWithFields}
         columnConfigs={columnConfigs}
         visibleColumnIds={visibleColumnIds}
+      />
+
+      <BulkActionsBar
+        selectedCount={selectedEmployeeIds.size}
+        onArchive={() => handleBulkAction('archive')}
+        onRestore={() => handleBulkAction('restore')}
+        onClear={() => setSelectedEmployeeIds(new Set())}
+        isArchivedView={includeArchived}
+        isProcessing={isBulkProcessing}
       />
 
     </>

@@ -21,6 +21,8 @@ export interface Employee {
   termination_reason: string | null;
   is_terminated: boolean;
   is_archived: boolean;
+  archived_at: string | null;
+  is_anonymized: boolean;
   
   // Story 8.13: Repayment tracking fields (auto-managed by termination workflow)
   /**
@@ -76,8 +78,17 @@ export interface Employee {
 
 export type EmployeeFormData = Omit<
   Employee,
-  "id" | "created_at" | "updated_at"
->;
+  "id" | "created_at" | "updated_at" | "archived_at" | "is_anonymized"
+> & {
+  /**
+   * DB-managed: set by archive/restore workflow. Not required on create.
+   */
+  archived_at?: string | null;
+  /**
+   * DB-managed: set by anonymization workflow. Not required on create.
+   */
+  is_anonymized?: boolean;
+};
 
 export interface EmployeeListItem {
   id: string;
