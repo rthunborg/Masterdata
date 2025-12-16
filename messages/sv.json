@@ -98,7 +98,10 @@
       "employees": "anställda",
       "sinceLastLogin": "sedan din senaste inloggning",
       "seeHighlightedFields": "Se markerade fält nedan."
-    }
+    },
+    "statsActiveEmployeesLabel": "Anställda (aktiva)",
+    "statsCrewedEmployeesLabel": "Besättningsklara",
+    "statsHint": "Arkiverade exkluderas. Uppsagda inkluderas."
   },
   "forms": {
     "firstName": "Förnamn",
