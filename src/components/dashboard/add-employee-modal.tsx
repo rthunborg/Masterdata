@@ -63,7 +63,6 @@ export function AddEmployeeModal({
   const tCommon = useTranslations('common');
   const tDashboard = useTranslations('dashboard');
   const tErrors = useTranslations('errors');
-  const tToasts = useTranslations('toasts');
 
   // Fetch Important Dates with real-time updates
   const { dates: stenaDates, isLoading: stenaLoading } =
@@ -83,7 +82,6 @@ export function AddEmployeeModal({
   );
 
   const form = useForm<CreateEmployeeInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(createEmployeeSchema) as any,
     defaultValues: {
       first_name: "",
@@ -247,7 +245,6 @@ export function AddEmployeeModal({
         </DialogHeader>
 
         <Form {...form}>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4" noValidate>
             {/* Live region for validation error announcements */}
             <div 
@@ -418,7 +415,13 @@ export function AddEmployeeModal({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={t('selectTownDistrict') || "Select district"} />
+                          <SelectValue
+                            placeholder={
+                              t('selectTownDistrict') === 'selectTownDistrict'
+                                ? 'Välj stad'
+                                : t('selectTownDistrict')
+                            }
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
