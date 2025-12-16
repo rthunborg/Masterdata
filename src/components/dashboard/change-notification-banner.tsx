@@ -73,10 +73,12 @@ export function ChangeNotificationBanner({
     // If storedBaseline is null (first tracking), we assume existing dismissal state is valid/relevant
     // (or just respect the current session state).
     if (storedBaseline && storedBaseline !== changesBaseline) {
-      sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
+      if (changesBaseline) {
+        sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
+      }
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
       // isDismissed is already false (default or reset via derived state)
-    } 
+    }  
     // Case 2: Same baseline as stored OR first time tracking this baseline
     // We update tracking key and restore dismissal state
     else {
