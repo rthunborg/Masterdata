@@ -198,7 +198,7 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
   ).refine(
     (data) => {
       // Story 8.17: Diet details are mandatory if special_diet is true
-      if (data.special_diet && typeof data.diet_details === 'string' && data.diet_details.trim() === '') {
+      if (data.special_diet && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
         return false;
       }
       return true;
@@ -320,7 +320,7 @@ export const createEmployeeSchema = baseEmployeeSchema.refine(
 ).refine(
   (data) => {
     // Story 8.17: Diet details are mandatory if special_diet is true
-    if (data.special_diet && (!data.diet_details || data.diet_details.trim() === '')) {
+    if (data.special_diet && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
       return false;
     }
     return true;
@@ -349,7 +349,7 @@ export const updateEmployeeSchema = baseEmployeeSchema
   .refine(
     (data) => {
       // Story 8.17: Diet details are mandatory if special_diet is true
-      if (data.special_diet && typeof data.diet_details === 'string' && data.diet_details.trim() === '') {
+      if (data.special_diet && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
         return false;
       }
       return true;
