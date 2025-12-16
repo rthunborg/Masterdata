@@ -43,19 +43,17 @@ export function ChangeNotificationBanner({
   const tDashboard = useTranslations('dashboard');
 
   // Handle baseline changes (Derived State Pattern)
-  // Store computed values in regular variables or use useEffect with proper dependency handling
-  // Here we use useEffect to sync state when prop changes
-  useEffect(() => {
-    if (changesBaseline !== prevBaseline) {
-      setPrevBaseline(changesBaseline);
-      
-      // Only reset dismissal if we have a previous baseline to compare against
-      // (i.e. not the first render)
-      if (prevBaseline !== null) {
-        setIsDismissed(false);
-      }
+  // We can update state during render if it's derived purely from props
+  // React will immediately re-render with the new state, avoiding an effect
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  if (changesBaseline !== prevBaseline) {
+    setPrevBaseline(changesBaseline);
+    // Only reset dismissal if we have a previous baseline to compare against
+    // (i.e. not the first render)
+    if (prevBaseline !== null) {
+      setIsDismissed(false);
     }
-  }, [changesBaseline, prevBaseline]);
+  }
 
   // Handle side effects (Storage Sync) and initial restore
   useIsomorphicLayoutEffect(() => {
