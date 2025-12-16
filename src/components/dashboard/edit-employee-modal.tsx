@@ -410,7 +410,13 @@ export function EditEmployeeModal({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={t('selectTownDistrict') || "Select district"} />
+                          <SelectValue
+                            placeholder={
+                              t('selectTownDistrict') === 'selectTownDistrict'
+                                ? 'Välj stad'
+                                : t('selectTownDistrict')
+                            }
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

@@ -184,7 +184,10 @@ export class EmployeeRepository {
 
       const { data: employee, error } = await supabase
         .from("employees")
-        .update({ is_archived: true })
+        .update({ 
+          is_archived: true,
+          archived_at: new Date().toISOString()
+        })
         .eq("id", id)
         .select()
         .single();
@@ -221,7 +224,10 @@ export class EmployeeRepository {
 
       const { data: employee, error } = await supabase
         .from("employees")
-        .update({ is_archived: false })
+        .update({ 
+          is_archived: false,
+          archived_at: null
+        })
         .eq("id", id)
         .select()
         .single();
@@ -249,6 +255,65 @@ export class EmployeeRepository {
       // Unexpected errors
       console.error("Unexpected error unarchiving employee:", error);
       throw new Error("Failed to unarchive employee");
+    }
+  }
+
+  async updateArchiveStatusMany(ids: string[], isArchived: boolean): Promise<void> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      
+      const updateData = isArchived 
+        ? { is_archived: true, archived_at: new Date().toISOString() }
+        : { is_archived: false, archived_at: null };
+
+      const { error } = await supabase
+        .from("employees")
+        .update(updateData)
+        .in("id", ids);
+
+      if (error) {
+        console.error("Error bulk updating archive status:", error);
+        throw new Error("Failed to bulk update status");
+      }
+    } catch (error) {
+      console.error("Unexpected error in bulk archive update:", error);
+      throw error;
+    }
+  }
+
+  async anonymizeOldArchivedEmployees(): Promise<number> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      
+      // Calculate date 3 months ago
+      const cutoffDate = new Date();
+      cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+      
+      const { data, error } = await supabase
+        .from("employees")
+        .update({
+          first_name: '*****',
+          surname: '*****',
+          ssn: '*****',
+          mobile: '*****',
+          diet_details: null, // Reset diet details
+          special_diet: false, // Reset special diet flag
+          comments: null,
+          is_anonymized: true
+        })
+        .lt("archived_at", cutoffDate.toISOString())
+        .eq("is_anonymized", false)
+        .select("id");
+
+      if (error) {
+        console.error("Error anonymizing employees:", error);
+        throw new Error("Failed to anonymize employees");
+      }
+
+      return data?.length ?? 0;
+    } catch (error) {
+      console.error("Unexpected error in anonymization:", error);
+      throw error;
     }
   }
 
