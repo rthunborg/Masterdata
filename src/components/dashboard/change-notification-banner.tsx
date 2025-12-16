@@ -48,7 +48,12 @@ export function ChangeNotificationBanner({
   useEffect(() => {
     if (changesBaseline !== prevBaseline) {
       setPrevBaseline(changesBaseline);
-      setIsDismissed(false);
+      
+      // Only reset dismissal if we have a previous baseline to compare against
+      // (i.e. not the first render)
+      if (prevBaseline !== null) {
+        setIsDismissed(false);
+      }
     }
   }, [changesBaseline, prevBaseline]);
 
