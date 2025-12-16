@@ -14,7 +14,7 @@ import type { SessionUser } from '@/lib/types/user';
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
   default: (props: React.ImgHTMLAttributes<HTMLImageElement> & { priority?: boolean }) => {
-    // eslint-disable-next-line @next/next/no-img-element
+     
     const { priority, ...imgProps } = props;
     return <img {...imgProps} />;
   },

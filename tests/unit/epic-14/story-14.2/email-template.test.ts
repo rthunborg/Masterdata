@@ -35,7 +35,7 @@ function createMockPe3Entry(overrides: Partial<Pe3EntryWithEmployee> = {}): Pe3E
 describe('generatePe3SubmitDeadlineEmailSubject', () => {
   it('should generate correct subject for submit deadline', () => {
     const subject = generatePe3SubmitDeadlineEmailSubject();
-    expect(subject).toBe('PE3 deadline today – last date to submit spots');
+    expect(subject).toBe('Stena Season: PE3 deadline idag – sista dagen att skicka in platser');
   });
 });
 
@@ -60,8 +60,8 @@ describe('generatePe3SubmitDeadlineEmailBody', () => {
 
     const body = generatePe3SubmitDeadlineEmailBody(entries, today);
 
-    expect(body).toContain('submit');
-    expect(body).toContain('last date to submit PE3 spots');
+    expect(body).toContain('skicka in');
+    expect(body).toContain('sista dagen att skicka in PE3-platser');
   });
 
   it('should include employee names when assigned', () => {
@@ -75,7 +75,7 @@ describe('generatePe3SubmitDeadlineEmailBody', () => {
     const body = generatePe3SubmitDeadlineEmailBody(entries, today);
 
     expect(body).toContain('John Doe');
-    expect(body).toContain('Assigned:');
+    expect(body).toContain('Tilldelad:');
   });
 
   it('should include "Unassigned" when no employee assigned', () => {
@@ -88,7 +88,7 @@ describe('generatePe3SubmitDeadlineEmailBody', () => {
 
     const body = generatePe3SubmitDeadlineEmailBody(entries, today);
 
-    expect(body).toContain('Unassigned');
+    expect(body).toContain('Ej tilldelad');
   });
 });
 
@@ -114,8 +114,8 @@ describe('generatePe3SubmitDeadlineEmailHtml', () => {
 
     const html = generatePe3SubmitDeadlineEmailHtml(entries, today);
 
-    expect(html).toContain('submit');
-    expect(html).toContain('last date to submit PE3 spots');
+    expect(html).toContain('skicka in');
+    expect(html).toContain('sista dagen att skicka in PE3-platser');
   });
 
   it('should include employee names in HTML', () => {
@@ -135,7 +135,7 @@ describe('generatePe3SubmitDeadlineEmailHtml', () => {
 describe('generatePe3CancelDeadlineEmailSubject', () => {
   it('should generate correct subject for cancel deadline', () => {
     const subject = generatePe3CancelDeadlineEmailSubject();
-    expect(subject).toBe('PE3 deadline today – last date to cancel spots');
+    expect(subject).toBe('Stena Season: PE3 deadline idag – sista dagen att avboka platser');
   });
 });
 
@@ -159,8 +159,8 @@ describe('generatePe3CancelDeadlineEmailBody', () => {
 
     const body = generatePe3CancelDeadlineEmailBody(entries, today);
 
-    expect(body).toContain('cancel');
-    expect(body).toContain('last date to cancel PE3 spots');
+    expect(body).toContain('avboka');
+    expect(body).toContain('sista dagen att avboka PE3-platser');
   });
 
   it('should include employee names when assigned', () => {
@@ -186,7 +186,7 @@ describe('generatePe3CancelDeadlineEmailBody', () => {
 
     const body = generatePe3CancelDeadlineEmailBody(entries, today);
 
-    expect(body).toContain('Unassigned');
+    expect(body).toContain('Ej tilldelad');
   });
 });
 
@@ -211,8 +211,8 @@ describe('generatePe3CancelDeadlineEmailHtml', () => {
 
     const html = generatePe3CancelDeadlineEmailHtml(entries, today);
 
-    expect(html).toContain('cancel');
-    expect(html).toContain('last date to cancel PE3 spots');
+    expect(html).toContain('avboka');
+    expect(html).toContain('sista dagen att avboka PE3-platser');
   });
 });
 
@@ -289,7 +289,7 @@ describe('getEmployeeNameForPe3Entry', () => {
 
     const name = getEmployeeNameForPe3Entry(entry);
 
-    expect(name).toBe('Unassigned');
+    expect(name).toBe('Ej tilldelad');
   });
 
   it('should return "Unassigned" when assigned_employees is null', () => {
@@ -299,7 +299,7 @@ describe('getEmployeeNameForPe3Entry', () => {
 
     const name = getEmployeeNameForPe3Entry(entry);
 
-    expect(name).toBe('Unassigned');
+    expect(name).toBe('Ej tilldelad');
   });
 
   it('should handle employees with missing names', () => {
@@ -312,8 +312,7 @@ describe('getEmployeeNameForPe3Entry', () => {
 
     const name = getEmployeeNameForPe3Entry(entry);
 
-    // Function returns "Unknown" for employees with missing names
-    expect(name).toBe('John Doe, Unknown');
+    // Function returns "Okänd" for employees with missing names
+    expect(name).toBe('John Doe, Okänd');
   });
 });
-

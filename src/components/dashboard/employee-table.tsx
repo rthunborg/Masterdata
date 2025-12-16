@@ -2,11 +2,12 @@
 
 "use no memo";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import * as React from "react";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import {
-
   useReactTable,
 
   getCoreRowModel,
@@ -26,14 +27,16 @@ import {
 
 } from "@tanstack/react-table";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import type { Employee } from "@/lib/types/employee";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import {
-
   Table,
 
   TableBody,
@@ -48,8 +51,8 @@ import {
 
 } from "@/components/ui/table";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import {
-
   AlertDialog,
 
   AlertDialogAction,
@@ -68,26 +71,32 @@ import {
 
 } from "@/components/ui/alert-dialog";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { Button } from "@/components/ui/button";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { Checkbox } from "@/components/ui/checkbox";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { Label } from "@/components/ui/label";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { Input } from "@/components/ui/input";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { Skeleton } from "@/components/ui/skeleton";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import {
-
   Select,
 
   SelectContent,
@@ -100,8 +109,8 @@ import {
 
 } from "@/components/ui/select";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import {
-
   Tooltip,
 
   TooltipContent,
@@ -110,60 +119,80 @@ import {
 
 } from "@/components/ui/tooltip";
 
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2 } from "lucide-react";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { EditableCell } from "./editable-cell";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { getReadableTextColor } from "@/lib/utils/color-contrast";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { EditableDateCell } from "./editable-date-cell";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { employeeService } from "@/lib/services/employee-service";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { customDataService } from "@/lib/services/custom-data-service";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { mutationQueueService } from "@/lib/services/mutation-queue";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { toast } from "sonner";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useAuth } from "@/lib/hooks/use-auth";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useColumns } from "@/lib/hooks/use-columns";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 
 
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { } from "@/lib/utils/column-width-storage";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { ExportFieldSelectionDialog } from "./export-field-selection-dialog";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { getEmployeeFieldValue, mapColumnToEmployeeField } from "@/lib/utils/column-mapping";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { cn } from "@/lib/utils";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useTranslations } from "@/lib/i18n";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { TOWN_DISTRICTS } from "@/lib/constants/options";
 
 
@@ -184,6 +213,7 @@ interface EmployeeTableProps {
 }
 
 // Custom global filter function for multi-column search
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const globalFilterFn = (row: Row<Employee>, columnId: string, filterValue: string) => {
   const searchableFields = [
     row.original.first_name,
@@ -201,6 +231,7 @@ const globalFilterFn = (row: Row<Employee>, columnId: string, filterValue: strin
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function EmployeeTable({
   employees,
   isLoading,
@@ -225,7 +256,7 @@ export function EmployeeTable({
   const tToasts = useTranslations("toasts");
 
   // Get preview mode state and column visibility
-  const { previewRole, isPreviewMode, initColumnVisibility, columnVisibility } = useUIStore();
+  const { previewRole, isPreviewMode, initColumnVisibility, columnVisibility, density, setDensity } = useUIStore();
 
   // Initialize column visibility preferences on mount
   React.useEffect(() => {
@@ -642,6 +673,13 @@ export function EmployeeTable({
 
   const columns: ColumnDef<Employee>[] = React.useMemo(() => {
 
+    // Define styles based on density
+    const isCompact = density === 'compact';
+    const cellPaddingClass = isCompact ? 'px-2 py-1' : 'px-3 py-2';
+    const cellHeightClass = isCompact ? 'min-h-8' : 'min-h-10';
+    const fontSizeClass = isCompact ? 'text-xs' : 'text-sm';
+    const iconSizeClass = isCompact ? 'h-3 w-3' : 'h-4 w-4';
+
 
     // Story 13.2: Selection checkbox column (first column)
 
@@ -861,6 +899,10 @@ export function EmployeeTable({
 
                 isChanged={isDateChanged} // Story 16.5: Pass highlight flag
 
+                className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+                
+                isCompact={isCompact}
+
                 onSave={handleMasterdataUpdate}
 
                 onError={(error) => toast.error(error)}
@@ -987,6 +1029,10 @@ export function EmployeeTable({
 
               {...crewingDoneConditionalProps} // Conditionally pass employee data for Crewing/Done
 
+              className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+              
+              isCompact={isCompact}
+
               onSave={handleSave}
 
               onError={(error) => toast.error(error)}
@@ -1077,7 +1123,7 @@ export function EmployeeTable({
 
               {!canEdit && (
 
-                <Lock className="h-4 w-4 text-gray-400" aria-hidden="true" />
+                <Lock className={cn(iconSizeClass, "text-gray-400")} aria-hidden="true" />
 
               )}
 
@@ -1087,15 +1133,15 @@ export function EmployeeTable({
 
                   {column.getIsSorted() === "asc" ? (
 
-                    <ArrowUp className="h-4 w-4" />
+                    <ArrowUp className={iconSizeClass} />
 
                   ) : column.getIsSorted() === "desc" ? (
 
-                    <ArrowDown className="h-4 w-4" />
+                    <ArrowDown className={iconSizeClass} />
 
                   ) : (
 
-                    <ArrowUpDown className="h-4 w-4 opacity-50" />
+                    <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
 
                   )}
 
@@ -1263,9 +1309,11 @@ export function EmployeeTable({
 
                       onClick={() => handleUnarchiveClick(employee)}
 
+                      className={isCompact ? "h-6 w-6 p-0" : ""}
+
                     >
 
-                      <ArchiveRestore className="h-4 w-4" />
+                      <ArchiveRestore className={iconSizeClass} />
 
                     </Button>
 
@@ -1293,9 +1341,11 @@ export function EmployeeTable({
 
                       onClick={() => handleArchiveClick(employee)}
 
+                      className={isCompact ? "h-6 w-6 p-0" : ""}
+
                     >
 
-                      <Archive className="h-4 w-4" />
+                      <Archive className={iconSizeClass} />
 
                     </Button>
 
@@ -1326,7 +1376,7 @@ export function EmployeeTable({
 
     return [selectionColumn, ...dataColumns];
 
-  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates, includeTerminated, isEmployeeSelected, toggleEmployeeSelection, checkColumnChanged]); // Story 16.5: Include checkColumnChanged so columns re-render when highlighting state changes
+  }, [columnConfigs, isHRAdmin, handleMasterdataUpdate, handleCustomDataUpdate, effectiveRole, isPreviewMode, t, tAdmin, tDashboard, columnVisibility, allImportantDates, includeTerminated, isEmployeeSelected, toggleEmployeeSelection, checkColumnChanged, density]); // Story 16.5: Include checkColumnChanged so columns re-render when highlighting state changes
 
   // Story 8.5: Apply crew-ready filter to employees
 
@@ -1564,7 +1614,9 @@ export function EmployeeTable({
 
     defaultColumn: {
 
-      minSize: 80,
+      minSize: density === 'compact' ? 40 : 80,
+
+      size: density === 'compact' ? 100 : 150,
 
       maxSize: 500,
 
@@ -1809,6 +1861,7 @@ export function EmployeeTable({
             {/* Story 8.5: Crew-Ready Filter - HR Admin only */}
             {/* Story 17.5: Hide premade filters dropdown for external users */}
             {isHRAdmin && (
+              <div className="flex items-center gap-2">
               <Select
 
                 value={crewReadyFilter}
@@ -1834,7 +1887,25 @@ export function EmployeeTable({
                 </SelectContent>
 
               </Select>
+              </div>
             )}
+
+            {/* Density Toggle - Visible to everyone */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setDensity(density === 'compact' ? 'default' : 'compact')}
+                  aria-label={density === 'compact' ? t("switchToComfortable") : t("switchToCompact")}
+                >
+                  {density === 'compact' ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{density === 'compact' ? t("switchToComfortable") : t("switchToCompact")}</p>
+              </TooltipContent>
+            </Tooltip>
 
             {/* Story 13.6: General Export Button with Field Selection */}
             {/* Story 17.4: Export Button for External Users - visible to all users */}
@@ -1968,6 +2039,8 @@ export function EmployeeTable({
 
                       // Check if this is the checkbox column (empty header)
                       const isCheckboxColumn = header.column.id === "select";
+                      const isActionColumn = header.column.id === "actions";
+                      const isCompact = density === "compact";
                       
                       return (
 
@@ -1978,7 +2051,11 @@ export function EmployeeTable({
                           className={cn(
                             "relative",
                             // Story 16.6: For checkbox column, remove all padding to match cell structure
-                            isCheckboxColumn && "!p-0"
+                            isCheckboxColumn && "!p-0",
+                            // Compact mode adjustments
+                            isCompact ? "h-8 px-2" : "h-12 px-4",
+                            // Sticky action column
+                            isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
                           )}
 
                           style={{
@@ -2008,7 +2085,11 @@ export function EmployeeTable({
 
                               {/* Primary header text */}
 
-                              <div className="text-sm font-semibold leading-none">
+                              <div className={cn(
+                                "font-semibold leading-none",
+                                // Compact mode text size
+                                isCompact ? "text-xs" : "text-sm"
+                              )}>
 
                                 {headerContent}
 
@@ -2133,6 +2214,8 @@ export function EmployeeTable({
                         // and have disabled row selection logic. Checkbox interactions are handled directly.
                         
                         className={cn(
+                          // Base background to ensure sticky columns are opaque
+                          "bg-background",
 
                           row.original.is_archived && "bg-muted text-muted-foreground opacity-60",
 
@@ -2162,6 +2245,8 @@ export function EmployeeTable({
                         {row.getVisibleCells().map((cell, cellIndex) => {
                           // Story 16.6: Check if this is the checkbox column to match header padding
                           const isCheckboxCell = cell.column.id === "select";
+                          const isActionColumn = cell.column.id === "actions";
+                          const isCompact = density === "compact";
                           
                           return (
                           <TableCell 
@@ -2174,7 +2259,20 @@ export function EmployeeTable({
                             className={cn(
                               "overflow-hidden",
                               // Story 16.6: Remove all padding for checkbox column to match header alignment
-                              isCheckboxCell && "!p-0"
+                              isCheckboxCell && "!p-0",
+                              // Compact mode padding
+                              !isCheckboxCell && (isCompact ? "p-2" : "p-4"),
+                              // Sticky action column
+                              isActionColumn && "sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
+                              // For sticky column, we need a background to cover scrolling content.
+                              // Inherit works if the row has a background color. 
+                              // If row is default, we need bg-background.
+                              // We can use bg-inherit and a fallback of bg-background via a composed class or just rely on row colors.
+                              // But Tailwind doesn't support "bg-inherit-or-white".
+                              // Best bet: sticky cell gets the same bg as row if row is colored, else bg-background.
+                              // Since we can't easily extract the row class here without refactoring,
+                              // and bg-inherit on a sticky element inside a tr works for opacity in most browsers:
+                              isActionColumn && "bg-inherit" 
                             )}
                           >
 

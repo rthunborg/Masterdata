@@ -17,6 +17,16 @@ interface ImportError {
   data: Record<string, unknown>;
 }
 
+// Helper to safely parse boolean values from CSV
+function parseBoolean(value: unknown): boolean {
+  if (value === true) return true;
+  if (value === false) return false;
+  if (value === null || value === undefined) return false;
+  
+  const strVal = String(value).toLowerCase();
+  return ["true", "1", "yes"].includes(strVal);
+}
+
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -101,6 +111,10 @@ export async function POST(request: NextRequest) {
             "comments": "comments",
             "notes": "comments",
             "remarks": "comments",
+            "special_diet": "special_diet",
+            "specialkost": "special_diet",
+            "diet": "diet_details",
+            "diet_details": "diet_details",
           };
 
           return mappings[normalized] || normalized;
@@ -166,6 +180,8 @@ export async function POST(request: NextRequest) {
           is_archived: false,
           termination_date: null,
           termination_reason: null,
+          special_diet: row.special_diet || null,
+          diet_details: row.diet_details || null,
         };
 
         // Validate using Zod schema
@@ -193,22 +209,25 @@ export async function POST(request: NextRequest) {
           // Repayment tracking fields (Story 8.13)
           repayment_needed_omc: null,
           repayment_needed_pe3: null,
+          // Story 8.17: Dietary Requirements
+          special_diet: parseBoolean(validated.special_diet),
+          diet_details: validated.diet_details === "" || !validated.diet_details ? null : validated.diet_details,
           // Masterdata columns (Story 7.1) - all boolean fields default to false
-          one: validated.one === true || validated.one === "true" || validated.one === "1" || validated.one === "yes" ? true : false,
+          one: parseBoolean(validated.one),
           one_marked_at: null, // Story 8.3 - will be set if one is true during creation
-          talmundo: validated.talmundo === true || validated.talmundo === "true" || validated.talmundo === "1" || validated.talmundo === "yes" ? true : false, // Story 8.4
-          isps: validated.isps === true || validated.isps === "true" || validated.isps === "1" || validated.isps === "yes" ? true : false,
-          photo: validated.photo === true || validated.photo === "true" || validated.photo === "1" || validated.photo === "yes" ? true : false,
-          origo: validated.origo === true || validated.origo === "true" || validated.origo === "1" || validated.origo === "yes" ? true : false,
+          talmundo: parseBoolean(validated.talmundo), // Story 8.4
+          isps: parseBoolean(validated.isps),
+          photo: parseBoolean(validated.photo),
+          origo: parseBoolean(validated.origo),
           loneiva: validated.loneiva === "" || !validated.loneiva ? null : (typeof validated.loneiva === "number" ? validated.loneiva : parseInt(String(validated.loneiva), 10)),
-          mail_lon: validated.mail_lon === true || validated.mail_lon === "true" || validated.mail_lon === "1" || validated.mail_lon === "yes" ? true : false,
-          bankuppgifter: validated.bankuppgifter === true || validated.bankuppgifter === "true" || validated.bankuppgifter === "1" || validated.bankuppgifter === "yes" ? true : false,
-          li: validated.li === true || validated.li === "true" || validated.li === "1" || validated.li === "yes" ? true : false,
-          passport: validated.passport === true || validated.passport === "true" || validated.passport === "1" || validated.passport === "yes" ? true : false,
-          kvitto_c17_18: validated.kvitto_c17_18 === true || validated.kvitto_c17_18 === "true" || validated.kvitto_c17_18 === "1" || validated.kvitto_c17_18 === "yes" ? true : false,
-          c17: validated.c17 === true || validated.c17 === "true" || validated.c17 === "1" || validated.c17 === "yes" ? true : false,
-          crewing_done: validated.crewing_done === true || validated.crewing_done === "true" || validated.crewing_done === "1" || validated.crewing_done === "yes" ? true : false,
-          hotel_required: validated.hotel_required === true || validated.hotel_required === "true" || validated.hotel_required === "1" || validated.hotel_required === "yes" ? true : false,
+          mail_lon: parseBoolean(validated.mail_lon),
+          bankuppgifter: parseBoolean(validated.bankuppgifter),
+          li: parseBoolean(validated.li),
+          passport: parseBoolean(validated.passport),
+          kvitto_c17_18: parseBoolean(validated.kvitto_c17_18),
+          c17: parseBoolean(validated.c17),
+          crewing_done: parseBoolean(validated.crewing_done),
+          hotel_required: parseBoolean(validated.hotel_required),
           room_number_shared: validated.room_number_shared === "" || !validated.room_number_shared ? null : (typeof validated.room_number_shared === "number" ? validated.room_number_shared : parseInt(String(validated.room_number_shared), 10)),
         };
 

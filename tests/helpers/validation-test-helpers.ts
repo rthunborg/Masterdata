@@ -81,6 +81,8 @@ export function createTestEmployee(
     is_archived: false,
     repayment_needed_omc: null,
     repayment_needed_pe3: null,
+    special_diet: false,
+    diet_details: null,
     one: false,
     one_marked_at: null,
     talmundo: false,

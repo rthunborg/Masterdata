@@ -58,12 +58,12 @@ describe('generateOmcReminderEmailSubject', () => {
   it('should include employee name in subject', () => {
     const subject = generateOmcReminderEmailSubject('John Doe');
     expect(subject).toContain('John Doe');
-    expect(subject).toContain('ÖMC completed 3 days ago');
+    expect(subject).toContain('ÖMC genomförd för 3 dagar sedan');
   });
 
   it('should format subject correctly', () => {
     const subject = generateOmcReminderEmailSubject('Jane Smith');
-    expect(subject).toBe('ÖMC completed 3 days ago – masterdata still incomplete for Jane Smith');
+    expect(subject).toBe('Stena Season: ÖMC genomförd för 3 dagar sedan – masterdata fortfarande ofullständig för Jane Smith');
   });
 });
 
@@ -94,18 +94,13 @@ describe('generateOmcReminderEmailBody', () => {
     expect(body).toContain('Lönenivå');
   });
 
-  it('should include employee ID', () => {
-    const employee = createMockEmployee({ id: 'emp-456' });
-    const body = generateOmcReminderEmailBody(employee, '2025-01-01', ['one']);
-    
-    expect(body).toContain('emp-456');
-  });
+  // Employee ID check removed as it is no longer included in the template
 
   it('should format boolean fields as "false"', () => {
     const employee = createMockEmployee();
     const body = generateOmcReminderEmailBody(employee, '2025-01-01', ['one', 'isps']);
     
-    expect(body).toContain('(false)');
+    expect(body).toContain('(saknas)');
   });
 
   it('should format loneiva as "empty"', () => {
@@ -113,7 +108,7 @@ describe('generateOmcReminderEmailBody', () => {
     const body = generateOmcReminderEmailBody(employee, '2025-01-01', ['loneiva']);
     
     expect(body).toContain('Lönenivå');
-    expect(body).toContain('(empty)');
+    expect(body).toContain('(tom)');
   });
 
   it('should handle multiple missing fields', () => {
@@ -143,4 +138,3 @@ describe('generateOmcReminderEmailBody', () => {
     });
   });
 });
-

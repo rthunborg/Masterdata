@@ -36,13 +36,51 @@ export const validationMessages = {
   terminationReasonRequired: "errors.validation.terminationReasonRequired",
   terminationReasonMaxLength: "errors.validation.terminationReasonMaxLength",
   updateFieldRequired: "errors.validation.updateFieldRequired",
+  dietDetailsRequired: "errors.validation.dietDetailsRequired",
 };
 
 /**
- * Create validation schema with custom error messages
- * @param t Optional translation function to override default English messages
+ * Story 8.4: Talmundo validation helper function
+ * Validates that Talmundo can only be true if One field is green (>= 24 hours)
  */
-export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
+function validateTalmundoField(data: {
+  talmundo?: boolean | null;
+  one?: boolean | null;
+  one_marked_at?: string | null;
+}): boolean {
+  // If talmundo is not true, no validation needed
+  if (data.talmundo !== true) {
+    return true;
+  }
+
+  // Check if One field is true
+  if (!data.one) {
+    return false;
+  }
+
+  // Check if one_marked_at timestamp exists and is >= 24 hours ago
+  if (!data.one_marked_at) {
+    return false;
+  }
+
+  try {
+    const markedAt = new Date(data.one_marked_at);
+    const now = new Date();
+    const elapsed = now.getTime() - markedAt.getTime();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    // Talmundo can only be true if One field has been true for >= 24 hours
+    return elapsed >= twentyFourHours;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Returns the base employee schema object (without refinements).
+ * This allows .partial() to be called on it for update schemas.
+ */
+function getBaseEmployeeSchemaObject(t?: (key: string) => string) {
   const msg = (key: keyof typeof validationMessages) =>
     t ? t(validationMessages[key]) : validationMessages[key];
 
@@ -133,9 +171,43 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
     // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
     repayment_needed_omc: z.boolean().nullable().optional(),
     repayment_needed_pe3: z.boolean().nullable().optional(),
+
+    // Story 8.17: Dietary Requirements
+    special_diet: z.boolean().default(false),
+    diet_details: z.string().nullable().optional(),
+
     // Story 14.1: ÖMC Masterdata Reminder Notification
     omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
   });
+}
+
+/**
+ * Create validation schema with custom error messages
+ * @param t Optional translation function to override default English messages
+ */
+export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
+  const msg = (key: keyof typeof validationMessages) =>
+    t ? t(validationMessages[key]) : validationMessages[key];
+
+  return getBaseEmployeeSchemaObject(t).refine(
+    validateTalmundoField,
+    {
+      message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
+      path: ['talmundo'],
+    }
+  ).refine(
+    (data) => {
+      // Story 8.17: Diet details are mandatory if special_diet is true
+      if (data.special_diet && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: msg('dietDetailsRequired'),
+      path: ["diet_details"],
+    }
+  );
 }
 
 /**
@@ -230,52 +302,32 @@ const baseEmployeeSchema = z.object({
   // Changed to boolean (flag only)
   repayment_needed_omc: z.boolean().nullable().optional(),
   repayment_needed_pe3: z.boolean().nullable().optional(),
+  
+  // Story 8.17: Dietary Requirements
+  special_diet: z.boolean().default(false),
+  diet_details: z.string().nullable().optional(),
+
   // Story 14.1: ÖMC Masterdata Reminder Notification
   omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
 });
-
-/**
- * Story 8.4: Talmundo validation helper function
- * Validates that Talmundo can only be true if One field is green (>= 24 hours)
- */
-function validateTalmundoField(data: {
-  talmundo?: boolean | null;
-  one?: boolean | null;
-  one_marked_at?: string | null;
-}): boolean {
-  // If talmundo is not true, no validation needed
-  if (data.talmundo !== true) {
-    return true;
-  }
-
-  // Check if One field is true
-  if (!data.one) {
-    return false;
-  }
-
-  // Check if one_marked_at timestamp exists and is >= 24 hours ago
-  if (!data.one_marked_at) {
-    return false;
-  }
-
-  try {
-    const markedAt = new Date(data.one_marked_at);
-    const now = new Date();
-    const elapsed = now.getTime() - markedAt.getTime();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
-    // Talmundo can only be true if One field has been true for >= 24 hours
-    return elapsed >= twentyFourHours;
-  } catch {
-    return false;
-  }
-}
 
 export const createEmployeeSchema = baseEmployeeSchema.refine(
   validateTalmundoField,
   {
     message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
     path: ['talmundo'],
+  }
+).refine(
+  (data) => {
+    // Story 8.17: Diet details are mandatory if special_diet is true
+    if (data.special_diet && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Diet details are required when special diet is selected",
+    path: ["diet_details"],
   }
 );
 
@@ -293,6 +345,22 @@ export const updateEmployeeSchema = baseEmployeeSchema
     {
       message: "At least one field must be provided for update",
     }
+  )
+  .refine(
+    (data) => {
+      // Story 8.17: Diet details are mandatory if special_diet is true
+      // Only validate if diet_details is present in the update payload.
+      if (data.special_diet && data.diet_details !== undefined) {
+         if (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === '')) {
+            return false;
+         }
+      }
+      return true;
+    },
+    {
+      message: "Diet details are required when special diet is selected",
+      path: ["diet_details"],
+    }
   );
 // Note: Talmundo validation is handled in the API route handler (PATCH /api/employees/[id])
 // because it requires current employee data from the database to check the 24-hour rule
@@ -306,11 +374,34 @@ export function updateEmployeeSchemaWithMessages(t?: (key: string) => string) {
   const msg = (key: keyof typeof validationMessages) =>
     t ? t(validationMessages[key]) : validationMessages[key];
 
-  return createEmployeeSchemaWithMessages(t)
+  return getBaseEmployeeSchemaObject(t)
     .partial()
     .refine((data) => Object.keys(data).length > 0, {
       message: msg('updateFieldRequired'),
-    });
+    })
+    // Note: Talmundo validation (24h rule) is excluded here intentionally.
+    // It requires current database state to check the 'one' field duration,
+    // which cannot be reliably done on the client side with partial updates.
+    // The validation is enforced in the API route.
+    .refine(
+      (data) => {
+        // Story 8.17: Diet details are mandatory if special_diet is true
+        // Only validate if diet_details is present in the update payload.
+        // If special_diet is true but diet_details is missing, we assume 
+        // the API will handle validation against current DB state (similar to Talmundo),
+        // or that diet_details already exists in the DB.
+        if (data.special_diet && data.diet_details !== undefined) {
+           if (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === '')) {
+             return false;
+           }
+        }
+        return true;
+      },
+      {
+        message: msg('dietDetailsRequired'),
+        path: ["diet_details"],
+      }
+    );
 }
 
 /**
@@ -453,6 +544,26 @@ export const csvImportEmployeeSchema = z.object({
   // Changed to boolean (flag only)
   repayment_needed_omc: z.union([z.boolean(), z.string(), z.null()]).nullable().default(null).optional(),
   repayment_needed_pe3: z.union([z.boolean(), z.string(), z.null()]).nullable().default(null).optional(),
-});
+
+  // Story 8.17: Dietary Requirements
+  special_diet: z.union([z.boolean(), z.string(), z.null()]).nullable().default(false).optional(),
+  diet_details: z.string().nullable().optional(),
+}).refine(
+  (data) => {
+    // Story 8.17: Diet details are mandatory if special_diet is true
+    // Handle boolean or string "true"/"yes"/etc.
+    const isSpecialDiet = data.special_diet === true || 
+      (typeof data.special_diet === 'string' && ['true', 'yes', '1'].includes(data.special_diet.toLowerCase()));
+      
+    if (isSpecialDiet && (!data.diet_details || (typeof data.diet_details === 'string' && data.diet_details.trim() === ''))) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Diet details are required when special diet is selected",
+    path: ["diet_details"],
+  }
+);
 
 export type CSVImportEmployeeInput = z.infer<typeof csvImportEmployeeSchema>;

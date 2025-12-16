@@ -38,41 +38,52 @@ export function ChangeNotificationBanner({
   error,
 }: ChangeNotificationBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false);
-  const [prevBaseline, setPrevBaseline] = useState(changesBaseline);
+  // Fix: Initialize with null to avoid stale closure from prop
+  const [prevBaseline, setPrevBaseline] = useState<string | null>(null);
   const tDashboard = useTranslations('dashboard');
 
   // Handle baseline changes (Derived State Pattern)
-  // This avoids "setState in useEffect" for resetting state when props change
+  // We can update state during render if it's derived purely from props
+  // React will immediately re-render with the new state, avoiding an effect
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
   if (changesBaseline !== prevBaseline) {
     setPrevBaseline(changesBaseline);
-    setIsDismissed(false);
+    // Only reset dismissal if we have a previous baseline to compare against
+    // (i.e. not the first render)
+    if (prevBaseline !== null) {
+      setIsDismissed(false);
+    }
   }
 
   // Handle side effects (Storage Sync) and initial restore
   useIsomorphicLayoutEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Prevent race condition: Don't process storage if baseline isn't loaded yet
+    // BUT allow restoring dismissal state if we have a stored baseline
     const storedBaseline = sessionStorage.getItem(BASELINE_TRACKING_KEY);
+    
+    if (!changesBaseline && !storedBaseline) return;
 
     // Case 1: Baseline changed since last session (or new login)
     // We detect this by comparing prop to storage
     // NOTE: We only reset if we have a stored baseline to compare against.
     // If storedBaseline is null (first tracking), we assume existing dismissal state is valid/relevant
     // (or just respect the current session state).
-    if (changesBaseline && storedBaseline && storedBaseline !== changesBaseline) {
-      sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
+    if (storedBaseline && storedBaseline !== changesBaseline) {
+      if (changesBaseline) {
+        sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
+      }
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
       // isDismissed is already false (default or reset via derived state)
-    } 
+    }  
     // Case 2: Same baseline as stored OR first time tracking this baseline
     // We update tracking key and restore dismissal state
     else {
       if (changesBaseline) {
         sessionStorage.setItem(BASELINE_TRACKING_KEY, changesBaseline);
-      } else {
-        sessionStorage.removeItem(BASELINE_TRACKING_KEY);
       }
-
+      
       const dismissed = sessionStorage.getItem(SESSION_STORAGE_KEY);
       if (dismissed === "true") {
         setIsDismissed(true);

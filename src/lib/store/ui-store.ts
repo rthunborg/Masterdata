@@ -12,6 +12,10 @@ interface UIStore {
   setPreviewRole: (role: UserRole | null) => void;
   isPreviewMode: boolean;
   
+  // Current user ID (for persistence)
+  currentUserId: string | null;
+  setCurrentUserId: (userId: string | null) => void;
+  
   // Modal states
   modals: {
     addEmployee: boolean;
@@ -27,6 +31,10 @@ interface UIStore {
   
   // Column visibility preferences (for HR Admin)
   columnVisibility: Record<string, boolean>; // columnId -> visible boolean
+
+  // Density preference
+  density: 'default' | 'compact';
+  setDensity: (density: 'default' | 'compact') => void;
   
   openModal: (modal: keyof UIStore["modals"]) => void;
   closeModal: (modal: keyof UIStore["modals"]) => void;
@@ -46,6 +54,15 @@ export const useUIStore = create<UIStore>((set, get) => ({
   isPreviewMode: false,
   setPreviewRole: (role) => set({ previewRole: role, isPreviewMode: !!role }),
   
+  // Current user ID
+  currentUserId: null,
+  setCurrentUserId: (userId) => {
+      set({ currentUserId: userId });
+      if (typeof window !== "undefined" && userId) {
+          localStorage.setItem("currentUserId", userId);
+      }
+  },
+
   // Modal states
   modals: {
     addEmployee: false,
@@ -62,7 +79,23 @@ export const useUIStore = create<UIStore>((set, get) => ({
   // Column visibility state
   columnVisibility: {},
   
-  openModal: (modal) => 
+  // Density state
+  density: 'default',
+  setDensity: (density) => {
+    set({ density });
+    // Persist to localStorage
+    if (typeof window !== "undefined") {
+      const { currentUserId } = get();
+      const userId = currentUserId || localStorage.getItem("currentUserId");
+      
+      if (userId) {
+        const storageKey = `hr_masterdata_density_${userId}`;
+        localStorage.setItem(storageKey, density);
+      }
+    }
+  },
+
+  openModal: (modal) =>  
     set((state) => ({ 
       modals: { ...state.modals, [modal]: true } 
     })),
@@ -131,24 +164,34 @@ export const useUIStore = create<UIStore>((set, get) => ({
     if (typeof window === "undefined") return;
     
     // Store userId for persistence operations
-    localStorage.setItem("currentUserId", userId);
+    get().setCurrentUserId(userId);
     
-    // Load from localStorage
-    const storageKey = `hr_masterdata_column_visibility_${userId}`;
-    const stored = localStorage.getItem(storageKey);
+    // Load column visibility from localStorage
+    const visibilityKey = `hr_masterdata_column_visibility_${userId}`;
+    const storedVisibility = localStorage.getItem(visibilityKey);
     
-    if (stored) {
+    // Load density from localStorage
+    const densityKey = `hr_masterdata_density_${userId}`;
+    const storedDensity = localStorage.getItem(densityKey);
+    
+    const updates: Partial<UIStore> = {};
+    
+    if (storedVisibility) {
       try {
-        const parsed = JSON.parse(stored);
-        set({ columnVisibility: parsed });
+        const parsed = JSON.parse(storedVisibility);
+        updates.columnVisibility = parsed;
       } catch (error) {
         console.error("Failed to parse column visibility preferences:", error);
-        // Reset to empty on parse error
-        set({ columnVisibility: {} });
+        updates.columnVisibility = {};
       }
-    } else {
-      // No stored preferences, initialize with empty
-      set({ columnVisibility: {} });
+    }
+
+    if (storedDensity && (storedDensity === 'default' || storedDensity === 'compact')) {
+      updates.density = storedDensity as 'default' | 'compact';
+    }
+    
+    if (Object.keys(updates).length > 0) {
+      set(updates as Partial<UIStore>);
     }
   },
   
