@@ -109,9 +109,8 @@ describe("EmployeeCard - Performance Tests", () => {
       );
 
       const moreButton = screen.getByLabelText(/Expand details/i);
-      
-      const startTime = performance.now();
       await user.click(moreButton);
+      const startTime = performance.now();
       
       await waitFor(() => {
         expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();

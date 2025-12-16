@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import fetch from 'node-fetch';
 
 // Polyfill fetch for Node.js environment (needed for Supabase client)
@@ -119,3 +119,12 @@ if (typeof Element !== 'undefined' && !Element.prototype.hasPointerCapture) {
   Element.prototype.setPointerCapture = vi.fn();
   Element.prototype.releasePointerCapture = vi.fn();
 }
+
+// Ensure no test leaks fake timers into others (prevents flaky userEvent + waitFor behavior)
+afterEach(() => {
+  try {
+    vi.useRealTimers();
+  } finally {
+    vi.clearAllTimers();
+  }
+});

@@ -165,6 +165,8 @@ function getBaseEmployeeSchemaObject(t?: (key: string) => string) {
     // System-managed fields with defaults
     is_terminated: z.boolean(),
     is_archived: z.boolean(),
+    archived_at: z.string().nullable().optional(),
+    is_anonymized: z.boolean().default(false),
     termination_date: z.string().nullable().optional(),
     termination_reason: z.string().nullable().optional(),
 
@@ -537,6 +539,8 @@ export const csvImportEmployeeSchema = z.object({
   // System-managed fields with defaults
   is_terminated: z.boolean().default(false).optional(),
   is_archived: z.boolean().default(false).optional(),
+  archived_at: z.string().nullable().default(null).optional(),
+  is_anonymized: z.boolean().default(false).optional(),
   termination_date: z.string().nullable().default(null).optional(),
   termination_reason: z.string().nullable().default(null).optional(),
 

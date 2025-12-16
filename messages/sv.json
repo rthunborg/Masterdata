@@ -98,7 +98,10 @@
       "employees": "anställda",
       "sinceLastLogin": "sedan din senaste inloggning",
       "seeHighlightedFields": "Se markerade fält nedan."
-    }
+    },
+    "statsActiveEmployeesLabel": "Anställda (aktiva)",
+    "statsCrewedEmployeesLabel": "Besättningsklara",
+    "statsHint": "Arkiverade exkluderas. Uppsagda inkluderas."
   },
   "forms": {
     "firstName": "Förnamn",
@@ -160,6 +163,7 @@
     "rankSEV": "SEV",
     "rankCHEF": "Chef",
     "selectRank": "Välj grad",
+    "selectTownDistrict": "Välj stad",
     "commentsPlaceholder": "Ytterligare anteckningar om den anställde...",
     "specialDiet": "Specialkost",
     "specialDietDescription": "Ange om anställd har speciella kostbehov",

@@ -102,7 +102,7 @@ export function ImportEmployeesModal({
     const template = `First Name,Surname,SSN,Email,Mobile,Town District,Rank,Gender,Hire Date,Stena Date,ÖMC Date,PE3 Date,Comments
 John,Doe,19850315-1234,john.doe@example.com,+46701234567,Göteborg,Manager,Male,2025-01-15,2025-01-10,2025-01-12,,Sample employee with all fields
 Jane,Smith,19900520-5678,,+46709876543,Halmstad,Developer,Female,2025-02-01,,,,"Example with empty email, dates, and gender"
-Bob,Johnson,19920810-9012,bob.johnson@example.com,,,Trelleborg,Senior Engineer,,2024-12-01,,,,Example with empty mobile and town district`;
+Bob,Johnson,19920810-9012,bob.johnson@example.com,,Trelleborg,Senior Engineer,,2024-12-01,,,,Example with empty mobile and town district`;
 
     const blob = new Blob([template], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);

@@ -13,6 +13,16 @@ export interface EmployeeFilters {
   needsRepayment?: boolean; // Story 8.13 AC 9
 }
 
+export interface EmployeeSystemStats {
+  totalActive: number;
+  crewedActive: number;
+  /**
+   * Percentage of crewedActive / totalActive, rounded to 1 decimal.
+   * Null when totalActive is 0.
+   */
+  crewedPercent: number | null;
+}
+
 export class EmployeeRepository {
   private async getSupabaseClient() {
     return await createClient();
@@ -63,6 +73,55 @@ export class EmployeeRepository {
     } catch (error) {
       console.error("Unexpected error fetching employees:", error);
       return [];
+    }
+  }
+
+  /**
+   * Whole-system tallies for dashboard stats.
+   *
+   * Requirements:
+   * - Do NOT count archived employees
+   * - Terminated employees should be included in the total tally
+   * - "Crewed" means crewing_done === true
+   *
+   * Note: RLS still applies per user role.
+   */
+  async getSystemStats(): Promise<EmployeeSystemStats> {
+    try {
+      const supabase = await this.getSupabaseClient();
+
+      const { count: totalActiveCount, error: totalError } = await supabase
+        .from("employees")
+        .select("id", { count: "exact", head: true })
+        .eq("is_archived", false);
+
+      if (totalError) {
+        console.error("Error counting active employees:", totalError);
+        throw new Error("Failed to count active employees");
+      }
+
+      const { count: crewedActiveCount, error: crewedError } = await supabase
+        .from("employees")
+        .select("id", { count: "exact", head: true })
+        .eq("is_archived", false)
+        .eq("crewing_done", true);
+
+      if (crewedError) {
+        console.error("Error counting crewed employees:", crewedError);
+        throw new Error("Failed to count crewed employees");
+      }
+
+      const totalActive = totalActiveCount ?? 0;
+      const crewedActive = crewedActiveCount ?? 0;
+      const crewedPercent =
+        totalActive > 0
+          ? Math.round((crewedActive / totalActive) * 1000) / 10
+          : null;
+
+      return { totalActive, crewedActive, crewedPercent };
+    } catch (error) {
+      console.error("Unexpected error fetching employee system stats:", error);
+      throw error instanceof Error ? error : new Error("Failed to fetch employee system stats");
     }
   }
 
@@ -184,7 +243,10 @@ export class EmployeeRepository {
 
       const { data: employee, error } = await supabase
         .from("employees")
-        .update({ is_archived: true })
+        .update({ 
+          is_archived: true,
+          archived_at: new Date().toISOString()
+        })
         .eq("id", id)
         .select()
         .single();
@@ -221,7 +283,10 @@ export class EmployeeRepository {
 
       const { data: employee, error } = await supabase
         .from("employees")
-        .update({ is_archived: false })
+        .update({ 
+          is_archived: false,
+          archived_at: null
+        })
         .eq("id", id)
         .select()
         .single();
@@ -249,6 +314,65 @@ export class EmployeeRepository {
       // Unexpected errors
       console.error("Unexpected error unarchiving employee:", error);
       throw new Error("Failed to unarchive employee");
+    }
+  }
+
+  async updateArchiveStatusMany(ids: string[], isArchived: boolean): Promise<void> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      
+      const updateData = isArchived 
+        ? { is_archived: true, archived_at: new Date().toISOString() }
+        : { is_archived: false, archived_at: null };
+
+      const { error } = await supabase
+        .from("employees")
+        .update(updateData)
+        .in("id", ids);
+
+      if (error) {
+        console.error("Error bulk updating archive status:", error);
+        throw new Error("Failed to bulk update status");
+      }
+    } catch (error) {
+      console.error("Unexpected error in bulk archive update:", error);
+      throw error;
+    }
+  }
+
+  async anonymizeOldArchivedEmployees(): Promise<number> {
+    try {
+      const supabase = await this.getSupabaseClient();
+      
+      // Calculate date 3 months ago
+      const cutoffDate = new Date();
+      cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+      
+      const { data, error } = await supabase
+        .from("employees")
+        .update({
+          first_name: '*****',
+          surname: '*****',
+          ssn: '*****',
+          mobile: '*****',
+          diet_details: null, // Reset diet details
+          special_diet: false, // Reset special diet flag
+          comments: null,
+          is_anonymized: true
+        })
+        .lt("archived_at", cutoffDate.toISOString())
+        .eq("is_anonymized", false)
+        .select("id");
+
+      if (error) {
+        console.error("Error anonymizing employees:", error);
+        throw new Error("Failed to anonymize employees");
+      }
+
+      return data?.length ?? 0;
+    } catch (error) {
+      console.error("Unexpected error in anonymization:", error);
+      throw error;
     }
   }
 
