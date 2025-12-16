@@ -289,7 +289,7 @@ export class EmployeeRepository {
       const cutoffDate = new Date();
       cutoffDate.setMonth(cutoffDate.getMonth() - 3);
       
-      const { data, error, count } = await supabase
+      const { data, error } = await supabase
         .from("employees")
         .update({
           first_name: '*****',
@@ -303,14 +303,14 @@ export class EmployeeRepository {
         })
         .lt("archived_at", cutoffDate.toISOString())
         .eq("is_anonymized", false)
-        .select("id", { count: 'exact' });
+        .select("id");
 
       if (error) {
         console.error("Error anonymizing employees:", error);
         throw new Error("Failed to anonymize employees");
       }
 
-      return count || 0;
+      return data?.length ?? 0;
     } catch (error) {
       console.error("Unexpected error in anonymization:", error);
       throw error;
