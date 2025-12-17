@@ -509,7 +509,7 @@ function DraggableRow({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{column.is_visible ? "Deactivate column" : "Activate column"}</p>
+              <p>{column.is_visible ? "Inaktivera" : "Aktivera"}</p>
             </TooltipContent>
           </Tooltip>
           
