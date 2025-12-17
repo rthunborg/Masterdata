@@ -232,7 +232,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
 
     // Wait for modal to open and find delete button
     await waitFor(() => {
-      const deleteButton = screen.getByRole("button", { name: /Ta bort anpassad kolumn/i });
+      const deleteButton = screen.getByRole("button", { name: /Ta bort (permanent)/i });
       expect(deleteButton).toBeInTheDocument();
     });
   });
@@ -249,7 +249,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
     });
 
     // Click delete button
-    const deleteButton = screen.getByRole("button", { name: /Ta bort anpassad kolumn/i });
+    const deleteButton = screen.getByRole("button", { name: /Ta bort (permanent)/i });
     fireEvent.click(deleteButton);
 
     // Confirmation dialog should appear
@@ -271,7 +271,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
     });
 
     // Click delete button
-    const deleteButton = screen.getByRole("button", { name: /Ta bort anpassad kolumn/i });
+    const deleteButton = screen.getByRole("button", { name: /Ta bort (permanent)/i });
     fireEvent.click(deleteButton);
 
     // Wait for confirmation dialog
@@ -302,7 +302,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
     });
 
     // Click delete button
-    const deleteButton = screen.getByRole("button", { name: /Ta bort anpassad kolumn/i });
+    const deleteButton = screen.getByRole("button", { name: /Ta bort (permanent)/i });
     fireEvent.click(deleteButton);
 
     // Wait for confirmation dialog
@@ -334,7 +334,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
     });
 
     // Click delete button
-    const deleteButton = screen.getByRole("button", { name: /Ta bort anpassad kolumn/i });
+    const deleteButton = screen.getByRole("button", { name: /Ta bort (permanent)/i });
     fireEvent.click(deleteButton);
 
     // Wait for confirmation dialog
@@ -364,7 +364,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
     });
 
     // Click delete button
-    const deleteButton = screen.getByRole("button", { name: /Ta bort anpassad kolumn/i });
+    const deleteButton = screen.getByRole("button", { name: /Ta bort (permanent)/i });
     fireEvent.click(deleteButton);
 
     // Wait for confirmation dialog

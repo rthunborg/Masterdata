@@ -99,8 +99,8 @@
       "sinceLastLogin": "sedan din senaste inloggning",
       "seeHighlightedFields": "Se markerade fält nedan."
     },
-    "statsActiveEmployeesLabel": "Anställda (aktiva)",
-    "statsCrewedEmployeesLabel": "Besättningsklara",
+    "statsActiveEmployeesLabel": "Totalt antal anställda",
+    "statsCrewedEmployeesLabel": "Crewing done",
     "statsHint": "Arkiverade exkluderas. Uppsagda inkluderas."
   },
   "forms": {
@@ -448,7 +448,7 @@
     "allColumns": "Alla kolumner",
     "masterdataOnly": "Endast masterdata",
     "customOnly": "Endast externa kolumner",
-    "configureRolesDescription": "Konfigurera vilka roller som kan visa och redigera specifika kolumner",
+    "configureRolesDescription": "Tryck på rutan med ett 'öga' för att ge en användargrupp läsbehörighet till kolumnen, tryck på rutan med ett streck för att ge en användargrupp skrivbehörighet till kolumnen.",
     "show": "Visa",
     "hide": "Dölj",
     "type": "Typ",
@@ -525,7 +525,7 @@
     "archiveDate": "Arkivera detta viktiga datum",
     "restoreDate": "Återställ detta viktiga datum",
     "editColumn": "Redigera kolumnnamn och kategori",
-    "deleteColumn": "Ta bort anpassad kolumn",
+    "deleteColumn": "Ta bort (permanent)",
     "hideColumn": "Dölj kolumn från tabell",
     "showColumn": "Visa kolumn i tabell",
     "manageColumns": "Hantera kolumner",
