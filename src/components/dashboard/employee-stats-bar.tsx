@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useTranslations } from "@/lib/i18n";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type EmployeeStats = {
   totalActive: number;
@@ -53,41 +53,48 @@ export function EmployeeStatsBar({ refreshToken = 0, className }: EmployeeStatsB
     stats?.crewedPercent === null || stats?.crewedPercent === undefined
       ? null
       : stats.crewedPercent;
+  const hintText = tDashboard("statsHint") || "Arkiverade exkluderas. Uppsagda inkluderas.";
+  const totalLabel = tDashboard("statsActiveEmployeesLabel") || "Anställda (aktiva)";
+  const crewedLabel = tDashboard("statsCrewedEmployeesLabel") || "Besättningsklara";
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-xs text-muted-foreground">
-              {tDashboard("statsActiveEmployeesLabel") || "Anställda (aktiva)"}
-            </div>
-            <div className="mt-1 text-2xl font-semibold tabular-nums">
+    <div className={cn("flex flex-wrap sm:flex-nowrap items-center gap-2", className)}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label={`${totalLabel}: ${hasError ? "—" : isLoading ? "…" : total}`}
+          >
+            <span className="text-muted-foreground whitespace-nowrap">{totalLabel}</span>
+            <span className="font-semibold tabular-nums text-right min-w-[4ch]">
               {hasError ? "—" : isLoading ? "…" : total}
-            </div>
-          </CardContent>
-        </Card>
+            </span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent sideOffset={6}>{hintText}</TooltipContent>
+      </Tooltip>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-xs text-muted-foreground">
-              {tDashboard("statsCrewedEmployeesLabel") || "Besättningsklara"}
-            </div>
-            <div className="mt-1 text-2xl font-semibold tabular-nums">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label={`${crewedLabel}: ${hasError ? "—" : isLoading ? "…" : crewed}${!hasError && !isLoading && percent !== null ? ` (${percent}%)` : ""}`}
+          >
+            <span className="text-muted-foreground whitespace-nowrap">{crewedLabel}</span>
+            <span className="font-semibold tabular-nums text-right min-w-[4ch]">
               {hasError ? "—" : isLoading ? "…" : crewed}
-              {!hasError && !isLoading && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  {percent === null ? "" : `(${percent}%)`}
-                </span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="text-xs text-muted-foreground">
-        {tDashboard("statsHint") || "Arkiverade exkluderas. Uppsagda inkluderas."}
-      </div>
+            </span>
+            {!hasError && !isLoading && percent !== null && (
+              <span className="text-muted-foreground tabular-nums text-right min-w-[6ch]">
+                ({percent}%)
+              </span>
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent sideOffset={6}>{hintText}</TooltipContent>
+      </Tooltip>
     </div>
   );
 }

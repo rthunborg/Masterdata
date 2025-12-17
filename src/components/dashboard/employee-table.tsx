@@ -1805,88 +1805,62 @@ export function EmployeeTable({
 
     <>
 
-      {/* Filter checkboxes - always show for HR Admin */}
+      {/* Filters + tallies row */}
+      {((isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange)) || employees.length > 0) && (
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 mb-4 pt-4">
+          {/* Filter checkboxes - always show for HR Admin */}
+          {isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
+            <div className="flex flex-wrap items-center gap-4">
+              {onIncludeArchivedChange && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-archived"
+                    checked={includeArchived}
+                    onCheckedChange={onIncludeArchivedChange}
+                  />
+                  <Label htmlFor="show-archived" className="cursor-pointer">
+                    {tDashboard("showArchived")}
+                  </Label>
+                </div>
+              )}
 
-      {isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
+              {onIncludeTerminatedChange && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-terminated"
+                    checked={includeTerminated}
+                    onCheckedChange={onIncludeTerminatedChange}
+                  />
+                  <Label htmlFor="show-terminated" className="cursor-pointer">
+                    {tDashboard("showTerminated")}
+                  </Label>
+                </div>
+              )}
 
-        <div className="flex items-center space-x-4 mb-4 pt-4">
-
-          {onIncludeArchivedChange && (
-
-            <div className="flex items-center space-x-2">
-
-              <Checkbox
-
-                id="show-archived"
-
-                checked={includeArchived}
-
-                onCheckedChange={onIncludeArchivedChange}
-
-              />
-
-              <Label htmlFor="show-archived" className="cursor-pointer">
-
-                {tDashboard("showArchived")}
-
-              </Label>
-
+              {/* Story 8.13 AC 9: Needs Repayment filter */}
+              {onNeedsRepaymentChange && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="needs-repayment"
+                    checked={needsRepayment}
+                    onCheckedChange={onNeedsRepaymentChange}
+                  />
+                  <Label htmlFor="needs-repayment" className="cursor-pointer">
+                    {tDashboard("needsRepayment")}
+                  </Label>
+                </div>
+              )}
             </div>
-
           )}
 
-          {onIncludeTerminatedChange && (
-
-            <div className="flex items-center space-x-2">
-
-              <Checkbox
-
-                id="show-terminated"
-
-                checked={includeTerminated}
-
-                onCheckedChange={onIncludeTerminatedChange}
-
-              />
-
-              <Label htmlFor="show-terminated" className="cursor-pointer">
-
-                {tDashboard("showTerminated")}
-
-              </Label>
-
-            </div>
-
+          {/* Employee tallies (only when table has data) */}
+          {employees.length > 0 && (
+            <EmployeeStatsBar
+              refreshToken={statsRefreshToken}
+              className="ml-auto"
+            />
           )}
-
-          {/* Story 8.13 AC 9: Needs Repayment filter */}
-
-          {onNeedsRepaymentChange && (
-
-            <div className="flex items-center space-x-2">
-
-              <Checkbox
-
-                id="needs-repayment"
-
-                checked={needsRepayment}
-
-                onCheckedChange={onNeedsRepaymentChange}
-
-              />
-
-              <Label htmlFor="needs-repayment" className="cursor-pointer">
-
-                {tDashboard("needsRepayment")}
-
-              </Label>
-
-            </div>
-
-          )}
-
         </div>
-
       )}
 
       {/* Empty state */}
@@ -1907,13 +1881,10 @@ export function EmployeeTable({
 
         <>
 
-          <EmployeeStatsBar refreshToken={statsRefreshToken} className="mb-4" />
-
           {/* Search Input and Column Visibility */}
 
           <div className={cn(
-            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4",
-            !isHRAdmin && "pt-4"
+            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4"
           )}>
 
             <div className="relative flex-1 max-w-sm w-full">
