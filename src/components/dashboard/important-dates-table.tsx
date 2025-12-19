@@ -695,6 +695,7 @@ export function ImportantDatesTable({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const isActionColumn = header.column.id === "actions";
+                  const isWeekNumberColumn = header.column.id === "week_number";
                   const isCompact = density === "compact";
                   
                   return (
@@ -705,7 +706,9 @@ export function ImportantDatesTable({
                       // Compact mode adjustments
                       isCompact ? "h-8 px-2 text-xs" : "h-12 px-4 text-sm",
                       // Sticky action column
-                      isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
+                      isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
+                      // Center align week_number column header
+                      isWeekNumberColumn && "text-center"
                     )}
                     style={{
                       width: header.getSize(),
@@ -751,6 +754,7 @@ export function ImportantDatesTable({
                   >
                     {row.getVisibleCells().map((cell) => {
                       const isActionColumn = cell.column.id === "actions";
+                      const isWeekNumberColumn = cell.column.id === "week_number";
                       const isCompact = density === "compact";
                       
                       return (
@@ -765,7 +769,9 @@ export function ImportantDatesTable({
                       // Ensure opacity for sticky column by inheriting row background
                       isActionColumn && "bg-inherit",
                       // Compact mode font size for cell content
-                      !isActionColumn && isCompact && "text-xs"
+                      !isActionColumn && isCompact && "text-xs",
+                      // Center align week_number column
+                      isWeekNumberColumn && "text-center"
                     )}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
