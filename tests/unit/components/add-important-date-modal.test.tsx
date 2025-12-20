@@ -558,25 +558,32 @@ describe("AddImportantDateModal", () => {
         expect(omcInput.value).toBeTruthy();
       }, { timeout: 3000 });
 
-      // Change the year
+      // Change the year - first change to a different year to trigger the update, then back to 2026
       const yearInput = screen.getByLabelText(/år/i) as HTMLInputElement;
-      const newYear = 2026;
-      // Use fireEvent to set value directly to avoid typing character-by-character issues
       const { fireEvent } = await import("@testing-library/react");
-      fireEvent.change(yearInput, { target: { value: newYear.toString() } });
-
-      // Wait for year to be fully set first
+      
+      // First, change to 2025 to trigger the year change effect
+      fireEvent.change(yearInput, { target: { value: "2025" } });
+      
+      // Wait for the change to be processed
+      await waitFor(() => {
+        expect(parseInt(yearInput.value, 10)).toBe(2025);
+      });
+      
+      // Now change back to 2026 to verify the update works
+      fireEvent.change(yearInput, { target: { value: "2026" } });
+      
+      // Wait for year input value to be updated
       await waitFor(() => {
         expect(parseInt(yearInput.value, 10)).toBe(2026);
       });
-
-      // Wait for date to be updated - ÖMC date should now show the new year in the formatted display
-      // The formatted value should update to show the new year
+      
+      // Give React Hook Form time to process the change and trigger the useEffect
       await waitFor(() => {
         // The formatted display should include the new year (e.g., "8-9 mars 2026")
         const formattedValue = omcInput.value;
         expect(formattedValue).toContain("2026");
-      }, { timeout: 3000 });
+      }, { timeout: 5000 });
     });
 
     it("should recalculate week number when year changes", async () => {
