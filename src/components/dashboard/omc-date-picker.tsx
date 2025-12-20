@@ -61,10 +61,20 @@ export function OMCDatePicker({
     return end;
   }, [startDate]);
 
-  // Display formatted value
-  const displayValue = startDate 
-    ? formatOMCDate(startDate, 'sv-SE')
-    : "";
+  // Display formatted value - memoized to ensure it updates when value changes
+  const displayValue = React.useMemo(() => {
+    return startDate ? formatOMCDate(startDate, 'sv-SE') : "";
+  }, [startDate]);
+
+  // Clear textInput when value changes externally (e.g., when year changes)
+  // This ensures the displayValue is shown instead of stale textInput
+  React.useEffect(() => {
+    if (value && textInput && textInput !== displayValue) {
+      // Clear textInput if it doesn't match the current displayValue
+      // This happens when value changes externally (like when year changes)
+      setTextInput("");
+    }
+  }, [value, displayValue, textInput]);
 
   // Handle calendar date selection
   const handleCalendarSelect = (date: Date | undefined) => {

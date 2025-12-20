@@ -1,3 +1,4 @@
+/// <reference types="@testing-library/jest-dom" />
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -6,6 +7,7 @@ import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
+import { getDefaultYear } from "@/lib/utils/date-utils";
 
 // Mock the important date service
 vi.mock("@/lib/services/important-date-service", () => ({
@@ -72,8 +74,8 @@ describe("AddImportantDateModal", () => {
       );
 
       const yearInput = screen.getByLabelText(/år/i) as HTMLInputElement;
-      const currentYear = new Date().getFullYear();
-      expect(yearInput.value).toBe(currentYear.toString());
+      const defaultYear = getDefaultYear();
+      expect(yearInput.value).toBe(defaultYear.toString());
 
       // Category should default to "Stena Dates"
       const categorySelect = screen.getByRole("combobox", { name: /kategori/i });
@@ -106,10 +108,10 @@ describe("AddImportantDateModal", () => {
       vi.mocked(importantDateService.create).mockResolvedValue({
         id: "new-date",
         week_number: 15,
-        year: 2025,
+        year: 2026,
         category: "Stena Dates",
         date_description: "Test Date",
-        date_value: "2025-04-10",
+        date_value: "2026-04-10",
         notes: null,
     time_value: null,
     deadline_submit: null,
@@ -118,8 +120,8 @@ describe("AddImportantDateModal", () => {
     max_spots: 0,
     remaining_spots: 0,
     assigned_employees: [],
-    created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",      });
+    created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",      });
 
       renderWithI18n(
         <AddImportantDateModal
@@ -135,9 +137,9 @@ describe("AddImportantDateModal", () => {
 
       const dateValueInput = screen.getByLabelText(/datumvärde/i) as HTMLInputElement;
       // For date input type, we need to set the value directly
-      await user.type(dateValueInput, "2025-04-10");
+      await user.type(dateValueInput, "2026-04-10");
 
-      // Week number should auto-calculate to 15 for April 10, 2025
+      // Week number should auto-calculate to 15 for April 10, 2026
       const weekInput = screen.getByLabelText(/veckonummer/i) as HTMLInputElement;
       await waitFor(() => {
         expect(weekInput.value).toBe("15");
@@ -150,7 +152,7 @@ describe("AddImportantDateModal", () => {
         expect(importantDateService.create).toHaveBeenCalledWith(
           expect.objectContaining({
             week_number: 15,
-            date_value: "2025-04-10",
+            date_value: "2026-04-10",
           })
         );
       });
@@ -163,10 +165,10 @@ describe("AddImportantDateModal", () => {
       const mockCreatedDate = {
         id: "new-date",
         week_number: 7,
-        year: 2025,
+        year: 2026,
         category: "Stena Dates",
-        date_description: "Fredag 14/2",
-        date_value: "2025-02-14",
+        date_description: "Lördag 14/2",
+        date_value: "2026-02-14",
         notes: "Test notes",
     time_value: null,
     deadline_submit: null,
@@ -175,8 +177,8 @@ describe("AddImportantDateModal", () => {
     max_spots: 0,
     remaining_spots: 0,
     assigned_employees: [],
-    created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",      };
+    created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",      };
 
       vi.mocked(importantDateService.create).mockResolvedValue(mockCreatedDate);
 
@@ -194,10 +196,10 @@ describe("AddImportantDateModal", () => {
       await user.type(weekInput, "7");
 
       const dateDescriptionInput = screen.getByLabelText(/datumbeskrivning/i);
-      await user.type(dateDescriptionInput, "Fredag 14/2");
+      await user.type(dateDescriptionInput, "Lördag 14/2");
 
       const dateValueInput = screen.getByLabelText(/datumvärde/i) as HTMLInputElement;
-      await user.type(dateValueInput, "2025-02-14");
+      await user.type(dateValueInput, "2026-02-14");
 
       const notesInput = screen.getByLabelText(/anteckningar/i);
       await user.type(notesInput, "Test notes");
@@ -209,10 +211,10 @@ describe("AddImportantDateModal", () => {
         expect(importantDateService.create).toHaveBeenCalledWith(
           expect.objectContaining({
             week_number: 7,
-            year: 2025,
+            year: 2026,
             category: "Stena Dates",
-            date_description: "Fredag 14/2",
-            date_value: "2025-02-14",
+            date_description: "Lördag 14/2",
+            date_value: "2026-02-14",
             notes: "Test notes",
           time_value: null,
       deadline_submit: null,
@@ -248,7 +250,7 @@ describe("AddImportantDateModal", () => {
       await user.type(dateDescriptionInput, "Test Date");
 
       const dateValueInput = screen.getByLabelText(/datumvärde/i) as HTMLInputElement;
-      await user.type(dateValueInput, "2025-04-10");
+      await user.type(dateValueInput, "2026-04-10");
 
       const saveButton = screen.getByRole("button", { name: /skapa/i });
       await user.click(saveButton);
@@ -342,7 +344,7 @@ describe("AddImportantDateModal", () => {
       await user.type(dateDescriptionInput, "Test Date");
 
       const dateValueInput = screen.getByLabelText(/datumvärde/i) as HTMLInputElement;
-      await user.type(dateValueInput, "2025-04-10");
+      await user.type(dateValueInput, "2026-04-10");
 
       const saveButton = screen.getByRole("button", { name: /skapa/i });
       await user.click(saveButton);
@@ -356,13 +358,13 @@ describe("AddImportantDateModal", () => {
       resolveCreate!({
         id: "new-date",
         week_number: null,
-        year: 2025,
+        year: 2026,
         category: "Stena Dates",
         date_description: "Test Date",
-        date_value: "2025-04-10",
+        date_value: "2026-04-10",
         notes: null,
-        created_at: "2025-01-01T00:00:00Z",
-        updated_at: "2025-01-01T00:00:00Z",      });
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",      });
 
       await waitFor(() => {
         expect(mockOnSuccess).toHaveBeenCalled();
@@ -491,11 +493,11 @@ describe("AddImportantDateModal", () => {
       // First, select a date
       const dateValueInput = screen.getByLabelText(/datumvärde/i) as HTMLInputElement;
       await user.clear(dateValueInput);
-      await user.type(dateValueInput, "2025-03-15");
+      await user.type(dateValueInput, "2026-03-15");
 
       // Wait for date to be set
       await waitFor(() => {
-        expect(dateValueInput.value).toBe("2025-03-15");
+        expect(dateValueInput.value).toBe("2026-03-15");
       });
 
       // Then change the year by setting value directly
@@ -556,25 +558,32 @@ describe("AddImportantDateModal", () => {
         expect(omcInput.value).toBeTruthy();
       }, { timeout: 3000 });
 
-      // Change the year
+      // Change the year - first change to a different year to trigger the update, then back to 2026
       const yearInput = screen.getByLabelText(/år/i) as HTMLInputElement;
-      const newYear = 2026;
-      // Use fireEvent to set value directly to avoid typing character-by-character issues
       const { fireEvent } = await import("@testing-library/react");
-      fireEvent.change(yearInput, { target: { value: newYear.toString() } });
-
-      // Wait for year to be fully set first
+      
+      // First, change to 2025 to trigger the year change effect
+      fireEvent.change(yearInput, { target: { value: "2025" } });
+      
+      // Wait for the change to be processed
+      await waitFor(() => {
+        expect(parseInt(yearInput.value, 10)).toBe(2025);
+      });
+      
+      // Now change back to 2026 to verify the update works
+      fireEvent.change(yearInput, { target: { value: "2026" } });
+      
+      // Wait for year input value to be updated
       await waitFor(() => {
         expect(parseInt(yearInput.value, 10)).toBe(2026);
       });
-
-      // Wait for date to be updated - ÖMC date should now show the new year in the formatted display
-      // The formatted value should update to show the new year
+      
+      // Give React Hook Form time to process the change and trigger the useEffect
       await waitFor(() => {
         // The formatted display should include the new year (e.g., "8-9 mars 2026")
         const formattedValue = omcInput.value;
         expect(formattedValue).toContain("2026");
-      }, { timeout: 3000 });
+      }, { timeout: 5000 });
     });
 
     it("should recalculate week number when year changes", async () => {
@@ -591,7 +600,7 @@ describe("AddImportantDateModal", () => {
       // Select a date
       const dateValueInput = screen.getByLabelText(/datumvärde/i) as HTMLInputElement;
       await user.clear(dateValueInput);
-      await user.type(dateValueInput, "2025-04-10");
+      await user.type(dateValueInput, "2026-04-10");
 
       // Wait for week number to be calculated
       const weekInput = screen.getByLabelText(/veckonummer/i) as HTMLInputElement;
