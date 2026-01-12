@@ -52,3 +52,111 @@ export function getWeekNumberFromDateString(dateString: string): number | null {
   
   return getISOWeek(date);
 }
+
+/**
+ * Get the default year for date creation.
+ * Returns current year, or next year if we're in the last 3 months (October, November, December).
+ * 
+ * @returns The default year to use for new dates
+ */
+export function getDefaultYear(): number {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1; // getMonth() returns 0-11, so add 1 for 1-12
+  const currentYear = now.getFullYear();
+  
+  // If we're in October (10), November (11), or December (12), use next year
+  if (currentMonth >= 10) {
+    return currentYear + 1;
+  }
+  
+  return currentYear;
+}
+
+/**
+ * Parse a pasted date string and convert it to ISO format (YYYY-MM-DD).
+ * Supports various date formats commonly used:
+ * - YYYY-MM-DD (ISO format)
+ * - DD/MM/YYYY or DD-MM-YYYY
+ * - DD.MM.YYYY
+ * - YYYY/MM/DD
+ * - DD MMM YYYY (e.g., "15 Mar 2025")
+ * 
+ * @param pastedText - The pasted text to parse
+ * @returns The date in ISO format (YYYY-MM-DD) or null if parsing fails
+ */
+export function parsePastedDate(pastedText: string): string | null {
+  if (!pastedText || typeof pastedText !== 'string') {
+    return null;
+  }
+
+  const trimmed = pastedText.trim();
+  
+  // Already in ISO format (YYYY-MM-DD)
+  const isoRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (isoRegex.test(trimmed)) {
+    // Validate the date
+    const date = new Date(trimmed);
+    if (!isNaN(date.getTime())) {
+      return trimmed;
+    }
+  }
+
+  // Try DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+  const ddmmyyyyRegex = /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/;
+  const ddmmyyyyMatch = trimmed.match(ddmmyyyyRegex);
+  if (ddmmyyyyMatch) {
+    const [, day, month, year] = ddmmyyyyMatch;
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+    
+    if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
+      const date = new Date(yearNum, monthNum - 1, dayNum);
+      if (date.getFullYear() === yearNum && date.getMonth() === monthNum - 1 && date.getDate() === dayNum) {
+        return `${yearNum}-${String(monthNum).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+      }
+    }
+  }
+
+  // Try YYYY/MM/DD or YYYY-MM-DD (already handled above, but check for alternative separators)
+  const yyyymmddRegex = /^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/;
+  const yyyymmddMatch = trimmed.match(yyyymmddRegex);
+  if (yyyymmddMatch) {
+    const [, year, month, day] = yyyymmddMatch;
+    const yearNum = parseInt(year, 10);
+    const monthNum = parseInt(month, 10);
+    const dayNum = parseInt(day, 10);
+    
+    if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
+      const date = new Date(yearNum, monthNum - 1, dayNum);
+      if (date.getFullYear() === yearNum && date.getMonth() === monthNum - 1 && date.getDate() === dayNum) {
+        return `${yearNum}-${String(monthNum).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+      }
+    }
+  }
+
+  // Try parsing with Date constructor (handles many formats)
+  const parsedDate = new Date(trimmed);
+  if (!isNaN(parsedDate.getTime())) {
+    // Check if it's a reasonable date (not too far in past/future)
+    const year = parsedDate.getFullYear();
+    if (year >= 1900 && year <= 2100) {
+      const month = parsedDate.getMonth() + 1;
+      const day = parsedDate.getDate();
+      
+      // Verify the parsed date components are valid by reconstructing the date
+      // This avoids timezone issues when comparing timestamps
+      const reconstructedDate = new Date(year, month - 1, day);
+      if (
+        reconstructedDate.getFullYear() === year &&
+        reconstructedDate.getMonth() === month - 1 &&
+        reconstructedDate.getDate() === day
+      ) {
+        const isoDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        return isoDate;
+      }
+    }
+  }
+
+  return null;
+}
