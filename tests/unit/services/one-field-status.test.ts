@@ -123,7 +123,8 @@ describe('One Field Status Service', () => {
       // 18.5 hours ago = 5 hours 30 minutes remaining
       const eighteenThirtyAgo = new Date(Date.now() - 18.5 * 60 * 60 * 1000);
       const remaining = getRemainingTime(eighteenThirtyAgo);
-      expect(remaining).toMatch(/5 hours 30 minutes/);
+      // Allow for small time discrepancies during test execution (29 or 30 minutes)
+      expect(remaining).toMatch(/5 hours (29|30) minutes/);
     });
 
     it('returns full 24 hours when just marked', () => {
