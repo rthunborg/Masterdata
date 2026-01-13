@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DATE_CATEGORIES } from "@/lib/types/important-date";
 import { parseOMCDateInput } from "@/lib/utils/omc-date-formatter";
 import { validateTimeFormat } from "@/lib/utils/time-formatter";
 import { validateDeadlines } from "@/lib/utils/deadline-validator";
@@ -7,7 +8,7 @@ import { getDefaultMaxCapacity } from "@/lib/services/date-capacity";
 export const createImportantDateSchema = z.object({
   week_number: z.number().int().min(1).max(53).nullable(),
   year: z.number().int().min(2020).max(2100),
-  category: z.enum(["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]),
+  category: z.enum(DATE_CATEGORIES),
   date_description: z.string(),
   date_value: z.string().min(1, "Date value is required"),
   time_value: z.string().nullable().optional(),
@@ -43,10 +44,13 @@ export const createImportantDateSchema = z.object({
   }
 )
 .superRefine((data, ctx) => {
+  const isPE3 = data.category === 'PE3 Dates';
+  const timeValue = data.time_value;
+
   // PE3 dates require time field validation
-  if (data.category === 'PE3 Dates') {
+  if (isPE3) {
     // Check if time_value is null, undefined, or empty string
-    if (data.time_value === null || data.time_value === undefined) {
+    if (timeValue === null || timeValue === undefined || (typeof timeValue === 'string' && timeValue.trim() === '')) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Time is required for PE3 dates',
@@ -54,48 +58,17 @@ export const createImportantDateSchema = z.object({
       });
       return;
     }
-    
-    // Check if time_value is a non-empty string
-    if (typeof data.time_value === 'string') {
-      if (data.time_value.trim() === '') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Time is required for PE3 dates',
-          path: ['time_value'],
-        });
-        return;
-      }
-      
-      // Validate time format
-      const result = validateTimeFormat(data.time_value);
-      if (!result.valid) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-          path: ['time_value'],
-        });
-        return;
-      }
-    } else {
-      // time_value is not a string and not null/undefined - invalid type
+  } 
+  
+  // Validate time format if provided (for any category)
+  if (timeValue && typeof timeValue === 'string' && timeValue.trim() !== '') {
+    const result = validateTimeFormat(timeValue);
+    if (!result.valid) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Time is required for PE3 dates',
+        message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
         path: ['time_value'],
       });
-      return;
-    }
-  } else {
-    // For other categories, validate time format if provided
-    if (data.time_value && typeof data.time_value === 'string' && data.time_value.trim() !== '') {
-      const result = validateTimeFormat(data.time_value);
-      if (!result.valid) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-          path: ['time_value'],
-        });
-      }
     }
   }
 })
@@ -125,7 +98,7 @@ export const createImportantDateSchema = z.object({
 export const updateImportantDateSchema = z.object({
   week_number: z.number().int().min(1).max(53).nullable().optional(),
   year: z.number().int().min(2020).max(2100).optional(),
-  category: z.enum(["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]).optional(),
+  category: z.enum(DATE_CATEGORIES).optional(),
   date_description: z.string().optional(),
   date_value: z.string().min(1, "Date value is required").optional(),
   time_value: z.string().nullable().optional(),
