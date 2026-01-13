@@ -13,6 +13,9 @@ export interface AssignedEmployee {
   room_number: number | null;
 }
 
+export const DATE_CATEGORIES = ["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"] as const;
+export type DateCategory = typeof DATE_CATEGORIES[number];
+
 export interface ImportantDate {
   id: string;
   week_number: number | null;

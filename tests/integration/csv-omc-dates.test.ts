@@ -4,7 +4,7 @@
  * AC2: Integration Test Coverage (CSV Import/Export)
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { exportImportantDates } from '@/lib/services/export-service';
 import { validateImportantDatesCSV } from '@/lib/utils/important-dates-csv-validator';
 import type { ImportantDate } from '@/lib/types/important-date';
@@ -28,6 +28,13 @@ vi.mock('@/lib/utils/csv-export', async () => {
 beforeEach(() => {
   capturedCSV = null;
   capturedFilename = null;
+  // Fix: Mock system date to 2025 so date parsing defaults to 2025 for year-less inputs
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2025-06-15T12:00:00Z'));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('CSV Export with ÖMC Dates', () => {

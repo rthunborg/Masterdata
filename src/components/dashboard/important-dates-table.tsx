@@ -11,7 +11,7 @@ import {
   type ColumnSizingState,
   flexRender,
 } from "@tanstack/react-table";
-import type { ImportantDate } from "@/lib/types/important-date";
+import { type ImportantDate, DATE_CATEGORIES } from "@/lib/types/important-date";
 import {
   Table,
   TableBody,
@@ -175,6 +175,8 @@ export function ImportantDatesTable({
           
           // Calculate new remaining spots: new max - assigned count
           // Ensure it doesn't go below 0
+          // Note: This calculation relies on client-side state which might be stale (optimistic concurrency risk).
+          // Ideally this should be handled atomically on the server.
           const newRemainingSpots = Math.max(0, numValue - assignedCount);
           
           // Update both max_spots and remaining_spots
@@ -297,7 +299,7 @@ export function ImportantDatesTable({
               employeeId={row.original.id}
               field="category"
               type="select"
-              options={["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]}
+              options={[...DATE_CATEGORIES]}
               className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
               isCompact={isCompact}
               onSave={handleCellUpdate}
@@ -607,7 +609,8 @@ export function ImportantDatesTable({
     }
     
     // Sort: active dates first (by current sorting), then archived dates at the bottom
-    return filtered.sort((a, b) => {
+    // Use toSorted() or spread to avoid mutating the original array
+    return [...filtered].sort((a, b) => {
       // Archived dates always go to the bottom
       if (a.is_active !== b.is_active) {
         return a.is_active ? -1 : 1;
@@ -661,10 +664,11 @@ export function ImportantDatesTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">{tDates('allCategories')}</SelectItem>
-            <SelectItem value="Stena Dates">Stena Dates</SelectItem>
-            <SelectItem value="ÖMC Dates">ÖMC Dates</SelectItem>
-            <SelectItem value="PE3 Dates">PE3 Dates</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
+            {DATE_CATEGORIES.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         </div>
