@@ -607,7 +607,8 @@ export function ImportantDatesTable({
     }
     
     // Sort: active dates first (by current sorting), then archived dates at the bottom
-    return filtered.sort((a, b) => {
+    // Use toSorted() or spread to avoid mutating the original array
+    return [...filtered].sort((a, b) => {
       // Archived dates always go to the bottom
       if (a.is_active !== b.is_active) {
         return a.is_active ? -1 : 1;

@@ -4,10 +4,21 @@
  * AC3: Component Test Coverage (Date Picker)
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OMCDatePicker } from '@/components/dashboard/omc-date-picker';
+
+// Fix: Mock system date to 2025 so date parsing defaults to 2025 for year-less inputs
+// Note: Only mock Date, not timers (useFakeTimers breaks userEvent)
+beforeEach(() => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  vi.setSystemTime(new Date('2025-06-15T12:00:00Z'));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('OMCDatePicker Component', () => {
   it('should display ÖMC date format "8-9 mars 2025"', () => {
@@ -24,7 +35,7 @@ describe('OMCDatePicker Component', () => {
   });
 
   it('should accept multiple input formats', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const onChange = vi.fn();
     
     render(
@@ -54,7 +65,7 @@ describe('OMCDatePicker Component', () => {
   });
 
   it('should validate consecutive days', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const onChange = vi.fn();
     
     render(
@@ -80,7 +91,7 @@ describe('OMCDatePicker Component', () => {
   });
 
   it('should show error for invalid input', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     
     render(
       <OMCDatePicker
@@ -114,7 +125,7 @@ describe('OMCDatePicker Component', () => {
   });
 
   it('should update state on selection', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const onChange = vi.fn();
     
     render(
@@ -135,7 +146,7 @@ describe('OMCDatePicker Component', () => {
   });
 
   it('should highlight two-day range in calendar popup', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const onChange = vi.fn();
     
     render(
