@@ -44,10 +44,13 @@ export const createImportantDateSchema = z.object({
   }
 )
 .superRefine((data, ctx) => {
+  const isPE3 = data.category === 'PE3 Dates';
+  const timeValue = data.time_value;
+
   // PE3 dates require time field validation
-  if (data.category === 'PE3 Dates') {
+  if (isPE3) {
     // Check if time_value is null, undefined, or empty string
-    if (data.time_value === null || data.time_value === undefined) {
+    if (timeValue === null || timeValue === undefined || (typeof timeValue === 'string' && timeValue.trim() === '')) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Time is required for PE3 dates',
@@ -55,48 +58,17 @@ export const createImportantDateSchema = z.object({
       });
       return;
     }
-    
-    // Check if time_value is a non-empty string
-    if (typeof data.time_value === 'string') {
-      if (data.time_value.trim() === '') {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Time is required for PE3 dates',
-          path: ['time_value'],
-        });
-        return;
-      }
-      
-      // Validate time format
-      const result = validateTimeFormat(data.time_value);
-      if (!result.valid) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-          path: ['time_value'],
-        });
-        return;
-      }
-    } else {
-      // time_value is not a string and not null/undefined - invalid type
+  } 
+  
+  // Validate time format if provided (for any category)
+  if (timeValue && typeof timeValue === 'string' && timeValue.trim() !== '') {
+    const result = validateTimeFormat(timeValue);
+    if (!result.valid) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Time is required for PE3 dates',
+        message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
         path: ['time_value'],
       });
-      return;
-    }
-  } else {
-    // For other categories, validate time format if provided
-    if (data.time_value && typeof data.time_value === 'string' && data.time_value.trim() !== '') {
-      const result = validateTimeFormat(data.time_value);
-      if (!result.valid) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Tid måste vara i format HH:MM (00:00 - 23:59)',
-          path: ['time_value'],
-        });
-      }
     }
   }
 })

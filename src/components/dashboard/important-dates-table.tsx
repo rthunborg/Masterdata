@@ -175,6 +175,8 @@ export function ImportantDatesTable({
           
           // Calculate new remaining spots: new max - assigned count
           // Ensure it doesn't go below 0
+          // Note: This calculation relies on client-side state which might be stale (optimistic concurrency risk).
+          // Ideally this should be handled atomically on the server.
           const newRemainingSpots = Math.max(0, numValue - assignedCount);
           
           // Update both max_spots and remaining_spots
