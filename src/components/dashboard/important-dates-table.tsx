@@ -11,7 +11,7 @@ import {
   type ColumnSizingState,
   flexRender,
 } from "@tanstack/react-table";
-import type { ImportantDate } from "@/lib/types/important-date";
+import { type ImportantDate, DATE_CATEGORIES } from "@/lib/types/important-date";
 import {
   Table,
   TableBody,
@@ -297,7 +297,7 @@ export function ImportantDatesTable({
               employeeId={row.original.id}
               field="category"
               type="select"
-              options={["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]}
+              options={[...DATE_CATEGORIES]}
               className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
               isCompact={isCompact}
               onSave={handleCellUpdate}
@@ -662,10 +662,11 @@ export function ImportantDatesTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">{tDates('allCategories')}</SelectItem>
-            <SelectItem value="Stena Dates">Stena Dates</SelectItem>
-            <SelectItem value="ÖMC Dates">ÖMC Dates</SelectItem>
-            <SelectItem value="PE3 Dates">PE3 Dates</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
+            {DATE_CATEGORIES.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         </div>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DATE_CATEGORIES } from "@/lib/types/important-date";
 import { parseOMCDateInput } from "@/lib/utils/omc-date-formatter";
 import { validateTimeFormat } from "@/lib/utils/time-formatter";
 import { validateDeadlines } from "@/lib/utils/deadline-validator";
@@ -7,7 +8,7 @@ import { getDefaultMaxCapacity } from "@/lib/services/date-capacity";
 export const createImportantDateSchema = z.object({
   week_number: z.number().int().min(1).max(53).nullable(),
   year: z.number().int().min(2020).max(2100),
-  category: z.enum(["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]),
+  category: z.enum(DATE_CATEGORIES),
   date_description: z.string(),
   date_value: z.string().min(1, "Date value is required"),
   time_value: z.string().nullable().optional(),
@@ -125,7 +126,7 @@ export const createImportantDateSchema = z.object({
 export const updateImportantDateSchema = z.object({
   week_number: z.number().int().min(1).max(53).nullable().optional(),
   year: z.number().int().min(2020).max(2100).optional(),
-  category: z.enum(["Stena Dates", "ÖMC Dates", "PE3 Dates", "Other"]).optional(),
+  category: z.enum(DATE_CATEGORIES).optional(),
   date_description: z.string().optional(),
   date_value: z.string().min(1, "Date value is required").optional(),
   time_value: z.string().nullable().optional(),
