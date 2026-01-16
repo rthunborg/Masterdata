@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
+import { requireEmployeeManagerAPI, createErrorResponse } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 import Papa from "papaparse";
@@ -20,8 +20,8 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: Request) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI();
 
     // Parse request body to get selected employee IDs
     const body = await request.json();

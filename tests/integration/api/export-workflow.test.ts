@@ -103,7 +103,7 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const allEmployees = [eligibleEmployee, ineligibleEmployee];
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
     vi.mocked(canEditCrewingDone).mockImplementation((emp) => {
       return emp.isps && emp.photo && emp.origo && emp.mail_lon && 
@@ -150,7 +150,7 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const allEmployees = [eligible1, eligible2, ineligible];
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
     vi.mocked(canEditCrewingDone).mockReturnValue(true);
     vi.mocked(employeeRepository.update).mockResolvedValue(eligible1);
@@ -175,7 +175,7 @@ describe("POST /api/employees/export-crew-ready", () => {
       omc_date: "omc-date-1",
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue([eligibleEmployee]);
     vi.mocked(canEditCrewingDone).mockReturnValue(true);
     vi.mocked(employeeRepository.update).mockResolvedValue(eligibleEmployee);
@@ -218,7 +218,7 @@ describe("POST /api/employees/export-crew-ready", () => {
       omc_date: "omc-date-1",
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue([eligibleEmployee]);
     vi.mocked(canEditCrewingDone).mockReturnValue(true);
     vi.mocked(employeeRepository.update).mockResolvedValue(eligibleEmployee);
@@ -239,7 +239,7 @@ describe("POST /api/employees/export-crew-ready", () => {
   it("should return CSV format", async () => {
     const eligibleEmployee = createMockEmployee();
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue([eligibleEmployee]);
     vi.mocked(canEditCrewingDone).mockReturnValue(true);
     vi.mocked(employeeRepository.update).mockResolvedValue(eligibleEmployee);
@@ -265,7 +265,7 @@ describe("POST /api/employees/export-crew-ready", () => {
   it("should handle empty result set", async () => {
     const allEmployees: Employee[] = [];
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
@@ -287,7 +287,7 @@ describe("POST /api/employees/export-crew-ready", () => {
       crewing_done: false,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue([employeeWithoutPrerequisites]);
     vi.mocked(canEditCrewingDone).mockReturnValue(false); // Prerequisites not met
 
@@ -304,7 +304,7 @@ describe("POST /api/employees/export-crew-ready", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(new Error("Authentication required"));
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(new Error("Authentication required"));
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
@@ -330,7 +330,7 @@ describe("POST /api/employees/export-crew-ready", () => {
   });
 
   it("should return 400 when no employees are selected", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
@@ -346,7 +346,7 @@ describe("POST /api/employees/export-crew-ready", () => {
   });
 
   it("should return 400 when selectedEmployeeIds is missing", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/export-crew-ready", {
       method: "POST",
@@ -381,7 +381,7 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     const allEmployees = [eligible1, eligible2, ineligible, notSelected];
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockResolvedValue(allEmployees);
     vi.mocked(canEditCrewingDone).mockImplementation((emp) => {
       return emp.id !== "emp-3"; // emp-3 doesn't meet prerequisites

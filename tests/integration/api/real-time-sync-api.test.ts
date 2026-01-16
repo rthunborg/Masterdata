@@ -98,7 +98,7 @@ describe("Real-time Sync - Employee CRUD", () => {
       updated_at: "2025-10-27T12:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
     vi.mocked(createClient).mockResolvedValue({} as unknown as SupabaseClient);
@@ -159,7 +159,7 @@ describe("Real-time Sync - Employee CRUD", () => {
       updated_at: "2025-10-27T15:30:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
     vi.mocked(createClient).mockResolvedValue({} as unknown as SupabaseClient);
@@ -214,7 +214,7 @@ describe("Real-time Sync - Employee CRUD", () => {
       updated_at: "2025-01-01T00:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.delete).mockResolvedValue();
     vi.mocked(createClient).mockResolvedValue({} as unknown as SupabaseClient);
@@ -295,7 +295,7 @@ describe("Real-time Sync - Date Capacity Changes", () => {
       updated_at: "2025-01-02T00:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findById).mockResolvedValue(mockDate);
     vi.mocked(importantDateRepository.update).mockResolvedValue(mockDate);
 
@@ -397,7 +397,7 @@ describe("Real-time Sync - Multiple Clients", () => {
       updated_at: "2025-10-27T12:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
     vi.mocked(createClient).mockResolvedValue({} as unknown as SupabaseClient);
@@ -554,7 +554,7 @@ describe("Real-time Sync - Latency Requirements", () => {
       updated_at: "2025-10-27T12:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
 
     // Setup real-time subscription

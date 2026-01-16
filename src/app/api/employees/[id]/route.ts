@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import {
-  requireHRAdminAPI,
+  requireEmployeeManagerAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
 import { updateEmployeeSchema } from "@/lib/validation/employee-schema";
@@ -22,8 +22,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify authentication (all roles can view, but permissions handled by repository)
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
@@ -77,8 +77,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
@@ -501,8 +501,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;

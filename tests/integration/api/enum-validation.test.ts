@@ -43,7 +43,7 @@ describe("API Enum Validation - Gender", () => {
   });
 
   it("should reject invalid gender enum value via API", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       ...baseEmployeeData,
@@ -80,7 +80,7 @@ describe("API Enum Validation - Rank", () => {
   });
 
   it("should reject invalid rank enum value via API", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       first_name: "John",
@@ -105,7 +105,7 @@ describe("API Enum Validation - Rank", () => {
   });
 
   it("should reject invalid rank enum on PATCH", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     const employee = createTestEmployee();
     vi.mocked(employeeRepository.findById).mockResolvedValue(employee);
 

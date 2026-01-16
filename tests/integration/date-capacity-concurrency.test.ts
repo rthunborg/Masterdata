@@ -26,7 +26,7 @@ vi.mock("@/lib/server/auth", async () => {
   const actual = await vi.importActual("@/lib/server/auth");
   return {
     ...actual,
-    requireHRAdminAPI: vi.fn(),
+    requireEmployeeManagerAPI: vi.fn(),
     createErrorResponse: vi.fn((error: unknown) => {
       const message = error instanceof Error ? error.message : "Internal server error";
       return new Response(
@@ -136,7 +136,7 @@ describe("Date Capacity Concurrency Integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     // Mock Supabase client
     vi.mocked(createClient).mockResolvedValue({
       from: vi.fn(() => ({

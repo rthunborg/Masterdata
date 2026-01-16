@@ -166,7 +166,7 @@ describe("GET /api/employees", () => {
   });
 
   it("should return 403 for non-HR Admin users", async () => {
-    // Note: GET endpoint uses requireAuthAPI, not requireHRAdminAPI
+    // Note: GET endpoint uses requireAuthAPI, not requireEmployeeManagerAPI
     // This test should verify that non-HR Admin users can still access the endpoint
     // (since GET allows all authenticated users, but RLS filters results)
     const mockExternalUser = {
@@ -241,6 +241,15 @@ describe("POST /api/employees", () => {
     created_at: "2025-01-01T00:00:00Z",
     last_active_at: null,
   };
+  const mockRecruiterUser = {
+    id: "user-2",
+    auth_id: "auth-2",
+    email: "recruiter@example.com",
+    role: UserRole.RECRUITER,
+    is_active: true,
+    created_at: "2025-01-02T00:00:00Z",
+    last_active_at: null,
+  };
 
   const validEmployeeData: EmployeeFormData = {
     first_name: "Jane",
@@ -292,7 +301,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should create employee for HR Admin", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -317,7 +326,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should return 400 for missing required fields", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       first_name: "John",
@@ -338,7 +347,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should return 400 for invalid email format", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       ...validEmployeeData,
@@ -359,7 +368,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should return 400 for invalid SSN format", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       ...validEmployeeData,
@@ -380,7 +389,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should return 400 for future hire date", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -405,7 +414,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should return 409 for duplicate SSN", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockRejectedValue(
       new Error("Employee with SSN 19900101-1234 already exists")
     );
@@ -424,7 +433,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Authentication required")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -452,7 +461,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should return 403 for non-HR Admin users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -480,7 +489,7 @@ describe("POST /api/employees", () => {
   });
 
   it("should accept minimal valid data with defaults", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
 
     const minimalData = {
@@ -550,6 +559,23 @@ describe("POST /api/employees", () => {
       })
     );
   });
+
+  it("should create employee for Recruiter", async () => {
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockRecruiterUser);
+    vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
+
+    const request = new NextRequest("http://localhost:3000/api/employees", {
+      method: "POST",
+      body: JSON.stringify(validEmployeeData),
+    });
+
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(json.data).toEqual(mockCreatedEmployee);
+    expect(employeeRepository.create).toHaveBeenCalled();
+  });
 });
 
 describe("PATCH /api/employees/[id]", () => {
@@ -613,7 +639,7 @@ describe("PATCH /api/employees/[id]", () => {
       email: "updated@example.com",
       updated_at: "2025-10-27T15:30:00Z",      };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
@@ -642,7 +668,7 @@ describe("PATCH /api/employees/[id]", () => {
       rank: "SEV" as const,
       updated_at: "2025-10-27T15:30:00Z",      };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
@@ -665,7 +691,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 400 for invalid email format", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -681,7 +707,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 400 for invalid SSN format", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -697,7 +723,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 400 for empty update object", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -713,7 +739,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 404 for non-existent employee", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.update).mockRejectedValue(
       new Error("Employee with ID nonexistent-id not found")
     );
@@ -732,7 +758,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 409 for duplicate SSN", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockRejectedValue(
       new Error("Employee with SSN 19900101-1234 already exists")
@@ -752,7 +778,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Authentication required")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -780,7 +806,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 403 for non-HR Admin users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -813,7 +839,7 @@ describe("PATCH /api/employees/[id]", () => {
       mobile: null,
       updated_at: "2025-10-27T15:30:00Z",      };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
@@ -894,7 +920,7 @@ describe("POST /api/employees/[id]/terminate", () => {
       termination_reason: "Voluntary resignation",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({ 
       employee: terminatedEmployee, 
       clearedDates: [], 
@@ -924,7 +950,7 @@ describe("POST /api/employees/[id]/terminate", () => {
   });
 
   it("should return 400 for missing termination date", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123/terminate", {
       method: "POST",
@@ -942,7 +968,7 @@ describe("POST /api/employees/[id]/terminate", () => {
   });
 
   it("should return 400 for missing termination reason", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123/terminate", {
       method: "POST",
@@ -960,7 +986,7 @@ describe("POST /api/employees/[id]/terminate", () => {
   });
 
   it("should return 400 for invalid date format", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123/terminate", {
       method: "POST",
@@ -978,7 +1004,7 @@ describe("POST /api/employees/[id]/terminate", () => {
   });
 
   it("should return 404 for non-existent employee", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockRejectedValue(
       new Error("Employee with ID nonexistent-id not found")
     );
@@ -1000,7 +1026,7 @@ describe("POST /api/employees/[id]/terminate", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Authentication required")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -1031,7 +1057,7 @@ describe("POST /api/employees/[id]/terminate", () => {
   });
 
   it("should return 403 for non-HR Admin users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -1118,7 +1144,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
   });
 
   it("should reactivate employee for HR Admin", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({ employee: mockEmployee, warnings: [] });
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123/reactivate", {
@@ -1136,7 +1162,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
   });
 
   it("should return 404 for non-existent employee", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockRejectedValue(
       new Error("Employee with ID nonexistent-id not found")
     );
@@ -1154,7 +1180,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Authentication required")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -1181,7 +1207,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
   });
 
   it("should return 403 for non-HR Admin users", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -1275,7 +1301,7 @@ describe("SSN Normalization Tests", () => {
         updated_at: "2025-10-27T12:00:00Z",
       };
 
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
 
       const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -1345,7 +1371,7 @@ describe("SSN Normalization Tests", () => {
         updated_at: "2025-10-27T12:00:00Z",
       };
 
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
 
       const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -1416,7 +1442,7 @@ describe("SSN Normalization Tests", () => {
         updated_at: "2025-10-27T12:00:00Z",
       };
 
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
 
       const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -1488,7 +1514,7 @@ describe("SSN Normalization Tests", () => {
         ssn: "850315-1234", // Original SSN
       };
 
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findById).mockResolvedValue(mockCurrentEmployee);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
 
@@ -1560,7 +1586,7 @@ describe("SSN Normalization Tests", () => {
         ssn: "850315-1234", // Original SSN
       };
 
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findById).mockResolvedValue(mockCurrentEmployee);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
 
@@ -1633,7 +1659,7 @@ describe("SSN Normalization Tests", () => {
         first_name: "Test", // Original first name
       };
 
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       vi.mocked(employeeRepository.findById).mockResolvedValue(mockCurrentEmployee);
       vi.mocked(employeeRepository.update).mockResolvedValue(mockUpdatedEmployee);
 
@@ -1727,7 +1753,7 @@ describe("POST /api/employees - Capacity Management", () => {
       updated_at: "2025-10-27T12:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
 
@@ -1797,7 +1823,7 @@ describe("POST /api/employees - Capacity Management", () => {
       updated_at: "2025-10-27T12:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(calculateRoomNumber).mockResolvedValue(5);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
@@ -1889,7 +1915,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
       updated_at: "2025-10-27T15:30:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
@@ -1927,7 +1953,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
       updated_at: "2025-10-27T15:30:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(employeeWithDate);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
     vi.mocked(recalculateRoomsForEmployee).mockResolvedValue();
@@ -1962,7 +1988,7 @@ describe("PATCH /api/employees/[id] - Capacity and Room Recalculation", () => {
       updated_at: "2025-10-27T15:30:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(employeeWithDate);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
     vi.mocked(recalculateRoomsForDate).mockResolvedValue();
@@ -2038,7 +2064,7 @@ describe("DELETE /api/employees/[id]", () => {
   });
 
   it("should delete employee successfully", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.delete).mockResolvedValue();
     vi.mocked(recalculateRoomsForDate).mockResolvedValue();
@@ -2057,7 +2083,7 @@ describe("DELETE /api/employees/[id]", () => {
   });
 
   it("should release capacity spots on deletion", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.delete).mockResolvedValue();
     vi.mocked(recalculateRoomsForDate).mockResolvedValue();
@@ -2075,7 +2101,7 @@ describe("DELETE /api/employees/[id]", () => {
   });
 
   it("should recalculate rooms for ÖMC date after deletion", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.delete).mockResolvedValue();
     vi.mocked(recalculateRoomsForDate).mockResolvedValue();
@@ -2091,7 +2117,7 @@ describe("DELETE /api/employees/[id]", () => {
   });
 
   it("should return 404 if employee not found", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(null);
 
     const request = new NextRequest("http://localhost:3000/api/employees/non-existent-id", {

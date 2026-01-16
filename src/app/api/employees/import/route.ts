@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
+import { requireEmployeeManagerAPI, createErrorResponse } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { csvImportEmployeeSchema } from "@/lib/validation/employee-schema";
 import { normalizeSSN } from "@/lib/utils/ssn-formatter";
@@ -33,8 +33,8 @@ export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
-    // Require HR Admin authentication
-    await requireHRAdminAPI();
+    // Require HR Admin or Recruiter authentication
+    await requireEmployeeManagerAPI();
 
     // Parse multipart/form-data
     const formData = await request.formData();
