@@ -1033,65 +1033,10 @@ export function EmployeeTable({
           // Determine EditableCell type based on column_type
 
 
-          let cellType: "text" | "date" | "select" | "number" | "boolean" = "text";
+          const cellType: "text" | "date" | "select" | "number" | "boolean" = "text";
 
 
           let options: string[] | undefined;
-
-          // Force boolean type for fields that are boolean in the database but may be
-          // misconfigured as 'text' in column_config (Story 13.9, Story 19.2)
-          const BOOLEAN_FIELD_NAMES = [
-            "repayment_needed_omc",
-            "repayment_needed_pe3",
-            "one",
-            "talmundo",
-            "isps",
-            "photo",
-            "origo",
-            "mail_lon",
-            "bankuppgifter",
-            "li",
-            "passport",
-            "kvitto_c17_18",
-            "c17",
-            "crewing_done",
-            "special_diet",
-            "hotel_required",
-          ];
-          if (BOOLEAN_FIELD_NAMES.includes(config.db_column_name)) {
-            cellType = "boolean";
-          } else if (config.column_type === "date") {
-
-            cellType = "date";
-
-          } else if (config.column_type === "number") {
-
-            cellType = "number";
-
-          } else if (config.column_type === "boolean") {
-
-            cellType = "boolean";
-
-          } else if (config.column_name === "Gender") {
-
-            cellType = "select";
-
-            options = ["Man", "Woman"];
-
-          } else if (config.column_name === "Rank") {
-
-            cellType = "select";
-
-            options = ["SEV", "CHEF"];
-
-          } else if (config.column_name === "Town District" || config.db_column_name === "town_district") {
-
-            cellType = "select";
-
-            options = [...TOWN_DISTRICTS];
-
-          }
-
 
           // Choose the appropriate save handler based on column type
 

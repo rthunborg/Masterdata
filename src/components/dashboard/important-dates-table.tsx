@@ -56,10 +56,7 @@ import { useUIStore } from "@/lib/store/ui-store";
 import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
-import { formatTimeDisplay } from "@/lib/utils/time-formatter";
-import { format } from "date-fns";
-import { sv } from "date-fns/locale";
+import { formatDateForDisplay } from "@/lib/utils/format";
 import { hasValueChanged } from "@/lib/utils/change-detection";
 import { 
   loadColumnWidths, 
@@ -338,27 +335,13 @@ export function ImportantDatesTable({
         enableSorting: true,
         cell: ({ row }) => {
           const isArchived = !row.original.is_active;
-          const isOmc = isOMCDate(row.original.category);
-          const isPE3 = row.original.category === 'PE3 Dates';
           
-          let displayValue = row.original.date_value;
-          
-          // Format ÖMC dates as two-day ranges
-          if (isOmc) {
-            displayValue = formatOMCDate(row.original.date_value, 'sv-SE');
-          }
-          // Format PE3 dates with time if available
-          else if (isPE3 && row.original.time_value) {
-            try {
-              const date = new Date(row.original.date_value + 'T00:00:00');
-              const formattedDate = format(date, 'd MMMM yyyy', { locale: sv });
-              const formattedTime = formatTimeDisplay(row.original.time_value);
-              displayValue = `${formattedDate} ${formattedTime}`;
-            } catch {
-              // Fall back to date only if parsing fails
-              displayValue = row.original.date_value;
-            }
-          }
+          // Story 19.3: Use unified formatDateForDisplay for consistent Swedish formatting
+          const displayValue = formatDateForDisplay(
+            row.original.date_value,
+            row.original.category,
+            row.original.time_value
+          );
           
           return isHRAdmin && !isArchived ? (
             <EditableCell
@@ -378,6 +361,7 @@ export function ImportantDatesTable({
         },
       },
       // Story 8.11: Deadline columns
+      // Story 19.3: Updated to use formatDateForDisplay for consistent Swedish formatting
       {
         accessorKey: "deadline_submit",
         header: "Inlämningsdeadline",
@@ -386,26 +370,22 @@ export function ImportantDatesTable({
           const deadlineSubmit = row.original.deadline_submit;
           if (!deadlineSubmit) return "—";
           
-          try {
-            const date = new Date(deadlineSubmit + 'T00:00:00');
-            const formattedDate = format(date, 'd MMM yyyy', { locale: sv });
-            
-            // Check deadline status
-            const status = getDeadlineStatus(deadlineSubmit, row.original.deadline_cancel);
-            
-            return (
-              <div className="flex items-center gap-2">
-                <span>{formattedDate}</span>
-                {status === 'submit_closed' && (
-                  <Badge variant="destructive" className="text-xs">
-                    Stängd
-                  </Badge>
-                )}
-              </div>
-            );
-          } catch {
-            return deadlineSubmit;
-          }
+          // Story 19.3: Use unified formatDateForDisplay for consistent Swedish formatting
+          const formattedDate = formatDateForDisplay(deadlineSubmit);
+          
+          // Check deadline status
+          const status = getDeadlineStatus(deadlineSubmit, row.original.deadline_cancel);
+          
+          return (
+            <div className="flex items-center gap-2">
+              <span>{formattedDate}</span>
+              {status === 'submit_closed' && (
+                <Badge variant="destructive" className="text-xs">
+                  Stängd
+                </Badge>
+              )}
+            </div>
+          );
         },
       },
       {
@@ -416,26 +396,22 @@ export function ImportantDatesTable({
           const deadlineCancel = row.original.deadline_cancel;
           if (!deadlineCancel) return "—";
           
-          try {
-            const date = new Date(deadlineCancel + 'T00:00:00');
-            const formattedDate = format(date, 'd MMM yyyy', { locale: sv });
-            
-            // Check deadline status
-            const status = getDeadlineStatus(row.original.deadline_submit, deadlineCancel);
-            
-            return (
-              <div className="flex items-center gap-2">
-                <span>{formattedDate}</span>
-                {status === 'cancel_closed' && (
-                  <Badge variant="destructive" className="text-xs">
-                    Stängd
-                  </Badge>
-                )}
-              </div>
-            );
-          } catch {
-            return deadlineCancel;
-          }
+          // Story 19.3: Use unified formatDateForDisplay for consistent Swedish formatting
+          const formattedDate = formatDateForDisplay(deadlineCancel);
+          
+          // Check deadline status
+          const status = getDeadlineStatus(row.original.deadline_submit, deadlineCancel);
+          
+          return (
+            <div className="flex items-center gap-2">
+              <span>{formattedDate}</span>
+              {status === 'cancel_closed' && (
+                <Badge variant="destructive" className="text-xs">
+                  Stängd
+                </Badge>
+              )}
+            </div>
+          );
         },
       },
       {

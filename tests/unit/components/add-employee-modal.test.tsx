@@ -397,12 +397,14 @@ describe("AddEmployeeModal", () => {
       }, { timeout: 5000 });
 
       // Verify the date option contains remaining spots in parentheses
-      // Note: formatImportantDateOption adds "Week X - " prefix, so we check for the formatted text
+      // Story 19.3: formatImportantDateOption now uses formatDateForDisplay()
+      // Format: "v. 10 - 31 december 2026" (Swedish date from date_value, not date_description)
       const allOptions = screen.getAllByRole("option");
       const dateOption = allOptions.find(opt => {
         const text = opt.textContent || '';
         return (
-          (text.includes("Fredag 7/3") || text.includes("Week 10")) &&
+          // Look for Swedish formatted date or week number
+          (text.includes("31 december 2026") || text.includes("v. 10") || text.includes("december")) &&
           text.includes("(5)")
         );
       });

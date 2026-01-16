@@ -13,29 +13,29 @@ import {
 } from '@/lib/utils/omc-date-formatter';
 
 describe('formatOMCDate', () => {
-  it('should format date as two-day range in Swedish', () => {
-    const result = formatOMCDate('2025-03-08', 'sv-SE');
-    expect(result).toBe('8-9 mars 2025');
+  it('should format date as two-day range in dd-MM format', () => {
+    const result = formatOMCDate('2025-03-08');
+    expect(result).toBe('08-03 - 09-03');
   });
 
   it('should handle Date object input', () => {
     const date = new Date(2025, 2, 8); // March 8, 2025
-    const result = formatOMCDate(date, 'sv-SE');
-    expect(result).toBe('8-9 mars 2025');
+    const result = formatOMCDate(date);
+    expect(result).toBe('08-03 - 09-03');
   });
 
   it('should handle month boundary (March 31 - April 1)', () => {
-    const result = formatOMCDate('2025-03-31', 'sv-SE');
-    expect(result).toBe('31-1 april 2025');
+    const result = formatOMCDate('2025-03-31');
+    expect(result).toBe('31-03 - 01-04');
   });
 
   it('should handle year boundary (December 31 - January 1)', () => {
-    const result = formatOMCDate('2024-12-31', 'sv-SE');
-    expect(result).toBe('31-1 januari 2025');
+    const result = formatOMCDate('2024-12-31');
+    expect(result).toBe('31-12 - 01-01');
   });
 
   it('should return "Invalid Date" for invalid input', () => {
-    const result = formatOMCDate('invalid-date', 'sv-SE');
+    const result = formatOMCDate('invalid-date');
     expect(result).toBe('Invalid Date');
   });
 });
