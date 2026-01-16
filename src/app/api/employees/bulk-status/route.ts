@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import {
-  requireHRAdminAPI,
+  requireEmployeeManagerAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
 import { z } from "zod";
@@ -16,8 +16,8 @@ const bulkStatusSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI();
 
     const body = await request.json();
     const result = bulkStatusSchema.safeParse(body);

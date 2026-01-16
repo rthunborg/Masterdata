@@ -333,7 +333,7 @@ describe("POST /api/employees - PE3 Uniqueness", () => {
   });
 
   it("should reject duplicate PE3 date assignment (409)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     const duplicateError = new Error("PE3 date pe3-date-1 is already assigned to another employee");
     vi.mocked(employeeRepository.create).mockRejectedValue(duplicateError);
 
@@ -357,7 +357,7 @@ describe("POST /api/employees - PE3 Uniqueness", () => {
       updated_at: "2025-10-27T12:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
     vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
@@ -436,7 +436,7 @@ describe("PATCH /api/employees/[id] - PE3 Uniqueness", () => {
   });
 
   it("should reject duplicate PE3 date assignment (409)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     // assignEmployeeToDate throws PE3 duplicate error
     const duplicateError = new Error("PE3 date pe3-date-1 is already assigned to another employee");
@@ -462,7 +462,7 @@ describe("PATCH /api/employees/[id] - PE3 Uniqueness", () => {
       updated_at: "2025-10-27T15:30:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     // When only date fields are updated, route calls findById after assignEmployeeToDate
     vi.mocked(employeeRepository.findById).mockResolvedValueOnce(mockEmployee).mockResolvedValueOnce(updatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });

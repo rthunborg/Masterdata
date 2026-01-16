@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
+import { requireRoleAPI, createErrorResponse } from "@/lib/server/auth";
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
 import { validateImportantDatesCSV } from "@/lib/utils/important-dates-csv-validator";
 import Papa from "papaparse";
 import type { ImportantDateFormData } from "@/lib/types/important-date";
+import { UserRole } from "@/lib/types/user";
 
 // Force Node.js runtime
 export const runtime = "nodejs";
@@ -14,8 +15,8 @@ interface CSVRow {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
 
     // Parse multipart form data
     const formData = await request.formData();

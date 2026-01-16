@@ -87,7 +87,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       pe3_date: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [],
@@ -130,7 +130,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       pe3_date: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [omcDateId],
@@ -167,7 +167,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       omc_date: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [pe3DateId],
@@ -205,7 +205,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       stena_date: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [omcDateId, pe3DateId],
@@ -240,7 +240,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       is_terminated: true,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [],
@@ -264,7 +264,7 @@ describe('POST /api/employees/[id]/terminate', () => {
   });
 
   it('should return 404 when employee not found', async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockRejectedValue(
       new Error('Employee with ID emp-not-found not found')
     );
@@ -286,7 +286,7 @@ describe('POST /api/employees/[id]/terminate', () => {
   });
 
   it('should return 400 when already terminated', async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockRejectedValue(
       new Error('Employee is already terminated')
     );
@@ -380,7 +380,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
       termination_reason: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({
       employee: mockEmployee,
       warnings: [],
@@ -410,7 +410,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
       repayment_needed_omc: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({
       employee: mockEmployee,
       warnings: [],
@@ -437,7 +437,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
       repayment_needed_omc: true,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({
       employee: mockEmployee,
       warnings: [
@@ -467,7 +467,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
       repayment_needed_omc: true,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({
       employee: mockEmployee,
       warnings: [
@@ -488,7 +488,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
   });
 
   it('should return 404 when employee not found', async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockRejectedValue(
       new Error('Employee with ID emp-not-found not found')
     );
@@ -506,7 +506,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
   });
 
   it('should return 400 when already active', async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockRejectedValue(
       new Error('Employee is already active')
     );

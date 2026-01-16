@@ -50,7 +50,7 @@ describe("Error Handling - 400 Bad Request", () => {
   });
 
   it("should return 400 for invalid input data (POST /api/employees)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       first_name: "John",
@@ -71,7 +71,7 @@ describe("Error Handling - 400 Bad Request", () => {
   });
 
   it("should return 400 for validation constraint violated (invalid enum)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       first_name: "John",
@@ -96,7 +96,7 @@ describe("Error Handling - 400 Bad Request", () => {
   });
 
   it("should return 400 for invalid date format", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       first_name: "John",
@@ -135,7 +135,7 @@ describe("Error Handling - 404 Not Found", () => {
   });
 
   it("should return 404 when employee not found (PATCH)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(null);
 
     const request = new NextRequest("http://localhost:3000/api/employees/non-existent-id", {
@@ -152,7 +152,7 @@ describe("Error Handling - 404 Not Found", () => {
   });
 
   it("should return 404 when employee not found (DELETE)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(null);
 
     const request = new NextRequest("http://localhost:3000/api/employees/non-existent-id", {
@@ -167,7 +167,7 @@ describe("Error Handling - 404 Not Found", () => {
   });
 
   it("should return 404 when important date not found (PATCH)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.update).mockRejectedValue(
       new Error("Important date not found")
     );
@@ -185,7 +185,7 @@ describe("Error Handling - 404 Not Found", () => {
   });
 
   it("should return 404 when important date not found (DELETE)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.delete).mockRejectedValue(
       new Error("Important date not found")
     );
@@ -218,7 +218,7 @@ describe("Error Handling - 409 Conflict", () => {
   });
 
   it("should return 409 when capacity is full", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     // Use unknown for type assertion to fix lint error
     const mockCreatedEmployee = {
       id: "emp-123",
@@ -288,7 +288,7 @@ describe("Error Handling - 409 Conflict", () => {
   });
 
   it("should return 409 for PE3 uniqueness violation", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     const mockCreatedEmployee = {
       id: "emp-123",
       first_name: "John",
@@ -372,7 +372,7 @@ describe("Error Handling - 500 Internal Server Error", () => {
   });
 
   it("should return 500 for database error", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findAll).mockRejectedValue(
       new Error("Database connection failed")
     );
@@ -413,7 +413,7 @@ describe("Error Handling - Error Response Format", () => {
   });
 
   it("should have consistent error response format", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(null);
 
     const request = new NextRequest("http://localhost:3000/api/employees/non-existent-id", {
@@ -432,7 +432,7 @@ describe("Error Handling - Error Response Format", () => {
   });
 
   it("should include Swedish error messages when appropriate", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockRejectedValue(
       new Error("ÖMC-datum 8-9 mars 2025 är fullbokat")
     );
