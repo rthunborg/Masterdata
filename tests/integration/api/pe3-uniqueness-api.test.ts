@@ -90,7 +90,7 @@ describe("GET /api/important-dates/available-pe3", () => {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       not: vi.fn().mockReturnThis(),
     };
@@ -101,7 +101,7 @@ describe("GET /api/important-dates/available-pe3", () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          gte: vi.fn().mockReturnThis(),
+          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({ data: mockAvailableDates, error: null }),
         } as unknown as ReturnType<typeof mockSupabaseClient.from>;
       } else if (table === "employees") {
@@ -116,8 +116,7 @@ describe("GET /api/important-dates/available-pe3", () => {
 
     vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as unknown as ReturnType<typeof createClient>);
 
-    const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -155,7 +154,7 @@ describe("GET /api/important-dates/available-pe3", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
+            or: vi.fn().mockReturnThis(),
             order: vi.fn().mockResolvedValue({ data: datesWithFull, error: null }),
           };
         } else if (table === "employees") {
@@ -171,8 +170,7 @@ describe("GET /api/important-dates/available-pe3", () => {
 
     vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as unknown as ReturnType<typeof createClient>);
 
-    const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -182,7 +180,6 @@ describe("GET /api/important-dates/available-pe3", () => {
   });
 
   it("should exclude dates already assigned to employee", async () => {
-    const employeeId = "emp-123";
     const assignedDateId = "pe3-1";
 
     vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
@@ -193,7 +190,7 @@ describe("GET /api/important-dates/available-pe3", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
+            or: vi.fn().mockReturnThis(),
             order: vi.fn().mockResolvedValue({ data: mockAvailableDates, error: null }),
           };
         } else if (table === "employees") {
@@ -212,10 +209,7 @@ describe("GET /api/important-dates/available-pe3", () => {
 
     vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as unknown as ReturnType<typeof createClient>);
 
-    const request = new NextRequest(
-      `http://localhost:3000/api/important-dates/available-pe3?employeeId=${employeeId}`
-    );
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -231,7 +225,7 @@ describe("GET /api/important-dates/available-pe3", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
+            or: vi.fn().mockReturnThis(),
             order: vi.fn().mockResolvedValue({ data: [], error: null }),
           };
         } else if (table === "employees") {
@@ -247,8 +241,7 @@ describe("GET /api/important-dates/available-pe3", () => {
 
     vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as unknown as ReturnType<typeof createClient>);
 
-    const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -269,8 +262,7 @@ describe("GET /api/important-dates/available-pe3", () => {
       )
     );
 
-    const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(401);
