@@ -89,6 +89,10 @@ export async function requireHRAdminAPI(): Promise<SessionUser> {
   return requireRoleAPI(["hr_admin" as UserRole]);
 }
 
+export async function requireEmployeeManagerAPI(): Promise<SessionUser> {
+  return requireRoleAPI(["hr_admin" as UserRole, "recruiter" as UserRole]);
+}
+
 // Error Response Utilities
 
 export function createUnauthorizedResponse(message: string = "Inloggning krävs") {

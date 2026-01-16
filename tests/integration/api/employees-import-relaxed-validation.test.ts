@@ -47,7 +47,7 @@ describe("POST /api/employees/import - Relaxed Validation", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
   });
 
   it("should accept employee with empty email", async () => {
