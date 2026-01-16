@@ -400,19 +400,26 @@ export function EditableCell({
               aria-label={`${field} (read-only)`}
               aria-disabled={(isTalmundoField || isCrewingField) ? "true" : undefined}
             >
-              {displayValue || <span className="text-muted-foreground">—</span>}
+              {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}
+              <span 
+                className="truncate min-w-0 flex-1 text-left"
+                dir="ltr"
+                title={displayValue || undefined}
+              >
+                {displayValue || <span className="text-muted-foreground">—</span>}
+              </span>
               {badgeStatus && (
                 badgeTooltip ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span><StatusBadge status={badgeStatus} /></span>
+                      <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{badgeTooltip}</p>
                     </TooltipContent>
                   </Tooltip>
                 ) : (
-                  <StatusBadge status={badgeStatus} />
+                  <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
                 )
               )}
             </div>
@@ -536,19 +543,26 @@ export function EditableCell({
         aria-readonly="false"
         aria-label={`Edit ${field}`}
       >
-        {displayValue || <span className="text-muted-foreground">—</span>}
+        {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}
+        <span 
+          className="truncate min-w-0 flex-1 text-left"
+          dir="ltr"
+          title={displayValue || undefined}
+        >
+          {displayValue || <span className="text-muted-foreground">—</span>}
+        </span>
         {badgeStatus && (
           badgeTooltip ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span><StatusBadge status={badgeStatus} /></span>
+                <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{badgeTooltip}</p>
               </TooltipContent>
             </Tooltip>
           ) : (
-            <StatusBadge status={badgeStatus} />
+            <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
           )
         )}
       </div>

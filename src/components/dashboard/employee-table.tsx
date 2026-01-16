@@ -189,6 +189,7 @@ import { cn } from "@/lib/utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { EmployeeStatsBar } from "./employee-stats-bar";
+import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
@@ -1449,9 +1450,49 @@ export function EmployeeTable({
     }
 
 
-    // Story 13.2: Return selection column first, then data columns
+    // Story 19.5: Checklist Progress column (only show if there are checklist items)
+    const hasChecklistItems = columnConfigs.some(
+      (col) => col.column_type === 'boolean' && col.is_checklist_item
+    );
+    
+    const progressColumn: ColumnDef<Employee> | null = hasChecklistItems ? {
+      id: "checklist_progress",
+      header: () => (
+        <div className={cn("font-medium", fontSizeClass)}>
+          Framsteg
+        </div>
+      ),
+      enableSorting: true,
+      enableResizing: true,
+      size: 120,
+      accessorFn: (row) => {
+        // Calculate progress for sorting - returns percentage as number
+        const checklistColumns = columnConfigs.filter(
+          (col) => col.column_type === 'boolean' && col.is_checklist_item
+        );
+        if (checklistColumns.length === 0) return 0;
+        const completed = checklistColumns.filter((col) => {
+          const value = getEmployeeFieldValue(row, col.db_column_name);
+          return value === true;
+        }).length;
+        return (completed / checklistColumns.length) * 100;
+      },
+      cell: ({ row }) => (
+        <div className={cn(cellPaddingClass, cellHeightClass, "flex items-center")}>
+          <ChecklistProgressIndicator
+            employee={row.original}
+            columns={columnConfigs}
+          />
+        </div>
+      ),
+    } : null;
 
-    return [selectionColumn, ...dataColumns];
+    // Story 13.2: Return selection column first, then progress column (if any), then data columns
+    const allColumns = progressColumn 
+      ? [selectionColumn, progressColumn, ...dataColumns]
+      : [selectionColumn, ...dataColumns];
+    
+    return allColumns;
 
   }, [
     columnConfigs,
