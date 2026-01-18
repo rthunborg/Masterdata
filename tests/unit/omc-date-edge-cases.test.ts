@@ -14,26 +14,24 @@ import { createOMCDate } from '../helpers/omc-date-test-helpers';
 
 describe('ÖMC Date Edge Cases', () => {
   describe('Month Boundary Scenarios', () => {
-    it('should handle valid month boundary: "30-31 mars 2025"', () => {
+    it('should handle valid month boundary: "30-03 - 31-03"', () => {
       const date = createOMCDate(30, 3, 2025); // March 30
-      const result = formatOMCDate(date, 'sv-SE');
-      expect(result).toBe('30-31 mars 2025');
+      const result = formatOMCDate(date);
+      expect(result).toBe('30-03 - 31-03');
     });
 
-    it('should reject invalid month boundary: "31 mars - 1 april" (different months)', () => {
-      // Story 8.9: ÖMC dates must be in the same month
-      // Attempting to format March 31 would create April 1, which violates same-month rule
+    it('should handle month boundary spanning to next month: "31-03 - 01-04"', () => {
+      // Story 8.9: ÖMC dates spanning month boundary
+      // March 31 would create April 1 as the second day
       const date = createOMCDate(31, 3, 2025); // March 31
-      const result = formatOMCDate(date, 'sv-SE');
-      // The formatter will show "31-1 april 2025" but validation should reject this
-      // Since formatOMCDate doesn't validate, we test validation separately
+      const result = formatOMCDate(date);
+      // The formatter will show "31-03 - 01-04"
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
       const validation = validateOMCDateRange(date, endDate);
-      // Validation should fail because dates are in different months
-      // However, validateOMCDateRange only checks consecutive days, not same month
-      // So this test documents the expected behavior: format works, but business logic should reject
-      expect(result).toBe('31-1 april 2025');
+      // Validation passes because dates are consecutive
+      // Business logic may reject cross-month dates separately
+      expect(result).toBe('31-03 - 01-04');
     });
 
     it('should parse "30-31/3" correctly (valid month boundary)', () => {
@@ -65,10 +63,10 @@ describe('ÖMC Date Edge Cases', () => {
   });
 
   describe('Leap Year Scenarios', () => {
-    it('should handle valid leap year: "28-29 feb 2024" (leap year)', () => {
+    it('should handle valid leap year: "28-02 - 29-02" (leap year)', () => {
       const date = createOMCDate(28, 2, 2024); // February 28, 2024 (leap year)
-      const result = formatOMCDate(date, 'sv-SE');
-      expect(result).toBe('28-29 februari 2024');
+      const result = formatOMCDate(date);
+      expect(result).toBe('28-02 - 29-02');
       
       const parsed = parseOMCDateInput('28-29 februari 2024');
       expect(parsed).not.toBeNull();

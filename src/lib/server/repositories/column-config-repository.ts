@@ -100,6 +100,7 @@ export class ColumnConfigRepository {
     role: UserRole;
     category?: string;
     category_color?: string | null;
+    is_checklist_item?: boolean; // Story 19.5: Mark boolean column as checklist item
   }): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
@@ -149,6 +150,9 @@ export class ColumnConfigRepository {
     rolePermissions[input.role] = { view: true, edit: true };
 
     // Step 3: Create column config entry
+    // Story 19.5: Include is_checklist_item (only valid for boolean masterdata columns)
+    // Non-masterdata columns can never be checklist items
+    const canBeChecklistItem = input.column_type === 'boolean' && input.is_masterdata;
     const columnData = {
       column_name: input.column_name,
       db_column_name: input.db_column_name,
@@ -157,6 +161,7 @@ export class ColumnConfigRepository {
       category: input.category || null,
       category_color: input.category_color || null,
       role_permissions: rolePermissions,
+      is_checklist_item: canBeChecklistItem ? (input.is_checklist_item ?? false) : false,
     };
 
     const { data, error } = await supabase

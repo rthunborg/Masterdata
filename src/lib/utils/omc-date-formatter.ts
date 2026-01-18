@@ -9,17 +9,16 @@
  */
 
 /**
- * Format ÖMC date as two-day range (e.g., "8-9 mars 2025" in Swedish).
+ * Format ÖMC date as two-day range (e.g., "08-03 - 09-03" in dd-MM format).
  * 
  * @param startDate - Start date (ISO string or Date object)
- * @param locale - Locale for month name (default 'sv-SE' for Swedish)
- * @returns Formatted two-day range string
+ * @returns Formatted two-day range string in "dd-MM - dd-MM" format
  * 
  * @example
- * formatOMCDate('2025-03-08', 'sv-SE') // Returns "8-9 mars 2025"
- * formatOMCDate(new Date(2025, 2, 8), 'sv-SE') // Returns "8-9 mars 2025"
+ * formatOMCDate('2025-03-08') // Returns "08-03 - 09-03"
+ * formatOMCDate(new Date(2025, 2, 8)) // Returns "08-03 - 09-03"
  */
-export function formatOMCDate(startDate: Date | string, locale: string = 'sv-SE'): string {
+export function formatOMCDate(startDate: Date | string): string {
   const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
   
   // Validate date
@@ -30,16 +29,14 @@ export function formatOMCDate(startDate: Date | string, locale: string = 'sv-SE'
   const end = new Date(start);
   end.setDate(end.getDate() + 1);
 
-  const startDay = start.getDate();
-  const endDay = end.getDate();
-  
-  // Use end date's month and year if they differ (month/year boundary)
-  const monthName = end.toLocaleDateString(locale, { month: 'long' });
-  const year = end.getFullYear();
+  // Format both dates as dd-MM
+  const startDay = String(start.getDate()).padStart(2, '0');
+  const startMonth = String(start.getMonth() + 1).padStart(2, '0');
+  const endDay = String(end.getDate()).padStart(2, '0');
+  const endMonth = String(end.getMonth() + 1).padStart(2, '0');
 
-  // Swedish format: "8-9 mars 2025" (no ordinal suffix)
-  // For month boundaries: "31-1 april 2025" (end date's month)
-  return `${startDay}-${endDay} ${monthName} ${year}`;
+  // Format: "dd-MM - dd-MM"
+  return `${startDay}-${startMonth} - ${endDay}-${endMonth}`;
 }
 
 /**

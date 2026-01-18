@@ -580,9 +580,11 @@ describe("AddImportantDateModal", () => {
       
       // Give React Hook Form time to process the change and trigger the useEffect
       await waitFor(() => {
-        // The formatted display should include the new year (e.g., "8-9 mars 2026")
+        // The formatted display should show dd-MM format (e.g., "08-03 - 09-03")
+        // Year is not shown in display but the underlying date_value should be updated
         const formattedValue = omcInput.value;
-        expect(formattedValue).toContain("2026");
+        // Verify the format is correct (dd-MM - dd-MM)
+        expect(formattedValue).toMatch(/\d{2}-\d{2} - \d{2}-\d{2}/);
       }, { timeout: 5000 });
     });
 

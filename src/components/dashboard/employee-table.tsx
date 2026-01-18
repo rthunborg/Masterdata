@@ -189,6 +189,7 @@ import { cn } from "@/lib/utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { EmployeeStatsBar } from "./employee-stats-bar";
+import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
@@ -234,6 +235,28 @@ const globalFilterFn = (row: Row<Employee>, columnId: string, filterValue: strin
     field?.toString().toLowerCase().includes(searchLower)
   );
 };
+
+// Story 19.1: Constants for sticky column positioning
+const CHECKBOX_COLUMN_WIDTH = 40;
+
+// Story 19.1: Helper function to calculate sticky left offset for columns
+// This centralizes the offset logic to avoid duplication between headers and cells
+function calculateStickyLeftOffset(
+  columnType: 'checkbox' | 'first_name' | 'surname' | 'other',
+  firstNameColumnWidth: number | undefined,
+  defaultColumnWidth: number
+): number | undefined {
+  switch (columnType) {
+    case 'checkbox':
+      return 0;
+    case 'first_name':
+      return CHECKBOX_COLUMN_WIDTH;
+    case 'surname':
+      return CHECKBOX_COLUMN_WIDTH + (firstNameColumnWidth ?? defaultColumnWidth);
+    default:
+      return undefined;
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function EmployeeTable({
@@ -1011,46 +1034,10 @@ export function EmployeeTable({
           // Determine EditableCell type based on column_type
 
 
-          let cellType: "text" | "date" | "select" | "number" | "boolean" = "text";
+          const cellType: "text" | "date" | "select" | "number" | "boolean" = "text";
 
 
           let options: string[] | undefined;
-
-          // Force boolean type for repayment fields (Story 13.9 fix)
-          if (["repayment_needed_omc", "repayment_needed_pe3"].includes(config.db_column_name)) {
-            cellType = "boolean";
-          } else if (config.column_type === "date") {
-
-            cellType = "date";
-
-          } else if (config.column_type === "number") {
-
-            cellType = "number";
-
-          } else if (config.column_type === "boolean") {
-
-            cellType = "boolean";
-
-          } else if (config.column_name === "Gender") {
-
-            cellType = "select";
-
-            options = ["Man", "Woman"];
-
-          } else if (config.column_name === "Rank") {
-
-            cellType = "select";
-
-            options = ["SEV", "CHEF"];
-
-          } else if (config.column_name === "Town District" || config.db_column_name === "town_district") {
-
-            cellType = "select";
-
-            options = [...TOWN_DISTRICTS];
-
-          }
-
 
           // Choose the appropriate save handler based on column type
 
@@ -1463,9 +1450,49 @@ export function EmployeeTable({
     }
 
 
-    // Story 13.2: Return selection column first, then data columns
+    // Story 19.5: Checklist Progress column (only show if there are checklist items)
+    const hasChecklistItems = columnConfigs.some(
+      (col) => col.column_type === 'boolean' && col.is_checklist_item
+    );
+    
+    const progressColumn: ColumnDef<Employee> | null = hasChecklistItems ? {
+      id: "checklist_progress",
+      header: () => (
+        <div className={cn("font-medium", fontSizeClass)}>
+          Framsteg
+        </div>
+      ),
+      enableSorting: true,
+      enableResizing: true,
+      size: 120,
+      accessorFn: (row) => {
+        // Calculate progress for sorting - returns percentage as number
+        const checklistColumns = columnConfigs.filter(
+          (col) => col.column_type === 'boolean' && col.is_checklist_item
+        );
+        if (checklistColumns.length === 0) return 0;
+        const completed = checklistColumns.filter((col) => {
+          const value = getEmployeeFieldValue(row, col.db_column_name);
+          return value === true;
+        }).length;
+        return (completed / checklistColumns.length) * 100;
+      },
+      cell: ({ row }) => (
+        <div className={cn(cellPaddingClass, cellHeightClass, "flex items-center")}>
+          <ChecklistProgressIndicator
+            employee={row.original}
+            columns={columnConfigs}
+          />
+        </div>
+      ),
+    } : null;
 
-    return [selectionColumn, ...dataColumns];
+    // Story 13.2: Return selection column first, then progress column (if any), then data columns
+    const allColumns = progressColumn 
+      ? [selectionColumn, progressColumn, ...dataColumns]
+      : [selectionColumn, ...dataColumns];
+    
+    return allColumns;
 
   }, [
     columnConfigs,
@@ -2105,7 +2132,26 @@ export function EmployeeTable({
                       // Check if this is the checkbox column (empty header)
                       const isCheckboxColumn = header.column.id === "select";
                       const isActionColumn = header.column.id === "actions";
+                      // Story 19.1: Check if this is a Name column (First Name or Surname) for sticky positioning
+                      const isFirstNameColumn = columnConfig?.db_column_name === "first_name";
+                      const isSurnameColumn = columnConfig?.db_column_name === "surname";
+                      const isStickyNameColumn = isFirstNameColumn || isSurnameColumn;
                       const isCompact = density === "compact";
+                      
+                      // Story 19.1: Calculate left offset for sticky columns using helper
+                      const columnType = isCheckboxColumn ? 'checkbox' 
+                        : isFirstNameColumn ? 'first_name' 
+                        : isSurnameColumn ? 'surname' 
+                        : 'other';
+                      const firstNameHeader = headerGroup.headers.find(
+                        h => columnConfigs.find((c: ColumnConfig) => c.id === h.column.id)?.db_column_name === "first_name"
+                      );
+                      const defaultColumnWidth = isCompact ? 100 : 150;
+                      const stickyLeftOffset = calculateStickyLeftOffset(
+                        columnType,
+                        firstNameHeader?.getSize(),
+                        defaultColumnWidth
+                      );
                       
                       return (
 
@@ -2119,6 +2165,12 @@ export function EmployeeTable({
                             isCheckboxColumn && "p-0!",
                             // Compact mode adjustments
                             isCompact ? "h-8 px-2" : "h-12 px-4",
+                            // Story 19.1: Sticky checkbox column (leftmost)
+                            isCheckboxColumn && "sticky z-20 bg-background",
+                            // Story 19.1: Sticky name columns (First Name and Surname)
+                            isStickyNameColumn && "sticky z-20 bg-background",
+                            // Story 19.1: Shadow only on the last sticky name column (Surname)
+                            isSurnameColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
                             // Sticky action column
                             isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
                           )}
@@ -2134,6 +2186,9 @@ export function EmployeeTable({
                             backgroundColor: categoryColor || undefined,
 
                             color: textColor === 'white' ? '#ffffff' : textColor === 'black' ? '#000000' : undefined,
+
+                            // Story 19.1: Dynamic left offset for sticky columns
+                            left: stickyLeftOffset !== undefined ? `${stickyLeftOffset}px` : undefined,
 
                           }}
 
@@ -2311,7 +2366,27 @@ export function EmployeeTable({
                           // Story 16.6: Check if this is the checkbox column to match header padding
                           const isCheckboxCell = cell.column.id === "select";
                           const isActionColumn = cell.column.id === "actions";
+                          // Story 19.1: Check if this is a Name column for sticky positioning
+                          const cellColumnConfig = columnConfigs.find((c: ColumnConfig) => c.id === cell.column.id);
+                          const isFirstNameCell = cellColumnConfig?.db_column_name === "first_name";
+                          const isSurnameCell = cellColumnConfig?.db_column_name === "surname";
+                          const isStickyNameCell = isFirstNameCell || isSurnameCell;
                           const isCompact = density === "compact";
+                          
+                          // Story 19.1: Calculate left offset for sticky cells using helper
+                          const cellColumnType = isCheckboxCell ? 'checkbox' 
+                            : isFirstNameCell ? 'first_name' 
+                            : isSurnameCell ? 'surname' 
+                            : 'other';
+                          const firstNameCell = row.getVisibleCells().find(
+                            c => columnConfigs.find((cfg: ColumnConfig) => cfg.id === c.column.id)?.db_column_name === "first_name"
+                          );
+                          const defaultCellWidth = isCompact ? 100 : 150;
+                          const cellStickyLeftOffset = calculateStickyLeftOffset(
+                            cellColumnType,
+                            firstNameCell?.column.getSize(),
+                            defaultCellWidth
+                          );
                           
                           return (
                           <TableCell 
@@ -2320,6 +2395,8 @@ export function EmployeeTable({
                               width: cell.column.getSize(),
                               minWidth: cell.column.getSize(),
                               maxWidth: cell.column.getSize(),
+                              // Story 19.1: Dynamic left offset for sticky cells
+                              left: cellStickyLeftOffset !== undefined ? `${cellStickyLeftOffset}px` : undefined,
                             }}
                             className={cn(
                               "overflow-hidden",
@@ -2327,6 +2404,12 @@ export function EmployeeTable({
                               isCheckboxCell && "p-0!",
                               // Compact mode padding
                               !isCheckboxCell && (isCompact ? "p-2" : "p-4"),
+                              // Story 19.1: Sticky checkbox column (leftmost)
+                              isCheckboxCell && "sticky z-10 bg-inherit",
+                              // Story 19.1: Sticky name columns (First Name and Surname)
+                              isStickyNameCell && "sticky z-10 bg-inherit",
+                              // Story 19.1: Shadow only on the last sticky name column (Surname)
+                              isSurnameCell && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
                               // Sticky action column
                               isActionColumn && "sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
                               // For sticky column, we need a background to cover scrolling content.

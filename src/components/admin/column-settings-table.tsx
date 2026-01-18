@@ -37,7 +37,8 @@ import { PermissionToggle } from "./permission-toggle";
 import { DeleteColumnModal } from "./delete-column-modal";
 import { ColorIndicator, ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
-import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, X, Eye, EyeOff } from "lucide-react";
+import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, X, Eye, EyeOff, ListChecks } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
   DndContext,
@@ -322,6 +323,7 @@ function DraggableRow({
   handleCategoryUpdate,
   handleCategoryColorUpdate,
   handleColumnNameUpdate,
+  handleChecklistItemToggle,
   handleDeleteClick,
   handleToggleVisibility,
   isMobile,
@@ -345,6 +347,7 @@ function DraggableRow({
   handleCategoryUpdate: (columnId: string, newCategory: string) => Promise<void>;
   handleCategoryColorUpdate: (categoryName: string, color: string | null) => Promise<void>;
   handleColumnNameUpdate: (columnId: string, newName: string) => Promise<void>;
+  handleChecklistItemToggle: (columnId: string, isChecklistItem: boolean) => Promise<void>;
   handleDeleteClick: (column: ColumnConfig) => void;
   handleToggleVisibility: (column: ColumnConfig) => Promise<void>;
   isMobile: boolean;
@@ -436,6 +439,29 @@ function DraggableRow({
           <Check className="h-5 w-5 text-green-600 inline-block" />
         ) : (
           <X className="h-5 w-5 text-gray-400 inline-block" />
+        )}
+      </TableCell>
+
+      {/* Story 19.5: Checklist Item toggle (only for boolean masterdata columns) */}
+      <TableCell className="w-24 lg:w-auto lg:p-2">
+        {column.column_type === 'boolean' && column.is_masterdata ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center">
+                <Checkbox
+                  checked={column.is_checklist_item ?? false}
+                  onCheckedChange={(checked: boolean) => handleChecklistItemToggle(column.id, checked)}
+                  disabled={isUpdating}
+                  aria-label="Toggle checklist item"
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{column.is_checklist_item ? "Ingår i checklista" : "Ingår ej i checklista"}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <span className="text-gray-400 text-sm">–</span>
         )}
       </TableCell>
 
@@ -774,6 +800,28 @@ export function ColumnSettingsTable({
     }
   };
 
+  // Story 19.5: Handle checklist item toggle
+  const handleChecklistItemToggle = async (columnId: string, isChecklistItem: boolean) => {
+    try {
+      setUpdatingColumnId(columnId);
+      await columnService.updateColumnPermissions(columnId, {
+        is_checklist_item: isChecklistItem,
+      });
+      toast.success(
+        isChecklistItem 
+          ? "Kolumn tillagd i checklistan" 
+          : "Kolumn borttagen från checklistan"
+      );
+      onPermissionsUpdated();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Kunde inte uppdatera checklista-inställning"
+      );
+    } finally {
+      setUpdatingColumnId(null);
+    }
+  };
+
   const handleDeleteClick = (column: ColumnConfig) => {
     setColumnToDelete(column);
     setDeleteModalOpen(true);
@@ -815,13 +863,14 @@ export function ColumnSettingsTable({
           <Table className="w-full table-auto lg:table-fixed">
             <colgroup className="hidden lg:table-column-group">
               <col style={{ width: '2.5%' }} />
-              <col style={{ width: '11%' }} />
-              <col style={{ width: '11%' }} />
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '10%' }} />
               <col style={{ width: '5%' }} />
               <col style={{ width: '5%' }} />
-              <col style={{ width: '11%' }} />
+              <col style={{ width: '5%' }} />
+              <col style={{ width: '10%' }} />
               {allRoles.map((role, index) => (
-                <col key={`role-${role}-${index}`} style={{ width: `${44.5 / allRoles.length}%` }} />
+                <col key={`role-${role}-${index}`} style={{ width: `${42.5 / allRoles.length}%` }} />
               ))}
               <col style={{ width: '10%' }} />
             </colgroup>
@@ -832,6 +881,19 @@ export function ColumnSettingsTable({
                 <TableHead className="min-w-[150px] lg:min-w-0 lg:p-2">Databasnamn</TableHead>
                 <TableHead className="w-16 lg:w-auto lg:p-2">{tAdmin("type")}</TableHead>
                 <TableHead className="w-24 lg:w-auto lg:p-2">Masterdata</TableHead>
+                <TableHead className="w-24 lg:w-auto lg:p-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1">
+                        <ListChecks className="h-4 w-4" />
+                        <span className="hidden xl:inline">Checklista</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Inkludera i medarbetarens checklista-indikator</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
                 <TableHead className="w-40 lg:w-auto lg:p-2">{tAdmin("category")}</TableHead>
                 {allRoles.map((role) => (
                   <TableHead key={role} className="w-40 lg:w-auto lg:p-2">
@@ -846,7 +908,7 @@ export function ColumnSettingsTable({
                 {items.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7 + allRoles.length}
+                      colSpan={8 + allRoles.length}
                       className="text-center text-gray-500"
                     >
                       No columns found
@@ -865,6 +927,7 @@ export function ColumnSettingsTable({
                       handleCategoryUpdate={handleCategoryUpdate}
                       handleCategoryColorUpdate={handleCategoryColorUpdate}
                       handleColumnNameUpdate={handleColumnNameUpdate}
+                      handleChecklistItemToggle={handleChecklistItemToggle}
                       handleDeleteClick={handleDeleteClick}
                       handleToggleVisibility={handleToggleVisibility}
                       isMobile={isMobile}

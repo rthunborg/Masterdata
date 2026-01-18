@@ -30,6 +30,7 @@ import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-
 import { useTranslations } from "@/lib/i18n";
 import type { Employee } from "@/lib/types/employee";
 import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
+import { formatDateForDisplay } from "@/lib/utils/format";
 import { hasValueChanged } from "@/lib/utils/change-detection";
 import dynamic from "next/dynamic";
 
@@ -334,13 +335,22 @@ export function EditableCell({
     if (!effectiveCanEdit) {
       // Story 8.9: Format ÖMC dates as two-day range in display mode
       // Story 9.9: Show Swedish labels for boolean fields
-      const displayValue = type === "boolean"
-        ? (value ? tDashboard("booleanTrue") : tDashboard("booleanFalse"))
-        : field === "date_value" && category && isOMCDate(category) && value
-          ? formatOMCDate(String(value), 'sv-SE')
-          : value !== null && value !== undefined
-            ? String(value)
-            : null;
+      // Story 19.3: Format all date type fields in Swedish format
+      const getReadOnlyDisplayValue = () => {
+        if (type === "boolean") {
+          return value ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+        }
+        // ÖMC date field with category
+        if (field === "date_value" && category && isOMCDate(category) && value) {
+          return formatOMCDate(String(value));
+        }
+        // Story 19.3: Format date type fields in Swedish format
+        if (type === "date" && value) {
+          return formatDateForDisplay(String(value), category);
+        }
+        return value !== null && value !== undefined ? String(value) : null;
+      };
+      const displayValue = getReadOnlyDisplayValue();
 
       // Calculate One field status for visual indicator (Story 8.3)
       let badgeStatus: 'green' | 'yellow' | null = null;
@@ -390,19 +400,26 @@ export function EditableCell({
               aria-label={`${field} (read-only)`}
               aria-disabled={(isTalmundoField || isCrewingField) ? "true" : undefined}
             >
-              {displayValue || <span className="text-muted-foreground">—</span>}
+              {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}
+              <span 
+                className="truncate min-w-0 flex-1 text-left"
+                dir="ltr"
+                title={displayValue || undefined}
+              >
+                {displayValue || <span className="text-muted-foreground">—</span>}
+              </span>
               {badgeStatus && (
                 badgeTooltip ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span><StatusBadge status={badgeStatus} /></span>
+                      <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{badgeTooltip}</p>
                     </TooltipContent>
                   </Tooltip>
                 ) : (
-                  <StatusBadge status={badgeStatus} />
+                  <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
                 )
               )}
             </div>
@@ -418,6 +435,7 @@ export function EditableCell({
     // Story 8.9: Format ÖMC dates as two-day range in display mode
     // Story 9.9: Show Swedish labels for boolean fields
     // Story 9.10: Use editValue for display when it differs from value prop (shows updated value immediately after save)
+    // Story 19.3: Format all date type fields in Swedish format
     const getDisplayValue = () => {
       
       // For boolean fields, compare boolean values
@@ -439,7 +457,12 @@ export function EditableCell({
       
       // For date fields with ÖMC formatting
       if (field === "date_value" && category && isOMCDate(category) && value) {
-        return formatOMCDate(String(value), 'sv-SE');
+        return formatOMCDate(String(value));
+      }
+      
+      // Story 19.3: Format date type fields in Swedish format
+      if (type === "date" && value) {
+        return formatDateForDisplay(String(value), category);
       }
       
       // For select/text fields, compare string values
@@ -520,19 +543,26 @@ export function EditableCell({
         aria-readonly="false"
         aria-label={`Edit ${field}`}
       >
-        {displayValue || <span className="text-muted-foreground">—</span>}
+        {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}
+        <span 
+          className="truncate min-w-0 flex-1 text-left"
+          dir="ltr"
+          title={displayValue || undefined}
+        >
+          {displayValue || <span className="text-muted-foreground">—</span>}
+        </span>
         {badgeStatus && (
           badgeTooltip ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span><StatusBadge status={badgeStatus} /></span>
+                <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{badgeTooltip}</p>
               </TooltipContent>
             </Tooltip>
           ) : (
-            <StatusBadge status={badgeStatus} />
+            <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
           )
         )}
       </div>
