@@ -140,10 +140,13 @@ export class ColumnConfigRepository {
     // HR Admin can add themselves later via column settings if needed
     const rolePermissions: Record<string, { view: boolean; edit: boolean }> = {
       hr_admin: { view: false, edit: false },
+      recruiter: { view: false, edit: false },
+      admin_limited: { view: false, edit: false },
       omc: { view: false, edit: false },
       payroll: { view: false, edit: false },
       sodexo: { view: false, edit: false },
       toplux: { view: false, edit: false },
+      crewing: { view: false, edit: false },
     };
 
     // Give the creating role full access
@@ -421,10 +424,13 @@ export class ColumnConfigRepository {
       // When deactivating, set all permissions to false
       updateData.role_permissions = {
         hr_admin: { view: false, edit: false },
+        recruiter: { view: false, edit: false },
+        admin_limited: { view: false, edit: false },
         sodexo: { view: false, edit: false },
         omc: { view: false, edit: false },
         payroll: { view: false, edit: false },
-        toplux: { view: false, edit: false }
+        toplux: { view: false, edit: false },
+        crewing: { view: false, edit: false }
       };
     }
 

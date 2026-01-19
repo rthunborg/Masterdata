@@ -23,7 +23,7 @@ import dynamic from "next/dynamic";
 import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEmployeeChanges } from "@/lib/hooks/use-employee-changes";
-import { hasAdminAccess, UserRole, isHRAdmin } from "@/lib/types/user";
+import { hasAdminAccess, UserRole, isHRAdmin, canAddEmployee } from "@/lib/types/user";
 
 // Lazy load heavy modals for better initial bundle size (Story 12.5: Performance optimization)
 const AddEmployeeModal = dynamic(
@@ -188,6 +188,8 @@ export default function DashboardPage() {
   // Check if user has admin access (HR Admin or Recruiter)
   const isAdmin = hasAdminAccess(user?.role as UserRole) || user?.role === UserRole.RECRUITER;
   const isHRAdminUser = isHRAdmin(user?.role as UserRole);
+  // Check if user can add employees (excludes Administrator role)
+  const canAdd = canAddEmployee(user?.role as UserRole);
 
   return (
     <div className="space-y-6">
@@ -212,7 +214,7 @@ export default function DashboardPage() {
           {/* Role Selector - Only for HR Admin */}
           <RoleSelector />
 
-          {isAdmin ? (
+          {canAdd ? (
             <>
               <Button onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -279,8 +281,8 @@ export default function DashboardPage() {
       <AddColumnModal />
       <EditColumnModal />
       
-      {/* Floating Action Button for Mobile - Only for Admins */}
-      {isMobile && isAdmin && (
+      {/* Floating Action Button for Mobile - Only for users who can add employees */}
+      {isMobile && canAdd && (
         <FloatingActionButton 
           onAddEmployee={() => setIsAddModalOpen(true)}
           onImportCSV={() => setIsImportModalOpen(true)}

@@ -185,6 +185,10 @@ import { getEmployeeFieldValue, mapColumnToEmployeeField } from "@/lib/utils/col
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { cn } from "@/lib/utils";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { canEditField } from "@/lib/utils/role-utils";
+import { UserRole } from "@/lib/types/user";
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { BulkActionsBar } from "./bulk-actions-bar";
@@ -888,7 +892,9 @@ export function EmployeeTable({
       const userRole = effectiveRole || "";
 
 
-      const hasEditPermission = config.role_permissions[userRole]?.edit ?? false;
+      // Use canEditField helper which handles Administrator's special edit restrictions
+      // (can only edit checklist items + loneniva)
+      const hasEditPermission = canEditField(userRole as UserRole, config);
 
 
       const canEdit = hasEditPermission && !isPreviewMode; // Disable editing in preview mode
