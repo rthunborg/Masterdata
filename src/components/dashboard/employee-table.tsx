@@ -23,6 +23,8 @@ import {
 
   type Row,
 
+  type ColumnSizingState,
+
   flexRender,
 
 } from "@tanstack/react-table";
@@ -173,7 +175,7 @@ import { useImportantDates } from "@/lib/hooks/use-important-dates";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { } from "@/lib/utils/column-width-storage";
+import { loadColumnWidths, saveColumnWidths } from "@/lib/utils/column-width-storage";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -197,6 +199,9 @@ import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
+
+// Story 19.9: Sticky horizontal scrollbar
+import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -331,6 +336,34 @@ export function EmployeeTable({
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
+  // Story 19.11: Column width persistence
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {
+    if (user?.id) {
+      return loadColumnWidths('dashboard', user.id) || {};
+    }
+    return {};
+  });
+
+  // Story 19.11: Debounced save for column widths
+  const saveDebounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const handleColumnSizingChange = React.useCallback((
+    updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)
+  ) => {
+    const newSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
+    setColumnSizing(newSizing);
+
+    // Debounce save to localStorage (300ms delay)
+    if (saveDebounceTimerRef.current) {
+      clearTimeout(saveDebounceTimerRef.current);
+    }
+
+    saveDebounceTimerRef.current = setTimeout(() => {
+      if (user?.id) {
+        saveColumnWidths('dashboard', user.id, newSizing);
+      }
+    }, 300);
+  }, [columnSizing, user?.id]);
+
   // Story 13.2: Toggle employee selection
   const toggleEmployeeSelection = React.useCallback((id: string) => {
     setSelectedEmployeeIds((prev) => {
@@ -374,6 +407,9 @@ export function EmployeeTable({
 
   // Row refs for scrolling
   const rowRefs = React.useRef<Map<string, HTMLTableRowElement>>(new Map());
+
+  // Story 19.9: Ref for sticky scrollbar
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Notify parent of global filter changes
   React.useEffect(() => {
@@ -1736,6 +1772,7 @@ export function EmployeeTable({
     state: {
       globalFilter,
       sorting,
+      columnSizing,
       rowSelection: React.useMemo(() => {
         const selection: Record<string, boolean> = {};
         selectedEmployeeIds.forEach((id) => {
@@ -1748,6 +1785,8 @@ export function EmployeeTable({
     onGlobalFilterChange: setGlobalFilter,
 
     onSortingChange: setSorting,
+
+    onColumnSizingChange: handleColumnSizingChange,
 
     globalFilterFn: globalFilterFn,
 
@@ -2121,7 +2160,8 @@ export function EmployeeTable({
 
           <div className="rounded-md border">
 
-            <Table className="table-fixed">
+            {/* Story 19.9: Pass container ref for sticky scrollbar */}
+            <Table className="table-fixed" containerRef={tableContainerRef}>
 
               <TableHeader>
 
@@ -2505,6 +2545,9 @@ export function EmployeeTable({
               </TableBody>
 
             </Table>
+
+            {/* Story 19.9: Sticky horizontal scrollbar */}
+            <StickyScrollbar containerRef={tableContainerRef} />
 
           </div>
 

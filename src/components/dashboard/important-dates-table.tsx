@@ -64,6 +64,8 @@ import {
 } from "@/lib/utils/column-width-storage";
 import { getDeadlineStatus } from "@/lib/utils/deadline-validator";
 import { Badge } from "@/components/ui/badge";
+// Story 19.9: Sticky horizontal scrollbar
+import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 interface ImportantDatesTableProps {
   dates: ImportantDate[];
@@ -91,6 +93,9 @@ export function ImportantDatesTable({
   const [selectedDateForEmployees, setSelectedDateForEmployees] = React.useState<ImportantDate | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isArchiving, setIsArchiving] = React.useState(false);
+
+  // Story 19.9: Ref for sticky scrollbar
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
   
   // Category filter and sort state
   const [categoryFilter, setCategoryFilter] = React.useState<string>("All");
@@ -669,14 +674,23 @@ export function ImportantDatesTable({
 
       {/* Table */}
       <div className="rounded-md border">
-        <Table>
+        {/* Story 19.9: Pass container ref for sticky scrollbar */}
+        <Table containerRef={tableContainerRef}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const isActionColumn = header.column.id === "actions";
                   const isWeekNumberColumn = header.column.id === "week_number";
+                  const isCategoryColumn = header.column.id === "category";
                   const isCompact = density === "compact";
+                  
+                  // Story 19.12: Dynamic sticky left column offsets
+                  // Use actual column width from table state, fallback to default
+                  const weekNumberWidth = table.getColumn('week_number')?.getSize() ?? 80;
+                  const stickyLeftOffset = isWeekNumberColumn ? 0 
+                    : isCategoryColumn ? weekNumberWidth 
+                    : undefined;
                   
                   return (
                   <TableHead 
@@ -685,6 +699,12 @@ export function ImportantDatesTable({
                       "relative",
                       // Compact mode adjustments
                       isCompact ? "h-8 px-2 text-xs" : "h-12 px-4 text-sm",
+                      // Story 19.10: Sticky Week Number column (leftmost)
+                      isWeekNumberColumn && "sticky z-20 bg-background",
+                      // Story 19.10: Sticky Category column
+                      isCategoryColumn && "sticky z-20 bg-background",
+                      // Story 19.10: Shadow only on Category (rightmost sticky left column)
+                      isCategoryColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
                       // Sticky action column
                       isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
                       // Center align week_number column header
@@ -692,6 +712,8 @@ export function ImportantDatesTable({
                     )}
                     style={{
                       width: header.getSize(),
+                      // Story 19.10: Dynamic left offset for sticky columns
+                      left: stickyLeftOffset !== undefined ? `${stickyLeftOffset}px` : undefined,
                     }}
                   >
                     {header.isPlaceholder
@@ -735,7 +757,15 @@ export function ImportantDatesTable({
                     {row.getVisibleCells().map((cell) => {
                       const isActionColumn = cell.column.id === "actions";
                       const isWeekNumberColumn = cell.column.id === "week_number";
+                      const isCategoryColumn = cell.column.id === "category";
                       const isCompact = density === "compact";
+                      
+                      // Story 19.12: Dynamic sticky left column offsets
+                      // Use actual column width from table state, fallback to default
+                      const weekNumberWidth = table.getColumn('week_number')?.getSize() ?? 80;
+                      const cellStickyLeftOffset = isWeekNumberColumn ? 0 
+                        : isCategoryColumn ? weekNumberWidth 
+                        : undefined;
                       
                       return (
                       <TableCell 
@@ -744,6 +774,12 @@ export function ImportantDatesTable({
                           isArchived && "text-gray-500",
                           // Compact mode padding
                           isCompact ? "p-2" : "p-4",
+                      // Story 19.10: Sticky Week Number column (leftmost)
+                      isWeekNumberColumn && "sticky z-10 bg-inherit",
+                      // Story 19.10: Sticky Category column
+                      isCategoryColumn && "sticky z-10 bg-inherit",
+                      // Story 19.10: Shadow only on Category (rightmost sticky left column)
+                      isCategoryColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
                       // Sticky action column
                       isActionColumn && "sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
                       // Ensure opacity for sticky column by inheriting row background
@@ -753,6 +789,10 @@ export function ImportantDatesTable({
                       // Center align week_number column
                       isWeekNumberColumn && "text-center"
                     )}
+                    style={{
+                      // Story 19.10: Dynamic left offset for sticky cells
+                      left: cellStickyLeftOffset !== undefined ? `${cellStickyLeftOffset}px` : undefined,
+                    }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
@@ -770,6 +810,9 @@ export function ImportantDatesTable({
             )}
           </TableBody>
         </Table>
+
+        {/* Story 19.9: Sticky horizontal scrollbar */}
+        <StickyScrollbar containerRef={tableContainerRef} />
       </div>
 
       {/* Delete Confirmation Dialog */}

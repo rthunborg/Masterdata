@@ -4,9 +4,18 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+interface TableProps extends React.ComponentProps<"table"> {
+  /**
+   * Optional ref to the scroll container element.
+   * Use this for sticky scrollbar integration.
+   */
+  containerRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+function Table({ className, containerRef, ...props }: TableProps) {
   return (
     <div
+      ref={containerRef}
       data-slot="table-container"
       className="relative w-full overflow-x-auto"
     >

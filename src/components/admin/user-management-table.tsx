@@ -41,6 +41,8 @@ import {
   saveColumnWidths, 
   clearColumnWidths 
 } from "@/lib/utils/column-width-storage";
+// Story 19.9: Sticky horizontal scrollbar
+import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 interface UserManagementTableProps {
   users: User[];
@@ -84,6 +86,10 @@ export function UserManagementTable({
   
   // Debounced save for column widths (Story 9.4b)
   const saveDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Story 19.9: Ref for sticky scrollbar
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
   const handleColumnSizingChange = useCallback((updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)) => {
     const newSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
     setColumnSizing(newSizing);
@@ -342,14 +348,27 @@ export function UserManagementTable({
   return (
     <>
       <div className="rounded-md border">
-        <Table>
+        {/* Story 19.9: Pass container ref for sticky scrollbar */}
+        <Table containerRef={tableContainerRef}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map((header) => {
+                  const isEmailColumn = header.column.id === "email";
+                  const isActionsColumn = header.column.id === "actions";
+                  
+                  return (
                   <TableHead 
                     key={header.id}
-                    className="relative"
+                    className={cn(
+                      "relative",
+                      // Story 19.10: Sticky Email column (leftmost identifier)
+                      isEmailColumn && "sticky left-0 z-20 bg-background",
+                      // Story 19.10: Shadow on Email (only sticky left column)
+                      isEmailColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
+                      // Sticky actions column on right
+                      isActionsColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
+                    )}
                     style={{
                       width: header.getSize(),
                     }}
@@ -374,7 +393,8 @@ export function UserManagementTable({
                       />
                     )}
                   </TableHead>
-                ))}
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -387,17 +407,35 @@ export function UserManagementTable({
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                <TableRow key={row.id} className="bg-background">
+                  {row.getVisibleCells().map((cell) => {
+                    const isEmailColumn = cell.column.id === "email";
+                    const isActionsColumn = cell.column.id === "actions";
+                    
+                    return (
+                    <TableCell 
+                      key={cell.id}
+                      className={cn(
+                        // Story 19.10: Sticky Email column (leftmost identifier)
+                        isEmailColumn && "sticky left-0 z-10 bg-inherit",
+                        // Story 19.10: Shadow on Email (only sticky left column)
+                        isEmailColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
+                        // Sticky actions column on right
+                        isActionsColumn && "sticky right-0 z-10 bg-inherit shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
+                      )}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
-                  ))}
+                    );
+                  })}
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+
+        {/* Story 19.9: Sticky horizontal scrollbar */}
+        <StickyScrollbar containerRef={tableContainerRef} />
       </div>
 
       <AlertDialog
