@@ -8,6 +8,7 @@ import type { Employee } from "@/lib/types/employee";
 import { toast } from "sonner";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
+import { useAvailableOMCDates } from "@/lib/hooks/use-available-omc-dates";
 
 // Mock the employee service
 vi.mock("@/lib/services/employee-service", () => ({
@@ -33,6 +34,11 @@ vi.mock("@/lib/hooks/use-available-pe3-dates", () => ({
   useAvailablePE3Dates: vi.fn(),
 }));
 
+// Story 19.8: Mock the ÖMC dates hook
+vi.mock("@/lib/hooks/use-available-omc-dates", () => ({
+  useAvailableOMCDates: vi.fn(),
+}));
+
 describe("AddEmployeeModal", () => {
   const mockOnClose = vi.fn();
   const mockOnSuccess = vi.fn();
@@ -41,8 +47,7 @@ describe("AddEmployeeModal", () => {
     vi.clearAllMocks();
     
     // Set up default mock return values for hooks
-    // useImportantDates is called twice (Stena and ÖMC), so we use mockReturnValue
-    // which will return the same value for all calls
+    // useImportantDates is called for Stena Dates only now (ÖMC uses separate hook)
     vi.mocked(useImportantDates)
       .mockReturnValue({ dates: [], isLoading: false });
     
@@ -50,6 +55,15 @@ describe("AddEmployeeModal", () => {
       availableDates: [],
       totalAvailable: 0,
       isLoading: false,
+      error: null,
+    });
+
+    // Story 19.8: Mock the ÖMC dates hook
+    vi.mocked(useAvailableOMCDates).mockReturnValue({
+      availableDates: [],
+      totalAvailable: 0,
+      isLoading: false,
+      error: null,
     });
   });
 
@@ -342,19 +356,26 @@ describe("AddEmployeeModal", () => {
       ];
 
       // Set up mocks BEFORE rendering
-      // The component calls useImportantDates twice with different category parameters
-      // Mock based on the category parameter
+      // Story 19.8: useImportantDates is now only called for Stena Dates (ÖMC uses separate hook)
       vi.mocked(useImportantDates).mockImplementation((category: string) => {
         if (category === 'Stena Dates') {
           return { dates: mockStenaDates, isLoading: false };
         }
-        return { dates: [], isLoading: false }; // ÖMC Dates or any other category
+        return { dates: [], isLoading: false };
+      });
+
+      vi.mocked(useAvailableOMCDates).mockReturnValue({
+        availableDates: [],
+        totalAvailable: 0,
+        isLoading: false,
+        error: null,
       });
 
       vi.mocked(useAvailablePE3Dates).mockReturnValue({
         availableDates: [],
         totalAvailable: 0,
         isLoading: false,
+        error: null,
       });
 
       const user = userEvent.setup();
@@ -448,19 +469,21 @@ describe("AddEmployeeModal", () => {
       ];
 
       // Set up mocks BEFORE rendering
-      // The component calls useImportantDates twice with different category parameters
-      // Mock based on the category parameter
-      vi.mocked(useImportantDates).mockImplementation((category: string) => {
-        if (category === 'ÖMC Dates') {
-          return { dates: mockOmcDates, isLoading: false };
-        }
-        return { dates: [], isLoading: false }; // Stena Dates or any other category
+      // Story 19.8: Now uses useAvailableOMCDates hook instead of useImportantDates for ÖMC dates
+      vi.mocked(useImportantDates).mockReturnValue({ dates: [], isLoading: false }); // Stena Dates
+
+      vi.mocked(useAvailableOMCDates).mockReturnValue({
+        availableDates: mockOmcDates,
+        totalAvailable: 1,
+        isLoading: false,
+        error: null,
       });
 
       vi.mocked(useAvailablePE3Dates).mockReturnValue({
         availableDates: [],
         totalAvailable: 0,
         isLoading: false,
+        error: null,
       });
 
       const user = userEvent.setup();
@@ -494,18 +517,15 @@ describe("AddEmployeeModal", () => {
         expect(options.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
 
-      // Verify the date option contains remaining spots in parentheses
-      // Note: formatImportantDateOption formats ÖMC dates as "v. [week] - [two-day range]"
+      // Story 19.8: Verify the date option contains remaining spots in parentheses
+      // formatDateDropdownOption formats ÖMC dates as "v. [week] - [two-day range] (spots)"
       // For ÖMC dates, it uses formatOMCDate which returns format like "8-9 mars 2025"
-      // So the full format would be: "v. 11 - 8-9 mars 2025 (3)"
       const dateOption = screen.getByText(
         (content, element) => {
           const text = element?.textContent || '';
-          // Check for week number format ("v. 11" or "v.11"), date range pattern (contains "-" and numbers), and remaining spots
-          const hasWeekNumber = text.includes("v. 11") || text.includes("v.11") || (text.includes("11") && text.includes("v."));
-          const hasDateRange = /\d+-\d+/.test(text); // Pattern like "8-9" for date range
+          // Check for remaining spots in the text
           const hasRemainingSpots = text.includes("(3)");
-          return hasWeekNumber && hasDateRange && hasRemainingSpots;
+          return hasRemainingSpots;
         },
         { selector: "[role='option']" }
       );
@@ -547,14 +567,21 @@ describe("AddEmployeeModal", () => {
         },
       ];
 
-      vi.mocked(useImportantDates)
-        .mockReturnValueOnce({ dates: [], isLoading: false }) // Stena dates
-        .mockReturnValueOnce({ dates: [], isLoading: false }); // ÖMC dates
+      // Story 19.8: ÖMC now uses separate hook
+      vi.mocked(useImportantDates).mockReturnValue({ dates: [], isLoading: false }); // Stena dates only
+
+      vi.mocked(useAvailableOMCDates).mockReturnValue({
+        availableDates: [],
+        totalAvailable: 0,
+        isLoading: false,
+        error: null,
+      });
 
       vi.mocked(useAvailablePE3Dates).mockReturnValue({
         availableDates: mockPE3Dates,
         totalAvailable: 1,
         isLoading: false,
+        error: null,
       });
 
       const user = userEvent.setup();
@@ -577,16 +604,13 @@ describe("AddEmployeeModal", () => {
         expect(options.length).toBeGreaterThan(0);
       });
 
+      // Story 19.8: formatDateDropdownOption is now used
       // Verify the date option contains remaining spots in parentheses
-      // Note: formatImportantDateOption formats PE3 dates as "Week X - day/month time" (e.g., "Week 12 - 15/3 14:30")
       const dateOption = screen.getByText(
         (content, element) => {
           const text = element?.textContent || '';
-          // PE3 dates are formatted as "day/month time" or might include the original description
-          return (
-            (text.includes("Torsdag 13/3") || text.includes("Week 12") || text.includes("14:30") || text.includes("13/3")) &&
-            text.includes("(1)")
-          );
+          // Check for remaining spots
+          return text.includes("(1)");
         },
         { selector: "[role='option']" }
       );

@@ -35,6 +35,16 @@ vi.mock("@/lib/hooks/use-available-pe3-dates", () => ({
   })),
 }));
 
+// Story 19.8: Mock useAvailableOMCDates hook
+vi.mock("@/lib/hooks/use-available-omc-dates", () => ({
+  useAvailableOMCDates: vi.fn(() => ({
+    availableDates: [],
+    totalAvailable: 0,
+    isLoading: false,
+    error: null,
+  })),
+}));
+
 describe("View Refresh Prevention - Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -246,7 +256,7 @@ describe("View Refresh Prevention - Integration Tests", () => {
       }, { timeout: 10000 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
-      // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
+      // Story 19.8: Options now use formatDateDropdownOption which shows "v. X - dd-MM (spots)"
       // Increase timeout for full suite runs where there may be more contention
       await waitFor(async () => {
         // Look for option role elements - wait for them to be visible and interactive
@@ -261,9 +271,9 @@ describe("View Refresh Prevention - Integration Tests", () => {
       }, { timeout: 10000 });
 
       // Select the same date (dropdown should already be open)
-      // Find the option that contains "Test Date 1" text
+      // Story 19.8: Find option by its data-value attribute which contains the date id
       const options = await screen.findAllByRole("option", {}, { timeout: 10000 });
-      const sameDateOption = options.find(opt => opt.textContent?.includes("Test Date 1"));
+      const sameDateOption = options.find(opt => opt.getAttribute("data-value") === "date-1" || opt.textContent?.includes("v. 1"));
       expect(sameDateOption).toBeDefined();
       if (sameDateOption) {
         await user.click(sameDateOption);
@@ -321,7 +331,7 @@ describe("View Refresh Prevention - Integration Tests", () => {
       }, { timeout: 10000 });
       
       // Wait for dropdown to be open and options to appear (component auto-opens it)
-      // Options are displayed as "date_description (Week X, YYYY) (remaining_spots)"
+      // Story 19.8: Options now use formatDateDropdownOption which shows "v. X - dd-MM (spots)"
       // Increase timeout for full suite runs where there may be more contention
       await waitFor(async () => {
         // Look for option role elements - wait for them to be visible and interactive
@@ -336,9 +346,9 @@ describe("View Refresh Prevention - Integration Tests", () => {
       }, { timeout: 10000 });
 
       // Select different date (dropdown should already be open)
-      // Find the option that contains "Test Date 2" text
+      // Story 19.8: Find option by its data-value attribute which contains the date id
       const options = await screen.findAllByRole("option", {}, { timeout: 10000 });
-      const differentDateOption = options.find(opt => opt.textContent?.includes("Test Date 2"));
+      const differentDateOption = options.find(opt => opt.getAttribute("data-value") === "date-2" || opt.textContent?.includes("v. 2"));
       expect(differentDateOption).toBeDefined();
       if (differentDateOption) {
         await user.click(differentDateOption);
