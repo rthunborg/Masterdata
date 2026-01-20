@@ -1,6 +1,7 @@
 export enum UserRole {
   HR_ADMIN = "hr_admin",
   RECRUITER = "recruiter",
+  ADMIN_LIMITED = "admin_limited",
   CREWING = "crewing",
   SODEXO = "sodexo",
   OMC = "omc",
@@ -13,7 +14,8 @@ export const USER_ROLES = Object.values(UserRole);
 // Role Permission Constants
 export const ADMIN_ROLES: UserRole[] = [UserRole.HR_ADMIN];
 // Recruiter has admin-like privileges but is distinct
-export const INTERNAL_ROLES: UserRole[] = [UserRole.HR_ADMIN, UserRole.RECRUITER];
+// Admin Limited is internal but with restricted edit permissions
+export const INTERNAL_ROLES: UserRole[] = [UserRole.HR_ADMIN, UserRole.RECRUITER, UserRole.ADMIN_LIMITED];
 export const EXTERNAL_PARTY_ROLES: UserRole[] = [UserRole.SODEXO, UserRole.OMC, UserRole.PAYROLL, UserRole.TOPLUX, UserRole.CREWING];
 export const ALL_ROLES: UserRole[] = [...INTERNAL_ROLES, ...EXTERNAL_PARTY_ROLES];
 
@@ -30,26 +32,17 @@ export function hasAdminAccess(role: UserRole): boolean {
   return ADMIN_ROLES.includes(role);
 }
 
-export function canManageSettings(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN;
-}
-
-export function canManageEmployees(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
-}
-
-export function getRoleDisplayName(role: UserRole): string {
-  switch (role) {
-    case UserRole.HR_ADMIN: return "HR Superuser";
-    case UserRole.RECRUITER: return "Recruiter";
-    case UserRole.CREWING: return "Crewing";
-    case UserRole.SODEXO: return "Sodexo";
-    case UserRole.OMC: return "ÖMC";
-    case UserRole.PAYROLL: return "Payroll";
-    case UserRole.TOPLUX: return "Toplux";
-    default: return role;
-  }
-}
+// Re-export role utility functions from role-utils.ts to maintain backward compatibility
+// The canonical implementations live in role-utils.ts to avoid duplication
+export {
+  getRoleDisplayName,
+  canManageSettings,
+  canManageEmployees,
+  canAddEmployee,
+  canArchiveEmployee,
+  canTerminateEmployee,
+  isAdminLimited,
+} from "@/lib/utils/role-utils";
 
 export interface User {
   id: string;

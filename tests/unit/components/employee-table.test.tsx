@@ -463,12 +463,11 @@ describe("EmployeeTable", () => {
   it("should format hire date correctly", () => {
     renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-    // Story 19.3: Dates should display in Swedish format
+    // Story 19.3: Dates display in dd-MM format (e.g., "15-01" for January 15th)
     // mockEmployees has hire_date: "2025-01-15" (John) and "2020-01-01" (Jane)
-    // Note: In test environment, date-fns locale may render differently
-    // Check for both ISO format (fallback) or Swedish format
-    const hasJohnDate = screen.queryByText(/15 januari 2025/) || screen.queryByText(/2025-01-15/);
-    const hasJaneDate = screen.queryByText(/1 januari 2020/) || screen.queryByText(/2020-01-01/);
+    // formatDateForDisplay returns "15-01" for 2025-01-15 and "01-01" for 2020-01-01
+    const hasJohnDate = screen.queryByText("15-01");
+    const hasJaneDate = screen.queryByText("01-01");
     expect(hasJohnDate).toBeTruthy();
     expect(hasJaneDate).toBeTruthy();
   });

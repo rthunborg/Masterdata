@@ -38,7 +38,8 @@ import {
 import { employeeService } from "@/lib/services/employee-service";
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
-import { formatImportantDateOption } from "@/lib/utils/format";
+import { useAvailableOMCDates } from "@/lib/hooks/use-available-omc-dates";
+import { formatDateDropdownOption, isJan1ExceptionDate } from "@/lib/utils/format";
 import { UnsavedChangesDialog } from "@/components/dashboard/unsaved-changes-dialog";
 import { CapacityBadge } from "@/components/dashboard/capacity-badge";
 import { cn } from "@/lib/utils";
@@ -68,10 +69,12 @@ export function EditEmployeeModal({
   // Fetch Important Dates with real-time updates
   const { dates: stenaDates, isLoading: stenaLoading } =
     useImportantDates('Stena Dates');
-  const { dates: omcDates, isLoading: omcLoading } =
-    useImportantDates('ÖMC Dates');
+  // Story 19.8: Use available ÖMC dates hook with Jan 1 exception support
+  // Pass current omc_date for edit mode to keep it in the list
+  const { availableDates: omcDates, isLoading: omcLoading } =
+    useAvailableOMCDates(employee?.omc_date);
   const { availableDates: pe3Dates, totalAvailable: pe3Available, isLoading: pe3Loading } =
-    useAvailablePE3Dates();
+    useAvailablePE3Dates(employee?.pe3_date);
 
   // Create schema with translated error messages
   const updateEmployeeSchema = updateEmployeeSchemaWithMessages(
@@ -528,24 +531,28 @@ export function EditEmployeeModal({
                             const remainingSpots = date.remaining_spots ?? 0;
                             const maxSpots = date.max_spots ?? 99;
                             const isFull = remainingSpots === 0;
+                            // Story 19.8: Check for exception date
+                            const isExceptionDate = isJan1ExceptionDate(date);
                             
                             return (
                               <SelectItem 
                                 key={date.id} 
                                 value={date.id}
-                                disabled={isFull}
-                                className={cn(isFull && "opacity-50 cursor-not-allowed")}
+                                disabled={isFull && !isExceptionDate}
+                                className={cn(isFull && !isExceptionDate && "opacity-50 cursor-not-allowed")}
                               >
                                 <div className="flex items-center justify-between gap-2 w-full">
-                                  <span className={cn(isFull && "text-muted-foreground")}>
-                                    {formatImportantDateOption(date)} ({remainingSpots})
+                                  <span className={cn(isFull && !isExceptionDate && "text-muted-foreground")}>
+                                    {formatDateDropdownOption(date, !isExceptionDate)}
                                   </span>
-                                  <div className="flex items-center gap-1.5">
-                                    <CapacityBadge
-                                      remainingSpots={remainingSpots}
-                                      maxSpots={maxSpots}
-                                    />
-                                  </div>
+                                  {!isExceptionDate && (
+                                    <div className="flex items-center gap-1.5">
+                                      <CapacityBadge
+                                        remainingSpots={remainingSpots}
+                                        maxSpots={maxSpots}
+                                      />
+                                    </div>
+                                  )}
                                 </div>
                               </SelectItem>
                             );
@@ -577,34 +584,37 @@ export function EditEmployeeModal({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {omcDates
-                          .filter((d) => new Date(d.date_value) >= new Date())
-                          .map((date) => {
-                            const remainingSpots = date.remaining_spots ?? 0;
-                            const maxSpots = date.max_spots ?? 99;
-                            const isFull = remainingSpots === 0;
-                            
-                            return (
-                              <SelectItem 
-                                key={date.id} 
-                                value={date.id}
-                                disabled={isFull}
-                                className={cn(isFull && "opacity-50 cursor-not-allowed")}
-                              >
-                                <div className="flex items-center justify-between gap-2 w-full">
-                                  <span className={cn(isFull && "text-muted-foreground")}>
-                                    {formatImportantDateOption(date)} ({remainingSpots})
-                                  </span>
+                        {/* Story 19.8: ÖMC dates now come from useAvailableOMCDates hook with Jan 1 exception */}
+                        {omcDates.map((date) => {
+                          const remainingSpots = date.remaining_spots ?? 0;
+                          const maxSpots = date.max_spots ?? 99;
+                          const isFull = remainingSpots === 0;
+                          // Story 19.8: Check for exception date
+                          const isExceptionDate = isJan1ExceptionDate(date);
+                          
+                          return (
+                            <SelectItem 
+                              key={date.id} 
+                              value={date.id}
+                              disabled={isFull && !isExceptionDate}
+                              className={cn(isFull && !isExceptionDate && "opacity-50 cursor-not-allowed")}
+                            >
+                              <div className="flex items-center justify-between gap-2 w-full">
+                                <span className={cn(isFull && !isExceptionDate && "text-muted-foreground")}>
+                                  {formatDateDropdownOption(date, !isExceptionDate)}
+                                </span>
+                                {!isExceptionDate && (
                                   <div className="flex items-center gap-1.5">
                                     <CapacityBadge
                                       remainingSpots={remainingSpots}
                                       maxSpots={maxSpots}
                                     />
                                   </div>
-                                </div>
-                              </SelectItem>
-                            );
-                          })}
+                                )}
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -636,24 +646,26 @@ export function EditEmployeeModal({
                               {t('noPe3DatesAvailable')}
                             </SelectItem>
                           )}
-                          {pe3Dates
-                            .filter((d) => new Date(d.date_value) >= new Date())
-                            .map((date) => {
-                              const remainingSpots = date.remaining_spots ?? 0;
-                              const maxSpots = date.max_spots ?? 1;
-                              const isFull = remainingSpots === 0;
-                              
-                              return (
-                                <SelectItem 
-                                  key={date.id} 
-                                  value={date.id}
-                                  disabled={isFull}
-                                  className={cn(isFull && "opacity-50 cursor-not-allowed")}
-                                >
-                                  <div className="flex items-center justify-between gap-2 w-full">
-                                    <span className={cn(isFull && "text-muted-foreground")}>
-                                      {formatImportantDateOption(date)} ({remainingSpots})
-                                    </span>
+                          {/* Story 19.8: PE3 dates come from hook with Jan 1 exception support */}
+                          {pe3Dates.map((date) => {
+                            const remainingSpots = date.remaining_spots ?? 0;
+                            const maxSpots = date.max_spots ?? 1;
+                            const isFull = remainingSpots === 0;
+                            // Story 19.8: Check for exception date
+                            const isExceptionDate = isJan1ExceptionDate(date);
+                            
+                            return (
+                              <SelectItem 
+                                key={date.id} 
+                                value={date.id}
+                                disabled={isFull && !isExceptionDate}
+                                className={cn(isFull && !isExceptionDate && "opacity-50 cursor-not-allowed")}
+                              >
+                                <div className="flex items-center justify-between gap-2 w-full">
+                                  <span className={cn(isFull && !isExceptionDate && "text-muted-foreground")}>
+                                    {formatDateDropdownOption(date, !isExceptionDate)}
+                                  </span>
+                                  {!isExceptionDate && (
                                     <div className="flex items-center gap-1.5">
                                       {isFull ? (
                                         <CapacityBadge
@@ -666,10 +678,11 @@ export function EditEmployeeModal({
                                         </span>
                                       )}
                                     </div>
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
+                                  )}
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
                       {field.value && (

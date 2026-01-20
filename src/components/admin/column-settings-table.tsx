@@ -57,6 +57,8 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+// Story 19.9: Sticky horizontal scrollbar
+import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 interface ColumnSettingsTableProps {
   columns: ColumnConfig[];
@@ -378,10 +380,16 @@ function DraggableRow({
     <TableRow 
       ref={setNodeRef} 
       style={style}
-      className={cn(!column.is_visible && "bg-gray-200 opacity-75")}
+      className={cn(
+        "bg-background",
+        !column.is_visible && "bg-gray-200 opacity-75"
+      )}
     >
-      {/* Drag Handle / Move Buttons */}
-      <TableCell className="w-12 lg:w-auto lg:p-2">
+      {/* Story 19.10: Sticky Drag Handle / Move Buttons */}
+      <TableCell 
+        className="w-12 lg:w-auto lg:p-2 sticky z-10 bg-inherit"
+        style={{ left: 0 }}
+      >
         {isMobile ? (
           <div className="flex flex-col gap-1">
             <Button
@@ -415,8 +423,11 @@ function DraggableRow({
         )}
       </TableCell>
 
-      {/* Column Name (Display Name - Editable) */}
-      <TableCell className="lg:p-2">
+      {/* Story 19.10: Sticky Column Name (Display Name - Editable) */}
+      <TableCell 
+        className="lg:p-2 sticky z-10 bg-inherit"
+        style={{ left: 40 }}
+      >
         <EditableColumnNameCell
           value={column.column_name}
           columnId={column.id}
@@ -425,8 +436,11 @@ function DraggableRow({
         />
       </TableCell>
 
-      {/* Database Column Name (Read-only) */}
-      <TableCell className="text-gray-600 lg:truncate lg:p-2">
+      {/* Story 19.10: Sticky Database Column Name (Read-only) - rightmost sticky with shadow */}
+      <TableCell 
+        className="text-gray-600 lg:truncate lg:p-2 sticky z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
+        style={{ left: 190 }}
+      >
         <span className="font-mono text-sm">{column.db_column_name}</span>
       </TableCell>
 
@@ -514,8 +528,8 @@ function DraggableRow({
         );
       })}
 
-      {/* Actions */}
-      <TableCell className="text-left w-20 lg:w-auto lg:pl-4 lg:pr-2">
+      {/* Story 19.10: Sticky Actions column on right */}
+      <TableCell className="text-left w-20 lg:w-auto lg:pl-4 lg:pr-2 sticky right-0 z-10 bg-inherit shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
         <div className="flex items-center justify-start gap-2">
           {/* Toggle Visibility Button */}
           <Tooltip>
@@ -577,6 +591,9 @@ export function ColumnSettingsTable({
 
   // Detect mobile
   const [isMobile, setIsMobile] = useState(false);
+
+  // Story 19.9: Ref for sticky scrollbar
+  const tableContainerRef = useRef<HTMLDivElement>(null);
   
   // Note: Column resizing for this table requires TanStack Table refactor
   // due to complex drag-and-drop implementation. Placeholder for future enhancement.
@@ -860,7 +877,8 @@ export function ColumnSettingsTable({
         onDragEnd={handleDragEnd}
       >
         <div className="rounded-md border w-full overflow-x-auto lg:overflow-hidden">
-          <Table className="w-full table-auto lg:table-fixed">
+          {/* Story 19.9: Pass container ref for sticky scrollbar */}
+          <Table className="w-full table-auto lg:table-fixed" containerRef={tableContainerRef}>
             <colgroup className="hidden lg:table-column-group">
               <col style={{ width: '2.5%' }} />
               <col style={{ width: '10%' }} />
@@ -876,9 +894,19 @@ export function ColumnSettingsTable({
             </colgroup>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12 lg:w-auto lg:p-2"></TableHead>
-                <TableHead className="min-w-[150px] lg:min-w-0 lg:p-2">Visningsnamn</TableHead>
-                <TableHead className="min-w-[150px] lg:min-w-0 lg:p-2">Databasnamn</TableHead>
+                {/* Story 19.10: Sticky columns - Drag icon, Display Name, Database Name */}
+                <TableHead 
+                  className="w-12 lg:w-auto lg:p-2 sticky left-0 z-20 bg-background"
+                  style={{ left: 0 }}
+                ></TableHead>
+                <TableHead 
+                  className="min-w-[150px] lg:min-w-0 lg:p-2 sticky z-20 bg-background"
+                  style={{ left: 40 }}
+                >Visningsnamn</TableHead>
+                <TableHead 
+                  className="min-w-[150px] lg:min-w-0 lg:p-2 sticky z-20 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
+                  style={{ left: 190 }}
+                >Databasnamn</TableHead>
                 <TableHead className="w-16 lg:w-auto lg:p-2">{tAdmin("type")}</TableHead>
                 <TableHead className="w-24 lg:w-auto lg:p-2">Masterdata</TableHead>
                 <TableHead className="w-24 lg:w-auto lg:p-2">
@@ -900,7 +928,8 @@ export function ColumnSettingsTable({
                       {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
                   </TableHead>
                 ))}
-                <TableHead className="w-40 lg:w-auto text-left lg:pl-4 lg:pr-2">{tAdmin("actions")}</TableHead>
+                {/* Story 19.10: Sticky actions column on right */}
+                <TableHead className="w-40 lg:w-auto text-left lg:pl-4 lg:pr-2 sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">{tAdmin("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -942,6 +971,9 @@ export function ColumnSettingsTable({
               </SortableContext>
             </TableBody>
           </Table>
+
+          {/* Story 19.9: Sticky horizontal scrollbar */}
+          <StickyScrollbar containerRef={tableContainerRef} />
         </div>
         <DeleteColumnModal
           column={columnToDelete}

@@ -17,8 +17,10 @@ import { cn } from "@/lib/utils";
 import { hasValueChanged } from "@/lib/utils/change-detection";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
+import { useAvailableOMCDates } from "@/lib/hooks/use-available-omc-dates";
 import { useTranslations } from "@/lib/i18n";
 import { CapacityBadge } from "./capacity-badge";
+import { isJan1ExceptionDate, formatDateDropdownOption } from "@/lib/utils/format";
 
 interface EditableDateCellProps {
   value: string | null; // UUID of the selected Important Date
@@ -68,14 +70,26 @@ export function EditableDateCell({
     isPE3Date && isEditing // Only fetch when it's a PE3 date AND we're editing
   );
 
+  // Story 19.8: For ÖMC dates, use the hook to get available dates with Jan 1 exception
+  const isOMCDate = dateCategory === "ÖMC Dates";
+  const { availableDates: omcAvailableDates, isLoading: omcLoading } = useAvailableOMCDates(
+    isOMCDate ? value : null,
+    isOMCDate && isEditing // Only fetch when it's an ÖMC date AND we're editing
+  );
+
   // Filter dates by category and future dates
   const filteredDates = useMemo(() => {
     if (dateCategory === "PE3 Dates") {
-      // Use available PE3 dates from the hook (handles uniqueness)
+      // Use available PE3 dates from the hook (handles uniqueness and Jan 1 exception)
       return pe3AvailableDates;
     }
 
-    // For Stena and ÖMC dates, filter by category, future dates, and active status
+    if (dateCategory === "ÖMC Dates") {
+      // Story 19.8: Use available ÖMC dates from the hook (handles Jan 1 exception)
+      return omcAvailableDates;
+    }
+
+    // For Stena dates, filter by category, future dates, and active status
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -91,7 +105,7 @@ export function EditableDateCell({
       dateValue.setHours(0, 0, 0, 0);
       return dateValue >= today;
     });
-  }, [dateCategory, pe3AvailableDates, allDates]);
+  }, [dateCategory, pe3AvailableDates, omcAvailableDates, allDates]);
 
   // Auto-open dropdown when entering edit mode
   useEffect(() => {
@@ -334,7 +348,7 @@ export function EditableDateCell({
               });
           }, 0);
         }}
-        disabled={isLoading || (dateCategory === "PE3 Dates" && pe3Loading)}
+        disabled={isLoading || (dateCategory === "PE3 Dates" && pe3Loading) || (dateCategory === "ÖMC Dates" && omcLoading)}
       >
         <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-11 touch-manipulation", isCompact && "min-h-8 h-8 text-xs")}>
           <SelectValue placeholder="Select a date..." />
@@ -345,29 +359,34 @@ export function EditableDateCell({
             const remainingSpots = date.remaining_spots ?? 0;
             const maxSpots = date.max_spots ?? 99;
             const isFull = remainingSpots === 0;
-            const isAlmostFull = remainingSpots < 5 && remainingSpots > 0;
+            // Story 19.8: Check if this is a Jan 1 exception date
+            const isExceptionDate = isJan1ExceptionDate(date);
 
             return (
               <SelectItem
                 key={date.id}
                 value={date.id}
-                disabled={isFull}
+                disabled={isFull && !isExceptionDate} // Exception dates are never disabled
                 className={cn(
                   "min-h-11 touch-manipulation",
-                  isFull && "opacity-50 cursor-not-allowed",
+                  isFull && !isExceptionDate && "opacity-50 cursor-not-allowed",
                   isCompact && "min-h-8 h-8 text-xs"
                 )}
               >
                 <div className="flex items-center justify-between gap-2 w-full">
-                  <span className={cn(isFull && "text-muted-foreground")}>
-                    {date.date_description} (Week {date.week_number}, {date.year}) ({remainingSpots})
+                  <span className={cn(isFull && !isExceptionDate && "text-muted-foreground")}>
+                    {/* Story 19.8: Use formatDateDropdownOption for unified format */}
+                    {formatDateDropdownOption(date, !isExceptionDate)}
                   </span>
-                  <div className="flex items-center gap-1.5">
-                    <CapacityBadge
-                      remainingSpots={remainingSpots}
-                      maxSpots={maxSpots}
-                    />
-                  </div>
+                  {/* Story 19.8: Don't show capacity badge for exception dates */}
+                  {!isExceptionDate && (
+                    <div className="flex items-center gap-1.5">
+                      <CapacityBadge
+                        remainingSpots={remainingSpots}
+                        maxSpots={maxSpots}
+                      />
+                    </div>
+                  )}
                 </div>
               </SelectItem>
             );

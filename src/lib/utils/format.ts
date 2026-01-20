@@ -5,6 +5,68 @@ import { format, isValid, parseISO } from "date-fns";
 import { sv } from "date-fns/locale";
 
 /**
+ * Story 19.8: Check if a date is a January 1st exception date
+ * 
+ * January 1st of the current year is used as a special "Has certificate" date
+ * for employees who already possess PE3 or ÖMC certificates. These dates
+ * should display only the description (no spots, week number, or year).
+ * 
+ * @param date - ImportantDate object to check
+ * @returns true if the date is January 1st of the current year
+ * 
+ * @example
+ * isJan1ExceptionDate({ date_value: "2026-01-01", ... }) // true (if current year is 2026)
+ * isJan1ExceptionDate({ date_value: "2025-01-01", ... }) // false (previous year)
+ * isJan1ExceptionDate({ date_value: "2026-03-15", ... }) // false (not Jan 1)
+ */
+export function isJan1ExceptionDate(date: ImportantDate): boolean {
+  const currentYear = new Date().getFullYear();
+  const jan1CurrentYear = `${currentYear}-01-01`;
+  return date.date_value === jan1CurrentYear;
+}
+
+/**
+ * Story 19.8: Format Important Date for dropdown display with exception date handling
+ * 
+ * For January 1st exception dates (PE3 and ÖMC):
+ * - Display only the date_description (e.g., "Har certifikat")
+ * - No spots count, no week number, no year
+ * 
+ * For regular dates:
+ * - Use formatImportantDateOption() format with remaining spots
+ * - Format: "v. X - dd-MM (spots)" or "v. X - dd-MM - dd-MM (spots)" for ÖMC
+ * 
+ * @param date - ImportantDate object
+ * @param showSpots - Whether to show remaining spots (default: true for regular dates)
+ * @returns Formatted string for dropdown display
+ * 
+ * @example
+ * // Exception date
+ * formatDateDropdownOption({ date_value: "2026-01-01", date_description: "Har certifikat", ... })
+ * // Returns: "Har certifikat"
+ * 
+ * // Regular date
+ * formatDateDropdownOption({ date_value: "2026-03-08", week_number: 10, remaining_spots: 5, ... })
+ * // Returns: "v. 10 - 08-03 (5)"
+ */
+export function formatDateDropdownOption(date: ImportantDate, showSpots: boolean = true): string {
+  if (isJan1ExceptionDate(date)) {
+    // Exception dates: show only description, no spots/week/year
+    return date.date_description || "";
+  }
+  
+  // Regular dates: use formatImportantDateOption + spots
+  const formattedDate = formatImportantDateOption(date);
+  
+  if (showSpots) {
+    const remainingSpots = date.remaining_spots ?? 0;
+    return `${formattedDate} (${remainingSpots})`;
+  }
+  
+  return formattedDate;
+}
+
+/**
  * Story 19.3: Unified date display formatting utility
  * 
  * Formats dates consistently across the application using dd-MM format.
