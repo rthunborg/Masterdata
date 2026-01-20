@@ -65,9 +65,16 @@ export async function GET() {
     );
 
     // Filter to only unassigned dates with available capacity
-    const filteredDates = (data || []).filter(
-      (date) => !assignedDateIds.has(date.id) && date.remaining_spots > 0
-    ) as ImportantDate[];
+    // Exception: Jan 1 current year is always included (even if full) - frontend handles disable state
+    const filteredDates = (data || []).filter((date) => {
+      const isJan1Exception = date.date_value === jan1CurrentYear;
+      const isUnassigned = !assignedDateIds.has(date.id);
+      const hasCapacity = date.remaining_spots > 0;
+      
+      // Jan 1 exception: include if unassigned, regardless of capacity
+      // Other dates: require both unassigned AND has capacity
+      return isUnassigned && (isJan1Exception || hasCapacity);
+    }) as ImportantDate[];
 
     // Sort with Jan 1 current year pinned to top, then by date ascending
     // This ensures the Jan 1 exception date appears first when present

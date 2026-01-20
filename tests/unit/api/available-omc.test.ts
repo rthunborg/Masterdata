@@ -579,6 +579,125 @@ describe("GET /api/important-dates/available-omc", () => {
     expect(json.data[2].date_value).toBe(`${currentYear}-05-17`);
   });
 
+  it("should include Jan 1 current year even when remaining_spots is 0 (full)", async () => {
+    // This test verifies that the Jan 1 exception date is included in the API response
+    // even when it's "full" (remaining_spots = 0), because the frontend handles the
+    // disable state via `disabled={isFull && !isExceptionDate}`
+    const currentYear = new Date().getFullYear();
+    const jan1CurrentYear = `${currentYear}-01-01`;
+
+    mockSupabaseClient.auth.getSession.mockResolvedValue({
+      data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
+      error: null,
+    });
+
+    mockSupabaseClient.from.mockImplementation((table: string) => {
+      if (table === "users") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: {
+                  id: mockUsers.hrAdmin.id,
+                  email: mockUsers.hrAdmin.email,
+                  role: mockUsers.hrAdmin.role,
+                  is_active: true,
+                  created_at: mockUsers.hrAdmin.created_at,
+                },
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+
+      if (table === "important_dates") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          or: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [
+              {
+                id: "date-jan1-full",
+                week_number: 1,
+                year: currentYear,
+                category: "ÖMC Dates",
+                date_description: "1 januari",
+                date_value: jan1CurrentYear,
+                notes: null,
+                time_value: null,
+                max_spots: 10,
+                remaining_spots: 0, // FULL - no spots remaining
+                is_active: true,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+              {
+                id: "date-future",
+                week_number: 10,
+                year: currentYear,
+                category: "ÖMC Dates",
+                date_description: "8-9 mars",
+                date_value: `${currentYear}-03-08`,
+                notes: null,
+                time_value: null,
+                max_spots: 20,
+                remaining_spots: 15, // Has capacity
+                is_active: true,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+              {
+                id: "date-future-full",
+                week_number: 20,
+                year: currentYear,
+                category: "ÖMC Dates",
+                date_description: "17-18 maj",
+                date_value: `${currentYear}-05-17`,
+                notes: null,
+                time_value: null,
+                max_spots: 20,
+                remaining_spots: 0, // FULL - should be excluded (not Jan 1)
+                is_active: true,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+            ],
+            error: null,
+          }),
+        };
+      }
+
+      if (table === "employees") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          not: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({
+            data: [], // No dates assigned
+            error: null,
+          }),
+        };
+      }
+
+      return {};
+    });
+
+    const response = await GET();
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    // Should include Jan 1 (full but exception) + future date with capacity
+    // Should NOT include future date that's full (date-future-full)
+    expect(json.data).toHaveLength(2);
+    // Jan 1 should be first (pinned to top)
+    expect(json.data[0].date_value).toBe(jan1CurrentYear);
+    expect(json.data[0].remaining_spots).toBe(0); // Confirms it's full but included
+    // Future date with capacity should be second
+    expect(json.data[1].date_value).toBe(`${currentYear}-03-08`);
+    expect(json.data[1].remaining_spots).toBe(15);
+  });
+
   it("should update when employee ÖMC date is cleared", async () => {
     // This test simulates two separate API calls
     // First call: date-2 is assigned to an employee

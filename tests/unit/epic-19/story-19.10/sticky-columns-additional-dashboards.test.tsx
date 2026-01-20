@@ -192,7 +192,8 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
         expect(categoryHeader.className).toContain("z-20");
         // Category is rightmost sticky left column, should have shadow
         expect(categoryHeader.className).toContain("shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]");
-        expect(categoryHeader.style.left).toBe("80px");
+        // Story 19.12: Dynamic offset uses TanStack Table's default column width (150px)
+        expect(categoryHeader.style.left).toBe("150px");
       }
     });
 
@@ -233,7 +234,8 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
         expect(categoryCell.className).toContain("z-10");
         expect(categoryCell.className).toContain("bg-inherit");
         expect(categoryCell.className).toContain("shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]");
-        expect(categoryCell.style.left).toBe("80px");
+        // Story 19.12: Dynamic offset uses TanStack Table's default column width (150px)
+        expect(categoryCell.style.left).toBe("150px");
       }
     });
 
