@@ -1,4 +1,4 @@
-import { screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { StickyScrollbar, useStickyScrollbar } from "@/components/ui/sticky-scrollbar";
@@ -195,11 +195,16 @@ describe("StickyScrollbar", () => {
     });
 
     it("provides containerRef that can be attached to an element", () => {
-      let capturedRef: React.RefObject<HTMLDivElement | null> | null = null;
+      // Use a mutable object to capture ref without reassigning during render
+      const captured: { ref: React.RefObject<HTMLDivElement | null> | null } = { ref: null };
 
       const HookTestComponent = () => {
-        const { containerRef, stickyScrollbarProps } = useStickyScrollbar<HTMLDivElement>();
-        capturedRef = containerRef;
+        const { containerRef } = useStickyScrollbar<HTMLDivElement>();
+        
+        // Capture ref in useEffect to avoid side effects during render
+        React.useEffect(() => {
+          captured.ref = containerRef;
+        }, [containerRef]);
 
         return (
           <div
@@ -213,9 +218,11 @@ describe("StickyScrollbar", () => {
 
       renderWithI18n(<HookTestComponent />);
 
-      // After render, the ref should be attached
-      expect(capturedRef).not.toBeNull();
-      expect(capturedRef?.current).toBe(screen.getByTestId("container"));
+      // After render, the ref should be attached to the DOM element
+      const container = screen.getByTestId("container");
+      expect(container).toBeInTheDocument();
+      // The ref.current should point to the DOM element
+      expect(captured.ref?.current).toBe(container);
     });
   });
 
