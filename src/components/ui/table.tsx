@@ -17,7 +17,10 @@ function Table({ className, containerRef, ...props }: TableProps) {
     <div
       ref={containerRef}
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      // overflow-y-visible is critical: without it, overflow-x-auto causes overflow-y to compute as 'auto',
+      // which creates a scroll container that breaks sticky header positioning (sticky top-0 on thead).
+      // By explicitly setting overflow-y-visible, sticky headers stick to the viewport/page scroll instead.
+      className="relative w-full overflow-x-auto overflow-y-visible"
     >
       <table
         data-slot="table"
