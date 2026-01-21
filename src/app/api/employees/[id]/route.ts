@@ -177,7 +177,7 @@ export async function PATCH(
           {
             error: {
               code: "TALMUNDO_EDIT_NOT_ALLOWED",
-              message: "Cannot edit Talmundo field - One field must be completed for 24 hours first",
+              message: "Cannot edit Talmundo field - One field must be completed until the following day",
               timestamp: new Date().toISOString(),
             },
           },

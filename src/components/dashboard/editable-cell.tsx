@@ -166,7 +166,7 @@ export function EditableCell({
   const isLoneivaField = field.toLowerCase() === 'loneiva' || field.toLowerCase() === 'lönenivå';
 
   // Calculate conditional editability for Talmundo field (Story 8.4)
-  // Talmundo can only be edited when One field is green (>= 24 hours elapsed)
+  // Talmundo can only be edited when One field is green (past 00:01 AM the following day)
   let effectiveCanEdit = canEdit;
   let tooltipMessage = '';
 
@@ -351,7 +351,7 @@ export function EditableCell({
         if (badgeStatus === 'yellow' && oneMarkedAt) {
           badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
         } else if (badgeStatus === 'green') {
-          badgeTooltip = 'Complete - 24-hour waiting period elapsed';
+          badgeTooltip = 'Complete - Ready for editing';
         }
       } else if (type === "boolean" && value === true) {
         badgeStatus = 'green';
@@ -473,7 +473,7 @@ export function EditableCell({
       if (badgeStatus === 'yellow' && oneMarkedAt) {
         badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
       } else if (badgeStatus === 'green') {
-        badgeTooltip = 'Complete - 24-hour waiting period elapsed';
+        badgeTooltip = 'Complete - Ready for editing';
       }
     } else if (type === "boolean" && value === true && effectiveCanEdit) {
       // Story 8.4: Show green badge for Talmundo when true and enabled
