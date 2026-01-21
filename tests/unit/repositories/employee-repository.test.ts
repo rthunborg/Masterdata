@@ -360,7 +360,8 @@ describe("EmployeeRepository", () => {
           termination_reason: "Resigned",
           is_terminated: true,
           is_archived: false,
-          repayment_needed_omc: true,
+          // Story 19.14: repayment fields now store UUIDs
+          repayment_needed_omc: 'omc-date-uuid-123',
           repayment_needed_pe3: null,
           comments: null,
           one: false,
@@ -413,7 +414,8 @@ describe("EmployeeRepository", () => {
           termination_reason: "Resigned",
           is_terminated: true,
           is_archived: false,
-          repayment_needed_omc: true,
+          // Story 19.14: repayment fields now store UUIDs
+          repayment_needed_omc: 'omc-date-uuid-123',
           repayment_needed_pe3: null,
           comments: null,
           one: false,

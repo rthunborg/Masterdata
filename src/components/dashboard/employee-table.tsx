@@ -1069,6 +1069,49 @@ export function EmployeeTable({
 
           }
 
+          // Story 19.14: Special handling for repayment date columns
+          // These show a dropdown of all dates from the current year (no capacity filtering)
+          if (["repayment_needed_omc", "repayment_needed_pe3"].includes(config.db_column_name)) {
+            const repaymentFieldMap: Record<string, keyof Employee> = {
+              "repayment_needed_omc": "repayment_needed_omc",
+              "repayment_needed_pe3": "repayment_needed_pe3"
+            };
+
+            const repaymentCategoryMap: Record<string, string> = {
+              "repayment_needed_omc": "ÖMC Dates",
+              "repayment_needed_pe3": "PE3 Dates"
+            };
+
+            const repaymentField = repaymentFieldMap[config.db_column_name];
+            const repaymentCategory = repaymentCategoryMap[config.db_column_name];
+            const repaymentValue = row.original[repaymentField] as string | null;
+            
+            // Get display value for repayment field
+            const repaymentDisplayValue = repaymentValue
+              ? allImportantDates.find(d => d.id === repaymentValue)?.date_description || tDashboard("dateDeleted")
+              : null;
+
+            const isRepaymentChanged = checkColumnChanged(row.original.id, config.db_column_name);
+
+            return (
+              <EditableDateCell
+                value={repaymentValue}
+                displayValue={repaymentDisplayValue || "—"}
+                employeeId={row.original.id}
+                field={repaymentField}
+                dateCategory={repaymentCategory}
+                allDates={allImportantDates}
+                canEdit={canEdit}
+                isChanged={isRepaymentChanged}
+                isRepaymentMode={true} // Show all current year dates without capacity filtering
+                className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+                isCompact={isCompact}
+                onSave={handleMasterdataUpdate}
+                onError={(error) => toast.error(error)}
+              />
+            );
+          }
+
           // Standard cell rendering for other columns
           // Determine EditableCell type based on column_type
 
@@ -1077,9 +1120,8 @@ export function EmployeeTable({
 
           let options: string[] | undefined;
 
-          if (["repayment_needed_omc", "repayment_needed_pe3"].includes(config.db_column_name)) {
-            cellType = "boolean";
-          } else if (config.column_type === "date") {
+          // Note: repayment_needed_omc and repayment_needed_pe3 are handled above with EditableDateCell
+          if (config.column_type === "date") {
 
             cellType = "date";
 

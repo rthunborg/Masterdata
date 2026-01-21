@@ -151,6 +151,7 @@ vi.mock('@/lib/hooks/use-columns', () => ({
 }));
 
 describe('Story 13.9: Repayment Column Visibility', () => {
+  // Story 19.14: repayment_needed fields now store UUIDs, not date strings
   const terminatedEmployee: Employee = {
     id: '1',
     first_name: 'John',
@@ -169,8 +170,12 @@ describe('Story 13.9: Repayment Column Visibility', () => {
     termination_reason: 'Resigned',
     is_terminated: true,
     is_archived: false,
-    repayment_needed_omc: '2025-03-15',
-    repayment_needed_pe3: '2025-04-20',
+    archived_at: null,
+    is_anonymized: false,
+    special_diet: false,
+    diet_details: null,
+    repayment_needed_omc: 'omc-date-uuid-123', // UUID reference to Important Date
+    repayment_needed_pe3: 'pe3-date-uuid-456', // UUID reference to Important Date
     comments: null,
     one: false,
     one_marked_at: null,

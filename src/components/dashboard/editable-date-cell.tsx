@@ -26,11 +26,12 @@ interface EditableDateCellProps {
   value: string | null; // UUID of the selected Important Date
   displayValue: string; // Human-readable date description
   employeeId: string;
-  field: string; // "stena_date", "omc_date", or "pe3_date"
+  field: string; // "stena_date", "omc_date", "pe3_date", "repayment_needed_omc", or "repayment_needed_pe3"
   dateCategory: string; // "Stena Dates", "ÖMC Dates", or "PE3 Dates"
   allDates: ImportantDate[];
   canEdit?: boolean;
   isChanged?: boolean; // Story 16.5: Flag for field highlighting
+  isRepaymentMode?: boolean; // Story 19.14: Show all current year dates without capacity filtering
   className?: string; // Support for styling props
   isCompact?: boolean; // Support for density preference
   onSave: (id: string, field: string, value: string | null) => Promise<void>;
@@ -46,6 +47,7 @@ export function EditableDateCell({
   allDates,
   canEdit = true,
   isChanged = false, // Story 16.5: Default to false for backward compatibility
+  isRepaymentMode = false, // Story 19.14: Default to false for backward compatibility
   className,
   isCompact,
   onSave,
@@ -79,6 +81,20 @@ export function EditableDateCell({
 
   // Filter dates by category and future dates
   const filteredDates = useMemo(() => {
+    // Story 19.14: Repayment mode - show all current year dates without capacity filtering
+    if (isRepaymentMode) {
+      const currentYear = new Date().getFullYear();
+      return allDates.filter((date) => {
+        // Filter by category
+        if (date.category !== dateCategory) return false;
+        // Filter to current year only
+        if (date.year !== currentYear) return false;
+        // Filter out archived dates
+        if (!date.is_active) return false;
+        return true;
+      }).sort((a, b) => a.date_value.localeCompare(b.date_value));
+    }
+
     if (dateCategory === "PE3 Dates") {
       // Use available PE3 dates from the hook (handles uniqueness and Jan 1 exception)
       return pe3AvailableDates;
@@ -105,7 +121,7 @@ export function EditableDateCell({
       dateValue.setHours(0, 0, 0, 0);
       return dateValue >= today;
     });
-  }, [dateCategory, pe3AvailableDates, omcAvailableDates, allDates]);
+  }, [dateCategory, pe3AvailableDates, omcAvailableDates, allDates, isRepaymentMode]);
 
   // Auto-open dropdown when entering edit mode
   useEffect(() => {
@@ -361,25 +377,31 @@ export function EditableDateCell({
             const isFull = remainingSpots === 0;
             // Story 19.8: Check if this is a Jan 1 exception date
             const isExceptionDate = isJan1ExceptionDate(date);
+            // Story 19.14: In repayment mode, never disable options (capacity doesn't matter)
+            const shouldDisable = !isRepaymentMode && isFull && !isExceptionDate;
+            // Story 19.14: In repayment mode, don't show capacity (repayment doesn't consume spots)
+            const showCapacity = !isRepaymentMode && !isExceptionDate;
 
             return (
               <SelectItem
                 key={date.id}
                 value={date.id}
-                disabled={isFull && !isExceptionDate} // Exception dates are never disabled
+                disabled={shouldDisable}
                 className={cn(
                   "min-h-11 touch-manipulation",
-                  isFull && !isExceptionDate && "opacity-50 cursor-not-allowed",
+                  shouldDisable && "opacity-50 cursor-not-allowed",
                   isCompact && "min-h-8 h-8 text-xs"
                 )}
               >
                 <div className="flex items-center justify-between gap-2 w-full">
-                  <span className={cn(isFull && !isExceptionDate && "text-muted-foreground")}>
+                  <span className={cn(shouldDisable && "text-muted-foreground")}>
                     {/* Story 19.8: Use formatDateDropdownOption for unified format */}
-                    {formatDateDropdownOption(date, !isExceptionDate)}
+                    {/* Story 19.14: In repayment mode, don't show capacity in label */}
+                    {formatDateDropdownOption(date, showCapacity)}
                   </span>
                   {/* Story 19.8: Don't show capacity badge for exception dates */}
-                  {!isExceptionDate && (
+                  {/* Story 19.14: Don't show capacity badge in repayment mode */}
+                  {showCapacity && (
                     <div className="flex items-center gap-1.5">
                       <CapacityBadge
                         remainingSpots={remainingSpots}

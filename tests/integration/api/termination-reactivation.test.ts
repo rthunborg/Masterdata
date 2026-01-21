@@ -118,6 +118,7 @@ describe('POST /api/employees/[id]/terminate', () => {
     );
   });
 
+  // Story 19.14: repayment fields now store UUIDs, not booleans
   it('should terminate employee with ÖMC date (repayment captured)', async () => {
     const omcDateId = 'omc-date-1';
     const mockEmployee = createMockEmployee({
@@ -125,7 +126,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'End of contract',
       is_terminated: true,
-      repayment_needed_omc: true,
+      repayment_needed_omc: omcDateId, // UUID of the date that needs repayment
       stena_date: null,
       pe3_date: null,
     });
@@ -149,7 +150,7 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_omc).toBe(true);
+    expect(json.data.employee.repayment_needed_omc).toBe(omcDateId);
     expect(json.data.employee.omc_date).toBeNull();
     expect(json.data.clearedDates).toContain(omcDateId);
     expect(json.data.releasedSpots).toBe(1);
@@ -162,7 +163,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'Retirement',
       is_terminated: true,
-      repayment_needed_pe3: true,
+      repayment_needed_pe3: pe3DateId, // UUID of the date that needs repayment
       stena_date: null,
       omc_date: null,
     });
@@ -186,7 +187,7 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_pe3).toBe(true);
+    expect(json.data.employee.repayment_needed_pe3).toBe(pe3DateId);
     expect(json.data.employee.pe3_date).toBeNull();
     expect(json.data.clearedDates).toContain(pe3DateId);
   });
@@ -200,8 +201,8 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'End of contract',
       is_terminated: true,
-      repayment_needed_omc: true,
-      repayment_needed_pe3: true,
+      repayment_needed_omc: omcDateId, // UUID of the date that needs repayment
+      repayment_needed_pe3: pe3DateId, // UUID of the date that needs repayment
       stena_date: null,
     });
 
@@ -430,11 +431,12 @@ describe('POST /api/employees/[id]/reactivate', () => {
   });
 
   it('should reactivate employee with unavailable spots (warnings returned)', async () => {
+    const omcDateId = 'omc-date-1';
     const mockEmployee = createMockEmployee({
       is_terminated: false,
       termination_date: null,
       omc_date: null,
-      repayment_needed_omc: true,
+      repayment_needed_omc: omcDateId, // UUID still set (not restored due to unavailable spots)
     });
 
     vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
@@ -460,11 +462,12 @@ describe('POST /api/employees/[id]/reactivate', () => {
   });
 
   it('should reactivate employee with deleted dates (warnings returned)', async () => {
+    const omcDateId = 'omc-date-1';
     const mockEmployee = createMockEmployee({
       is_terminated: false,
       termination_date: null,
       omc_date: null,
-      repayment_needed_omc: true,
+      repayment_needed_omc: omcDateId, // UUID still set (not restored due to deleted date)
     });
 
     vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);

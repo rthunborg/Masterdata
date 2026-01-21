@@ -241,7 +241,7 @@ describe("Export Field Selection Integration", () => {
       { 
         id: "emp1", 
         first_name: "John", 
-        repayment_needed_omc: true, // boolean
+        repayment_needed_omc: 'omc-date-uuid-123', // Story 19.14: Now stores UUID
         termination_date: null, // null
         // mobile is undefined
       },
