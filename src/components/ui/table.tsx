@@ -32,7 +32,14 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn(
+        "[&_tr]:border-b",
+        // Story 19.13: Sticky header - stays visible when scrolling down
+        // z-30 ensures header is above body content and sticky columns (z-10/z-20)
+        // Shadow provides visual separation when content scrolls behind
+        "sticky top-0 z-30 bg-background shadow-[0_2px_4px_-1px_rgba(0,0,0,0.1)]",
+        className
+      )}
       {...props}
     />
   )
@@ -80,6 +87,8 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
       data-slot="table-head"
       className={cn(
         "text-foreground h-12 px-4 text-center align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        // Story 19.13: Ensure header cells have background for sticky headers
+        "bg-background",
         className
       )}
       {...props}
