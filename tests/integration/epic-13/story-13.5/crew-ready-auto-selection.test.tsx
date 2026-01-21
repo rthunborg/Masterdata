@@ -337,9 +337,10 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     fireEvent.click(crewReadyOption);
 
     // Wait for selection
+    // First checkbox is header "Select All", employee checkboxes start at index 1
     await waitFor(() => {
       const table = screen.getByRole('table');
-      const checkbox = within(table).getAllByRole('checkbox')[0];
+      const checkbox = within(table).getAllByRole('checkbox')[1];
       expect(checkbox).toBeChecked();
     });
 

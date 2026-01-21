@@ -23,7 +23,7 @@ import dynamic from "next/dynamic";
 import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEmployeeChanges } from "@/lib/hooks/use-employee-changes";
-import { hasAdminAccess, UserRole, isHRAdmin, canAddEmployee } from "@/lib/types/user";
+import { hasAdminAccess, UserRole, isHRAdmin, canAddEmployee, isExternalParty } from "@/lib/types/user";
 
 // Lazy load heavy modals for better initial bundle size (Story 12.5: Performance optimization)
 const AddEmployeeModal = dynamic(
@@ -225,7 +225,7 @@ export default function DashboardPage() {
                 {t('actions.importEmployees')}
               </Button>
             </>
-          ) : isHRAdminUser ? (
+          ) : isExternalParty(user?.role as UserRole) ? (
             <div className="flex gap-2">
               <Button onClick={() => openModal('addColumn')}>
                 <Plus className="mr-2 h-4 w-4" />
