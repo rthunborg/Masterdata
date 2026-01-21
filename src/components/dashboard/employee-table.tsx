@@ -2313,11 +2313,9 @@ export function EmployeeTable({
                         >
 
                           {/* Header content with category label */}
-                          {/* For checkbox column, match the cell structure exactly (empty div to match cell wrapper) */}
+                          {/* Story 19.x: For checkbox column, render the select-all checkbox from headerContent */}
                           {isCheckboxColumn ? (
-                            <div className="flex items-center justify-center w-full h-full gap-2">
-                              {/* Empty - matches the structure of checkbox cell which has a div wrapper with gap-2 */}
-                            </div>
+                            headerContent
                           ) : (
                             <div className="flex flex-col items-center justify-center leading-none gap-0.5">
 

@@ -384,4 +384,124 @@ describe('Story 13.2: Employee Selection Checkboxes', () => {
       // expect(row).toHaveClass('dark:bg-gray-800');
     });
   });
+
+  describe('Task 1.5: Select All Header Checkbox', () => {
+    it('header checkbox is present with Select all aria-label', () => {
+      renderWithI18n(
+        <EmployeeTable
+          employees={mockEmployees}
+          isLoading={false}
+        />
+      );
+
+      const selectAllCheckbox = screen.getByRole('checkbox', { name: /Select all/i });
+      expect(selectAllCheckbox).toBeInTheDocument();
+    });
+
+    it('header checkbox selects all visible employees when clicked', async () => {
+      renderWithI18n(
+        <EmployeeTable
+          employees={mockEmployees}
+          isLoading={false}
+        />
+      );
+
+      const selectAllCheckbox = screen.getByRole('checkbox', { name: /Select all/i });
+      
+      // Initially unchecked
+      expect(selectAllCheckbox).toHaveAttribute('data-state', 'unchecked');
+
+      // Click select all
+      await act(async () => {
+        fireEvent.click(selectAllCheckbox);
+      });
+
+      // All rows should now be selected
+      const row1 = screen.getByTestId('employee-row-1');
+      const row2 = screen.getByTestId('employee-row-2');
+      const row3 = screen.getByTestId('employee-row-3');
+
+      expect(row1).toHaveAttribute('data-state', 'selected');
+      expect(row2).toHaveAttribute('data-state', 'selected');
+      expect(row3).toHaveAttribute('data-state', 'selected');
+    });
+
+    it('header checkbox deselects all employees when clicked while all are selected', async () => {
+      renderWithI18n(
+        <EmployeeTable
+          employees={mockEmployees}
+          isLoading={false}
+        />
+      );
+
+      // First select all employees individually
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select John Doe/i }));
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select Jane Smith/i }));
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select Bob Johnson/i }));
+      });
+
+      // All rows should be selected
+      expect(screen.getByTestId('employee-row-1')).toHaveAttribute('data-state', 'selected');
+      expect(screen.getByTestId('employee-row-2')).toHaveAttribute('data-state', 'selected');
+      expect(screen.getByTestId('employee-row-3')).toHaveAttribute('data-state', 'selected');
+
+      // Now click header checkbox to deselect all
+      const selectAllCheckbox = screen.getByRole('checkbox', { name: /Select all/i });
+      await act(async () => {
+        fireEvent.click(selectAllCheckbox);
+      });
+
+      // All rows should now be deselected
+      expect(screen.getByTestId('employee-row-1')).not.toHaveAttribute('data-state', 'selected');
+      expect(screen.getByTestId('employee-row-2')).not.toHaveAttribute('data-state', 'selected');
+      expect(screen.getByTestId('employee-row-3')).not.toHaveAttribute('data-state', 'selected');
+    });
+
+    it('header checkbox shows indeterminate state when some employees are selected', async () => {
+      renderWithI18n(
+        <EmployeeTable
+          employees={mockEmployees}
+          isLoading={false}
+        />
+      );
+
+      // Select just one employee
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select John Doe/i }));
+      });
+
+      // Header checkbox should show indeterminate state
+      const selectAllCheckbox = screen.getByRole('checkbox', { name: /Select all/i });
+      expect(selectAllCheckbox).toHaveAttribute('data-state', 'indeterminate');
+    });
+
+    it('header checkbox shows checked state when all employees are selected individually', async () => {
+      renderWithI18n(
+        <EmployeeTable
+          employees={mockEmployees}
+          isLoading={false}
+        />
+      );
+
+      // Select all employees individually
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select John Doe/i }));
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select Jane Smith/i }));
+      });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('checkbox', { name: /Select Bob Johnson/i }));
+      });
+
+      // Header checkbox should be checked
+      const selectAllCheckbox = screen.getByRole('checkbox', { name: /Select all/i });
+      expect(selectAllCheckbox).toHaveAttribute('data-state', 'checked');
+    });
+  });
 });
