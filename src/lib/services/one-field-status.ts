@@ -3,41 +3,53 @@
  * 
  * Business Rule: The "One" field represents a completion checkpoint that triggers
  * data synchronization to the Talmundo external system. Talmundo's integration
- * requirements mandate a 24-hour processing window after the One field is marked
- * as complete before dependent fields can be edited.
+ * requirements mandate that the Talmundo field cannot be edited until 00:01 AM
+ * the day after the One field was marked as complete.
  * 
  * This service provides time-based status calculation for the One field to enforce
- * the mandatory 24-hour waiting period.
+ * the mandatory waiting period until the next day.
  * 
  * Status Indicators:
- * - Yellow (⚠ Pending): One is true but less than 24 hours have elapsed
- * - Green (✓ Complete): One is true and 24+ hours have elapsed
+ * - Yellow (⚠ Pending): One is true but not yet past 00:01 AM the following day
+ * - Green (✓ Complete): One is true and it's past 00:01 AM the following day
  * - Null: One is false or not set
  */
 
 /**
- * Calculate the current status of the One field based on elapsed time since marking.
+ * Calculate the unlock time (00:01 AM the day after markedAt)
  * 
- * This enforces a mandatory 24-hour waiting period for external system synchronization.
- * The function uses UTC timestamps to avoid timezone and DST issues.
+ * @param markedAt - Timestamp when One was set to true
+ * @returns Date object representing 00:01 AM the following day (local time)
+ */
+export function getUnlockTime(markedAt: Date): Date {
+  // Get the next day at 00:01 AM in local time
+  const unlockTime = new Date(markedAt);
+  unlockTime.setDate(unlockTime.getDate() + 1); // Move to next day
+  unlockTime.setHours(0, 1, 0, 0); // Set to 00:01:00.000
+  return unlockTime;
+}
+
+/**
+ * Calculate the current status of the One field based on time until next day 00:01 AM.
+ * 
+ * This enforces a mandatory waiting period until the following day at 00:01 AM
+ * for external system synchronization.
  * 
  * @param oneValue - Current boolean value of the One field
- * @param markedAt - Timestamp when One was set to true (UTC)
- * @returns 'green' if >= 24 hours elapsed, 'yellow' if < 24 hours, null if One is false
+ * @param markedAt - Timestamp when One was set to true
+ * @returns 'green' if past 00:01 AM the following day, 'yellow' if not yet, null if One is false
  * 
  * @example
  * // Just marked as true
  * getOneFieldStatus(true, null) // Returns 'yellow'
  * 
  * @example
- * // Marked 12 hours ago
- * const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
- * getOneFieldStatus(true, twelveHoursAgo) // Returns 'yellow'
+ * // Marked today at 3 PM, current time is 11 PM same day
+ * getOneFieldStatus(true, todayAt3PM) // Returns 'yellow'
  * 
  * @example
- * // Marked 25 hours ago
- * const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000);
- * getOneFieldStatus(true, twentyFiveHoursAgo) // Returns 'green'
+ * // Marked yesterday at 3 PM, current time is 00:02 AM today
+ * getOneFieldStatus(true, yesterdayAt3PM) // Returns 'green'
  * 
  * @example
  * // One is false
@@ -57,48 +69,38 @@ export function getOneFieldStatus(
     return 'yellow';
   }
 
-  // Calculate elapsed time in milliseconds
   const now = new Date();
-  const elapsed = now.getTime() - markedAt.getTime();
-  
-  // 24 hours in milliseconds
-  const twentyFourHours = 24 * 60 * 60 * 1000;
+  const unlockTime = getUnlockTime(markedAt);
 
-  // Return green if 24+ hours have elapsed, otherwise yellow
-  return elapsed >= twentyFourHours ? 'green' : 'yellow';
+  // Return green if we've passed the unlock time (00:01 AM the following day)
+  return now >= unlockTime ? 'green' : 'yellow';
 }
 
 /**
  * Calculate remaining time until One field status turns green.
  * 
  * This function formats the remaining time in a human-readable format
- * to display in tooltips, showing how long until the 24-hour waiting period completes.
+ * to display in tooltips, showing how long until 00:01 AM the following day.
  * 
  * @param markedAt - Timestamp when One was set to true
  * @returns Formatted string "X hours Y minutes" or "Ready" if time elapsed
  * 
  * @example
- * // 5 hours and 30 minutes remaining
- * const fiveThirtyAgo = new Date(Date.now() - 18.5 * 60 * 60 * 1000);
- * getRemainingTime(fiveThirtyAgo) // Returns "5 hours 30 minutes"
+ * // Marked today at 8 PM, showing time until tomorrow 00:01 AM
+ * getRemainingTime(todayAt8PM) // Returns "4 hours 1 minutes"
  * 
  * @example
- * // Less than 1 hour remaining
- * const twentyThreeThirtyAgo = new Date(Date.now() - 23.5 * 60 * 60 * 1000);
- * getRemainingTime(twentyThreeThirtyAgo) // Returns "30 minutes"
+ * // Less than 1 hour remaining until 00:01 AM
+ * getRemainingTime(todayAt11_30PM) // Returns "31 minutes"
  * 
  * @example
- * // Time has elapsed
- * const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000);
- * getRemainingTime(twentyFiveHoursAgo) // Returns "Ready"
+ * // Time has elapsed (past 00:01 AM the next day)
+ * getRemainingTime(yesterdayAt3PM) // Returns "Ready"
  */
 export function getRemainingTime(markedAt: Date): string {
   const now = new Date();
-  const elapsed = now.getTime() - markedAt.getTime();
-  
-  // 24 hours in milliseconds
-  const twentyFourHours = 24 * 60 * 60 * 1000;
-  const remaining = twentyFourHours - elapsed;
+  const unlockTime = getUnlockTime(markedAt);
+  const remaining = unlockTime.getTime() - now.getTime();
 
   // If time has elapsed, return "Ready"
   if (remaining <= 0) {

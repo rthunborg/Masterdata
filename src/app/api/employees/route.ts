@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
           {
             error: {
               code: "TALMUNDO_EDIT_NOT_ALLOWED",
-              message: "Cannot set Talmundo to true - One field must be completed for 24 hours first",
+              message: "Cannot set Talmundo to true - One field must be completed until the following day",
               timestamp: new Date().toISOString(),
             },
           },
