@@ -225,8 +225,9 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_omc).toBe(true);
-    expect(json.data.employee.repayment_needed_pe3).toBe(true);
+    // Story 19.14: repayment fields now store UUIDs of the dates that need repayment
+    expect(json.data.employee.repayment_needed_omc).toBe(omcDateId);
+    expect(json.data.employee.repayment_needed_pe3).toBe(pe3DateId);
     expect(json.data.clearedDates).toHaveLength(2);
     expect(json.data.releasedSpots).toBe(2);
   });
@@ -456,7 +457,8 @@ describe('POST /api/employees/[id]/reactivate', () => {
 
     expect(response.status).toBe(200);
     expect(json.data.omc_date).toBeNull();
-    expect(json.data.repayment_needed_omc).toBe(true);
+    // Story 19.14: repayment fields store UUIDs - UUID still set because couldn't restore date
+    expect(json.data.repayment_needed_omc).toBe(omcDateId);
     expect(json.warnings).toHaveLength(1);
     expect(json.warnings[0]).toContain('fully booked');
   });

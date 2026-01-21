@@ -143,9 +143,7 @@ export async function PATCH(
 
     return NextResponse.json({ data: updatedColumn });
   } catch (error) {
-    console.error("PATCH /api/admin/columns/[id] error:", error);
-
-    // Handle validation errors
+    // Handle validation errors (expected, don't log)
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
@@ -158,6 +156,8 @@ export async function PATCH(
       );
     }
 
+    // Log unexpected errors
+    console.error("PATCH /api/admin/columns/[id] error:", error);
     return createErrorResponse(error);
   }
 }

@@ -203,14 +203,25 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
   });
 
   describe("Talmundo Lock Validation", () => {
-    it("should return 400 if Talmundo locked when <24h since one=true", async () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should return 400 if Talmundo locked when before unlock time", async () => {
+      // Current time: Jan 16 at 10 PM
+      vi.setSystemTime(new Date('2025-01-16T22:00:00'));
+      
       vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       
-      // Employee with One=true but <24h elapsed
-      const oneData = setOneDateWithTimer(12); // 12 hours ago
+      // Employee with One=true, marked today at 3 PM - unlock is Jan 17 00:01 AM
+      const markedAt = '2025-01-16T15:00:00';
       const employee = createTestEmployee({
         one: true,
-        one_marked_at: oneData.one_marked_at,
+        one_marked_at: markedAt,
         talmundo: false,
       });
       
@@ -226,7 +237,7 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
 
       expect(response.status).toBe(400);
       expect(json.error.code).toBe("TALMUNDO_EDIT_NOT_ALLOWED");
-      expect(json.error.message).toContain("24 hours");
+      expect(json.error.message).toContain("following day");
     });
   });
 
