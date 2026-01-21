@@ -610,13 +610,15 @@ export class EmployeeRepository {
       // Get masterdata columns that the user has view permission for
       const { columnConfigRepository } = await import("./column-config-repository");
       const allColumns = await columnConfigRepository.findAll();
+      // admin_limited inherits view permissions from hr_admin
+      const roleForView = userRole === 'admin_limited' ? 'hr_admin' : userRole;
       const visibleMasterdataColumns = allColumns
         .filter(col => {
           // Only masterdata columns
           if (!col.is_masterdata) return false;
           
           // Check if user role has view permission
-          const rolePerms = col.role_permissions[userRole as keyof typeof col.role_permissions];
+          const rolePerms = col.role_permissions[roleForView as keyof typeof col.role_permissions];
           return rolePerms?.view === true;
         })
         .map(col => col.db_column_name.toLowerCase().trim()); // Normalize to lowercase for consistent matching

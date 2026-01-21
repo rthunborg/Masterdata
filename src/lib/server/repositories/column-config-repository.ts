@@ -67,6 +67,8 @@ export class ColumnConfigRepository {
   /**
    * Fetch columns visible to a specific role
    * Filters by role_permissions[role].view = true
+   * 
+   * Note: admin_limited inherits view permissions from hr_admin
    */
   async findByRole(role: UserRole): Promise<ColumnConfig[]> {
     try {
@@ -74,8 +76,10 @@ export class ColumnConfigRepository {
       // (JSONB filtering in PostgreSQL is complex; simpler to filter in code)
       const allColumns = await this.findAll();
 
+      // admin_limited inherits view permissions from hr_admin
+      const roleForView = role === 'admin_limited' ? 'hr_admin' : role;
       return allColumns.filter((column) => {
-        const rolePerms = column.role_permissions[role];
+        const rolePerms = column.role_permissions[roleForView];
         return rolePerms && rolePerms.view === true;
       });
     } catch (error) {
