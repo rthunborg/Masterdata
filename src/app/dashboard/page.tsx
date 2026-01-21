@@ -137,15 +137,15 @@ export default function DashboardPage() {
     filters, // Use memoized filters object
     enableRealtime: true,
     userRole: user?.role,
-    enableNotifications: user?.role !== UserRole.HR_ADMIN, // Only enable for external parties
+    enableNotifications: isExternalParty(user?.role as UserRole), // Only enable for external parties
     globalFilter,
   });
 
   // Story 16.5: Call useEmployeeChanges once at dashboard level to avoid N+2 duplicate API requests
-  // Only fetch changes for external users (not HR admin/Recruiter) - Epic 16 is for external users only
-  // We treat Recruiter as internal admin for this purpose (they don't see change highlights like external parties)
-  const isInternalAdmin = user?.role === UserRole.HR_ADMIN || user?.role === UserRole.RECRUITER;
-  const isExternalUser = !isInternalAdmin;
+  // Only fetch changes for external users (not HR admin/Recruiter/Admin Limited) - Epic 16 is for external users only
+  // Internal roles (HR Admin, Recruiter, Admin Limited) don't see change highlights
+  const isInternalRole = user?.role === UserRole.HR_ADMIN || user?.role === UserRole.RECRUITER || user?.role === UserRole.ADMIN_LIMITED;
+  const isExternalUser = !isInternalRole;
 
   const employeeChangesResult = useEmployeeChanges();
   const { 
