@@ -225,7 +225,7 @@ export default function DashboardPage() {
                 {t('actions.importEmployees')}
               </Button>
             </>
-          ) : (
+          ) : isHRAdminUser ? (
             <div className="flex gap-2">
               <Button onClick={() => openModal('addColumn')}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -233,7 +233,7 @@ export default function DashboardPage() {
               </Button>
               <ManageColumnsDialog />
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
