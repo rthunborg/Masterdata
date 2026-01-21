@@ -332,3 +332,243 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
         });
     });
 });
+
+describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", () => {
+    const mockOnSave = vi.fn().mockResolvedValue(undefined);
+    const mockOnError = vi.fn();
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    describe("Display Mode - Shows 'Ja' instead of 'Klart' when isChecklistItem=false", () => {
+        it("displays 'Ja' for true value in read mode when isChecklistItem=false", () => {
+            renderWithI18n(
+                <EditableCell
+                    value={true}
+                    employeeId="emp-1"
+                    field="some_boolean"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            expect(screen.getByText("Ja")).toBeInTheDocument();
+            expect(screen.queryByText("Klart")).not.toBeInTheDocument();
+        });
+
+        it("displays 'Nej' for false value in read mode when isChecklistItem=false", () => {
+            renderWithI18n(
+                <EditableCell
+                    value={false}
+                    employeeId="emp-1"
+                    field="some_boolean"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            expect(screen.getByText("Nej")).toBeInTheDocument();
+        });
+    });
+
+    describe("Edit Mode - Dropdown options show 'Ja/Nej' when isChecklistItem=false", () => {
+        it("dropdown preselects 'Ja' when value is true and isChecklistItem=false", async () => {
+            renderWithI18n(
+                <EditableCell
+                    value={true}
+                    employeeId="emp-1"
+                    field="some_boolean"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            const cell = screen.getByRole("gridcell");
+            fireEvent.click(cell);
+
+            await waitFor(() => {
+                const dropdown = screen.getByRole("combobox", { hidden: true });
+                expect(dropdown).toHaveTextContent("Ja");
+            });
+        });
+
+        it("dropdown shows 'Ja' option instead of 'Klart' when isChecklistItem=false", async () => {
+            renderWithI18n(
+                <EditableCell
+                    value={false}
+                    employeeId="emp-1"
+                    field="some_boolean"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            const cell = screen.getByRole("gridcell");
+            fireEvent.click(cell);
+
+            const trigger = screen.getByRole("combobox", { hidden: true });
+            fireEvent.click(trigger);
+
+            await waitFor(() => {
+                const jaOptions = screen.getAllByText("Ja");
+                expect(jaOptions.length).toBeGreaterThan(0);
+            });
+
+            // Should NOT show 'Klart' as an option
+            expect(screen.queryByText("Klart")).not.toBeInTheDocument();
+        });
+
+        it("selecting 'Ja' saves true when isChecklistItem=false", async () => {
+            renderWithI18n(
+                <EditableCell
+                    value={false}
+                    employeeId="emp-1"
+                    field="some_boolean"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            const cell = screen.getByRole("gridcell");
+            fireEvent.click(cell);
+
+            const trigger = screen.getByRole("combobox", { hidden: true });
+            fireEvent.click(trigger);
+
+            await waitFor(() => {
+                const jaOptions = screen.getAllByText("Ja");
+                jaOptions[jaOptions.length - 1].click();
+            });
+
+            await waitFor(() => {
+                expect(mockOnSave).toHaveBeenCalledWith("emp-1", "some_boolean", true);
+            });
+        });
+
+        it("selecting 'Nej' saves false when isChecklistItem=false", async () => {
+            renderWithI18n(
+                <EditableCell
+                    value={true}
+                    employeeId="emp-1"
+                    field="some_boolean"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            const cell = screen.getByRole("gridcell");
+            fireEvent.click(cell);
+
+            const trigger = screen.getByRole("combobox", { hidden: true });
+            fireEvent.click(trigger);
+
+            await waitFor(() => {
+                const nejOptions = screen.getAllByText("Nej");
+                nejOptions[nejOptions.length - 1].click();
+            });
+
+            await waitFor(() => {
+                expect(mockOnSave).toHaveBeenCalledWith("emp-1", "some_boolean", false);
+            });
+        });
+    });
+
+    describe("No-op Edit - Does not trigger save when value unchanged", () => {
+        it("entering edit mode with true and selecting 'Ja' does not call onSave when isChecklistItem=false", async () => {
+            renderWithI18n(
+                <EditableCell
+                    value={true}
+                    employeeId="emp-1"
+                    field="some_boolean"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            const cell = screen.getByRole("gridcell");
+            fireEvent.click(cell);
+
+            const trigger = screen.getByRole("combobox", { hidden: true });
+            fireEvent.click(trigger);
+
+            await waitFor(() => {
+                const jaOptions = screen.getAllByText("Ja");
+                jaOptions[jaOptions.length - 1].click();
+            });
+
+            await waitFor(() => {
+                expect(mockOnSave).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("Read-only mode - Shows 'Ja' instead of 'Klart' when isChecklistItem=false", () => {
+        it("displays 'Ja' for read-only true value when isChecklistItem=false", () => {
+            renderWithI18n(
+                <EditableCell
+                    value={true}
+                    employeeId="emp-1"
+                    field="some_boolean"
+                    type="boolean"
+                    canEdit={false}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            expect(screen.getByText("Ja")).toBeInTheDocument();
+            expect(screen.queryByText("Klart")).not.toBeInTheDocument();
+        });
+    });
+
+    describe("Comparison - isChecklistItem=true shows 'Klart', isChecklistItem=false shows 'Ja'", () => {
+        it("shows 'Klart' when isChecklistItem=true (default behavior)", () => {
+            renderWithI18n(
+                <EditableCell
+                    value={true}
+                    employeeId="emp-1"
+                    field="checklist_field"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={true}
+                    onSave={mockOnSave}
+                />
+            );
+
+            expect(screen.getByText("Klart")).toBeInTheDocument();
+            expect(screen.queryByText("Ja")).not.toBeInTheDocument();
+        });
+
+        it("shows 'Ja' when isChecklistItem=false", () => {
+            renderWithI18n(
+                <EditableCell
+                    value={true}
+                    employeeId="emp-1"
+                    field="non_checklist_field"
+                    type="boolean"
+                    canEdit={true}
+                    isChecklistItem={false}
+                    onSave={mockOnSave}
+                />
+            );
+
+            expect(screen.getByText("Ja")).toBeInTheDocument();
+            expect(screen.queryByText("Klart")).not.toBeInTheDocument();
+        });
+    });
+});

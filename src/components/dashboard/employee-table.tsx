@@ -1213,6 +1213,8 @@ export function EmployeeTable({
 
               isChanged={isChanged} // Story 16.5: Pass highlight flag
 
+              isChecklistItem={config.is_checklist_item} // Story 19.x: Boolean fields show "Ja/Nej" or "Klart/Nej" based on this flag
+
               {...oneMarkedAtProp} // Conditionally pass oneMarkedAt for One field
 
               {...talmundoConditionalProps} // Conditionally pass One field data for Talmundo
