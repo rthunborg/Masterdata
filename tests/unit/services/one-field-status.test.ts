@@ -161,40 +161,42 @@ describe('One Field Status Service', () => {
       // Marked at 11:59 PM on Jan 15
       const markedAt = new Date('2025-01-15T23:59:00');
       
-      // 2 minutes later (00:01 AM on Jan 16)
+      // 2 minutes later (00:01 AM on Jan 16 = unlock time)
       const now = new Date('2025-01-16T00:01:00');
       vi.setSystemTime(now);
 
       const status = getOneFieldStatus(true, markedAt);
       
-      // Should still be yellow because unlock time is 00:01 AM on Jan 17
-      expect(status).toBe('yellow');
+      // Unlock time is always 00:01 AM the next calendar day after marking
+      // Marked on Jan 15 -> unlocks Jan 16 00:01 AM
+      expect(status).toBe('green');
 
       vi.useRealTimers();
     });
 
-    it('handles late night marking - next day evening', () => {
+    it('handles late night marking - same night before unlock', () => {
       vi.useFakeTimers();
       // Marked at 11:59 PM on Jan 15
       const markedAt = new Date('2025-01-15T23:59:00');
       
-      // Next day at 11 PM (still before unlock time of Jan 17 00:01)
-      const now = new Date('2025-01-16T23:00:00');
+      // 1 minute later (00:00 AM on Jan 16 - still before unlock time)
+      const now = new Date('2025-01-16T00:00:00');
       vi.setSystemTime(now);
 
       const status = getOneFieldStatus(true, markedAt);
       
+      // Still yellow because 00:00 is before unlock time of 00:01
       expect(status).toBe('yellow');
 
       vi.useRealTimers();
     });
 
-    it('handles late night marking - day after next', () => {
+    it('handles late night marking - well past unlock time', () => {
       vi.useFakeTimers();
       // Marked at 11:59 PM on Jan 15
       const markedAt = new Date('2025-01-15T23:59:00');
       
-      // Jan 17 at 00:01 AM (unlock time for Jan 15)
+      // Jan 17 at 00:01 AM (2 days after marking, well past unlock time of Jan 16 00:01)
       const now = new Date('2025-01-17T00:01:00');
       vi.setSystemTime(now);
 

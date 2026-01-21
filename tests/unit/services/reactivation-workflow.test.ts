@@ -66,17 +66,20 @@ vi.mock('@/lib/services/date-capacity', () => ({
       vi.restoreAllMocks();
     });
 
-    describe('Repayment Flag Clearing', () => {
-      it('should clear ÖMC repayment flag when set', async () => {
+    // Story 19.14: repayment fields now store UUIDs, not booleans
+    // Tests verify clearing sets to null instead of false
+    describe('Repayment Tracking Clearing', () => {
+      it('should clear ÖMC repayment tracking when UUID is set', async () => {
         const employeeId = 'emp-123';
+        const omcDateId = 'omc-date-uuid-1';
         
         const mockEmployeeSingle = vi.fn().mockResolvedValue({
           data: {
             id: employeeId,
             first_name: 'John',
             surname: 'Doe',
-            repayment_needed_omc: true,
-            repayment_needed_pe3: false,
+            repayment_needed_omc: omcDateId, // UUID instead of boolean
+            repayment_needed_pe3: null,
           },
           error: null,
         });
@@ -111,21 +114,23 @@ vi.mock('@/lib/services/date-capacity', () => ({
         const result = await restoreRepaymentDates(employeeId);
 
         expect(assignEmployeeToDate).not.toHaveBeenCalled();
-        expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: false });
+        // Story 19.14: Clears with null, not false
+        expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
         expect(result.restored.omc).toBe(true);
         expect(result.warnings).toEqual([]);
       });
 
-      it('should clear PE3 repayment flag when set', async () => {
+      it('should clear PE3 repayment tracking when UUID is set', async () => {
         const employeeId = 'emp-123';
+        const pe3DateId = 'pe3-date-uuid-1';
         
         const mockEmployeeSingle = vi.fn().mockResolvedValue({
           data: {
             id: employeeId,
             first_name: 'John',
             surname: 'Doe',
-            repayment_needed_omc: false,
-            repayment_needed_pe3: true,
+            repayment_needed_omc: null,
+            repayment_needed_pe3: pe3DateId, // UUID instead of boolean
           },
           error: null,
         });
@@ -160,21 +165,24 @@ vi.mock('@/lib/services/date-capacity', () => ({
         const result = await restoreRepaymentDates(employeeId);
 
         expect(assignEmployeeToDate).not.toHaveBeenCalled();
-        expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: false });
+        // Story 19.14: Clears with null, not false
+        expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: null });
         expect(result.restored.pe3).toBe(true);
         expect(result.warnings).toEqual([]);
       });
 
-      it('should clear both flags when set', async () => {
+      it('should clear both repayment UUIDs when set', async () => {
         const employeeId = 'emp-123';
+        const omcDateId = 'omc-date-uuid-1';
+        const pe3DateId = 'pe3-date-uuid-1';
         
         const mockEmployeeSingle = vi.fn().mockResolvedValue({
           data: {
             id: employeeId,
             first_name: 'John',
             surname: 'Doe',
-            repayment_needed_omc: true,
-            repayment_needed_pe3: true,
+            repayment_needed_omc: omcDateId,
+            repayment_needed_pe3: pe3DateId,
           },
           error: null,
         });
@@ -208,8 +216,9 @@ vi.mock('@/lib/services/date-capacity', () => ({
 
         const result = await restoreRepaymentDates(employeeId);
 
-        expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: false });
-        expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: false });
+        // Story 19.14: Clears with null, not false
+        expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
+        expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: null });
         expect(result.restored.omc).toBe(true);
         expect(result.restored.pe3).toBe(true);
       });
@@ -224,8 +233,8 @@ vi.mock('@/lib/services/date-capacity', () => ({
             id: employeeId,
             first_name: 'John',
             surname: 'Doe',
-            repayment_needed_omc: false,
-            repayment_needed_pe3: false,
+            repayment_needed_omc: null,
+            repayment_needed_pe3: null,
           },
           error: null,
         });

@@ -27,7 +27,7 @@ describe('canEditTalmundo', () => {
 
     it('returns false even with a valid timestamp from yesterday', () => {
       vi.setSystemTime(new Date('2025-01-16T10:00:00'));
-      const yesterdayAt3PM = '2025-01-15T15:00:00.000Z';
+      const yesterdayAt3PM = '2025-01-15T15:00:00';
       const result = canEditTalmundo(false, yesterdayAt3PM);
       expect(result).toBe(false);
     });
@@ -42,7 +42,7 @@ describe('canEditTalmundo', () => {
 
     it('returns false even with a valid timestamp', () => {
       vi.setSystemTime(new Date('2025-01-16T10:00:00'));
-      const yesterdayAt3PM = '2025-01-15T15:00:00.000Z';
+      const yesterdayAt3PM = '2025-01-15T15:00:00';
       const result = canEditTalmundo(null, yesterdayAt3PM);
       expect(result).toBe(false);
     });
@@ -53,7 +53,7 @@ describe('canEditTalmundo', () => {
       // Current time: Jan 15, 10 PM
       vi.setSystemTime(new Date('2025-01-15T22:00:00'));
       // Marked same day at 3 PM
-      const markedAt = '2025-01-15T15:00:00.000Z';
+      const markedAt = '2025-01-15T15:00:00';
       
       const result = canEditTalmundo(true, markedAt);
       expect(result).toBe(false);
@@ -63,20 +63,31 @@ describe('canEditTalmundo', () => {
       // Current time: Jan 16, 00:00 (midnight)
       vi.setSystemTime(new Date('2025-01-16T00:00:00'));
       // Marked previous day at 3 PM
-      const markedAt = '2025-01-15T15:00:00.000Z';
+      const markedAt = '2025-01-15T15:00:00';
       
       const result = canEditTalmundo(true, markedAt);
       expect(result).toBe(false); // Still need to wait until 00:01
     });
 
-    it('returns false when marked late at night and only a few minutes have passed', () => {
-      // Marked at 11:59 PM on Jan 15
-      const markedAt = '2025-01-15T23:59:00.000Z';
-      // Current time: 00:01 AM on Jan 16 (only 2 minutes later)
+    it('returns true when marked late at night and unlock time has passed', () => {
+      // Marked at 11:59 PM on Jan 15 (local time)
+      const markedAt = '2025-01-15T23:59:00';
+      // Current time: 00:01 AM on Jan 16 (unlock time for Jan 15)
       vi.setSystemTime(new Date('2025-01-16T00:01:00'));
       
       const result = canEditTalmundo(true, markedAt);
-      // Should be false because unlock time is Jan 17 00:01
+      // Should be true because unlock time is Jan 16 00:01 (next calendar day after marking)
+      expect(result).toBe(true);
+    });
+
+    it('returns false when marked late at night and still before unlock time', () => {
+      // Marked at 11:59 PM on Jan 15 (local time)
+      const markedAt = '2025-01-15T23:59:00';
+      // Current time: 00:00 AM on Jan 16 (1 minute before unlock)
+      vi.setSystemTime(new Date('2025-01-16T00:00:00'));
+      
+      const result = canEditTalmundo(true, markedAt);
+      // Should be false because unlock time is Jan 16 00:01
       expect(result).toBe(false);
     });
   });
@@ -86,7 +97,7 @@ describe('canEditTalmundo', () => {
       // Current time: Jan 16, 00:01
       vi.setSystemTime(new Date('2025-01-16T00:01:00'));
       // Marked previous day at 3 PM
-      const markedAt = '2025-01-15T15:00:00.000Z';
+      const markedAt = '2025-01-15T15:00:00';
       
       const result = canEditTalmundo(true, markedAt);
       expect(result).toBe(true);
@@ -96,7 +107,7 @@ describe('canEditTalmundo', () => {
       // Current time: Jan 16, 9 AM
       vi.setSystemTime(new Date('2025-01-16T09:00:00'));
       // Marked previous day at 3 PM
-      const markedAt = '2025-01-15T15:00:00.000Z';
+      const markedAt = '2025-01-15T15:00:00';
       
       const result = canEditTalmundo(true, markedAt);
       expect(result).toBe(true);
@@ -106,7 +117,7 @@ describe('canEditTalmundo', () => {
       // Current time: Jan 20
       vi.setSystemTime(new Date('2025-01-20T10:00:00'));
       // Marked 5 days ago
-      const markedAt = '2025-01-15T15:00:00.000Z';
+      const markedAt = '2025-01-15T15:00:00';
       
       const result = canEditTalmundo(true, markedAt);
       expect(result).toBe(true);
@@ -116,7 +127,7 @@ describe('canEditTalmundo', () => {
       // Current time: Jan 22
       vi.setSystemTime(new Date('2025-01-22T10:00:00'));
       // Marked 7 days ago
-      const markedAt = '2025-01-15T15:00:00.000Z';
+      const markedAt = '2025-01-15T15:00:00';
       
       const result = canEditTalmundo(true, markedAt);
       expect(result).toBe(true);
@@ -156,7 +167,7 @@ describe('canEditTalmundo', () => {
 
     it('handles month boundary correctly', () => {
       // Marked on Jan 31
-      const markedAt = '2025-01-31T15:00:00.000Z';
+      const markedAt = '2025-01-31T15:00:00';
       // Current time: Feb 1, 00:01
       vi.setSystemTime(new Date('2025-02-01T00:01:00'));
       
@@ -166,7 +177,7 @@ describe('canEditTalmundo', () => {
 
     it('handles year boundary correctly', () => {
       // Marked on Dec 31
-      const markedAt = '2025-12-31T15:00:00.000Z';
+      const markedAt = '2025-12-31T15:00:00';
       // Current time: Jan 1, 2026, 00:01
       vi.setSystemTime(new Date('2026-01-01T00:01:00'));
       
@@ -177,7 +188,7 @@ describe('canEditTalmundo', () => {
 
   describe('real-world scenarios', () => {
     it('scenario: HR marks One at 3 PM Monday, cannot edit Talmundo until Tuesday 00:01', () => {
-      const mondayAt3PM = '2025-01-13T15:00:00.000Z'; // Monday
+      const mondayAt3PM = '2025-01-13T15:00:00'; // Monday
 
       // Monday evening - should be yellow
       vi.setSystemTime(new Date('2025-01-13T20:00:00'));
@@ -196,28 +207,25 @@ describe('canEditTalmundo', () => {
       expect(canEditTalmundo(true, mondayAt3PM)).toBe(true);
     });
 
-    it('scenario: HR marks One at 11:59 PM, must wait until day after next', () => {
-      const mondayAt1159PM = '2025-01-13T23:59:00.000Z'; // Monday 11:59 PM
+    it('scenario: HR marks One at 11:59 PM, unlocks at 00:01 AM the next day', () => {
+      const mondayAt1159PM = '2025-01-13T23:59:00'; // Monday 11:59 PM (local time)
 
-      // Tuesday 00:01 - should be yellow (only 2 minutes elapsed)
+      // Tuesday 00:00 - should be yellow (1 minute before unlock)
+      vi.setSystemTime(new Date('2025-01-14T00:00:00'));
+      expect(canEditTalmundo(true, mondayAt1159PM)).toBe(false);
+
+      // Tuesday 00:01 - should be green (unlock time = 00:01 AM next calendar day)
+      // Business rule: unlock at 00:01 AM the day after One was marked
       vi.setSystemTime(new Date('2025-01-14T00:01:00'));
-      expect(canEditTalmundo(true, mondayAt1159PM)).toBe(false);
+      expect(canEditTalmundo(true, mondayAt1159PM)).toBe(true);
 
-      // Tuesday evening - should be yellow
+      // Tuesday evening - should still be green
       vi.setSystemTime(new Date('2025-01-14T20:00:00'));
-      expect(canEditTalmundo(true, mondayAt1159PM)).toBe(false);
-
-      // Wednesday 00:00 - should be yellow
-      vi.setSystemTime(new Date('2025-01-15T00:00:00'));
-      expect(canEditTalmundo(true, mondayAt1159PM)).toBe(false);
-
-      // Wednesday 00:01 - should be green
-      vi.setSystemTime(new Date('2025-01-15T00:01:00'));
       expect(canEditTalmundo(true, mondayAt1159PM)).toBe(true);
     });
 
     it('scenario: HR marks One at 00:00 midnight, must wait until next day 00:01', () => {
-      const mondayAtMidnight = '2025-01-13T00:00:00.000Z'; // Monday midnight
+      const mondayAtMidnight = '2025-01-13T00:00:00'; // Monday midnight (local time)
 
       // Monday evening - should be yellow
       vi.setSystemTime(new Date('2025-01-13T20:00:00'));

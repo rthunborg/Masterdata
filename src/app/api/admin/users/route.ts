@@ -132,9 +132,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/admin/users error:", error);
-
-    // Handle validation errors
+    // Handle validation errors (expected, don't log)
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
@@ -147,6 +145,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Log unexpected errors
+    console.error("POST /api/admin/users error:", error);
     return createErrorResponse(error);
   }
 }

@@ -49,6 +49,7 @@ interface EditableCellProps {
   options?: string[]; // For select dropdowns (e.g., Gender)
   canEdit?: boolean; // Permission flag for edit access
   isChanged?: boolean; // Story 16.5: Flag for field highlighting
+  isChecklistItem?: boolean; // Story 19.x: When true, boolean fields show "Klart/Nej", otherwise "Ja/Nej"
   oneMarkedAt?: string | null; // Timestamp for One field (Story 8.3)
   oneValue?: boolean | null; // One field value for Talmundo conditional editability (Story 8.4)
   employeeData?: Partial<Employee>; // For Crewing/Done field conditional editability (Story 8.5)
@@ -67,6 +68,7 @@ export function EditableCell({
   options,
   canEdit = true, // Default to true for backward compatibility
   isChanged = false, // Story 16.5: Default to false for backward compatibility
+  isChecklistItem = true, // Story 19.x: Default to true for backward compatibility (existing boolean fields use "Klart")
   oneMarkedAt, // Timestamp for One field (Story 8.3)
   oneValue, // One field value for Talmundo conditional editability (Story 8.4)
   employeeData, // Employee data for Crewing/Done conditional editability (Story 8.5)
@@ -78,6 +80,10 @@ export function EditableCell({
 }: EditableCellProps) {
   const tDashboard = useTranslations("dashboard");
   const tErrors = useTranslations("errors");
+
+  // Story 19.x: Helper to get the correct true label based on isChecklistItem flag
+  // Checklist items show "Klart" (Done), non-checklist items show "Ja" (Yes)
+  const getBooleanTrueLabel = () => isChecklistItem ? tDashboard("booleanTrue") : tDashboard("booleanYes");
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -338,7 +344,7 @@ export function EditableCell({
       // Story 19.3: Format all date type fields in Swedish format
       const getReadOnlyDisplayValue = () => {
         if (type === "boolean") {
-          return value ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+          return value ? getBooleanTrueLabel() : tDashboard("booleanFalse");
         }
         // ÖMC date field with category
         if (field === "date_value" && category && isOMCDate(category) && value) {
@@ -447,12 +453,12 @@ export function EditableCell({
         // Priority: If we have a saved value that differs from the prop, show it (save in progress)
         // Otherwise, if editValue differs from value, show editValue (transitioning state)
         if (lastSavedBool !== null && lastSavedBool !== valueBool) {
-          return lastSavedBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+          return lastSavedBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
         }
         if (editBool !== valueBool) {
-          return editBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+          return editBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
         }
-        return valueBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+        return valueBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
       }
       
       // For date fields with ÖMC formatting
@@ -751,7 +757,7 @@ export function EditableCell({
             <SelectValue placeholder={tDashboard("booleanFalse")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="true">{tDashboard("booleanTrue")}</SelectItem>
+            <SelectItem value="true">{getBooleanTrueLabel()}</SelectItem>
             <SelectItem value="false">{tDashboard("booleanFalse")}</SelectItem>
           </SelectContent>
         </Select>

@@ -60,16 +60,13 @@ export async function applyRepaymentCapture(
 ): Promise<void> {
   const supabase = await createClient();
 
-  // Set boolean flags if dates exist (Story 13.9)
-  const repaymentNeededOmc = !!repaymentDates.omc;
-  const repaymentNeededPe3 = !!repaymentDates.pe3;
-
-  // Update employee with repayment flags
+  // Story 19.14: Store the actual date UUID for repayment tracking (not just boolean)
+  // This allows HR Admin to see which specific date requires repayment
   const { error } = await supabase
     .from('employees')
     .update({
-      repayment_needed_omc: repaymentNeededOmc,
-      repayment_needed_pe3: repaymentNeededPe3,
+      repayment_needed_omc: repaymentDates.omc, // Store UUID or null
+      repayment_needed_pe3: repaymentDates.pe3, // Store UUID or null
     })
     .eq('id', employeeId);
 
@@ -201,20 +198,21 @@ export async function restoreRepaymentDates(
   // 
   // Let's implement: Clear the repayment flags on restoration. We can't re-book them.
   
+  // Story 19.14: Clear repayment tracking by setting to null (now stores UUID, not boolean)
   if (employee.repayment_needed_omc) {
-     // Just clear the flag
+     // Clear the repayment tracking
      await supabase
        .from('employees')
-       .update({ repayment_needed_omc: false })
+       .update({ repayment_needed_omc: null })
        .eq('id', employeeId);
      restored.omc = true; // Signal that we handled it (cleared it)
   }
 
   if (employee.repayment_needed_pe3) {
-     // Just clear the flag
+     // Clear the repayment tracking
      await supabase
        .from('employees')
-       .update({ repayment_needed_pe3: false })
+       .update({ repayment_needed_pe3: null })
        .eq('id', employeeId);
      restored.pe3 = true; // Signal that we handled it
   }
