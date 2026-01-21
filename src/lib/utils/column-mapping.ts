@@ -30,6 +30,11 @@ const COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "Crewing/Done": "crewing_done",
   "Hotel Required?": "hotel_required",
   "Room Number (Shared)": "room_number_shared",
+  // Story 8.17: Dietary Requirements - Map display names to DB field names
+  "Specialkost": "special_diet",
+  "Special Diet": "special_diet",
+  "Diet": "diet_details",
+  "Diet Details": "diet_details",
 };
 
 /**
