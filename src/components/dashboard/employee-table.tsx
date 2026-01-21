@@ -2739,6 +2739,7 @@ export function EmployeeTable({
         onClear={() => setSelectedEmployeeIds(new Set())}
         isArchivedView={includeArchived}
         isProcessing={isBulkProcessing}
+        isHRAdmin={isHRAdmin}
       />
 
     </>

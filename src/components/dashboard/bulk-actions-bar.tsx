@@ -11,6 +11,8 @@ interface BulkActionsBarProps {
   onClear: () => void;
   isArchivedView: boolean;
   isProcessing?: boolean;
+  /** Only HR Admin users can archive/restore employees */
+  isHRAdmin?: boolean;
 }
 
 export function BulkActionsBar({
@@ -20,8 +22,12 @@ export function BulkActionsBar({
   onClear,
   isArchivedView,
   isProcessing = false,
+  isHRAdmin = false,
 }: BulkActionsBarProps) {
   if (selectedCount === 0) return null;
+
+  // Determine if we should show archive/restore actions (HR Admin only)
+  const showArchiveActions = isHRAdmin;
 
   return (
     <div
@@ -30,7 +36,10 @@ export function BulkActionsBar({
         "animate-in slide-in-from-bottom-10 fade-in duration-300"
       )}
     >
-      <div className="flex items-center gap-4 border-r pr-4">
+      <div className={cn(
+        "flex items-center gap-4",
+        showArchiveActions && "border-r pr-4"
+      )}>
         <span className="font-medium text-sm">
           {selectedCount} selected
         </span>
@@ -45,30 +54,33 @@ export function BulkActionsBar({
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
-        {isArchivedView ? (
-          <Button
-            onClick={onRestore}
-            disabled={isProcessing}
-            size="sm"
-            className="gap-2"
-          >
-            <ArchiveRestore className="h-4 w-4" />
-            Restore Selected
-          </Button>
-        ) : (
-          <Button
-            onClick={onArchive}
-            disabled={isProcessing}
-            size="sm"
-            variant="destructive"
-            className="gap-2"
-          >
-            <Archive className="h-4 w-4" />
-            Archive Selected
-          </Button>
-        )}
-      </div>
+      {/* Archive/Restore buttons - only visible to HR Admin users */}
+      {showArchiveActions && (
+        <div className="flex items-center gap-2">
+          {isArchivedView ? (
+            <Button
+              onClick={onRestore}
+              disabled={isProcessing}
+              size="sm"
+              className="gap-2"
+            >
+              <ArchiveRestore className="h-4 w-4" />
+              Restore Selected
+            </Button>
+          ) : (
+            <Button
+              onClick={onArchive}
+              disabled={isProcessing}
+              size="sm"
+              variant="destructive"
+              className="gap-2"
+            >
+              <Archive className="h-4 w-4" />
+              Archive Selected
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
