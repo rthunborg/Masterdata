@@ -10,17 +10,29 @@ interface TableProps extends React.ComponentProps<"table"> {
    * Use this for sticky scrollbar integration.
    */
   containerRef?: React.RefObject<HTMLDivElement | null>;
+  /**
+   * Optional max height for the table container.
+   * When set, enables vertical scrolling within the container,
+   * which is required for sticky headers to work properly.
+   * Use viewport units like "calc(100vh - 300px)" or fixed values like "600px".
+   */
+  maxHeight?: string;
 }
 
-function Table({ className, containerRef, ...props }: TableProps) {
+function Table({ className, containerRef, maxHeight, ...props }: TableProps) {
   return (
     <div
       ref={containerRef}
       data-slot="table-container"
-      // overflow-y-visible is critical: without it, overflow-x-auto causes overflow-y to compute as 'auto',
-      // which creates a scroll container that breaks sticky header positioning (sticky top-0 on thead).
-      // By explicitly setting overflow-y-visible, sticky headers stick to the viewport/page scroll instead.
-      className="relative w-full overflow-x-auto overflow-y-visible"
+      // When maxHeight is set, we enable both horizontal and vertical scrolling within this container.
+      // This makes sticky headers work because the sticky element sticks within this scroll container.
+      // Without maxHeight, vertical scrolling happens at the page level, and sticky headers won't work
+      // because CSS computes overflow-y as 'auto' when overflow-x is 'auto' (even if you set overflow-y: visible).
+      className={cn(
+        "relative w-full overflow-x-auto",
+        maxHeight && "overflow-y-auto"
+      )}
+      style={maxHeight ? { maxHeight } : undefined}
     >
       <table
         data-slot="table"

@@ -349,7 +349,8 @@ export function UserManagementTable({
     <>
       <div className="rounded-md border">
         {/* Story 19.9: Pass container ref for sticky scrollbar */}
-        <Table containerRef={tableContainerRef}>
+        {/* Story 19.13: maxHeight enables sticky headers by making table scroll internally */}
+        <Table containerRef={tableContainerRef} maxHeight="calc(100vh - 300px)">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>

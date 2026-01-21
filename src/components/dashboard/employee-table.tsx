@@ -2205,7 +2205,11 @@ export function EmployeeTable({
           <div className="rounded-md border">
 
             {/* Story 19.9: Pass container ref for sticky scrollbar */}
-            <Table className="table-fixed" containerRef={tableContainerRef}>
+            {/* Story 19.13: maxHeight enables vertical scrolling within the table container, 
+                which is required for sticky headers to work. The height accounts for:
+                - Header (~64px) + Nav (~56px) + Page padding (~48px) + Card header (~80px) 
+                - Filters/controls (~60px) + some margin (~42px) ≈ 350px total */}
+            <Table className="table-fixed" containerRef={tableContainerRef} maxHeight="calc(100vh - 350px)">
 
               <TableHeader>
 

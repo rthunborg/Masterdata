@@ -876,9 +876,10 @@ export function ColumnSettingsTable({
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className="rounded-md border w-full overflow-x-auto lg:overflow-hidden">
+        <div className="rounded-md border w-full lg:overflow-hidden">
           {/* Story 19.9: Pass container ref for sticky scrollbar */}
-          <Table className="w-full table-auto lg:table-fixed" containerRef={tableContainerRef}>
+          {/* Story 19.13: maxHeight enables sticky headers by making table scroll internally */}
+          <Table className="w-full table-auto lg:table-fixed" containerRef={tableContainerRef} maxHeight="calc(100vh - 300px)">
             <colgroup className="hidden lg:table-column-group">
               <col style={{ width: '2.5%' }} />
               <col style={{ width: '10%' }} />
