@@ -408,8 +408,9 @@ export function EditableCell({
             >
               {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}
               <span 
-                className="truncate min-w-0 flex-1 text-left"
+                className="truncate min-w-0 flex-1 text-left overflow-hidden whitespace-nowrap"
                 dir="ltr"
+                style={{ textOverflow: 'ellipsis' }}
                 title={displayValue || undefined}
               >
                 {displayValue || <span className="text-muted-foreground">—</span>}
@@ -551,8 +552,9 @@ export function EditableCell({
       >
         {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}
         <span 
-          className="truncate min-w-0 flex-1 text-left"
+          className="truncate min-w-0 flex-1 text-left overflow-hidden whitespace-nowrap"
           dir="ltr"
+          style={{ textOverflow: 'ellipsis' }}
           title={displayValue || undefined}
         >
           {displayValue || <span className="text-muted-foreground">—</span>}
