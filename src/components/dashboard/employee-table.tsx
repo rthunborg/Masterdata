@@ -2546,8 +2546,8 @@ export function EmployeeTable({
 
                               <div className={cn(
                                 "flex items-center gap-2 w-full",
-                                // Story 16.6: Center all cell content to match header alignment
-                                "justify-center"
+                                // Story 16.6: Center checkbox/action columns, left-align text content
+                                (isCheckboxCell || isActionColumn) ? "justify-center" : "justify-start"
                               )}>
 
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
