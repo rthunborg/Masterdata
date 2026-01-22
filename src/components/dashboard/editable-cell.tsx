@@ -162,6 +162,22 @@ export function EditableCell({
   
   // Track the last saved value to ensure displayValue shows it until value prop updates
   const lastSavedValueRef = useRef<string | number | boolean | null>(null);
+  
+  // Track the previous employeeId to detect row changes (e.g., when filtering)
+  const prevEmployeeIdRef = useRef<string>(employeeId);
+  
+  // Story 19.x: Reset internal state when row identity changes (e.g., filtering)
+  // This prevents showing stale values from a previous row when React reuses component instances
+  useEffect(() => {
+    if (prevEmployeeIdRef.current !== employeeId) {
+      // Row has changed - reset internal state
+      lastSavedValueRef.current = null;
+      setEditValue(value ?? (type === "boolean" ? false : type === "number" ? 0 : ""));
+      setIsEditing(false);
+      setError(null);
+      prevEmployeeIdRef.current = employeeId;
+    }
+  }, [employeeId, value, type]);
 
   // Determine if this is the Talmundo field (Story 8.4)
   const isTalmundoField = field.toLowerCase() === 'talmundo';
