@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ImportantDate } from "@/lib/types/important-date";
 
@@ -22,6 +22,14 @@ export function useAvailableOMCDates(currentOMCDateId?: string | null, enabled: 
 
   // Ref for debounce timer
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Synchronously set loading state when enabled changes to avoid race conditions
+  // useLayoutEffect runs before browser paint, ensuring loading spinner shows immediately
+  useLayoutEffect(() => {
+    if (enabled) {
+      setIsLoading(true);
+    }
+  }, [enabled]);
 
   const fetchAvailableDates = useCallback(async () => {
     if (!enabled) {
