@@ -370,53 +370,82 @@ export function EditableDateCell({
           <SelectValue placeholder="Select a date..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__NONE__">(None)</SelectItem>
-          {filteredDates.map((date) => {
-            const remainingSpots = date.remaining_spots ?? 0;
-            const maxSpots = date.max_spots ?? 99;
-            const isFull = remainingSpots === 0;
-            // Story 19.8: Check if this is a Jan 1 exception date
-            const isExceptionDate = isJan1ExceptionDate(date);
-            // Story 19.14: In repayment mode, never disable options (capacity doesn't matter)
-            const shouldDisable = !isRepaymentMode && isFull && !isExceptionDate;
-            // Story 19.14: In repayment mode, don't show capacity (repayment doesn't consume spots)
-            const showCapacity = !isRepaymentMode && !isExceptionDate;
-
-            return (
-              <SelectItem
-                key={date.id}
-                value={date.id}
-                disabled={shouldDisable}
-                className={cn(
-                  "min-h-11 touch-manipulation",
-                  shouldDisable && "opacity-50 cursor-not-allowed",
-                  isCompact && "min-h-8 h-8 text-xs"
-                )}
+          {/* Show loading spinner when fetching PE3 or ÖMC dates */}
+          {((dateCategory === "PE3 Dates" && pe3Loading) || (dateCategory === "ÖMC Dates" && omcLoading)) ? (
+            <div className="flex items-center justify-center gap-2 px-2 py-4 text-sm text-muted-foreground">
+              <svg
+                className="animate-spin h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
               >
-                <div className="flex items-center justify-between gap-2 w-full">
-                  <span className={cn(shouldDisable && "text-muted-foreground")}>
-                    {/* Story 19.8: Use formatDateDropdownOption for unified format */}
-                    {/* Story 19.14: In repayment mode, don't show capacity in label */}
-                    {formatDateDropdownOption(date, showCapacity)}
-                  </span>
-                  {/* Story 19.8: Don't show capacity badge for exception dates */}
-                  {/* Story 19.14: Don't show capacity badge in repayment mode */}
-                  {showCapacity && (
-                    <div className="flex items-center gap-1.5">
-                      <CapacityBadge
-                        remainingSpots={remainingSpots}
-                        maxSpots={maxSpots}
-                      />
-                    </div>
-                  )}
-                </div>
-              </SelectItem>
-            );
-          })}
-          {filteredDates.length === 0 && (
-            <div className="px-2 py-1.5 text-sm text-muted-foreground">
-              No available dates
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              {t("loadingDates")}
             </div>
+          ) : (
+            <>
+              <SelectItem value="__NONE__">(None)</SelectItem>
+              {filteredDates.map((date) => {
+                const remainingSpots = date.remaining_spots ?? 0;
+                const maxSpots = date.max_spots ?? 99;
+                const isFull = remainingSpots === 0;
+                // Story 19.8: Check if this is a Jan 1 exception date
+                const isExceptionDate = isJan1ExceptionDate(date);
+                // Story 19.14: In repayment mode, never disable options (capacity doesn't matter)
+                const shouldDisable = !isRepaymentMode && isFull && !isExceptionDate;
+                // Story 19.14: In repayment mode, don't show capacity (repayment doesn't consume spots)
+                const showCapacity = !isRepaymentMode && !isExceptionDate;
+
+                return (
+                  <SelectItem
+                    key={date.id}
+                    value={date.id}
+                    disabled={shouldDisable}
+                    className={cn(
+                      "min-h-11 touch-manipulation",
+                      shouldDisable && "opacity-50 cursor-not-allowed",
+                      isCompact && "min-h-8 h-8 text-xs"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2 w-full">
+                      <span className={cn(shouldDisable && "text-muted-foreground")}>
+                        {/* Story 19.8: Use formatDateDropdownOption for unified format */}
+                        {/* Story 19.14: In repayment mode, don't show capacity in label */}
+                        {formatDateDropdownOption(date, showCapacity)}
+                      </span>
+                      {/* Story 19.8: Don't show capacity badge for exception dates */}
+                      {/* Story 19.14: Don't show capacity badge in repayment mode */}
+                      {showCapacity && (
+                        <div className="flex items-center gap-1.5">
+                          <CapacityBadge
+                            remainingSpots={remainingSpots}
+                            maxSpots={maxSpots}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+              {filteredDates.length === 0 && (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                  No available dates
+                </div>
+              )}
+            </>
           )}
         </SelectContent>
       </Select>
