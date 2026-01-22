@@ -29,6 +29,9 @@ export function useAvailableOMCDates(currentOMCDateId?: string | null, enabled: 
       return;
     }
 
+    // Set loading to true at the start of fetch
+    setIsLoading(true);
+
     try {
       setError(null);
       

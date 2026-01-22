@@ -27,6 +27,9 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
       return;
     }
 
+    // Set loading to true at the start of fetch
+    setIsLoading(true);
+
     try {
       setError(null);
       

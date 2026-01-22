@@ -8,16 +8,19 @@
  */
 
 import type { ImportantDate } from "@/lib/types/important-date";
-import { formatDateForDisplay } from "./format";
+import { formatDateForDisplay, isJan1ExceptionDate } from "./format";
 
 /**
  * Resolve an Important Date ID to its display description
  * 
  * Story 19.3: Now uses formatDateForDisplay() for consistent Swedish date formatting.
+ * Story 19.8: Jan 1 exception dates show date_description instead of formatted date.
+ * 
  * Returns dates in Swedish format based on category:
- * - ÖMC Dates: Two-day range "8-9 mars 2025"
- * - PE3 Dates with time: "7 mars 2025 14:30"
- * - Standard dates: "8 mars 2025"
+ * - Jan 1 exception dates: date_description (e.g., "Har certifikat")
+ * - ÖMC Dates: Two-day range "08-03 - 09-03"
+ * - PE3 Dates with time: "07-03 14:30"
+ * - Standard dates: "08-03"
  * 
  * @param dateId - The UUID of the important date, or null
  * @param allDates - Array of all important dates
@@ -37,6 +40,12 @@ export function resolveImportantDateId(
   const date = allDates.find((d) => d.id === dateId);
   
   if (!date) return dateDeletedText;
+  
+  // Story 19.8: Jan 1 exception dates show description instead of formatted date
+  // These are "Has certificate" placeholders for employees with existing certifications
+  if (isJan1ExceptionDate(date)) {
+    return date.date_description || "";
+  }
   
   // Story 19.3: Use formatDateForDisplay for consistent Swedish formatting
   // Format based on date_value (ISO date) and category, not the free-text date_description
