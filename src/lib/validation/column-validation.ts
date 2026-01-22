@@ -65,7 +65,21 @@ export const createCustomColumnSchema = z.object({
     .regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, "Invalid hex color format (use #RGB or #RRGGBB)")
     .nullable()
     .optional(),
-});
+  // Story 19.5: Mark boolean column as checklist item for progress indicator
+  is_checklist_item: z.boolean().optional(),
+}).refine(
+  // Story 19.5: is_checklist_item can only be true for boolean columns
+  (data) => {
+    if (data.is_checklist_item && data.column_type !== 'boolean') {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Only boolean columns can be marked as checklist items",
+    path: ["is_checklist_item"],
+  }
+);
 
 /**
  * Type inference for create custom column input
@@ -152,6 +166,8 @@ export const updateColumnConfigSchema = z.object({
     .min(1, "Display name is required")
     .max(100, "Display name must be less than 100 characters")
     .optional(),
+  // Story 19.5: Mark boolean column as checklist item for progress indicator
+  is_checklist_item: z.boolean().optional(),
 });
 
 /**

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ImportantDate } from "@/lib/types/important-date";
 
@@ -21,11 +21,22 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
   // Ref for debounce timer
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Synchronously set loading state when enabled changes to avoid race conditions
+  // useLayoutEffect runs before browser paint, ensuring loading spinner shows immediately
+  useLayoutEffect(() => {
+    if (enabled) {
+      setIsLoading(true);
+    }
+  }, [enabled]);
+
   const fetchAvailableDates = useCallback(async () => {
     if (!enabled) {
       setIsLoading(false);
       return;
     }
+
+    // Set loading to true at the start of fetch
+    setIsLoading(true);
 
     try {
       setError(null);

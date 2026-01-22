@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import {
   requireEmployeeManagerAPI,
+  requireEmployeeEditorAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
 import { updateEmployeeSchema } from "@/lib/validation/employee-schema";
@@ -77,8 +78,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin or Recruiter role
-    await requireEmployeeManagerAPI();
+    // Verify HR Admin, Recruiter, or Admin Limited role
+    // Note: Admin Limited can only edit checklist fields + lönenivå (enforced at UI/field level)
+    await requireEmployeeEditorAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;

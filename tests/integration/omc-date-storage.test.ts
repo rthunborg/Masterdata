@@ -68,11 +68,11 @@ describe('ÖMC Date Database Storage', () => {
     expect(endDate.toISOString().split('T')[0]).toBe('2025-03-09');
   });
 
-  it('should format retrieved date as "8-9 mars 2025"', () => {
+  it('should format retrieved date as "08-03 - 09-03"', () => {
     const storedDate = '2025-03-08'; // Start date from database
-    const formatted = formatOMCDate(storedDate, 'sv-SE');
+    const formatted = formatOMCDate(storedDate);
 
-    expect(formatted).toBe('8-9 mars 2025');
+    expect(formatted).toBe('08-03 - 09-03');
   });
 
   it('should query by ÖMC date range correctly', async () => {
@@ -160,7 +160,7 @@ describe('ÖMC Date Database Storage', () => {
 
     // Simulate query operation
     const filtered = mockDates.filter(date => date.category === 'ÖMC Dates');
-    const formatted = filtered.map(date => formatOMCDate(date.date_value, 'sv-SE'));
+    const formatted = filtered.map(date => formatOMCDate(date.date_value));
 
     const endTime = performance.now();
     const duration = endTime - startTime;

@@ -23,7 +23,7 @@ import dynamic from "next/dynamic";
 import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEmployeeChanges } from "@/lib/hooks/use-employee-changes";
-import { hasAdminAccess, UserRole, isHRAdmin } from "@/lib/types/user";
+import { hasAdminAccess, UserRole, isHRAdmin, canAddEmployee, isExternalParty } from "@/lib/types/user";
 
 // Lazy load heavy modals for better initial bundle size (Story 12.5: Performance optimization)
 const AddEmployeeModal = dynamic(
@@ -137,15 +137,15 @@ export default function DashboardPage() {
     filters, // Use memoized filters object
     enableRealtime: true,
     userRole: user?.role,
-    enableNotifications: user?.role !== UserRole.HR_ADMIN, // Only enable for external parties
+    enableNotifications: isExternalParty(user?.role as UserRole), // Only enable for external parties
     globalFilter,
   });
 
   // Story 16.5: Call useEmployeeChanges once at dashboard level to avoid N+2 duplicate API requests
-  // Only fetch changes for external users (not HR admin/Recruiter) - Epic 16 is for external users only
-  // We treat Recruiter as internal admin for this purpose (they don't see change highlights like external parties)
-  const isInternalAdmin = user?.role === UserRole.HR_ADMIN || user?.role === UserRole.RECRUITER;
-  const isExternalUser = !isInternalAdmin;
+  // Only fetch changes for external users (not HR admin/Recruiter/Admin Limited) - Epic 16 is for external users only
+  // Internal roles (HR Admin, Recruiter, Admin Limited) don't see change highlights
+  const isInternalRole = user?.role === UserRole.HR_ADMIN || user?.role === UserRole.RECRUITER || user?.role === UserRole.ADMIN_LIMITED;
+  const isExternalUser = !isInternalRole;
 
   const employeeChangesResult = useEmployeeChanges();
   const { 
@@ -188,6 +188,8 @@ export default function DashboardPage() {
   // Check if user has admin access (HR Admin or Recruiter)
   const isAdmin = hasAdminAccess(user?.role as UserRole) || user?.role === UserRole.RECRUITER;
   const isHRAdminUser = isHRAdmin(user?.role as UserRole);
+  // Check if user can add employees (excludes Administrator role)
+  const canAdd = canAddEmployee(user?.role as UserRole);
 
   return (
     <div className="space-y-6">
@@ -212,7 +214,7 @@ export default function DashboardPage() {
           {/* Role Selector - Only for HR Admin */}
           <RoleSelector />
 
-          {isAdmin ? (
+          {canAdd ? (
             <>
               <Button onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -223,7 +225,7 @@ export default function DashboardPage() {
                 {t('actions.importEmployees')}
               </Button>
             </>
-          ) : (
+          ) : isExternalParty(user?.role as UserRole) ? (
             <div className="flex gap-2">
               <Button onClick={() => openModal('addColumn')}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -231,7 +233,7 @@ export default function DashboardPage() {
               </Button>
               <ManageColumnsDialog />
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -279,8 +281,8 @@ export default function DashboardPage() {
       <AddColumnModal />
       <EditColumnModal />
       
-      {/* Floating Action Button for Mobile - Only for Admins */}
-      {isMobile && isAdmin && (
+      {/* Floating Action Button for Mobile - Only for users who can add employees */}
+      {isMobile && canAdd && (
         <FloatingActionButton 
           onAddEmployee={() => setIsAddModalOpen(true)}
           onImportCSV={() => setIsImportModalOpen(true)}

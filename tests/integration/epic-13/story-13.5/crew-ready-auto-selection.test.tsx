@@ -229,11 +229,13 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     await waitFor(() => {
       const table = screen.getByRole('table');
       const checkboxes = within(table).getAllByRole('checkbox');
-      // First two checkboxes (crew ready employees) should be checked
-      expect(checkboxes[0]).toBeChecked();
+      // First checkbox is header "Select All", employee checkboxes start at index 1
+      // Employee checkboxes (crew ready employees) should be checked
       expect(checkboxes[1]).toBeChecked();
+      expect(checkboxes[2]).toBeChecked();
       // Non-crew ready employee should be filtered out
-      expect(checkboxes).toHaveLength(2);
+      // 1 header checkbox + 2 employee checkboxes = 3 total
+      expect(checkboxes).toHaveLength(3);
     });
   });
 
@@ -335,9 +337,10 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     fireEvent.click(crewReadyOption);
 
     // Wait for selection
+    // First checkbox is header "Select All", employee checkboxes start at index 1
     await waitFor(() => {
       const table = screen.getByRole('table');
-      const checkbox = within(table).getAllByRole('checkbox')[0];
+      const checkbox = within(table).getAllByRole('checkbox')[1];
       expect(checkbox).toBeChecked();
     });
 
@@ -358,9 +361,10 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     );
 
     // Wait for selection to clear
+    // First checkbox is header "Select All", employee checkboxes start at index 1
     await waitFor(() => {
       const table = screen.getByRole('table');
-      const checkbox = within(table).getAllByRole('checkbox')[0];
+      const checkbox = within(table).getAllByRole('checkbox')[1]; // First employee
       expect(checkbox).not.toBeChecked();
     });
 
@@ -397,23 +401,24 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     fireEvent.click(crewReadyOption);
 
     // Wait for auto-selection
+    // First checkbox is header "Select All", employee checkboxes start at index 1
     await waitFor(() => {
       const table = screen.getByRole('table');
       const checkboxes = within(table).getAllByRole('checkbox');
-      expect(checkboxes[0]).toBeChecked();
-      expect(checkboxes[1]).toBeChecked();
+      expect(checkboxes[1]).toBeChecked(); // First employee
+      expect(checkboxes[2]).toBeChecked(); // Second employee
     });
 
-    // Manually uncheck first employee
+    // Manually uncheck first employee (index 1, not 0 which is header)
     const table = screen.getByRole('table');
     const checkboxes = within(table).getAllByRole('checkbox');
-    fireEvent.click(checkboxes[0]);
+    fireEvent.click(checkboxes[1]);
 
-    // First should be unchecked, second should remain checked
+    // First employee should be unchecked, second should remain checked
     await waitFor(() => {
       const currentCheckboxes = within(table).getAllByRole('checkbox');
-      expect(currentCheckboxes[0]).not.toBeChecked();
-      expect(currentCheckboxes[1]).toBeChecked();
+      expect(currentCheckboxes[1]).not.toBeChecked(); // First employee
+      expect(currentCheckboxes[2]).toBeChecked(); // Second employee
     });
   });
 });

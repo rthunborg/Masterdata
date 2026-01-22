@@ -273,5 +273,126 @@ describe("EditableCell - Permission States", () => {
       expect(screen.getByText("—")).toBeInTheDocument();
     });
   });
+
+  // Story 19.4: Text Truncation Tests
+  describe("Text Truncation (Story 19.4)", () => {
+    it("applies truncate CSS classes to editable cell display", () => {
+      renderWithI18n(
+        <EditableCell
+          value="henriette.rogstad@outlook.com"
+          employeeId="emp-1"
+          field="email"
+          type="text"
+          canEdit={true}
+          onSave={mockOnSave}
+        />
+      );
+
+      // Find the span containing the text (inside the gridcell)
+      const cell = screen.getByRole("gridcell");
+      const textSpan = cell.querySelector("span.truncate");
+      
+      expect(textSpan).toBeInTheDocument();
+      expect(textSpan).toHaveClass("truncate");
+      expect(textSpan).toHaveClass("min-w-0");
+      expect(textSpan).toHaveClass("flex-1");
+      expect(textSpan).toHaveClass("text-left");
+    });
+
+    it("applies truncate CSS classes to read-only cell display", () => {
+      renderWithI18n(
+        <EditableCell
+          value="henriette.rogstad@outlook.com"
+          employeeId="emp-1"
+          field="email"
+          type="text"
+          canEdit={false}
+          onSave={mockOnSave}
+        />
+      );
+
+      const cell = screen.getByRole("gridcell");
+      const textSpan = cell.querySelector("span.truncate");
+      
+      expect(textSpan).toBeInTheDocument();
+      expect(textSpan).toHaveClass("truncate");
+      expect(textSpan).toHaveClass("min-w-0");
+    });
+
+    it("sets dir='ltr' for left-to-right text direction", () => {
+      renderWithI18n(
+        <EditableCell
+          value="test@example.com"
+          employeeId="emp-1"
+          field="email"
+          type="text"
+          canEdit={true}
+          onSave={mockOnSave}
+        />
+      );
+
+      const cell = screen.getByRole("gridcell");
+      const textSpan = cell.querySelector("span.truncate");
+      
+      expect(textSpan).toHaveAttribute("dir", "ltr");
+    });
+
+    it("shows title attribute with full value for tooltip on hover", () => {
+      const longEmail = "henriette.rogstad@outlook.com";
+      
+      renderWithI18n(
+        <EditableCell
+          value={longEmail}
+          employeeId="emp-1"
+          field="email"
+          type="text"
+          canEdit={true}
+          onSave={mockOnSave}
+        />
+      );
+
+      const cell = screen.getByRole("gridcell");
+      const textSpan = cell.querySelector("span.truncate");
+      
+      expect(textSpan).toHaveAttribute("title", longEmail);
+    });
+
+    it("does not set title attribute when value is null", () => {
+      renderWithI18n(
+        <EditableCell
+          value={null}
+          employeeId="emp-1"
+          field="email"
+          type="text"
+          canEdit={true}
+          onSave={mockOnSave}
+        />
+      );
+
+      const cell = screen.getByRole("gridcell");
+      const textSpan = cell.querySelector("span.truncate");
+      
+      // title should be undefined/not present for null values
+      expect(textSpan).not.toHaveAttribute("title");
+    });
+
+    it("preserves text content in truncated span", () => {
+      const emailValue = "test.user@company.com";
+      
+      renderWithI18n(
+        <EditableCell
+          value={emailValue}
+          employeeId="emp-1"
+          field="email"
+          type="text"
+          canEdit={true}
+          onSave={mockOnSave}
+        />
+      );
+
+      const cell = screen.getByRole("gridcell");
+      expect(cell).toHaveTextContent(emailValue);
+    });
+  });
 });
 

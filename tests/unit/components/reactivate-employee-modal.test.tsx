@@ -122,8 +122,9 @@ describe('ReactivateEmployeeDialog', () => {
     termination_reason: 'Voluntary resignation',
     is_terminated: true,
     is_archived: false,
-    repayment_needed_omc: '2025-03-08',
-    repayment_needed_pe3: '2025-04-20',
+    // Story 19.14: repayment fields now store UUIDs, not date strings
+    repayment_needed_omc: 'omc-date-uuid-123',
+    repayment_needed_pe3: 'pe3-date-uuid-456',
     one: null,
     one_marked_at: null,
     talmundo: null,
@@ -175,9 +176,9 @@ describe('ReactivateEmployeeDialog', () => {
       />
     );
 
-    // Dialog should show that employee has repayment dates
-    expect(mockTerminatedEmployee.repayment_needed_omc).toBe('2025-03-08');
-    expect(mockTerminatedEmployee.repayment_needed_pe3).toBe('2025-04-20');
+    // Dialog should show that employee has repayment dates (now UUIDs)
+    expect(mockTerminatedEmployee.repayment_needed_omc).toBe('omc-date-uuid-123');
+    expect(mockTerminatedEmployee.repayment_needed_pe3).toBe('pe3-date-uuid-456');
   });
 
   it('should show spot availability indicators', async () => {
@@ -220,7 +221,7 @@ describe('ReactivateEmployeeDialog', () => {
         is_terminated: false,
         termination_date: null,
         omc_date: null,
-        repayment_needed_omc: '2025-03-08', // Still set (not restored)
+        repayment_needed_omc: 'omc-date-uuid-123', // Still set (not restored)
       },
       warnings: [
         'Cannot restore ÖMC Date ÖMC Training 8-9 mars 2025 - currently fully booked (0 spots remaining)',
@@ -347,8 +348,8 @@ describe('ReactivateEmployeeDialog', () => {
 
     const employeeWithRepayment = {
       ...mockTerminatedEmployee,
-      repayment_needed_omc: '2025-03-08',
-      repayment_needed_pe3: '2025-04-20',
+      repayment_needed_omc: 'omc-date-uuid-123',
+      repayment_needed_pe3: 'pe3-date-uuid-456',
     };
 
     renderWithI18n(

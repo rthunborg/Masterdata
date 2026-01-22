@@ -37,7 +37,8 @@ import { PermissionToggle } from "./permission-toggle";
 import { DeleteColumnModal } from "./delete-column-modal";
 import { ColorIndicator, ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
-import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, X, Eye, EyeOff } from "lucide-react";
+import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, X, Eye, EyeOff, ListChecks } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
   DndContext,
@@ -56,6 +57,8 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+// Story 19.9: Sticky horizontal scrollbar
+import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 interface ColumnSettingsTableProps {
   columns: ColumnConfig[];
@@ -322,6 +325,7 @@ function DraggableRow({
   handleCategoryUpdate,
   handleCategoryColorUpdate,
   handleColumnNameUpdate,
+  handleChecklistItemToggle,
   handleDeleteClick,
   handleToggleVisibility,
   isMobile,
@@ -345,6 +349,7 @@ function DraggableRow({
   handleCategoryUpdate: (columnId: string, newCategory: string) => Promise<void>;
   handleCategoryColorUpdate: (categoryName: string, color: string | null) => Promise<void>;
   handleColumnNameUpdate: (columnId: string, newName: string) => Promise<void>;
+  handleChecklistItemToggle: (columnId: string, isChecklistItem: boolean) => Promise<void>;
   handleDeleteClick: (column: ColumnConfig) => void;
   handleToggleVisibility: (column: ColumnConfig) => Promise<void>;
   isMobile: boolean;
@@ -375,10 +380,16 @@ function DraggableRow({
     <TableRow 
       ref={setNodeRef} 
       style={style}
-      className={cn(!column.is_visible && "bg-gray-200 opacity-75")}
+      className={cn(
+        "bg-background",
+        !column.is_visible && "bg-gray-200 opacity-75"
+      )}
     >
-      {/* Drag Handle / Move Buttons */}
-      <TableCell className="w-12 lg:w-auto lg:p-2">
+      {/* Story 19.10: Sticky Drag Handle / Move Buttons */}
+      <TableCell 
+        className="w-12 lg:w-auto lg:p-2 sticky z-10 bg-inherit"
+        style={{ left: 0 }}
+      >
         {isMobile ? (
           <div className="flex flex-col gap-1">
             <Button
@@ -412,8 +423,11 @@ function DraggableRow({
         )}
       </TableCell>
 
-      {/* Column Name (Display Name - Editable) */}
-      <TableCell className="lg:p-2">
+      {/* Story 19.10: Sticky Column Name (Display Name - Editable) */}
+      <TableCell 
+        className="lg:p-2 sticky z-10 bg-inherit"
+        style={{ left: 40 }}
+      >
         <EditableColumnNameCell
           value={column.column_name}
           columnId={column.id}
@@ -422,8 +436,11 @@ function DraggableRow({
         />
       </TableCell>
 
-      {/* Database Column Name (Read-only) */}
-      <TableCell className="text-gray-600 lg:truncate lg:p-2">
+      {/* Story 19.10: Sticky Database Column Name (Read-only) - rightmost sticky with shadow */}
+      <TableCell 
+        className="text-gray-600 lg:truncate lg:p-2 sticky z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
+        style={{ left: 190 }}
+      >
         <span className="font-mono text-sm">{column.db_column_name}</span>
       </TableCell>
 
@@ -436,6 +453,29 @@ function DraggableRow({
           <Check className="h-5 w-5 text-green-600 inline-block" />
         ) : (
           <X className="h-5 w-5 text-gray-400 inline-block" />
+        )}
+      </TableCell>
+
+      {/* Story 19.5: Checklist Item toggle (only for boolean masterdata columns) */}
+      <TableCell className="w-24 lg:w-auto lg:p-2">
+        {column.column_type === 'boolean' && column.is_masterdata ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center">
+                <Checkbox
+                  checked={column.is_checklist_item ?? false}
+                  onCheckedChange={(checked: boolean) => handleChecklistItemToggle(column.id, checked)}
+                  disabled={isUpdating}
+                  aria-label="Toggle checklist item"
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{column.is_checklist_item ? "Ingår i checklista" : "Ingår ej i checklista"}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <span className="text-gray-400 text-sm">–</span>
         )}
       </TableCell>
 
@@ -488,8 +528,8 @@ function DraggableRow({
         );
       })}
 
-      {/* Actions */}
-      <TableCell className="text-left w-20 lg:w-auto lg:pl-4 lg:pr-2">
+      {/* Story 19.10: Sticky Actions column on right */}
+      <TableCell className="text-left w-20 lg:w-auto lg:pl-4 lg:pr-2 sticky right-0 z-10 bg-inherit shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
         <div className="flex items-center justify-start gap-2">
           {/* Toggle Visibility Button */}
           <Tooltip>
@@ -551,6 +591,9 @@ export function ColumnSettingsTable({
 
   // Detect mobile
   const [isMobile, setIsMobile] = useState(false);
+
+  // Story 19.9: Ref for sticky scrollbar
+  const tableContainerRef = useRef<HTMLDivElement>(null);
   
   // Note: Column resizing for this table requires TanStack Table refactor
   // due to complex drag-and-drop implementation. Placeholder for future enhancement.
@@ -774,6 +817,28 @@ export function ColumnSettingsTable({
     }
   };
 
+  // Story 19.5: Handle checklist item toggle
+  const handleChecklistItemToggle = async (columnId: string, isChecklistItem: boolean) => {
+    try {
+      setUpdatingColumnId(columnId);
+      await columnService.updateColumnPermissions(columnId, {
+        is_checklist_item: isChecklistItem,
+      });
+      toast.success(
+        isChecklistItem 
+          ? "Kolumn tillagd i checklistan" 
+          : "Kolumn borttagen från checklistan"
+      );
+      onPermissionsUpdated();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Kunde inte uppdatera checklista-inställning"
+      );
+    } finally {
+      setUpdatingColumnId(null);
+    }
+  };
+
   const handleDeleteClick = (column: ColumnConfig) => {
     setColumnToDelete(column);
     setDeleteModalOpen(true);
@@ -811,34 +876,61 @@ export function ColumnSettingsTable({
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className="rounded-md border w-full overflow-x-auto lg:overflow-hidden">
-          <Table className="w-full table-auto lg:table-fixed">
+        <div className="rounded-md border w-full lg:overflow-hidden">
+          {/* Story 19.9: Pass container ref for sticky scrollbar */}
+          {/* Story 19.13: maxHeight enables sticky headers by making table scroll internally */}
+          <Table className="w-full table-auto lg:table-fixed" containerRef={tableContainerRef} maxHeight="calc(100vh - 300px)">
             <colgroup className="hidden lg:table-column-group">
               <col style={{ width: '2.5%' }} />
-              <col style={{ width: '11%' }} />
-              <col style={{ width: '11%' }} />
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '10%' }} />
               <col style={{ width: '5%' }} />
               <col style={{ width: '5%' }} />
-              <col style={{ width: '11%' }} />
+              <col style={{ width: '5%' }} />
+              <col style={{ width: '10%' }} />
               {allRoles.map((role, index) => (
-                <col key={`role-${role}-${index}`} style={{ width: `${44.5 / allRoles.length}%` }} />
+                <col key={`role-${role}-${index}`} style={{ width: `${42.5 / allRoles.length}%` }} />
               ))}
               <col style={{ width: '10%' }} />
             </colgroup>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12 lg:w-auto lg:p-2"></TableHead>
-                <TableHead className="min-w-[150px] lg:min-w-0 lg:p-2">Visningsnamn</TableHead>
-                <TableHead className="min-w-[150px] lg:min-w-0 lg:p-2">Databasnamn</TableHead>
+                {/* Story 19.10: Sticky columns - Drag icon, Display Name, Database Name */}
+                <TableHead 
+                  className="w-12 lg:w-auto lg:p-2 sticky left-0 z-20 bg-background"
+                  style={{ left: 0 }}
+                ></TableHead>
+                <TableHead 
+                  className="min-w-[150px] lg:min-w-0 lg:p-2 sticky z-20 bg-background"
+                  style={{ left: 40 }}
+                >Visningsnamn</TableHead>
+                <TableHead 
+                  className="min-w-[150px] lg:min-w-0 lg:p-2 sticky z-20 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
+                  style={{ left: 190 }}
+                >Databasnamn</TableHead>
                 <TableHead className="w-16 lg:w-auto lg:p-2">{tAdmin("type")}</TableHead>
                 <TableHead className="w-24 lg:w-auto lg:p-2">Masterdata</TableHead>
+                <TableHead className="w-24 lg:w-auto lg:p-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1">
+                        <ListChecks className="h-4 w-4" />
+                        <span className="hidden xl:inline">Checklista</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Inkludera i medarbetarens checklista-indikator</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
                 <TableHead className="w-40 lg:w-auto lg:p-2">{tAdmin("category")}</TableHead>
                 {allRoles.map((role) => (
                   <TableHead key={role} className="w-40 lg:w-auto lg:p-2">
                       {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
                   </TableHead>
                 ))}
-                <TableHead className="w-40 lg:w-auto text-left lg:pl-4 lg:pr-2">{tAdmin("actions")}</TableHead>
+                {/* Story 19.10: Sticky actions column on right */}
+                <TableHead className="w-40 lg:w-auto text-left lg:pl-4 lg:pr-2 sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">{tAdmin("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -846,7 +938,7 @@ export function ColumnSettingsTable({
                 {items.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7 + allRoles.length}
+                      colSpan={8 + allRoles.length}
                       className="text-center text-gray-500"
                     >
                       No columns found
@@ -865,6 +957,7 @@ export function ColumnSettingsTable({
                       handleCategoryUpdate={handleCategoryUpdate}
                       handleCategoryColorUpdate={handleCategoryColorUpdate}
                       handleColumnNameUpdate={handleColumnNameUpdate}
+                      handleChecklistItemToggle={handleChecklistItemToggle}
                       handleDeleteClick={handleDeleteClick}
                       handleToggleVisibility={handleToggleVisibility}
                       isMobile={isMobile}
@@ -879,6 +972,9 @@ export function ColumnSettingsTable({
               </SortableContext>
             </TableBody>
           </Table>
+
+          {/* Story 19.9: Sticky horizontal scrollbar */}
+          <StickyScrollbar containerRef={tableContainerRef} />
         </div>
         <DeleteColumnModal
           column={columnToDelete}

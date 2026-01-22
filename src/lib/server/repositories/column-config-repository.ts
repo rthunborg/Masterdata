@@ -67,6 +67,8 @@ export class ColumnConfigRepository {
   /**
    * Fetch columns visible to a specific role
    * Filters by role_permissions[role].view = true
+   * 
+   * Note: admin_limited inherits view permissions from hr_admin
    */
   async findByRole(role: UserRole): Promise<ColumnConfig[]> {
     try {
@@ -74,8 +76,10 @@ export class ColumnConfigRepository {
       // (JSONB filtering in PostgreSQL is complex; simpler to filter in code)
       const allColumns = await this.findAll();
 
+      // admin_limited inherits view permissions from hr_admin
+      const roleForView = role === 'admin_limited' ? 'hr_admin' : role;
       return allColumns.filter((column) => {
-        const rolePerms = column.role_permissions[role];
+        const rolePerms = column.role_permissions[roleForView];
         return rolePerms && rolePerms.view === true;
       });
     } catch (error) {
@@ -100,6 +104,7 @@ export class ColumnConfigRepository {
     role: UserRole;
     category?: string;
     category_color?: string | null;
+    is_checklist_item?: boolean; // Story 19.5: Mark boolean column as checklist item
   }): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
@@ -139,16 +144,22 @@ export class ColumnConfigRepository {
     // HR Admin can add themselves later via column settings if needed
     const rolePermissions: Record<string, { view: boolean; edit: boolean }> = {
       hr_admin: { view: false, edit: false },
+      recruiter: { view: false, edit: false },
+      admin_limited: { view: false, edit: false },
       omc: { view: false, edit: false },
       payroll: { view: false, edit: false },
       sodexo: { view: false, edit: false },
       toplux: { view: false, edit: false },
+      crewing: { view: false, edit: false },
     };
 
     // Give the creating role full access
     rolePermissions[input.role] = { view: true, edit: true };
 
     // Step 3: Create column config entry
+    // Story 19.5: Include is_checklist_item (only valid for boolean masterdata columns)
+    // Non-masterdata columns can never be checklist items
+    const canBeChecklistItem = input.column_type === 'boolean' && input.is_masterdata;
     const columnData = {
       column_name: input.column_name,
       db_column_name: input.db_column_name,
@@ -157,6 +168,7 @@ export class ColumnConfigRepository {
       category: input.category || null,
       category_color: input.category_color || null,
       role_permissions: rolePermissions,
+      is_checklist_item: canBeChecklistItem ? (input.is_checklist_item ?? false) : false,
     };
 
     const { data, error } = await supabase
@@ -416,10 +428,13 @@ export class ColumnConfigRepository {
       // When deactivating, set all permissions to false
       updateData.role_permissions = {
         hr_admin: { view: false, edit: false },
+        recruiter: { view: false, edit: false },
+        admin_limited: { view: false, edit: false },
         sodexo: { view: false, edit: false },
         omc: { view: false, edit: false },
         payroll: { view: false, edit: false },
-        toplux: { view: false, edit: false }
+        toplux: { view: false, edit: false },
+        crewing: { view: false, edit: false }
       };
     }
 

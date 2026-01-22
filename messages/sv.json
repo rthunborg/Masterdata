@@ -64,6 +64,7 @@
     "noEmployeesMatchSearch": "Inga anställda matchar din sökning. Prova att justera dina söktermer.",
     "noEmployeesToDisplay": "Inga anställda att visa.",
     "dateDeleted": "(Datum hittades inte)",
+    "loadingDates": "Laddar tillgängliga datum...",
     "dragToResize": "Dra för att ändra storlek",
     "repaymentColumnTooltip": "Endast synligt när uppsagda anställda visas",
     "readOnlyFieldTooltip": "Detta fält är skrivskyddat. Kontakta HR för att uppdatera.",
@@ -77,6 +78,7 @@
     "selectSalaryLevel": "Välj lönenivå",
     "notSet": "Ej angiven",
     "booleanTrue": "Klart",
+    "booleanYes": "Ja",
     "booleanFalse": "Nej",
     "export": {
       "selectFields": "Välj fält att exportera",

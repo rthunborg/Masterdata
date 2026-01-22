@@ -40,6 +40,7 @@ import { useLongPress } from '@/hooks/use-long-press';
 import { EmployeeContextMenu } from './employee-context-menu';
 
 import { Checkbox } from '@/components/ui/checkbox';
+import { ChecklistProgressIndicator } from './checklist-progress-indicator';
 
 
 interface EmployeeCardProps {
@@ -777,7 +778,17 @@ function EmployeeCardComponent({
 
           </div>
 
-          {getStatusBadge()}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Story 19.5: Checklist Progress Indicator */}
+            {columnConfigs.some(col => col.column_type === 'boolean' && col.is_checklist_item) && (
+              <ChecklistProgressIndicator
+                employee={employee}
+                columns={columnConfigs}
+                compact={true}
+              />
+            )}
+            {getStatusBadge()}
+          </div>
 
         </div>
 

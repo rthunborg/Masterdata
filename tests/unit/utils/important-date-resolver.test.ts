@@ -67,9 +67,22 @@ const mockDates: ImportantDate[] = [
 
 describe('important-date-resolver', () => {
   describe('resolveImportantDateId', () => {
-    it('should return date description for valid ID', () => {
+    // Story 19.3: Updated to expect formatted dd-MM date from date_value
+    it('should return formatted dd-MM date for valid ID', () => {
       const result = resolveImportantDateId('uuid-1', mockDates);
-      expect(result).toBe('Fredag 14/2');
+      // Now returns formatted date from date_value instead of date_description
+      expect(result).toBe('14-02');
+    });
+
+    it('should return formatted ÖMC two-day range for ÖMC date', () => {
+      const result = resolveImportantDateId('uuid-2', mockDates);
+      // ÖMC dates return two-day range format
+      expect(result).toBe('10-03 - 11-03');
+    });
+
+    it('should return formatted dd-MM date for PE3 date without time', () => {
+      const result = resolveImportantDateId('uuid-3', mockDates);
+      expect(result).toBe('15-04');
     });
 
     it('should return "Datum borttaget" for invalid ID', () => {

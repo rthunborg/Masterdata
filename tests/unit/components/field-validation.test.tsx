@@ -6,9 +6,9 @@
 
 import { screen, waitFor, fireEvent } from "@testing-library/react";
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { EditableCell } from "@/components/dashboard/editable-cell";
-import { createEmployeeWithPrerequisites, setOneDateWithTimer } from "@/../tests/helpers/validation-test-helpers";
+import { createEmployeeWithPrerequisites } from "@/../tests/helpers/validation-test-helpers";
 
 describe("Field Validation - Component Display Tests", () => {
   const mockOnSave = vi.fn().mockResolvedValue(undefined);
@@ -70,8 +70,19 @@ describe("Field Validation - Component Display Tests", () => {
   });
 
   describe("Talmundo Field Validation", () => {
-    it("should show timer countdown when locked (<24h)", async () => {
-      const oneData = setOneDateWithTimer(12); // 12 hours ago
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should show timer countdown when locked (before unlock time)", async () => {
+      // Current time: Jan 16 at 10 PM
+      vi.setSystemTime(new Date('2025-01-16T22:00:00'));
+      // Marked at 3 PM today - unlock is Jan 17 00:01 AM
+      const markedAt = '2025-01-16T15:00:00';
 
       renderWithI18n(
         <EditableCell
@@ -81,7 +92,7 @@ describe("Field Validation - Component Display Tests", () => {
           type="boolean"
           canEdit={true}
           oneValue={true}
-          oneMarkedAt={oneData.one_marked_at}
+          oneMarkedAt={markedAt}
           onSave={mockOnSave}
         />
       );
@@ -89,15 +100,18 @@ describe("Field Validation - Component Display Tests", () => {
       const cell = screen.getByRole("gridcell");
       fireEvent.click(cell);
 
+      // Use real timers for async operations
+      vi.useRealTimers();
       await waitFor(() => {
-        // Tooltip shows English text (hardcoded in editable-cell.tsx)
-        // Using flexible matcher to catch the tooltip
+        // Tooltip shows Swedish text
         const tooltips = screen.getAllByText(/Kan endast redigeras efter One-fältet har slutfört 24-timmars synkronisering till Talmundo-systemet/i);
         expect(tooltips.length).toBeGreaterThan(0);
       });
     });
 
     it("should show lock icon when one=false", () => {
+      vi.setSystemTime(new Date('2025-01-16T15:00:00'));
+      
       renderWithI18n(
         <EditableCell
           value={false}

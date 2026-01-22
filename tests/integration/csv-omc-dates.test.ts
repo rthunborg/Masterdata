@@ -38,7 +38,7 @@ afterEach(() => {
 });
 
 describe('CSV Export with ÖMC Dates', () => {
-  it('should export ÖMC dates formatted as "8-9 mars 2025"', () => {
+  it('should export ÖMC dates formatted as "08-03 - 09-03"', () => {
     const dates: ImportantDate[] = [
       {
         id: '1',
@@ -62,7 +62,7 @@ describe('CSV Export with ÖMC Dates', () => {
     exportImportantDates(dates);
     
     expect(capturedCSV).not.toBeNull();
-    expect(capturedCSV).toContain('8-9 mars 2025');
+    expect(capturedCSV).toContain('08-03 - 09-03');
     expect(capturedCSV).toContain('ÖMC Dates');
   });
 

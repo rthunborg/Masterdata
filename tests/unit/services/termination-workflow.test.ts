@@ -207,21 +207,11 @@ describe('Termination Workflow Service', () => {
   });
 
   describe('applyRepaymentCapture', () => {
-    it('should populate repayment_needed_omc with boolean true', async () => {
+    // Story 19.14: applyRepaymentCapture now stores the actual UUID, not boolean
+    it('should store ÖMC date UUID for repayment tracking', async () => {
       const employeeId = 'emp-123';
       const omcDateId = 'omc-date-1';
-      const omcDateValue = '2025-03-08';
       
-      // Mock date lookup
-      const mockDatesIn = vi.fn().mockResolvedValue({
-        data: [{ id: omcDateId, date_value: omcDateValue }],
-        error: null,
-      });
-
-      const mockDatesSelect = vi.fn().mockReturnValue({
-        in: mockDatesIn,
-      });
-
       // Mock employee update
       const mockUpdateEq = vi.fn().mockResolvedValue({
         data: null,
@@ -233,11 +223,6 @@ describe('Termination Workflow Service', () => {
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'important_dates') {
-          return {
-            select: mockDatesSelect,
-          };
-        }
         if (table === 'employees') {
           return {
             update: mockUpdate,
@@ -248,16 +233,15 @@ describe('Termination Workflow Service', () => {
 
       await applyRepaymentCapture(employeeId, { omc: omcDateId, pe3: null });
 
-      // No longer need to fetch date value since we just set boolean
-      // expect(mockDatesSelect).toHaveBeenCalledWith('id, date_value'); 
+      // Story 19.14: Now stores the actual UUID, not boolean
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: true,
-        repayment_needed_pe3: false,
+        repayment_needed_omc: omcDateId,
+        repayment_needed_pe3: null,
       });
       expect(mockUpdateEq).toHaveBeenCalledWith('id', employeeId);
     });
 
-    it('should populate repayment_needed_pe3 with boolean true', async () => {
+    it('should store PE3 date UUID for repayment tracking', async () => {
       const employeeId = 'emp-123';
       const pe3DateId = 'pe3-date-1';
       
@@ -282,12 +266,12 @@ describe('Termination Workflow Service', () => {
       await applyRepaymentCapture(employeeId, { omc: null, pe3: pe3DateId });
 
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: false,
-        repayment_needed_pe3: true,
+        repayment_needed_omc: null,
+        repayment_needed_pe3: pe3DateId,
       });
     });
 
-    it('should populate both repayment fields when both dates assigned', async () => {
+    it('should store both date UUIDs when both dates assigned', async () => {
       const employeeId = 'emp-123';
       const omcDateId = 'omc-date-1';
       const pe3DateId = 'pe3-date-1';
@@ -313,25 +297,14 @@ describe('Termination Workflow Service', () => {
       await applyRepaymentCapture(employeeId, { omc: omcDateId, pe3: pe3DateId });
 
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: true,
-        repayment_needed_pe3: true,
+        repayment_needed_omc: omcDateId,
+        repayment_needed_pe3: pe3DateId,
       });
     });
 
-    it('should throw error when date lookup fails', async () => {
+    it('should store null when no dates to capture', async () => {
       const employeeId = 'emp-123';
-      const omcDateId = 'omc-date-1';
       
-      const mockDatesIn = vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: 'Database error' },
-      });
-
-      const mockDatesSelect = vi.fn().mockReturnValue({
-        in: mockDatesIn,
-      });
-
-      // Mock update to succeed (function handles date lookup errors gracefully)
       const mockUpdateEq = vi.fn().mockResolvedValue({
         data: null,
         error: null,
@@ -342,11 +315,6 @@ describe('Termination Workflow Service', () => {
       });
 
       mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'important_dates') {
-          return {
-            select: mockDatesSelect,
-          };
-        }
         if (table === 'employees') {
           return {
             update: mockUpdate,
@@ -355,16 +323,11 @@ describe('Termination Workflow Service', () => {
         return {};
       });
 
-      // Should not throw on date lookup error, but should handle gracefully
-      // When date lookup fails, it sets values to null and still updates
-      await applyRepaymentCapture(employeeId, { omc: omcDateId, pe3: null });
+      await applyRepaymentCapture(employeeId, { omc: null, pe3: null });
       
-      // Verify that update was called (with boolean values since dates exist but lookup failed logic was removed)
-      // Actually applyRepaymentCapture NO LONGER DOES LOOKUP. It just uses the IDs.
-      // So if IDs are present, it sets true.
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: true,
-        repayment_needed_pe3: false,
+        repayment_needed_omc: null,
+        repayment_needed_pe3: null,
       });
     });
 
@@ -698,17 +661,19 @@ describe('Termination Workflow Service', () => {
   });
 
   describe('restoreRepaymentDates', () => {
-    it('should clear ÖMC flag when present', async () => {
+    // Story 19.14: restoreRepaymentDates now clears with null (not false) since fields store UUIDs
+    it('should clear ÖMC repayment tracking when present', async () => {
       const employeeId = 'emp-123';
+      const omcDateId = 'omc-date-uuid-1';
       
-      // Mock employee fetch
+      // Mock employee fetch - repayment fields now store UUIDs
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
         data: {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: true,
-          repayment_needed_pe3: false,
+          repayment_needed_omc: omcDateId, // UUID of the date
+          repayment_needed_pe3: null,
         },
         error: null,
       });
@@ -744,23 +709,25 @@ describe('Termination Workflow Service', () => {
       const result = await restoreRepaymentDates(employeeId);
 
       expect(assignEmployeeToDate).not.toHaveBeenCalled();
-      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: false });
+      // Story 19.14: Clears with null, not false
+      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
       expect(result.restored.omc).toBe(true);
       expect(result.restored.pe3).toBe(false);
       expect(result.warnings).toEqual([]);
     });
 
-    it('should clear PE3 flag when present', async () => {
+    it('should clear PE3 repayment tracking when present', async () => {
       const employeeId = 'emp-123';
+      const pe3DateId = 'pe3-date-uuid-1';
       
-      // Mock employee fetch
+      // Mock employee fetch - repayment fields now store UUIDs
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
         data: {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: false,
-          repayment_needed_pe3: true,
+          repayment_needed_omc: null,
+          repayment_needed_pe3: pe3DateId, // UUID of the date
         },
         error: null,
       });
@@ -796,14 +763,17 @@ describe('Termination Workflow Service', () => {
       const result = await restoreRepaymentDates(employeeId);
 
       expect(assignEmployeeToDate).not.toHaveBeenCalled();
-      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: false });
+      // Story 19.14: Clears with null, not false
+      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: null });
       expect(result.restored.pe3).toBe(true);
       expect(result.restored.omc).toBe(false);
       expect(result.warnings).toEqual([]);
     });
 
-    it('should handle both flags present', async () => {
+    it('should handle both repayment UUIDs present', async () => {
       const employeeId = 'emp-123';
+      const omcDateId = 'omc-date-uuid-1';
+      const pe3DateId = 'pe3-date-uuid-1';
       
       // Mock employee fetch
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
@@ -811,8 +781,8 @@ describe('Termination Workflow Service', () => {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: true,
-          repayment_needed_pe3: true,
+          repayment_needed_omc: omcDateId,
+          repayment_needed_pe3: pe3DateId,
         },
         error: null,
       });
@@ -847,8 +817,9 @@ describe('Termination Workflow Service', () => {
 
       const result = await restoreRepaymentDates(employeeId);
 
-      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: false });
-      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: false });
+      // Story 19.14: Clears with null, not false
+      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_omc: null });
+      expect(mockUpdate).toHaveBeenCalledWith({ repayment_needed_pe3: null });
       expect(result.restored.omc).toBe(true);
       expect(result.restored.pe3).toBe(true);
     });
@@ -861,8 +832,8 @@ describe('Termination Workflow Service', () => {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: false,
-          repayment_needed_pe3: false,
+          repayment_needed_omc: null,
+          repayment_needed_pe3: null,
         },
         error: null,
       });

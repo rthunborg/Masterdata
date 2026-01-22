@@ -58,8 +58,9 @@ export class EmployeeRepository {
       
       // Story 8.13 AC 9: Filter by repayment needed
       // When needsRepayment is true: show only employees needing repayment
+      // Story 19.14: repayment fields now store UUIDs, so check for non-null values
       if (filters?.needsRepayment === true) {
-        query = query.or("repayment_needed_omc.is.true,repayment_needed_pe3.is.true");
+        query = query.or("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
       }
 
       const { data, error } = await query;
@@ -609,13 +610,15 @@ export class EmployeeRepository {
       // Get masterdata columns that the user has view permission for
       const { columnConfigRepository } = await import("./column-config-repository");
       const allColumns = await columnConfigRepository.findAll();
+      // admin_limited inherits view permissions from hr_admin
+      const roleForView = userRole === 'admin_limited' ? 'hr_admin' : userRole;
       const visibleMasterdataColumns = allColumns
         .filter(col => {
           // Only masterdata columns
           if (!col.is_masterdata) return false;
           
           // Check if user role has view permission
-          const rolePerms = col.role_permissions[userRole as keyof typeof col.role_permissions];
+          const rolePerms = col.role_permissions[roleForView as keyof typeof col.role_permissions];
           return rolePerms?.view === true;
         })
         .map(col => col.db_column_name.toLowerCase().trim()); // Normalize to lowercase for consistent matching

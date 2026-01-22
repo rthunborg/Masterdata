@@ -11,7 +11,7 @@ export const sessionUserSchema = z.object({
   id: z.string(),
   auth_id: z.string(),
   email: z.string().email(),
-  role: z.enum(["hr_admin", "sodexo", "omc", "payroll", "toplux"]),
+  role: z.enum(["hr_admin", "recruiter", "admin_limited", "crewing", "sodexo", "omc", "payroll", "toplux"]),
   is_active: z.boolean(),
   created_at: z.string(),
 });

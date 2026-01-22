@@ -70,58 +70,62 @@ describe("ImportantDatesTable", () => {
     vi.clearAllMocks();
   });
 
+  // Story 19.3: Mock data with proper ISO date values for consistent Swedish formatting
   const mockImportantDates: ImportantDate[] = [
     {
       id: "date-1",
       week_number: 7,
       year: 2025,
       category: "Stena Dates",
-      date_description: "Fredag 14/2",
-      date_value: "15-16/2",
+      date_description: "Fredag 14/2", // Legacy description, now ignored for display
+      date_value: "2025-02-14", // ISO date - displays as "14 februari 2025"
       notes: null,
       time_value: null,
-    deadline_submit: null,
-    deadline_cancel: null,
-    is_active: true,
-    max_spots: 0,
-    remaining_spots: 0,
-    assigned_employees: [],
-    created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",      },
+      deadline_submit: null,
+      deadline_cancel: null,
+      is_active: true,
+      max_spots: 0,
+      remaining_spots: 0,
+      assigned_employees: [],
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    },
     {
       id: "date-2",
       week_number: 10,
       year: 2025,
       category: "ÖMC Dates",
-      date_description: "Fredag 7/3",
-      date_value: "2025-03-08", // ISO date string for ÖMC (will be formatted as "8-9 mars 2025")
+      date_description: "Fredag 7/3", // Legacy description, now ignored for display
+      date_value: "2025-03-08", // ISO date - displays as "8-9 mars 2025" (ÖMC two-day range)
       notes: "Important deadline",
       time_value: null,
-    deadline_submit: null,
-    deadline_cancel: null,
-    is_active: true,
-    max_spots: 0,
-    remaining_spots: 0,
-    assigned_employees: [],
-    created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",      },
+      deadline_submit: null,
+      deadline_cancel: null,
+      is_active: true,
+      max_spots: 0,
+      remaining_spots: 0,
+      assigned_employees: [],
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    },
     {
       id: "date-3",
       week_number: 15,
       year: 2025,
       category: "Other",
-      date_description: "Holiday",
-      date_value: "10/4",
+      date_description: "Holiday", // Legacy description, now ignored for display
+      date_value: "2025-04-10", // ISO date - displays as "10 april 2025"
       notes: null,
       time_value: null,
-    deadline_submit: null,
-    deadline_cancel: null,
-    is_active: true,
-    max_spots: 0,
-    remaining_spots: 0,
-    assigned_employees: [],
-    created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",      },
+      deadline_submit: null,
+      deadline_cancel: null,
+      is_active: true,
+      max_spots: 0,
+      remaining_spots: 0,
+      assigned_employees: [],
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    },
   ];
 
   describe("Rendering", () => {
@@ -134,13 +138,17 @@ describe("ImportantDatesTable", () => {
         />
       );
 
-      expect(screen.getByText("Fredag 14/2")).toBeInTheDocument();
-      expect(screen.getByText("15-16/2")).toBeInTheDocument();
+      // Story 19.3: Check for formatted Swedish dates from date_value (not date_description)
+      // date_description column still shows the legacy description text
+      expect(screen.getByText("Fredag 14/2")).toBeInTheDocument(); // date_description column
       expect(screen.getByText("Stena Dates")).toBeInTheDocument();
-      expect(screen.getByText("Fredag 7/3")).toBeInTheDocument();
-      // ÖMC dates are formatted as "8-9 mars 2025" (Swedish format with month name)
-      expect(screen.getByText(/8-9 mars 2025/i)).toBeInTheDocument();
+      expect(screen.getByText("Fredag 7/3")).toBeInTheDocument(); // date_description column for ÖMC
       expect(screen.getByText("ÖMC Dates")).toBeInTheDocument();
+      
+      // Story 19.3: date_value column shows formatted dd-MM dates
+      // For HR admin, date_value is rendered in EditableCell which may have the value in an input or div
+      // ÖMC dates are formatted as "08-03 - 09-03" (dd-MM format with two-day range)
+      expect(screen.getByText(/08-03 - 09-03/i)).toBeInTheDocument();
     });
 
     it("should display loading state", () => {
@@ -239,9 +247,11 @@ describe("ImportantDatesTable", () => {
         />
       );
 
-      // External party users see plain text, not editable cells
-      expect(screen.getByText("Fredag 14/2")).toBeInTheDocument();
-      expect(screen.getByText("15-16/2")).toBeInTheDocument();
+      // Story 19.3: External party users see formatted dd-MM dates
+      // Stena date "2025-02-14" displays as "14-02"
+      expect(screen.getByText("14-02")).toBeInTheDocument();
+      // ÖMC date "2025-03-08" displays as "08-03 - 09-03" (two-day range)
+      expect(screen.getByText("08-03 - 09-03")).toBeInTheDocument();
     });
   });
 

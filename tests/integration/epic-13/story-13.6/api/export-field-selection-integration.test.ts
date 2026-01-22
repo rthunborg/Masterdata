@@ -241,7 +241,7 @@ describe("Export Field Selection Integration", () => {
       { 
         id: "emp1", 
         first_name: "John", 
-        repayment_needed_omc: true, // boolean
+        repayment_needed_omc: 'omc-date-uuid-123', // Story 19.14: Now stores UUID
         termination_date: null, // null
         // mobile is undefined
       },
@@ -274,9 +274,10 @@ describe("Export Field Selection Integration", () => {
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
     // Check data row
-    // boolean -> "Yes"/"No" (based on implementation)
+    // Story 19.14: repayment_needed_omc now stores UUID instead of boolean
+    // UUID -> exported as-is
     // null -> ""
     // undefined -> ""
-    expect(unparseCall.data[0]).toEqual(["John", "Yes", "", ""]);
+    expect(unparseCall.data[0]).toEqual(["John", "omc-date-uuid-123", "", ""]);
   });
 });

@@ -3,30 +3,49 @@
  * Story 8.4: Talmundo Field with Conditional Editability
  * 
  * These tests verify the complete flow from API validation to business logic
- * ensuring that Talmundo field can only be edited when One field is green (>= 24 hours)
+ * ensuring that Talmundo field can only be edited when One field is green 
+ * (past 00:01 AM the following day after marking).
+ * 
+ * Business Rule: Unlock time is 00:01 AM the calendar day after One was marked true.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { canEditTalmundo } from '@/lib/services/talmundo-validation';
 import type { Employee } from '@/lib/types/employee';
 
 describe('Talmundo Conditional Editability Integration', () => {
   describe('Business Logic Integration', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('should reject Talmundo edit when One is false', () => {
       const result = canEditTalmundo(false, null);
       expect(result).toBe(false);
     });
 
-    it('should reject Talmundo edit when One is yellow (< 24 hours)', () => {
-      const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
-      const result = canEditTalmundo(true, twelveHoursAgo);
-      expect(result).toBe(false);
+    it('should reject Talmundo edit when One is yellow (before 00:01 AM next day)', () => {
+      // Set current time to Jan 16, 2025 at 10:00 PM
+      vi.setSystemTime(new Date('2025-01-16T22:00:00'));
+      
+      // Marked at 3 PM today (Jan 16) - unlock time is Jan 17 00:01 AM
+      const markedAt = '2025-01-16T15:00:00';
+      const result = canEditTalmundo(true, markedAt);
+      expect(result).toBe(false); // Still before unlock time
     });
 
-    it('should allow Talmundo edit when One is green (>= 24 hours)', () => {
-      const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
-      const result = canEditTalmundo(true, twentyFiveHoursAgo);
-      expect(result).toBe(true);
+    it('should allow Talmundo edit when One is green (past 00:01 AM next day)', () => {
+      // Set current time to Jan 17, 2025 at 10:00 AM
+      vi.setSystemTime(new Date('2025-01-17T10:00:00'));
+      
+      // Marked at 3 PM yesterday (Jan 16) - unlock time was Jan 17 00:01 AM
+      const markedAt = '2025-01-16T15:00:00';
+      const result = canEditTalmundo(true, markedAt);
+      expect(result).toBe(true); // Past unlock time
     });
   });
 
@@ -170,14 +189,20 @@ describe('Talmundo Conditional Editability Integration', () => {
       if (!result.success) {
         const talmundoError = result.error.errors.find(e => e.path.includes('talmundo'));
         expect(talmundoError).toBeDefined();
-        expect(talmundoError?.message).toContain('24 hours');
+        // Business rule message mentions "following day" not specific hours
+        expect(talmundoError?.message).toContain('following day');
       }
     });
 
-    it('should reject talmundo=true when One is yellow (< 24 hours)', async () => {
+    it('should reject talmundo=true when One is yellow (before unlock time)', async () => {
+      vi.useFakeTimers();
+      // Set current time to Jan 16, 2025 at 10:00 PM
+      vi.setSystemTime(new Date('2025-01-16T22:00:00'));
+      
       const { createEmployeeSchema } = await import('@/lib/validation/employee-schema');
       
-      const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+      // Marked at 3 PM today - unlock time is Jan 17 00:01 AM
+      const markedAt = '2025-01-16T15:00:00';
       const invalidData = {
         first_name: 'Test',
         surname: 'User',
@@ -192,9 +217,9 @@ describe('Talmundo Conditional Editability Integration', () => {
         omc_date: null,
         pe3_date: null,
         comments: null,
-        talmundo: true, // Invalid - One is yellow (< 24 hours)
+        talmundo: true, // Invalid - One is yellow (before unlock time)
         one: true,
-        one_marked_at: twelveHoursAgo,
+        one_marked_at: markedAt,
         isps: false,
         photo: false,
         origo: false,
@@ -223,12 +248,22 @@ describe('Talmundo Conditional Editability Integration', () => {
         const talmundoError = result.error.errors.find(e => e.path.includes('talmundo'));
         expect(talmundoError).toBeDefined();
       }
+      
+      vi.useRealTimers();
     });
 
-    it('should accept talmundo=true when One is green (>= 24 hours)', async () => {
+    it('should accept talmundo=true when One is green (past unlock time)', async () => {
+      vi.useFakeTimers();
+      // Set current time to Jan 17, 2025 at 10:00 AM
+      vi.setSystemTime(new Date('2025-01-17T10:00:00'));
+      
+      // Re-import module to ensure it uses mocked Date
+      vi.resetModules();
       const { createEmployeeSchema } = await import('@/lib/validation/employee-schema');
       
-      const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
+      // Marked at 3 PM yesterday - unlock time was Jan 17 00:01 AM
+      // Using Z suffix for proper datetime validation (ISO 8601)
+      const markedAt = '2025-01-16T15:00:00Z';
       const validData = {
         first_name: 'Test',
         surname: 'User',
@@ -243,9 +278,9 @@ describe('Talmundo Conditional Editability Integration', () => {
         omc_date: null,
         pe3_date: null,
         comments: null,
-        talmundo: true, // Valid - One is green (>= 24 hours)
+        talmundo: true, // Valid - One is green (past unlock time)
         one: true,
-        one_marked_at: twentyFiveHoursAgo,
+        one_marked_at: markedAt,
         isps: false,
         photo: false,
         origo: false,
@@ -269,38 +304,47 @@ describe('Talmundo Conditional Editability Integration', () => {
       };
 
       const result = createEmployeeSchema.safeParse(validData);
+      if (!result.success) {
+        console.log('Validation errors:', JSON.stringify(result.error.errors, null, 2));
+      }
       expect(result.success).toBe(true);
+      
+      vi.useRealTimers();
     });
   });
 
   describe('Time-based Status Transitions', () => {
-    it('should transition from disabled to enabled after 24 hours', () => {
-      // Just before 24 hours
-      const almostTwentyFourHours = new Date(
-        Date.now() - 23 * 60 * 60 * 1000 - 59 * 60 * 1000
-      ).toISOString();
-      expect(canEditTalmundo(true, almostTwentyFourHours)).toBe(false);
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
 
-      // Exactly 24 hours
-      const exactlyTwentyFourHours = new Date(
-        Date.now() - 24 * 60 * 60 * 1000
-      ).toISOString();
-      expect(canEditTalmundo(true, exactlyTwentyFourHours)).toBe(true);
+    afterEach(() => {
+      vi.useRealTimers();
+    });
 
-      // After 24 hours
-      const moreThanTwentyFourHours = new Date(
-        Date.now() - 25 * 60 * 60 * 1000
-      ).toISOString();
-      expect(canEditTalmundo(true, moreThanTwentyFourHours)).toBe(true);
+    it('should transition from disabled to enabled at 00:01 AM the next day', () => {
+      // Set current time to Jan 16, 2025 at 11:00 PM
+      vi.setSystemTime(new Date('2025-01-16T23:00:00'));
+      
+      // Marked at 3 PM today - unlock time is Jan 17 00:01 AM
+      const markedToday = '2025-01-16T15:00:00';
+      expect(canEditTalmundo(true, markedToday)).toBe(false); // Still before unlock
+
+      // Move time to exactly 00:01 AM next day
+      vi.setSystemTime(new Date('2025-01-17T00:01:00'));
+      expect(canEditTalmundo(true, markedToday)).toBe(true); // Now unlocked
     });
 
     it('should become disabled again if One is set to false', () => {
-      // Initially One is green and Talmundo is editable
-      const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
-      expect(canEditTalmundo(true, twentyFiveHoursAgo)).toBe(true);
+      // Set time to well past unlock
+      vi.setSystemTime(new Date('2025-01-17T10:00:00'));
+      
+      // Marked yesterday - should be unlocked
+      const markedYesterday = '2025-01-16T15:00:00';
+      expect(canEditTalmundo(true, markedYesterday)).toBe(true);
 
       // One is set to false - Talmundo should become disabled
-      expect(canEditTalmundo(false, twentyFiveHoursAgo)).toBe(false);
+      expect(canEditTalmundo(false, markedYesterday)).toBe(false);
     });
   });
 });
