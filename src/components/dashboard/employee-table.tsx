@@ -2292,9 +2292,7 @@ export function EmployeeTable({
                             // Story 19.1: Sticky name columns (First Name and Surname)
                             isStickyNameColumn && "sticky z-20 bg-background",
                             // Story 19.1: Shadow only on the last sticky name column (Surname)
-                            isSurnameColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
-                            // Sticky action column
-                            isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
+                            isSurnameColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
                           )}
 
                           style={{
@@ -2529,18 +2527,7 @@ export function EmployeeTable({
                                 // Story 19.1: Sticky name columns (First Name and Surname)
                                 isStickyNameCell && "sticky z-10 bg-inherit",
                                 // Story 19.1: Shadow only on the last sticky name column (Surname)
-                                isSurnameCell && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
-                                // Sticky action column
-                                isActionColumn && "sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
-                                // For sticky column, we need a background to cover scrolling content.
-                                // Inherit works if the row has a background color. 
-                                // If row is default, we need bg-background.
-                                // We can use bg-inherit and a fallback of bg-background via a composed class or just rely on row colors.
-                                // But Tailwind doesn't support "bg-inherit-or-white".
-                                // Best bet: sticky cell gets the same bg as row if row is colored, else bg-background.
-                                // Since we can't easily extract the row class here without refactoring,
-                                // and bg-inherit on a sticky element inside a tr works for opacity in most browsers:
-                                isActionColumn && "bg-inherit"
+                                isSurnameCell && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
                               )}
                             >
 

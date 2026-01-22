@@ -706,8 +706,6 @@ export function ImportantDatesTable({
                       isCategoryColumn && "sticky z-20 bg-background",
                       // Story 19.10: Shadow only on Category (rightmost sticky left column)
                       isCategoryColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
-                      // Sticky action column
-                      isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
                       // Center align week_number column header
                       isWeekNumberColumn && "text-center"
                     )}
@@ -781,12 +779,8 @@ export function ImportantDatesTable({
                       isCategoryColumn && "sticky z-10 bg-inherit",
                       // Story 19.10: Shadow only on Category (rightmost sticky left column)
                       isCategoryColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
-                      // Sticky action column
-                      isActionColumn && "sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
-                      // Ensure opacity for sticky column by inheriting row background
-                      isActionColumn && "bg-inherit",
                       // Compact mode font size for cell content
-                      !isActionColumn && isCompact && "text-xs",
+                      isCompact && "text-xs",
                       // Center align week_number column
                       isWeekNumberColumn && "text-center"
                     )}

@@ -528,8 +528,8 @@ function DraggableRow({
         );
       })}
 
-      {/* Story 19.10: Sticky Actions column on right */}
-      <TableCell className="text-left w-20 lg:w-auto lg:pl-4 lg:pr-2 sticky right-0 z-10 bg-inherit shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
+      {/* Actions column */}
+      <TableCell className="text-left w-20 lg:w-auto lg:pl-4 lg:pr-2">
         <div className="flex items-center justify-start gap-2">
           {/* Toggle Visibility Button */}
           <Tooltip>
@@ -929,8 +929,8 @@ export function ColumnSettingsTable({
                       {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
                   </TableHead>
                 ))}
-                {/* Story 19.10: Sticky actions column on right */}
-                <TableHead className="w-40 lg:w-auto text-left lg:pl-4 lg:pr-2 sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">{tAdmin("actions")}</TableHead>
+                {/* Actions column */}
+                <TableHead className="w-40 lg:w-auto text-left lg:pl-4 lg:pr-2">{tAdmin("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

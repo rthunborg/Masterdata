@@ -239,7 +239,7 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
       }
     });
 
-    it("should maintain existing sticky action column on right", async () => {
+    it("should not make action column sticky (user preference)", async () => {
       render(
         <ImportantDatesTable
           dates={mockImportantDates}
@@ -258,9 +258,10 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
         }
       });
 
+      // Action column should NOT be sticky (per user request)
       if (actionsHeader) {
-        expect(actionsHeader.className).toContain("sticky");
-        expect(actionsHeader.className).toContain("right-0");
+        expect(actionsHeader.className).not.toContain("sticky");
+        expect(actionsHeader.className).not.toContain("right-0");
       }
     });
   });
@@ -314,7 +315,7 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
       }
     });
 
-    it("should maintain sticky actions column on right", async () => {
+    it("should not make actions column sticky (user preference)", async () => {
       render(
         <UserManagementTable
           users={mockUsers}
@@ -332,9 +333,10 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
         }
       });
 
+      // Action column should NOT be sticky (per user request)
       if (actionsHeader) {
-        expect(actionsHeader.className).toContain("sticky");
-        expect(actionsHeader.className).toContain("right-0");
+        expect(actionsHeader.className).not.toContain("sticky");
+        expect(actionsHeader.className).not.toContain("right-0");
       }
     });
 
@@ -495,7 +497,7 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
       }
     });
 
-    it("should apply sticky positioning to Actions column header on right", async () => {
+    it("should not make Actions column header sticky (user preference)", async () => {
       render(
         <ColumnSettingsTable
           columns={mockColumnConfigs}
@@ -514,10 +516,10 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
         }
       });
 
+      // Action column should NOT be sticky (per user request)
       if (actionsHeader) {
-        expect(actionsHeader.className).toContain("sticky");
-        expect(actionsHeader.className).toContain("right-0");
-        expect(actionsHeader.className).toContain("z-20");
+        expect(actionsHeader.className).not.toContain("sticky");
+        expect(actionsHeader.className).not.toContain("right-0");
       }
     });
 
