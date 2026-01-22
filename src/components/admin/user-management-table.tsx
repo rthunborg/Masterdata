@@ -366,9 +366,7 @@ export function UserManagementTable({
                       // Story 19.10: Sticky Email column (leftmost identifier)
                       isEmailColumn && "sticky left-0 z-20 bg-background",
                       // Story 19.10: Shadow on Email (only sticky left column)
-                      isEmailColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
-                      // Sticky actions column on right
-                      isActionsColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
+                      isEmailColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
                     )}
                     style={{
                       width: header.getSize(),
@@ -420,9 +418,7 @@ export function UserManagementTable({
                         // Story 19.10: Sticky Email column (leftmost identifier)
                         isEmailColumn && "sticky left-0 z-10 bg-inherit",
                         // Story 19.10: Shadow on Email (only sticky left column)
-                        isEmailColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
-                        // Sticky actions column on right
-                        isActionsColumn && "sticky right-0 z-10 bg-inherit shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
+                        isEmailColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
                       )}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

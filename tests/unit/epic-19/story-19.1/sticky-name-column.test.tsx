@@ -353,7 +353,7 @@ describe("Story 19.1: Sticky Name Column", () => {
   });
 
   describe("Compatibility with existing features", () => {
-    it("should not affect action column sticky behavior", async () => {
+    it("should not make action column sticky (user preference)", async () => {
       render(
         <EmployeeTable
           employees={mockEmployees}
@@ -371,10 +371,10 @@ describe("Story 19.1: Sticky Name Column", () => {
         }
       });
 
-      // If actions header exists (HR Admin view), verify it's still sticky
+      // Action column should NOT be sticky (per user request)
       if (actionsHeader) {
-        expect(actionsHeader.className).toContain("sticky");
-        expect(actionsHeader.className).toContain("right-0");
+        expect(actionsHeader.className).not.toContain("sticky");
+        expect(actionsHeader.className).not.toContain("right-0");
       }
     });
   });

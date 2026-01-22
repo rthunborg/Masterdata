@@ -239,7 +239,7 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
       }
     });
 
-    it("should maintain existing sticky action column on right", async () => {
+    it("should not make action column sticky (user preference)", async () => {
       render(
         <ImportantDatesTable
           dates={mockImportantDates}
@@ -258,9 +258,10 @@ describe("Story 19.10: Sticky Columns on Additional Dashboards", () => {
         }
       });
 
+      // Action column should NOT be sticky (per user request)
       if (actionsHeader) {
-        expect(actionsHeader.className).toContain("sticky");
-        expect(actionsHeader.className).toContain("right-0");
+        expect(actionsHeader.className).not.toContain("sticky");
+        expect(actionsHeader.className).not.toContain("right-0");
       }
     });
   });
