@@ -70,7 +70,11 @@ describe("GET /api/important-dates/available-omc", () => {
     vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as any);
   });
 
-  it("should return only unassigned ÖMC dates", async () => {
+  it("should return ÖMC dates with remaining capacity (not filtered by assignment)", async () => {
+    // Note: Unlike PE3 dates (unique per employee), ÖMC dates have capacity (multiple employees per date)
+    // Dates should be filtered by remaining_spots, NOT by whether any employee is assigned
+    const currentYear = new Date().getFullYear();
+    
     // Mock authentication
     mockSupabaseClient.auth.getSession.mockResolvedValue({
       data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
@@ -98,23 +102,22 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
             data: [
               {
                 id: "date-1",
                 week_number: 10,
-                year: 2025,
+                year: currentYear,
                 category: "ÖMC Dates",
                 date_description: "8-9 mars",
-                date_value: "2025-03-08",
+                date_value: `${currentYear}-03-08`,
                 notes: null,
                 time_value: null,
                 max_spots: 20,
-                remaining_spots: 15,
+                remaining_spots: 15, // Has capacity
                 is_active: true,
                 created_at: "2025-01-01T00:00:00Z",
                 updated_at: "2025-01-01T00:00:00Z",
@@ -122,14 +125,14 @@ describe("GET /api/important-dates/available-omc", () => {
               {
                 id: "date-2",
                 week_number: 14,
-                year: 2025,
+                year: currentYear,
                 category: "ÖMC Dates",
                 date_description: "5-6 april",
-                date_value: "2025-04-05",
+                date_value: `${currentYear}-04-05`,
                 notes: null,
                 time_value: null,
                 max_spots: 20,
-                remaining_spots: 10,
+                remaining_spots: 10, // Has capacity (even though employees may be assigned)
                 is_active: true,
                 created_at: "2025-01-01T00:00:00Z",
                 updated_at: "2025-01-01T00:00:00Z",
@@ -137,14 +140,14 @@ describe("GET /api/important-dates/available-omc", () => {
               {
                 id: "date-3",
                 week_number: 20,
-                year: 2025,
+                year: currentYear,
                 category: "ÖMC Dates",
                 date_description: "17-18 maj",
-                date_value: "2025-05-17",
+                date_value: `${currentYear}-05-17`,
                 notes: null,
                 time_value: null,
                 max_spots: 20,
-                remaining_spots: 18,
+                remaining_spots: 0, // NO capacity - should be filtered out
                 is_active: true,
                 created_at: "2025-01-01T00:00:00Z",
                 updated_at: "2025-01-01T00:00:00Z",
@@ -153,19 +156,9 @@ describe("GET /api/important-dates/available-omc", () => {
             error: null,
           }),
         };
-      }
-
-      if (table === "employees") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          not: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            data: [
-              { omc_date: "date-2" }, // date-2 is assigned
-            ],
-            error: null,
-          }),
-        };
+        // Chain eq calls to return mockChain for each call
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
@@ -175,13 +168,17 @@ describe("GET /api/important-dates/available-omc", () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data).toHaveLength(2); // Only date-1 and date-3 (date-2 is assigned)
+    // Both date-1 and date-2 should be available (they have remaining capacity)
+    // date-3 should NOT be available (no capacity)
+    expect(json.data).toHaveLength(2);
     expect(json.data[0].id).toBe("date-1");
-    expect(json.data[1].id).toBe("date-3");
+    expect(json.data[1].id).toBe("date-2");
     expect(json.meta.total).toBe(2);
   });
 
   it("should return future dates only (excluding past dates except Jan 1 current year)", async () => {
+    const currentYear = new Date().getFullYear();
+    
     // Mock authentication
     mockSupabaseClient.auth.getSession.mockResolvedValue({
       data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
@@ -209,19 +206,18 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
             data: [
               {
                 id: "date-future",
                 week_number: 20,
-                year: 2025,
+                year: currentYear,
                 category: "ÖMC Dates",
                 date_description: "17-18 maj",
-                date_value: "2025-05-17",
+                date_value: `${currentYear}-05-17`,
                 notes: null,
                 time_value: null,
                 max_spots: 20,
@@ -234,17 +230,8 @@ describe("GET /api/important-dates/available-omc", () => {
             error: null,
           }),
         };
-      }
-
-      if (table === "employees") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          not: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            data: [],
-            error: null,
-          }),
-        };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
@@ -255,7 +242,7 @@ describe("GET /api/important-dates/available-omc", () => {
 
     expect(response.status).toBe(200);
     expect(json.data).toHaveLength(1);
-    expect(json.data[0].date_value).toBe("2025-05-17");
+    expect(json.data[0].date_value).toBe(`${currentYear}-05-17`);
   });
 
   it("should include Jan 1 current year even if in the past", async () => {
@@ -290,10 +277,9 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
             // Simulate that the query returns Jan 1 (past) + future dates
             data: [
@@ -331,17 +317,8 @@ describe("GET /api/important-dates/available-omc", () => {
             error: null,
           }),
         };
-      }
-
-      if (table === "employees") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          not: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            data: [],
-            error: null,
-          }),
-        };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
@@ -390,14 +367,11 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
-            // The DB query with .or() filter should NOT return previous year Jan 1
-            // because it only matches: date_value >= today OR date_value = jan1CurrentYear
-            // This mock simulates correct DB behavior - only current year Jan 1 + future dates
+            // This mock simulates correct DB behavior - only current year dates
             data: [
               {
                 id: "date-jan1-current",
@@ -433,17 +407,8 @@ describe("GET /api/important-dates/available-omc", () => {
             error: null,
           }),
         };
-      }
-
-      if (table === "employees") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          not: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            data: [],
-            error: null,
-          }),
-        };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
@@ -494,10 +459,9 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
             // DB returns in date order, but API should reorder with Jan 1 first
             data: [
@@ -550,17 +514,8 @@ describe("GET /api/important-dates/available-omc", () => {
             error: null,
           }),
         };
-      }
-
-      if (table === "employees") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          not: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            data: [],
-            error: null,
-          }),
-        };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
@@ -612,10 +567,9 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
             data: [
               {
@@ -667,17 +621,8 @@ describe("GET /api/important-dates/available-omc", () => {
             error: null,
           }),
         };
-      }
-
-      if (table === "employees") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          not: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            data: [], // No dates assigned
-            error: null,
-          }),
-        };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
@@ -698,18 +643,17 @@ describe("GET /api/important-dates/available-omc", () => {
     expect(json.data[1].remaining_spots).toBe(15);
   });
 
-  it("should update when employee ÖMC date is cleared", async () => {
-    // This test simulates two separate API calls
-    // First call: date-2 is assigned to an employee
-    // Second call: ÖMC date cleared (employee deleted or omc_date set to null)
+  it("should return all dates with remaining capacity regardless of employee assignments", async () => {
+    // Unlike PE3 dates (unique per employee), ÖMC dates have capacity (multiple employees per date)
+    // Dates should be filtered by remaining_spots, not by whether any employee is assigned
+    // This test verifies that dates with capacity are available even if employees are assigned
+    const currentYear = new Date().getFullYear();
 
-    // First call setup
     mockSupabaseClient.auth.getSession.mockResolvedValueOnce({
       data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
       error: null,
     });
 
-    let callCount = 0;
     mockSupabaseClient.from.mockImplementation((table: string) => {
       if (table === "users") {
         return {
@@ -731,23 +675,22 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
             data: [
               {
                 id: "date-1",
                 week_number: 10,
-                year: 2025,
+                year: currentYear,
                 category: "ÖMC Dates",
                 date_description: "8-9 mars",
-                date_value: "2025-03-08",
+                date_value: `${currentYear}-03-08`,
                 notes: null,
                 time_value: null,
                 max_spots: 20,
-                remaining_spots: 15,
+                remaining_spots: 15, // Has capacity
                 is_active: true,
                 created_at: "2025-01-01T00:00:00Z",
                 updated_at: "2025-01-01T00:00:00Z",
@@ -755,14 +698,29 @@ describe("GET /api/important-dates/available-omc", () => {
               {
                 id: "date-2",
                 week_number: 14,
-                year: 2025,
+                year: currentYear,
                 category: "ÖMC Dates",
                 date_description: "5-6 april",
-                date_value: "2025-04-05",
+                date_value: `${currentYear}-04-05`,
                 notes: null,
                 time_value: null,
                 max_spots: 20,
-                remaining_spots: 10,
+                remaining_spots: 10, // Has capacity (even though employees are assigned)
+                is_active: true,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+              {
+                id: "date-3",
+                week_number: 18,
+                year: currentYear,
+                category: "ÖMC Dates",
+                date_description: "3-4 maj",
+                date_value: `${currentYear}-05-03`,
+                notes: null,
+                time_value: null,
+                max_spots: 20,
+                remaining_spots: 0, // No capacity - should be filtered out
                 is_active: true,
                 created_at: "2025-01-01T00:00:00Z",
                 updated_at: "2025-01-01T00:00:00Z",
@@ -771,46 +729,23 @@ describe("GET /api/important-dates/available-omc", () => {
             error: null,
           }),
         };
-      }
-
-      if (table === "employees") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          not: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            // First call: date-2 is assigned
-            // Second call: no dates assigned
-            data: callCount === 0 ? [{ omc_date: "date-2" }] : [],
-            error: null,
-          }),
-        };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
     });
 
-    // First call
-    const response1 = await GET();
-    const json1 = await response1.json();
+    const response = await GET();
+    const json = await response.json();
 
-    expect(json1.data).toHaveLength(1); // Only date-1 available
-    expect(json1.data[0].id).toBe("date-1");
-
-    // Increment call count to simulate state change
-    callCount++;
-
-    // Second call: ÖMC date cleared
-    mockSupabaseClient.auth.getSession.mockResolvedValueOnce({
-      data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
-      error: null,
-    });
-
-    const response2 = await GET();
-    const json2 = await response2.json();
-
-    expect(json2.data).toHaveLength(2); // Both dates now available
-    expect(json2.data[0].id).toBe("date-1");
-    expect(json2.data[1].id).toBe("date-2");
+    // Both date-1 and date-2 should be available (they have remaining capacity)
+    // date-3 should NOT be available (no capacity)
+    expect(json.data).toHaveLength(2);
+    expect(json.data[0].id).toBe("date-1");
+    expect(json.data[1].id).toBe("date-2");
+    // Verify date-3 (no capacity) is not included
+    expect(json.data.find((d: { id: string }) => d.id === "date-3")).toBeUndefined();
   });
 
   it("should require authentication", async () => {
@@ -854,26 +789,16 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
             data: [],
             error: null,
           }),
         };
-      }
-
-      if (table === "employees") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          not: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({
-            data: [],
-            error: null,
-          }),
-        };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
@@ -919,15 +844,16 @@ describe("GET /api/important-dates/available-omc", () => {
       }
 
       if (table === "important_dates") {
-        return {
+        const mockChain = {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({
             data: null,
             error: { message: "Database connection error" },
           }),
         };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
       }
 
       return {};
