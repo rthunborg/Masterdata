@@ -639,7 +639,7 @@ describe("PATCH /api/employees/[id]", () => {
       email: "updated@example.com",
       updated_at: "2025-10-27T15:30:00Z",      };
 
-    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
@@ -668,7 +668,7 @@ describe("PATCH /api/employees/[id]", () => {
       rank: "SEV" as const,
       updated_at: "2025-10-27T15:30:00Z",      };
 
-    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
@@ -691,7 +691,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 400 for invalid email format", async () => {
-    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -707,7 +707,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 400 for invalid SSN format", async () => {
-    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -723,7 +723,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 400 for empty update object", async () => {
-    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -739,7 +739,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 404 for non-existent employee", async () => {
-    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.update).mockRejectedValue(
       new Error("Employee with ID nonexistent-id not found")
     );
@@ -758,7 +758,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 409 for duplicate SSN", async () => {
-    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockRejectedValue(
       new Error("Employee with SSN 19900101-1234 already exists")
@@ -778,7 +778,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeEditorAPI).mockRejectedValue(
       new Error("Authentication required")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -806,7 +806,7 @@ describe("PATCH /api/employees/[id]", () => {
   });
 
   it("should return 403 for non-HR Admin users", async () => {
-    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeEditorAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -839,7 +839,7 @@ describe("PATCH /api/employees/[id]", () => {
       mobile: null,
       updated_at: "2025-10-27T15:30:00Z",      };
 
-    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee);
 
