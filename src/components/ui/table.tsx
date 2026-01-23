@@ -28,8 +28,9 @@ function Table({ className, containerRef, maxHeight, ...props }: TableProps) {
       // This makes sticky headers work because the sticky element sticks within this scroll container.
       // Without maxHeight, vertical scrolling happens at the page level, and sticky headers won't work
       // because CSS computes overflow-y as 'auto' when overflow-x is 'auto' (even if you set overflow-y: visible).
+      // max-w-full ensures the container doesn't expand beyond its parent, keeping horizontal scroll internal.
       className={cn(
-        "relative w-full overflow-x-auto",
+        "relative w-full max-w-full overflow-x-auto",
         maxHeight && "overflow-y-auto"
       )}
       style={maxHeight ? { maxHeight } : undefined}

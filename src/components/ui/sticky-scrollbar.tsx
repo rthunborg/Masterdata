@@ -220,11 +220,15 @@ export function StickyScrollbar({
       className={cn(
         "fixed bottom-0 left-0 right-0 overflow-x-auto overflow-y-hidden",
         "bg-background/80 backdrop-blur-sm border-t",
+        // Ensure sticky scrollbar doesn't cause page-level overflow
+        "max-w-[100vw]",
         className
       )}
       style={{
         zIndex,
         height: "17px", // Standard scrollbar height
+        // Explicitly constrain width to viewport
+        width: "100vw",
       }}
       aria-hidden="true"
       data-testid="sticky-scrollbar"
