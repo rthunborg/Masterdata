@@ -229,6 +229,11 @@ export function StickyScrollbar({
         height: "17px", // Standard scrollbar height
         // Explicitly constrain width to viewport
         width: "100vw",
+        // Create a new containing block and isolate from document width calculations
+        // Using transform creates a containing block that prevents child widths from affecting document scroll
+        transform: "translateZ(0)",
+        // CSS containment to prevent layout from affecting ancestors
+        contain: "layout size style paint",
       }}
       aria-hidden="true"
       data-testid="sticky-scrollbar"
