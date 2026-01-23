@@ -2019,7 +2019,7 @@ export function EmployeeTable({
 
       {/* Filters + tallies row */}
       {((isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange)) || employees.length > 0) && (
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 mb-4 pt-4">
+        <div className="flex flex-wrap items-center gap-4 mb-4 pt-4 w-full max-w-full">
           {/* Filter checkboxes - always show for HR Admin (simulated in preview mode) */}
           {isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
             <div className="flex flex-wrap items-center gap-4">
@@ -2096,7 +2096,9 @@ export function EmployeeTable({
           {/* Search Input and Column Visibility */}
 
           <div className={cn(
-            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4"
+            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4",
+            // Prevent controls from exceeding viewport width
+            "w-full max-w-full"
           )}>
 
             <div className="relative flex-1 max-w-sm w-full">
