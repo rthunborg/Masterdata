@@ -117,8 +117,14 @@ export function StickyScrollbar({
     const container = containerRef.current;
     if (!container) return;
 
-    // Initial update
-    updateDimensions();
+    // Initial update - use requestAnimationFrame to ensure container is fully rendered
+    requestAnimationFrame(() => {
+      updateDimensions();
+      // Double-check after a short delay to catch any late layout changes
+      setTimeout(() => {
+        updateDimensions();
+      }, 100);
+    });
 
     // Listen to container scroll
     container.addEventListener("scroll", handleContainerScroll, { passive: true });
@@ -145,15 +151,16 @@ export function StickyScrollbar({
   }, [containerRef, handleContainerScroll, updateDimensions, updateVisibility]);
 
   // Listen to sticky scrollbar scroll
+  // This effect needs to re-run when isVisible changes because the scrollbar might not exist yet
   React.useEffect(() => {
     const stickyScrollbar = stickyScrollbarRef.current;
-    if (!stickyScrollbar) return;
+    if (!stickyScrollbar || !isVisible) return;
 
     stickyScrollbar.addEventListener("scroll", handleStickyScroll, { passive: true });
     return () => {
       stickyScrollbar.removeEventListener("scroll", handleStickyScroll);
     };
-  }, [handleStickyScroll]);
+  }, [handleStickyScroll, isVisible]);
 
   // Sync initial scroll position when component becomes visible
   React.useEffect(() => {
