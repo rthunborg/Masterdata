@@ -181,14 +181,21 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                 <FormItem>
                   <FormLabel>Kolumnnamn (Visningsnamn) *</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="t.ex., Meal Plan, Training Status, Room Number"
-                      {...field}
-                      disabled={isSubmitting}
-                    />
+                    <div className="relative">
+                      <Input
+                        placeholder="t.ex., Meal Plan, Training Status, Room Number"
+                        {...field}
+                        disabled={isSubmitting}
+                        maxLength={50}
+                        className="pr-14"
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                        {field.value?.length || 0}/50
+                      </div>
+                    </div>
                   </FormControl>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Detta namn visas i tabellhuvudet och i gränssnittet. Kan innehålla mellanslag och specialtecken.
+                    Detta namn visas i tabellhuvudet och i gränssnittet. Kan innehålla mellanslag och specialtecken. Max 50 tecken.
                   </p>
                   <FormMessage />
                 </FormItem>

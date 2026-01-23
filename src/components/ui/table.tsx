@@ -99,9 +99,11 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-12 px-4 text-center align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-foreground h-12 px-4 text-center align-middle font-medium [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         // Story 19.13: Ensure header cells have background for sticky headers
         "bg-background",
+        // Header text handling: allow wrapping but constrain width to prevent overflow
+        "max-w-[200px]",
         className
       )}
       {...props}

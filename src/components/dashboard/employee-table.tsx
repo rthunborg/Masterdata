@@ -122,7 +122,7 @@ import {
 } from "@/components/ui/tooltip";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2 } from "lucide-react";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit } from "lucide-react";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1261,95 +1261,125 @@ export function EmployeeTable({
           const displayName = config.column_name;
 
 
-          // Add lock icon for read-only columns
+          // Determine permission indicator for preview mode
+          // Show eye icon for view-only, edit icon for editable columns
+          const showPermissionIndicator = isPreviewMode && hasEditPermission;
+          const isViewOnly = isPreviewMode && !hasEditPermission;
+
 
           return (
 
-            <div
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
 
-              className={cn(
+                  className={cn(
 
-                column.getCanSort()
+                    column.getCanSort()
 
-                  ? "flex items-center gap-2 cursor-pointer select-none hover:text-foreground"
+                      ? "flex items-center gap-1.5 cursor-pointer select-none hover:text-foreground"
 
-                  : "flex items-center gap-2",
+                      : "flex items-center gap-1.5",
 
-                column.getIsSorted() && "font-semibold"
-
-              )}
-
-              onClick={column.getCanSort() ? column.getToggleSortingHandler() : undefined}
-
-              role={column.getCanSort() ? "button" : undefined}
-
-              tabIndex={column.getCanSort() ? 0 : undefined}
-
-              onKeyDown={(e) => {
-
-                if (column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
-
-                  e.preventDefault();
-
-                  column.getToggleSortingHandler()?.(e);
-
-                }
-
-              }}
-
-              aria-label={
-
-                column.getCanSort()
-
-                  ? `Sort by ${displayName}${column.getIsSorted() === "asc"
-
-                    ? ", currently sorted ascending"
-
-                    : column.getIsSorted() === "desc"
-
-                      ? ", currently sorted descending"
-
-                      : ""
-
-                  }${!canEdit ? " (read-only)" : ""}`
-
-                  : !canEdit ? `${displayName} (read-only)` : displayName
-
-              }
-
-            >
-
-              <span>{displayName}</span>
-
-              {!canEdit && (
-
-                <Lock className={cn(iconSizeClass, "text-gray-400")} aria-hidden="true" />
-
-              )}
-
-              {column.getCanSort() && (
-
-                <span className="ml-auto" aria-hidden="true">
-
-                  {column.getIsSorted() === "asc" ? (
-
-                    <ArrowUp className={iconSizeClass} />
-
-                  ) : column.getIsSorted() === "desc" ? (
-
-                    <ArrowDown className={iconSizeClass} />
-
-                  ) : (
-
-                    <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
+                    column.getIsSorted() && "font-semibold"
 
                   )}
 
-                </span>
+                  onClick={column.getCanSort() ? column.getToggleSortingHandler() : undefined}
 
-              )}
+                  role={column.getCanSort() ? "button" : undefined}
 
-            </div>
+                  tabIndex={column.getCanSort() ? 0 : undefined}
+
+                  onKeyDown={(e) => {
+
+                    if (column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
+
+                      e.preventDefault();
+
+                      column.getToggleSortingHandler()?.(e);
+
+                    }
+
+                  }}
+
+                  aria-label={
+
+                    column.getCanSort()
+
+                      ? `Sort by ${displayName}${column.getIsSorted() === "asc"
+
+                        ? ", currently sorted ascending"
+
+                        : column.getIsSorted() === "desc"
+
+                          ? ", currently sorted descending"
+
+                          : ""
+
+                      }${!canEdit ? " (read-only)" : ""}`
+
+                      : !canEdit ? `${displayName} (read-only)` : displayName
+
+                  }
+
+                >
+
+                  {/* Header text with truncation */}
+                  <span className="truncate max-w-[160px]" title={displayName}>
+                    {displayName}
+                  </span>
+
+                  {/* Permission indicator for preview mode */}
+                  {showPermissionIndicator && (
+                    <Edit className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                  )}
+                  {isViewOnly && (
+                    <Eye className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                  )}
+
+                  {/* Legacy lock icon (kept for non-preview mode) */}
+                  {!canEdit && !isPreviewMode && (
+
+                    <Lock className={cn(iconSizeClass, "text-gray-400 flex-shrink-0")} aria-hidden="true" />
+
+                  )}
+
+                  {column.getCanSort() && (
+
+                    <span className="ml-auto flex-shrink-0" aria-hidden="true">
+
+                      {column.getIsSorted() === "asc" ? (
+
+                        <ArrowUp className={iconSizeClass} />
+
+                      ) : column.getIsSorted() === "desc" ? (
+
+                        <ArrowDown className={iconSizeClass} />
+
+                      ) : (
+
+                        <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
+
+                      )}
+
+                    </span>
+
+                  )}
+
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="space-y-1">
+                  <p className="font-medium">{displayName}</p>
+                  {isPreviewMode && (
+                    <p className="text-xs text-muted-foreground">
+                      {canEdit ? "Editable" : "View only"}
+                    </p>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
 
           );
 

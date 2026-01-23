@@ -38,7 +38,7 @@ export const createCustomColumnSchema = z.object({
   column_name: z
     .string()
     .min(1, "Display name is required")
-    .max(100, "Display name must be less than 100 characters"),
+    .max(50, "Display name must be less than 50 characters"),
   db_column_name: z
     .string()
     .min(1, "Database column name is required")
@@ -94,7 +94,7 @@ export const updateColumnSchema = z.object({
   column_name: z
     .string()
     .min(1, "Column name is required")
-    .max(100, "Column name must be less than 100 characters")
+    .max(50, "Column name must be less than 50 characters")
     .optional(),
   column_type: z.enum(["text", "number", "date", "boolean"]).optional(),
   category: z.string().max(100).optional(),
@@ -164,7 +164,7 @@ export const updateColumnConfigSchema = z.object({
   column_name: z
     .string()
     .min(1, "Display name is required")
-    .max(100, "Display name must be less than 100 characters")
+    .max(50, "Display name must be less than 50 characters")
     .optional(),
   // Story 19.5: Mark boolean column as checklist item for progress indicator
   is_checklist_item: z.boolean().optional(),
