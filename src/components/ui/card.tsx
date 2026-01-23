@@ -11,6 +11,10 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       ref={ref}
       className={cn(
         "rounded-lg border shadow-sm",
+        // overflow-hidden prevents content (like wide tables) from expanding
+        // the card beyond its container, ensuring horizontal scroll stays
+        // within the table container rather than creating a page-level scrollbar
+        "overflow-hidden",
         variant === 'default' && "bg-card text-card-foreground",
         variant === 'beige' && "bg-accent text-accent-foreground",
         className
