@@ -288,7 +288,7 @@ export default function DashboardPage() {
       <EditColumnModal />
       
       {/* Floating Action Button for Mobile - Only for users who can add employees */}
-      {isMobile && canAdd && (
+      {isMobile && canAddEffective && (
         <FloatingActionButton 
           onAddEmployee={() => setIsAddModalOpen(true)}
           onImportCSV={() => setIsImportModalOpen(true)}
