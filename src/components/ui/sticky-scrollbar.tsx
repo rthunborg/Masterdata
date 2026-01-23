@@ -65,11 +65,9 @@ export function StickyScrollbar({
       return;
     }
 
-    const containerRect = container.getBoundingClientRect();
-    // The actual scrollbar is at the bottom of the container
-    // Show sticky scrollbar when the container bottom is below the viewport
-    const scrollbarVisible = containerRect.bottom <= window.innerHeight;
-    setIsVisible(!scrollbarVisible);
+    // Always show sticky scrollbar when there's horizontal overflow
+    // This allows users to scroll horizontally even when at the top of the page
+    setIsVisible(true);
   }, [containerRef]);
 
   // Update content width to match table scroll width
