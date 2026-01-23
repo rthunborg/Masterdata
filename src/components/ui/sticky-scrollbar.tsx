@@ -123,8 +123,7 @@ export function StickyScrollbar({
     // Listen to container scroll
     container.addEventListener("scroll", handleContainerScroll, { passive: true });
 
-    // Listen to window scroll and resize for visibility updates
-    window.addEventListener("scroll", updateVisibility, { passive: true });
+    // Listen to resize for dimension updates
     window.addEventListener("resize", updateDimensions, { passive: true });
 
     // Use ResizeObserver to detect content size changes
@@ -138,54 +137,10 @@ export function StickyScrollbar({
       resizeObserver.observe(container.firstElementChild);
     }
 
-    // Use IntersectionObserver to detect when container bottom enters/exits viewport
-    const intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          // We're observing a sentinel at the bottom of the container
-          // When it's visible, the actual scrollbar is visible too
-          // When it's not visible, we should show the sticky scrollbar
-          const hasHorizontalOverflow = container.scrollWidth > container.clientWidth;
-          if (hasHorizontalOverflow) {
-            setIsVisible(!entry.isIntersecting);
-          }
-        }
-      },
-      {
-        // Observe when the bottom of the container enters/exits the viewport
-        rootMargin: "0px 0px 0px 0px",
-        threshold: 0,
-      }
-    );
-
-    // Create a sentinel element at the bottom of the container to observe
-    const sentinel = document.createElement("div");
-    sentinel.style.height = "1px";
-    sentinel.style.width = "100%";
-    sentinel.style.position = "absolute";
-    sentinel.style.bottom = "0";
-    sentinel.style.pointerEvents = "none";
-    sentinel.setAttribute("data-sticky-scrollbar-sentinel", "true");
-
-    // We need to make the container position relative if it isn't already
-    const containerPosition = getComputedStyle(container).position;
-    if (containerPosition === "static") {
-      container.style.position = "relative";
-    }
-    container.appendChild(sentinel);
-    intersectionObserver.observe(sentinel);
-
     return () => {
       container.removeEventListener("scroll", handleContainerScroll);
-      window.removeEventListener("scroll", updateVisibility);
       window.removeEventListener("resize", updateDimensions);
       resizeObserver.disconnect();
-      intersectionObserver.disconnect();
-      // Clean up sentinel
-      const existingSentinel = container.querySelector("[data-sticky-scrollbar-sentinel]");
-      if (existingSentinel) {
-        container.removeChild(existingSentinel);
-      }
     };
   }, [containerRef, handleContainerScroll, updateDimensions, updateVisibility]);
 
