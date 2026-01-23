@@ -31,10 +31,14 @@ export function useColumns(effectiveRole?: UserRole) {
 
     try {
       setIsLoading(true);
-      const allColumns = await columnService.getAll();
+      
+      // Pass the role to the API for server-side filtering
+      // This is essential for preview mode where HR Admin needs to see
+      // columns configured for other roles (not just their own)
+      const allColumns = await columnService.getAll(roleToUse);
 
-      // Filter columns by role permissions
-      // admin_limited inherits view permissions from hr_admin
+      // The API already filters by role, but we keep this client-side filter
+      // as a safety measure and for admin_limited -> hr_admin inheritance
       const roleForView = roleToUse === 'admin_limited' ? 'hr_admin' : roleToUse;
       const visibleColumns = allColumns.filter((column) => {
         const rolePerms = column.role_permissions[roleForView];

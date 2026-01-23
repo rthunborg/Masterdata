@@ -45,8 +45,11 @@ const ImportEmployeesModal = dynamic(
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { openModal } = useUIStore();
+  const { openModal, previewRole } = useUIStore();
   const t = useTranslations('dashboard');
+  
+  // Effective role for UI simulation in preview mode
+  const effectiveRole = previewRole || user?.role;
   const isMobile = useMediaQuery('(max-width: 1023px)');
   const tErrors = useTranslations('errors');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -185,11 +188,14 @@ export default function DashboardPage() {
     );
   }
 
-  // Check if user has admin access (HR Admin or Recruiter)
+  // Check if user has admin access (HR Admin or Recruiter) - actual user role
   const isAdmin = hasAdminAccess(user?.role as UserRole) || user?.role === UserRole.RECRUITER;
   const isHRAdminUser = isHRAdmin(user?.role as UserRole);
-  // Check if user can add employees (excludes Administrator role)
-  const canAdd = canAddEmployee(user?.role as UserRole);
+  
+  // Effective role checks for UI simulation in preview mode
+  // When HR Admin previews as Sodexo, these will reflect what Sodexo would see
+  const canAddEffective = canAddEmployee(effectiveRole as UserRole);
+  const isExternalPartyEffective = isExternalParty(effectiveRole as UserRole);
 
   return (
     <div className="space-y-6">
@@ -214,7 +220,7 @@ export default function DashboardPage() {
           {/* Role Selector - Only for HR Admin */}
           <RoleSelector />
 
-          {canAdd ? (
+          {canAddEffective ? (
             <>
               <Button onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -225,7 +231,7 @@ export default function DashboardPage() {
                 {t('actions.importEmployees')}
               </Button>
             </>
-          ) : isExternalParty(user?.role as UserRole) ? (
+          ) : isExternalPartyEffective ? (
             <div className="flex gap-2">
               <Button onClick={() => openModal('addColumn')}>
                 <Plus className="mr-2 h-4 w-4" />

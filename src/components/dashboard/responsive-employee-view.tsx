@@ -64,6 +64,10 @@ export function ResponsiveEmployeeView({
   const { user } = useAuth();
   const { previewRole } = useUIStore();
   const effectiveRole = previewRole || user?.role;
+  
+  // isEffectivelyHRAdmin: For UI simulation in preview mode
+  // When previewing as Sodexo, this will be false (simulating what Sodexo sees)
+  const isEffectivelyHRAdmin = effectiveRole === "hr_admin";
 
   // Fetch column configurations for mobile view
   const { columns: columnConfigs } = useColumns(effectiveRole);
@@ -165,7 +169,7 @@ export function ResponsiveEmployeeView({
         <EmployeeCardList
           employees={filteredEmployees}
           isLoading={isLoading}
-          isHRAdmin={isHRAdmin}
+          isHRAdmin={isEffectivelyHRAdmin}
           searchValue={searchValue}
           onSearchChange={handleSearchChange}
           onArchive={handleArchive}

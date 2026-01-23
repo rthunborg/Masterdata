@@ -173,6 +173,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Prevent page-level horizontal scrollbar - horizontal scroll should only happen 
+     inside table containers with overflow-x-auto */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
   body {
     @apply bg-background text-foreground;
     /* Responsive typography: 14px on mobile, 15px on tablet, 16px on desktop */
