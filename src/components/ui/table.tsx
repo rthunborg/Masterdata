@@ -24,23 +24,15 @@ function Table({ className, containerRef, maxHeight, ...props }: TableProps) {
     <div
       ref={containerRef}
       data-slot="table-container"
-      // When maxHeight is set, we enable both horizontal and vertical scrolling within this container.
-      // This makes sticky headers work because the sticky element sticks within this scroll container.
-      // Without maxHeight, vertical scrolling happens at the page level, and sticky headers won't work
-      // because CSS computes overflow-y as 'auto' when overflow-x is 'auto' (even if you set overflow-y: visible).
-      // max-w-full ensures the container doesn't expand beyond its parent, keeping horizontal scroll internal.
+      // When maxHeight is set, we enable vertical scrolling within this container for sticky headers.
+      // Horizontal scrolling is now handled at the page level for better UX.
+      // The wide table will cause a page-level horizontal scrollbar to appear.
       className={cn(
-        "relative w-full max-w-full overflow-x-auto",
+        "relative w-full",
         maxHeight && "overflow-y-auto"
       )}
       style={{
         ...(maxHeight ? { maxHeight } : {}),
-        // Isolate this scroll container from document-level scrollbar calculations
-        // This prevents the browser from showing a phantom document scrollbar
-        // when this container's wide content scrolls
-        contain: "layout style paint",
-        // Create a new stacking context to further isolate from document
-        isolation: "isolate",
       }}
     >
       <table

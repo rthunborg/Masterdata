@@ -200,8 +200,8 @@ import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
 
-// Story 19.9: Sticky horizontal scrollbar
-import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
+// Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar
+// import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2273,12 +2273,7 @@ export function EmployeeTable({
           </div>
 
           <div 
-            className="rounded-md border overflow-hidden max-w-full"
-            style={{
-              // Ensure this wrapper doesn't contribute to document-level overflow
-              contain: "layout style paint",
-              isolation: "isolate",
-            }}
+            className="rounded-md border"
           >
 
             {/* Story 19.9: Pass container ref for sticky scrollbar */}
@@ -2656,8 +2651,7 @@ export function EmployeeTable({
 
             </Table>
 
-            {/* Story 19.9: Sticky horizontal scrollbar */}
-            <StickyScrollbar containerRef={tableContainerRef} />
+            {/* Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar */}
 
           </div>
 
