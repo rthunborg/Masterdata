@@ -33,7 +33,15 @@ function Table({ className, containerRef, maxHeight, ...props }: TableProps) {
         "relative w-full max-w-full overflow-x-auto",
         maxHeight && "overflow-y-auto"
       )}
-      style={maxHeight ? { maxHeight } : undefined}
+      style={{
+        ...(maxHeight ? { maxHeight } : {}),
+        // Isolate this scroll container from document-level scrollbar calculations
+        // This prevents the browser from showing a phantom document scrollbar
+        // when this container's wide content scrolls
+        contain: "layout style paint",
+        // Create a new stacking context to further isolate from document
+        isolation: "isolate",
+      }}
     >
       <table
         data-slot="table"

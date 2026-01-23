@@ -2272,7 +2272,14 @@ export function EmployeeTable({
 
           </div>
 
-          <div className="rounded-md border overflow-hidden max-w-full">
+          <div 
+            className="rounded-md border overflow-hidden max-w-full"
+            style={{
+              // Ensure this wrapper doesn't contribute to document-level overflow
+              contain: "layout style paint",
+              isolation: "isolate",
+            }}
+          >
 
             {/* Story 19.9: Pass container ref for sticky scrollbar */}
             {/* Story 19.13: maxHeight enables vertical scrolling within the table container, 
