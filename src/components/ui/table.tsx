@@ -24,20 +24,13 @@ function Table({ className, containerRef, maxHeight, ...props }: TableProps) {
     <div
       ref={containerRef}
       data-slot="table-container"
-      // When maxHeight is set, we enable vertical scrolling for sticky headers.
-      // For horizontal scrolling at page level: make container match table width
-      // so it doesn't constrain the table horizontally.
+      // When maxHeight is set, we enable both horizontal and vertical scrolling within this container.
+      // This makes sticky headers work because the sticky element sticks within this scroll container.
       className={cn(
-        "relative",
+        "relative w-full overflow-x-auto",
         maxHeight && "overflow-y-auto"
       )}
-      style={{
-        ...(maxHeight ? { maxHeight } : {}),
-        // Make container as wide as its content (the table)
-        // This allows the table's full width to propagate to the page level
-        width: "fit-content",
-        minWidth: "100%",
-      }}
+      style={maxHeight ? { maxHeight } : undefined}
     >
       <table
         data-slot="table"
