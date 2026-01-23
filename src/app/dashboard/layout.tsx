@@ -22,7 +22,7 @@ export default async function DashboardLayout({
   const showImportantDates = canManageEmployees(user.role as UserRole); // HR Admin & Recruiter
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Header />
       
       {/* Navigation - hidden on mobile, visible on desktop */}
@@ -66,7 +66,7 @@ export default async function DashboardLayout({
         </div>
       </nav>
 
-      <main className="w-full py-6 px-4 sm:px-6 lg:px-8">
+      <main className="w-full py-6 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
         {children}
       </main>
 
