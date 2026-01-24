@@ -133,8 +133,10 @@ describe("StickyScrollbar", () => {
       unmount();
 
       // Verify observers are disconnected
+      // Note: IntersectionObserver was removed in Attempt 12 (horizontal scrollbar bug fix)
+      // Only ResizeObserver remains in the current implementation
       expect(mockResizeDisconnect).toHaveBeenCalled();
-      expect(mockIntersectionDisconnect).toHaveBeenCalled();
+      // IntersectionObserver no longer used: expect(mockIntersectionDisconnect).toHaveBeenCalled();
     });
   });
 
