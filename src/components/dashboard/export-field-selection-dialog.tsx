@@ -65,7 +65,7 @@ interface ExportFieldSelectionDialogProps {
 
   visibleColumnIds: Set<string>;
 
-  onExport: (selectedFields: string[]) => void;
+  onExport: (selectedFields: string[], impersonatedRole?: string) => void;
 
 }
 
@@ -290,7 +290,8 @@ export function ExportFieldSelectionDialog({
 
       .filter((key): key is string => key !== undefined);
 
-    onExport(fieldKeys);
+    // Pass impersonated role if in preview mode (HR Admin only)
+    onExport(fieldKeys, previewRole || undefined);
 
     onOpenChange(false);
 
@@ -356,9 +357,23 @@ export function ExportFieldSelectionDialog({
 
           <DialogDescription>
 
-            {tDashboard("export.selectFieldsDescription") || 
+            {previewRole ? (
 
-              "Choose which fields to include in the export. Visible columns are pre-selected."}
+              <span className="text-amber-600 font-medium">
+
+                Exporting with {previewRole.toUpperCase()} view permissions. 
+
+                Fields shown match the impersonated role&apos;s view.
+
+              </span>
+
+            ) : (
+
+              tDashboard("export.selectFieldsDescription") || 
+
+              "Choose which fields to include in the export. Visible columns are pre-selected."
+
+            )}
 
           </DialogDescription>
 
