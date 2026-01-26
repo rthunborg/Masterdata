@@ -144,9 +144,12 @@ function EditableColumnNameCell({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         disabled={isUpdating}
-        className="h-8"
-        maxLength={100}
+        className="h-8 pr-12"
+        maxLength={50}
       />
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+        {inputValue.length}/50
+      </div>
     </div>
   );
 }

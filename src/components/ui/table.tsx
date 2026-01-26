@@ -26,8 +26,6 @@ function Table({ className, containerRef, maxHeight, ...props }: TableProps) {
       data-slot="table-container"
       // When maxHeight is set, we enable both horizontal and vertical scrolling within this container.
       // This makes sticky headers work because the sticky element sticks within this scroll container.
-      // Without maxHeight, vertical scrolling happens at the page level, and sticky headers won't work
-      // because CSS computes overflow-y as 'auto' when overflow-x is 'auto' (even if you set overflow-y: visible).
       className={cn(
         "relative w-full overflow-x-auto",
         maxHeight && "overflow-y-auto"
@@ -101,9 +99,11 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-12 px-4 text-center align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-foreground h-12 px-4 text-center align-middle font-medium [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         // Story 19.13: Ensure header cells have background for sticky headers
         "bg-background",
+        // Header text handling: allow wrapping but constrain width to prevent overflow
+        "max-w-[200px]",
         className
       )}
       {...props}

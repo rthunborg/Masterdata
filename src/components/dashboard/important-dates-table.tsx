@@ -673,7 +673,7 @@ export function ImportantDatesTable({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-hidden max-w-full">
         {/* Story 19.9: Pass container ref for sticky scrollbar */}
         {/* Story 19.13: maxHeight enables sticky headers by making table scroll internally */}
         <Table containerRef={tableContainerRef} maxHeight="calc(100vh - 350px)">

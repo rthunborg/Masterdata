@@ -34,10 +34,12 @@ export const columnService = {
   /**
    * Fetch all column configurations (user endpoint)
    * Returns all columns with full permission structure
+   * @param role - Optional role to filter by (for HR Admin preview mode)
    * @returns Array of column configurations
    */
-  async getAll(): Promise<ColumnConfig[]> {
-    const response = await fetch("/api/columns");
+  async getAll(role?: string): Promise<ColumnConfig[]> {
+    const url = role ? `/api/columns?role=${encodeURIComponent(role)}` : "/api/columns";
+    const response = await fetch(url);
 
     if (!response.ok) {
       const error = await response.json();

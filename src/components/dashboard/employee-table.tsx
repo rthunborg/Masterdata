@@ -122,7 +122,7 @@ import {
 } from "@/components/ui/tooltip";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2 } from "lucide-react";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit } from "lucide-react";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -189,7 +189,7 @@ import { cn } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { canEditField } from "@/lib/utils/role-utils";
-import { UserRole } from "@/lib/types/user";
+import { UserRole, INTERNAL_ROLES } from "@/lib/types/user";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -200,8 +200,8 @@ import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
 
-// Story 19.9: Sticky horizontal scrollbar
-import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
+// Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar
+// import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -284,6 +284,7 @@ export function EmployeeTable({
   isColumnChanged, // Story 16.5: Change detection function
 }: EmployeeTableProps) {
   const { user } = useAuth();
+  // isHRAdmin: The actual logged-in user's role (used for personal preferences & real permissions)
   const isHRAdmin = user?.role === "hr_admin";
   const t = useTranslations("tooltips");
   const tDashboard = useTranslations("dashboard");
@@ -301,8 +302,15 @@ export function EmployeeTable({
     }
   }, [user?.id, initColumnVisibility]);
 
-  // Determine effective role for column filtering
+  // Determine effective role for column filtering and UI simulation
   const effectiveRole = previewRole || user?.role;
+  
+  // isEffectivelyHRAdmin: For UI simulation in preview mode
+  // When previewing as Sodexo, this will be false (simulating what Sodexo sees)
+  const isEffectivelyHRAdmin = effectiveRole === "hr_admin";
+  
+  // isEffectivelyInternalUser: For features only visible to internal users (HR Admin, Recruiter, Admin Limited)
+  const isEffectivelyInternalUser = effectiveRole && INTERNAL_ROLES.includes(effectiveRole as UserRole);
 
   // Fetch column configurations based on effective role (for preview mode)
   const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns(effectiveRole);
@@ -1253,95 +1261,125 @@ export function EmployeeTable({
           const displayName = config.column_name;
 
 
-          // Add lock icon for read-only columns
+          // Determine permission indicator for preview mode
+          // Show eye icon for view-only, edit icon for editable columns
+          const showPermissionIndicator = isPreviewMode && hasEditPermission;
+          const isViewOnly = isPreviewMode && !hasEditPermission;
+
 
           return (
 
-            <div
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
 
-              className={cn(
+                  className={cn(
 
-                column.getCanSort()
+                    column.getCanSort()
 
-                  ? "flex items-center gap-2 cursor-pointer select-none hover:text-foreground"
+                      ? "flex items-center gap-1.5 cursor-pointer select-none hover:text-foreground"
 
-                  : "flex items-center gap-2",
+                      : "flex items-center gap-1.5",
 
-                column.getIsSorted() && "font-semibold"
-
-              )}
-
-              onClick={column.getCanSort() ? column.getToggleSortingHandler() : undefined}
-
-              role={column.getCanSort() ? "button" : undefined}
-
-              tabIndex={column.getCanSort() ? 0 : undefined}
-
-              onKeyDown={(e) => {
-
-                if (column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
-
-                  e.preventDefault();
-
-                  column.getToggleSortingHandler()?.(e);
-
-                }
-
-              }}
-
-              aria-label={
-
-                column.getCanSort()
-
-                  ? `Sort by ${displayName}${column.getIsSorted() === "asc"
-
-                    ? ", currently sorted ascending"
-
-                    : column.getIsSorted() === "desc"
-
-                      ? ", currently sorted descending"
-
-                      : ""
-
-                  }${!canEdit ? " (read-only)" : ""}`
-
-                  : !canEdit ? `${displayName} (read-only)` : displayName
-
-              }
-
-            >
-
-              <span>{displayName}</span>
-
-              {!canEdit && (
-
-                <Lock className={cn(iconSizeClass, "text-gray-400")} aria-hidden="true" />
-
-              )}
-
-              {column.getCanSort() && (
-
-                <span className="ml-auto" aria-hidden="true">
-
-                  {column.getIsSorted() === "asc" ? (
-
-                    <ArrowUp className={iconSizeClass} />
-
-                  ) : column.getIsSorted() === "desc" ? (
-
-                    <ArrowDown className={iconSizeClass} />
-
-                  ) : (
-
-                    <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
+                    column.getIsSorted() && "font-semibold"
 
                   )}
 
-                </span>
+                  onClick={column.getCanSort() ? column.getToggleSortingHandler() : undefined}
 
-              )}
+                  role={column.getCanSort() ? "button" : undefined}
 
-            </div>
+                  tabIndex={column.getCanSort() ? 0 : undefined}
+
+                  onKeyDown={(e) => {
+
+                    if (column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
+
+                      e.preventDefault();
+
+                      column.getToggleSortingHandler()?.(e);
+
+                    }
+
+                  }}
+
+                  aria-label={
+
+                    column.getCanSort()
+
+                      ? `Sort by ${displayName}${column.getIsSorted() === "asc"
+
+                        ? ", currently sorted ascending"
+
+                        : column.getIsSorted() === "desc"
+
+                          ? ", currently sorted descending"
+
+                          : ""
+
+                      }${!canEdit ? " (read-only)" : ""}`
+
+                      : !canEdit ? `${displayName} (read-only)` : displayName
+
+                  }
+
+                >
+
+                  {/* Header text with truncation */}
+                  <span className="truncate max-w-[160px]" title={displayName}>
+                    {displayName}
+                  </span>
+
+                  {/* Permission indicator for preview mode */}
+                  {showPermissionIndicator && (
+                    <Edit className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                  )}
+                  {isViewOnly && (
+                    <Eye className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                  )}
+
+                  {/* Legacy lock icon (kept for non-preview mode) */}
+                  {!canEdit && !isPreviewMode && (
+
+                    <Lock className={cn(iconSizeClass, "text-gray-400 flex-shrink-0")} aria-hidden="true" />
+
+                  )}
+
+                  {column.getCanSort() && (
+
+                    <span className="ml-auto flex-shrink-0" aria-hidden="true">
+
+                      {column.getIsSorted() === "asc" ? (
+
+                        <ArrowUp className={iconSizeClass} />
+
+                      ) : column.getIsSorted() === "desc" ? (
+
+                        <ArrowDown className={iconSizeClass} />
+
+                      ) : (
+
+                        <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
+
+                      )}
+
+                    </span>
+
+                  )}
+
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="space-y-1">
+                  <p className="font-medium">{displayName}</p>
+                  {isPreviewMode && (
+                    <p className="text-xs text-muted-foreground">
+                      {canEdit ? "Editable" : "View only"}
+                    </p>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
 
           );
 
@@ -1354,11 +1392,42 @@ export function EmployeeTable({
         ...(config.column_type === "date" && {
 
           sortingFn: (rowA, rowB) => {
+            // For Important Date fields (stena_date, omc_date, pe3_date), we need to look up
+            // the actual date_value from the ImportantDate object, not use the formatted display string
+            const importantDateFields = ["stena_date", "omc_date", "pe3_date", "repayment_needed_omc", "repayment_needed_pe3"];
+            const dbField = config.db_column_name.toLowerCase();
+            
+            let dateAStr: string | null = null;
+            let dateBStr: string | null = null;
+            
+            if (importantDateFields.includes(dbField)) {
+              // Get the UUID from the employee and look up the actual date_value
+              const dateIdA = rowA.original[dbField as keyof Employee] as string | null;
+              const dateIdB = rowB.original[dbField as keyof Employee] as string | null;
+              
+              const dateObjA = dateIdA ? allImportantDates.find(d => d.id === dateIdA) : null;
+              const dateObjB = dateIdB ? allImportantDates.find(d => d.id === dateIdB) : null;
+              
+              dateAStr = dateObjA?.date_value || null;
+              dateBStr = dateObjB?.date_value || null;
+            } else {
+              // For regular date columns, use the value directly
+              dateAStr = getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string | null;
+              dateBStr = getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string | null;
+            }
+            
+            // Handle null values - sort them to the end
+            if (!dateAStr && !dateBStr) return 0;
+            if (!dateAStr) return 1;
+            if (!dateBStr) return -1;
 
-            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string).getTime();
-
-
-            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string).getTime();
+            const dateA = new Date(dateAStr).getTime();
+            const dateB = new Date(dateBStr).getTime();
+            
+            // Handle invalid dates
+            if (isNaN(dateA) && isNaN(dateB)) return 0;
+            if (isNaN(dateA)) return 1;
+            if (isNaN(dateB)) return -1;
 
             return dateA - dateB;
 
@@ -1401,9 +1470,9 @@ export function EmployeeTable({
 
     });
 
-    // Add Actions column for HR Admin
+    // Add Actions column for HR Admin (simulated in preview mode)
 
-    if (isHRAdmin) {
+    if (isEffectivelyHRAdmin) {
 
       dataColumns.push({
 
@@ -1565,15 +1634,42 @@ export function EmployeeTable({
 
 
     // Story 19.5: Checklist Progress column (only show if there are checklist items)
+    // Only visible to internal users (hr_admin, recruiter, admin_limited)
     const hasChecklistItems = columnConfigs.some(
       (col) => col.column_type === 'boolean' && col.is_checklist_item
     );
+    // Use isEffectivelyInternalUser for preview mode simulation
+    const showProgressColumn = hasChecklistItems && isEffectivelyInternalUser;
 
-    const progressColumn: ColumnDef<Employee> | null = hasChecklistItems ? {
+    const progressColumn: ColumnDef<Employee> | null = showProgressColumn ? {
       id: "checklist_progress",
-      header: () => (
-        <div className={cn("font-medium", fontSizeClass)}>
-          Framsteg
+      header: ({ column }) => (
+        <div
+          className={cn(
+            "flex items-center gap-1 font-medium cursor-pointer select-none",
+            fontSizeClass
+          )}
+          onClick={column.getToggleSortingHandler()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              column.getToggleSortingHandler()?.(e);
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-label={`Sort by Framsteg${column.getIsSorted() === "asc" ? ", currently sorted ascending" : column.getIsSorted() === "desc" ? ", currently sorted descending" : ""}`}
+        >
+          <span>Framsteg</span>
+          <span className="ml-auto" aria-hidden="true">
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className={iconSizeClass} />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className={iconSizeClass} />
+            ) : (
+              <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
+            )}
+          </span>
         </div>
       ),
       enableSorting: true,
@@ -1611,6 +1707,8 @@ export function EmployeeTable({
   }, [
     columnConfigs,
     isHRAdmin,
+    isEffectivelyHRAdmin,
+    isEffectivelyInternalUser,
     handleMasterdataUpdate,
     handleCustomDataUpdate,
     effectiveRole,
@@ -1950,10 +2048,10 @@ export function EmployeeTable({
     <>
 
       {/* Filters + tallies row */}
-      {((isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange)) || employees.length > 0) && (
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 mb-4 pt-4">
-          {/* Filter checkboxes - always show for HR Admin */}
-          {isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
+      {((isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange)) || employees.length > 0) && (
+        <div className="flex flex-wrap items-center gap-4 mb-4 pt-4 w-full max-w-full">
+          {/* Filter checkboxes - always show for HR Admin (simulated in preview mode) */}
+          {isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
             <div className="flex flex-wrap items-center gap-4">
               {onIncludeArchivedChange && (
                 <div className="flex items-center gap-2">
@@ -2028,7 +2126,9 @@ export function EmployeeTable({
           {/* Search Input and Column Visibility */}
 
           <div className={cn(
-            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4"
+            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4",
+            // Prevent controls from exceeding viewport width
+            "w-full max-w-full"
           )}>
 
             <div className="relative flex-1 max-w-sm w-full">
@@ -2067,9 +2167,9 @@ export function EmployeeTable({
 
             </div>
 
-            {/* Story 8.5: Crew-Ready Filter - HR Admin only */}
+            {/* Story 8.5: Crew-Ready Filter - HR Admin only (simulated in preview mode) */}
             {/* Story 17.5: Hide premade filters dropdown for external users */}
-            {isHRAdmin && (
+            {isEffectivelyHRAdmin && (
               <div className="flex items-center gap-2">
                 <Select
 
@@ -2140,9 +2240,9 @@ export function EmployeeTable({
               </TooltipContent>
             </Tooltip>
 
-            {/* Story 8.5: Export Crew-Ready Employees (HR Admin only) */}
+            {/* Story 8.5: Export Crew-Ready Employees (HR Admin only, simulated in preview mode) */}
 
-            {isHRAdmin && (
+            {isEffectivelyHRAdmin && (
 
               <Tooltip>
 
@@ -2202,7 +2302,9 @@ export function EmployeeTable({
 
           </div>
 
-          <div className="rounded-md border">
+          <div 
+            className="rounded-md border"
+          >
 
             {/* Story 19.9: Pass container ref for sticky scrollbar */}
             {/* Story 19.13: maxHeight enables vertical scrolling within the table container, 
@@ -2579,8 +2681,7 @@ export function EmployeeTable({
 
             </Table>
 
-            {/* Story 19.9: Sticky horizontal scrollbar */}
-            <StickyScrollbar containerRef={tableContainerRef} />
+            {/* Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar */}
 
           </div>
 
@@ -2730,7 +2831,7 @@ export function EmployeeTable({
         onClear={() => setSelectedEmployeeIds(new Set())}
         isArchivedView={includeArchived}
         isProcessing={isBulkProcessing}
-        isHRAdmin={isHRAdmin}
+        isHRAdmin={isEffectivelyHRAdmin}
       />
 
     </>
