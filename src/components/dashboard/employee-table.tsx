@@ -1769,7 +1769,7 @@ export function EmployeeTable({
 
   };
 
-  const handleExportWithFields = async (selectedFields: string[]) => {
+  const handleExportWithFields = async (selectedFields: string[], impersonatedRole?: string) => {
 
     try {
 
@@ -1810,6 +1810,10 @@ export function EmployeeTable({
 
           fields: selectedFields,
 
+          impersonatedRole: impersonatedRole,
+
+          format: 'xlsx', // Always export as Excel
+
         }),
 
       });
@@ -1842,6 +1846,12 @@ export function EmployeeTable({
             case 'NO_EMPLOYEES_FOUND':
               errorMessage = tDashboard("exportNoEmployeesFound") || errorMessage;
               break;
+            case 'IMPERSONATION_FORBIDDEN':
+              errorMessage = "Only HR Admins can export with impersonated role context.";
+              break;
+            case 'INVALID_FORMAT':
+              errorMessage = "Invalid export format specified.";
+              break;
             default:
               // Use original message or fallback
               errorMessage = errorMessage;
@@ -1853,7 +1863,7 @@ export function EmployeeTable({
       }
 
 
-      // Download the CSV file
+      // Download the file (Excel or CSV based on format)
 
       const blob = await response.blob();
 
@@ -1865,7 +1875,12 @@ export function EmployeeTable({
 
       const dateStr = new Date().toISOString().split('T')[0];
 
-      a.download = `employees_export_${dateStr}.csv`;
+      // Determine file extension from Content-Type header
+      const contentType = response.headers.get('Content-Type') || '';
+      const isExcel = contentType.includes('spreadsheetml') || contentType.includes('excel');
+      const extension = isExcel ? 'xlsx' : 'csv';
+
+      a.download = `employees_export_${dateStr}.${extension}`;
 
       document.body.appendChild(a);
 

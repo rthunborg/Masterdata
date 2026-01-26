@@ -229,8 +229,8 @@ describe("Export Field Selection Integration", () => {
      
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
-    // Check headers
-    expect(unparseCall.fields).toEqual(["First Name", "Surname", "shoe_size", "t_shirt_size"]);
+    // Check headers (now uses user-friendly column names from column_config)
+    expect(unparseCall.fields).toEqual(["First Name", "Surname", "Shoe Size", "T-Shirt Size"]);
     
     // Check data row
     expect(unparseCall.data[0]).toEqual(["John", "Doe", "42", "L"]);

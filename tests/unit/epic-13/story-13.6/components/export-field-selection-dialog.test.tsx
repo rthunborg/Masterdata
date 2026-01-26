@@ -216,11 +216,15 @@ describe("ExportFieldSelectionDialog", () => {
     const exportButton = screen.getByText("export");
     fireEvent.click(exportButton);
 
-    expect(mockOnExport).toHaveBeenCalledWith(expect.arrayContaining([
-      "first_name",
-      "custom_field_1",
-      "custom_field_2"
-    ]));
+    // Updated signature: onExport(selectedFields, impersonatedRole?)
+    expect(mockOnExport).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        "first_name",
+        "custom_field_1",
+        "custom_field_2"
+      ]),
+      undefined // No impersonation in this test
+    );
     expect(mockOnOpenChange).toHaveBeenCalledWith(false);
   });
 

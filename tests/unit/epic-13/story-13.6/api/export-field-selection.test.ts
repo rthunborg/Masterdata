@@ -185,8 +185,9 @@ describe("POST /api/employees/export", () => {
     expect(Papa.unparse).toHaveBeenCalled();
     
     // Verify Papa.unparse was called with correct data
+    // Note: Headers now use user-friendly column names from column_config (improvement)
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
-    expect(unparseCall.fields).toEqual(["First Name", "custom_field_1"]);
+    expect(unparseCall.fields).toEqual(["First Name", "Custom Field 1"]);
     expect(unparseCall.data).toEqual([
       ["John", "Value 1"],
       ["Jane", "Value 2"],
