@@ -74,6 +74,9 @@ import { columnConfigRepository } from "@/lib/server/repositories/column-config-
 import { createClient } from "@/lib/supabase/server";
 import * as ExcelJS from "exceljs";
 
+// Type for mocked Supabase client
+type MockSupabaseClient = ReturnType<typeof createClient>;
+
 describe("HR Admin Impersonation Export", () => {
   const mockHRAdminUser = {
     id: "hr-admin-1",
@@ -189,7 +192,7 @@ describe("HR Admin Impersonation Export", () => {
         }),
       }),
     };
-    vi.mocked(createClient).mockReturnValue(mockSupabase as any);
+    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as MockSupabaseClient);
   });
 
   describe("Impersonation Permission Validation", () => {

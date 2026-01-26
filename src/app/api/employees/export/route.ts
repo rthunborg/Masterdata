@@ -323,6 +323,24 @@ export async function POST(request: Request) {
 }
 
 /**
+ * Convert column number to Excel column letter(s)
+ * @param columnNumber - 1-based column number (1 = A, 27 = AA, etc.)
+ * @returns Excel column letter(s)
+ */
+function getExcelColumnLetter(columnNumber: number): string {
+  let columnLetter = '';
+  let temp = columnNumber;
+  
+  while (temp > 0) {
+    const remainder = (temp - 1) % 26;
+    columnLetter = String.fromCharCode(65 + remainder) + columnLetter;
+    temp = Math.floor((temp - 1) / 26);
+  }
+  
+  return columnLetter;
+}
+
+/**
  * Generate Excel file with proper formatting
  * Creates a properly formatted Excel table with frozen headers and auto-filter
  */
@@ -377,7 +395,8 @@ async function generateExcelExport(
 
   // Add table formatting (Excel table with filters)
   if (data.length > 0) {
-    const lastColumn = String.fromCharCode(65 + fieldKeys.length - 1); // A, B, C, etc.
+    // Get proper Excel column letter (handles 27+ columns correctly: AA, AB, etc.)
+    const lastColumn = getExcelColumnLetter(fieldKeys.length);
     const tableRef = `A1:${lastColumn}${data.length + 1}`;
     
     worksheet.addTable({
