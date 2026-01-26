@@ -31,9 +31,6 @@ import { Label } from "@/components/ui/label";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 
-import { EXPORTABLE_EMPLOYEE_FIELDS } from "@/lib/constants/export-fields";
-
-
 import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,56 +96,36 @@ export function ExportFieldSelectionDialog({
 
     const fields: ExportField[] = [];
 
-    // Story 17.4: Add masterdata fields only if user has view permission
-    // Check if there's a column config with view permission for each masterdata field
-    EXPORTABLE_EMPLOYEE_FIELDS.forEach((field) => {
-      // Find matching masterdata column config
-      const matchingColumn = columnConfigs.find(
-        (config) =>
-          config.is_masterdata &&
-          config.db_column_name.toLowerCase().replace(/ /g, "_") === field.key
-      );
+    // Story 17.4: Use column_config as the single source of truth
+    // No need for EXPORTABLE_EMPLOYEE_FIELDS or alias mappings!
+    // Just filter columns by role permissions directly from column_config
+    columnConfigs.forEach((config) => {
 
-      // Only include if user has view permission (matchingColumn exists means permission check passed)
-      // For HR Admin, include all fields (no matchingColumn check needed)
-      if (effectiveRole === "hr_admin" || matchingColumn) {
-        fields.push({
-
-          id: `masterdata_${field.key}`,
-
-          label: field.label,
-
-          fieldKey: field.key,
-
-          isMasterdata: true,
-
-        });
+      // Check if the effective role has view permission for this column
+      let hasViewPermission = false;
+      if (effectiveRole) {
+        const rolePerms = config.role_permissions[effectiveRole];
+        hasViewPermission = rolePerms && rolePerms.view === true;
       }
-    });
 
-    // Add custom columns from columnConfigs
-    // columnConfigs is already filtered by useColumns to only include columns with view permission
-    columnConfigs
-
-      .filter((config) => !config.is_masterdata)
-
-      .forEach((config) => {
-
+      // Only include if user has view permission for the effective role
+      if (hasViewPermission) {
         fields.push({
 
-          id: config.id,
+          id: config.is_masterdata ? `masterdata_${config.db_column_name}` : config.id,
 
           label: config.column_name,
 
           fieldKey: config.db_column_name,
 
-          isMasterdata: false,
+          isMasterdata: config.is_masterdata,
 
           category: config.category,
 
         });
+      }
 
-      });
+    });
 
     return fields;
 

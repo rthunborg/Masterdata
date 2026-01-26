@@ -315,6 +315,13 @@ export function EmployeeTable({
   // Fetch column configurations based on effective role (for preview mode)
   const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns(effectiveRole);
 
+  // When impersonating, also fetch ALL columns (HR Admin view) for the export dialog
+  // This ensures the export dialog can see all columns that the impersonated role has access to
+  const { columns: allColumnConfigs } = useColumns(previewRole ? ('hr_admin' as UserRole) : undefined);
+  
+  // Use all columns for export dialog when impersonating, otherwise use filtered columns
+  const exportDialogColumns = previewRole ? allColumnConfigs : columnConfigs;
+
   // Fetch all Important Dates for resolving date field UUIDs
   const { dates: allImportantDates } = useImportantDates();
 
@@ -2835,7 +2842,7 @@ export function EmployeeTable({
         open={exportDialogOpen}
         onOpenChange={setExportDialogOpen}
         onExport={handleExportWithFields}
-        columnConfigs={columnConfigs}
+        columnConfigs={exportDialogColumns}
         visibleColumnIds={visibleColumnIds}
       />
 

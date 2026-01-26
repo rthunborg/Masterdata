@@ -3,6 +3,7 @@ import { requireEmployeeManagerAPI, createErrorResponse } from "@/lib/server/aut
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { csvImportEmployeeSchema } from "@/lib/validation/employee-schema";
 import { normalizeSSN } from "@/lib/utils/ssn-formatter";
+import { resolveColumnAlias } from "@/lib/utils/column-aliases";
 import Papa from "papaparse";
 import type { EmployeeFormData } from "@/lib/types/employee";
 import { z } from "zod";
@@ -76,48 +77,9 @@ export async function POST(request: NextRequest) {
         header: true,
         skipEmptyLines: true,
         transformHeader: (header) => {
-          // Normalize headers to match database field names
-          const normalized = header.toLowerCase().trim().replace(/\s+/g, "_");
-          
-          // Map common variations
-          const mappings: Record<string, string> = {
-            "first_name": "first_name",
-            "firstname": "first_name",
-            "given_name": "first_name",
-            "surname": "surname",
-            "last_name": "surname",
-            "lastname": "surname",
-            "family_name": "surname",
-            "ssn": "ssn",
-            "social_security_no": "ssn",
-            "social_security_number": "ssn",
-            "personal_number": "ssn",
-            "email": "email",
-            "mobile": "mobile",
-            "phone": "mobile",
-            "mobile_phone": "mobile",
-            "rank": "rank",
-            "position": "rank",
-            "title": "rank",
-            "gender": "gender",
-            "sex": "gender",
-            "town_district": "town_district",
-            "town": "town_district",
-            "district": "town_district",
-            "location": "town_district",
-            "hire_date": "hire_date",
-            "start_date": "hire_date",
-            "employment_date": "hire_date",
-            "comments": "comments",
-            "notes": "comments",
-            "remarks": "comments",
-            "special_diet": "special_diet",
-            "specialkost": "special_diet",
-            "diet": "diet_details",
-            "diet_details": "diet_details",
-          };
-
-          return mappings[normalized] || normalized;
+          // Use shared column alias resolver to normalize headers
+          // This ensures consistency across import and export functionality
+          return resolveColumnAlias(header);
         },
         complete: resolve,
         error: reject,

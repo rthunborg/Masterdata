@@ -127,6 +127,22 @@ describe("ExportFieldSelectionDialog", () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
+    {
+      id: "col4",
+      column_name: "Last Name",
+      db_column_name: "last_name",
+      column_type: "text",
+      is_masterdata: true,
+      category: null,
+      category_color: null,
+      is_visible: false,
+      role_permissions: {
+        hr_admin: { view: true, edit: true },
+      },
+      display_order: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
   ];
 
   const mockVisibleColumnIds = new Set(["col1", "col3"]);
