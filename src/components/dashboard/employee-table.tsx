@@ -317,7 +317,7 @@ export function EmployeeTable({
 
   // When impersonating, also fetch ALL columns (HR Admin view) for the export dialog
   // This ensures the export dialog can see all columns that the impersonated role has access to
-  const { columns: allColumnConfigs } = useColumns(previewRole ? 'hr_admin' : undefined);
+  const { columns: allColumnConfigs } = useColumns(previewRole ? ('hr_admin' as UserRole) : undefined);
   
   // Use all columns for export dialog when impersonating, otherwise use filtered columns
   const exportDialogColumns = previewRole ? allColumnConfigs : columnConfigs;
