@@ -37,9 +37,10 @@ describe("RolePreviewBanner", () => {
 
     renderWithI18n(<RolePreviewBanner />);
 
-    expect(screen.getByText(/Viewing as Sodexo/i)).toBeInTheDocument();
-    expect(screen.getByText(/Preview Mode/i)).toBeInTheDocument();
-    expect(screen.getByText(/Editing is disabled/i)).toBeInTheDocument();
+    // Swedish translations
+    expect(screen.getByText(/Visar som Sodexo/i)).toBeInTheDocument();
+    expect(screen.getByText(/Förhandsgranskningsläge/i)).toBeInTheDocument();
+    expect(screen.getByText(/Redigering är inaktiverad/i)).toBeInTheDocument();
   });
 
   it("calls setPreviewRole(null) when Exit Preview clicked", () => {
@@ -64,7 +65,8 @@ describe("RolePreviewBanner", () => {
 
     renderWithI18n(<RolePreviewBanner />);
 
-    const exitButton = screen.getByRole("button", { name: /Exit Preview/i });
+    // Swedish translation
+    const exitButton = screen.getByRole("button", { name: /Avsluta förhandsgranskning/i });
     fireEvent.click(exitButton);
 
     expect(mockSetPreviewRole).toHaveBeenCalledWith(null);
@@ -150,7 +152,8 @@ describe("RolePreviewBanner", () => {
       });
 
       const { unmount } = renderWithI18n(<RolePreviewBanner />);
-      expect(screen.getByText(new RegExp(`Viewing as ${displayName}`, "i"))).toBeInTheDocument();
+      // Swedish translation: "Visar som" instead of "Viewing as"
+      expect(screen.getByText(new RegExp(`Visar som ${displayName}`, "i"))).toBeInTheDocument();
       unmount();
     });
   });
