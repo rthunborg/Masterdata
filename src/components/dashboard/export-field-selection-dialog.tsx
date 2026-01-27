@@ -97,9 +97,10 @@ export function ExportFieldSelectionDialog({
     const fields: ExportField[] = [];
 
     // Story 17.4: Use column_config as the single source of truth
-    // No need for EXPORTABLE_EMPLOYEE_FIELDS or alias mappings!
-    // Just filter columns by role permissions directly from column_config
-    columnConfigs.forEach((config) => {
+    // Sort by display_order to maintain the same order as in the view
+    const sortedConfigs = [...columnConfigs].sort((a, b) => a.display_order - b.display_order);
+
+    sortedConfigs.forEach((config) => {
 
       // Check if the effective role has view permission for this column
       let hasViewPermission = false;

@@ -315,9 +315,18 @@ export function EmployeeTable({
   // Fetch column configurations based on effective role (for preview mode)
   const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns(effectiveRole);
 
-  // When impersonating, also fetch ALL columns (HR Admin view) for the export dialog
-  // This ensures the export dialog can see all columns that the impersonated role has access to
-  const { columns: allColumnConfigs } = useColumns(previewRole ? ('hr_admin' as UserRole) : undefined);
+  // When impersonating, fetch ALL columns (unfiltered) for the export dialog
+  // This ensures the export dialog can see all columns in the system, then filter by impersonated role's permissions
+  const [allColumnConfigs, setAllColumnConfigs] = React.useState<ColumnConfig[]>([]);
+  
+  React.useEffect(() => {
+    if (previewRole) {
+      // Fetch all columns without role filtering for export dialog
+      import("@/lib/services/column-service").then(({ columnService }) => {
+        columnService.getAllColumns().then(setAllColumnConfigs);
+      });
+    }
+  }, [previewRole]);
   
   // Use all columns for export dialog when impersonating, otherwise use filtered columns
   const exportDialogColumns = previewRole ? allColumnConfigs : columnConfigs;
