@@ -83,7 +83,7 @@
     "export": {
       "selectFields": "Välj fält att exportera",
       "selectFieldsDescription": "Välj vilka fält som ska inkluderas i exporten. Synliga kolumner är förvalda.",
-      "impersonationWarning": "Exporterar med visningsrättigheter för den simulerade rollen. Fälten som visas matchar den simulerade rollens vy.",
+      "impersonationWarning": "Exporterar med {role} visningsrättigheter. Fälten som visas matchar den simulerade rollens vy.",
       "masterdataFields": "Masterdatafält",
       "customFields": "Anpassade fält"
     },

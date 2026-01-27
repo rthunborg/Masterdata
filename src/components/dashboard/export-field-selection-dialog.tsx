@@ -35,6 +35,7 @@ import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { useUIStore } from "@/lib/store/ui-store";
+import { getRoleDisplayName } from "@/lib/types/user";
 
 
 export interface ExportField {
@@ -339,7 +340,9 @@ export function ExportFieldSelectionDialog({
 
               <span className="text-amber-600 font-medium">
 
-                {tDashboard("export.impersonationWarning")}
+                {tDashboard("export.impersonationWarning", { 
+                  role: getRoleDisplayName(previewRole)
+                })}
 
               </span>
 
