@@ -39,6 +39,11 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
 }));
 
 // Mock Supabase
+type MockSupabaseQueryChain = {
+  select: ReturnType<typeof vi.fn>;
+  in: ReturnType<typeof vi.fn>;
+};
+
 const mockSupabaseClient = {
   from: vi.fn(),
 };
@@ -80,13 +85,14 @@ describe("Export SSN Value Test", () => {
     vi.mocked(requireAuthAPI).mockResolvedValue(mockHRAdmin);
 
     // Mock Supabase custom_data query
-    vi.mocked(mockSupabaseClient.from).mockReturnValue({
+    const mockQueryChain: MockSupabaseQueryChain = {
       select: vi.fn().mockReturnThis(),
       in: vi.fn().mockResolvedValue({
         data: [],
         error: null,
       }),
-    } as any);
+    };
+    vi.mocked(mockSupabaseClient.from).mockReturnValue(mockQueryChain as never);
 
     // Mock employee with SSN
     const mockEmployee = {
@@ -234,13 +240,14 @@ describe("Export SSN Value Test", () => {
     vi.mocked(requireAuthAPI).mockResolvedValue(mockHRAdmin);
 
     // Mock Supabase custom_data query
-    vi.mocked(mockSupabaseClient.from).mockReturnValue({
+    const mockQueryChain2: MockSupabaseQueryChain = {
       select: vi.fn().mockReturnThis(),
       in: vi.fn().mockResolvedValue({
         data: [],
         error: null,
       }),
-    } as any);
+    };
+    vi.mocked(mockSupabaseClient.from).mockReturnValue(mockQueryChain2 as never);
 
     const mockEmployees = [
       {
