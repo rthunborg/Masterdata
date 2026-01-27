@@ -83,8 +83,15 @@
     "export": {
       "selectFields": "Välj fält att exportera",
       "selectFieldsDescription": "Välj vilka fält som ska inkluderas i exporten. Synliga kolumner är förvalda.",
+      "impersonationWarning": "Exporterar med visningsrättigheter för den simulerade rollen. Fälten som visas matchar den simulerade rollens vy.",
       "masterdataFields": "Masterdatafält",
       "customFields": "Anpassade fält"
+    },
+    "preview": {
+      "viewingAs": "Visar som",
+      "previewMode": "Förhandsgranskningsläge",
+      "editingDisabled": "Redigering är inaktiverad. Du kan testa sökning, filtrering och sortering.",
+      "exitPreview": "Avsluta förhandsgranskning"
     },
     "exportSelectedEmployees": "Exportera {count} markerade anställda",
     "noEmployeesSelected": "Inga anställda valda. Välj anställda att exportera.",

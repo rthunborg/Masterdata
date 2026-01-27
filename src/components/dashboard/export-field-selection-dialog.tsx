@@ -339,9 +339,7 @@ export function ExportFieldSelectionDialog({
 
               <span className="text-amber-600 font-medium">
 
-                Exporting with {previewRole.toUpperCase()} view permissions. 
-
-                Fields shown match the impersonated role&apos;s view.
+                {tDashboard("export.impersonationWarning")}
 
               </span>
 
