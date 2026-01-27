@@ -90,6 +90,18 @@ export async function POST(request: Request) {
     const userRole = (impersonatedRole || user.role) as UserRole;
     const allColumns = await columnConfigRepository.findAll();
     
+    // Debug: Log column config for SSN
+    const ssnColumn = allColumns.find(col => col.column_name === 'Social Security No.' || col.db_column_name === 'social_security_no' || col.db_column_name === 'ssn');
+    console.log('[Export Debug] SSN Column Config:', ssnColumn ? {
+      id: ssnColumn.id,
+      column_name: ssnColumn.column_name,
+      db_column_name: ssnColumn.db_column_name,
+      is_masterdata: ssnColumn.is_masterdata
+    } : 'NOT_FOUND');
+    
+    // Debug: Log requested fields
+    console.log('[Export Debug] Requested fields:', fields);
+    
     // Filter fields based on permissions
     const permittedFields: string[] = [];
     const deniedFields: string[] = [];
@@ -243,6 +255,18 @@ export async function POST(request: Request) {
         // Map db_column_name to actual Employee property if it's a masterdata field
         const actualPropertyName = dbColumnToEmployeeProperty[fieldKey] || fieldKey;
 
+        // Debug logging for SSN field
+        if (fieldKey === 'social_security_no') {
+          console.log('[Export Debug] SSN Field Processing:', {
+            fieldKey,
+            actualPropertyName,
+            employeeId: emp.id,
+            hasProperty: actualPropertyName in emp,
+            ssnValue: emp.ssn,
+            mappedValue: actualPropertyName in emp ? emp[actualPropertyName as keyof Employee] : 'NOT_FOUND'
+          });
+        }
+
         // Try to get value from employee object first (masterdata)
         if (actualPropertyName in emp) {
           const value = emp[actualPropertyName as keyof Employee];
@@ -262,6 +286,9 @@ export async function POST(request: Request) {
             row[fieldKey] = value !== null && value !== undefined ? String(value) : '';
           } else {
             // Field not found, set empty
+            if (fieldKey === 'social_security_no') {
+              console.log('[Export Debug] SSN NOT FOUND in employee or custom data');
+            }
             row[fieldKey] = '';
           }
         }
