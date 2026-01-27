@@ -199,18 +199,53 @@ export async function POST(request: Request) {
       });
     }
 
+    // Map db_column_name to actual Employee property names for masterdata fields
+    // Some column_config.db_column_name values don't match Employee property names
+    const dbColumnToEmployeeProperty: Record<string, string> = {
+      'social_security_no': 'ssn',
+      'first_name': 'first_name',
+      'surname': 'surname',
+      'email': 'email',
+      'mobile': 'mobile',
+      'rank': 'rank',
+      'gender': 'gender',
+      'town_district': 'town_district',
+      'hire_date': 'hire_date',
+      'stena_date': 'stena_date',
+      'omc_date': 'omc_date',
+      'pe3_date': 'pe3_date',
+      'termination_date': 'termination_date',
+      'termination_reason': 'termination_reason',
+      'comments': 'comments',
+      'special_diet': 'special_diet',
+      'diet_details': 'diet_details',
+      'one': 'one',
+      'talmundo': 'talmundo',
+      'isps': 'isps',
+      'photo': 'photo',
+      'origo': 'origo',
+      'loneiva': 'loneiva',
+      'mail_lon': 'mail_lon',
+      'bankuppgifter': 'bankuppgifter',
+      'li': 'li',
+      'passport': 'passport',
+      'kvitto_c17_18': 'kvitto_c17_18',
+      'c17': 'c17',
+      'crewing_done': 'crewing_done',
+      'hotel_required': 'hotel_required',
+    };
+
     // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {
       const row: Record<string, string> = {};
 
       fieldsToExport.forEach((fieldKey) => {
-        // Check if this is a masterdata field or custom column
-        // Masterdata fields use field names like "first_name", "surname"
-        // Custom columns use db_column_name
+        // Map db_column_name to actual Employee property if it's a masterdata field
+        const actualPropertyName = dbColumnToEmployeeProperty[fieldKey] || fieldKey;
 
         // Try to get value from employee object first (masterdata)
-        if (fieldKey in emp) {
-          const value = emp[fieldKey as keyof Employee];
+        if (actualPropertyName in emp) {
+          const value = emp[actualPropertyName as keyof Employee];
           // Format the value appropriately
           if (value === null || value === undefined) {
             row[fieldKey] = '';
