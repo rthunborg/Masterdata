@@ -11,25 +11,25 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createAPIClient(request);
 
-    // Get current session
+    // Get current authenticated user
     const {
-      data: { session },
-      error: sessionError,
+      data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     // Get user record from users table
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: dbError } = await supabase
       .from("users")
       .select("id, email, role, is_active, created_at, last_active_at")
-      .eq("auth_user_id", session.user.id)
+      .eq("auth_user_id", user.id)
       .single();
 
-    if (userError) {
-      console.error("[API /auth/user] Failed to fetch user:", userError);
+    if (dbError) {
+      console.error("[API /auth/user] Failed to fetch user:", dbError);
       return NextResponse.json(
         { error: "Failed to fetch user data" },
         { status: 500 }
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     // Return user with auth_id
     return NextResponse.json({
       ...userData,
-      auth_id: session.user.id,
+      auth_id: user.id,
     });
   } catch (error) {
     console.error("[API /auth/user] Unexpected error:", error);
