@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ImportantDate } from "@/lib/types/important-date";
+import { useAuthStore } from "@/lib/store/auth-store";
 
 /**
  * Hook to fetch and subscribe to available PE3 dates with real-time updates
@@ -13,9 +14,10 @@ import type { ImportantDate } from "@/lib/types/important-date";
  * @returns { availableDates, totalAvailable, isLoading, error }
  */
 export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: boolean = true) {
+  const { isAuthenticated } = useAuthStore();
   const [availableDates, setAvailableDates] = useState<ImportantDate[]>([]);
   const [totalAvailable, setTotalAvailable] = useState(0);
-  const [isLoading, setIsLoading] = useState(enabled);
+  const [isLoading, setIsLoading] = useState(enabled && isAuthenticated);
   const [error, setError] = useState<Error | null>(null);
 
   // Ref for debounce timer
@@ -109,7 +111,10 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
   }, [fetchAvailableDates]);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !isAuthenticated) {
+      setIsLoading(false);
+      setAvailableDates([]);
+      setTotalAvailable(0);
       return;
     }
 
@@ -193,7 +198,7 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
       }
       supabase.removeChannel(channel);
     };
-  }, [fetchAvailableDates, debouncedRefetch, enabled]);
+  }, [fetchAvailableDates, debouncedRefetch, enabled, isAuthenticated]);
 
   return { availableDates, totalAvailable, isLoading, error };
 }
