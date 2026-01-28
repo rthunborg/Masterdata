@@ -105,6 +105,9 @@ export async function POST(request: NextRequest) {
           email: finalUserData.email,
           role: finalUserData.role,
           is_active: finalUserData.is_active,
+          auth_id: authData.user.id,
+          created_at: finalUserData.created_at,
+          last_active_at: finalUserData.last_active_at,
         },
         session: {
           access_token: authData.session?.access_token || "",
