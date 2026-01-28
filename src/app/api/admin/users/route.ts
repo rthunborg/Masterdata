@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAPIClient, createServiceRoleClient } from "@/lib/supabase/server-api";
+import { createAPIClient } from "@/lib/supabase/server-api";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { createUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
