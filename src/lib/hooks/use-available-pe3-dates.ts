@@ -45,6 +45,13 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
       const response = await fetch("/api/important-dates/available-pe3");
       
       if (!response.ok) {
+        // Don't throw on 401 - just return empty (user logged out)
+        if (response.status === 401) {
+          setAvailableDates([]);
+          setTotalAvailable(0);
+          setIsLoading(false);
+          return;
+        }
         throw new Error(`Failed to fetch available PE3 dates: ${response.statusText}`);
       }
 

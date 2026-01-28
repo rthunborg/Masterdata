@@ -47,6 +47,13 @@ export function useAvailableOMCDates(currentOMCDateId?: string | null, enabled: 
       const response = await fetch("/api/important-dates/available-omc");
       
       if (!response.ok) {
+        // Don't throw on 401 - just return empty (user logged out)
+        if (response.status === 401) {
+          setAvailableDates([]);
+          setTotalAvailable(0);
+          setIsLoading(false);
+          return;
+        }
         throw new Error(`Failed to fetch available ÖMC dates: ${response.statusText}`);
       }
 
