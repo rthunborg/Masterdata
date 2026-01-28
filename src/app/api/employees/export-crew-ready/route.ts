@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireEmployeeManagerAPI, createErrorResponse } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
@@ -21,7 +21,7 @@ export const runtime = 'nodejs';
 export async function POST(request: Request) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireEmployeeManagerAPI();
+    await requireEmployeeManagerAPI(request);
 
     // Parse request body to get selected employee IDs
     const body = await request.json();

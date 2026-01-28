@@ -23,7 +23,7 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   try {
     // Verify authentication and get user
-    const user = await requireAuthAPI();
+    const user = await requireAuthAPI(request);
 
     // Check for role query parameter (preview mode)
     const { searchParams } = new URL(request.url);
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Verify authentication and get user
-    const user = await requireAuthAPI();
+    const user = await requireAuthAPI(request);
 
     // Parse and validate request body
     const body = await request.json();

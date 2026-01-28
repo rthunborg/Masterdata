@@ -1,15 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 /**
  * DEBUG ENDPOINT - Remove after investigation
  * Checks authentication state and Supabase connection
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const allCookies = cookieStore.getAll();
+    
+    // Also check headers directly
+    const headersList = await headers();
+    const cookieHeader = headersList.get('cookie');
     
     const supabase = await createClient();
     
@@ -61,6 +65,8 @@ export async function GET() {
         total: allCookies.length,
         supabaseCookies: supabaseCookies.length,
         supabaseCookieNames: supabaseCookies.map(c => c.name),
+        cookieHeader: cookieHeader?.substring(0, 100) || null,
+        hasCookieHeader: !!cookieHeader,
       },
     });
   } catch (error) {

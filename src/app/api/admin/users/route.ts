@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     // Enforce HR Admin role
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     const supabase = await createClient();
 
@@ -44,7 +44,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     // Enforce HR Admin role
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     const body = await request.json();
 
