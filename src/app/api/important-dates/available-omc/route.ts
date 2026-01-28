@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import type { ImportantDate } from "@/lib/types/important-date";
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     // Verify authentication (all authenticated users can view)
     await requireAuthAPI(request);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     const today = new Date().toISOString().split("T")[0];
     const jan1CurrentYear = getJan1CurrentYear();

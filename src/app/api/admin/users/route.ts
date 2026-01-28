@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createAPIClient, createServiceRoleClient } from "@/lib/supabase/server-api";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { createUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     // Enforce HR Admin role
     await requireHRAdminAPI(request);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     // Fetch all users ordered by creation date
     const { data: users, error } = await supabase

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 
 /**
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     // Enforce HR Admin role
     await requireHRAdminAPI(request);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     // Fetch all columns ordered by masterdata first, then alphabetically
     const { data: columns, error } = await supabase

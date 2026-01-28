@@ -12,6 +12,7 @@ import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber } from "@/lib/services/room-assignment";
 import { createAPIClient } from "@/lib/supabase/server-api";
+import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import type { EmployeeFormData } from "@/lib/types/employee";
 
