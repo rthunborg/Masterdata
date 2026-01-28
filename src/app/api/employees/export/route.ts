@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get custom column data for selected employees
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const { data: customDataRows, error: customDataError } = await supabase
       .from('custom_data')
       .select('*')
