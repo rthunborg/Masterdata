@@ -90,18 +90,6 @@ export async function POST(request: Request) {
     const userRole = (impersonatedRole || user.role) as UserRole;
     const allColumns = await columnConfigRepository.findAll();
     
-    // Debug: Log column config for SSN
-    const ssnColumn = allColumns.find(col => col.column_name === 'Social Security No.' || col.db_column_name === 'social_security_no' || col.db_column_name === 'ssn');
-    console.log('[Export Debug] SSN Column Config:', ssnColumn ? {
-      id: ssnColumn.id,
-      column_name: ssnColumn.column_name,
-      db_column_name: ssnColumn.db_column_name,
-      is_masterdata: ssnColumn.is_masterdata
-    } : 'NOT_FOUND');
-    
-    // Debug: Log requested fields
-    console.log('[Export Debug] Requested fields:', fields);
-    
     // Filter fields based on permissions
     const permittedFields: string[] = [];
     const deniedFields: string[] = [];
@@ -211,65 +199,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // Map db_column_name to actual Employee property names for masterdata fields
-    // Some column_config.db_column_name values don't match Employee property names
-    const dbColumnToEmployeeProperty: Record<string, string> = {
-      'social_security_no': 'ssn',
-      'first_name': 'first_name',
-      'surname': 'surname',
-      'email': 'email',
-      'mobile': 'mobile',
-      'rank': 'rank',
-      'gender': 'gender',
-      'town_district': 'town_district',
-      'hire_date': 'hire_date',
-      'stena_date': 'stena_date',
-      'omc_date': 'omc_date',
-      'pe3_date': 'pe3_date',
-      'termination_date': 'termination_date',
-      'termination_reason': 'termination_reason',
-      'comments': 'comments',
-      'special_diet': 'special_diet',
-      'diet_details': 'diet_details',
-      'one': 'one',
-      'talmundo': 'talmundo',
-      'isps': 'isps',
-      'photo': 'photo',
-      'origo': 'origo',
-      'loneiva': 'loneiva',
-      'mail_lon': 'mail_lon',
-      'bankuppgifter': 'bankuppgifter',
-      'li': 'li',
-      'passport': 'passport',
-      'kvitto_c17_18': 'kvitto_c17_18',
-      'c17': 'c17',
-      'crewing_done': 'crewing_done',
-      'hotel_required': 'hotel_required',
-    };
-
     // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {
       const row: Record<string, string> = {};
 
       fieldsToExport.forEach((fieldKey) => {
-        // Map db_column_name to actual Employee property if it's a masterdata field
-        const actualPropertyName = dbColumnToEmployeeProperty[fieldKey] || fieldKey;
-
-        // Debug logging for SSN field
-        if (fieldKey === 'social_security_no') {
-          console.log('[Export Debug] SSN Field Processing:', {
-            fieldKey,
-            actualPropertyName,
-            employeeId: emp.id,
-            hasProperty: actualPropertyName in emp,
-            ssnValue: emp.ssn,
-            mappedValue: actualPropertyName in emp ? emp[actualPropertyName as keyof Employee] : 'NOT_FOUND'
-          });
-        }
-
         // Try to get value from employee object first (masterdata)
-        if (actualPropertyName in emp) {
-          const value = emp[actualPropertyName as keyof Employee];
+        if (fieldKey in emp) {
+          const value = emp[fieldKey as keyof Employee];
           // Format the value appropriately
           if (value === null || value === undefined) {
             row[fieldKey] = '';
@@ -286,9 +223,6 @@ export async function POST(request: Request) {
             row[fieldKey] = value !== null && value !== undefined ? String(value) : '';
           } else {
             // Field not found, set empty
-            if (fieldKey === 'social_security_no') {
-              console.log('[Export Debug] SSN NOT FOUND in employee or custom data');
-            }
             row[fieldKey] = '';
           }
         }

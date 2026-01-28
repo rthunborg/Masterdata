@@ -2,9 +2,9 @@
  * Test to verify SSN values are correctly populated in Excel exports
  * 
  * This test verifies the complete flow:
- * 1. Column config has db_column_name: 'social_security_no'
+ * 1. Column config has db_column_name: 'ssn' (matches Employee property)
  * 2. Employee has property: ssn
- * 3. Mapping correctly translates social_security_no → ssn
+ * 3. Value is directly accessible (no mapping needed)
  * 4. Value is correctly extracted and included in export
  */
 
@@ -80,7 +80,7 @@ describe("Export SSN Value Test", () => {
     vi.clearAllMocks();
   });
 
-  it("should correctly map social_security_no to ssn and include value in Excel export", async () => {
+  it("should correctly include SSN values in Excel export", async () => {
     // Mock auth
     vi.mocked(requireAuthAPI).mockResolvedValue(mockHRAdmin);
 
@@ -164,7 +164,7 @@ describe("Export SSN Value Test", () => {
       {
         id: "col-ssn",
         column_name: "Social Security No.",
-        db_column_name: "social_security_no", // ❌ db_column_name doesn't match Employee property
+        db_column_name: "ssn", // ✅ Matches Employee property
         column_type: "text" as const,
         is_masterdata: true,
         category: null,
@@ -191,7 +191,7 @@ describe("Export SSN Value Test", () => {
       },
       body: JSON.stringify({
         employeeIds: ["emp-1"],
-        fields: ["first_name", "social_security_no"], // Request includes social_security_no
+        fields: ["first_name", "ssn"],
         format: "xlsx",
       }),
     });
@@ -344,7 +344,7 @@ describe("Export SSN Value Test", () => {
       {
         id: "col-ssn",
         column_name: "Social Security No.",
-        db_column_name: "social_security_no",
+        db_column_name: "ssn",
         column_type: "text" as const,
         is_masterdata: true,
         category: null,
@@ -366,7 +366,7 @@ describe("Export SSN Value Test", () => {
       method: "POST",
       body: JSON.stringify({
         employeeIds: ["emp-1", "emp-2"],
-        fields: ["social_security_no"],
+        fields: ["ssn"],
         format: "xlsx",
       }),
     });
