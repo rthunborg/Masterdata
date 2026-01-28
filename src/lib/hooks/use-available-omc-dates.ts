@@ -68,21 +68,28 @@ export function useAvailableOMCDates(currentOMCDateId?: string | null, enabled: 
         const hasCurrentDate = dates.some((d: ImportantDate) => d.id === currentOMCDateId);
         
         if (!hasCurrentDate) {
-          // Fetch the current date from important_dates table
-          const supabase = createClient();
-          const { data: currentDate, error: currentDateError } = await supabase
-            .from("important_dates")
-            .select("*")
-            .eq("id", currentOMCDateId)
-            .single();
-
-          if (!currentDateError && currentDate) {
-            // Merge current date with available dates
-            dates = [...dates, currentDate];
-            // Sort by date_value
-            dates.sort((a: ImportantDate, b: ImportantDate) => 
-              a.date_value.localeCompare(b.date_value)
+          // Fetch the current date via API to bypass network blocks
+          try {
+            const currentDateResponse = await fetch(
+              `/api/important-dates?id=${encodeURIComponent(currentOMCDateId)}`,
+              { credentials: "include" }
             );
+            
+            if (currentDateResponse.ok) {
+              const currentDateResult = await currentDateResponse.json();
+              const currentDate = currentDateResult.data?.[0];
+              
+              if (currentDate) {
+                // Merge current date with available dates
+                dates = [...dates, currentDate];
+                // Sort by date_value
+                dates.sort((a: ImportantDate, b: ImportantDate) => 
+                  a.date_value.localeCompare(b.date_value)
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching current ÖMC date:", error);
           }
         }
       }
