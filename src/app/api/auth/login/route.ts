@@ -36,6 +36,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (authError || !authData.user) {
+      console.error('[Login] Authentication failed:', {
+        email,
+        hasAuthError: !!authError,
+        authErrorMessage: authError?.message,
+        authErrorStatus: authError?.status,
+        hasUser: !!authData?.user,
+      });
       return NextResponse.json(
         {
           error: {
@@ -51,6 +58,10 @@ export async function POST(request: NextRequest) {
     const userData = await userRepository.findByAuthId(authData.user.id);
     
     if (!userData) {
+      console.error('[Login] User record not found in users table:', {
+        auth_user_id: authData.user.id,
+        email: authData.user.email,
+      });
       return NextResponse.json(
         {
           error: {
@@ -63,6 +74,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!userData.is_active) {
+      console.error('[Login] User account is deactivated:', {
+        user_id: userData.id,
+        email: userData.email,
+      });
       return NextResponse.json(
         {
           error: {

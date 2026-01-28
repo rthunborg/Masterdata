@@ -12,6 +12,12 @@ export async function getUserFromSession(): Promise<SessionUser | null> {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
+      if (userError) {
+        console.error('[getUserFromSession] Auth error:', {
+          message: userError.message,
+          status: userError.status,
+        });
+      }
       return null;
     }
 
@@ -23,6 +29,17 @@ export async function getUserFromSession(): Promise<SessionUser | null> {
       .single();
 
     if (dbError || !userData) {
+      console.error('[getUserFromSession] Failed to fetch user from users table:', {
+        auth_user_id: user.id,
+        email: user.email,
+        dbError: dbError ? {
+          message: dbError.message,
+          details: dbError.details,
+          hint: dbError.hint,
+          code: dbError.code,
+        } : null,
+        hasUserData: !!userData,
+      });
       return null;
     }
 
@@ -34,7 +51,8 @@ export async function getUserFromSession(): Promise<SessionUser | null> {
       ...userData,
       auth_id: user.id,
     };
-  } catch {
+  } catch (error) {
+    console.error('[getUserFromSession] Unexpected error:', error);
     return null;
   }
 }
