@@ -98,32 +98,30 @@ class AuthService {
 
   async getCurrentUser(): Promise<SessionUser | null> {
     try {
-      const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
-      
-      if (sessionError || !session?.user) {
+      // Use API route instead of direct database query to avoid RLS issues
+      const response = await fetch("/api/auth/user", {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        // 401/403/404 are expected when not authenticated or inactive
+        if ([401, 403, 404].includes(response.status)) {
+          return null;
+        }
+        
+        // Log unexpected errors
+        console.error(
+          "[AuthService] Failed to get current user:",
+          response.status,
+          response.statusText
+        );
         return null;
       }
 
-      // Get user record from users table
-      const { data: userData, error: userError } = await this.supabase
-        .from("users")
-        .select("id, email, role, is_active, created_at, last_active_at")
-        .eq("auth_user_id", session.user.id)
-        .single();
-
-      if (userError || !userData) {
-        return null;
-      }
-
-      if (!userData.is_active) {
-        return null;
-      }
-
-      return {
-        ...userData,
-        auth_id: session.user.id,
-      };
-    } catch {
+      const userData = await response.json();
+      return userData as SessionUser;
+    } catch (error) {
+      console.error("[AuthService] Error in getCurrentUser:", error);
       return null;
     }
   }
