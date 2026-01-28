@@ -14,7 +14,18 @@ vi.mock("@/lib/hooks/use-available-pe3-dates", () => ({
   })),
 }));
 
+// Story 19.8: Mock the useAvailableOMCDates hook
+vi.mock("@/lib/hooks/use-available-omc-dates", () => ({
+  useAvailableOMCDates: vi.fn(() => ({
+    availableDates: [],
+    totalAvailable: 0,
+    isLoading: false,
+    error: null,
+  })),
+}));
+
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
+import { useAvailableOMCDates } from "@/lib/hooks/use-available-omc-dates";
 
 describe("EditableDateCell", () => {
   const mockOnSave = vi.fn().mockResolvedValue(undefined);
@@ -751,13 +762,12 @@ describe("EditableDateCell", () => {
         expect(options.length).toBeGreaterThan(0);
       });
 
-      // Find the date option and verify it contains remaining spots in parentheses
+      // Story 19.8: Format changed to use formatDateDropdownOption which shows "v. X - dd-MM (spots)"
+      // Find the date option and verify it contains remaining spots count
       const dateOption = screen.getByText(
         (content, element) => {
-          return (
-            element?.textContent?.includes(dateWithSpots.date_description) &&
-            element?.textContent?.includes(`(${dateWithSpots.remaining_spots})`)
-          );
+          // Check for remaining spots in parentheses - format is now "v. X - dd-MM (spots)"
+          return element?.textContent?.includes(`(${dateWithSpots.remaining_spots})`);
         },
         { selector: "[role='option']" }
       );
@@ -813,14 +823,13 @@ describe("EditableDateCell", () => {
         expect(options.length).toBeGreaterThan(0);
       });
 
+      // Story 19.8: Format changed to use formatDateDropdownOption
       // Verify each date shows its remaining spots in parentheses
       datesWithDifferentSpots.forEach((date) => {
         const option = screen.getByText(
           (content, element) => {
-            return (
-              element?.textContent?.includes(date.date_description) &&
-              element?.textContent?.includes(`(${date.remaining_spots})`)
-            );
+            // Check for remaining spots - format is now "v. X - dd-MM (spots)"
+            return element?.textContent?.includes(`(${date.remaining_spots})`);
           },
           { selector: "[role='option']" }
         );

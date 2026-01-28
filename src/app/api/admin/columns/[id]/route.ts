@@ -53,6 +53,7 @@ export async function PATCH(
       category?: string | null;
       category_color?: string | null;
       column_name?: string;
+      is_checklist_item?: boolean;
     } = {};
     if (validated.role_permissions) {
       updateData.role_permissions = validated.role_permissions;
@@ -69,6 +70,41 @@ export async function PATCH(
     }
     if (validated.column_name !== undefined) {
       updateData.column_name = validated.column_name.trim();
+    }
+    // Story 19.5: Handle is_checklist_item updates
+    if (validated.is_checklist_item !== undefined) {
+      // Validate that only boolean masterdata columns can be checklist items
+      const { data: column } = await supabase
+        .from("column_config")
+        .select("column_type, is_masterdata")
+        .eq("id", id)
+        .single();
+      
+      if (validated.is_checklist_item) {
+        if (column?.column_type !== 'boolean') {
+          return NextResponse.json(
+            {
+              error: {
+                code: "VALIDATION_ERROR",
+                message: "Only boolean columns can be marked as checklist items",
+              },
+            },
+            { status: 400 }
+          );
+        }
+        if (!column?.is_masterdata) {
+          return NextResponse.json(
+            {
+              error: {
+                code: "VALIDATION_ERROR",
+                message: "Only masterdata columns can be marked as checklist items",
+              },
+            },
+            { status: 400 }
+          );
+        }
+      }
+      updateData.is_checklist_item = validated.is_checklist_item;
     }
 
     // Update column
@@ -107,9 +143,7 @@ export async function PATCH(
 
     return NextResponse.json({ data: updatedColumn });
   } catch (error) {
-    console.error("PATCH /api/admin/columns/[id] error:", error);
-
-    // Handle validation errors
+    // Handle validation errors (expected, don't log)
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
@@ -122,6 +156,8 @@ export async function PATCH(
       );
     }
 
+    // Log unexpected errors
+    console.error("PATCH /api/admin/columns/[id] error:", error);
     return createErrorResponse(error);
   }
 }

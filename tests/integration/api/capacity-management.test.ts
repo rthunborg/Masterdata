@@ -34,6 +34,7 @@ vi.mock("@/lib/server/auth", async () => {
   return {
     ...actual,
     requireEmployeeManagerAPI: vi.fn(),
+    requireEmployeeEditorAPI: vi.fn(),
     requireRoleAPI: vi.fn(),
     createErrorResponse: vi.fn((error: unknown) => {
       const message = error instanceof Error ? error.message : "Internal server error";

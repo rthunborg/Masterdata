@@ -463,8 +463,13 @@ describe("EmployeeTable", () => {
   it("should format hire date correctly", () => {
     renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
-    expect(screen.getByText("2025-01-15")).toBeInTheDocument();
-    expect(screen.getByText("2020-01-01")).toBeInTheDocument();
+    // Story 19.3: Dates display in dd-MM format (e.g., "15-01" for January 15th)
+    // mockEmployees has hire_date: "2025-01-15" (John) and "2020-01-01" (Jane)
+    // formatDateForDisplay returns "15-01" for 2025-01-15 and "01-01" for 2020-01-01
+    const hasJohnDate = screen.queryByText("15-01");
+    const hasJaneDate = screen.queryByText("01-01");
+    expect(hasJohnDate).toBeTruthy();
+    expect(hasJaneDate).toBeTruthy();
   });
 
   it("should display status correctly", () => {
@@ -891,11 +896,16 @@ describe("EmployeeTable", () => {
       const hireDateHeader = screen.getByText("Hire Date");
       fireEvent.click(hireDateHeader);
 
-      const rows = screen.getAllByRole("row");
-      // Oldest to newest: Bob (2021), Charlie (2023), Alice (2025)
-      expect(within(rows[1]).getByText("2021-06-20")).toBeInTheDocument();
-      expect(within(rows[2]).getByText("2023-03-15")).toBeInTheDocument();
-      expect(within(rows[3]).getByText("2025-01-10")).toBeInTheDocument();
+      // Verify sort order by checking that Bob (oldest hire date) comes before Alice (newest hire date)
+      // Bob: 2021-06-20, Charlie: 2023-03-15, Alice: 2025-01-10
+      const allText = screen.getByRole('table').textContent || '';
+      const bobIndex = allText.indexOf('Bob');
+      const charlieIndex = allText.indexOf('Charlie');
+      const aliceIndex = allText.indexOf('Alice');
+      
+      // After ascending sort by hire_date: Bob < Charlie < Alice
+      expect(bobIndex).toBeLessThan(charlieIndex);
+      expect(charlieIndex).toBeLessThan(aliceIndex);
     });
 
     it("should remove sort on third click (tri-state sorting)", () => {

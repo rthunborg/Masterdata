@@ -18,7 +18,7 @@ export interface Database {
           id: string;
           auth_user_id: string | null;
           email: string;
-          role: "hr_admin" | "sodexo" | "omc" | "payroll" | "toplux";
+          role: "hr_admin" | "recruiter" | "admin_limited" | "sodexo" | "omc" | "payroll" | "toplux" | "crewing";
           is_active: boolean;
           created_at: string;
         };
@@ -26,7 +26,7 @@ export interface Database {
           id?: string;
           auth_user_id?: string | null;
           email: string;
-          role: "hr_admin" | "sodexo" | "omc" | "payroll" | "toplux";
+          role: "hr_admin" | "recruiter" | "admin_limited" | "sodexo" | "omc" | "payroll" | "toplux" | "crewing";
           is_active?: boolean;
           created_at?: string;
         };

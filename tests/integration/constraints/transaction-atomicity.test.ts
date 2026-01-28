@@ -163,9 +163,11 @@ describe("Transaction Atomicity Tests", () => {
       let dateCleared = false;
       let spotsReleased = false;
 
+      // Story 19.14: repayment fields now store UUIDs
+      const omcDateId = 'omc-date-uuid-123';
       const mockUpdate = vi.fn()
         .mockResolvedValueOnce({
-          data: [{ repayment_needed_omc: "2025-03-08" }],
+          data: [{ repayment_needed_omc: omcDateId }],
           error: null,
         })
         .mockResolvedValueOnce({
@@ -177,7 +179,7 @@ describe("Transaction Atomicity Tests", () => {
         new Error("Failed to release spots")
       );
 
-      const updateResponse1 = { data: [{ repayment_needed_omc: "2025-03-08" }], error: null };
+      const updateResponse1 = { data: [{ repayment_needed_omc: omcDateId }], error: null };
       const updateResponse2 = { data: [{ omc_date: null }], error: null };
 
       let updateCallCount = 0;
@@ -204,10 +206,10 @@ describe("Transaction Atomicity Tests", () => {
       
       await testTransactionRollback(
         async () => {
-          // Set repayment
+          // Set repayment (now stores UUID)
           await supabase
             .from("employees")
-            .update({ repayment_needed_omc: "2025-03-08" })
+            .update({ repayment_needed_omc: omcDateId })
             .eq("id", "emp-1");
           repaymentSet = true;
 

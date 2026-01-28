@@ -103,17 +103,17 @@ async function applyMigrations() {
 
     // Define all 24 column configurations
     const columnConfigs = [
-      { column_name: 'Stena Date', column_type: 'text', is_masterdata: true, display_order: 1, role_permissions: {
+      { column_name: 'Stena Date', column_type: 'date', is_masterdata: true, display_order: 1, role_permissions: {
         hr_admin: { view: true, edit: true }, omc: { view: false, edit: false },
         payroll: { view: true, edit: false }, sodexo: { view: true, edit: false },
         toplux: { view: true, edit: false }
       }},
-      { column_name: 'ÖMC Date', column_type: 'text', is_masterdata: true, display_order: 2, role_permissions: {
+      { column_name: 'ÖMC Date', column_type: 'date', is_masterdata: true, display_order: 2, role_permissions: {
         hr_admin: { view: true, edit: true }, omc: { view: true, edit: false },
         payroll: { view: false, edit: false }, sodexo: { view: false, edit: false },
         toplux: { view: false, edit: false }
       }},
-      { column_name: 'PE3 Date', column_type: 'text', is_masterdata: true, display_order: 3, role_permissions: {
+      { column_name: 'PE3 Date', column_type: 'date', is_masterdata: true, display_order: 3, role_permissions: {
         hr_admin: { view: true, edit: true }, omc: { view: false, edit: false },
         payroll: { view: false, edit: false }, sodexo: { view: false, edit: false },
         toplux: { view: false, edit: false }

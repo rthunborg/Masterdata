@@ -9,6 +9,9 @@ import type { UserRole } from "@/lib/types/user";
  * Custom hook to fetch and filter column configurations based on user role
  * Returns only columns where role_permissions[userRole].view = true
  * 
+ * Note: admin_limited role inherits view permissions from hr_admin
+ * (they see the same columns but have restricted edit access via canEditField)
+ * 
  * @param effectiveRole - Optional role to use for filtering (for preview mode)
  */
 export function useColumns(effectiveRole?: UserRole) {
@@ -28,11 +31,17 @@ export function useColumns(effectiveRole?: UserRole) {
 
     try {
       setIsLoading(true);
-      const allColumns = await columnService.getAll();
+      
+      // Pass the role to the API for server-side filtering
+      // This is essential for preview mode where HR Admin needs to see
+      // columns configured for other roles (not just their own)
+      const allColumns = await columnService.getAll(roleToUse);
 
-      // Filter columns by role permissions
+      // The API already filters by role, but we keep this client-side filter
+      // as a safety measure and for admin_limited -> hr_admin inheritance
+      const roleForView = roleToUse === 'admin_limited' ? 'hr_admin' : roleToUse;
       const visibleColumns = allColumns.filter((column) => {
-        const rolePerms = column.role_permissions[roleToUse];
+        const rolePerms = column.role_permissions[roleForView];
         return rolePerms && rolePerms.view === true;
       });
 

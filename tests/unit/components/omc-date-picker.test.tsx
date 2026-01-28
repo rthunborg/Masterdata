@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe('OMCDatePicker Component', () => {
-  it('should display ÖMC date format "8-9 mars 2025"', () => {
+  it('should display ÖMC date format "08-03 - 09-03"', () => {
     const onChange = vi.fn();
     render(
       <OMCDatePicker
@@ -30,8 +30,8 @@ describe('OMCDatePicker Component', () => {
       />
     );
 
-    // Check that the formatted date is displayed
-    expect(screen.getByDisplayValue('8-9 mars 2025')).toBeInTheDocument();
+    // Check that the formatted date is displayed in dd-MM format
+    expect(screen.getByDisplayValue('08-03 - 09-03')).toBeInTheDocument();
   });
 
   it('should accept multiple input formats', async () => {
@@ -111,7 +111,7 @@ describe('OMCDatePicker Component', () => {
     });
   });
 
-  it('should display Swedish month names', () => {
+  it('should display date in dd-MM format', () => {
     const onChange = vi.fn();
     render(
       <OMCDatePicker
@@ -120,8 +120,8 @@ describe('OMCDatePicker Component', () => {
       />
     );
 
-    // Should show Swedish month name "mars"
-    expect(screen.getByDisplayValue(/mars/)).toBeInTheDocument();
+    // Should show date in dd-MM format "08-03 - 09-03"
+    expect(screen.getByDisplayValue(/08-03 - 09-03/)).toBeInTheDocument();
   });
 
   it('should update state on selection', async () => {
@@ -158,14 +158,14 @@ describe('OMCDatePicker Component', () => {
 
     // When value is provided, button shows the formatted date
     // Use getByRole to get the button specifically
-    const button = screen.getByRole('button', { name: /8-9 mars 2025/ });
+    const button = screen.getByRole('button', { name: /08-03 - 09-03/ });
     expect(button).toBeInTheDocument();
     
     // Should show selected range in the visual representation
     expect(screen.getByText(/✓ Valt intervall:/)).toBeInTheDocument();
     
     // Verify the date appears in multiple places (button and visual representation)
-    const dateTexts = screen.getAllByText(/8-9 mars 2025/);
+    const dateTexts = screen.getAllByText(/08-03 - 09-03/);
     expect(dateTexts.length).toBeGreaterThanOrEqual(2); // At least in button and visual rep
   });
 });

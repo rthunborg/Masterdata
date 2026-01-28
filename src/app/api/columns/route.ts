@@ -11,18 +11,38 @@ import { z } from "zod";
  * GET /api/columns
  * Fetch all column configurations visible to current user's role
  * Authorization: All authenticated users
+ * 
+ * Query params:
+ * - role: Optional role to filter by (for HR Admin preview mode only)
+ *         Only HR Admin can use this parameter to preview other roles' views
  */
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Verify authentication and get user
     const user = await requireAuthAPI();
 
-    // Fetch columns visible to user's role
-    const columns = await columnConfigRepository.findByRole(user.role);
+    // Check for role query parameter (preview mode)
+    const { searchParams } = new URL(request.url);
+    const previewRole = searchParams.get("role");
+
+    // Determine which role to filter by
+    let roleToFilter = user.role;
+
+    // Only HR Admin can preview other roles
+    if (previewRole && user.role === "hr_admin") {
+      // Validate that the preview role is a valid role
+      const validRoles = ["hr_admin", "sodexo", "omc", "payroll", "toplux", "recruiter", "admin_limited", "crewing"];
+      if (validRoles.includes(previewRole)) {
+        roleToFilter = previewRole as typeof user.role;
+      }
+    }
+
+    // Fetch columns visible to the target role
+    const columns = await columnConfigRepository.findByRole(roleToFilter);
 
     return NextResponse.json({
       data: columns,

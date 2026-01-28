@@ -360,7 +360,8 @@ describe("EmployeeRepository", () => {
           termination_reason: "Resigned",
           is_terminated: true,
           is_archived: false,
-          repayment_needed_omc: true,
+          // Story 19.14: repayment fields now store UUIDs
+          repayment_needed_omc: 'omc-date-uuid-123',
           repayment_needed_pe3: null,
           comments: null,
           one: false,
@@ -389,8 +390,10 @@ describe("EmployeeRepository", () => {
 
       expect(result).toEqual(mockRepaymentEmployees);
       expect(result.length).toBe(1);
-      expect(result[0].repayment_needed_omc).toBe(true);
-      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.is.true,repayment_needed_pe3.is.true");
+      // Story 19.14: repayment fields now store UUIDs instead of booleans
+      expect(result[0].repayment_needed_omc).toBe('omc-date-uuid-123');
+      // Story 19.14: Filter checks for non-null values (truthy UUIDs)
+      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
     });
 
     it("should apply multiple filters correctly", async () => {
@@ -413,7 +416,8 @@ describe("EmployeeRepository", () => {
           termination_reason: "Resigned",
           is_terminated: true,
           is_archived: false,
-          repayment_needed_omc: true,
+          // Story 19.14: repayment fields now store UUIDs
+          repayment_needed_omc: 'omc-date-uuid-123',
           repayment_needed_pe3: null,
           comments: null,
           one: false,
@@ -445,7 +449,8 @@ describe("EmployeeRepository", () => {
 
       expect(result).toEqual(mockFilteredEmployees);
       expect(chainMock.eq).toHaveBeenCalledWith("is_terminated", true);
-      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.is.true,repayment_needed_pe3.is.true");
+      // Story 19.14: repayment fields now store UUIDs, so check for non-null values
+      expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
     });
   });
 

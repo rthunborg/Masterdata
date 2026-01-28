@@ -146,7 +146,8 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
         renderWithI18n(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
 
         expect(screen.getByText("19900101-1234")).toBeInTheDocument();
-        expect(screen.getByText("2023-01-01")).toBeInTheDocument();
+        // Story 19.3: Hire date displays in dd-MM format (e.g., "01-01" for January 1st)
+        expect(screen.getByText("01-01")).toBeInTheDocument();
     });
 
     it("should display '-' when SSN is empty string", () => {
@@ -227,7 +228,8 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
 
         // Should display SSN and Hire Date because mapping handles Swedish names
         expect(screen.getByText("19900101-1234")).toBeInTheDocument();
-        expect(screen.getByText("2023-01-01")).toBeInTheDocument();
+        // Story 19.3: Hire date displays in dd-MM format (e.g., "01-01" for January 1st)
+        expect(screen.getByText("01-01")).toBeInTheDocument();
     });
 
     it("should not trigger update on no-op edit", async () => {

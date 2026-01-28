@@ -173,6 +173,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Allow natural horizontal scrolling at page level for wide tables */
+  html, body {
+    overflow-x: auto;
+  }
   body {
     @apply bg-background text-foreground;
     /* Responsive typography: 14px on mobile, 15px on tablet, 16px on desktop */

@@ -81,9 +81,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error("PATCH /api/admin/categories/[categoryName] error:", error);
-
-    // Handle validation errors
+    // Handle validation errors (expected, don't log)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -96,6 +94,8 @@ export async function PATCH(
       );
     }
 
+    // Log unexpected errors
+    console.error("PATCH /api/admin/categories/[categoryName] error:", error);
     return createErrorResponse(error);
   }
 }

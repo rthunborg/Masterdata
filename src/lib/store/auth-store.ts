@@ -3,6 +3,27 @@ import { persist } from "zustand/middleware";
 import { authService } from "@/lib/services/auth-service";
 import type { SessionUser } from "@/lib/types/user";
 
+// Storage key for auth state - used for manual cleanup
+const AUTH_STORAGE_KEY = "auth-storage";
+
+// Timeout for auth check to prevent infinite loading (10 seconds)
+const AUTH_CHECK_TIMEOUT_MS = 10000;
+
+/**
+ * Force clear auth storage from localStorage
+ * Called when session is invalid to prevent stale state issues
+ */
+function clearAuthStorage(): void {
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      console.log("[Auth] Cleared stale auth storage");
+    } catch (error) {
+      console.error("[Auth] Failed to clear auth storage:", error);
+    }
+  }
+}
+
 interface AuthState {
   user: SessionUser | null;
   isAuthenticated: boolean;
@@ -15,6 +36,7 @@ interface AuthActions {
   setUser: (user: SessionUser | null) => void;
   checkAuth: () => Promise<void>;
   setLoading: (loading: boolean) => void;
+  forceLogout: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -57,20 +79,32 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         try {
           await authService.logout();
-          set({ 
-            user: null, 
-            isAuthenticated: false, 
-            isLoading: false 
-          });
         } catch (error) {
-          // Even if logout fails, clear local state
+          // Log but don't throw - we want to clear state regardless
+          console.error("[Auth] Logout API failed:", error);
+        } finally {
+          // ALWAYS clear local state and storage, even if API fails
+          // This prevents users from being stuck in a logged-in state
+          clearAuthStorage();
           set({ 
             user: null, 
             isAuthenticated: false, 
             isLoading: false 
           });
-          throw error;
         }
+      },
+
+      /**
+       * Force logout without calling the API
+       * Used when session is known to be invalid
+       */
+      forceLogout: () => {
+        clearAuthStorage();
+        set({ 
+          user: null, 
+          isAuthenticated: false, 
+          isLoading: false 
+        });
       },
 
       setUser: (user: SessionUser | null) => {
@@ -82,14 +116,42 @@ export const useAuthStore = create<AuthStore>()(
 
       checkAuth: async () => {
         set({ isLoading: true });
+        
+        // Create a timeout promise to prevent infinite loading
+        const timeoutPromise = new Promise<null>((resolve) => {
+          setTimeout(() => {
+            console.warn("[Auth] Auth check timed out after", AUTH_CHECK_TIMEOUT_MS, "ms");
+            resolve(null);
+          }, AUTH_CHECK_TIMEOUT_MS);
+        });
+
         try {
-          const user = await authService.getCurrentUser();
-          set({ 
-            user, 
-            isAuthenticated: !!user, 
-            isLoading: false 
-          });
-        } catch {
+          // Race between auth check and timeout
+          const user = await Promise.race([
+            authService.getCurrentUser(),
+            timeoutPromise,
+          ]);
+          
+          if (user) {
+            set({ 
+              user, 
+              isAuthenticated: true, 
+              isLoading: false 
+            });
+          } else {
+            // No valid session - clear any stale localStorage data
+            // This prevents the "stuck logged in" issue when session expires
+            clearAuthStorage();
+            set({ 
+              user: null, 
+              isAuthenticated: false, 
+              isLoading: false 
+            });
+          }
+        } catch (error) {
+          console.error("[Auth] Auth check failed:", error);
+          // Clear stale storage on error to prevent stuck state
+          clearAuthStorage();
           set({ 
             user: null, 
             isAuthenticated: false, 
@@ -103,7 +165,7 @@ export const useAuthStore = create<AuthStore>()(
       },
     }),
     {
-      name: "auth-storage",
+      name: AUTH_STORAGE_KEY,
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,

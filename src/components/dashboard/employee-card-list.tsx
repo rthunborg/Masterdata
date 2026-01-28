@@ -136,6 +136,7 @@ export function EmployeeCardList({
   // Must be after usePullToRefresh to access containerRef
   const shouldUseVirtualScrolling = employees.length > 100;
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns functions that React Compiler cannot memoize; this is expected behavior
   const virtualizer = useVirtualizer({
     count: employees.length,
     getScrollElement: () => containerRef.current,

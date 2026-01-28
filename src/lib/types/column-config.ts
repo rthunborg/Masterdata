@@ -32,6 +32,7 @@ export interface ColumnConfig {
   category_color: string | null; // Hex color code (e.g., '#3B82F6') or null for no color
   display_order: number;
   is_visible: boolean;
+  is_checklist_item: boolean; // Story 19.5: When true, boolean column counts toward progress indicator
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +54,7 @@ export interface CreateCustomColumnInput {
   column_type: ColumnType;
   category?: string;
   category_color?: string | null; // Hex color code for the category
+  is_checklist_item?: boolean; // Story 19.5: Mark boolean column as checklist item
 }
 
 /**
@@ -90,6 +92,7 @@ export interface UpdateColumnConfigRequest {
   category?: string | null;
   category_color?: string | null; // Update category color
   column_name?: string; // Update display name
+  is_checklist_item?: boolean; // Story 19.5: Mark boolean column as checklist item
 }
 
 /**
