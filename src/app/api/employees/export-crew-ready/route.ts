@@ -18,7 +18,7 @@ export const runtime = 'nodejs';
  * Story 8.5: Crewing/Done Field Conditional Logic - Export Enhancement
  * Story 13.4: Export Only Selected Employees
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     // Verify HR Admin or Recruiter role
     await requireEmployeeManagerAPI(request);

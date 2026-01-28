@@ -8,7 +8,7 @@ import { ZodError } from "zod";
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Enforce HR Admin role
     await requireHRAdminAPI(request);

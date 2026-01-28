@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 
@@ -11,7 +11,7 @@ import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Enforce HR Admin role
     await requireHRAdminAPI(request);
