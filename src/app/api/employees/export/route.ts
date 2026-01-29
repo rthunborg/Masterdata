@@ -5,8 +5,10 @@ import { columnConfigRepository } from "@/lib/server/repositories/column-config-
 import Papa from "papaparse";
 import * as ExcelJS from "exceljs";
 import type { Employee } from "@/lib/types/employee";
+import type { ImportantDate } from "@/lib/types/important-date";
 import { createAPIClient } from "@/lib/supabase/server-api";
 import type { UserRole } from "@/lib/types/user";
+import { resolveImportantDateId } from "@/lib/utils/important-date-resolver";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -211,6 +213,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Fetch all important dates to resolve date UUIDs
+    const { data: importantDates, error: datesError } = await supabase
+      .from('important_dates')
+      .select('*')
+      .eq('is_active', true);
+
+    if (datesError) {
+      console.error("Error fetching important dates:", datesError);
+    }
+
+    const allImportantDates = importantDates || [];
+
     // Map db_column_name to actual Employee property names for masterdata fields
     // Some column_config.db_column_name values don't match Employee property names
     const dbColumnToEmployeeProperty: Record<string, string> = {
@@ -247,6 +261,9 @@ export async function POST(request: NextRequest) {
       'hotel_required': 'hotel_required',
     };
 
+    // Define date fields that store UUIDs and need resolution
+    const dateFields = ['stena_date', 'omc_date', 'pe3_date', 'repayment_needed_omc', 'repayment_needed_pe3'];
+
     // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {
       const row: Record<string, string> = {};
@@ -270,11 +287,15 @@ export async function POST(request: NextRequest) {
         // Try to get value from employee object first (masterdata)
         if (actualPropertyName in emp) {
           const value = emp[actualPropertyName as keyof Employee];
+          
           // Format the value appropriately
           if (value === null || value === undefined) {
             row[fieldKey] = '';
           } else if (typeof value === 'boolean') {
             row[fieldKey] = value ? 'Yes' : 'No';
+          } else if (dateFields.includes(actualPropertyName) && typeof value === 'string') {
+            // Resolve date UUID to actual date string
+            row[fieldKey] = resolveImportantDateId(value, allImportantDates, 'Date Deleted');
           } else {
             row[fieldKey] = String(value);
           }

@@ -4,6 +4,9 @@ import { employeeRepository } from "@/lib/server/repositories/employee-repositor
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 import Papa from "papaparse";
 import type { Employee } from "@/lib/types/employee";
+import type { ImportantDate } from "@/lib/types/important-date";
+import { createAPIClient } from "@/lib/supabase/server-api";
+import { resolveImportantDateId } from "@/lib/utils/important-date-resolver";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -71,6 +74,19 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Fetch all important dates to resolve date UUIDs
+    const supabase = createAPIClient(request);
+    const { data: importantDates, error: datesError } = await supabase
+      .from('important_dates')
+      .select('*')
+      .eq('is_active', true);
+
+    if (datesError) {
+      console.error("Error fetching important dates:", datesError);
+    }
+
+    const allImportantDates: ImportantDate[] = importantDates || [];
 
     // Prepare CSV data
     const csvData = eligibleEmployees.map((emp: Employee) => ({

@@ -70,6 +70,8 @@ stena/
 !/docs/screenshots/
 .manual-tests/
 migrations/
+!migrations/*.sql
+!migrations/README.md
 MANUAL_TESTING_5.9.md
 QA-FAILURE-SUMMARY.md
 PRODUCTION_SETUP.md
