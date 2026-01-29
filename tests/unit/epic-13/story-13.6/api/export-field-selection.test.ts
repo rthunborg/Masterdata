@@ -73,8 +73,8 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
   },
 }));
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(() => ({
+vi.mock("@/lib/supabase/server-api", () => ({
+  createAPIClient: vi.fn(() => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({ data: [], error: null })),
@@ -92,7 +92,7 @@ vi.mock("papaparse", () => ({
 
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import Papa from "papaparse";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 // Mock Employee type locally to avoid import issues
 interface Employee {
   id: string;
@@ -168,7 +168,7 @@ describe("POST /api/employees/export", () => {
         }),
       }),
     };
-    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",
@@ -185,8 +185,9 @@ describe("POST /api/employees/export", () => {
     expect(Papa.unparse).toHaveBeenCalled();
     
     // Verify Papa.unparse was called with correct data
+    // Note: Headers now use user-friendly column names from column_config (improvement)
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
-    expect(unparseCall.fields).toEqual(["First Name", "custom_field_1"]);
+    expect(unparseCall.fields).toEqual(["First Name", "Custom Field 1"]);
     expect(unparseCall.data).toEqual([
       ["John", "Value 1"],
       ["Jane", "Value 2"],
@@ -208,7 +209,7 @@ describe("POST /api/employees/export", () => {
         }),
       }),
     };
-    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",

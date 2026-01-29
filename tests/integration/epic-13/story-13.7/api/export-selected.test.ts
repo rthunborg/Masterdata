@@ -245,8 +245,9 @@ describe("Story 13.7: General Export API Integration", () => {
       expect(response.status).toBe(200);
       const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[]; data: string[][] };
       expect(unparseCall.fields).toContain("First Name");
-      expect(unparseCall.fields).toContain("custom_field_1");
-      expect(unparseCall.fields).toContain("custom_field_2");
+      // Headers now use user-friendly column names from column_config
+      expect(unparseCall.fields).toContain("Custom Field 1");
+      expect(unparseCall.fields).toContain("Custom Field 2");
     });
   });
 

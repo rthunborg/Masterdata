@@ -18,7 +18,7 @@ export async function PATCH(
 ) {
   try {
     // Enforce HR Admin role
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
@@ -179,7 +179,7 @@ export async function DELETE(
 ) {
   try {
     // Enforce HR Admin role
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { id: columnId } = await params;

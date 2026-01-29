@@ -19,7 +19,7 @@ export async function PATCH(
 ) {
   try {
     // Verify HR Admin authentication
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     const { id } = await params;
 

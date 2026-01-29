@@ -31,13 +31,11 @@ import { Label } from "@/components/ui/label";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 
-import { EXPORTABLE_EMPLOYEE_FIELDS } from "@/lib/constants/export-fields";
-
-
 import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
+import { getRoleDisplayName } from "@/lib/types/user";
 
 
 export interface ExportField {
@@ -65,7 +63,7 @@ interface ExportFieldSelectionDialogProps {
 
   visibleColumnIds: Set<string>;
 
-  onExport: (selectedFields: string[]) => void;
+  onExport: (selectedFields: string[], impersonatedRole?: string) => void;
 
 }
 
@@ -99,56 +97,37 @@ export function ExportFieldSelectionDialog({
 
     const fields: ExportField[] = [];
 
-    // Story 17.4: Add masterdata fields only if user has view permission
-    // Check if there's a column config with view permission for each masterdata field
-    EXPORTABLE_EMPLOYEE_FIELDS.forEach((field) => {
-      // Find matching masterdata column config
-      const matchingColumn = columnConfigs.find(
-        (config) =>
-          config.is_masterdata &&
-          config.db_column_name.toLowerCase().replace(/ /g, "_") === field.key
-      );
+    // Story 17.4: Use column_config as the single source of truth
+    // Sort by display_order to maintain the same order as in the view
+    const sortedConfigs = [...columnConfigs].sort((a, b) => a.display_order - b.display_order);
 
-      // Only include if user has view permission (matchingColumn exists means permission check passed)
-      // For HR Admin, include all fields (no matchingColumn check needed)
-      if (effectiveRole === "hr_admin" || matchingColumn) {
-        fields.push({
+    sortedConfigs.forEach((config) => {
 
-          id: `masterdata_${field.key}`,
-
-          label: field.label,
-
-          fieldKey: field.key,
-
-          isMasterdata: true,
-
-        });
+      // Check if the effective role has view permission for this column
+      let hasViewPermission = false;
+      if (effectiveRole) {
+        const rolePerms = config.role_permissions[effectiveRole];
+        hasViewPermission = rolePerms && rolePerms.view === true;
       }
-    });
 
-    // Add custom columns from columnConfigs
-    // columnConfigs is already filtered by useColumns to only include columns with view permission
-    columnConfigs
-
-      .filter((config) => !config.is_masterdata)
-
-      .forEach((config) => {
-
+      // Only include if user has view permission for the effective role
+      if (hasViewPermission) {
         fields.push({
 
-          id: config.id,
+          id: config.is_masterdata ? `masterdata_${config.db_column_name}` : config.id,
 
           label: config.column_name,
 
           fieldKey: config.db_column_name,
 
-          isMasterdata: false,
+          isMasterdata: config.is_masterdata,
 
           category: config.category,
 
         });
+      }
 
-      });
+    });
 
     return fields;
 
@@ -290,7 +269,8 @@ export function ExportFieldSelectionDialog({
 
       .filter((key): key is string => key !== undefined);
 
-    onExport(fieldKeys);
+    // Pass impersonated role if in preview mode (HR Admin only)
+    onExport(fieldKeys, previewRole || undefined);
 
     onOpenChange(false);
 
@@ -356,9 +336,23 @@ export function ExportFieldSelectionDialog({
 
           <DialogDescription>
 
-            {tDashboard("export.selectFieldsDescription") || 
+            {previewRole ? (
 
-              "Choose which fields to include in the export. Visible columns are pre-selected."}
+              <span className="text-amber-600 font-medium">
+
+                {tDashboard("export.impersonationWarning", { 
+                  role: getRoleDisplayName(previewRole)
+                })}
+
+              </span>
+
+            ) : (
+
+              tDashboard("export.selectFieldsDescription") || 
+
+              "Choose which fields to include in the export. Visible columns are pre-selected."
+
+            )}
 
           </DialogDescription>
 

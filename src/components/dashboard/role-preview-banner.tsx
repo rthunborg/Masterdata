@@ -1,10 +1,11 @@
 "use client";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
 import { Button } from "@/components/ui/button";
 import { getRoleDisplayName } from "@/lib/types/user";
 import { AlertCircle, X } from "lucide-react";
+import { useTranslations } from "@/lib/i18n";
 
 /**
  * Role Preview Banner Component
@@ -20,6 +21,7 @@ import { AlertCircle, X } from "lucide-react";
  */
 export function RolePreviewBanner() {
   const { previewRole, setPreviewRole, isPreviewMode } = useUIStore();
+  const t = useTranslations("dashboard");
 
   // Only render when in preview mode
   if (!isPreviewMode || !previewRole) return null;
@@ -35,10 +37,10 @@ export function RolePreviewBanner() {
         <AlertCircle className="h-5 w-5 text-yellow-700 shrink-0" />
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
           <span className="text-sm font-semibold text-yellow-900">
-            👁️ Viewing as {getRoleDisplayName(previewRole)} - Preview Mode
+            👁️ {t('preview.viewingAs')} {getRoleDisplayName(previewRole)} - {t('preview.previewMode')}
           </span>
           <span className="text-xs text-yellow-700">
-            Editing is disabled. You can test search, filter, and sort.
+            {t('preview.editingDisabled')}
           </span>
         </div>
       </div>
@@ -47,10 +49,10 @@ export function RolePreviewBanner() {
         size="sm"
         onClick={() => setPreviewRole(null)}
         className="bg-white hover:bg-yellow-50 border-yellow-400 text-yellow-900 hover:text-yellow-950 flex items-center gap-2 shrink-0"
-        aria-label="Exit preview mode"
+        aria-label={t('preview.exitPreview')}
       >
         <X className="h-4 w-4" />
-        Exit Preview
+        {t('preview.exitPreview')}
       </Button>
     </div>
   );

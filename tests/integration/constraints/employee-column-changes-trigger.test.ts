@@ -89,7 +89,7 @@ describe("Employee Column Changes Trigger Tests", () => {
           employee_id: employeeId,
           column_name: "first_name",
           changed_at: new Date().toISOString(),
-          changed_by: null,
+          changed_by: "user-uuid-123", // Now populated with auth.uid()
         }],
         error: null,
       });

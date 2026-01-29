@@ -27,7 +27,7 @@ export async function PATCH(
 ) {
   try {
     // Enforce HR Admin role
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { categoryName } = await params;

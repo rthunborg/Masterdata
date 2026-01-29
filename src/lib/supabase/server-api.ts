@@ -15,7 +15,7 @@ import { NextRequest } from "next/server";
  * }
  * ```
  */
-export function createAPIClient(request: NextRequest) {
+export function createAPIClient(request?: NextRequest) {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,7 +27,8 @@ export function createAPIClient(request: NextRequest) {
       cookies: {
         getAll() {
           // Read directly from request cookies instead of cookies() function
-          return request.cookies.getAll();
+          // Fallback to empty array for tests where request.cookies may not exist
+          return request?.cookies?.getAll() ?? [];
         },
         setAll(cookiesToSet) {
           // Cannot set cookies in API routes - this is handled by middleware
