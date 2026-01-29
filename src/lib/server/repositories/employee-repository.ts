@@ -575,6 +575,62 @@ export class EmployeeRepository {
   }
 
   /**
+   * Get detailed audit history for an employee including who made changes
+   * 
+   * Returns all column changes for an employee with user information.
+   * Useful for displaying audit trails in the UI.
+   * 
+   * @param employeeId - Employee UUID to get changes for
+   * @returns Array of changes with user information
+   */
+  async getEmployeeAuditHistory(
+    employeeId: string
+  ): Promise<Array<{
+    columnName: string;
+    changedAt: string;
+    changedBy: string | null;
+    changedByEmail: string | null;
+  }>> {
+    try {
+      const supabase = await this.getSupabaseClient();
+
+      // Query employee_column_changes with user information
+      const { data: changes, error } = await supabase
+        .from("employee_column_changes")
+        .select(`
+          column_name,
+          changed_at,
+          changed_by,
+          users!employee_column_changes_changed_by_fkey (
+            email
+          )
+        `)
+        .eq("employee_id", employeeId)
+        .order("changed_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching employee audit history:", error);
+        return [];
+      }
+
+      if (!changes || changes.length === 0) {
+        return [];
+      }
+
+      // Transform the response
+      return changes.map(change => ({
+        columnName: change.column_name,
+        changedAt: change.changed_at,
+        changedBy: change.changed_by,
+        changedByEmail: (change.users as any)?.email || null,
+      }));
+    } catch (error) {
+      console.error("Unexpected error fetching employee audit history:", error);
+      return [];
+    }
+  }
+
+  /**
    * Get employee column changes since a specific timestamp
    * 
    * Story: 16.2 - API Endpoint for Change Detection
