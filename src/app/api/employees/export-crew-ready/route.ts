@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireEmployeeManagerAPI, createErrorResponse } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
@@ -18,10 +18,10 @@ export const runtime = 'nodejs';
  * Story 8.5: Crewing/Done Field Conditional Logic - Export Enhancement
  * Story 13.4: Export Only Selected Employees
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireEmployeeManagerAPI();
+    await requireEmployeeManagerAPI(request);
 
     // Parse request body to get selected employee IDs
     const body = await request.json();

@@ -6,25 +6,32 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 // Mock fetch
 global.fetch = vi.fn();
 
-// Create mock functions with proper typing
-const mockOn = vi.fn().mockReturnThis();
-const mockSubscribe = vi.fn().mockReturnThis();
-
-// Mock Supabase client
-const mockChannel = {
-  on: mockOn,
-  subscribe: mockSubscribe,
-} as unknown as RealtimeChannel;
-
-const mockRemoveChannel = vi.fn();
-const mockSupabaseClient = {
-  channel: vi.fn(() => mockChannel),
-  removeChannel: mockRemoveChannel,
-  from: vi.fn(),
-};
+// Hoist mocks to avoid initialization issues
+const { mockOn, mockSubscribe, mockChannel, mockRemoveChannel, mockSupabaseClient } = vi.hoisted(() => {
+  const mockOn = vi.fn().mockReturnThis();
+  const mockSubscribe = vi.fn().mockReturnThis();
+  
+  const mockChannel = {
+    on: mockOn,
+    subscribe: mockSubscribe,
+  } as unknown as RealtimeChannel;
+  
+  const mockRemoveChannel = vi.fn();
+  const mockSupabaseClient = {
+    channel: vi.fn(() => mockChannel),
+    removeChannel: mockRemoveChannel,
+    from: vi.fn(),
+  };
+  
+  return { mockOn, mockSubscribe, mockChannel, mockRemoveChannel, mockSupabaseClient };
+});
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: vi.fn(() => mockSupabaseClient),
+}));
+
+vi.mock("@/lib/store/auth-store", () => ({
+  useAuthStore: vi.fn(() => ({ isAuthenticated: true })),
 }));
 
 describe("useAvailablePE3Dates", () => {
@@ -243,35 +250,31 @@ describe("useAvailablePE3Dates", () => {
       created_at: "2025-01-01T00:00:00Z",
       updated_at: "2025-01-01T00:00:00Z",      };
 
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        data: [
-          {
-            id: "date-1",
-            week_number: 10,
-            year: 2025,
-            category: "PE3 Dates",
-            date_description: "Fredag 7/3",
-            date_value: "2025-03-07",
-            notes: null,
-            created_at: "2025-01-01T00:00:00Z",
-            updated_at: "2025-01-01T00:00:00Z",      },
-        ],
-        meta: { total: 1, timestamp: new Date().toISOString() },
-      }),
-    });
-
-    mockSupabaseClient.from.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: currentDate,
-            error: null,
-          }),
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            {
+              id: "date-1",
+              week_number: 10,
+              year: 2025,
+              category: "PE3 Dates",
+              date_description: "Fredag 7/3",
+              date_value: "2025-03-07",
+              notes: null,
+              created_at: "2025-01-01T00:00:00Z",
+              updated_at: "2025-01-01T00:00:00Z",      },
+          ],
+          meta: { total: 1, timestamp: new Date().toISOString() },
         }),
-      }),
-    });
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [currentDate],
+        }),
+      });
 
     const { result } = renderHook(() => useAvailablePE3Dates("current-date"));
 

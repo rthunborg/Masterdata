@@ -69,16 +69,27 @@ export function TerminateEmployeeModal({
         return;
       }
       
-      const supabase = createClient();
+      // Helper to fetch date via API
+      async function fetchDateById(dateId: string) {
+        try {
+          const response = await fetch(
+            `/api/important-dates?id=${encodeURIComponent(dateId)}`,
+            { credentials: "include" }
+          );
+          
+          if (response.ok) {
+            const result = await response.json();
+            return result.data?.[0];
+          }
+        } catch (error) {
+          console.error("Error fetching date info:", error);
+        }
+        return null;
+      }
       
       // Fetch Stena date info if assigned
       if (employee.stena_date) {
-        const { data: stenaDate } = await supabase
-          .from('important_dates')
-          .select('date_description, date_value, remaining_spots')
-          .eq('id', employee.stena_date)
-          .single();
-          
+        const stenaDate = await fetchDateById(employee.stena_date);
         if (stenaDate) {
           setStenaDateInfo({
             description: stenaDate.date_description,
@@ -92,12 +103,7 @@ export function TerminateEmployeeModal({
       
       // Fetch ÖMC date info if assigned
       if (employee.omc_date) {
-        const { data: omcDate } = await supabase
-          .from('important_dates')
-          .select('date_description, date_value, remaining_spots')
-          .eq('id', employee.omc_date)
-          .single();
-          
+        const omcDate = await fetchDateById(employee.omc_date);
         if (omcDate) {
           setOmcDateInfo({
             description: omcDate.date_description,
@@ -111,12 +117,7 @@ export function TerminateEmployeeModal({
       
       // Fetch PE3 date info if assigned
       if (employee.pe3_date) {
-        const { data: pe3Date } = await supabase
-          .from('important_dates')
-          .select('date_description, date_value, remaining_spots')
-          .eq('id', employee.pe3_date)
-          .single();
-          
+        const pe3Date = await fetchDateById(employee.pe3_date);
         if (pe3Date) {
           setPe3DateInfo({
             description: pe3Date.date_description,

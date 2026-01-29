@@ -17,7 +17,7 @@ import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
 import { ChangeNotificationBanner } from "@/components/dashboard/change-notification-banner";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Plus, Upload } from "lucide-react";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
 import dynamic from "next/dynamic";
 import { FloatingActionButton } from "@/components/dashboard/floating-action-button";

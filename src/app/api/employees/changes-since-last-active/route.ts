@@ -38,7 +38,7 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   try {
     // Verify authentication
-    const user = await requireAuthAPI();
+    const user = await requireAuthAPI(request);
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;

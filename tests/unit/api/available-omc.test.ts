@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/important-dates/available-omc/route";
 import { mockUsers } from "../../utils/role-test-utils";
 import * as auth from "@/lib/server/auth";
-import { createClient } from "@/lib/supabase/server";
 
 // Mock the Supabase client
 const mockSupabaseClient = {
@@ -13,8 +12,8 @@ const mockSupabaseClient = {
   from: vi.fn(),
 };
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(),
+vi.mock("@/lib/supabase/server-api", () => ({
+  createAPIClient: vi.fn(),
 }));
 
 vi.mock("@/lib/server/auth", async () => {
@@ -52,7 +51,7 @@ vi.mock("@/lib/server/auth", async () => {
 });
 
 describe("GET /api/important-dates/available-omc", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     
     // Mock requireAuthAPI to succeed by default
@@ -66,8 +65,9 @@ describe("GET /api/important-dates/available-omc", () => {
       last_active_at: null,
     });
     
-    // Mock createClient to return mockSupabaseClient
-    vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as any);
+    // Mock createAPIClient to return mockSupabaseClient
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as any);
   });
 
   it("should return ÖMC dates with remaining capacity (not filtered by assignment)", async () => {

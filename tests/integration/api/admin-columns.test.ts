@@ -92,8 +92,21 @@ const mockSupabaseClient = {
   })),
 };
 
+vi.mock("@/lib/supabase/server-api", () => ({
+  createAPIClient: vi.fn(() => mockSupabaseClient),
+}));
+
+// Mock next/headers cookies() for createClient
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(() => ({
+    getAll: vi.fn(() => []),
+    set: vi.fn(),
+  })),
+}));
+
+// Mock createClient to return our mock
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(() => mockSupabaseClient),
+  createClient: vi.fn(async () => mockSupabaseClient),
 }));
 
 // Mock the auth helpers

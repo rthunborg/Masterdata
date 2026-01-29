@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/lib/store/auth-store";
 
 export const useAuth = () => {
@@ -14,9 +14,13 @@ export const useAuth = () => {
     setLoading,
   } = useAuthStore();
 
-  // Check auth on mount
+  // Track if we've already checked auth to prevent infinite loops
+  const hasCheckedRef = useRef(false);
+
+  // Check auth only once on mount
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (!hasCheckedRef.current && !user && !isLoading) {
+      hasCheckedRef.current = true;
       checkAuth();
     }
   }, [user, isLoading, checkAuth]);

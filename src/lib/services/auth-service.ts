@@ -6,74 +6,40 @@ class AuthService {
 
   async login(email: string, password: string): Promise<SessionUser> {
     try {
-      // Call Supabase Auth signInWithPassword
-      const { data: authData, error: authError } = await this.supabase.auth.signInWithPassword({
-        email,
-        password,
+      // Call API route instead of direct Supabase client
+      // This bypasses network-level blocks (like Cisco Umbrella) since API is same-origin
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
       });
 
-      if (authError) {
-        throw new Error(this.mapSupabaseAuthError(authError.message));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.error?.message || "Invalid email or password";
+        throw new Error(errorMessage);
       }
 
-      if (!authData.user) {
+      const result = await response.json();
+      const userData = result.data?.user;
+
+      if (!userData) {
         throw new Error("Invalid email or password");
       }
 
-      // Get user record from users table with role
-      // IMPORTANT: Fetch BEFORE updating last_active_at so we can use the previous value as baseline
-      const { data: userData, error: userError } = await this.supabase
-        .from("users")
-        .select("id, email, role, is_active, created_at, last_active_at")
-        .eq("auth_user_id", authData.user.id)
-        .single();
-
-      if (userError) {
-        throw new Error("Failed to retrieve user information");
-      }
-
-      if (!userData.is_active) {
-        throw new Error("Account has been deactivated");
-      }
-
-      // Store the PREVIOUS last_active_at before updating it
-      // This will be used as the baseline for change detection
-      const previousLastActiveAt = userData.last_active_at;
-
-      // Update last_active_at immediately on login (regardless of 5-minute rule)
-      // This ensures the timestamp is always current when user logs in
-      // Use fire-and-forget pattern - don't block login if update fails
-      try {
-        await this.supabase
-          .from("users")
-          .update({ last_active_at: new Date().toISOString() })
-          .eq("id", userData.id);
-      } catch (error) {
-        // Silently fail - login should succeed even if activity update fails
-        console.error('[AuthService] Failed to update last_active_at on login:', error);
-      }
-
-      // Fetch updated user data to include the new last_active_at timestamp
-      const { data: updatedUserData } = await this.supabase
-        .from("users")
-        .select("id, email, role, is_active, created_at, last_active_at")
-        .eq("id", userData.id)
-        .single();
-
-      const finalUserData = updatedUserData || userData;
-      
-      // Store previous last_active_at in a custom property for change detection
-      // The hook will use this as the baseline instead of the new last_active_at
-      // Type assertion needed because SessionUser doesn't include this temporary property
-      if (!authData.user) {
-        throw new Error("Invalid email or password");
-      }
-      
+      // Return user data (previous_last_active_at not needed for API-based login)
       return {
-        ...finalUserData,
-        auth_id: authData.user.id,
-        previous_last_active_at: previousLastActiveAt,
-      } as SessionUser & { previous_last_active_at?: string | null };
+        id: userData.id,
+        email: userData.email,
+        role: userData.role,
+        is_active: userData.is_active,
+        auth_id: userData.id,
+        created_at: userData.created_at,
+        last_active_at: userData.last_active_at,
+      } as SessionUser;
     } catch (error) {
       if (error instanceof Error) {
         throw error;
@@ -84,8 +50,14 @@ class AuthService {
 
   async logout(): Promise<void> {
     try {
-      const { error } = await this.supabase.auth.signOut();
-      if (error) {
+      // Call API route instead of direct Supabase client
+      // This bypasses network-level blocks (like Cisco Umbrella)
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
         throw new Error("Failed to log out");
       }
     } catch (error) {
@@ -98,32 +70,30 @@ class AuthService {
 
   async getCurrentUser(): Promise<SessionUser | null> {
     try {
-      const { data: { session }, error: sessionError } = await this.supabase.auth.getSession();
-      
-      if (sessionError || !session?.user) {
+      // Use API route instead of direct database query to avoid RLS issues
+      const response = await fetch("/api/auth/user", {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        // 401/403/404 are expected when not authenticated or inactive
+        if ([401, 403, 404].includes(response.status)) {
+          return null;
+        }
+        
+        // Log unexpected errors
+        console.error(
+          "[AuthService] Failed to get current user:",
+          response.status,
+          response.statusText
+        );
         return null;
       }
 
-      // Get user record from users table
-      const { data: userData, error: userError } = await this.supabase
-        .from("users")
-        .select("id, email, role, is_active, created_at, last_active_at")
-        .eq("auth_user_id", session.user.id)
-        .single();
-
-      if (userError || !userData) {
-        return null;
-      }
-
-      if (!userData.is_active) {
-        return null;
-      }
-
-      return {
-        ...userData,
-        auth_id: session.user.id,
-      };
-    } catch {
+      const userData = await response.json();
+      return userData as SessionUser;
+    } catch (error) {
+      console.error("[AuthService] Error in getCurrentUser:", error);
       return null;
     }
   }

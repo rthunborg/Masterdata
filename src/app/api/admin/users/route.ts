@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { createUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
@@ -8,12 +9,12 @@ import { ZodError } from "zod";
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request?: NextRequest) {
   try {
     // Enforce HR Admin role
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     // Fetch all users ordered by creation date
     const { data: users, error } = await supabase
@@ -44,7 +45,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     // Enforce HR Admin role
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     const body = await request.json();
 

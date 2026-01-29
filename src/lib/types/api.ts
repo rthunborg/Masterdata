@@ -17,6 +17,9 @@ export interface LoginResponse {
     email: string;
     role: string;
     is_active: boolean;
+    auth_id: string;
+    created_at: string;
+    last_active_at: string | null;
   };
   session: {
     access_token: string;

@@ -35,7 +35,7 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     // Require HR Admin or Recruiter authentication
-    await requireEmployeeManagerAPI();
+    await requireEmployeeManagerAPI(request);
 
     // Parse multipart/form-data
     const formData = await request.formData();
