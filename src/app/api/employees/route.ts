@@ -11,6 +11,7 @@ import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber } from "@/lib/services/room-assignment";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import type { EmployeeFormData } from "@/lib/types/employee";
@@ -21,7 +22,7 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   try {
     // Verify authentication (all roles can view, but permissions handled by RLS and column config)
-    const user = await requireAuthAPI();
+    const user = await requireAuthAPI(request);
     
     // Log for debugging (remove in production if needed)
     console.log('[GET /api/employees] Authenticated user:', { id: user.id, role: user.role, email: user.email });
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireEmployeeManagerAPI();
+    await requireEmployeeManagerAPI(request);
 
     // Parse and validate request body
     const body = await request.json();

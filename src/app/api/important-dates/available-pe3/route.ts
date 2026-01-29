@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import type { ImportantDate } from "@/lib/types/important-date";
 
@@ -16,12 +16,12 @@ function getJan1CurrentYear(): string {
   return `${currentYear}-01-01`;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Verify authentication (all authenticated users can view)
-    await requireAuthAPI();
+    await requireAuthAPI(request);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     const today = new Date().toISOString().split("T")[0];
     const jan1CurrentYear = getJan1CurrentYear();

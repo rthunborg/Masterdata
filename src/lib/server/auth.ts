@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import type { SessionUser, UserRole } from "@/lib/types/user";
 import { redirect } from "next/navigation";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function getUserFromSession(): Promise<SessionUser | null> {
   try {
@@ -12,6 +13,12 @@ export async function getUserFromSession(): Promise<SessionUser | null> {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
+      if (userError) {
+        console.error('[getUserFromSession] Auth error:', {
+          message: userError.message,
+          status: userError.status,
+        });
+      }
       return null;
     }
 
@@ -23,6 +30,17 @@ export async function getUserFromSession(): Promise<SessionUser | null> {
       .single();
 
     if (dbError || !userData) {
+      console.error('[getUserFromSession] Failed to fetch user from users table:', {
+        auth_user_id: user.id,
+        email: user.email,
+        dbError: dbError ? {
+          message: dbError.message,
+          details: dbError.details,
+          hint: dbError.hint,
+          code: dbError.code,
+        } : null,
+        hasUserData: !!userData,
+      });
       return null;
     }
 
@@ -34,7 +52,8 @@ export async function getUserFromSession(): Promise<SessionUser | null> {
       ...userData,
       auth_id: user.id,
     };
-  } catch {
+  } catch (error) {
+    console.error('[getUserFromSession] Unexpected error:', error);
     return null;
   }
 }
@@ -65,8 +84,14 @@ export async function requireHRAdmin(): Promise<SessionUser> {
 
 // API Route Protection Utilities
 
-export async function requireAuthAPI(): Promise<SessionUser> {
-  const user = await getUserFromSession();
+/**
+ * Require authentication in API routes
+ * @param request - Optional NextRequest for API routes with cookies issue workaround
+ */
+export async function requireAuthAPI(request?: NextRequest): Promise<SessionUser> {
+  const user = request 
+    ? await getUserFromSessionAPI(request)
+    : await getUserFromSession();
   
   if (!user) {
     throw new Error("Authentication required");
@@ -75,8 +100,65 @@ export async function requireAuthAPI(): Promise<SessionUser> {
   return user;
 }
 
-export async function requireRoleAPI(allowedRoles: UserRole[]): Promise<SessionUser> {
-  const user = await requireAuthAPI();
+/**
+ * Get user session in API routes using request cookies directly
+ * WORKAROUND for Next.js 16.0.7 cookies() issue in production
+ */
+async function getUserFromSessionAPI(request: NextRequest): Promise<SessionUser | null> {
+  try {
+    const supabase = createAPIClient(request);
+    
+    // Use getUser() instead of getSession() for better security
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      if (userError) {
+        console.error('[getUserFromSessionAPI] Auth error:', {
+          message: userError.message,
+          status: userError.status,
+        });
+      }
+      return null;
+    }
+
+    // Get user record from users table
+    const { data: userData, error: dbError } = await supabase
+      .from("users")
+      .select("id, email, role, is_active, created_at, last_active_at")
+      .eq("auth_user_id", user.id)
+      .single();
+
+    if (dbError || !userData) {
+      console.error('[getUserFromSessionAPI] Failed to fetch user from users table:', {
+        auth_user_id: user.id,
+        email: user.email,
+        dbError: dbError ? {
+          message: dbError.message,
+          details: dbError.details,
+          hint: dbError.hint,
+          code: dbError.code,
+        } : null,
+        hasUserData: !!userData,
+      });
+      return null;
+    }
+
+    if (!userData.is_active) {
+      return null;
+    }
+
+    return {
+      ...userData,
+      auth_id: user.id,
+    };
+  } catch (error) {
+    console.error('[getUserFromSessionAPI] Unexpected error:', error);
+    return null;
+  }
+}
+
+export async function requireRoleAPI(allowedRoles: UserRole[], request?: NextRequest): Promise<SessionUser> {
+  const user = await requireAuthAPI(request);
   
   if (!allowedRoles.includes(user.role as UserRole)) {
     throw new Error("Insufficient permissions");
@@ -85,12 +167,12 @@ export async function requireRoleAPI(allowedRoles: UserRole[]): Promise<SessionU
   return user;
 }
 
-export async function requireHRAdminAPI(): Promise<SessionUser> {
-  return requireRoleAPI(["hr_admin" as UserRole]);
+export async function requireHRAdminAPI(request?: NextRequest): Promise<SessionUser> {
+  return requireRoleAPI(["hr_admin" as UserRole], request);
 }
 
-export async function requireEmployeeManagerAPI(): Promise<SessionUser> {
-  return requireRoleAPI(["hr_admin" as UserRole, "recruiter" as UserRole]);
+export async function requireEmployeeManagerAPI(request?: NextRequest): Promise<SessionUser> {
+  return requireRoleAPI(["hr_admin" as UserRole, "recruiter" as UserRole], request);
 }
 
 /**

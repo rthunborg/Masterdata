@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireAuthAPI, createErrorResponse, createUnauthorizedResponse } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { columnConfigRepository } from "@/lib/server/repositories/column-config-repository";
 import Papa from "papaparse";
 import * as ExcelJS from "exceljs";
 import type { Employee } from "@/lib/types/employee";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import type { UserRole } from "@/lib/types/user";
 
 // Force Node.js runtime for cookies() support
@@ -20,10 +20,10 @@ export const runtime = 'nodejs';
  * Story 17.4: Export Functionality for External Users - permission-based field filtering
  * Enhancement: HR Admin Impersonation Export - export with impersonated role's view and Excel format
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     // Verify authentication (all authenticated users can export)
-    const user = await requireAuthAPI();
+    const user = await requireAuthAPI(request);
 
     // Parse request body
     const body = await request.json();
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
     }
 
     // Get custom column data for selected employees
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const { data: customDataRows, error: customDataError } = await supabase
       .from('custom_data')
       .select('*')

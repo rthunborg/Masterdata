@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { ImportantDate } from "@/lib/types/important-date";
+import { useAuthStore } from "@/lib/store/auth-store";
 
 /**
  * Hook to fetch and subscribe to available PE3 dates with real-time updates
@@ -13,9 +14,10 @@ import type { ImportantDate } from "@/lib/types/important-date";
  * @returns { availableDates, totalAvailable, isLoading, error }
  */
 export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: boolean = true) {
+  const { isAuthenticated } = useAuthStore();
   const [availableDates, setAvailableDates] = useState<ImportantDate[]>([]);
   const [totalAvailable, setTotalAvailable] = useState(0);
-  const [isLoading, setIsLoading] = useState(enabled);
+  const [isLoading, setIsLoading] = useState(enabled && isAuthenticated);
   const [error, setError] = useState<Error | null>(null);
 
   // Ref for debounce timer
@@ -45,6 +47,13 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
       const response = await fetch("/api/important-dates/available-pe3");
       
       if (!response.ok) {
+        // Don't throw on 401 - just return empty (user logged out)
+        if (response.status === 401) {
+          setAvailableDates([]);
+          setTotalAvailable(0);
+          setIsLoading(false);
+          return;
+        }
         throw new Error(`Failed to fetch available PE3 dates: ${response.statusText}`);
       }
 
@@ -57,21 +66,28 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
         const hasCurrentDate = dates.some((d: ImportantDate) => d.id === currentPE3DateId);
         
         if (!hasCurrentDate) {
-          // Fetch the current date from important_dates table
-          const supabase = createClient();
-          const { data: currentDate, error: currentDateError } = await supabase
-            .from("important_dates")
-            .select("*")
-            .eq("id", currentPE3DateId)
-            .single();
-
-          if (!currentDateError && currentDate) {
-            // Merge current date with available dates
-            dates = [...dates, currentDate];
-            // Sort by date_value
-            dates.sort((a: ImportantDate, b: ImportantDate) => 
-              a.date_value.localeCompare(b.date_value)
+          // Fetch the current date via API to bypass network blocks
+          try {
+            const currentDateResponse = await fetch(
+              `/api/important-dates?id=${encodeURIComponent(currentPE3DateId)}`,
+              { credentials: "include" }
             );
+            
+            if (currentDateResponse.ok) {
+              const currentDateResult = await currentDateResponse.json();
+              const currentDate = currentDateResult.data?.[0];
+              
+              if (currentDate) {
+                // Merge current date with available dates
+                dates = [...dates, currentDate];
+                // Sort by date_value
+                dates.sort((a: ImportantDate, b: ImportantDate) => 
+                  a.date_value.localeCompare(b.date_value)
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching current PE3 date:", error);
           }
         }
       }
@@ -102,7 +118,10 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
   }, [fetchAvailableDates]);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !isAuthenticated) {
+      setIsLoading(false);
+      setAvailableDates([]);
+      setTotalAvailable(0);
       return;
     }
 
@@ -186,7 +205,7 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
       }
       supabase.removeChannel(channel);
     };
-  }, [fetchAvailableDates, debouncedRefetch, enabled]);
+  }, [fetchAvailableDates, debouncedRefetch, enabled, isAuthenticated]);
 
   return { availableDates, totalAvailable, isLoading, error };
 }

@@ -17,11 +17,23 @@ export class UserRepository {
         .single();
 
       if (error || !data) {
+        if (error) {
+          console.error('[UserRepository.findByAuthId] Query failed:', {
+            auth_user_id: authUserId,
+            error: {
+              message: error.message,
+              details: error.details,
+              hint: error.hint,
+              code: error.code,
+            },
+          });
+        }
         return null;
       }
 
       return data;
-    } catch {
+    } catch (error) {
+      console.error('[UserRepository.findByAuthId] Unexpected error:', error);
       return null;
     }
   }

@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import LoginForm from "./login-form";
 
+// Force dynamic rendering - this page checks auth status with cookies
+export const dynamic = 'force-dynamic';
+
 export default async function LoginPage() {
   // Create server-side Supabase client
   const cookieStore = await cookies();

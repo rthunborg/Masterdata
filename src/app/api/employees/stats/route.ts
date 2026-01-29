@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 
@@ -13,10 +13,10 @@ export const runtime = "nodejs";
  * - Includes terminated employees
  * - "Crewed" means crewing_done === true
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // All authenticated roles can view system-wide stats (RLS still applies)
-    await requireAuthAPI();
+    await requireAuthAPI(request);
 
     const stats = await employeeRepository.getSystemStats();
 

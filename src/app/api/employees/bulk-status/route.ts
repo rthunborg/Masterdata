@@ -17,7 +17,7 @@ const bulkStatusSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireEmployeeManagerAPI();
+    await requireEmployeeManagerAPI(request);
 
     const body = await request.json();
     const result = bulkStatusSchema.safeParse(body);
