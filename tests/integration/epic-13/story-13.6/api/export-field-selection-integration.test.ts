@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/employees/export/route";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import Papa from "papaparse";
 
 // Mock dependencies
@@ -160,8 +160,8 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
   },
 }));
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(),
+vi.mock("@/lib/supabase/server-api", () => ({
+  createAPIClient: vi.fn(),
 }));
 
 vi.mock("papaparse", () => ({
@@ -209,7 +209,7 @@ describe("Export Field Selection Integration", () => {
       }),
     };
      
-    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
 
     // Execute request
     const request = new Request("http://localhost/api/employees/export", {
@@ -258,7 +258,7 @@ describe("Export Field Selection Integration", () => {
       }),
     };
      
-    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",

@@ -51,7 +51,7 @@ import { AssignedEmployeesBadge } from "./assigned-employees-badge";
 import { AssignedEmployeesModal } from "./assigned-employees-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
 import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";

@@ -1,12 +1,26 @@
 import '@testing-library/jest-dom';
 import { afterEach, vi } from 'vitest';
-import fetch from 'node-fetch';
+import nodeFetch from 'node-fetch';
 
-// Polyfill fetch for Node.js environment (needed for Supabase client)
-if (!globalThis.fetch) {
-   
-  globalThis.fetch = fetch as unknown as typeof globalThis.fetch;
-}
+// Polyfill fetch for Node.js environment with relative URL support
+const originalFetch = nodeFetch as unknown as typeof globalThis.fetch;
+const baseURL = 'http://localhost:3000';
+
+globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+  // Convert relative URLs to absolute
+  let url: string;
+  if (typeof input === 'string') {
+    url = input.startsWith('/') ? `${baseURL}${input}` : input;
+  } else if (input instanceof URL) {
+    url = input.href;
+  } else if (input instanceof Request) {
+    url = input.url.startsWith('/') ? `${baseURL}${input.url}` : input.url;
+  } else {
+    url = input as string;
+  }
+  
+  return originalFetch(url, init);
+}) as typeof globalThis.fetch;
 
 // Mock environment variables
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321';

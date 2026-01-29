@@ -87,8 +87,20 @@ describe('TerminateEmployeeModal', () => {
     from: vi.fn(),
   } as unknown as SupabaseClient;
 
+  // Mock fetch for date info API calls
+  const mockFetch = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Mock global fetch
+    global.fetch = mockFetch as unknown as typeof fetch;
+    
+    // Default fetch mock returns null data
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [] }),
+    });
     
     // Default mock that returns empty data
     const defaultSingle = vi.fn().mockResolvedValue({ data: null, error: null });
@@ -119,40 +131,38 @@ describe('TerminateEmployeeModal', () => {
   });
 
   it('should display current date values for confirmation', async () => {
-    // Mock date info fetch
-    const mockSingle = vi.fn()
+    // Mock fetch responses for date info API calls
+    mockFetch
       .mockResolvedValueOnce({
-        data: {
-          date_description: 'Stena Training',
-          date_value: '2025-02-15',
-          remaining_spots: 5,
-        },
-        error: null,
+        ok: true,
+        json: async () => ({
+          data: [{
+            date_description: 'Stena Training',
+            date_value: '2025-02-15',
+            remaining_spots: 5,
+          }],
+        }),
       })
       .mockResolvedValueOnce({
-        data: {
-          date_description: 'ÖMC Training 8-9 mars',
-          date_value: '2025-03-08',
-          remaining_spots: 10,
-        },
-        error: null,
+        ok: true,
+        json: async () => ({
+          data: [{
+            date_description: 'ÖMC Training 8-9 mars',
+            date_value: '2025-03-08',
+            remaining_spots: 10,
+          }],
+        }),
       })
       .mockResolvedValueOnce({
-        data: {
-          date_description: 'PE3 Training',
-          date_value: '2025-04-20',
-          remaining_spots: 3,
-        },
-        error: null,
+        ok: true,
+        json: async () => ({
+          data: [{
+            date_description: 'PE3 Training',
+            date_value: '2025-04-20',
+            remaining_spots: 3,
+          }],
+        }),
       });
-
-    mockSupabaseClient.from.mockReturnValue({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: mockSingle,
-        })),
-      })),
-    } as never);
 
     renderWithI18n(
       <TerminateEmployeeModal
@@ -180,32 +190,32 @@ describe('TerminateEmployeeModal', () => {
       repayment_needed_pe3: 'pe3-date-uuid-456',
     };
 
-    const mockSingle = vi.fn()
-      .mockResolvedValueOnce({ data: null, error: null }) // stena_date
+    // Mock fetch responses for date info API calls
+    mockFetch
       .mockResolvedValueOnce({
-        data: {
-          date_description: 'ÖMC Training 8-9 mars',
-          date_value: '2025-03-08',
-          remaining_spots: 10,
-        },
-        error: null,
-      }) // omc_date
+        ok: true,
+        json: async () => ({ data: [] }), // stena_date not found
+      })
       .mockResolvedValueOnce({
-        data: {
-          date_description: 'PE3 Training',
-          date_value: '2025-04-20',
-          remaining_spots: 3,
-        },
-        error: null,
-      }); // pe3_date
-
-    mockSupabaseClient.from.mockReturnValue({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: mockSingle,
-        })),
-      })),
-    } as never);
+        ok: true,
+        json: async () => ({
+          data: [{
+            date_description: 'ÖMC Training 8-9 mars',
+            date_value: '2025-03-08',
+            remaining_spots: 10,
+          }],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [{
+            date_description: 'PE3 Training',
+            date_value: '2025-04-20',
+            remaining_spots: 3,
+          }],
+        }),
+      });
 
     renderWithI18n(
       <TerminateEmployeeModal
@@ -225,32 +235,32 @@ describe('TerminateEmployeeModal', () => {
   });
 
   it('should display spots to be released', async () => {
-    const mockSingle = vi.fn()
-      .mockResolvedValueOnce({ data: null, error: null }) // stena_date (not assigned in mockEmployee)
+    // Mock fetch responses for date info API calls
+    mockFetch
       .mockResolvedValueOnce({
-        data: {
-          date_description: 'ÖMC Training',
-          date_value: '2025-03-08',
-          remaining_spots: 5,
-        },
-        error: null,
-      }) // omc_date
+        ok: true,
+        json: async () => ({ data: [] }), // stena_date not found
+      })
       .mockResolvedValueOnce({
-        data: {
-          date_description: 'PE3 Training',
-          date_value: '2025-04-20',
-          remaining_spots: 3,
-        },
-        error: null,
-      }); // pe3_date
-
-    mockSupabaseClient.from.mockReturnValue({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: mockSingle,
-        })),
-      })),
-    } as never);
+        ok: true,
+        json: async () => ({
+          data: [{
+            date_description: 'ÖMC Training',
+            date_value: '2025-03-08',
+            remaining_spots: 5,
+          }],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [{
+            date_description: 'PE3 Training',
+            date_value: '2025-04-20',
+            remaining_spots: 3,
+          }],
+        }),
+      });
 
     renderWithI18n(
       <TerminateEmployeeModal

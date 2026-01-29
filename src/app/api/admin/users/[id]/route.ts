@@ -53,7 +53,7 @@ export async function PATCH(
 ) {
   try {
     // Enforce HR Admin role and get current user
-    const currentUser = await requireHRAdminAPI();
+    const currentUser = await requireHRAdminAPI(request);
 
     const supabase = await createClient();
     const body = await request.json();
@@ -166,7 +166,7 @@ export async function DELETE(
 ) {
   try {
     // Enforce HR Admin role and get current user
-    const currentUser = await requireHRAdminAPI();
+    const currentUser = await requireHRAdminAPI(request);
 
     const supabase = await createClient();
     const { id } = await params;

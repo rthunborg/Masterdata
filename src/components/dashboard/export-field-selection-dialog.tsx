@@ -33,7 +33,7 @@ import type { ColumnConfig } from "@/lib/types/column-config";
 
 import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
 import { getRoleDisplayName } from "@/lib/types/user";
 

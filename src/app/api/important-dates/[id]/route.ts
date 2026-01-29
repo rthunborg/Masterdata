@@ -17,7 +17,7 @@ export async function PATCH(
 ) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER], request);
 
     const { id } = await params;
 
@@ -84,7 +84,7 @@ export async function DELETE(
 ) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER], request);
 
     const { id } = await params;
 

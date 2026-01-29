@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAPIClient } from "@/lib/supabase/server-api";
-import { requireAuthAPI } from "@/lib/server/auth";
+import { requireAuthAPI, requireRoleAPI, createErrorResponse } from "@/lib/server/auth";
+import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
+import { createImportantDateSchema } from "@/lib/validation/important-date-schema";
+import { UserRole } from "@/lib/types/user";
+import { z } from "zod";
 
 export const dynamic = 'force-dynamic';
 
@@ -11,13 +15,13 @@ export const dynamic = 'force-dynamic';
  *   - category: Optional category filter (e.g., "Stena Dates", "ÖMC Dates", "PE3 Dates")
  *   - id: Optional ID filter to fetch a single date
  */
-export async function GET(request: NextRequest) {
+export async function GET(request?: NextRequest) {
   try {
     // Require authentication
     await requireAuthAPI(request);
 
     const supabase = createAPIClient(request);
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(request?.url ?? 'http://localhost');
     const category = searchParams.get("category");
     const id = searchParams.get("id");
 
@@ -66,5 +70,64 @@ export async function GET(request: NextRequest) {
       { error: "Internal server error" },
       { status: 500 }
     );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Verify HR Admin or Recruiter role
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER], request);
+
+    // Parse and validate request body
+    const body = await request.json();
+    
+    let validatedData;
+    try {
+      validatedData = createImportantDateSchema.parse(body);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid input data",
+              details: validationError.issues.reduce((acc, err) => {
+                const field = err.path.join(".");
+                if (!acc[field]) acc[field] = [];
+                acc[field].push(err.message);
+                return acc;
+              }, {} as Record<string, string[]>),
+              timestamp: new Date().toISOString(),
+            },
+          },
+          { status: 400 }
+        );
+      }
+      throw validationError;
+    }
+
+    // Create important date via repository
+    // Ensure undefined values are converted to null for database compatibility
+    const dateData = {
+      ...validatedData,
+      time_value: validatedData.time_value ?? null,
+      deadline_submit: validatedData.deadline_submit ?? null,
+      deadline_cancel: validatedData.deadline_cancel ?? null,
+    };
+    
+    const importantDate = await importantDateRepository.create(dateData);
+
+    // Return successful response
+    return NextResponse.json(
+      {
+        data: importantDate,
+        meta: {
+          timestamp: new Date().toISOString(),
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    return createErrorResponse(error);
   }
 }
