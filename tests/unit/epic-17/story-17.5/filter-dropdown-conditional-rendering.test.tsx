@@ -1,6 +1,14 @@
 /**
  * Unit Tests for Story 17.5: Search Filter Improvements for External Users
  * 
+ * **PARTIALLY SKIPPED - Story 20.1: Crew Ready Dropdown Removed**
+ * The crew ready dropdown filter was removed in Story 20.1 to consolidate
+ * all filtering into the new advanced filter panel (Epic 20).
+ * 
+ * Tests that verify the dropdown is hidden for external users are now obsolete
+ * since the dropdown no longer exists for any role. Search functionality tests
+ * remain valid and active.
+ * 
  * Tests that the premade filters dropdown (Crew Ready filter) is conditionally
  * rendered based on user role, while search input remains visible for all users.
  */
@@ -159,7 +167,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
     vi.clearAllMocks();
   });
 
-  describe("AC1: Remove Premade Filters Dropdown for External Users", () => {
+  describe.skip("AC1: Remove Premade Filters Dropdown for External Users - SKIPPED (Story 20.1)", () => {
     it("should hide crew ready filter dropdown for sodexo user", async () => {
       mockUseAuth.mockReturnValue({
         user: {
@@ -315,7 +323,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
     });
   });
 
-  describe("AC3: HR Admin Unaffected", () => {
+  describe.skip("AC3: HR Admin Unaffected - SKIPPED (Story 20.1: Dropdown removed for all roles)", () => {
     it("should show crew ready filter dropdown for HR Admin", async () => {
       mockUseAuth.mockReturnValue({
         user: {
@@ -348,7 +356,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
     });
   });
 
-  describe("AC4: Role-Based Conditional Rendering", () => {
+  describe.skip("AC4: Role-Based Conditional Rendering - SKIPPED (Story 20.1)", () => {
     it("should conditionally render dropdown based on isHRAdmin check", async () => {
       // Test external user
       mockUseAuth.mockReturnValue({

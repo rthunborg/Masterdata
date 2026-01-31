@@ -2,6 +2,13 @@
  * Integration Tests for Crew Ready Auto-Selection
  * Story 13.5: Crew Ready Filter Auto-Selection
  * 
+ * **SKIPPED - Story 20.1: Crew Ready Dropdown Removed**
+ * The crew ready dropdown filter was removed in Story 20.1 to consolidate
+ * all filtering into the new advanced filter panel (Epic 20).
+ * 
+ * These tests verified UI interactions with the dropdown that no longer exists.
+ * The crew ready export functionality remains and is tested elsewhere.
+ * 
  * Tests verify:
  * 1. Crew ready filter activates and selects employees
  * 2. Selected employees show greyish tint
@@ -187,7 +194,7 @@ const createNonCrewReadyEmployee = (id: string, overrides: Partial<Employee> = {
   ...overrides,
 });
 
-describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
+describe.skip('Story 13.5: Crew Ready Auto-Selection Integration - SKIPPED (Story 20.1)', () => {
   const mockOnEmployeeUpdated = vi.fn();
   const mockOnIncludeArchivedChange = vi.fn();
   const mockOnIncludeTerminatedChange = vi.fn();

@@ -1,7 +1,18 @@
+/**
+ * E2E Tests for Story 13.5: Crew Ready Auto-Selection Workflow
+ * 
+ * **SKIPPED - Story 20.1: Crew Ready Dropdown Removed**
+ * The crew ready dropdown filter was removed in Story 20.1 to consolidate
+ * all filtering into the new advanced filter panel (Epic 20).
+ * 
+ * These tests verified end-to-end workflows with the dropdown that no longer exists.
+ * The crew ready export functionality remains and is tested elsewhere.
+ */
+
 import { test, expect } from '@playwright/test';
 import { setupTestUser, loginAsHRAdmin } from '../../helpers/e2e-helpers';
 
-test.describe('Story 13.5: Crew Ready Auto-Selection Workflow', () => {
+test.describe.skip('Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1)', () => {
   test.beforeEach(async ({ page }) => {
     await setupTestUser();
     await loginAsHRAdmin(page);
