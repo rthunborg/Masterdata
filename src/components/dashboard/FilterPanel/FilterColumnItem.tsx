@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ColumnConfig } from "@/lib/types/column-config";
-import type { FilterState } from "./FilterPanel";
+import type { FilterState } from "@/lib/types/filter";
 import { TextFilter } from "./TextFilter";
 import { BooleanFilter } from "./BooleanFilter";
 import { DateFilter } from "./DateFilter";

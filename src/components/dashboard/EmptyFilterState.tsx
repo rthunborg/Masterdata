@@ -75,7 +75,7 @@ export function EmptyFilterState({
             
             return (
               <li key={filter.columnId} className="text-muted-foreground">
-                • <strong>{column.display_name}:</strong> {formatFilterValue(filter)}
+                • <strong>{column.column_name}:</strong> {formatFilterValue(filter)}
               </li>
             );
           })}

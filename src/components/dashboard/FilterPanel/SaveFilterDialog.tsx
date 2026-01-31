@@ -72,7 +72,7 @@ export function SaveFilterDialog({
   // Get column name for display
   const getColumnName = (columnId: string): string => {
     const column = columnConfigs.find((c) => c.id === columnId);
-    return column?.display_name || columnId;
+    return column?.column_name || columnId;
   };
 
   // Format filter for display

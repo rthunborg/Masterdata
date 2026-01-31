@@ -38,7 +38,7 @@ export function useAvailableDates(column: ColumnConfig, enabled = true) {
 
     async function fetchDates() {
       try {
-        const url = `/api/important-dates?category=${encodeURIComponent(category)}`;
+        const url = `/api/important-dates?category=${encodeURIComponent(category!)}`;
         const response = await fetch(url, {
           credentials: "include",
         });

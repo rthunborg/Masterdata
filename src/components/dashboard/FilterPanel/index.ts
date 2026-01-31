@@ -6,4 +6,4 @@ export { BooleanFilter } from "./BooleanFilter";
 export { DateFilter } from "./DateFilter";
 export { ActiveFiltersList } from "./ActiveFiltersList";
 export type { FilterState } from "@/lib/types/filter";
-export type { ImportantDate } from "./DateFilter";
+export type { ImportantDate } from "@/lib/types/important-date";

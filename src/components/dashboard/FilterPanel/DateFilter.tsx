@@ -14,16 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { ColumnConfig } from "@/lib/types/column-config";
-
-export interface ImportantDate {
-  id: string;
-  date_value: string; // ISO date string
-  category: "OMC" | "STENA" | "PE3";
-  capacity?: number;
-  booked?: number;
-  available?: number;
-  is_active?: boolean;
-}
+import type { ImportantDate } from "@/lib/types/important-date";
 
 interface DateFilterProps {
   column: ColumnConfig;

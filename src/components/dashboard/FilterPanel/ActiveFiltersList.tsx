@@ -89,14 +89,14 @@ export function ActiveFiltersList({
               data-testid={`active-filter-${filter.columnId}`}
             >
               <span className="flex-1 truncate">
-                <strong>{column.display_name}:</strong> {formatFilterValue(filter)}
+                <strong>{column.column_name}:</strong> {formatFilterValue(filter)}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onRemove(filter.columnId)}
                 className="h-6 w-6 p-0 ml-2 flex-shrink-0"
-                aria-label={`Remove ${column.display_name} filter`}
+                aria-label={`Remove ${column.column_name} filter`}
                 data-testid={`remove-filter-${filter.columnId}`}
               >
                 <X className="h-3 w-3" />
