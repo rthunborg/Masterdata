@@ -214,7 +214,7 @@ describe("Export Date Resolution", () => {
       }),
     };
 
-    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as any);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as ReturnType<typeof createAPIClient>);
 
     // Import the route handler
     const { POST } = await import("@/app/api/employees/export/route");
@@ -282,13 +282,13 @@ describe("Export Date Resolution", () => {
         omc_date: null,
         pe3_date: null,
         // ... other required fields
-      } as any,
+      } as Partial<Employee>,
     ];
 
-    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
+    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees as Employee[]);
 
     // Mock important dates (empty - date was deleted)
-    const mockImportantDates: any[] = [];
+    const mockImportantDates: ImportantDate[] = [];
 
     // Mock column config
     vi.mocked(columnConfigRepository.findAll).mockResolvedValue([
@@ -300,8 +300,8 @@ describe("Export Date Resolution", () => {
         role_permissions: {
           hr_admin: { view: true, edit: true },
         },
-      } as any,
-    ]);
+      } as Partial<ColumnConfig>,
+    ] as ColumnConfig[]);
 
     // Mock Supabase client
     const mockSupabaseClient = {
@@ -319,7 +319,7 @@ describe("Export Date Resolution", () => {
       }),
     };
 
-    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as any);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as ReturnType<typeof createAPIClient>);
 
     // Import the route handler
     const { POST } = await import("@/app/api/employees/export/route");
