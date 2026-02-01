@@ -182,9 +182,9 @@ describe("EmptyFilterState - Story 20.5", () => {
   });
 
   it("displays actual date names when importantDates provided", () => {
-    const mockDates = [
-      { id: "date-1", date_description: "Week 15 - ÖMC" } as any,
-      { id: "date-2", date_description: "Week 16 - ÖMC" } as any,
+    const mockDates: Partial<ImportantDate>[] = [
+      { id: "date-1", date_description: "Week 15 - ÖMC" },
+      { id: "date-2", date_description: "Week 16 - ÖMC" },
     ];
     
     const filters: FilterState[] = [
@@ -208,11 +208,11 @@ describe("EmptyFilterState - Story 20.5", () => {
   });
 
   it("truncates date list with +N more for many dates", () => {
-    const mockDates = [
-      { id: "date-1", date_description: "Week 15" } as any,
-      { id: "date-2", date_description: "Week 16" } as any,
-      { id: "date-3", date_description: "Week 17" } as any,
-      { id: "date-4", date_description: "Week 18" } as any,
+    const mockDates: Partial<ImportantDate>[] = [
+      { id: "date-1", date_description: "Week 15" },
+      { id: "date-2", date_description: "Week 16" },
+      { id: "date-3", date_description: "Week 17" },
+      { id: "date-4", date_description: "Week 18" },
     ];
     
     const filters: FilterState[] = [
@@ -228,7 +228,7 @@ describe("EmptyFilterState - Story 20.5", () => {
         activeFilters={filters}
         columnConfigs={mockColumnConfigs}
         onClearFilters={vi.fn()}
-        importantDates={mockDates}
+        importantDates={mockDates as ImportantDate[]}
       />
     );
 

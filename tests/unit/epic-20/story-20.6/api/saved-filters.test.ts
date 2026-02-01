@@ -65,7 +65,7 @@ describe("GET /api/users/filters", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any);
+    vi.mocked(createClient).mockResolvedValue(mockSupabase as ReturnType<typeof createClient>);
 
     const request = new NextRequest("http://localhost/api/users/filters");
     const response = await GET(request);
@@ -102,7 +102,7 @@ describe("GET /api/users/filters", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any);
+    vi.mocked(createClient).mockResolvedValue(mockSupabase as ReturnType<typeof createClient>);
 
     const request = new NextRequest("http://localhost/api/users/filters");
     const response = await GET(request);

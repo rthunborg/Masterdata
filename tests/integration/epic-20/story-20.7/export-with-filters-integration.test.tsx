@@ -203,7 +203,7 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
         json: () => Promise.resolve({}),
       });
     });
-    global.fetch = fetchMock as any;
+    global.fetch = fetchMock as typeof fetch;
 
     // Mock localStorage
     Storage.prototype.getItem = vi.fn();

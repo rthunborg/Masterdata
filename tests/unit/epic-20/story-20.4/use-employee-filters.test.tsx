@@ -162,7 +162,7 @@ describe('Story 20.4: useEmployeeFilters Hook', () => {
     mockSearchParams.delete('filters');
     
     // Mock fetch to return important dates
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       json: async () => ({
         data: [
@@ -612,7 +612,7 @@ describe('Story 20.4: useEmployeeFilters Hook', () => {
 
   describe('Error Handling', () => {
     it('should handle failed important dates fetch', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(global.fetch).mockRejectedValueOnce(new Error('Network error'));
 
       const { result } = renderHook(() =>
         useEmployeeFilters({
