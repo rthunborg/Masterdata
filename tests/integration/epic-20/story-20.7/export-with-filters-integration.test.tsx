@@ -12,7 +12,6 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
-import type { ColumnConfig } from '@/lib/types/column-config';
 
 // Mock Next.js navigation
 vi.mock('next/navigation', () => ({
@@ -145,7 +144,7 @@ vi.mock('@/hooks/useSavedFilters', () => ({
 // Mock filter engine to return all employees when no filters
 vi.mock('@/lib/filters/filterEngine', () => ({
   applyFilters: (employees: Employee[]) => employees, // No filtering - return all
-  hasActiveFilters: (filters: any[]) => filters.length > 0,
+  hasActiveFilters: (filters: unknown[]) => filters.length > 0,
   matchesFilter: () => true,
 }));
 
