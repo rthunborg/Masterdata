@@ -5,6 +5,20 @@ import { EmptyFilterState } from "@/components/dashboard/EmptyFilterState";
 import type { FilterState } from "@/lib/types/filter";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("EmptyFilterState - Story 20.5", () => {
   const mockColumnConfigs: ColumnConfig[] = [
     {

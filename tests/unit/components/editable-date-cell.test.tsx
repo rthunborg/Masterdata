@@ -1,4 +1,5 @@
 import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableDateCell } from "@/components/dashboard/editable-date-cell";
@@ -28,6 +29,24 @@ import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { useAvailableOMCDates } from "@/lib/hooks/use-available-omc-dates";
 
 describe("EditableDateCell", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnSave = vi.fn().mockResolvedValue(undefined);
   const mockOnError = vi.fn();
 
@@ -148,7 +167,7 @@ describe("EditableDateCell", () => {
 
   describe("Read-Only State (canEdit = false)", () => {
     it("renders read-only cell with gray background", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -169,7 +188,7 @@ describe("EditableDateCell", () => {
     });
 
     it("shows tooltip when read-only cell is clicked", async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -194,7 +213,7 @@ describe("EditableDateCell", () => {
     });
 
     it("does not enter edit mode when clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -215,7 +234,7 @@ describe("EditableDateCell", () => {
     });
 
     it("displays em-dash for null value", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={null}
           displayValue=""
@@ -232,7 +251,7 @@ describe("EditableDateCell", () => {
     });
 
     it("displays warning color for date not found", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value="invalid-id"
           displayValue="(Datum hittades inte)" // Swedish translation of dateDeleted from dashboard namespace
@@ -253,7 +272,7 @@ describe("EditableDateCell", () => {
 
   describe("Editable State (canEdit = true)", () => {
     it("renders editable cell with white background and hover effect", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -274,7 +293,7 @@ describe("EditableDateCell", () => {
     });
 
     it("enters edit mode when clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -295,7 +314,7 @@ describe("EditableDateCell", () => {
     });
 
     it("enters edit mode on Enter key", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -316,7 +335,7 @@ describe("EditableDateCell", () => {
     });
 
     it("enters edit mode on Space key", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -337,7 +356,7 @@ describe("EditableDateCell", () => {
     });
 
     it("displays em-dash for null value in editable cell", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={null}
           displayValue=""
@@ -356,7 +375,7 @@ describe("EditableDateCell", () => {
 
   describe("Date Filtering", () => {
     it("filters dates by Stena Dates category", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -378,7 +397,7 @@ describe("EditableDateCell", () => {
     });
 
     it("filters dates by ÖMC Dates category", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockOmcDate.id}
           displayValue={mockOmcDate.date_description}
@@ -404,7 +423,7 @@ describe("EditableDateCell", () => {
         error: null,
       });
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockPE3Date.id}
           displayValue={mockPE3Date.date_description}
@@ -429,7 +448,7 @@ describe("EditableDateCell", () => {
         error: null,
       });
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockPE3Date.id}
           displayValue={mockPE3Date.date_description}
@@ -450,7 +469,7 @@ describe("EditableDateCell", () => {
 
   describe("Tooltip with Date Details", () => {
     it("shows date details tooltip on hover for editable cell with value", async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -483,7 +502,7 @@ describe("EditableDateCell", () => {
     });
 
     it("does not show date details tooltip when value is null", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={null}
           displayValue=""
@@ -506,7 +525,7 @@ describe("EditableDateCell", () => {
 
   describe("Save Operation", () => {
     it("calls onSave with null when selecting (None)", async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -531,7 +550,7 @@ describe("EditableDateCell", () => {
         () => new Promise((resolve) => setTimeout(resolve, 100))
       );
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -552,7 +571,7 @@ describe("EditableDateCell", () => {
       const errorMessage = "Failed to update date";
       mockOnSave.mockRejectedValue(new Error(errorMessage));
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -576,7 +595,7 @@ describe("EditableDateCell", () => {
       const errorMessage = "Failed to update date";
       mockOnSave.mockRejectedValue(new Error(errorMessage));
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -597,7 +616,7 @@ describe("EditableDateCell", () => {
 
   describe("ARIA Attributes", () => {
     it("sets aria-readonly='true' for read-only cells", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -616,7 +635,7 @@ describe("EditableDateCell", () => {
     });
 
     it("sets aria-readonly='false' for editable cells", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -635,7 +654,7 @@ describe("EditableDateCell", () => {
     });
 
     it("has role='gridcell' for proper table semantics", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -654,7 +673,7 @@ describe("EditableDateCell", () => {
 
   describe("Default Behavior", () => {
     it("defaults to editable when canEdit prop is omitted", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={mockStenaDate.id}
           displayValue={mockStenaDate.date_description}
@@ -674,7 +693,7 @@ describe("EditableDateCell", () => {
 
   describe("Radix UI Select Empty String Fix", () => {
     it("uses '__NONE__' placeholder instead of empty string for (None) option", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={null}
           displayValue=""
@@ -697,7 +716,7 @@ describe("EditableDateCell", () => {
     });
 
     it("initializes editValue to '__NONE__' when value is null", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={null}
           displayValue=""
@@ -730,7 +749,7 @@ describe("EditableDateCell", () => {
         max_spots: 20,
       };
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={null}
           displayValue=""
@@ -791,7 +810,7 @@ describe("EditableDateCell", () => {
         { ...mockStenaDate, id: "date-3", date_value: futureDate3.toISOString().split('T')[0], remaining_spots: 15, max_spots: 20 },
       ];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value={null}
           displayValue=""

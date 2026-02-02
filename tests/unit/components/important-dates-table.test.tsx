@@ -1,6 +1,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, fireEvent, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { ImportantDatesTable } from "@/components/dashboard/important-dates-table";
 import type { ImportantDate } from "@/lib/types/important-date";
@@ -66,6 +67,24 @@ vi.mock("@/lib/i18n", () => ({
 }));
 
 describe("ImportantDatesTable", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -130,7 +149,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Rendering", () => {
     it("should render important dates correctly", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -152,7 +171,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should display loading state", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={[]}
           isLoading={true}
@@ -166,7 +185,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should display empty state when no dates exist", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={[]}
           isLoading={false}
@@ -178,7 +197,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should render all table columns", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -198,7 +217,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Role-based Display", () => {
     it("should show delete buttons for HR Admin", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -211,7 +230,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should hide delete buttons for external party users", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -224,7 +243,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should show editable cells for HR Admin", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -239,7 +258,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should show read-only cells for external party users", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -257,7 +276,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Category Filtering", () => {
     it("should render category filter dropdown", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -269,7 +288,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should filter dates by Stena Dates category", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -293,7 +312,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should show all dates when 'All' filter is selected", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -310,7 +329,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Sorting", () => {
     it("should sort by week number ascending by default", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -326,7 +345,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should allow sorting by clicking column headers", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -347,7 +366,7 @@ describe("ImportantDatesTable", () => {
 
   describe("Delete Functionality", () => {
     it("should open delete confirmation dialog when delete button is clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -363,7 +382,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should close dialog on cancel", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -385,7 +404,7 @@ describe("ImportantDatesTable", () => {
       const mockOnDateDeleted = vi.fn();
       vi.mocked(importantDateService.delete).mockResolvedValue();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -410,7 +429,7 @@ describe("ImportantDatesTable", () => {
         new Error("Failed to delete")
       );
 
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -437,7 +456,7 @@ describe("ImportantDatesTable", () => {
         notes: "Updated notes",
       });
 
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={mockImportantDates}
           isLoading={false}
@@ -460,7 +479,7 @@ describe("ImportantDatesTable", () => {
         week_number: null,
       };
 
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={[dateWithNullWeek]}
           isLoading={false}
@@ -474,7 +493,7 @@ describe("ImportantDatesTable", () => {
     });
 
     it("should display em dash for null notes", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ImportantDatesTable
           dates={[mockImportantDates[0]]}
           isLoading={false}

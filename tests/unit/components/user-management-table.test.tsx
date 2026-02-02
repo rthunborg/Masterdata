@@ -11,6 +11,7 @@
  */
 
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserManagementTable } from '@/components/admin/user-management-table';
@@ -46,6 +47,24 @@ vi.mock('@/lib/services/admin-service', () => ({
 import { adminService } from '@/lib/services/admin-service';
 
 describe('UserManagementTable', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockUsers: User[] = [
     {
       id: 'user-1',
@@ -80,7 +99,7 @@ describe('UserManagementTable', () => {
   });
 
   it('renders user list correctly', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -99,7 +118,7 @@ describe('UserManagementTable', () => {
   });
 
   it('displays "Deactivate" button for active users', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -111,7 +130,7 @@ describe('UserManagementTable', () => {
   });
 
   it('displays "Activate" button for inactive users', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -122,7 +141,7 @@ describe('UserManagementTable', () => {
   });
 
   it('disables deactivate button for current user', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -138,7 +157,7 @@ describe('UserManagementTable', () => {
   });
 
   it('shows confirmation dialog when deactivate clicked', async () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -171,7 +190,7 @@ describe('UserManagementTable', () => {
       last_active_at: new Date().toISOString(),
     });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -213,7 +232,7 @@ describe('UserManagementTable', () => {
       last_active_at: new Date().toISOString(),
     });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -244,7 +263,7 @@ describe('UserManagementTable', () => {
     const mockUpdateUserStatus = vi.mocked(adminService.updateUserStatus);
     mockUpdateUserStatus.mockRejectedValueOnce(new Error('Network error'));
 
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -272,7 +291,7 @@ describe('UserManagementTable', () => {
   });
 
   it('displays "No users found" when list is empty', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable users={[]} onUserStatusChanged={mockOnUserStatusChanged} />
     );
 
@@ -280,7 +299,7 @@ describe('UserManagementTable', () => {
   });
 
   it('formats dates correctly', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}
@@ -292,7 +311,7 @@ describe('UserManagementTable', () => {
   });
 
   it('displays active status badge correctly', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <UserManagementTable
         users={mockUsers}
         onUserStatusChanged={mockOnUserStatusChanged}

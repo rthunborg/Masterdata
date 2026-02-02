@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
@@ -18,6 +19,20 @@ vi.mock("sonner", () => ({
     error: vi.fn(),
   },
 }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 
 const mockEmployees: Employee[] = [
   {
@@ -61,6 +76,24 @@ const mockEmployees: Employee[] = [
 ];
 
 describe("EmployeeTable - Dynamic Column Rendering", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     resetViewport();
@@ -152,7 +185,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       refetch: vi.fn(),
     });
 
-    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify all columns are present
     expect(screen.getByText("First Name")).toBeInTheDocument();
@@ -237,7 +270,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       refetch: vi.fn(),
     });
 
-    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify only permitted columns are present
     expect(screen.getByText("First Name")).toBeInTheDocument();
@@ -310,7 +343,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       refetch: vi.fn(),
     });
 
-    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify SSN is visible
     expect(screen.getByText("SSN")).toBeInTheDocument();
@@ -346,7 +379,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       refetch: vi.fn(),
     });
 
-    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify error message is displayed
     expect(
@@ -381,7 +414,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       refetch: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    const { container } = renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify skeleton is present (checking for the animation class)
     const skeletons = container.querySelectorAll(".animate-pulse");
@@ -415,7 +448,7 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
       refetch: vi.fn(),
     });
 
-    renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify error message is displayed
     expect(
@@ -520,7 +553,7 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
       refetch: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    const { container } = renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify table has table-fixed class (Story 17.7 implementation)
     const table = container.querySelector("table");
@@ -578,7 +611,7 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
       refetch: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    const { container } = renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Verify table has table-fixed class
     const table = container.querySelector("table");
@@ -637,7 +670,7 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
       refetch: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    const { container } = renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     const table = container.querySelector("table");
     expect(table).toHaveClass("table-fixed");
@@ -691,7 +724,7 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
       refetch: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    const { container } = renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     const table = container.querySelector("table");
     expect(table).toHaveClass("table-fixed");
@@ -744,7 +777,7 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
       refetch: vi.fn(),
     });
 
-    const { container, rerender } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    const { container, rerender } = renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     // Test at desktop size
     setViewportSize(1280, 720);
@@ -813,7 +846,7 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
       refetch: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    const { container } = renderWithQueryClient(<EmployeeTable employees={mockEmployees} isLoading={false} />);
 
     const table = container.querySelector("table");
     expect(table).toHaveClass("table-fixed");

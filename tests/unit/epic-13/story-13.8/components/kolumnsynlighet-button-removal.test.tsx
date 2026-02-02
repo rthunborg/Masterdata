@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -58,7 +59,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch for hooks
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock useEmployees hook
 vi.mock('@/lib/hooks/use-employees', () => ({
@@ -156,6 +180,24 @@ vi.mock('@/lib/store/ui-store', () => ({
 }));
 
 describe('Kolumnsynlighet Button Removal', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: '1',
@@ -207,7 +249,7 @@ describe('Kolumnsynlighet Button Removal', () => {
       refetch: vi.fn(),
     });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -259,7 +301,7 @@ describe('Kolumnsynlighet Button Removal', () => {
 
     // Should not throw any errors
     expect(() => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -304,7 +346,7 @@ describe('Kolumnsynlighet Button Removal', () => {
       refetch: vi.fn(),
     });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -353,7 +395,7 @@ describe('Kolumnsynlighet Button Removal', () => {
       refetch: vi.fn(),
     });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}

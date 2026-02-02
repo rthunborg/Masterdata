@@ -8,6 +8,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
 import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
@@ -55,9 +56,50 @@ vi.mock("@/lib/supabase/client", () => ({
 }));
 
 // Mock fetch for hooks that use it
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 describe("Form Validation Integration Workflows", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnClose = vi.fn();
   const mockOnSuccess = vi.fn();
 
@@ -79,7 +121,7 @@ describe("Form Validation Integration Workflows", () => {
       const mockCreate = vi.mocked(importantDateService.create);
       mockCreate.mockRejectedValue(new Error("Validation failed"));
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -113,7 +155,7 @@ describe("Form Validation Integration Workflows", () => {
     it("should validate all required fields in employee creation", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -139,7 +181,7 @@ describe("Form Validation Integration Workflows", () => {
     it("should display validation errors in correct locations", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -173,7 +215,7 @@ describe("Form Validation Integration Workflows", () => {
       const user = userEvent.setup();
       const mockCreate = vi.mocked(importantDateService.create);
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -218,7 +260,7 @@ describe("Form Validation Integration Workflows", () => {
 
       mockCreate.mockResolvedValue(mockCreatedDate);
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}

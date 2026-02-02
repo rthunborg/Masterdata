@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { EmployeeCard } from "@/components/dashboard/employee-card";
 import { employeeService } from "@/lib/services/employee-service";
@@ -57,6 +58,20 @@ vi.mock("@/hooks/use-long-press", () => ({
   })),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 // Helper to create test column configs
 function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnConfig {
   return {
@@ -80,6 +95,24 @@ function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnCo
 }
 
 describe("EmployeeCard - Expansion Behavior", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnEmployeeUpdated = vi.fn();
   let mockEmployee: Employee;
   let mockColumnConfigs: ColumnConfig[];
@@ -121,7 +154,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
 
   describe("AC1: Expansion Behavior Tests", () => {
     it('should show "More" button when card is collapsed', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -138,7 +171,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
     it('should expand card to show all fields when "More" button is clicked', async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -165,7 +198,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
     it('should show "Less" button when card is expanded', async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -185,7 +218,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
     it('should collapse card back to summary view when "Less" button is clicked', async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -218,7 +251,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
 
     it("should maintain expansion state during re-renders", async () => {
       const user = userEvent.setup();
-      const { rerender } = renderWithI18n(
+      const { rerender } = renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -262,7 +295,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
         })
       );
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -293,7 +326,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
         })
       );
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -323,7 +356,7 @@ describe("EmployeeCard - Expansion Behavior", () => {
     it("should apply correct CSS classes for expansion and scrolling", async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}

@@ -57,6 +57,20 @@ const mockUseVirtualizerCalls: Array<{ count: number; enabled: boolean; overscan
 const mockUseVirtualizerResults: Array<{ getVirtualItems: () => Array<{ key: string; index: number; start: number; size: number }>; getTotalSize: () => number }> = [];
 
 vi.mock('@tanstack/react-virtual', () => ({
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
   useVirtualizer: (config: { count: number; enabled: boolean; overscan?: number; estimateSize?: () => number }) => {
     // Track the call
     mockUseVirtualizerCalls.push(config);

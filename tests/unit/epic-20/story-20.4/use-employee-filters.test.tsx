@@ -30,7 +30,15 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock fetch for important dates
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
 
 describe('Story 20.4: useEmployeeFilters Hook', () => {
   const mockEmployees: Employee[] = [

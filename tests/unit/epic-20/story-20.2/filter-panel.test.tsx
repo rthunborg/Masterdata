@@ -13,9 +13,10 @@
  * 8. Apply button closes panel
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FilterPanel } from '@/components/dashboard/FilterPanel';
 import type { ColumnConfig } from '@/lib/types/column-config';
 
@@ -82,9 +83,41 @@ const mockColumnConfigs: ColumnConfig[] = [
   },
 ];
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('Story 20.2: FilterPanel', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   it('should render when open', () => {
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={vi.fn()}
@@ -99,7 +132,7 @@ describe('Story 20.2: FilterPanel', () => {
   });
 
   it('should not render when closed', () => {
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={false}
         onClose={vi.fn()}
@@ -113,7 +146,7 @@ describe('Story 20.2: FilterPanel', () => {
   });
 
   it('should show only filterable columns (exclude id, created_at, updated_at, hidden)', () => {
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={vi.fn()}
@@ -136,7 +169,7 @@ describe('Story 20.2: FilterPanel', () => {
     const handleClose = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={handleClose}
@@ -154,7 +187,7 @@ describe('Story 20.2: FilterPanel', () => {
     const handleClose = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={handleClose}
@@ -172,7 +205,7 @@ describe('Story 20.2: FilterPanel', () => {
     const handleClose = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={handleClose}
@@ -187,7 +220,7 @@ describe('Story 20.2: FilterPanel', () => {
   });
 
   it('should have correct ARIA attributes', () => {
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={vi.fn()}
@@ -207,7 +240,7 @@ describe('Story 20.2: FilterPanel', () => {
     const handleClose = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={handleClose}
@@ -225,7 +258,7 @@ describe('Story 20.2: FilterPanel', () => {
     const handleClose = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={handleClose}
@@ -258,7 +291,7 @@ describe('Story 20.2: FilterPanel', () => {
       },
     ];
 
-    render(
+    renderWithQueryClient(
       <FilterPanel
         isOpen={true}
         onClose={vi.fn()}

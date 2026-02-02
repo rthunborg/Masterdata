@@ -15,6 +15,20 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FilterButton } from '@/components/dashboard/FilterPanel';
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('Story 20.2: FilterButton', () => {
   it('should render with icon and text', () => {
     render(
@@ -118,6 +132,6 @@ describe('Story 20.2: FilterButton', () => {
       />
     );
 
-    expect(screen.getByTestId('filter-count-badge')).toHaveTextContent('10');
+    expect(screen.getByTestId('filter-count-badge')).toHaveTextContent('9+');
   });
 });

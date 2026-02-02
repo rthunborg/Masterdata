@@ -43,6 +43,20 @@ vi.mock('@/components/layout/mobile-nav', () => ({
 // Mock getRoleDisplayName
 vi.mock('@/lib/types/user', async () => {
   const actual = await vi.importActual('@/lib/types/user');
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
   return {
     ...actual,
     getRoleDisplayName: vi.fn((role: UserRole) => {

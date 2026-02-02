@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import type { Employee } from "@/lib/types/employee";
 import type { ColumnConfig } from "@/lib/types/column-config";
@@ -46,6 +47,19 @@ vi.mock("@/lib/store/ui-store", () => ({
 
 vi.mock("@/lib/i18n", () => ({
   useTranslations: () => (key: string) => key,
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
 }));
 
 vi.mock("@/lib/services/employee-service", () => ({
@@ -144,14 +158,29 @@ const mockEmployees: Employee[] = [
 ];
 
 describe("Story 19.1: Sticky Name Column", () => {
+  let queryClient: QueryClient;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
   });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
 
   describe("Sticky Column Positioning", () => {
     it("should apply sticky positioning to the checkbox column", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />
@@ -182,8 +211,8 @@ describe("Story 19.1: Sticky Name Column", () => {
     });
 
     it("should apply sticky positioning to the First Name column cells", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />
@@ -206,8 +235,8 @@ describe("Story 19.1: Sticky Name Column", () => {
     });
 
     it("should apply sticky positioning to the Surname column cells", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />
@@ -230,8 +259,8 @@ describe("Story 19.1: Sticky Name Column", () => {
     });
 
     it("should apply shadow only to the last sticky name column (Surname)", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />
@@ -252,8 +281,8 @@ describe("Story 19.1: Sticky Name Column", () => {
     });
 
     it("should apply z-index for proper layering", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />
@@ -275,8 +304,8 @@ describe("Story 19.1: Sticky Name Column", () => {
     });
 
     it("should apply bg-inherit for proper background inheritance", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />
@@ -300,8 +329,8 @@ describe("Story 19.1: Sticky Name Column", () => {
 
   describe("Header Sticky Positioning", () => {
     it("should apply sticky positioning to the First Name header", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />
@@ -325,8 +354,8 @@ describe("Story 19.1: Sticky Name Column", () => {
     });
 
     it("should apply sticky positioning to the Surname header", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />
@@ -354,8 +383,8 @@ describe("Story 19.1: Sticky Name Column", () => {
 
   describe("Compatibility with existing features", () => {
     it("should not make action column sticky (user preference)", async () => {
-      render(
-        <EmployeeTable
+    renderWithQueryClient(
+      <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
         />

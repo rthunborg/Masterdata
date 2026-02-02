@@ -10,14 +10,33 @@
  */
 
 import { screen, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi } from "vitest";
 import { PermissionToggle } from "@/components/admin/permission-toggle";
 import { UserRole } from "@/lib/types/user";
 
 describe("PermissionToggle", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   it("renders checkbox with correct state", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <PermissionToggle
         role={UserRole.SODEXO}
         permissionType="view"
@@ -33,7 +52,7 @@ describe("PermissionToggle", () => {
   });
 
   it("renders unchecked checkbox when value is false", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <PermissionToggle
         role={UserRole.SODEXO}
         permissionType="edit"
@@ -49,7 +68,7 @@ describe("PermissionToggle", () => {
 
   it("calls onChange when checkbox clicked", () => {
     const mockOnChange = vi.fn();
-    renderWithI18n(
+    renderWithQueryClient(
       <PermissionToggle
         role={UserRole.SODEXO}
         permissionType="view"
@@ -66,7 +85,7 @@ describe("PermissionToggle", () => {
 
   it("does not call onChange when disabled", () => {
     const mockOnChange = vi.fn();
-    renderWithI18n(
+    renderWithQueryClient(
       <PermissionToggle
         role={UserRole.HR_ADMIN}
         permissionType="view"
@@ -85,7 +104,7 @@ describe("PermissionToggle", () => {
   });
 
   it("displays tooltip when disabled and tooltip provided", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <PermissionToggle
         role={UserRole.HR_ADMIN}
         permissionType="view"
@@ -101,7 +120,7 @@ describe("PermissionToggle", () => {
   });
 
   it("does not display tooltip when not disabled", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <PermissionToggle
         role={UserRole.SODEXO}
         permissionType="view"

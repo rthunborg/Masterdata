@@ -20,6 +20,20 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('OMCDatePicker Component', () => {
   it('should display ÖMC date format "08-03 - 09-03"', () => {
     const onChange = vi.fn();

@@ -1,6 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import type { Employee } from "@/lib/types/employee";
@@ -49,8 +50,31 @@ vi.mock("@/lib/supabase/client", () => ({
     })),
 }));
 
-// Mock fetch
-global.fetch = vi.fn();
+// Mock fetch with proper Response
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock useColumns
 vi.mock("@/lib/hooks/use-columns", () => ({
@@ -98,6 +122,24 @@ vi.mock("sonner", () => ({
 }));
 
 describe("EmployeeTable SSN and Hiring Date Display", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
     const mockEmployee: Employee = {
         id: "1",
         first_name: "Test",
@@ -143,7 +185,7 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
     });
 
     it("should display SSN and Hire Date when present", () => {
-        renderWithI18n(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
+        renderWithQueryClient(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
 
         expect(screen.getByText("19900101-1234")).toBeInTheDocument();
         // Story 19.3: Hire date displays in dd-MM format (e.g., "01-01" for January 1st)
@@ -152,7 +194,7 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
 
     it("should display '-' when SSN is empty string", () => {
         const emptySSNEmployee = { ...mockEmployee, ssn: "" };
-        renderWithI18n(<EmployeeTable employees={[emptySSNEmployee]} isLoading={false} />);
+        renderWithQueryClient(<EmployeeTable employees={[emptySSNEmployee]} isLoading={false} />);
 
         const dashes = screen.getAllByText("—");
         expect(dashes.length).toBeGreaterThan(0);
@@ -160,7 +202,7 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
 
     it("should display '-' when Hire Date is empty string", () => {
         const emptyHireDateEmployee = { ...mockEmployee, hire_date: "" };
-        renderWithI18n(<EmployeeTable employees={[emptyHireDateEmployee]} isLoading={false} />);
+        renderWithQueryClient(<EmployeeTable employees={[emptyHireDateEmployee]} isLoading={false} />);
 
         const dashes = screen.getAllByText("—");
         expect(dashes.length).toBeGreaterThan(0);
@@ -190,7 +232,7 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
             refetch: vi.fn(),
         });
 
-        renderWithI18n(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
+        renderWithQueryClient(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
 
         // Should display SSN because mapping now handles trailing space
         expect(screen.getByText("19900101-1234")).toBeInTheDocument();
@@ -224,7 +266,7 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
             refetch: vi.fn(),
         });
 
-        renderWithI18n(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
+        renderWithQueryClient(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
 
         // Should display SSN and Hire Date because mapping handles Swedish names
         expect(screen.getByText("19900101-1234")).toBeInTheDocument();
@@ -233,7 +275,7 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
     });
 
     it("should not trigger update on no-op edit", async () => {
-        renderWithI18n(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
+        renderWithQueryClient(<EmployeeTable employees={[mockEmployee]} isLoading={false} />);
 
         // Click on SSN to edit
         const ssnCell = screen.getByText("19900101-1234");

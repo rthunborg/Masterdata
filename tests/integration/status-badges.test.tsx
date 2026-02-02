@@ -7,6 +7,20 @@ import { EditableCell } from '@/components/dashboard/editable-cell';
 vi.mock('@/components/dashboard/status-badge', () => ({
   StatusBadge: ({ status }: { status: string | null }) => {
     if (!status) return null;
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
     return <span data-testid="status-badge" className={`badge-${status}`}>✓</span>;
   }
 }));

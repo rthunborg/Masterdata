@@ -1,4 +1,5 @@
 import { screen, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RolePreviewBanner } from "@/components/dashboard/role-preview-banner";
@@ -9,6 +10,24 @@ import { UserRole } from "@/lib/types/user";
 vi.mock("@/lib/store/ui-store");
 
 describe("RolePreviewBanner", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockSetPreviewRole = vi.fn();
 
   beforeEach(() => {
@@ -35,7 +54,7 @@ describe("RolePreviewBanner", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    renderWithI18n(<RolePreviewBanner />);
+    renderWithQueryClient(<RolePreviewBanner />);
 
     // Swedish translations
     expect(screen.getByText(/Visar som Sodexo/i)).toBeInTheDocument();
@@ -63,7 +82,7 @@ describe("RolePreviewBanner", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    renderWithI18n(<RolePreviewBanner />);
+    renderWithQueryClient(<RolePreviewBanner />);
 
     // Swedish translation
     const exitButton = screen.getByRole("button", { name: /Avsluta förhandsgranskning/i });
@@ -92,7 +111,7 @@ describe("RolePreviewBanner", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<RolePreviewBanner />);
+    const { container } = renderWithQueryClient(<RolePreviewBanner />);
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -116,7 +135,7 @@ describe("RolePreviewBanner", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    renderWithI18n(<RolePreviewBanner />);
+    renderWithQueryClient(<RolePreviewBanner />);
 
     const banner = screen.getByRole("alert");
     expect(banner).toHaveAttribute("aria-live", "polite");
@@ -151,7 +170,7 @@ describe("RolePreviewBanner", () => {
         closeEditColumnModal: vi.fn(),
       });
 
-      const { unmount } = renderWithI18n(<RolePreviewBanner />);
+      const { unmount } = renderWithQueryClient(<RolePreviewBanner />);
       // Swedish translation: "Visar som" instead of "Viewing as"
       expect(screen.getByText(new RegExp(`Visar som ${displayName}`, "i"))).toBeInTheDocument();
       unmount();

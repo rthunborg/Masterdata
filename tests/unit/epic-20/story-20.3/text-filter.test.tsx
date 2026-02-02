@@ -17,6 +17,20 @@ import userEvent from '@testing-library/user-event';
 import { TextFilter } from '@/components/dashboard/FilterPanel';
 import type { ColumnConfig } from '@/lib/types/column-config';
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('Story 20.3: TextFilter', () => {
   const mockColumn: ColumnConfig = {
     id: 'col-1',

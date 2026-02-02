@@ -2,6 +2,20 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { FilteredCountDisplay } from "@/components/dashboard/FilteredCountDisplay";
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("FilteredCountDisplay - Story 20.5", () => {
   it("renders when show is true", () => {
     render(

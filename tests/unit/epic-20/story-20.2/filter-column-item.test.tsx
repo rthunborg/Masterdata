@@ -33,6 +33,20 @@ const mockColumn: ColumnConfig = {
   updated_at: '2024-01-01',
 };
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('Story 20.2: FilterColumnItem', () => {
   it('should render with column name', () => {
     render(

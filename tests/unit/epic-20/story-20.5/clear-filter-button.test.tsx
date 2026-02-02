@@ -3,6 +3,20 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ClearFilterButton } from "@/components/dashboard/ClearFilterButton";
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("ClearFilterButton - Story 20.5", () => {
   it("renders when show is true", () => {
     render(<ClearFilterButton onClick={vi.fn()} show={true} />);

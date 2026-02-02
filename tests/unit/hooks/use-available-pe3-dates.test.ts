@@ -4,7 +4,15 @@ import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // Mock fetch
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
 
 // Hoist mocks to avoid initialization issues
 const { mockOn, mockSubscribe, mockChannel, mockRemoveChannel, mockSupabaseClient } = vi.hoisted(() => {

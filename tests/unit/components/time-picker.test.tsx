@@ -10,6 +10,20 @@ import { TimePicker } from "@/components/dashboard/time-picker";
 // Helper to get time input
 const getTimeInput = (container: HTMLElement) => container.querySelector('input[type="text"]') as HTMLInputElement;
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("TimePicker Component", () => {
   describe("Rendering", () => {
     it("renders with null value and shows placeholder", () => {

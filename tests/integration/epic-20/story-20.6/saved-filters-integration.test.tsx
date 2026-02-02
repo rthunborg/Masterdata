@@ -17,7 +17,15 @@ import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
 
 // Mock fetch for API calls
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
 
 // Mock toast
 vi.mock("sonner", () => ({
@@ -26,6 +34,20 @@ vi.mock("sonner", () => ({
     error: vi.fn(),
   },
 }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 
 describe("Story 20.6: Saved Filters Integration", () => {
   let queryClient: QueryClient;

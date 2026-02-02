@@ -19,6 +19,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -78,7 +79,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock columns hook
 vi.mock('@/lib/hooks/use-columns', () => ({
@@ -210,7 +234,7 @@ describe.skip('Story 13.5: Crew Ready Auto-Selection Integration - SKIPPED (Stor
     const nonCrewReady = createNonCrewReadyEmployee('3');
     const employees = [crewReady1, crewReady2, nonCrewReady];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}
@@ -250,7 +274,7 @@ describe.skip('Story 13.5: Crew Ready Auto-Selection Integration - SKIPPED (Stor
     const crewReady1 = createCrewReadyEmployee('1');
     const employees = [crewReady1];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}
@@ -282,7 +306,7 @@ describe.skip('Story 13.5: Crew Ready Auto-Selection Integration - SKIPPED (Stor
     const crewReady2 = createCrewReadyEmployee('2');
     const employees = [crewReady1, crewReady2];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}
@@ -323,7 +347,7 @@ describe.skip('Story 13.5: Crew Ready Auto-Selection Integration - SKIPPED (Stor
     const crewReady1 = createCrewReadyEmployee('1');
     const employees = [crewReady1];
 
-    const { rerender } = renderWithI18n(
+    const { rerender } = renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}
@@ -387,7 +411,7 @@ describe.skip('Story 13.5: Crew Ready Auto-Selection Integration - SKIPPED (Stor
     const crewReady2 = createCrewReadyEmployee('2');
     const employees = [crewReady1, crewReady2];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}

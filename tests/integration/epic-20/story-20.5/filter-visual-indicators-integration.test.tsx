@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import type { Employee } from "@/lib/types/employee";
 
@@ -69,6 +70,24 @@ vi.mock("@/lib/i18n", () => ({
 }));
 
 describe("Story 20.5: Filter Visual Indicators Integration", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: "1",
@@ -98,7 +117,7 @@ describe("Story 20.5: Filter Visual Indicators Integration", () => {
   });
 
   it("displays filter button without badge when no filters active", () => {
-    render(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -113,7 +132,7 @@ describe("Story 20.5: Filter Visual Indicators Integration", () => {
   });
 
   it("does not show ClearFilterButton when no filters active", () => {
-    render(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -125,7 +144,7 @@ describe("Story 20.5: Filter Visual Indicators Integration", () => {
   });
 
   it("does not show FilteredCountDisplay when no filters active", () => {
-    render(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -137,7 +156,7 @@ describe("Story 20.5: Filter Visual Indicators Integration", () => {
   });
 
   it("shows all employees when no filters applied", () => {
-    render(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -151,7 +170,7 @@ describe("Story 20.5: Filter Visual Indicators Integration", () => {
   it("opens filter panel when filter button clicked", async () => {
     const user = userEvent.setup();
     
-    render(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}

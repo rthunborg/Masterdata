@@ -3,6 +3,20 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FilterButton } from "@/components/dashboard/FilterPanel/FilterButton";
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("FilterButton Badge - Story 20.5", () => {
   it("shows no badge when filterCount is 0", () => {
     render(<FilterButton onClick={vi.fn()} isActive={false} filterCount={0} />);

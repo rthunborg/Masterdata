@@ -18,6 +18,20 @@ vi.mock('@/hooks/use-media-query', () => ({
   useMediaQuery: () => true,
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 // Mock haptic feedback
 Object.defineProperty(navigator, 'vibrate', {
   writable: true,

@@ -5,6 +5,20 @@ import { ActiveFiltersList } from "@/components/dashboard/FilterPanel/ActiveFilt
 import type { FilterState } from "@/lib/types/filter";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("ActiveFiltersList - Story 20.5", () => {
   const mockColumnConfigs: ColumnConfig[] = [
     {
