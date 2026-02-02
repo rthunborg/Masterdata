@@ -262,7 +262,8 @@ export async function POST(request: NextRequest) {
     };
 
     // Define date fields that store UUIDs and need resolution
-    const dateFields = ['stena_date', 'omc_date', 'pe3_date', 'repayment_needed_omc', 'repayment_needed_pe3'];
+    // Note: repayment_needed_omc/pe3 store UUID references but should be exported as-is (Story 19.14)
+    const dateFields = ['stena_date', 'omc_date', 'pe3_date'];
 
     // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {

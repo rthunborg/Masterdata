@@ -325,10 +325,12 @@ describe('Story 13.11: Employee Status Visual Indicators (Integration)', () => {
       // Update employee to terminated
       const terminatedEmployee = { ...employee, is_terminated: true };
       rerender(
-        <EmployeeTable
-          employees={[terminatedEmployee]}
-          isLoading={false}
-        />
+        <QueryClientProvider client={queryClient}>
+          <EmployeeTable
+            employees={[terminatedEmployee]}
+            isLoading={false}
+          />
+        </QueryClientProvider>
       );
 
       // Should show red tint
@@ -360,10 +362,12 @@ describe('Story 13.11: Employee Status Visual Indicators (Integration)', () => {
       // Update to crew ready
       const crewReadyEmployee = { ...employee, crewing_done: true };
       rerender(
-        <EmployeeTable
-          employees={[crewReadyEmployee]}
-          isLoading={false}
-        />
+        <QueryClientProvider client={queryClient}>
+          <EmployeeTable
+            employees={[crewReadyEmployee]}
+            isLoading={false}
+          />
+        </QueryClientProvider>
       );
 
       // Should update smoothly

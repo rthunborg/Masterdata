@@ -43,7 +43,7 @@ vi.mock('@/lib/i18n', () => ({
       dashboard: {},
       errors: {},
     };
-    return translations[namespace] || {};
+    return translations[namespace]?.[key] || key;
   },
 }));
 
@@ -58,10 +58,6 @@ vi.mock("next/navigation", () => ({
     toString: vi.fn(() => ""),
   }),
   usePathname: () => "/dashboard",
-}));
-
-    return translations[namespace as keyof typeof translations]?.[key] || key;
-  },
 }));
 
 describe('Form Accessibility', () => {

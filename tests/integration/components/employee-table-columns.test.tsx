@@ -458,10 +458,25 @@ describe("EmployeeTable - Dynamic Column Rendering", () => {
 });
 
 describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
+  let queryClient: QueryClient;
+
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
     vi.clearAllMocks();
     resetViewport();
   });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
 
   /**
    * Helper function to create column configs
@@ -781,7 +796,11 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
 
     // Test at desktop size
     setViewportSize(1280, 720);
-    rerender(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <EmployeeTable employees={mockEmployees} isLoading={false} />
+      </QueryClientProvider>
+    );
     
     let { header, cell } = getColumnElements("First Name");
     if (header && cell) {
@@ -792,7 +811,11 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
 
     // Test at tablet size
     setViewportSize(768, 1024);
-    rerender(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <EmployeeTable employees={mockEmployees} isLoading={false} />
+      </QueryClientProvider>
+    );
     
     ({ header, cell } = getColumnElements("First Name"));
     if (header && cell) {
@@ -803,7 +826,11 @@ describe("EmployeeTable - Column Alignment (Story 17.7)", () => {
 
     // Test at critical breakpoint (1024px)
     setViewportSize(1024, 768);
-    rerender(<EmployeeTable employees={mockEmployees} isLoading={false} />);
+    rerender(
+      <QueryClientProvider client={queryClient}>
+        <EmployeeTable employees={mockEmployees} isLoading={false} />
+      </QueryClientProvider>
+    );
     
     ({ header, cell } = getColumnElements("First Name"));
     if (header && cell) {

@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from "@/components/dashboard/employee-table";
@@ -19,6 +19,15 @@ vi.mock("@/lib/services/employee-service", () => ({
 vi.mock("@/lib/services/custom-data-service", () => ({
     customDataService: {
         updateCustomData: vi.fn(() => Promise.resolve({})),
+    },
+}));
+
+vi.mock("@/lib/services/mutation-queue", () => ({
+    mutationQueueService: {
+        addMutation: vi.fn(() => Promise.resolve()),
+        getPendingMutations: vi.fn(() => Promise.resolve([])),
+        removeMutation: vi.fn(() => Promise.resolve()),
+        clearPendingMutations: vi.fn(() => Promise.resolve()),
     },
 }));
 
@@ -287,6 +296,11 @@ describe("EmployeeTable SSN and Hiring Date Display", () => {
 
         // Press Enter without changing value
         fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+        // Wait for edit mode to exit
+        await waitFor(() => {
+          expect(screen.queryByDisplayValue("19900101-1234")).not.toBeInTheDocument();
+        });
 
         // Check that update was NOT called
         expect(employeeService.update).not.toHaveBeenCalled();

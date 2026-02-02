@@ -190,6 +190,7 @@ describe("ManageColumnsDialog - Translations", () => {
 });
 
 describe("ManageColumnsDialog - Delete Functionality", () => {
+  let queryClient: QueryClient;
   const mockOpenEditColumnModal = vi.fn();
   const mockRefetch = vi.fn();
 
@@ -212,7 +213,20 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
     },
   ];
 
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
     vi.clearAllMocks();
     
     vi.mocked(useColumns).mockReturnValue({

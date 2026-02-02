@@ -278,17 +278,71 @@ describe("Export Date Resolution", () => {
         first_name: "John",
         surname: "Doe",
         ssn: "123456-7890",
+        email: "john@example.com",
+        mobile: "0701234567",
+        rank: "SEV",
+        gender: "Man",
+        town_district: null,
+        hire_date: "2025-01-15",
         stena_date: "deleted-date-uuid", // UUID that doesn't exist in important_dates
         omc_date: null,
         pe3_date: null,
-        // ... other required fields
-      } as Partial<Employee>,
+        termination_date: null,
+        termination_reason: null,
+        is_terminated: false,
+        is_archived: false,
+        archived_at: null,
+        is_anonymized: false,
+        repayment_needed_omc: null,
+        repayment_needed_pe3: null,
+        special_diet: false,
+        diet_details: null,
+        comments: null,
+        one: false,
+        one_marked_at: null,
+        talmundo: false,
+        isps: false,
+        photo: false,
+        origo: false,
+        loneiva: null,
+        mail_lon: false,
+        bankuppgifter: false,
+        li: false,
+        passport: false,
+        kvitto_c17_18: false,
+        c17: false,
+        crewing_done: false,
+        hotel_required: false,
+        room_number_shared: null,
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-01-29T00:00:00Z",
+      },
     ];
 
-    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees as Employee[]);
+    vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
 
-    // Mock important dates (empty - date was deleted)
-    const mockImportantDates: ImportantDate[] = [];
+    // Mock important dates (has other dates but not the deleted one)
+    // Note: allDates must have length > 0 for resolveImportantDateId to return dateDeletedText
+    const mockImportantDates = [
+      {
+        id: "other-date-uuid",
+        week_number: 10,
+        year: 2025,
+        category: "Stena Dates",
+        date_description: "Stena 10 mars",
+        date_value: "2025-03-10",
+        time_value: null,
+        deadline_submit: null,
+        deadline_cancel: null,
+        notes: null,
+        is_active: true,
+        max_spots: 0,
+        remaining_spots: 0,
+        assigned_employees: [],
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-01-01T00:00:00Z",
+      },
+    ];
 
     // Mock column config
     vi.mocked(columnConfigRepository.findAll).mockResolvedValue([
@@ -296,12 +350,20 @@ describe("Export Date Resolution", () => {
         id: "col-1",
         column_name: "Stena Date",
         db_column_name: "stena_date",
+        column_type: "date",
         is_masterdata: true,
+        is_visible: true,
+        is_checklist_item: false,
+        category: null,
+        category_color: null,
+        display_order: 1,
         role_permissions: {
           hr_admin: { view: true, edit: true },
         },
-      } as Partial<ColumnConfig>,
-    ] as ColumnConfig[]);
+        created_at: "2025-01-01T00:00:00Z",
+        updated_at: "2025-01-01T00:00:00Z",
+      },
+    ]);
 
     // Mock Supabase client
     const mockSupabaseClient = {

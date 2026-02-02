@@ -353,10 +353,24 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
 });
 
 describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", () => {
+    let queryClient: QueryClient;
     const mockOnSave = vi.fn().mockResolvedValue(undefined);
     const mockOnError = vi.fn();
 
+    const renderWithQueryClient = (component: React.ReactElement) => {
+        return renderWithI18n(
+            <QueryClientProvider client={queryClient}>
+                {component}
+            </QueryClientProvider>
+        );
+    };
+
     beforeEach(() => {
+        queryClient = new QueryClient({
+            defaultOptions: {
+                queries: { retry: false },
+            },
+        });
         vi.clearAllMocks();
     });
 

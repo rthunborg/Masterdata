@@ -17,7 +17,7 @@ import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { createTestEmployee } from "@/../tests/helpers/validation-test-helpers";
 import type { Employee } from "@/lib/types/employee";
 import type { ColumnConfig } from "@/lib/types/column-config";
-import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
+import { renderWithI18n, I18nWrapper } from "@/../tests/utils/i18n-test-wrapper";
 
 // Mock services
 vi.mock("@/lib/services/employee-service", () => ({
@@ -268,15 +268,16 @@ describe("EmployeeCard - Expansion Behavior", () => {
         expect(screen.getByLabelText(/Collapse details/i)).toBeInTheDocument();
       });
 
-      // Re-render with same props
+      // Re-render with same props - must match the structure passed to initial render
       rerender(
-        <EmployeeCard
-          employee={mockEmployee}
-          isHRAdmin={true}
-          columnConfigs={mockColumnConfigs}
-          onEmployeeUpdated={mockOnEmployeeUpdated}
-        />
-
+        <QueryClientProvider client={queryClient}>
+          <EmployeeCard
+            employee={mockEmployee}
+            isHRAdmin={true}
+            columnConfigs={mockColumnConfigs}
+            onEmployeeUpdated={mockOnEmployeeUpdated}
+          />
+        </QueryClientProvider>
       );
 
       // State should be maintained (expanded)

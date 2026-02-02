@@ -368,7 +368,7 @@ export function EmployeeTable({
     isFiltering, // Story 20.5: Loading state for slow filters
   } = useEmployeeFilters({
     employees,
-    columnConfigs: allColumnConfigs,
+    columnConfigs: columnConfigs, // Use columnConfigs from useColumns, not allColumnConfigs (which is only for preview mode)
     enableUrlSync: true,
   });
 
