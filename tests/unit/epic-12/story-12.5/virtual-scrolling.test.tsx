@@ -56,8 +56,6 @@ function generateEmployees(count: number): Employee[] {
 const mockUseVirtualizerCalls: Array<{ count: number; enabled: boolean; overscan?: number; estimateSize?: () => number }> = [];
 const mockUseVirtualizerResults: Array<{ getVirtualItems: () => Array<{ key: string; index: number; start: number; size: number }>; getTotalSize: () => number }> = [];
 
-vi.mock('@tanstack/react-virtual', () => ({
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -70,6 +68,8 @@ vi.mock("next/navigation", () => ({
   }),
   usePathname: () => "/dashboard",
 }));
+
+vi.mock('@tanstack/react-virtual', () => ({
 
   useVirtualizer: (config: { count: number; enabled: boolean; overscan?: number; estimateSize?: () => number }) => {
     // Track the call

@@ -3,11 +3,6 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EditableCell } from '@/components/dashboard/editable-cell';
 
-// Mock the StatusBadge component
-vi.mock('@/components/dashboard/status-badge', () => ({
-  StatusBadge: ({ status }: { status: string | null }) => {
-    if (!status) return null;
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -20,6 +15,11 @@ vi.mock("next/navigation", () => ({
   }),
   usePathname: () => "/dashboard",
 }));
+
+// Mock the StatusBadge component
+vi.mock('@/components/dashboard/status-badge', () => ({
+  StatusBadge: ({ status }: { status: string | null }) => {
+    if (!status) return null;
 
     return <span data-testid="status-badge" className={`badge-${status}`}>✓</span>;
   }

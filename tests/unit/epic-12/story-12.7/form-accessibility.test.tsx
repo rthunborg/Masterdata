@@ -43,6 +43,9 @@ vi.mock('@/lib/i18n', () => ({
       dashboard: {},
       errors: {},
     };
+    return translations[namespace] || {};
+  },
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({

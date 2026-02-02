@@ -65,8 +65,6 @@ vi.mock("@/components/ui/checkbox", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/label", () => ({
-
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -79,6 +77,8 @@ vi.mock("next/navigation", () => ({
   }),
   usePathname: () => "/dashboard",
 }));
+
+vi.mock("@/components/ui/label", () => ({
 
   Label: ({ children, htmlFor }: { children: React.ReactNode; htmlFor: string }) => (
     <label htmlFor={htmlFor}>{children}</label>

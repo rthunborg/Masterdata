@@ -40,10 +40,7 @@ vi.mock('@/components/layout/mobile-nav', () => ({
   MobileNav: () => <div data-testid="mobile-nav">Mobile Nav</div>,
 }));
 
-// Mock getRoleDisplayName
-vi.mock('@/lib/types/user', async () => {
-  const actual = await vi.importActual('@/lib/types/user');
-
+// Mock Next.js navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -56,6 +53,10 @@ vi.mock("next/navigation", () => ({
   }),
   usePathname: () => "/dashboard",
 }));
+
+// Mock getRoleDisplayName
+vi.mock('@/lib/types/user', async () => {
+  const actual = await vi.importActual('@/lib/types/user');
 
   return {
     ...actual,
