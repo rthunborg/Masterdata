@@ -46,7 +46,9 @@ next-env.d.ts
 
 # Internal Tooling & AI Context (Portfolio Cleanup)
 .bmad/
+bmad/
 _bmad/
+_bmad-output/
 .cursor/
 .agent/
 .ai/

@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
 import { employeeService } from "@/lib/services/employee-service";
@@ -29,6 +30,24 @@ vi.mock("sonner", () => ({
 }));
 
 describe("Employee Creation Hotel Field", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnClose = vi.fn();
   const mockOnSuccess = vi.fn();
 
@@ -38,7 +57,7 @@ describe("Employee Creation Hotel Field", () => {
 
   describe("AC4: Employee Creation Hotel Field Tests", () => {
     it("should render hotel field after town_district field in form order", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -76,7 +95,7 @@ describe("Employee Creation Hotel Field", () => {
     });
 
     it("should default hotel field to false for new employees", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -95,7 +114,7 @@ describe("Employee Creation Hotel Field", () => {
     it("should allow hotel field to be optional (not mandatory)", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -133,7 +152,7 @@ describe("Employee Creation Hotel Field", () => {
         // ... other required fields
       } as unknown as Employee);
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -190,7 +209,7 @@ describe("Employee Creation Hotel Field", () => {
         // ... other required fields
       } as unknown as Employee);
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}

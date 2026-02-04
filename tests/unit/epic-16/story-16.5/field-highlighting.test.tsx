@@ -5,12 +5,45 @@
  */
 
 import { screen, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableCell } from "@/components/dashboard/editable-cell";
 import { EditableDateCell } from "@/components/dashboard/editable-date-cell";
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("Story 16.5: Field Highlighting", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnSave = vi.fn().mockResolvedValue(undefined);
   const mockOnError = vi.fn();
 
@@ -20,7 +53,7 @@ describe("Story 16.5: Field Highlighting", () => {
 
   describe("AC1: Field Highlighting - EditableCell", () => {
     it("applies amber background when isChanged is true", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -38,7 +71,7 @@ describe("Story 16.5: Field Highlighting", () => {
     });
 
     it("does not apply highlight when isChanged is false", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -56,7 +89,7 @@ describe("Story 16.5: Field Highlighting", () => {
     });
 
     it("applies highlight to entire cell, not just text", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -74,7 +107,7 @@ describe("Story 16.5: Field Highlighting", () => {
     });
 
     it("highlight does not interfere with hover state", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -106,7 +139,7 @@ describe("Story 16.5: Field Highlighting", () => {
     ];
 
     it("applies amber background when isChanged is true (read-only)", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value="date-1"
           displayValue="Week 24, 2025, Stena Dates"
@@ -126,7 +159,7 @@ describe("Story 16.5: Field Highlighting", () => {
     });
 
     it("applies amber background when isChanged is true (editable)", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value="date-1"
           displayValue="Week 24, 2025, Stena Dates"
@@ -146,7 +179,7 @@ describe("Story 16.5: Field Highlighting", () => {
     });
 
     it("does not apply highlight when isChanged is false", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableDateCell
           value="date-1"
           displayValue="Week 24, 2025, Stena Dates"
@@ -168,7 +201,7 @@ describe("Story 16.5: Field Highlighting", () => {
 
   describe("AC5: No Highlight for Unchanged", () => {
     it("unchanged fields have normal styling", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -188,7 +221,7 @@ describe("Story 16.5: Field Highlighting", () => {
 
   describe("AC8: Inline Editing Compatibility", () => {
     it("highlight does not interfere with edit mode", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -212,7 +245,7 @@ describe("Story 16.5: Field Highlighting", () => {
     });
 
     it("highlight remains after saving if field still changed", () => {
-      const { rerender } = renderWithI18n(
+      const { rerender } = renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -247,7 +280,7 @@ describe("Story 16.5: Field Highlighting", () => {
 
   describe("AC6: Highlight Styling", () => {
     it("uses soft amber color (bg-amber-50) in light mode", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -264,7 +297,7 @@ describe("Story 16.5: Field Highlighting", () => {
     });
 
     it("uses subtle amber in dark mode (bg-amber-950/20)", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -281,7 +314,7 @@ describe("Story 16.5: Field Highlighting", () => {
     });
 
     it("text remains readable with highlight", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -303,7 +336,7 @@ describe("Story 16.5: Field Highlighting", () => {
 
   describe("Backward Compatibility", () => {
     it("works when isChanged prop is not provided (defaults to false)", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"

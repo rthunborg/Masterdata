@@ -13,6 +13,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { UserRole, type SessionUser } from "@/lib/types/user";
 import { mockUsers } from "@/../tests/utils/role-test-utils";
@@ -64,6 +65,24 @@ vi.mock("@/lib/i18n", () => ({
 }));
 
 describe("Story 17.6: Navigation Visibility Integration Tests", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -74,7 +93,7 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
 
       await act(async () => {
         const LayoutResult = await DashboardLayout({ children: <div>Dashboard Content</div> });
-        renderWithI18n(LayoutResult);
+        renderWithQueryClient(LayoutResult);
       });
 
       await waitFor(() => {
@@ -96,7 +115,7 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
 
       await act(async () => {
         const LayoutResult = await DashboardLayout({ children: <div>Dashboard Content</div> });
-        renderWithI18n(LayoutResult);
+        renderWithQueryClient(LayoutResult);
       });
 
       await waitFor(() => {
@@ -112,7 +131,7 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
 
       await act(async () => {
         const LayoutResult = await DashboardLayout({ children: <div>Dashboard Content</div> });
-        renderWithI18n(LayoutResult);
+        renderWithQueryClient(LayoutResult);
       });
 
       await waitFor(() => {
@@ -128,7 +147,7 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
 
       await act(async () => {
         const LayoutResult = await DashboardLayout({ children: <div data-testid="dashboard-content">Dashboard Content</div> });
-        renderWithI18n(LayoutResult);
+        renderWithQueryClient(LayoutResult);
       });
 
       await waitFor(() => {
@@ -149,7 +168,7 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
 
       await act(async () => {
         const LayoutResult = await DashboardLayout({ children: <div>Dashboard Content</div> });
-        renderWithI18n(LayoutResult);
+        renderWithQueryClient(LayoutResult);
       });
 
       await waitFor(() => {
@@ -168,7 +187,7 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
 
       await act(async () => {
         const LayoutResult = await DashboardLayout({ children: <div>Dashboard Content</div> });
-        renderWithI18n(LayoutResult);
+        renderWithQueryClient(LayoutResult);
       });
 
       await waitFor(() => {
@@ -187,7 +206,7 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
       let container: HTMLElement;
       await act(async () => {
         const LayoutResult = await DashboardLayout({ children: <div data-testid="content">Content</div> });
-        const result = renderWithI18n(LayoutResult);
+        const result = renderWithQueryClient(LayoutResult);
         container = result.container;
       });
 

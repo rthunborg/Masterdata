@@ -43,8 +43,21 @@ vi.mock('@/lib/i18n', () => ({
       dashboard: {},
       errors: {},
     };
-    return translations[namespace as keyof typeof translations]?.[key] || key;
+    return translations[namespace]?.[key] || key;
   },
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
 }));
 
 describe('Form Accessibility', () => {

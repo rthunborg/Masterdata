@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, render, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -59,7 +60,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock important dates hook
 vi.mock('@/lib/hooks/use-important-dates', () => ({
@@ -151,6 +175,24 @@ vi.mock('@/lib/hooks/use-columns', () => ({
 }));
 
 describe('Story 13.9: Repayment Column Visibility', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   // Story 19.14: repayment_needed fields now store UUIDs, not date strings
   const terminatedEmployee: Employee = {
     id: '1',
@@ -220,7 +262,7 @@ describe('Story 13.9: Repayment Column Visibility', () => {
   });
 
   it('should hide repayment columns for non-terminated employees when includeTerminated is true', async () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <EmployeeTable
         employees={[activeEmployee]}
         isLoading={false}
@@ -253,7 +295,7 @@ describe('Story 13.9: Repayment Column Visibility', () => {
   });
 
   it('should show repayment columns for terminated employees when includeTerminated is true', async () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <EmployeeTable
         employees={[terminatedEmployee]}
         isLoading={false}
@@ -279,7 +321,7 @@ describe('Story 13.9: Repayment Column Visibility', () => {
   });
 
   it('should not show repayment columns when includeTerminated is false', async () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <EmployeeTable
         employees={[terminatedEmployee, activeEmployee]}
         isLoading={false}
@@ -301,7 +343,7 @@ describe('Story 13.9: Repayment Column Visibility', () => {
   });
 
   it('should conditionally render repayment cells based on employee termination status', async () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <EmployeeTable
         employees={[terminatedEmployee, activeEmployee]}
         isLoading={false}

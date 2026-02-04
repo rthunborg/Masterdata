@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import UserManagementPage from '@/app/dashboard/admin/users/page';
 import { UserCard } from '@/components/admin/user-card';
@@ -44,6 +45,24 @@ vi.mock('@/lib/services/admin-service', () => ({
 }));
 
 describe('User Settings Mobile Button Tests (AC3)', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockHRAdminUser: SessionUser = {
     id: '1',
     email: 'hr@example.com',
@@ -84,7 +103,7 @@ describe('User Settings Mobile Button Tests (AC3)', () => {
   it('AC3: "Add New User" button fully visible on mobile', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<UserManagementPage />);
+    const { container } = renderWithQueryClient(<UserManagementPage />);
     
     const addButton = await screen.findByRole('button', { 
       name: /Lägg till användare|Add User/i 
@@ -100,7 +119,7 @@ describe('User Settings Mobile Button Tests (AC3)', () => {
   it('AC3: Envelope icon hidden on mobile (<768px)', () => {
     setViewportSize(375, 667); // Mobile viewport (<768px)
     
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <UserCard
         user={mockUser}
         currentUserId={mockHRAdminUser.id}
@@ -128,7 +147,7 @@ describe('User Settings Mobile Button Tests (AC3)', () => {
   it('AC3: Envelope icon visible on desktop (>=768px)', () => {
     setViewportSize(768, 1024); // Desktop viewport (>=768px)
     
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <UserCard
         user={mockUser}
         currentUserId={mockHRAdminUser.id}
@@ -157,7 +176,7 @@ describe('User Settings Mobile Button Tests (AC3)', () => {
   it('AC3: User cards stack properly on mobile', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<UserManagementPage />);
+    const { container } = renderWithQueryClient(<UserManagementPage />);
     
     // Wait for user cards to render - use getAllByText since there might be multiple instances
     const emailElements = await screen.findAllByText(mockUser.email);
@@ -181,7 +200,7 @@ describe('User Settings Mobile Button Tests (AC3)', () => {
   it('AC3: Touch targets meet 44px minimum', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<UserManagementPage />);
+    const { container } = renderWithQueryClient(<UserManagementPage />);
     
     const addButton = await screen.findByRole('button', { 
       name: /Lägg till användare|Add User/i 
@@ -194,7 +213,7 @@ describe('User Settings Mobile Button Tests (AC3)', () => {
     expect(addButton).toBeInTheDocument();
     
     // Check buttons in user card
-    const userCard = renderWithI18n(
+    const userCard = renderWithQueryClient(
       <UserCard
         user={mockUser}
         currentUserId={mockHRAdminUser.id}

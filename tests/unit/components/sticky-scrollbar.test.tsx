@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { StickyScrollbar, useStickyScrollbar } from "@/components/ui/sticky-scrollbar";
@@ -45,6 +46,24 @@ afterEach(() => {
 });
 
 describe("StickyScrollbar", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   describe("Visibility Logic", () => {
     it("does not render when container has no horizontal overflow", () => {
       const TestComponent = () => {
@@ -64,7 +83,7 @@ describe("StickyScrollbar", () => {
         );
       };
 
-      renderWithI18n(<TestComponent />);
+      renderWithQueryClient(<TestComponent />);
 
       // Sticky scrollbar should not be visible when there's no overflow
       expect(screen.queryByTestId("sticky-scrollbar")).not.toBeInTheDocument();
@@ -73,7 +92,7 @@ describe("StickyScrollbar", () => {
     it("does not render when containerRef is null", () => {
       const nullRef = { current: null };
 
-      renderWithI18n(<StickyScrollbar containerRef={nullRef} />);
+      renderWithQueryClient(<StickyScrollbar containerRef={nullRef} />);
 
       expect(screen.queryByTestId("sticky-scrollbar")).not.toBeInTheDocument();
     });
@@ -100,7 +119,7 @@ describe("StickyScrollbar", () => {
         );
       };
 
-      renderWithI18n(<TestComponent />);
+      renderWithQueryClient(<TestComponent />);
 
       // The sticky scrollbar visibility depends on viewport intersection
       // In tests, we can't easily simulate the real behavior
@@ -128,7 +147,7 @@ describe("StickyScrollbar", () => {
         );
       };
 
-      const { unmount } = renderWithI18n(<TestComponent />);
+      const { unmount } = renderWithQueryClient(<TestComponent />);
 
       unmount();
 
@@ -165,7 +184,7 @@ describe("StickyScrollbar", () => {
         );
       };
 
-      renderWithI18n(<TestComponent />);
+      renderWithQueryClient(<TestComponent />);
 
       // The component should mount without errors
       expect(screen.getByTestId("container")).toBeInTheDocument();
@@ -191,7 +210,7 @@ describe("StickyScrollbar", () => {
         );
       };
 
-      renderWithI18n(<HookTestComponent />);
+      renderWithQueryClient(<HookTestComponent />);
 
       expect(screen.getByTestId("container")).toBeInTheDocument();
     });
@@ -218,7 +237,7 @@ describe("StickyScrollbar", () => {
         );
       };
 
-      renderWithI18n(<HookTestComponent />);
+      renderWithQueryClient(<HookTestComponent />);
 
       // After render, the ref should be attached to the DOM element
       const container = screen.getByTestId("container");
@@ -249,7 +268,7 @@ describe("StickyScrollbar", () => {
         );
       };
 
-      renderWithI18n(<TestComponent />);
+      renderWithQueryClient(<TestComponent />);
 
       // When visible, the sticky scrollbar should have aria-hidden
       // Since it's a duplicate scrollbar for visual purposes only

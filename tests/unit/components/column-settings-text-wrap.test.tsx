@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, render } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ColumnSettingsTable } from "@/components/admin/column-settings-table";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import { UserRole } from "@/lib/types/user";
@@ -24,6 +25,24 @@ vi.mock("@/lib/services/column-service", () => ({
 }));
 
 describe("Column Settings Display Name Text Wrapping", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnPermissionsUpdated = vi.fn();
 
   const mockColumns: ColumnConfig[] = [
@@ -64,7 +83,7 @@ describe("Column Settings Display Name Text Wrapping", () => {
 
   describe("AC5: Column Settings Display Name Wrapping Tests", () => {
     it("should wrap long display names (>50 chars) to multiple lines", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ColumnSettingsTable
           columns={mockColumns}
           allColumns={mockAllColumns}
@@ -89,7 +108,7 @@ describe("Column Settings Display Name Text Wrapping", () => {
     });
 
     it("should expand row height to accommodate wrapped text", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ColumnSettingsTable
           columns={mockColumns}
           allColumns={mockAllColumns}
@@ -127,7 +146,7 @@ describe("Column Settings Display Name Text Wrapping", () => {
     });
 
     it("should keep database column name visible below display name", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ColumnSettingsTable
           columns={mockColumns}
           allColumns={mockAllColumns}
@@ -151,7 +170,7 @@ describe("Column Settings Display Name Text Wrapping", () => {
     });
 
     it("should maintain readable line-height for wrapped text", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ColumnSettingsTable
           columns={mockColumns}
           allColumns={mockAllColumns}
@@ -189,7 +208,7 @@ describe("Column Settings Display Name Text Wrapping", () => {
         value: 375, // Mobile width
       });
 
-      renderWithI18n(
+      renderWithQueryClient(
         <ColumnSettingsTable
           columns={mockColumns}
           allColumns={mockAllColumns}
@@ -235,7 +254,7 @@ describe("Column Settings Display Name Text Wrapping", () => {
         },
       ];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <ColumnSettingsTable
           columns={multipleLongColumns}
           allColumns={multipleLongColumns}

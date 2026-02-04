@@ -1,4 +1,5 @@
 import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AddColumnModal } from "@/components/dashboard/add-column-modal";
@@ -18,6 +19,24 @@ vi.mock("@/lib/hooks/use-columns");
 vi.mock("sonner");
 
 describe("AddColumnModal", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockCloseModal = vi.fn();
   const mockRefetch = vi.fn();
   const mockOnColumnCreated = vi.fn();
@@ -89,7 +108,7 @@ describe("AddColumnModal", () => {
         setLoading: vi.fn(),
       });
 
-      renderWithI18n(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
+      renderWithQueryClient(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
 
       // Column type selection label should not be visible
       expect(
@@ -125,7 +144,7 @@ describe("AddColumnModal", () => {
         setLoading: vi.fn(),
       });
 
-      renderWithI18n(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
+      renderWithQueryClient(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
 
       expect(
         screen.queryByText(/Kolumnkategori/i)
@@ -152,7 +171,7 @@ describe("AddColumnModal", () => {
         setLoading: vi.fn(),
       });
 
-      renderWithI18n(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
+      renderWithQueryClient(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
 
       // Column type selection should be visible for HR Admin
       expect(
@@ -215,7 +234,7 @@ describe("AddColumnModal", () => {
 
       vi.mocked(columnService.createCustomColumn).mockResolvedValue(mockCreatedColumn);
 
-      renderWithI18n(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
+      renderWithQueryClient(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
 
       // Fill in the form - use placeholder text or more specific label text
       const columnNameInput = screen.getByPlaceholderText(/Meal Plan, Training Status/i);
@@ -286,7 +305,7 @@ describe("AddColumnModal", () => {
 
       vi.mocked(columnService.createCustomColumn).mockResolvedValue(mockCreatedColumn);
 
-      renderWithI18n(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
+      renderWithQueryClient(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
 
       const columnNameInput = screen.getByPlaceholderText(/Meal Plan, Training Status/i);
       const dbColumnNameInput = screen.getByPlaceholderText(/meal_plan, training_status/i);
@@ -348,7 +367,7 @@ describe("AddColumnModal", () => {
 
       vi.mocked(columnService.createCustomColumn).mockResolvedValue(mockCreatedColumn);
 
-      renderWithI18n(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
+      renderWithQueryClient(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
 
       const columnNameInput = screen.getByPlaceholderText(/Meal Plan, Training Status/i);
       const dbColumnNameInput = screen.getByPlaceholderText(/meal_plan, training_status/i);
@@ -413,7 +432,7 @@ describe("AddColumnModal", () => {
 
       vi.mocked(columnService.createCustomColumn).mockResolvedValue(mockCreatedColumn);
 
-      renderWithI18n(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
+      renderWithQueryClient(<AddColumnModal onColumnCreated={mockOnColumnCreated} />);
 
       // HR Admin should see the column type selection
       const masterdataRadio = screen.getByLabelText(/Masterdata kolumn/i);

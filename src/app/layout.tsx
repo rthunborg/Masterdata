@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toast';
 import { PerformanceTracker } from '@/components/performance/performance-tracker';
 import { ServiceWorkerUnregister } from '@/components/pwa/service-worker-unregister';
+import { QueryProvider } from '@/components/providers/query-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -51,10 +52,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <PerformanceTracker />
-        <ServiceWorkerUnregister />
-        {children}
-        <Toaster />
+        <QueryProvider>
+          <PerformanceTracker />
+          <ServiceWorkerUnregister />
+          {children}
+          <Toaster />
+        </QueryProvider>
       </body>
     </html>
   );

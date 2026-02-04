@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { EmployeeCard } from "@/components/dashboard/employee-card";
 import { createTestEmployee } from "@/../tests/helpers/validation-test-helpers";
 import type { Employee } from "@/lib/types/employee";
@@ -65,6 +66,24 @@ function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnCo
 }
 
 describe("EmployeeCard - Swipe Gestures", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnArchive = vi.fn();
   const mockOnTerminate = vi.fn();
   const mockOnEdit = vi.fn();
@@ -98,7 +117,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -142,7 +161,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -181,7 +200,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -236,7 +255,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -281,7 +300,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -320,7 +339,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -358,7 +377,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -394,7 +413,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(false); // Desktop
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -427,7 +446,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
       const { useMediaQuery } = await import("@/hooks/use-media-query");
       vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -474,7 +493,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
 
       const archivedEmployee = { ...mockEmployee, is_archived: true };
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={archivedEmployee}
           isHRAdmin={true}
@@ -505,7 +524,7 @@ describe("EmployeeCard - Swipe Gestures", () => {
 
       const terminatedEmployee = { ...mockEmployee, is_terminated: true };
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={terminatedEmployee}
           isHRAdmin={true}

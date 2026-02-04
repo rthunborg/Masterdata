@@ -2,6 +2,13 @@
  * Integration Tests for Crew Ready Auto-Selection
  * Story 13.5: Crew Ready Filter Auto-Selection
  * 
+ * **SKIPPED - Story 20.1: Crew Ready Dropdown Removed**
+ * The crew ready dropdown filter was removed in Story 20.1 to consolidate
+ * all filtering into the new advanced filter panel (Epic 20).
+ * 
+ * These tests verified UI interactions with the dropdown that no longer exists.
+ * The crew ready export functionality remains and is tested elsewhere.
+ * 
  * Tests verify:
  * 1. Crew ready filter activates and selects employees
  * 2. Selected employees show greyish tint
@@ -12,6 +19,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -71,7 +79,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock columns hook
 vi.mock('@/lib/hooks/use-columns', () => ({
@@ -187,7 +218,7 @@ const createNonCrewReadyEmployee = (id: string, overrides: Partial<Employee> = {
   ...overrides,
 });
 
-describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
+describe.skip('Story 13.5: Crew Ready Auto-Selection Integration - SKIPPED (Story 20.1)', () => {
   const mockOnEmployeeUpdated = vi.fn();
   const mockOnIncludeArchivedChange = vi.fn();
   const mockOnIncludeTerminatedChange = vi.fn();
@@ -203,7 +234,7 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     const nonCrewReady = createNonCrewReadyEmployee('3');
     const employees = [crewReady1, crewReady2, nonCrewReady];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}
@@ -243,7 +274,7 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     const crewReady1 = createCrewReadyEmployee('1');
     const employees = [crewReady1];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}
@@ -275,7 +306,7 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     const crewReady2 = createCrewReadyEmployee('2');
     const employees = [crewReady1, crewReady2];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}
@@ -316,7 +347,7 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     const crewReady1 = createCrewReadyEmployee('1');
     const employees = [crewReady1];
 
-    const { rerender } = renderWithI18n(
+    const { rerender } = renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}
@@ -380,7 +411,7 @@ describe('Story 13.5: Crew Ready Auto-Selection Integration', () => {
     const crewReady2 = createCrewReadyEmployee('2');
     const employees = [crewReady1, crewReady2];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={employees}
         isLoading={false}

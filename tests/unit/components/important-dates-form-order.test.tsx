@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
@@ -28,6 +29,24 @@ vi.mock("sonner", () => ({
 }));
 
 describe("Important Dates Form Field Order", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnClose = vi.fn();
   const mockOnSuccess = vi.fn();
 
@@ -37,7 +56,7 @@ describe("Important Dates Form Field Order", () => {
 
   describe("AC3: Important Dates Form Field Order Tests", () => {
     it("should render category dropdown first", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -69,7 +88,7 @@ describe("Important Dates Form Field Order", () => {
     });
 
     it("should render date picker second", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -104,7 +123,7 @@ describe("Important Dates Form Field Order", () => {
     it("should render time picker third (after date picker) for PE3 category", async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -151,7 +170,7 @@ describe("Important Dates Form Field Order", () => {
     it("should only show time picker for PE3 category", async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -185,7 +204,7 @@ describe("Important Dates Form Field Order", () => {
     it("should render description field after time picker for PE3", async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -226,7 +245,7 @@ describe("Important Dates Form Field Order", () => {
     it("should maintain correct field order: Category -> Date -> Time -> Description", async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}

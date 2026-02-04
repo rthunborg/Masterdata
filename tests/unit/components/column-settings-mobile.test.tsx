@@ -9,6 +9,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import ColumnSettingsPage from '@/app/dashboard/admin/columns/page';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -56,6 +57,24 @@ vi.mock('@/lib/store/ui-store', () => ({
 }));
 
 describe('Column Settings Mobile Button Tests (AC4)', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockHRAdminUser: SessionUser = {
     id: '1',
     email: 'hr@example.com',
@@ -99,7 +118,7 @@ describe('Column Settings Mobile Button Tests (AC4)', () => {
   it('AC4: "Create New Column" button fully visible on mobile', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<ColumnSettingsPage />);
+    const { container } = renderWithQueryClient(<ColumnSettingsPage />);
     
     const createButton = await screen.findByRole('button', { 
       name: /Skapa ny kolumn|Create New Column/i 
@@ -115,7 +134,7 @@ describe('Column Settings Mobile Button Tests (AC4)', () => {
   it('AC4: Filter buttons wrap properly on narrow screens', async () => {
     setViewportSize(320, 568); // Narrow mobile viewport
     
-    const { container } = renderWithI18n(<ColumnSettingsPage />);
+    const { container } = renderWithQueryClient(<ColumnSettingsPage />);
     
     // Wait for filter buttons to render
     await screen.findByRole('button', { name: /Alla kolumner|All Columns/i });
@@ -133,7 +152,7 @@ describe('Column Settings Mobile Button Tests (AC4)', () => {
   it('AC4: Column table scrolls horizontally on mobile', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<ColumnSettingsPage />);
+    const { container } = renderWithQueryClient(<ColumnSettingsPage />);
     
     await screen.findByText('Name');
     
@@ -156,7 +175,7 @@ describe('Column Settings Mobile Button Tests (AC4)', () => {
   it('AC4: Mobile reorder controls (arrows) display instead of drag handles', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<ColumnSettingsPage />);
+    const { container } = renderWithQueryClient(<ColumnSettingsPage />);
     
     await screen.findByText('Name');
     
@@ -182,7 +201,7 @@ describe('Column Settings Mobile Button Tests (AC4)', () => {
   it('AC4: All action buttons meet 44px touch target minimum', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<ColumnSettingsPage />);
+    const { container } = renderWithQueryClient(<ColumnSettingsPage />);
     
     const createButton = await screen.findByRole('button', { 
       name: /Skapa ny kolumn|Create New Column/i 

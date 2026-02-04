@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -58,7 +59,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch for hooks
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock the columns hook
 vi.mock('@/lib/hooks/use-columns', () => ({
@@ -129,6 +153,24 @@ vi.mock('@/lib/i18n', () => ({
 }));
 
 describe('Story 13.3: Row Click Integration (REMOVED in Story 9.11)', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: '1',
@@ -158,7 +200,7 @@ describe('Story 13.3: Row Click Integration (REMOVED in Story 9.11)', () => {
 
   describe('Task 1.2: Row Click Integration (REMOVED in Story 9.11)', () => {
     it('row click does NOT update selection state (Story 9.11)', { timeout: 15000 }, async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -177,7 +219,7 @@ describe('Story 13.3: Row Click Integration (REMOVED in Story 9.11)', () => {
     });
 
     it('row click does NOT update checkbox state (Story 9.11)', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -198,7 +240,7 @@ describe('Story 13.3: Row Click Integration (REMOVED in Story 9.11)', () => {
     });
 
     it('row click does NOT update visual tint (Story 9.11)', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -220,7 +262,7 @@ describe('Story 13.3: Row Click Integration (REMOVED in Story 9.11)', () => {
     });
 
     it('interactive elements still work correctly (Story 9.11)', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}

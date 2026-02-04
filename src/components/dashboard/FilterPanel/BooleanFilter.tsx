@@ -1,0 +1,70 @@
+"use client";
+
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { ColumnConfig } from "@/lib/types/column-config";
+
+interface BooleanFilterProps {
+  column: ColumnConfig;
+  value: boolean | null; // null = "Either"
+  onChange: (value: boolean | null) => void;
+}
+
+export function BooleanFilter({ column, value, onChange }: BooleanFilterProps) {
+  const stringValue =
+    value === null ? "either" : value === true ? "true" : "false";
+
+  const handleValueChange = (newValue: string) => {
+    if (newValue === "either") {
+      onChange(null);
+    } else if (newValue === "true") {
+      onChange(true);
+    } else {
+      onChange(false);
+    }
+  };
+
+  return (
+    <div
+      className="space-y-3"
+      data-testid={`boolean-filter-${column.db_column_name}`}
+    >
+      <RadioGroup
+        value={stringValue}
+        onValueChange={handleValueChange}
+        aria-label={`Filter ${column.column_name}`}
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem
+            value="either"
+            id={`${column.id}-either`}
+            data-testid={`boolean-filter-either-${column.db_column_name}`}
+          />
+          <Label htmlFor={`${column.id}-either`} className="cursor-pointer">
+            Either
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem
+            value="true"
+            id={`${column.id}-yes`}
+            data-testid={`boolean-filter-yes-${column.db_column_name}`}
+          />
+          <Label htmlFor={`${column.id}-yes`} className="cursor-pointer">
+            Yes
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem
+            value="false"
+            id={`${column.id}-no`}
+            data-testid={`boolean-filter-no-${column.db_column_name}`}
+          />
+          <Label htmlFor={`${column.id}-no`} className="cursor-pointer">
+            No
+          </Label>
+        </div>
+      </RadioGroup>
+    </div>
+  );
+}

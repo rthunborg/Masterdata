@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import userEvent from "@testing-library/user-event";
 import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
@@ -31,6 +32,24 @@ vi.mock("@/lib/hooks/use-available-pe3-dates", () => ({
 }));
 
 describe("Story 8.17: Dietary Requirements Logic", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   describe("Validation Schema", () => {
     it("should fail validation if special_diet is true but diet_details is empty", () => {
       const invalidData = {
@@ -202,7 +221,7 @@ describe("Story 8.17: Dietary Requirements Logic", () => {
     });
 
     it("should initially hide diet details field when special diet is unchecked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -221,7 +240,7 @@ describe("Story 8.17: Dietary Requirements Logic", () => {
 
     it("should show diet details field when special diet is checked", async () => {
       const user = userEvent.setup();
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -241,7 +260,7 @@ describe("Story 8.17: Dietary Requirements Logic", () => {
 
     it("should validate mandatory diet details when special diet is checked", async () => {
       const user = userEvent.setup();
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}

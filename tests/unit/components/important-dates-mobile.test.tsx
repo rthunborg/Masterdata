@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import ImportantDatesPage from '@/app/dashboard/important-dates/page';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -48,6 +49,24 @@ vi.mock('@/lib/services/export-service', () => ({
 }));
 
 describe('Important Dates Mobile Button Tests (AC2)', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockHRAdminUser: SessionUser = {
     id: '1',
     email: 'hr@example.com',
@@ -78,7 +97,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
   it('AC2: "Add New Date" button fully visible on mobile', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<ImportantDatesPage />);
+    const { container } = renderWithQueryClient(<ImportantDatesPage />);
     
     // Wait for component to render
     const addButton = await screen.findByRole('button', { 
@@ -97,7 +116,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
   it('AC2: "Import Dates" button fully visible on mobile', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<ImportantDatesPage />);
+    const { container } = renderWithQueryClient(<ImportantDatesPage />);
     
     const importButton = await screen.findByRole('button', { 
       name: /Importera|Import/i 
@@ -113,7 +132,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
   it('AC2: Buttons stack vertically on narrow screens', async () => {
     setViewportSize(320, 568); // Narrow mobile viewport
     
-    const { container } = renderWithI18n(<ImportantDatesPage />);
+    const { container } = renderWithQueryClient(<ImportantDatesPage />);
     
     const addButton = await screen.findByRole('button', { 
       name: /Nytt datum|Add Date/i 
@@ -133,7 +152,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
   it('AC2: Button container uses flex-col on mobile', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<ImportantDatesPage />);
+    const { container } = renderWithQueryClient(<ImportantDatesPage />);
     
     await screen.findByRole('button', { name: /Nytt datum|Add Date/i });
     
@@ -151,7 +170,7 @@ describe('Important Dates Mobile Button Tests (AC2)', () => {
   it('AC2: Buttons maintain 44px minimum height (touch targets)', async () => {
     setViewportSize(375, 667); // Mobile viewport
     
-    const { container } = renderWithI18n(<ImportantDatesPage />);
+    const { container } = renderWithQueryClient(<ImportantDatesPage />);
     
     const addButton = await screen.findByRole('button', { 
       name: /Nytt datum|Add Date/i 

@@ -3,7 +3,15 @@ import { employeeService } from "@/lib/services/employee-service";
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 
 // Mock fetch globally
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
 
 describe("employeeService", () => {
   const mockEmployees: Employee[] = [

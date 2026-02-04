@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import LoginForm from '@/app/(auth)/login/login-form';
 
@@ -27,12 +28,30 @@ vi.mock('sonner', () => ({
 }));
 
 describe('LoginForm', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders login form elements', () => {
-    renderWithI18n(<LoginForm />);
+    renderWithQueryClient(<LoginForm />);
     
     expect(screen.getByRole('heading', { name: 'Logga in' })).toBeInTheDocument();
     expect(screen.getByLabelText('E-post')).toBeInTheDocument();
@@ -41,7 +60,7 @@ describe('LoginForm', () => {
   });
 
   it('shows validation errors for invalid email', async () => {
-    renderWithI18n(<LoginForm />);
+    renderWithQueryClient(<LoginForm />);
     
     const emailInput = screen.getByLabelText('E-post');
     const passwordInput = screen.getByLabelText('Lösenord');
@@ -58,7 +77,7 @@ describe('LoginForm', () => {
   });
 
   it('shows validation errors for short password', async () => {
-    renderWithI18n(<LoginForm />);
+    renderWithQueryClient(<LoginForm />);
     
     const emailInput = screen.getByLabelText('E-post');
     const passwordInput = screen.getByLabelText('Lösenord');
@@ -76,7 +95,7 @@ describe('LoginForm', () => {
   it('calls login and redirects on successful form submission', async () => {
     mockLogin.mockResolvedValue(undefined);
     
-    renderWithI18n(<LoginForm />);
+    renderWithQueryClient(<LoginForm />);
     
     const emailInput = screen.getByLabelText('E-post');
     const passwordInput = screen.getByLabelText('Lösenord');
@@ -97,7 +116,7 @@ describe('LoginForm', () => {
     const errorMessage = 'Invalid credentials';
     mockLogin.mockRejectedValue(new Error(errorMessage));
     
-    renderWithI18n(<LoginForm />);
+    renderWithQueryClient(<LoginForm />);
     
     const emailInput = screen.getByLabelText('E-post');
     const passwordInput = screen.getByLabelText('Lösenord');
