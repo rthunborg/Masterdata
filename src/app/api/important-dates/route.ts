@@ -1,41 +1,82 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
+import { requireAuthAPI, requireRoleAPI, createErrorResponse } from "@/lib/server/auth";
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
-import {
-  requireRoleAPI,
-  createErrorResponse,
-} from "@/lib/server/auth";
-import { UserRole } from "@/lib/types/user";
 import { createImportantDateSchema } from "@/lib/validation/important-date-schema";
+import { UserRole } from "@/lib/types/user";
 import { z } from "zod";
 
+export const dynamic = 'force-dynamic';
 
-// Force Node.js runtime for cookies() support
-export const runtime = 'nodejs';
-
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/important-dates
+ * Get important dates with optional filters
+ * Query params:
+ *   - category: Optional category filter (e.g., "Stena Dates", "ÖMC Dates", "PE3 Dates")
+ *   - id: Optional ID filter to fetch a single date
+ */
+export async function GET(request?: NextRequest) {
   try {
-    // Verify HR Admin or Recruiter role
-    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
+    // Require authentication
+    await requireAuthAPI(request);
 
-    // Parse query parameters
-    const searchParams = request.nextUrl.searchParams;
-    const category = searchParams.get("category") || undefined;
+    const supabase = createAPIClient(request);
+    const { searchParams } = new URL(request?.url ?? 'http://localhost');
+    const category = searchParams.get("category");
+    const id = searchParams.get("id");
 
-    // Fetch important dates
-    const dates = await importantDateRepository.findAll(category);
+    // Build query
+    let query = supabase
+      .from("important_dates")
+      .select("*");
 
-    return NextResponse.json({
-      data: dates,
-    });
+    // Apply ID filter if provided (single record lookup)
+    if (id) {
+      query = query.eq("id", id);
+    } else {
+      // Apply sorting only for list queries
+      query = query
+        .order("year", { ascending: true })
+        .order("week_number", { ascending: true, nullsFirst: false });
+    }
+
+    // Apply category filter if provided
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("[API /important-dates] Query error:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch important dates" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ data: data || [] });
   } catch (error) {
-    return createErrorResponse(error);
+    console.error("[API /important-dates] Unexpected error:", error);
+    
+    if (error instanceof Error && error.message === "Authentication required") {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER], request);
 
     // Parse and validate request body
     const body = await request.json();
@@ -67,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // Create important date via repository
     // Ensure undefined values are converted to null for database compatibility
-    const dateData: typeof validatedData & { time_value: string | null; deadline_submit: string | null; deadline_cancel: string | null } = {
+    const dateData = {
       ...validatedData,
       time_value: validatedData.time_value ?? null,
       deadline_submit: validatedData.deadline_submit ?? null,

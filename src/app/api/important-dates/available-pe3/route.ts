@@ -1,19 +1,33 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import type { ImportantDate } from "@/lib/types/important-date";
 
 // Force Node.js runtime for cookies() support
 export const runtime = "nodejs";
 
-export async function GET() {
+/**
+ * Helper to get Jan 1 of current year in YYYY-MM-DD format.
+ * Used for the PE3 date exception rule: Jan 1 current-year is always
+ * available even if in the past.
+ */
+function getJan1CurrentYear(): string {
+  const currentYear = new Date().getFullYear();
+  return `${currentYear}-01-01`;
+}
+
+export async function GET(request?: NextRequest) {
   try {
     // Verify authentication (all authenticated users can view)
-    await requireAuthAPI();
+    await requireAuthAPI(request);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
+
+    const today = new Date().toISOString().split("T")[0];
+    const jan1CurrentYear = getJan1CurrentYear();
 
     // Query to get available PE3 dates (not assigned to any active employee)
+    // Include: future dates OR Jan 1 of current year (even if past)
     // Uses LEFT JOIN to find dates where no employee.pe3_date references them
     const { data, error } = await supabase
       .from("important_dates")
@@ -24,7 +38,7 @@ export async function GET() {
       )
       .eq("category", "PE3 Dates")
       .eq("is_active", true) // Only active (non-archived) dates
-      .gte("date_value", new Date().toISOString().split("T")[0]) // Future dates only
+      .or(`date_value.gte.${today},date_value.eq.${jan1CurrentYear}`) // Future dates OR Jan 1 current year
       .order("date_value", { ascending: true });
 
     if (error) {
@@ -51,9 +65,23 @@ export async function GET() {
     );
 
     // Filter to only unassigned dates with available capacity
-    const availableDates = (data || []).filter(
+    const filteredDates = (data || []).filter(
       (date) => !assignedDateIds.has(date.id) && date.remaining_spots > 0
     ) as ImportantDate[];
+
+    // Sort with Jan 1 current year pinned to top, then by date ascending
+    // This ensures the Jan 1 exception date appears first when present
+    const availableDates = filteredDates.sort((a, b) => {
+      const aIsJan1 = a.date_value === jan1CurrentYear;
+      const bIsJan1 = b.date_value === jan1CurrentYear;
+
+      // Pin Jan 1 current year to top
+      if (aIsJan1 && !bIsJan1) return -1;
+      if (!aIsJan1 && bIsJan1) return 1;
+
+      // Otherwise sort by date ascending
+      return a.date_value.localeCompare(b.date_value);
+    });
 
     return NextResponse.json({
       data: availableDates,

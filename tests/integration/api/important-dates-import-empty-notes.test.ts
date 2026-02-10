@@ -56,7 +56,7 @@ describe("POST /api/important-dates/import - Empty Notes Field", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireRoleAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(importantDateRepository.findAll).mockResolvedValue([]);
   });
 

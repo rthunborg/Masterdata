@@ -30,6 +30,7 @@ import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-
 import { useTranslations } from "@/lib/i18n";
 import type { Employee } from "@/lib/types/employee";
 import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
+import { formatDateForDisplay } from "@/lib/utils/format";
 import { hasValueChanged } from "@/lib/utils/change-detection";
 import dynamic from "next/dynamic";
 
@@ -48,6 +49,7 @@ interface EditableCellProps {
   options?: string[]; // For select dropdowns (e.g., Gender)
   canEdit?: boolean; // Permission flag for edit access
   isChanged?: boolean; // Story 16.5: Flag for field highlighting
+  isChecklistItem?: boolean; // Story 19.x: When true, boolean fields show "Klart/Nej", otherwise "Ja/Nej"
   oneMarkedAt?: string | null; // Timestamp for One field (Story 8.3)
   oneValue?: boolean | null; // One field value for Talmundo conditional editability (Story 8.4)
   employeeData?: Partial<Employee>; // For Crewing/Done field conditional editability (Story 8.5)
@@ -66,6 +68,7 @@ export function EditableCell({
   options,
   canEdit = true, // Default to true for backward compatibility
   isChanged = false, // Story 16.5: Default to false for backward compatibility
+  isChecklistItem = true, // Story 19.x: Default to true for backward compatibility (existing boolean fields use "Klart")
   oneMarkedAt, // Timestamp for One field (Story 8.3)
   oneValue, // One field value for Talmundo conditional editability (Story 8.4)
   employeeData, // Employee data for Crewing/Done conditional editability (Story 8.5)
@@ -77,6 +80,10 @@ export function EditableCell({
 }: EditableCellProps) {
   const tDashboard = useTranslations("dashboard");
   const tErrors = useTranslations("errors");
+
+  // Story 19.x: Helper to get the correct true label based on isChecklistItem flag
+  // Checklist items show "Klart" (Done), non-checklist items show "Ja" (Yes)
+  const getBooleanTrueLabel = () => isChecklistItem ? tDashboard("booleanTrue") : tDashboard("booleanYes");
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -155,6 +162,22 @@ export function EditableCell({
   
   // Track the last saved value to ensure displayValue shows it until value prop updates
   const lastSavedValueRef = useRef<string | number | boolean | null>(null);
+  
+  // Track the previous employeeId to detect row changes (e.g., when filtering)
+  const prevEmployeeIdRef = useRef<string>(employeeId);
+  
+  // Story 19.x: Reset internal state when row identity changes (e.g., filtering)
+  // This prevents showing stale values from a previous row when React reuses component instances
+  useEffect(() => {
+    if (prevEmployeeIdRef.current !== employeeId) {
+      // Row has changed - reset internal state
+      lastSavedValueRef.current = null;
+      setEditValue(value ?? (type === "boolean" ? false : type === "number" ? 0 : ""));
+      setIsEditing(false);
+      setError(null);
+      prevEmployeeIdRef.current = employeeId;
+    }
+  }, [employeeId, value, type]);
 
   // Determine if this is the Talmundo field (Story 8.4)
   const isTalmundoField = field.toLowerCase() === 'talmundo';
@@ -166,7 +189,7 @@ export function EditableCell({
   const isLoneivaField = field.toLowerCase() === 'loneiva' || field.toLowerCase() === 'lönenivå';
 
   // Calculate conditional editability for Talmundo field (Story 8.4)
-  // Talmundo can only be edited when One field is green (>= 24 hours elapsed)
+  // Talmundo can only be edited when One field is green (past 00:01 AM the following day)
   let effectiveCanEdit = canEdit;
   let tooltipMessage = '';
 
@@ -334,13 +357,22 @@ export function EditableCell({
     if (!effectiveCanEdit) {
       // Story 8.9: Format ÖMC dates as two-day range in display mode
       // Story 9.9: Show Swedish labels for boolean fields
-      const displayValue = type === "boolean"
-        ? (value ? tDashboard("booleanTrue") : tDashboard("booleanFalse"))
-        : field === "date_value" && category && isOMCDate(category) && value
-          ? formatOMCDate(String(value), 'sv-SE')
-          : value !== null && value !== undefined
-            ? String(value)
-            : null;
+      // Story 19.3: Format all date type fields in Swedish format
+      const getReadOnlyDisplayValue = () => {
+        if (type === "boolean") {
+          return value ? getBooleanTrueLabel() : tDashboard("booleanFalse");
+        }
+        // ÖMC date field with category
+        if (field === "date_value" && category && isOMCDate(category) && value) {
+          return formatOMCDate(String(value));
+        }
+        // Story 19.3: Format date type fields in Swedish format
+        if (type === "date" && value) {
+          return formatDateForDisplay(String(value), category);
+        }
+        return value !== null && value !== undefined ? String(value) : null;
+      };
+      const displayValue = getReadOnlyDisplayValue();
 
       // Calculate One field status for visual indicator (Story 8.3)
       let badgeStatus: 'green' | 'yellow' | null = null;
@@ -351,7 +383,7 @@ export function EditableCell({
         if (badgeStatus === 'yellow' && oneMarkedAt) {
           badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
         } else if (badgeStatus === 'green') {
-          badgeTooltip = 'Complete - 24-hour waiting period elapsed';
+          badgeTooltip = 'Complete - Ready for editing';
         }
       } else if (type === "boolean" && value === true) {
         badgeStatus = 'green';
@@ -390,19 +422,27 @@ export function EditableCell({
               aria-label={`${field} (read-only)`}
               aria-disabled={(isTalmundoField || isCrewingField) ? "true" : undefined}
             >
-              {displayValue || <span className="text-muted-foreground">—</span>}
+              {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}
+              <span 
+                className="truncate min-w-0 flex-1 text-left overflow-hidden whitespace-nowrap"
+                dir="ltr"
+                style={{ textOverflow: 'ellipsis' }}
+                title={displayValue || undefined}
+              >
+                {displayValue || <span className="text-muted-foreground">—</span>}
+              </span>
               {badgeStatus && (
                 badgeTooltip ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span><StatusBadge status={badgeStatus} /></span>
+                      <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{badgeTooltip}</p>
                     </TooltipContent>
                   </Tooltip>
                 ) : (
-                  <StatusBadge status={badgeStatus} />
+                  <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
                 )
               )}
             </div>
@@ -418,6 +458,7 @@ export function EditableCell({
     // Story 8.9: Format ÖMC dates as two-day range in display mode
     // Story 9.9: Show Swedish labels for boolean fields
     // Story 9.10: Use editValue for display when it differs from value prop (shows updated value immediately after save)
+    // Story 19.3: Format all date type fields in Swedish format
     const getDisplayValue = () => {
       
       // For boolean fields, compare boolean values
@@ -429,17 +470,22 @@ export function EditableCell({
         // Priority: If we have a saved value that differs from the prop, show it (save in progress)
         // Otherwise, if editValue differs from value, show editValue (transitioning state)
         if (lastSavedBool !== null && lastSavedBool !== valueBool) {
-          return lastSavedBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+          return lastSavedBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
         }
         if (editBool !== valueBool) {
-          return editBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+          return editBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
         }
-        return valueBool ? tDashboard("booleanTrue") : tDashboard("booleanFalse");
+        return valueBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
       }
       
       // For date fields with ÖMC formatting
       if (field === "date_value" && category && isOMCDate(category) && value) {
-        return formatOMCDate(String(value), 'sv-SE');
+        return formatOMCDate(String(value));
+      }
+      
+      // Story 19.3: Format date type fields in Swedish format
+      if (type === "date" && value) {
+        return formatDateForDisplay(String(value), category);
       }
       
       // For select/text fields, compare string values
@@ -473,7 +519,7 @@ export function EditableCell({
       if (badgeStatus === 'yellow' && oneMarkedAt) {
         badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
       } else if (badgeStatus === 'green') {
-        badgeTooltip = 'Complete - 24-hour waiting period elapsed';
+        badgeTooltip = 'Complete - Ready for editing';
       }
     } else if (type === "boolean" && value === true && effectiveCanEdit) {
       // Story 8.4: Show green badge for Talmundo when true and enabled
@@ -520,19 +566,27 @@ export function EditableCell({
         aria-readonly="false"
         aria-label={`Edit ${field}`}
       >
-        {displayValue || <span className="text-muted-foreground">—</span>}
+        {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}
+        <span 
+          className="truncate min-w-0 flex-1 text-left overflow-hidden whitespace-nowrap"
+          dir="ltr"
+          style={{ textOverflow: 'ellipsis' }}
+          title={displayValue || undefined}
+        >
+          {displayValue || <span className="text-muted-foreground">—</span>}
+        </span>
         {badgeStatus && (
           badgeTooltip ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span><StatusBadge status={badgeStatus} /></span>
+                <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{badgeTooltip}</p>
               </TooltipContent>
             </Tooltip>
           ) : (
-            <StatusBadge status={badgeStatus} />
+            <span className="shrink-0"><StatusBadge status={badgeStatus} /></span>
           )
         )}
       </div>
@@ -721,7 +775,7 @@ export function EditableCell({
             <SelectValue placeholder={tDashboard("booleanFalse")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="true">{tDashboard("booleanTrue")}</SelectItem>
+            <SelectItem value="true">{getBooleanTrueLabel()}</SelectItem>
             <SelectItem value="false">{tDashboard("booleanFalse")}</SelectItem>
           </SelectContent>
         </Select>

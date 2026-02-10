@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import type { APIResponse } from "@/lib/types/api";
 
@@ -6,10 +6,10 @@ import type { APIResponse } from "@/lib/types/api";
 export const runtime = 'nodejs';
 
 // Example protected API route - requires any authenticated user
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Require authentication (any role)
-    const user = await requireAuthAPI();
+    const user = await requireAuthAPI(request);
 
     const response: APIResponse = {
       data: {

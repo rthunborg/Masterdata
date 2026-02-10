@@ -5,6 +5,9 @@ import { Header } from "@/components/layout/header";
 import { canManageSettings, canManageEmployees, UserRole } from "@/lib/types/user";
 import { t } from "@/lib/i18n";
 
+// Force dynamic rendering - this layout uses cookies for auth
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {

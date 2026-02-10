@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/employees/export/route";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import Papa from "papaparse";
 
 // Mock dependencies
@@ -160,8 +160,8 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
   },
 }));
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(),
+vi.mock("@/lib/supabase/server-api", () => ({
+  createAPIClient: vi.fn(),
 }));
 
 vi.mock("papaparse", () => ({
@@ -209,7 +209,7 @@ describe("Export Field Selection Integration", () => {
       }),
     };
      
-    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
 
     // Execute request
     const request = new Request("http://localhost/api/employees/export", {
@@ -229,8 +229,8 @@ describe("Export Field Selection Integration", () => {
      
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
-    // Check headers
-    expect(unparseCall.fields).toEqual(["First Name", "Surname", "shoe_size", "t_shirt_size"]);
+    // Check headers (now uses user-friendly column names from column_config)
+    expect(unparseCall.fields).toEqual(["First Name", "Surname", "Shoe Size", "T-Shirt Size"]);
     
     // Check data row
     expect(unparseCall.data[0]).toEqual(["John", "Doe", "42", "L"]);
@@ -241,7 +241,7 @@ describe("Export Field Selection Integration", () => {
       { 
         id: "emp1", 
         first_name: "John", 
-        repayment_needed_omc: true, // boolean
+        repayment_needed_omc: 'omc-date-uuid-123', // Story 19.14: Now stores UUID
         termination_date: null, // null
         // mobile is undefined
       },
@@ -258,7 +258,7 @@ describe("Export Field Selection Integration", () => {
       }),
     };
      
-    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",
@@ -274,9 +274,10 @@ describe("Export Field Selection Integration", () => {
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
     // Check data row
-    // boolean -> "Yes"/"No" (based on implementation)
+    // Story 19.14: repayment_needed_omc now stores UUID instead of boolean
+    // UUID -> exported as-is
     // null -> ""
     // undefined -> ""
-    expect(unparseCall.data[0]).toEqual(["John", "Yes", "", ""]);
+    expect(unparseCall.data[0]).toEqual(["John", "omc-date-uuid-123", "", ""]);
   });
 });

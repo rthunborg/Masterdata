@@ -31,7 +31,7 @@ describe('POST /api/important-dates - ÖMC Date Validation', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
   });
 
   it('should validate ÖMC date format on POST', async () => {
@@ -130,7 +130,7 @@ describe('PATCH /api/important-dates/[id] - ÖMC Date Validation', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
   });
 
   it('should validate ÖMC date format on PATCH', async () => {
@@ -195,7 +195,7 @@ describe('POST /api/employees - ÖMC Date Validation', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     // Mock Supabase client
     vi.mock('@/lib/supabase/server', () => ({
       createClient: vi.fn(),
@@ -263,7 +263,7 @@ describe('Error Messages in Swedish', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
   });
 
   it('should return error messages in Swedish', async () => {

@@ -27,7 +27,7 @@ export async function PATCH(
 ) {
   try {
     // Enforce HR Admin role
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { categoryName } = await params;
@@ -81,9 +81,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error("PATCH /api/admin/categories/[categoryName] error:", error);
-
-    // Handle validation errors
+    // Handle validation errors (expected, don't log)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -96,6 +94,8 @@ export async function PATCH(
       );
     }
 
+    // Log unexpected errors
+    console.error("PATCH /api/admin/categories/[categoryName] error:", error);
     return createErrorResponse(error);
   }
 }

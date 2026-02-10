@@ -7,7 +7,7 @@ import { ColumnConfig } from "@/lib/types/column-config";
 import { ColumnSettingsTable } from "@/components/admin/column-settings-table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
 import { AddColumnModal } from "@/components/dashboard/add-column-modal";
 import { Plus } from "lucide-react";

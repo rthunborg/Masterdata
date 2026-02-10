@@ -22,25 +22,23 @@ export function useImportantDates(category?: string) {
     async function fetchDates() {
       setIsLoading(true);
       try {
-        let query = supabase
-          .from("important_dates")
-          .select("*")
-          .order("year", { ascending: true })
-          .order("week_number", { ascending: true, nullsFirst: false });
-
-        if (category) {
-          query = query.eq("category", category);
-        }
-
-        const { data, error } = await query;
+        // Use API route instead of direct database query to bypass network blocks
+        const url = category 
+          ? `/api/important-dates?category=${encodeURIComponent(category)}`
+          : `/api/important-dates`;
+        
+        const response = await fetch(url, {
+          credentials: "include",
+        });
 
         if (!isMounted) return;
 
-        if (error) {
-          console.error("Error fetching important dates:", error);
+        if (!response.ok) {
+          console.error("Error fetching important dates:", response.status, response.statusText);
           setDates([]);
         } else {
-          setDates(data || []);
+          const result = await response.json();
+          setDates(result.data || []);
         }
       } catch (err) {
         console.error("Unexpected error fetching important dates:", err);

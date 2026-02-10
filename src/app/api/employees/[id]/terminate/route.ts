@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import {
-  requireHRAdminAPI,
+  requireEmployeeManagerAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
 import { terminateEmployeeSchema } from "@/lib/validation/employee-schema";
@@ -15,8 +15,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;

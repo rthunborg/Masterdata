@@ -2,8 +2,8 @@
  * Talmundo Field Validation Service
  * 
  * Business Rule: The Talmundo field represents completion status of the Talmundo 
- * external system integration. Talmundo can only be edited after the One field 
- * has been marked as complete for at least 24 hours.
+ * external system integration. Talmundo can only be edited after 00:01 AM the day
+ * following when the One field was marked as complete.
  * 
  * This enforces the correct operational sequence and prevents data integrity issues
  * from premature editing during the Talmundo system synchronization period.
@@ -18,9 +18,10 @@ import { getOneFieldStatus } from './one-field-status';
 /**
  * Determine if Talmundo field can be edited based on One field status.
  * 
- * Business Rule: Talmundo field requires One field to be true for >= 24 hours
- * before editing is allowed. This enforces the correct operational sequence
- * and prevents premature editing during the Talmundo system sync period.
+ * Business Rule: Talmundo field requires One field to be true and the current
+ * time to be past 00:01 AM the following day. This enforces the correct 
+ * operational sequence and prevents premature editing during the Talmundo 
+ * system sync period.
  * 
  * @param oneValue - Current boolean value of the One field
  * @param oneMarkedAt - Timestamp when One was set to true (ISO 8601 format)
@@ -31,14 +32,14 @@ import { getOneFieldStatus } from './one-field-status';
  * canEditTalmundo(false, null) // Returns false
  * 
  * @example
- * // One is true but less than 24 hours elapsed (yellow status)
- * const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
- * canEditTalmundo(true, twelveHoursAgo) // Returns false
+ * // One is true but not yet 00:01 AM the following day (yellow status)
+ * const todayAt3PM = new Date(); todayAt3PM.setHours(15, 0, 0, 0);
+ * canEditTalmundo(true, todayAt3PM.toISOString()) // Returns false (same day)
  * 
  * @example
- * // One is true and 24+ hours elapsed (green status)
- * const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
- * canEditTalmundo(true, twentyFiveHoursAgo) // Returns true
+ * // One is true and past 00:01 AM the following day (green status)
+ * const yesterdayAt3PM = new Date(Date.now() - 24 * 60 * 60 * 1000);
+ * canEditTalmundo(true, yesterdayAt3PM.toISOString()) // Returns true
  * 
  * @example
  * // One is true but timestamp is missing (edge case)
@@ -70,6 +71,6 @@ export function canEditTalmundo(
   // Calculate One field status (yellow = pending, green = ready)
   const oneStatus = getOneFieldStatus(oneValue, markedAtDate);
 
-  // Talmundo can only be edited when One field is green (24+ hours elapsed)
+  // Talmundo can only be edited when One field is green (past 00:01 AM the following day)
   return oneStatus === 'green';
 }

@@ -73,7 +73,7 @@ describe("API Field Validation - POST /api/employees", () => {
 
   describe("Enum Validation", () => {
     it("should return 400 for invalid gender enum value", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
       const invalidData = {
         ...validEmployeeData,
@@ -94,7 +94,7 @@ describe("API Field Validation - POST /api/employees", () => {
     });
 
     it("should return 400 for invalid rank enum value", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
       const invalidData = {
         ...validEmployeeData,
@@ -117,7 +117,7 @@ describe("API Field Validation - POST /api/employees", () => {
 
   describe("Range Validation", () => {
     it("should return 400 for lönenivå out of range (above maximum)", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
       const invalidData = {
         ...validEmployeeData,
@@ -138,7 +138,7 @@ describe("API Field Validation - POST /api/employees", () => {
     });
 
     it("should return 400 for lönenivå out of range (below minimum)", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
       const invalidData = {
         ...validEmployeeData,
@@ -177,7 +177,7 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
 
   describe("Crewing/Done Prerequisite Validation", () => {
     it("should return 400 if prerequisites not met when updating crewing_done", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       
       // Employee with missing prerequisites
       const incompleteEmployee = createTestEmployee({
@@ -203,14 +203,25 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
   });
 
   describe("Talmundo Lock Validation", () => {
-    it("should return 400 if Talmundo locked when <24h since one=true", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should return 400 if Talmundo locked when before unlock time", async () => {
+      // Current time: Jan 16 at 10 PM
+      vi.setSystemTime(new Date('2025-01-16T22:00:00'));
       
-      // Employee with One=true but <24h elapsed
-      const oneData = setOneDateWithTimer(12); // 12 hours ago
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
+      
+      // Employee with One=true, marked today at 3 PM - unlock is Jan 17 00:01 AM
+      const markedAt = '2025-01-16T15:00:00';
       const employee = createTestEmployee({
         one: true,
-        one_marked_at: oneData.one_marked_at,
+        one_marked_at: markedAt,
         talmundo: false,
       });
       
@@ -226,13 +237,13 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
 
       expect(response.status).toBe(400);
       expect(json.error.code).toBe("TALMUNDO_EDIT_NOT_ALLOWED");
-      expect(json.error.message).toContain("24 hours");
+      expect(json.error.message).toContain("following day");
     });
   });
 
   describe("Enum Validation on Update", () => {
     it("should return 400 for invalid gender enum on PATCH", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       const employee = createTestEmployee();
       vi.mocked(employeeRepository.findById).mockResolvedValue(employee);
 
@@ -250,7 +261,7 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
     });
 
     it("should return 400 for invalid rank enum on PATCH", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       const employee = createTestEmployee();
       vi.mocked(employeeRepository.findById).mockResolvedValue(employee);
 
@@ -270,7 +281,7 @@ describe("API Field Validation - PATCH /api/employees/[id]", () => {
 
   describe("Range Validation on Update", () => {
     it("should return 400 for lönenivå out of range on PATCH", async () => {
-      vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+      vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
       const employee = createTestEmployee();
       vi.mocked(employeeRepository.findById).mockResolvedValue(employee);
 

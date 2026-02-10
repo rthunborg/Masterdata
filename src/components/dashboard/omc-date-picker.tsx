@@ -63,7 +63,7 @@ export function OMCDatePicker({
 
   // Display formatted value - memoized to ensure it updates when value changes
   const displayValue = React.useMemo(() => {
-    return startDate ? formatOMCDate(startDate, 'sv-SE') : "";
+    return startDate ? formatOMCDate(startDate) : "";
   }, [startDate]);
 
   // Clear textInput when value changes externally (e.g., when year changes)
@@ -217,7 +217,7 @@ export function OMCDatePicker({
             ✓ Valt intervall:
           </span>
           <span className="text-blue-900">
-            {formatOMCDate(startDate, 'sv-SE')}
+            {formatOMCDate(startDate)}
           </span>
         </div>
       )}

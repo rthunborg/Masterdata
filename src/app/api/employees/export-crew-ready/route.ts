@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
-import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { requireEmployeeManagerAPI, createErrorResponse } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 import Papa from "papaparse";
 import type { Employee } from "@/lib/types/employee";
+import type { ImportantDate } from "@/lib/types/important-date";
+import { createAPIClient } from "@/lib/supabase/server-api";
+import { resolveImportantDateId } from "@/lib/utils/important-date-resolver";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -18,10 +21,10 @@ export const runtime = 'nodejs';
  * Story 8.5: Crewing/Done Field Conditional Logic - Export Enhancement
  * Story 13.4: Export Only Selected Employees
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI(request);
 
     // Parse request body to get selected employee IDs
     const body = await request.json();
@@ -71,6 +74,19 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
+
+    // Fetch all important dates to resolve date UUIDs
+    const supabase = createAPIClient(request);
+    const { data: importantDates, error: datesError } = await supabase
+      .from('important_dates')
+      .select('*')
+      .eq('is_active', true);
+
+    if (datesError) {
+      console.error("Error fetching important dates:", datesError);
+    }
+
+    const allImportantDates: ImportantDate[] = importantDates || [];
 
     // Prepare CSV data
     const csvData = eligibleEmployees.map((emp: Employee) => ({

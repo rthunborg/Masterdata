@@ -2,11 +2,11 @@
 
 "use no memo";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import * as React from "react";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import {
   useReactTable,
 
@@ -23,19 +23,21 @@ import {
 
   type Row,
 
+  type ColumnSizingState,
+
   flexRender,
 
 } from "@tanstack/react-table";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import type { Employee } from "@/lib/types/employee";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import {
   Table,
 
@@ -51,7 +53,7 @@ import {
 
 } from "@/components/ui/table";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import {
   AlertDialog,
 
@@ -71,31 +73,31 @@ import {
 
 } from "@/components/ui/alert-dialog";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { Button } from "@/components/ui/button";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { Checkbox } from "@/components/ui/checkbox";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { Label } from "@/components/ui/label";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { Input } from "@/components/ui/input";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { Skeleton } from "@/components/ui/skeleton";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import {
   Select,
 
@@ -109,7 +111,7 @@ import {
 
 } from "@/components/ui/select";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import {
   Tooltip,
 
@@ -119,84 +121,92 @@ import {
 
 } from "@/components/ui/tooltip";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2 } from "lucide-react";
+ 
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit } from "lucide-react";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { EditableCell } from "./editable-cell";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { getReadableTextColor } from "@/lib/utils/color-contrast";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { EditableDateCell } from "./editable-date-cell";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { employeeService } from "@/lib/services/employee-service";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { customDataService } from "@/lib/services/custom-data-service";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { mutationQueueService } from "@/lib/services/mutation-queue";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { toast } from "sonner";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useAuth } from "@/lib/hooks/use-auth";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useColumns } from "@/lib/hooks/use-columns";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useImportantDates } from "@/lib/hooks/use-important-dates";
 
 
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { } from "@/lib/utils/column-width-storage";
+ 
+import { loadColumnWidths, saveColumnWidths } from "@/lib/utils/column-width-storage";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { ExportFieldSelectionDialog } from "./export-field-selection-dialog";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { getEmployeeFieldValue, mapColumnToEmployeeField } from "@/lib/utils/column-mapping";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { cn } from "@/lib/utils";
 
+ 
+import { canEditField } from "@/lib/utils/role-utils";
+import { UserRole, INTERNAL_ROLES } from "@/lib/types/user";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+ 
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { EmployeeStatsBar } from "./employee-stats-bar";
+import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
 
+// Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar
+// import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+ 
 import { useTranslations } from "@/lib/i18n";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { TOWN_DISTRICTS } from "@/lib/constants/options";
 
 
@@ -217,7 +227,7 @@ interface EmployeeTableProps {
 }
 
 // Custom global filter function for multi-column search
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const globalFilterFn = (row: Row<Employee>, columnId: string, filterValue: string) => {
   const searchableFields = [
     row.original.first_name,
@@ -235,7 +245,29 @@ const globalFilterFn = (row: Row<Employee>, columnId: string, filterValue: strin
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Story 19.1: Constants for sticky column positioning
+const CHECKBOX_COLUMN_WIDTH = 40;
+
+// Story 19.1: Helper function to calculate sticky left offset for columns
+// This centralizes the offset logic to avoid duplication between headers and cells
+function calculateStickyLeftOffset(
+  columnType: 'checkbox' | 'first_name' | 'surname' | 'other',
+  firstNameColumnWidth: number | undefined,
+  defaultColumnWidth: number
+): number | undefined {
+  switch (columnType) {
+    case 'checkbox':
+      return 0;
+    case 'first_name':
+      return CHECKBOX_COLUMN_WIDTH;
+    case 'surname':
+      return CHECKBOX_COLUMN_WIDTH + (firstNameColumnWidth ?? defaultColumnWidth);
+    default:
+      return undefined;
+  }
+}
+
+ 
 export function EmployeeTable({
   employees,
   isLoading,
@@ -252,6 +284,7 @@ export function EmployeeTable({
   isColumnChanged, // Story 16.5: Change detection function
 }: EmployeeTableProps) {
   const { user } = useAuth();
+  // isHRAdmin: The actual logged-in user's role (used for personal preferences & real permissions)
   const isHRAdmin = user?.role === "hr_admin";
   const t = useTranslations("tooltips");
   const tDashboard = useTranslations("dashboard");
@@ -269,11 +302,34 @@ export function EmployeeTable({
     }
   }, [user?.id, initColumnVisibility]);
 
-  // Determine effective role for column filtering
+  // Determine effective role for column filtering and UI simulation
   const effectiveRole = previewRole || user?.role;
+  
+  // isEffectivelyHRAdmin: For UI simulation in preview mode
+  // When previewing as Sodexo, this will be false (simulating what Sodexo sees)
+  const isEffectivelyHRAdmin = effectiveRole === "hr_admin";
+  
+  // isEffectivelyInternalUser: For features only visible to internal users (HR Admin, Recruiter, Admin Limited)
+  const isEffectivelyInternalUser = effectiveRole && INTERNAL_ROLES.includes(effectiveRole as UserRole);
 
   // Fetch column configurations based on effective role (for preview mode)
   const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns(effectiveRole);
+
+  // When impersonating, fetch ALL columns (unfiltered) for the export dialog
+  // This ensures the export dialog can see all columns in the system, then filter by impersonated role's permissions
+  const [allColumnConfigs, setAllColumnConfigs] = React.useState<ColumnConfig[]>([]);
+  
+  React.useEffect(() => {
+    if (previewRole) {
+      // Fetch all columns without role filtering for export dialog
+      import("@/lib/services/column-service").then(({ columnService }) => {
+        columnService.getAllColumns().then(setAllColumnConfigs);
+      });
+    }
+  }, [previewRole]);
+  
+  // Use all columns for export dialog when impersonating, otherwise use filtered columns
+  const exportDialogColumns = previewRole ? allColumnConfigs : columnConfigs;
 
   // Fetch all Important Dates for resolving date field UUIDs
   const { dates: allImportantDates } = useImportantDates();
@@ -303,6 +359,34 @@ export function EmployeeTable({
   const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // Story 19.11: Column width persistence
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {
+    if (user?.id) {
+      return loadColumnWidths('dashboard', user.id) || {};
+    }
+    return {};
+  });
+
+  // Story 19.11: Debounced save for column widths
+  const saveDebounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const handleColumnSizingChange = React.useCallback((
+    updater: ColumnSizingState | ((old: ColumnSizingState) => ColumnSizingState)
+  ) => {
+    const newSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
+    setColumnSizing(newSizing);
+
+    // Debounce save to localStorage (300ms delay)
+    if (saveDebounceTimerRef.current) {
+      clearTimeout(saveDebounceTimerRef.current);
+    }
+
+    saveDebounceTimerRef.current = setTimeout(() => {
+      if (user?.id) {
+        saveColumnWidths('dashboard', user.id, newSizing);
+      }
+    }, 300);
+  }, [columnSizing, user?.id]);
 
   // Story 13.2: Toggle employee selection
   const toggleEmployeeSelection = React.useCallback((id: string) => {
@@ -347,6 +431,9 @@ export function EmployeeTable({
 
   // Row refs for scrolling
   const rowRefs = React.useRef<Map<string, HTMLTableRowElement>>(new Map());
+
+  // Story 19.9: Ref for sticky scrollbar
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Notify parent of global filter changes
   React.useEffect(() => {
@@ -406,24 +493,24 @@ export function EmployeeTable({
     let rollback: (() => void) | undefined;
 
     try {
-        if (onOptimisticUpdate) {
-          rollback = onOptimisticUpdate(id, { [field]: value });
-        } else {
-        }
+      if (onOptimisticUpdate) {
+        rollback = onOptimisticUpdate(id, { [field]: value });
+      } else {
+      }
 
-        await employeeService.update(id, { [field]: value });
-        toast.success(tToasts("employees.updatedSuccessfully"));
-        
-        // Don't call onEmployeeUpdated immediately after optimistic update
-        // Real-time sync will handle the update, preventing race conditions
-        // where refetch overwrites the optimistic update before server processes it
-        // Only call onEmployeeUpdated if no optimistic update was performed
-        if (!onOptimisticUpdate) {
-          onEmployeeUpdated?.();
-        }
+      await employeeService.update(id, { [field]: value });
+      toast.success(tToasts("employees.updatedSuccessfully"));
 
-        // Stats are DB-sourced and need explicit refresh
-        bumpStats();
+      // Don't call onEmployeeUpdated immediately after optimistic update
+      // Real-time sync will handle the update, preventing race conditions
+      // where refetch overwrites the optimistic update before server processes it
+      // Only call onEmployeeUpdated if no optimistic update was performed
+      if (!onOptimisticUpdate) {
+        onEmployeeUpdated?.();
+      }
+
+      // Stats are DB-sourced and need explicit refresh
+      bumpStats();
     } catch (error: unknown) {
       // Rollback optimistic update
       if (rollback) {
@@ -559,8 +646,8 @@ export function EmployeeTable({
       }
 
       toast.success(
-        action === 'archive' 
-          ? `Archived ${selectedIds.length} employees` 
+        action === 'archive'
+          ? `Archived ${selectedIds.length} employees`
           : `Restored ${selectedIds.length} employees`
       );
 
@@ -758,7 +845,7 @@ export function EmployeeTable({
         const allVisibleIds = filteredEmployees.map(e => e.id);
         const allSelected = allVisibleIds.length > 0 && allVisibleIds.every(id => selectedEmployeeIds.has(id));
         const someSelected = allVisibleIds.some(id => selectedEmployeeIds.has(id));
-        
+
         return (
           <div className="flex items-center justify-center w-full h-full gap-2">
             <Checkbox
@@ -865,7 +952,9 @@ export function EmployeeTable({
       const userRole = effectiveRole || "";
 
 
-      const hasEditPermission = config.role_permissions[userRole]?.edit ?? false;
+      // Use canEditField helper which handles Administrator's special edit restrictions
+      // (can only edit checklist items + loneniva)
+      const hasEditPermission = canEditField(userRole as UserRole, config);
 
 
       const canEdit = hasEditPermission && !isPreviewMode; // Disable editing in preview mode
@@ -901,7 +990,7 @@ export function EmployeeTable({
         // Get the field key for the employee object
         // Use mapColumnToEmployeeField for masterdata to ensure correct DB field name (e.g. "Lönenivå" -> "loneiva")
         // For custom columns, use db_column_name directly as fallback, but prefer consistent mapping
-        const fieldKey = config.is_masterdata 
+        const fieldKey = config.is_masterdata
           ? mapColumnToEmployeeField(config.column_name)
           : config.db_column_name.toLowerCase().replace(/ /g, "_");
 
@@ -991,7 +1080,7 @@ export function EmployeeTable({
                 isChanged={isDateChanged} // Story 16.5: Pass highlight flag
 
                 className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
-                
+
                 isCompact={isCompact}
 
                 onSave={handleMasterdataUpdate}
@@ -1004,22 +1093,59 @@ export function EmployeeTable({
 
           }
 
+          // Story 19.14: Special handling for repayment date columns
+          // These show a dropdown of all dates from the current year (no capacity filtering)
+          if (["repayment_needed_omc", "repayment_needed_pe3"].includes(config.db_column_name)) {
+            const repaymentFieldMap: Record<string, keyof Employee> = {
+              "repayment_needed_omc": "repayment_needed_omc",
+              "repayment_needed_pe3": "repayment_needed_pe3"
+            };
+
+            const repaymentCategoryMap: Record<string, string> = {
+              "repayment_needed_omc": "ÖMC Dates",
+              "repayment_needed_pe3": "PE3 Dates"
+            };
+
+            const repaymentField = repaymentFieldMap[config.db_column_name];
+            const repaymentCategory = repaymentCategoryMap[config.db_column_name];
+            const repaymentValue = row.original[repaymentField] as string | null;
+            
+            // Get display value for repayment field
+            const repaymentDisplayValue = repaymentValue
+              ? allImportantDates.find(d => d.id === repaymentValue)?.date_description || tDashboard("dateDeleted")
+              : null;
+
+            const isRepaymentChanged = checkColumnChanged(row.original.id, config.db_column_name);
+
+            return (
+              <EditableDateCell
+                value={repaymentValue}
+                displayValue={repaymentDisplayValue || "—"}
+                employeeId={row.original.id}
+                field={repaymentField}
+                dateCategory={repaymentCategory}
+                allDates={allImportantDates}
+                canEdit={canEdit}
+                isChanged={isRepaymentChanged}
+                isRepaymentMode={true} // Show all current year dates without capacity filtering
+                className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
+                isCompact={isCompact}
+                onSave={handleMasterdataUpdate}
+                onError={(error) => toast.error(error)}
+              />
+            );
+          }
 
           // Standard cell rendering for other columns
-
-
           // Determine EditableCell type based on column_type
 
 
           let cellType: "text" | "date" | "select" | "number" | "boolean" = "text";
 
-
           let options: string[] | undefined;
 
-          // Force boolean type for repayment fields (Story 13.9 fix)
-          if (["repayment_needed_omc", "repayment_needed_pe3"].includes(config.db_column_name)) {
-            cellType = "boolean";
-          } else if (config.column_type === "date") {
+          // Note: repayment_needed_omc and repayment_needed_pe3 are handled above with EditableDateCell
+          if (config.column_type === "date") {
 
             cellType = "date";
 
@@ -1051,10 +1177,7 @@ export function EmployeeTable({
 
           }
 
-
           // Choose the appropriate save handler based on column type
-
-
           const handleSave = config.is_masterdata
 
             ? handleMasterdataUpdate
@@ -1114,6 +1237,8 @@ export function EmployeeTable({
 
               isChanged={isChanged} // Story 16.5: Pass highlight flag
 
+              isChecklistItem={config.is_checklist_item} // Story 19.x: Boolean fields show "Ja/Nej" or "Klart/Nej" based on this flag
+
               {...oneMarkedAtProp} // Conditionally pass oneMarkedAt for One field
 
               {...talmundoConditionalProps} // Conditionally pass One field data for Talmundo
@@ -1121,7 +1246,7 @@ export function EmployeeTable({
               {...crewingDoneConditionalProps} // Conditionally pass employee data for Crewing/Done
 
               className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
-              
+
               isCompact={isCompact}
 
               onSave={handleSave}
@@ -1152,95 +1277,125 @@ export function EmployeeTable({
           const displayName = config.column_name;
 
 
-          // Add lock icon for read-only columns
+          // Determine permission indicator for preview mode
+          // Show eye icon for view-only, edit icon for editable columns
+          const showPermissionIndicator = isPreviewMode && hasEditPermission;
+          const isViewOnly = isPreviewMode && !hasEditPermission;
+
 
           return (
 
-            <div
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
 
-              className={cn(
+                  className={cn(
 
-                column.getCanSort()
+                    column.getCanSort()
 
-                  ? "flex items-center gap-2 cursor-pointer select-none hover:text-foreground"
+                      ? "flex items-center gap-1.5 cursor-pointer select-none hover:text-foreground"
 
-                  : "flex items-center gap-2",
+                      : "flex items-center gap-1.5",
 
-                column.getIsSorted() && "font-semibold"
-
-              )}
-
-              onClick={column.getCanSort() ? column.getToggleSortingHandler() : undefined}
-
-              role={column.getCanSort() ? "button" : undefined}
-
-              tabIndex={column.getCanSort() ? 0 : undefined}
-
-              onKeyDown={(e) => {
-
-                if (column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
-
-                  e.preventDefault();
-
-                  column.getToggleSortingHandler()?.(e);
-
-                }
-
-              }}
-
-              aria-label={
-
-                column.getCanSort()
-
-                  ? `Sort by ${displayName}${column.getIsSorted() === "asc"
-
-                    ? ", currently sorted ascending"
-
-                    : column.getIsSorted() === "desc"
-
-                      ? ", currently sorted descending"
-
-                      : ""
-
-                  }${!canEdit ? " (read-only)" : ""}`
-
-                  : !canEdit ? `${displayName} (read-only)` : displayName
-
-              }
-
-            >
-
-              <span>{displayName}</span>
-
-              {!canEdit && (
-
-                <Lock className={cn(iconSizeClass, "text-gray-400")} aria-hidden="true" />
-
-              )}
-
-              {column.getCanSort() && (
-
-                <span className="ml-auto" aria-hidden="true">
-
-                  {column.getIsSorted() === "asc" ? (
-
-                    <ArrowUp className={iconSizeClass} />
-
-                  ) : column.getIsSorted() === "desc" ? (
-
-                    <ArrowDown className={iconSizeClass} />
-
-                  ) : (
-
-                    <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
+                    column.getIsSorted() && "font-semibold"
 
                   )}
 
-                </span>
+                  onClick={column.getCanSort() ? column.getToggleSortingHandler() : undefined}
 
-              )}
+                  role={column.getCanSort() ? "button" : undefined}
 
-            </div>
+                  tabIndex={column.getCanSort() ? 0 : undefined}
+
+                  onKeyDown={(e) => {
+
+                    if (column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
+
+                      e.preventDefault();
+
+                      column.getToggleSortingHandler()?.(e);
+
+                    }
+
+                  }}
+
+                  aria-label={
+
+                    column.getCanSort()
+
+                      ? `Sort by ${displayName}${column.getIsSorted() === "asc"
+
+                        ? ", currently sorted ascending"
+
+                        : column.getIsSorted() === "desc"
+
+                          ? ", currently sorted descending"
+
+                          : ""
+
+                      }${!canEdit ? " (read-only)" : ""}`
+
+                      : !canEdit ? `${displayName} (read-only)` : displayName
+
+                  }
+
+                >
+
+                  {/* Header text with truncation */}
+                  <span className="truncate max-w-[160px]" title={displayName}>
+                    {displayName}
+                  </span>
+
+                  {/* Permission indicator for preview mode */}
+                  {showPermissionIndicator && (
+                    <Edit className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                  )}
+                  {isViewOnly && (
+                    <Eye className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                  )}
+
+                  {/* Legacy lock icon (kept for non-preview mode) */}
+                  {!canEdit && !isPreviewMode && (
+
+                    <Lock className={cn(iconSizeClass, "text-gray-400 flex-shrink-0")} aria-hidden="true" />
+
+                  )}
+
+                  {column.getCanSort() && (
+
+                    <span className="ml-auto flex-shrink-0" aria-hidden="true">
+
+                      {column.getIsSorted() === "asc" ? (
+
+                        <ArrowUp className={iconSizeClass} />
+
+                      ) : column.getIsSorted() === "desc" ? (
+
+                        <ArrowDown className={iconSizeClass} />
+
+                      ) : (
+
+                        <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
+
+                      )}
+
+                    </span>
+
+                  )}
+
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="space-y-1">
+                  <p className="font-medium">{displayName}</p>
+                  {isPreviewMode && (
+                    <p className="text-xs text-muted-foreground">
+                      {canEdit ? "Editable" : "View only"}
+                    </p>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
 
           );
 
@@ -1253,11 +1408,42 @@ export function EmployeeTable({
         ...(config.column_type === "date" && {
 
           sortingFn: (rowA, rowB) => {
+            // For Important Date fields (stena_date, omc_date, pe3_date), we need to look up
+            // the actual date_value from the ImportantDate object, not use the formatted display string
+            const importantDateFields = ["stena_date", "omc_date", "pe3_date", "repayment_needed_omc", "repayment_needed_pe3"];
+            const dbField = config.db_column_name.toLowerCase();
+            
+            let dateAStr: string | null = null;
+            let dateBStr: string | null = null;
+            
+            if (importantDateFields.includes(dbField)) {
+              // Get the UUID from the employee and look up the actual date_value
+              const dateIdA = rowA.original[dbField as keyof Employee] as string | null;
+              const dateIdB = rowB.original[dbField as keyof Employee] as string | null;
+              
+              const dateObjA = dateIdA ? allImportantDates.find(d => d.id === dateIdA) : null;
+              const dateObjB = dateIdB ? allImportantDates.find(d => d.id === dateIdB) : null;
+              
+              dateAStr = dateObjA?.date_value || null;
+              dateBStr = dateObjB?.date_value || null;
+            } else {
+              // For regular date columns, use the value directly
+              dateAStr = getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string | null;
+              dateBStr = getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string | null;
+            }
+            
+            // Handle null values - sort them to the end
+            if (!dateAStr && !dateBStr) return 0;
+            if (!dateAStr) return 1;
+            if (!dateBStr) return -1;
 
-            const dateA = new Date(getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string).getTime();
-
-
-            const dateB = new Date(getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string).getTime();
+            const dateA = new Date(dateAStr).getTime();
+            const dateB = new Date(dateBStr).getTime();
+            
+            // Handle invalid dates
+            if (isNaN(dateA) && isNaN(dateB)) return 0;
+            if (isNaN(dateA)) return 1;
+            if (isNaN(dateB)) return -1;
 
             return dateA - dateB;
 
@@ -1300,9 +1486,9 @@ export function EmployeeTable({
 
     });
 
-    // Add Actions column for HR Admin
+    // Add Actions column for HR Admin (simulated in preview mode)
 
-    if (isHRAdmin) {
+    if (isEffectivelyHRAdmin) {
 
       dataColumns.push({
 
@@ -1463,13 +1649,82 @@ export function EmployeeTable({
     }
 
 
-    // Story 13.2: Return selection column first, then data columns
+    // Story 19.5: Checklist Progress column (only show if there are checklist items)
+    // Only visible to internal users (hr_admin, recruiter, admin_limited)
+    const hasChecklistItems = columnConfigs.some(
+      (col) => col.column_type === 'boolean' && col.is_checklist_item
+    );
+    // Use isEffectivelyInternalUser for preview mode simulation
+    const showProgressColumn = hasChecklistItems && isEffectivelyInternalUser;
 
-    return [selectionColumn, ...dataColumns];
+    const progressColumn: ColumnDef<Employee> | null = showProgressColumn ? {
+      id: "checklist_progress",
+      header: ({ column }) => (
+        <div
+          className={cn(
+            "flex items-center gap-1 font-medium cursor-pointer select-none",
+            fontSizeClass
+          )}
+          onClick={column.getToggleSortingHandler()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              column.getToggleSortingHandler()?.(e);
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-label={`Sort by Framsteg${column.getIsSorted() === "asc" ? ", currently sorted ascending" : column.getIsSorted() === "desc" ? ", currently sorted descending" : ""}`}
+        >
+          <span>Framsteg</span>
+          <span className="ml-auto" aria-hidden="true">
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className={iconSizeClass} />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className={iconSizeClass} />
+            ) : (
+              <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
+            )}
+          </span>
+        </div>
+      ),
+      enableSorting: true,
+      enableResizing: true,
+      size: 120,
+      accessorFn: (row) => {
+        // Calculate progress for sorting - returns percentage as number
+        const checklistColumns = columnConfigs.filter(
+          (col) => col.column_type === 'boolean' && col.is_checklist_item
+        );
+        if (checklistColumns.length === 0) return 0;
+        const completed = checklistColumns.filter((col) => {
+          const value = getEmployeeFieldValue(row, col.db_column_name);
+          return value === true;
+        }).length;
+        return (completed / checklistColumns.length) * 100;
+      },
+      cell: ({ row }) => (
+        <div className={cn(cellPaddingClass, cellHeightClass, "flex items-center")}>
+          <ChecklistProgressIndicator
+            employee={row.original}
+            columns={columnConfigs}
+          />
+        </div>
+      ),
+    } : null;
+
+    // Story 13.2: Return selection column first, then progress column (if any), then data columns
+    const allColumns = progressColumn
+      ? [selectionColumn, progressColumn, ...dataColumns]
+      : [selectionColumn, ...dataColumns];
+
+    return allColumns;
 
   }, [
     columnConfigs,
     isHRAdmin,
+    isEffectivelyHRAdmin,
+    isEffectivelyInternalUser,
     handleMasterdataUpdate,
     handleCustomDataUpdate,
     effectiveRole,
@@ -1504,7 +1759,7 @@ export function EmployeeTable({
         .filter(emp => emp.crewing_done === true)
         .map(emp => emp.id);
       setSelectedEmployeeIds(new Set(readyEmployeeIds));
-    } 
+    }
     // Removed else block to prevent clearing selection when employees list updates in 'all' mode
     // or when switching filters, preserving user selection (Story 13.5 improvement)
   }, [crewReadyFilter, employees]);
@@ -1530,7 +1785,7 @@ export function EmployeeTable({
 
   };
 
-  const handleExportWithFields = async (selectedFields: string[]) => {
+  const handleExportWithFields = async (selectedFields: string[], impersonatedRole?: string) => {
 
     try {
 
@@ -1571,6 +1826,10 @@ export function EmployeeTable({
 
           fields: selectedFields,
 
+          impersonatedRole: impersonatedRole,
+
+          format: 'xlsx', // Always export as Excel
+
         }),
 
       });
@@ -1582,7 +1841,7 @@ export function EmployeeTable({
         // Story 17.4: Translate error codes to Swedish for external users
         const errorCode = errorData.error?.code;
         let errorMessage = errorData.error?.message || 'Failed to export employees';
-        
+
         if (errorCode) {
           switch (errorCode) {
             case 'NO_EMPLOYEES_SELECTED':
@@ -1593,8 +1852,8 @@ export function EmployeeTable({
               break;
             case 'PERMISSION_DENIED':
               // Extract field names from details or message
-              const deniedFields = errorData.error?.details?.deniedFields?.join(", ") || 
-                                   errorData.error?.message?.match(/following fields: (.+)/)?.[1] || '';
+              const deniedFields = errorData.error?.details?.deniedFields?.join(", ") ||
+                errorData.error?.message?.match(/following fields: (.+)/)?.[1] || '';
               errorMessage = tDashboard("exportPermissionDenied", { fields: deniedFields }) || errorMessage;
               break;
             case 'NO_PERMITTED_FIELDS':
@@ -1602,6 +1861,12 @@ export function EmployeeTable({
               break;
             case 'NO_EMPLOYEES_FOUND':
               errorMessage = tDashboard("exportNoEmployeesFound") || errorMessage;
+              break;
+            case 'IMPERSONATION_FORBIDDEN':
+              errorMessage = "Only HR Admins can export with impersonated role context.";
+              break;
+            case 'INVALID_FORMAT':
+              errorMessage = "Invalid export format specified.";
               break;
             default:
               // Use original message or fallback
@@ -1614,7 +1879,7 @@ export function EmployeeTable({
       }
 
 
-      // Download the CSV file
+      // Download the file (Excel or CSV based on format)
 
       const blob = await response.blob();
 
@@ -1626,7 +1891,12 @@ export function EmployeeTable({
 
       const dateStr = new Date().toISOString().split('T')[0];
 
-      a.download = `employees_export_${dateStr}.csv`;
+      // Determine file extension from Content-Type header
+      const contentType = response.headers.get('Content-Type') || '';
+      const isExcel = contentType.includes('spreadsheetml') || contentType.includes('excel');
+      const extension = isExcel ? 'xlsx' : 'csv';
+
+      a.download = `employees_export_${dateStr}.${extension}`;
 
       document.body.appendChild(a);
 
@@ -1675,6 +1945,7 @@ export function EmployeeTable({
     state: {
       globalFilter,
       sorting,
+      columnSizing,
       rowSelection: React.useMemo(() => {
         const selection: Record<string, boolean> = {};
         selectedEmployeeIds.forEach((id) => {
@@ -1687,6 +1958,8 @@ export function EmployeeTable({
     onGlobalFilterChange: setGlobalFilter,
 
     onSortingChange: setSorting,
+
+    onColumnSizingChange: handleColumnSizingChange,
 
     globalFilterFn: globalFilterFn,
 
@@ -1806,10 +2079,10 @@ export function EmployeeTable({
     <>
 
       {/* Filters + tallies row */}
-      {((isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange)) || employees.length > 0) && (
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 mb-4 pt-4">
-          {/* Filter checkboxes - always show for HR Admin */}
-          {isHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
+      {((isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange)) || employees.length > 0) && (
+        <div className="flex flex-wrap items-center gap-4 mb-4 pt-4 w-full max-w-full">
+          {/* Filter checkboxes - always show for HR Admin (simulated in preview mode) */}
+          {isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
             <div className="flex flex-wrap items-center gap-4">
               {onIncludeArchivedChange && (
                 <div className="flex items-center gap-2">
@@ -1884,7 +2157,9 @@ export function EmployeeTable({
           {/* Search Input and Column Visibility */}
 
           <div className={cn(
-            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4"
+            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4",
+            // Prevent controls from exceeding viewport width
+            "w-full max-w-full"
           )}>
 
             <div className="relative flex-1 max-w-sm w-full">
@@ -1923,35 +2198,35 @@ export function EmployeeTable({
 
             </div>
 
-            {/* Story 8.5: Crew-Ready Filter - HR Admin only */}
+            {/* Story 8.5: Crew-Ready Filter - HR Admin only (simulated in preview mode) */}
             {/* Story 17.5: Hide premade filters dropdown for external users */}
-            {isHRAdmin && (
+            {isEffectivelyHRAdmin && (
               <div className="flex items-center gap-2">
-              <Select
+                <Select
 
-                value={crewReadyFilter}
+                  value={crewReadyFilter}
 
-                onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
+                  onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
 
-              >
+                >
 
-                <SelectTrigger className="w-[180px]" aria-label="Crew Status" data-testid="crew-status-filter">
+                  <SelectTrigger className="w-[180px]" aria-label="Crew Status" data-testid="crew-status-filter">
 
-                  <SelectValue placeholder="Crew Status" />
+                    <SelectValue placeholder="Crew Status" />
 
-                </SelectTrigger>
+                  </SelectTrigger>
 
-                <SelectContent>
+                  <SelectContent>
 
-                  <SelectItem value="all">Alla anställda</SelectItem>
+                    <SelectItem value="all">Alla anställda</SelectItem>
 
-                  <SelectItem value="ready">Crew Ready</SelectItem>
+                    <SelectItem value="ready">Crew Ready</SelectItem>
 
-                  <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
+                    <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
 
-                </SelectContent>
+                  </SelectContent>
 
-              </Select>
+                </Select>
               </div>
             )}
 
@@ -1996,9 +2271,9 @@ export function EmployeeTable({
               </TooltipContent>
             </Tooltip>
 
-            {/* Story 8.5: Export Crew-Ready Employees (HR Admin only) */}
+            {/* Story 8.5: Export Crew-Ready Employees (HR Admin only, simulated in preview mode) */}
 
-            {isHRAdmin && (
+            {isEffectivelyHRAdmin && (
 
               <Tooltip>
 
@@ -2058,9 +2333,16 @@ export function EmployeeTable({
 
           </div>
 
-          <div className="rounded-md border">
+          <div 
+            className="rounded-md border"
+          >
 
-            <Table className="table-fixed">
+            {/* Story 19.9: Pass container ref for sticky scrollbar */}
+            {/* Story 19.13: maxHeight enables vertical scrolling within the table container, 
+                which is required for sticky headers to work. The height accounts for:
+                - Header (~64px) + Nav (~56px) + Page padding (~48px) + Card header (~80px) 
+                - Filters/controls (~60px) + some margin (~42px) ≈ 350px total */}
+            <Table className="table-fixed" containerRef={tableContainerRef} maxHeight="calc(100vh - 350px)">
 
               <TableHeader>
 
@@ -2105,8 +2387,27 @@ export function EmployeeTable({
                       // Check if this is the checkbox column (empty header)
                       const isCheckboxColumn = header.column.id === "select";
                       const isActionColumn = header.column.id === "actions";
+                      // Story 19.1: Check if this is a Name column (First Name or Surname) for sticky positioning
+                      const isFirstNameColumn = columnConfig?.db_column_name === "first_name";
+                      const isSurnameColumn = columnConfig?.db_column_name === "surname";
+                      const isStickyNameColumn = isFirstNameColumn || isSurnameColumn;
                       const isCompact = density === "compact";
-                      
+
+                      // Story 19.1: Calculate left offset for sticky columns using helper
+                      const columnType = isCheckboxColumn ? 'checkbox'
+                        : isFirstNameColumn ? 'first_name'
+                          : isSurnameColumn ? 'surname'
+                            : 'other';
+                      const firstNameHeader = headerGroup.headers.find(
+                        h => columnConfigs.find((c: ColumnConfig) => c.id === h.column.id)?.db_column_name === "first_name"
+                      );
+                      const defaultColumnWidth = isCompact ? 100 : 150;
+                      const stickyLeftOffset = calculateStickyLeftOffset(
+                        columnType,
+                        firstNameHeader?.getSize(),
+                        defaultColumnWidth
+                      );
+
                       return (
 
                         <TableHead
@@ -2119,8 +2420,12 @@ export function EmployeeTable({
                             isCheckboxColumn && "p-0!",
                             // Compact mode adjustments
                             isCompact ? "h-8 px-2" : "h-12 px-4",
-                            // Sticky action column
-                            isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]"
+                            // Story 19.1: Sticky checkbox column (leftmost)
+                            isCheckboxColumn && "sticky z-20 bg-background",
+                            // Story 19.1: Sticky name columns (First Name and Surname)
+                            isStickyNameColumn && "sticky z-20 bg-background",
+                            // Story 19.1: Shadow only on the last sticky name column (Surname)
+                            isSurnameColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
                           )}
 
                           style={{
@@ -2135,16 +2440,17 @@ export function EmployeeTable({
 
                             color: textColor === 'white' ? '#ffffff' : textColor === 'black' ? '#000000' : undefined,
 
+                            // Story 19.1: Dynamic left offset for sticky columns
+                            left: stickyLeftOffset !== undefined ? `${stickyLeftOffset}px` : undefined,
+
                           }}
 
                         >
 
                           {/* Header content with category label */}
-                          {/* For checkbox column, match the cell structure exactly (empty div to match cell wrapper) */}
+                          {/* Story 19.x: For checkbox column, render the select-all checkbox from headerContent */}
                           {isCheckboxColumn ? (
-                            <div className="flex items-center justify-center w-full h-full gap-2">
-                              {/* Empty - matches the structure of checkbox cell which has a div wrapper with gap-2 */}
-                            </div>
+                            headerContent
                           ) : (
                             <div className="flex flex-col items-center justify-center leading-none gap-0.5">
 
@@ -2277,7 +2583,7 @@ export function EmployeeTable({
                         // so we add an explicit handler that prevents any selection behavior
                         // UPDATE: Removed onClickCapture and onClick as we want standard event propagation
                         // and have disabled row selection logic. Checkbox interactions are handled directly.
-                        
+
                         className={cn(
                           // Base background to ensure sticky columns are opaque
                           "bg-background",
@@ -2311,69 +2617,86 @@ export function EmployeeTable({
                           // Story 16.6: Check if this is the checkbox column to match header padding
                           const isCheckboxCell = cell.column.id === "select";
                           const isActionColumn = cell.column.id === "actions";
+                          // Story 19.1: Check if this is a Name column for sticky positioning
+                          const cellColumnConfig = columnConfigs.find((c: ColumnConfig) => c.id === cell.column.id);
+                          const isFirstNameCell = cellColumnConfig?.db_column_name === "first_name";
+                          const isSurnameCell = cellColumnConfig?.db_column_name === "surname";
+                          const isStickyNameCell = isFirstNameCell || isSurnameCell;
                           const isCompact = density === "compact";
-                          
+
+                          // Story 19.1: Calculate left offset for sticky cells using helper
+                          const cellColumnType = isCheckboxCell ? 'checkbox'
+                            : isFirstNameCell ? 'first_name'
+                              : isSurnameCell ? 'surname'
+                                : 'other';
+                          const firstNameCell = row.getVisibleCells().find(
+                            c => columnConfigs.find((cfg: ColumnConfig) => cfg.id === c.column.id)?.db_column_name === "first_name"
+                          );
+                          const defaultCellWidth = isCompact ? 100 : 150;
+                          const cellStickyLeftOffset = calculateStickyLeftOffset(
+                            cellColumnType,
+                            firstNameCell?.column.getSize(),
+                            defaultCellWidth
+                          );
+
                           return (
-                          <TableCell 
-                            key={cell.id}
-                            style={{
-                              width: cell.column.getSize(),
-                              minWidth: cell.column.getSize(),
-                              maxWidth: cell.column.getSize(),
-                            }}
-                            className={cn(
-                              "overflow-hidden",
-                              // Story 16.6: Remove all padding for checkbox column to match header alignment
-                              isCheckboxCell && "p-0!",
-                              // Compact mode padding
-                              !isCheckboxCell && (isCompact ? "p-2" : "p-4"),
-                              // Sticky action column
-                              isActionColumn && "sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
-                              // For sticky column, we need a background to cover scrolling content.
-                              // Inherit works if the row has a background color. 
-                              // If row is default, we need bg-background.
-                              // We can use bg-inherit and a fallback of bg-background via a composed class or just rely on row colors.
-                              // But Tailwind doesn't support "bg-inherit-or-white".
-                              // Best bet: sticky cell gets the same bg as row if row is colored, else bg-background.
-                              // Since we can't easily extract the row class here without refactoring,
-                              // and bg-inherit on a sticky element inside a tr works for opacity in most browsers:
-                              isActionColumn && "bg-inherit" 
-                            )}
-                          >
-
-                            <div className={cn(
-                              "flex items-center gap-2 w-full",
-                              // Story 16.6: Center all cell content to match header alignment
-                              "justify-center"
-                            )}>
-
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-
-                              {/* Story 12.3: Pending sync indicator in first cell */}
-
-                              {cellIndex === 0 && hasPendingSync && (
-
-                                <Tooltip>
-
-                                  <TooltipTrigger asChild>
-
-                                    <Clock className="h-3 w-3 text-yellow-600 animate-pulse" />
-
-                                  </TooltipTrigger>
-
-                                  <TooltipContent>
-
-                                    <p>Pending sync - changes will sync when online</p>
-
-                                  </TooltipContent>
-
-                                </Tooltip>
-
+                            <TableCell
+                              key={cell.id}
+                              style={{
+                                width: cell.column.getSize(),
+                                minWidth: cell.column.getSize(),
+                                maxWidth: cell.column.getSize(),
+                                // Story 19.1: Dynamic left offset for sticky cells
+                                left: cellStickyLeftOffset !== undefined ? `${cellStickyLeftOffset}px` : undefined,
+                              }}
+                              className={cn(
+                                "overflow-hidden",
+                                // Story 16.6: Remove all padding for checkbox column to match header alignment
+                                isCheckboxCell && "p-0!",
+                                // Compact mode padding
+                                !isCheckboxCell && (isCompact ? "p-2" : "p-4"),
+                                // Story 19.1: Sticky checkbox column (leftmost)
+                                isCheckboxCell && "sticky z-10 bg-inherit",
+                                // Story 19.1: Sticky name columns (First Name and Surname)
+                                isStickyNameCell && "sticky z-10 bg-inherit",
+                                // Story 19.1: Shadow only on the last sticky name column (Surname)
+                                isSurnameCell && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
                               )}
+                            >
 
-                            </div>
+                              <div className={cn(
+                                "flex items-center gap-2 w-full",
+                                // Story 16.6: Center checkbox/action columns, left-align text content
+                                (isCheckboxCell || isActionColumn) ? "justify-center" : "justify-start"
+                              )}>
 
-                          </TableCell>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+
+                                {/* Story 12.3: Pending sync indicator in first cell */}
+
+                                {cellIndex === 0 && hasPendingSync && (
+
+                                  <Tooltip>
+
+                                    <TooltipTrigger asChild>
+
+                                      <Clock className="h-3 w-3 text-yellow-600 animate-pulse" />
+
+                                    </TooltipTrigger>
+
+                                    <TooltipContent>
+
+                                      <p>Pending sync - changes will sync when online</p>
+
+                                    </TooltipContent>
+
+                                  </Tooltip>
+
+                                )}
+
+                              </div>
+
+                            </TableCell>
                           );
                         })}
 
@@ -2388,6 +2711,8 @@ export function EmployeeTable({
               </TableBody>
 
             </Table>
+
+            {/* Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar */}
 
           </div>
 
@@ -2526,7 +2851,7 @@ export function EmployeeTable({
         open={exportDialogOpen}
         onOpenChange={setExportDialogOpen}
         onExport={handleExportWithFields}
-        columnConfigs={columnConfigs}
+        columnConfigs={exportDialogColumns}
         visibleColumnIds={visibleColumnIds}
       />
 
@@ -2537,6 +2862,7 @@ export function EmployeeTable({
         onClear={() => setSelectedEmployeeIds(new Set())}
         isArchivedView={includeArchived}
         isProcessing={isBulkProcessing}
+        isHRAdmin={isEffectivelyHRAdmin}
       />
 
     </>

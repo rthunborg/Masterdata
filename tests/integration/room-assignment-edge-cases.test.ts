@@ -36,7 +36,8 @@ vi.mock("@/lib/server/auth", async () => {
   const actual = await vi.importActual("@/lib/server/auth");
   return {
     ...actual,
-    requireHRAdminAPI: vi.fn(),
+    requireEmployeeManagerAPI: vi.fn(),
+    requireEmployeeEditorAPI: vi.fn(),
     createErrorResponse: vi.fn((error: unknown) => {
       const message = error instanceof Error ? error.message : "Internal server error";
       return new Response(
@@ -74,7 +75,7 @@ describe("Room Assignment Edge Case Tests", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     // Mock assignEmployeeToDate to succeed
     vi.mocked(dateCapacity.assignEmployeeToDate).mockResolvedValue({
       success: true,

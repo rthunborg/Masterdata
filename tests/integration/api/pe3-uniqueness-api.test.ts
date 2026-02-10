@@ -18,7 +18,7 @@ import { PATCH } from "@/app/api/employees/[id]/route";
 import { NextRequest } from "next/server";
 import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
 import type { ImportantDate } from "@/lib/types/important-date";
@@ -26,8 +26,24 @@ import { UserRole } from "@/lib/types/user";
 
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
-vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/supabase/server-api");
 vi.mock("@/lib/services/date-capacity");
+
+// Mock next/headers cookies() for createClient
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(() => ({
+    getAll: vi.fn(() => []),
+    set: vi.fn(),
+  })),
+}));
+
+// Mock createClient
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(async () => ({
+    from: vi.fn(),
+    auth: { getUser: vi.fn() },
+  })),
+}));
 
 describe("GET /api/important-dates/available-pe3", () => {
   const mockHRAdminUser = {
@@ -90,7 +106,7 @@ describe("GET /api/important-dates/available-pe3", () => {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       not: vi.fn().mockReturnThis(),
     };
@@ -101,7 +117,7 @@ describe("GET /api/important-dates/available-pe3", () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
-          gte: vi.fn().mockReturnThis(),
+          or: vi.fn().mockReturnThis(),
           order: vi.fn().mockResolvedValue({ data: mockAvailableDates, error: null }),
         } as unknown as ReturnType<typeof mockSupabaseClient.from>;
       } else if (table === "employees") {
@@ -114,10 +130,9 @@ describe("GET /api/important-dates/available-pe3", () => {
       return mockSupabaseClient;
     });
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as unknown as ReturnType<typeof createAPIClient>);
 
-    const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -155,7 +170,7 @@ describe("GET /api/important-dates/available-pe3", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
+            or: vi.fn().mockReturnThis(),
             order: vi.fn().mockResolvedValue({ data: datesWithFull, error: null }),
           };
         } else if (table === "employees") {
@@ -169,10 +184,9 @@ describe("GET /api/important-dates/available-pe3", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as unknown as ReturnType<typeof createAPIClient>);
 
-    const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -182,7 +196,6 @@ describe("GET /api/important-dates/available-pe3", () => {
   });
 
   it("should exclude dates already assigned to employee", async () => {
-    const employeeId = "emp-123";
     const assignedDateId = "pe3-1";
 
     vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
@@ -193,7 +206,7 @@ describe("GET /api/important-dates/available-pe3", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
+            or: vi.fn().mockReturnThis(),
             order: vi.fn().mockResolvedValue({ data: mockAvailableDates, error: null }),
           };
         } else if (table === "employees") {
@@ -210,12 +223,9 @@ describe("GET /api/important-dates/available-pe3", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as unknown as ReturnType<typeof createAPIClient>);
 
-    const request = new NextRequest(
-      `http://localhost:3000/api/important-dates/available-pe3?employeeId=${employeeId}`
-    );
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -231,7 +241,7 @@ describe("GET /api/important-dates/available-pe3", () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
+            or: vi.fn().mockReturnThis(),
             order: vi.fn().mockResolvedValue({ data: [], error: null }),
           };
         } else if (table === "employees") {
@@ -245,10 +255,9 @@ describe("GET /api/important-dates/available-pe3", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabaseClient as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as unknown as ReturnType<typeof createAPIClient>);
 
-    const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(200);
@@ -269,8 +278,7 @@ describe("GET /api/important-dates/available-pe3", () => {
       )
     );
 
-    const request = new NextRequest("http://localhost:3000/api/important-dates/available-pe3");
-    const response = await GET(request);
+    const response = await GET();
     const json = await response.json();
 
     expect(response.status).toBe(401);
@@ -333,7 +341,7 @@ describe("POST /api/employees - PE3 Uniqueness", () => {
   });
 
   it("should reject duplicate PE3 date assignment (409)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     const duplicateError = new Error("PE3 date pe3-date-1 is already assigned to another employee");
     vi.mocked(employeeRepository.create).mockRejectedValue(duplicateError);
 
@@ -357,10 +365,10 @@ describe("POST /api/employees - PE3 Uniqueness", () => {
       updated_at: "2025-10-27T12:00:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.create).mockResolvedValue(mockCreatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
-    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue({} as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
       method: "POST",
@@ -436,12 +444,12 @@ describe("PATCH /api/employees/[id] - PE3 Uniqueness", () => {
   });
 
   it("should reject duplicate PE3 date assignment (409)", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.findById).mockResolvedValue(mockEmployee);
     // assignEmployeeToDate throws PE3 duplicate error
     const duplicateError = new Error("PE3 date pe3-date-1 is already assigned to another employee");
     vi.mocked(assignEmployeeToDate).mockRejectedValue(duplicateError);
-    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue({} as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",
@@ -462,11 +470,11 @@ describe("PATCH /api/employees/[id] - PE3 Uniqueness", () => {
       updated_at: "2025-10-27T15:30:00Z",
     };
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     // When only date fields are updated, route calls findById after assignEmployeeToDate
     vi.mocked(employeeRepository.findById).mockResolvedValueOnce(mockEmployee).mockResolvedValueOnce(updatedEmployee);
     vi.mocked(assignEmployeeToDate).mockResolvedValue({ success: true, message: "Assigned" });
-    vi.mocked(createClient).mockResolvedValue({} as unknown as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue({} as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new NextRequest("http://localhost:3000/api/employees/employee-123", {
       method: "PATCH",

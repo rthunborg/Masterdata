@@ -51,7 +51,7 @@ export function exportImportantDates(dates: ImportantDate[]): void {
   const rows = dates.map(date => {
     // Story 8.9: Format ÖMC dates with two-day range for export
     const dateValue = isOMCDate(date.category)
-      ? formatOMCDate(date.date_value, 'sv-SE')
+      ? formatOMCDate(date.date_value)
       : date.date_value;
 
     // Story 8.10: Format time for PE3 dates

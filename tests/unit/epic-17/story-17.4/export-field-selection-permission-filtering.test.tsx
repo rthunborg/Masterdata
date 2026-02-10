@@ -28,15 +28,8 @@ vi.mock("@/lib/store/ui-store", () => ({
   useUIStore: () => mockUseUIStore(),
 }));
 
-// Mock constants
-vi.mock("@/lib/constants/export-fields", () => ({
-  EXPORTABLE_EMPLOYEE_FIELDS: [
-    { key: "first_name", label: "First Name" },
-    { key: "surname", label: "Surname" },
-    { key: "email", label: "Email" },
-    { key: "ssn", label: "SSN" },
-  ],
-}));
+// Note: EXPORTABLE_EMPLOYEE_FIELDS no longer used after architectural refactor
+// Export dialog now uses column_config as single source of truth
 
 // Mock UI components
 vi.mock("@/components/ui/dialog", () => ({
@@ -82,6 +75,20 @@ describe("Story 17.4: Permission-Based Field Filtering", () => {
   const mockOnOpenChange = vi.fn();
   const mockOnExport = vi.fn();
 
+  // Helper to convert db_column_name to title case display name
+  const toTitleCase = (str: string) => {
+    // Special handling for common acronyms
+    const acronyms: Record<string, string> = {
+      'ssn': 'SSN',
+    };
+    
+    if (acronyms[str]) {
+      return acronyms[str];
+    }
+    
+    return str.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  };
+
   // Mock column configs with different permission settings
   const createColumnConfig = (
     id: string,
@@ -90,7 +97,7 @@ describe("Story 17.4: Permission-Based Field Filtering", () => {
     permissions: Record<UserRole, { view: boolean; edit: boolean }>
   ): ColumnConfig => ({
     id,
-    column_name: dbColumnName.replace(/_/g, " "),
+    column_name: toTitleCase(dbColumnName),
     db_column_name: dbColumnName,
     column_type: "text",
     is_masterdata: isMasterdata,
@@ -326,12 +333,12 @@ describe("Story 17.4: Permission-Based Field Filtering", () => {
       );
 
       // Should show custom field 1 (has view permission)
-      expect(screen.getByText("custom field 1")).toBeDefined();
+      expect(screen.getByText("Custom Field 1")).toBeDefined();
     });
   });
 
-  describe("Field Matching Logic", () => {
-    it("should correctly match masterdata fields by db_column_name normalization", () => {
+  describe("Direct Column Config Usage", () => {
+    it("should display fields directly from column_config without alias matching", () => {
       mockUseAuth.mockReturnValue({
         user: {
           id: "user-2",
@@ -348,7 +355,7 @@ describe("Story 17.4: Permission-Based Field Filtering", () => {
         previewRole: null,
       });
 
-      // Column config with spaces in db_column_name (should be normalized)
+      // Column config - display name comes directly from column_name field
       const columnWithSpaces = createColumnConfig("col-first-name", "first name", true, {
         hr_admin: { view: true, edit: true },
         sodexo: { view: true, edit: false },
@@ -365,7 +372,7 @@ describe("Story 17.4: Permission-Based Field Filtering", () => {
         />
       );
 
-      // Should match "first_name" from EXPORTABLE_EMPLOYEE_FIELDS with "first name" from column config
+      // Should display column_name directly from config (title-cased via mock helper)
       expect(screen.getByText("First Name")).toBeDefined();
     });
   });

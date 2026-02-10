@@ -63,6 +63,25 @@ describe("column-mapping", () => {
     it("should handle single word column names", () => {
       expect(mapColumnToEmployeeField("Department")).toBe("department");
     });
+
+    // Story 8.17: Dietary Requirements field mappings
+    describe("dietary requirements mappings", () => {
+      it("should map 'Specialkost' (Swedish) to 'special_diet'", () => {
+        expect(mapColumnToEmployeeField("Specialkost")).toBe("special_diet");
+      });
+
+      it("should map 'Special Diet' (English) to 'special_diet'", () => {
+        expect(mapColumnToEmployeeField("Special Diet")).toBe("special_diet");
+      });
+
+      it("should map 'Diet' (Swedish column name) to 'diet_details'", () => {
+        expect(mapColumnToEmployeeField("Diet")).toBe("diet_details");
+      });
+
+      it("should map 'Diet Details' (English) to 'diet_details'", () => {
+        expect(mapColumnToEmployeeField("Diet Details")).toBe("diet_details");
+      });
+    });
   });
 
   describe("getEmployeeFieldValue", () => {
@@ -77,32 +96,40 @@ describe("column-mapping", () => {
       gender: 'Man',
       town_district: "Trelleborg",
       hire_date: "2020-01-15",
-    stena_date: null,
-    omc_date: null,
-    pe3_date: null,
-    termination_date: null,
+      stena_date: null,
+      omc_date: null,
+      pe3_date: null,
+      termination_date: null,
       termination_reason: null,
       is_terminated: false,
       is_archived: false,
-        repayment_needed_omc: null,
-        repayment_needed_pe3: null,
-        comments: null,
-        one: null,
-        one_marked_at: null,
-        talmundo: null,
-        isps: null,
-        photo: null,
-        origo: null,
-        loneiva: null,
-        mail_lon: null,
-        bankuppgifter: null,
-        li: null,
-        passport: null,
-        kvitto_c17_18: null,
-        c17: null,
-        crewing_done: null,
-        created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-01-01T00:00:00Z",      };
+      archived_at: null,
+      is_anonymized: false,
+      repayment_needed_omc: null,
+      repayment_needed_pe3: null,
+      comments: null,
+      one: false,
+      one_marked_at: null,
+      talmundo: false,
+      isps: false,
+      photo: false,
+      origo: false,
+      loneiva: null,
+      mail_lon: false,
+      bankuppgifter: false,
+      li: false,
+      passport: false,
+      kvitto_c17_18: false,
+      c17: false,
+      crewing_done: false,
+      hotel_required: false,
+      room_number_shared: null,
+      // Story 8.17: Dietary Requirements
+      special_diet: false,
+      diet_details: null,
+      created_at: "2025-01-01T00:00:00Z",
+      updated_at: "2025-01-01T00:00:00Z",
+    };
 
     it("should get first name value", () => {
       expect(getEmployeeFieldValue(mockEmployee, "First Name")).toBe("John");
@@ -171,6 +198,55 @@ describe("column-mapping", () => {
 
     it("should handle comments", () => {
       expect(getEmployeeFieldValue(mockEmployee, "Comments")).toBeNull();
+    });
+
+    // Story 8.17: Dietary Requirements field values
+    describe("dietary requirements values", () => {
+      it("should get special_diet value using Swedish column name 'Specialkost'", () => {
+        expect(getEmployeeFieldValue(mockEmployee, "Specialkost")).toBe(false);
+      });
+
+      it("should get special_diet value using English column name 'Special Diet'", () => {
+        expect(getEmployeeFieldValue(mockEmployee, "Special Diet")).toBe(false);
+      });
+
+      it("should get diet_details value using Swedish column name 'Diet'", () => {
+        expect(getEmployeeFieldValue(mockEmployee, "Diet")).toBeNull();
+      });
+
+      it("should get diet_details value using English column name 'Diet Details'", () => {
+        expect(getEmployeeFieldValue(mockEmployee, "Diet Details")).toBeNull();
+      });
+
+      it("should return true for special_diet when employee has special diet", () => {
+        const employeeWithDiet: Employee = {
+          ...mockEmployee,
+          special_diet: true,
+          diet_details: "Gluten free",
+        };
+        expect(getEmployeeFieldValue(employeeWithDiet, "Specialkost")).toBe(true);
+        expect(getEmployeeFieldValue(employeeWithDiet, "Special Diet")).toBe(true);
+      });
+
+      it("should return diet details string when employee has diet details", () => {
+        const employeeWithDiet: Employee = {
+          ...mockEmployee,
+          special_diet: true,
+          diet_details: "Vegetarian, lactose intolerant",
+        };
+        expect(getEmployeeFieldValue(employeeWithDiet, "Diet")).toBe("Vegetarian, lactose intolerant");
+        expect(getEmployeeFieldValue(employeeWithDiet, "Diet Details")).toBe("Vegetarian, lactose intolerant");
+      });
+
+      it("should return null for diet_details when employee has no diet details", () => {
+        const employeeNoDiet: Employee = {
+          ...mockEmployee,
+          special_diet: false,
+          diet_details: null,
+        };
+        expect(getEmployeeFieldValue(employeeNoDiet, "Diet")).toBeNull();
+        expect(getEmployeeFieldValue(employeeNoDiet, "Diet Details")).toBeNull();
+      });
     });
   });
 });

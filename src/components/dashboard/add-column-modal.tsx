@@ -32,12 +32,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ColorPicker, ColorIndicator } from "@/components/ui/color-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   createCustomColumnSchema,
   type CreateCustomColumnInput,
 } from "@/lib/validation/column-validation";
 import { columnService } from "@/lib/services/column-service";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
 import { useColumns } from "@/lib/hooks/use-columns";
 import {
@@ -90,8 +91,12 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
       is_masterdata: false, // Default to External column (always false for non-HR Admin)
       category: "",
       category_color: null,
+      is_checklist_item: false, // Story 19.5: Default to not a checklist item
     },
   });
+  
+  // Story 19.5: Watch column_type to conditionally show checklist item checkbox
+  const watchedColumnType = form.watch("column_type");
   
   // Ensure is_masterdata is always false for non-HR Admin users
   useEffect(() => {
@@ -176,14 +181,21 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                 <FormItem>
                   <FormLabel>Kolumnnamn (Visningsnamn) *</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="t.ex., Meal Plan, Training Status, Room Number"
-                      {...field}
-                      disabled={isSubmitting}
-                    />
+                    <div className="relative">
+                      <Input
+                        placeholder="t.ex., Meal Plan, Training Status, Room Number"
+                        {...field}
+                        disabled={isSubmitting}
+                        maxLength={50}
+                        className="pr-14"
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                        {field.value?.length || 0}/50
+                      </div>
+                    </div>
                   </FormControl>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Detta namn visas i tabellhuvudet och i gränssnittet. Kan innehålla mellanslag och specialtecken.
+                    Detta namn visas i tabellhuvudet och i gränssnittet. Kan innehålla mellanslag och specialtecken. Max 50 tecken.
                   </p>
                   <FormMessage />
                 </FormItem>
@@ -262,7 +274,13 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                 <FormItem>
                   <FormLabel>Kolumntyp *</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Story 19.5: Reset is_checklist_item when changing type away from boolean
+                      if (value !== 'boolean') {
+                        form.setValue('is_checklist_item', false);
+                      }
+                    }}
                     defaultValue={field.value}
                     disabled={isSubmitting}
                   >
@@ -282,6 +300,34 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
                 </FormItem>
               )}
             />
+
+            {/* Story 19.5: Checklist Item checkbox (only for HR Admin creating masterdata boolean columns) */}
+            {watchedColumnType === 'boolean' && isHRAdmin && form.watch('is_masterdata') && (
+              <FormField
+                control={form.control}
+                name="is_checklist_item"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isSubmitting}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        Inkludera i checklista
+                      </FormLabel>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        När aktiverat kommer denna kolumn räknas i medarbetarens checklista-indikator.
+                        Använd detta för uppgifter som ska slutföras (t.ex. &ldquo;Talmundo slutfört&rdquo;, &ldquo;C-17 certifikat&rdquo;).
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Category (Combobox with autocomplete) */}
             <FormField

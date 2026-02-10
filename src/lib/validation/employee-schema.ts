@@ -41,7 +41,8 @@ export const validationMessages = {
 
 /**
  * Story 8.4: Talmundo validation helper function
- * Validates that Talmundo can only be true if One field is green (>= 24 hours)
+ * Validates that Talmundo can only be true if One field is green 
+ * (past 00:01 AM the following day after One was marked true)
  */
 function validateTalmundoField(data: {
   talmundo?: boolean | null;
@@ -58,7 +59,7 @@ function validateTalmundoField(data: {
     return false;
   }
 
-  // Check if one_marked_at timestamp exists and is >= 24 hours ago
+  // Check if one_marked_at timestamp exists
   if (!data.one_marked_at) {
     return false;
   }
@@ -66,11 +67,14 @@ function validateTalmundoField(data: {
   try {
     const markedAt = new Date(data.one_marked_at);
     const now = new Date();
-    const elapsed = now.getTime() - markedAt.getTime();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
+    
+    // Calculate unlock time: 00:01 AM the day after markedAt
+    const unlockTime = new Date(markedAt);
+    unlockTime.setDate(unlockTime.getDate() + 1); // Move to next day
+    unlockTime.setHours(0, 1, 0, 0); // Set to 00:01:00.000
 
-    // Talmundo can only be true if One field has been true for >= 24 hours
-    return elapsed >= twentyFourHours;
+    // Talmundo can only be true if current time is past the unlock time
+    return now >= unlockTime;
   } catch {
     return false;
   }
@@ -170,9 +174,10 @@ function getBaseEmployeeSchemaObject(t?: (key: string) => string) {
     termination_date: z.string().nullable().optional(),
     termination_reason: z.string().nullable().optional(),
 
-    // Story 8.13: Repayment tracking fields (read-only, auto-managed by termination workflow)
-    repayment_needed_omc: z.boolean().nullable().optional(),
-    repayment_needed_pe3: z.boolean().nullable().optional(),
+    // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
+    // Changed from boolean to string (UUID) to allow selecting specific date for repayment
+    repayment_needed_omc: z.string().uuid().nullable().optional(),
+    repayment_needed_pe3: z.string().uuid().nullable().optional(),
 
     // Story 8.17: Dietary Requirements
     special_diet: z.boolean().default(false),
@@ -194,7 +199,7 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
   return getBaseEmployeeSchemaObject(t).refine(
     validateTalmundoField,
     {
-      message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
+      message: 'Talmundo field cannot be set to true - One field must be completed until the following day',
       path: ['talmundo'],
     }
   ).refine(
@@ -300,10 +305,10 @@ const baseEmployeeSchema = z.object({
   termination_date: z.string().nullable().optional(),
   termination_reason: z.string().nullable().optional(),
 
-  // Story 13.9: Repayment tracking fields (read-only, auto-managed by termination workflow)
-  // Changed to boolean (flag only)
-  repayment_needed_omc: z.boolean().nullable().optional(),
-  repayment_needed_pe3: z.boolean().nullable().optional(),
+  // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
+  // Changed from boolean to string (UUID) to allow selecting specific date for repayment
+  repayment_needed_omc: z.string().uuid().nullable().optional(),
+  repayment_needed_pe3: z.string().uuid().nullable().optional(),
   
   // Story 8.17: Dietary Requirements
   special_diet: z.boolean().default(false),
@@ -316,7 +321,7 @@ const baseEmployeeSchema = z.object({
 export const createEmployeeSchema = baseEmployeeSchema.refine(
   validateTalmundoField,
   {
-    message: 'Talmundo field cannot be set to true - One field must be completed for 24 hours first',
+    message: 'Talmundo field cannot be set to true - One field must be completed until the following day',
     path: ['talmundo'],
   }
 ).refine(
@@ -365,7 +370,7 @@ export const updateEmployeeSchema = baseEmployeeSchema
     }
   );
 // Note: Talmundo validation is handled in the API route handler (PATCH /api/employees/[id])
-// because it requires current employee data from the database to check the 24-hour rule
+// because it requires current employee data from the database to check the next-day unlock rule
 
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 
@@ -544,10 +549,11 @@ export const csvImportEmployeeSchema = z.object({
   termination_date: z.string().nullable().default(null).optional(),
   termination_reason: z.string().nullable().default(null).optional(),
 
-  // Story 13.9: Repayment tracking fields (read-only, auto-managed by termination workflow)
-  // Changed to boolean (flag only)
-  repayment_needed_omc: z.union([z.boolean(), z.string(), z.null()]).nullable().default(null).optional(),
-  repayment_needed_pe3: z.union([z.boolean(), z.string(), z.null()]).nullable().default(null).optional(),
+  // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
+  // Changed from boolean to string (UUID) to allow selecting specific date for repayment
+  // Union with null for import handling
+  repayment_needed_omc: z.union([z.string().uuid(), z.null()]).nullable().default(null).optional(),
+  repayment_needed_pe3: z.union([z.string().uuid(), z.null()]).nullable().default(null).optional(),
 
   // Story 8.17: Dietary Requirements
   special_diet: z.union([z.boolean(), z.string(), z.null()]).nullable().default(false).optional(),

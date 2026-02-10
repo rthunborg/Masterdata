@@ -1,10 +1,64 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getOneFieldStatus, getRemainingTime } from '@/lib/services/one-field-status';
+import { getOneFieldStatus, getRemainingTime, getUnlockTime } from '@/lib/services/one-field-status';
 
 describe('One Field Status Service', () => {
   beforeEach(() => {
     // Reset any mocks before each test
     vi.useRealTimers();
+  });
+
+  describe('getUnlockTime', () => {
+    it('returns 00:01 AM the following day', () => {
+      // Marked at 3 PM on Jan 15
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const unlockTime = getUnlockTime(markedAt);
+      
+      expect(unlockTime.getFullYear()).toBe(2025);
+      expect(unlockTime.getMonth()).toBe(0); // January
+      expect(unlockTime.getDate()).toBe(16); // Next day
+      expect(unlockTime.getHours()).toBe(0);
+      expect(unlockTime.getMinutes()).toBe(1);
+      expect(unlockTime.getSeconds()).toBe(0);
+    });
+
+    it('handles midnight correctly - still unlocks next day', () => {
+      // Marked at exactly midnight
+      const markedAt = new Date('2025-01-15T00:00:00');
+      const unlockTime = getUnlockTime(markedAt);
+      
+      expect(unlockTime.getDate()).toBe(16); // Next day
+      expect(unlockTime.getHours()).toBe(0);
+      expect(unlockTime.getMinutes()).toBe(1);
+    });
+
+    it('handles 11:59 PM correctly', () => {
+      // Marked at 11:59 PM
+      const markedAt = new Date('2025-01-15T23:59:00');
+      const unlockTime = getUnlockTime(markedAt);
+      
+      expect(unlockTime.getDate()).toBe(16); // Next day
+      expect(unlockTime.getHours()).toBe(0);
+      expect(unlockTime.getMinutes()).toBe(1);
+    });
+
+    it('handles month boundary correctly', () => {
+      // Marked on last day of January
+      const markedAt = new Date('2025-01-31T15:00:00');
+      const unlockTime = getUnlockTime(markedAt);
+      
+      expect(unlockTime.getMonth()).toBe(1); // February
+      expect(unlockTime.getDate()).toBe(1);
+    });
+
+    it('handles year boundary correctly', () => {
+      // Marked on Dec 31
+      const markedAt = new Date('2025-12-31T15:00:00');
+      const unlockTime = getUnlockTime(markedAt);
+      
+      expect(unlockTime.getFullYear()).toBe(2026);
+      expect(unlockTime.getMonth()).toBe(0); // January
+      expect(unlockTime.getDate()).toBe(1);
+    });
   });
 
   describe('getOneFieldStatus', () => {
@@ -15,8 +69,10 @@ describe('One Field Status Service', () => {
     });
 
     it('returns null when One field is false regardless of timestamp', () => {
-      const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000);
-      const status = getOneFieldStatus(false, twentyFiveHoursAgo);
+      const yesterdayAt3PM = new Date();
+      yesterdayAt3PM.setDate(yesterdayAt3PM.getDate() - 1);
+      yesterdayAt3PM.setHours(15, 0, 0, 0);
+      const status = getOneFieldStatus(false, yesterdayAt3PM);
       expect(status).toBeNull();
     });
 
@@ -25,198 +81,252 @@ describe('One Field Status Service', () => {
       expect(status).toBe('yellow');
     });
 
-    it('returns yellow when One field is true and less than 24 hours elapsed', () => {
-      // 23 hours ago
-      const twentyThreeHoursAgo = new Date(Date.now() - 23 * 60 * 60 * 1000);
-      const status = getOneFieldStatus(true, twentyThreeHoursAgo);
-      expect(status).toBe('yellow');
+    it('returns yellow when marked same day before 00:01 AM', () => {
+      vi.useFakeTimers();
+      // Current time: Jan 15, 10 PM
+      const now = new Date('2025-01-15T22:00:00');
+      vi.setSystemTime(now);
+
+      // Marked earlier same day at 3 PM
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const status = getOneFieldStatus(true, markedAt);
+      
+      expect(status).toBe('yellow'); // Not yet 00:01 AM on Jan 16
+
+      vi.useRealTimers();
     });
 
-    it('returns yellow when One field is true and 1 hour elapsed', () => {
-      // 1 hour ago
-      const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
-      const status = getOneFieldStatus(true, oneHourAgo);
-      expect(status).toBe('yellow');
+    it('returns yellow when current time is exactly 00:00 AM the next day', () => {
+      vi.useFakeTimers();
+      // Current time: Jan 16, 00:00 (midnight)
+      const now = new Date('2025-01-16T00:00:00');
+      vi.setSystemTime(now);
+
+      // Marked previous day
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const status = getOneFieldStatus(true, markedAt);
+      
+      expect(status).toBe('yellow'); // Still yellow - need to wait until 00:01
+
+      vi.useRealTimers();
     });
 
-    it('returns yellow when One field is true and 12 hours elapsed', () => {
-      // 12 hours ago
-      const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
-      const status = getOneFieldStatus(true, twelveHoursAgo);
-      expect(status).toBe('yellow');
+    it('returns green when current time is 00:01 AM the next day', () => {
+      vi.useFakeTimers();
+      // Current time: Jan 16, 00:01
+      const now = new Date('2025-01-16T00:01:00');
+      vi.setSystemTime(now);
+
+      // Marked previous day
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const status = getOneFieldStatus(true, markedAt);
+      
+      expect(status).toBe('green'); // Now green
+
+      vi.useRealTimers();
     });
 
-    it('returns green when One field is true and exactly 24 hours elapsed', () => {
-      // Exactly 24 hours ago
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const status = getOneFieldStatus(true, twentyFourHoursAgo);
+    it('returns green when current time is well past 00:01 AM the next day', () => {
+      vi.useFakeTimers();
+      // Current time: Jan 16, 10 AM
+      const now = new Date('2025-01-16T10:00:00');
+      vi.setSystemTime(now);
+
+      // Marked previous day
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const status = getOneFieldStatus(true, markedAt);
+      
       expect(status).toBe('green');
+
+      vi.useRealTimers();
     });
 
-    it('returns green when One field is true and more than 24 hours elapsed', () => {
-      // 25 hours ago
-      const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000);
-      const status = getOneFieldStatus(true, twentyFiveHoursAgo);
+    it('returns green when multiple days have passed', () => {
+      vi.useFakeTimers();
+      // Current time: Jan 20
+      const now = new Date('2025-01-20T10:00:00');
+      vi.setSystemTime(now);
+
+      // Marked 5 days ago
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const status = getOneFieldStatus(true, markedAt);
+      
       expect(status).toBe('green');
+
+      vi.useRealTimers();
     });
 
-    it('returns green when One field is true and 48 hours elapsed', () => {
-      // 48 hours (2 days) ago
-      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-      const status = getOneFieldStatus(true, fortyEightHoursAgo);
+    it('handles late night marking correctly', () => {
+      vi.useFakeTimers();
+      // Marked at 11:59 PM on Jan 15
+      const markedAt = new Date('2025-01-15T23:59:00');
+      
+      // 2 minutes later (00:01 AM on Jan 16 = unlock time)
+      const now = new Date('2025-01-16T00:01:00');
+      vi.setSystemTime(now);
+
+      const status = getOneFieldStatus(true, markedAt);
+      
+      // Unlock time is always 00:01 AM the next calendar day after marking
+      // Marked on Jan 15 -> unlocks Jan 16 00:01 AM
       expect(status).toBe('green');
+
+      vi.useRealTimers();
     });
 
-    it('handles exact boundary at 24 hours correctly', () => {
-      // Test exact 24-hour boundary (86400000 milliseconds)
-      const exactTwentyFourHours = new Date(Date.now() - 86400000);
-      const status = getOneFieldStatus(true, exactTwentyFourHours);
-      expect(status).toBe('green');
-    });
+    it('handles late night marking - same night before unlock', () => {
+      vi.useFakeTimers();
+      // Marked at 11:59 PM on Jan 15
+      const markedAt = new Date('2025-01-15T23:59:00');
+      
+      // 1 minute later (00:00 AM on Jan 16 - still before unlock time)
+      const now = new Date('2025-01-16T00:00:00');
+      vi.setSystemTime(now);
 
-    it('handles just before 24-hour boundary correctly', () => {
-      // 23 hours 59 minutes 59 seconds ago (just before 24 hours)
-      const almostTwentyFourHours = new Date(Date.now() - (24 * 60 * 60 * 1000 - 1000));
-      const status = getOneFieldStatus(true, almostTwentyFourHours);
+      const status = getOneFieldStatus(true, markedAt);
+      
+      // Still yellow because 00:00 is before unlock time of 00:01
       expect(status).toBe('yellow');
+
+      vi.useRealTimers();
+    });
+
+    it('handles late night marking - well past unlock time', () => {
+      vi.useFakeTimers();
+      // Marked at 11:59 PM on Jan 15
+      const markedAt = new Date('2025-01-15T23:59:00');
+      
+      // Jan 17 at 00:01 AM (2 days after marking, well past unlock time of Jan 16 00:01)
+      const now = new Date('2025-01-17T00:01:00');
+      vi.setSystemTime(now);
+
+      const status = getOneFieldStatus(true, markedAt);
+      
+      expect(status).toBe('green');
+
+      vi.useRealTimers();
     });
   });
 
   describe('getRemainingTime', () => {
-    it('returns "Ready" when more than 24 hours have elapsed', () => {
-      const twentyFiveHoursAgo = new Date(Date.now() - 25 * 60 * 60 * 1000);
-      const remaining = getRemainingTime(twentyFiveHoursAgo);
-      expect(remaining).toBe('Ready');
-    });
-
-    it('returns "Ready" when exactly 24 hours have elapsed', () => {
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const remaining = getRemainingTime(twentyFourHoursAgo);
-      expect(remaining).toBe('Ready');
-    });
-
-    it('returns hours and minutes when time remaining', () => {
-      // 18 hours ago = 6 hours remaining
-      const eighteenHoursAgo = new Date(Date.now() - 18 * 60 * 60 * 1000);
-      const remaining = getRemainingTime(eighteenHoursAgo);
-      expect(remaining).toMatch(/6 hours 0 minutes/);
-    });
-
-    it('returns only minutes when less than 1 hour remaining', () => {
-      // Use fake timers to ensure consistent timing
+    it('returns "Ready" when past unlock time', () => {
       vi.useFakeTimers();
-      const now = new Date('2025-01-15T12:00:00Z');
+      const now = new Date('2025-01-16T10:00:00');
       vi.setSystemTime(now);
+
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const remaining = getRemainingTime(markedAt);
       
-      // 23 hours 30 minutes ago = 30 minutes remaining
-      const twentyThreeThirtyAgo = new Date(now.getTime() - (23 * 60 * 60 * 1000 + 30 * 60 * 1000));
-      const remaining = getRemainingTime(twentyThreeThirtyAgo);
-      
-      // Allow for slight timing variations (29-31 minutes)
-      expect(remaining).toMatch(/\d+ minutes/);
-      expect(remaining).not.toMatch(/hours/);
-      
+      expect(remaining).toBe('Ready');
+
       vi.useRealTimers();
     });
 
-    it('formats hours and minutes correctly', () => {
-      // 18.5 hours ago = 5 hours 30 minutes remaining
-      const eighteenThirtyAgo = new Date(Date.now() - 18.5 * 60 * 60 * 1000);
-      const remaining = getRemainingTime(eighteenThirtyAgo);
-      // Allow for small time discrepancies during test execution (29 or 30 minutes)
-      expect(remaining).toMatch(/5 hours (29|30) minutes/);
+    it('returns hours and minutes until 00:01 AM next day', () => {
+      vi.useFakeTimers();
+      // Current time: Jan 15, 8 PM
+      const now = new Date('2025-01-15T20:00:00');
+      vi.setSystemTime(now);
+
+      // Marked same day at 3 PM
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const remaining = getRemainingTime(markedAt);
+      
+      // Unlock at Jan 16, 00:01 = 4 hours 1 minute from 8 PM
+      expect(remaining).toMatch(/4 hours 1 minutes/);
+
+      vi.useRealTimers();
     });
 
-    it('returns full 24 hours when just marked', () => {
-      // Just now (few milliseconds ago)
-      const justNow = new Date(Date.now() - 1000); // 1 second ago
-      const remaining = getRemainingTime(justNow);
-      expect(remaining).toMatch(/23 hours 59 minutes/);
+    it('returns only minutes when less than 1 hour remaining', () => {
+      vi.useFakeTimers();
+      // Current time: Jan 15, 11:30 PM
+      const now = new Date('2025-01-15T23:30:00');
+      vi.setSystemTime(now);
+
+      // Marked same day
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const remaining = getRemainingTime(markedAt);
+      
+      // Unlock at Jan 16, 00:01 = 31 minutes from 11:30 PM
+      expect(remaining).toMatch(/31 minutes/);
+      expect(remaining).not.toMatch(/hours/);
+
+      vi.useRealTimers();
     });
 
-    it('handles various time intervals correctly', () => {
-      // Test multiple scenarios
-      const testCases = [
-        { elapsed: 1 * 60 * 60 * 1000, expected: /23 hours 0 minutes/ },  // 1 hour ago
-        { elapsed: 12 * 60 * 60 * 1000, expected: /12 hours 0 minutes/ }, // 12 hours ago
-        { elapsed: 20 * 60 * 60 * 1000, expected: /4 hours 0 minutes/ },  // 20 hours ago
-        { elapsed: 23 * 60 * 60 * 1000 + 45 * 60 * 1000, expected: /15 minutes/ }, // 23h45m ago
-      ];
+    it('handles exact unlock time correctly', () => {
+      vi.useFakeTimers();
+      // Current time: exactly at unlock time
+      const now = new Date('2025-01-16T00:01:00');
+      vi.setSystemTime(now);
 
-      testCases.forEach(({ elapsed, expected }) => {
-        const markedAt = new Date(Date.now() - elapsed);
-        const remaining = getRemainingTime(markedAt);
-        expect(remaining).toMatch(expected);
-      });
+      const markedAt = new Date('2025-01-15T15:00:00');
+      const remaining = getRemainingTime(markedAt);
+      
+      expect(remaining).toBe('Ready');
+
+      vi.useRealTimers();
     });
   });
 
   describe('Edge Cases and Integration', () => {
-    it('handles timezone differences correctly (uses UTC)', () => {
-      // Create date in different timezone offset
-      const markedAt = new Date('2025-01-01T00:00:00Z');
-      const now = new Date('2025-01-02T00:00:00Z');
-      
-      // Mock Date.now() to return specific time
+    it('handles timezone correctly (uses local time)', () => {
       vi.useFakeTimers();
+      const now = new Date('2025-01-16T00:01:00');
       vi.setSystemTime(now);
 
+      const markedAt = new Date('2025-01-15T15:00:00');
       const status = getOneFieldStatus(true, markedAt);
-      expect(status).toBe('green'); // 24 hours have elapsed
-
-      vi.useRealTimers();
-    });
-
-    it('handles daylight savings time correctly (UTC-based)', () => {
-      // UTC timestamps avoid DST issues entirely
-      const beforeDST = new Date('2025-03-09T01:00:00Z'); // Before DST
-      const afterDST = new Date('2025-03-10T02:00:00Z');  // After DST (25 hours later in UTC)
-
-      vi.useFakeTimers();
-      vi.setSystemTime(afterDST);
-
-      const status = getOneFieldStatus(true, beforeDST);
-      expect(status).toBe('green'); // More than 24 hours
+      
+      expect(status).toBe('green');
 
       vi.useRealTimers();
     });
 
     it('works correctly with ISO string timestamps (from API)', () => {
-      // Simulating data coming from API as ISO string
-      const isoString = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+      vi.useFakeTimers();
+      const now = new Date('2025-01-15T22:00:00');
+      vi.setSystemTime(now);
+
+      const isoString = '2025-01-15T15:00:00.000Z';
       const markedAt = new Date(isoString);
       
       const status = getOneFieldStatus(true, markedAt);
-      expect(status).toBe('yellow');
+      expect(status).toBe('yellow'); // Same day, not yet 00:01 AM next day
+
+      vi.useRealTimers();
     });
 
     it('handles future timestamps gracefully (clock skew)', () => {
-      // If server clock is ahead of client clock
-      const futureTime = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour in future
+      vi.useFakeTimers();
+      const now = new Date('2025-01-15T10:00:00');
+      vi.setSystemTime(now);
+
+      // If server clock is ahead - marked in future
+      const futureTime = new Date('2025-01-15T15:00:00');
       const status = getOneFieldStatus(true, futureTime);
       
-      // Should still return yellow since negative elapsed time
+      // Should still return yellow since unlock time would be Jan 16 00:01
       expect(status).toBe('yellow');
       
       const remaining = getRemainingTime(futureTime);
-      // Should handle gracefully (will show > 24 hours remaining)
       expect(remaining).toBeDefined();
+
+      vi.useRealTimers();
     });
 
-    it('status changes from yellow to green after 24 hours', () => {
-      const markedAt = new Date(Date.now() - 23 * 60 * 60 * 1000);
-
+    it('status changes from yellow to green at 00:01 AM', () => {
       vi.useFakeTimers();
-      vi.setSystemTime(new Date(Date.now()));
+      const markedAt = new Date('2025-01-15T15:00:00');
 
-      // Should be yellow initially
+      // Before unlock time
+      vi.setSystemTime(new Date('2025-01-16T00:00:59'));
       let status = getOneFieldStatus(true, markedAt);
       expect(status).toBe('yellow');
 
-      // Advance time by 2 hours
-      vi.advanceTimersByTime(2 * 60 * 60 * 1000);
-
-      // Should now be green
+      // At unlock time
+      vi.setSystemTime(new Date('2025-01-16T00:01:00'));
       status = getOneFieldStatus(true, markedAt);
       expect(status).toBe('green');
 

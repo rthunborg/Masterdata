@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
 import {
-  requireHRAdminAPI,
+  requireRoleAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
+import { UserRole } from "@/lib/types/user";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -13,8 +14,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireRoleAPI([UserRole.HR_ADMIN, UserRole.RECRUITER]);
 
     const { id } = await params;
 

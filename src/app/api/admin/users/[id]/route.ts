@@ -53,7 +53,7 @@ export async function PATCH(
 ) {
   try {
     // Enforce HR Admin role and get current user
-    const currentUser = await requireHRAdminAPI();
+    const currentUser = await requireHRAdminAPI(request);
 
     const supabase = await createClient();
     const body = await request.json();
@@ -141,9 +141,7 @@ export async function PATCH(
 
     return NextResponse.json({ data: updatedUser });
   } catch (error) {
-    console.error("PATCH /api/admin/users/[id] error:", error);
-
-    // Handle validation errors
+    // Handle validation errors (expected, don't log)
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
@@ -156,6 +154,8 @@ export async function PATCH(
       );
     }
 
+    // Log unexpected errors
+    console.error("PATCH /api/admin/users/[id] error:", error);
     return createErrorResponse(error);
   }
 }
@@ -166,7 +166,7 @@ export async function DELETE(
 ) {
   try {
     // Enforce HR Admin role and get current user
-    const currentUser = await requireHRAdminAPI();
+    const currentUser = await requireHRAdminAPI(request);
 
     const supabase = await createClient();
     const { id } = await params;

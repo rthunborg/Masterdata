@@ -51,15 +51,12 @@ import { AssignedEmployeesBadge } from "./assigned-employees-badge";
 import { AssignedEmployeesModal } from "./assigned-employees-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
 import { toast } from "sonner";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { useUIStore } from "@/lib/store/ui-store";
 import { useTranslations } from "@/lib/i18n";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
-import { formatTimeDisplay } from "@/lib/utils/time-formatter";
-import { format } from "date-fns";
-import { sv } from "date-fns/locale";
+import { formatDateForDisplay } from "@/lib/utils/format";
 import { hasValueChanged } from "@/lib/utils/change-detection";
 import { 
   loadColumnWidths, 
@@ -67,6 +64,8 @@ import {
 } from "@/lib/utils/column-width-storage";
 import { getDeadlineStatus } from "@/lib/utils/deadline-validator";
 import { Badge } from "@/components/ui/badge";
+// Story 19.9: Sticky horizontal scrollbar
+import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 interface ImportantDatesTableProps {
   dates: ImportantDate[];
@@ -94,6 +93,9 @@ export function ImportantDatesTable({
   const [selectedDateForEmployees, setSelectedDateForEmployees] = React.useState<ImportantDate | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isArchiving, setIsArchiving] = React.useState(false);
+
+  // Story 19.9: Ref for sticky scrollbar
+  const tableContainerRef = React.useRef<HTMLDivElement>(null);
   
   // Category filter and sort state
   const [categoryFilter, setCategoryFilter] = React.useState<string>("All");
@@ -338,27 +340,13 @@ export function ImportantDatesTable({
         enableSorting: true,
         cell: ({ row }) => {
           const isArchived = !row.original.is_active;
-          const isOmc = isOMCDate(row.original.category);
-          const isPE3 = row.original.category === 'PE3 Dates';
           
-          let displayValue = row.original.date_value;
-          
-          // Format ÖMC dates as two-day ranges
-          if (isOmc) {
-            displayValue = formatOMCDate(row.original.date_value, 'sv-SE');
-          }
-          // Format PE3 dates with time if available
-          else if (isPE3 && row.original.time_value) {
-            try {
-              const date = new Date(row.original.date_value + 'T00:00:00');
-              const formattedDate = format(date, 'd MMMM yyyy', { locale: sv });
-              const formattedTime = formatTimeDisplay(row.original.time_value);
-              displayValue = `${formattedDate} ${formattedTime}`;
-            } catch {
-              // Fall back to date only if parsing fails
-              displayValue = row.original.date_value;
-            }
-          }
+          // Story 19.3: Use unified formatDateForDisplay for consistent Swedish formatting
+          const displayValue = formatDateForDisplay(
+            row.original.date_value,
+            row.original.category,
+            row.original.time_value
+          );
           
           return isHRAdmin && !isArchived ? (
             <EditableCell
@@ -378,6 +366,7 @@ export function ImportantDatesTable({
         },
       },
       // Story 8.11: Deadline columns
+      // Story 19.3: Updated to use formatDateForDisplay for consistent Swedish formatting
       {
         accessorKey: "deadline_submit",
         header: "Inlämningsdeadline",
@@ -386,26 +375,22 @@ export function ImportantDatesTable({
           const deadlineSubmit = row.original.deadline_submit;
           if (!deadlineSubmit) return "—";
           
-          try {
-            const date = new Date(deadlineSubmit + 'T00:00:00');
-            const formattedDate = format(date, 'd MMM yyyy', { locale: sv });
-            
-            // Check deadline status
-            const status = getDeadlineStatus(deadlineSubmit, row.original.deadline_cancel);
-            
-            return (
-              <div className="flex items-center gap-2">
-                <span>{formattedDate}</span>
-                {status === 'submit_closed' && (
-                  <Badge variant="destructive" className="text-xs">
-                    Stängd
-                  </Badge>
-                )}
-              </div>
-            );
-          } catch {
-            return deadlineSubmit;
-          }
+          // Story 19.3: Use unified formatDateForDisplay for consistent Swedish formatting
+          const formattedDate = formatDateForDisplay(deadlineSubmit);
+          
+          // Check deadline status
+          const status = getDeadlineStatus(deadlineSubmit, row.original.deadline_cancel);
+          
+          return (
+            <div className="flex items-center gap-2">
+              <span>{formattedDate}</span>
+              {status === 'submit_closed' && (
+                <Badge variant="destructive" className="text-xs">
+                  Stängd
+                </Badge>
+              )}
+            </div>
+          );
         },
       },
       {
@@ -416,26 +401,22 @@ export function ImportantDatesTable({
           const deadlineCancel = row.original.deadline_cancel;
           if (!deadlineCancel) return "—";
           
-          try {
-            const date = new Date(deadlineCancel + 'T00:00:00');
-            const formattedDate = format(date, 'd MMM yyyy', { locale: sv });
-            
-            // Check deadline status
-            const status = getDeadlineStatus(row.original.deadline_submit, deadlineCancel);
-            
-            return (
-              <div className="flex items-center gap-2">
-                <span>{formattedDate}</span>
-                {status === 'cancel_closed' && (
-                  <Badge variant="destructive" className="text-xs">
-                    Stängd
-                  </Badge>
-                )}
-              </div>
-            );
-          } catch {
-            return deadlineCancel;
-          }
+          // Story 19.3: Use unified formatDateForDisplay for consistent Swedish formatting
+          const formattedDate = formatDateForDisplay(deadlineCancel);
+          
+          // Check deadline status
+          const status = getDeadlineStatus(row.original.deadline_submit, deadlineCancel);
+          
+          return (
+            <div className="flex items-center gap-2">
+              <span>{formattedDate}</span>
+              {status === 'cancel_closed' && (
+                <Badge variant="destructive" className="text-xs">
+                  Stängd
+                </Badge>
+              )}
+            </div>
+          );
         },
       },
       {
@@ -692,15 +673,25 @@ export function ImportantDatesTable({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border overflow-hidden max-w-full">
+        {/* Story 19.9: Pass container ref for sticky scrollbar */}
+        {/* Story 19.13: maxHeight enables sticky headers by making table scroll internally */}
+        <Table containerRef={tableContainerRef} maxHeight="calc(100vh - 350px)">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const isActionColumn = header.column.id === "actions";
                   const isWeekNumberColumn = header.column.id === "week_number";
+                  const isCategoryColumn = header.column.id === "category";
                   const isCompact = density === "compact";
+                  
+                  // Story 19.12: Dynamic sticky left column offsets
+                  // Use actual column width from table state, fallback to default
+                  const weekNumberWidth = table.getColumn('week_number')?.getSize() ?? 80;
+                  const stickyLeftOffset = isWeekNumberColumn ? 0 
+                    : isCategoryColumn ? weekNumberWidth 
+                    : undefined;
                   
                   return (
                   <TableHead 
@@ -709,13 +700,19 @@ export function ImportantDatesTable({
                       "relative",
                       // Compact mode adjustments
                       isCompact ? "h-8 px-2 text-xs" : "h-12 px-4 text-sm",
-                      // Sticky action column
-                      isActionColumn && "sticky right-0 z-20 bg-background shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
+                      // Story 19.10: Sticky Week Number column (leftmost)
+                      isWeekNumberColumn && "sticky z-20 bg-background",
+                      // Story 19.10: Sticky Category column
+                      isCategoryColumn && "sticky z-20 bg-background",
+                      // Story 19.10: Shadow only on Category (rightmost sticky left column)
+                      isCategoryColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
                       // Center align week_number column header
                       isWeekNumberColumn && "text-center"
                     )}
                     style={{
                       width: header.getSize(),
+                      // Story 19.10: Dynamic left offset for sticky columns
+                      left: stickyLeftOffset !== undefined ? `${stickyLeftOffset}px` : undefined,
                     }}
                   >
                     {header.isPlaceholder
@@ -759,7 +756,15 @@ export function ImportantDatesTable({
                     {row.getVisibleCells().map((cell) => {
                       const isActionColumn = cell.column.id === "actions";
                       const isWeekNumberColumn = cell.column.id === "week_number";
+                      const isCategoryColumn = cell.column.id === "category";
                       const isCompact = density === "compact";
+                      
+                      // Story 19.12: Dynamic sticky left column offsets
+                      // Use actual column width from table state, fallback to default
+                      const weekNumberWidth = table.getColumn('week_number')?.getSize() ?? 80;
+                      const cellStickyLeftOffset = isWeekNumberColumn ? 0 
+                        : isCategoryColumn ? weekNumberWidth 
+                        : undefined;
                       
                       return (
                       <TableCell 
@@ -768,15 +773,21 @@ export function ImportantDatesTable({
                           isArchived && "text-gray-500",
                           // Compact mode padding
                           isCompact ? "p-2" : "p-4",
-                      // Sticky action column
-                      isActionColumn && "sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]",
-                      // Ensure opacity for sticky column by inheriting row background
-                      isActionColumn && "bg-inherit",
+                      // Story 19.10: Sticky Week Number column (leftmost)
+                      isWeekNumberColumn && "sticky z-10 bg-inherit",
+                      // Story 19.10: Sticky Category column
+                      isCategoryColumn && "sticky z-10 bg-inherit",
+                      // Story 19.10: Shadow only on Category (rightmost sticky left column)
+                      isCategoryColumn && "shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]",
                       // Compact mode font size for cell content
-                      !isActionColumn && isCompact && "text-xs",
+                      isCompact && "text-xs",
                       // Center align week_number column
                       isWeekNumberColumn && "text-center"
                     )}
+                    style={{
+                      // Story 19.10: Dynamic left offset for sticky cells
+                      left: cellStickyLeftOffset !== undefined ? `${cellStickyLeftOffset}px` : undefined,
+                    }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
@@ -794,6 +805,9 @@ export function ImportantDatesTable({
             )}
           </TableBody>
         </Table>
+
+        {/* Story 19.9: Sticky horizontal scrollbar */}
+        <StickyScrollbar containerRef={tableContainerRef} />
       </div>
 
       {/* Delete Confirmation Dialog */}

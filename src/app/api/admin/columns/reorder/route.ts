@@ -16,7 +16,7 @@ export const runtime = "nodejs";
 export async function PATCH(request: NextRequest) {
   try {
     // Verify HR Admin authentication
-    await requireHRAdminAPI();
+    await requireHRAdminAPI(request);
 
     // Parse request body
     const body: ReorderColumnsRequest = await request.json();

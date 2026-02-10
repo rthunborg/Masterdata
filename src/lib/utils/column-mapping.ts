@@ -30,6 +30,16 @@ const COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "Crewing/Done": "crewing_done",
   "Hotel Required?": "hotel_required",
   "Room Number (Shared)": "room_number_shared",
+  // Story 8.17: Dietary Requirements - Map display names to DB field names
+  "Specialkost": "special_diet",
+  "Special Diet": "special_diet",
+  "Diet": "diet_details",
+  "Diet Details": "diet_details",
+  // Story 19.14: Repayment tracking fields - UUID references to Important Dates
+  "Återbetalningsskyldig ÖMC": "repayment_needed_omc",
+  "Repayment Needed ÖMC": "repayment_needed_omc",
+  "Återbetalningsskyldig PE3": "repayment_needed_pe3",
+  "Repayment Needed PE3": "repayment_needed_pe3",
 };
 
 /**
@@ -82,7 +92,14 @@ export function getEmployeeFieldValue(
   const rawValue = employee[fieldName as keyof Employee] as string | number | boolean | null;
 
   // Check if this is an Important Date field (by checking the actual field names)
-  const isDateField = ["stena_date", "omc_date", "pe3_date"].includes(fieldName);
+  // Story 19.14: Include repayment fields which now store UUID references to Important Dates
+  const isDateField = [
+    "stena_date", 
+    "omc_date", 
+    "pe3_date",
+    "repayment_needed_omc",
+    "repayment_needed_pe3"
+  ].includes(fieldName);
 
   // If it's a date field and we have Important Dates available, resolve the UUID to description
   if (isDateField && allImportantDates && typeof rawValue === "string") {

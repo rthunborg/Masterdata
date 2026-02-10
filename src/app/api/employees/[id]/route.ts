@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import {
-  requireHRAdminAPI,
+  requireEmployeeManagerAPI,
+  requireEmployeeEditorAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
 import { updateEmployeeSchema } from "@/lib/validation/employee-schema";
@@ -22,8 +23,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify authentication (all roles can view, but permissions handled by repository)
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
@@ -77,8 +78,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin, Recruiter, or Admin Limited role
+    // Note: Admin Limited can only edit checklist fields + lönenivå (enforced at UI/field level)
+    await requireEmployeeEditorAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
@@ -177,7 +179,7 @@ export async function PATCH(
           {
             error: {
               code: "TALMUNDO_EDIT_NOT_ALLOWED",
-              message: "Cannot edit Talmundo field - One field must be completed for 24 hours first",
+              message: "Cannot edit Talmundo field - One field must be completed until the following day",
               timestamp: new Date().toISOString(),
             },
           },
@@ -501,8 +503,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify HR Admin role
-    await requireHRAdminAPI();
+    // Verify HR Admin or Recruiter role
+    await requireEmployeeManagerAPI();
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;

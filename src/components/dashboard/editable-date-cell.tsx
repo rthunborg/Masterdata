@@ -17,18 +17,21 @@ import { cn } from "@/lib/utils";
 import { hasValueChanged } from "@/lib/utils/change-detection";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
+import { useAvailableOMCDates } from "@/lib/hooks/use-available-omc-dates";
 import { useTranslations } from "@/lib/i18n";
 import { CapacityBadge } from "./capacity-badge";
+import { isJan1ExceptionDate, formatDateDropdownOption } from "@/lib/utils/format";
 
 interface EditableDateCellProps {
   value: string | null; // UUID of the selected Important Date
   displayValue: string; // Human-readable date description
   employeeId: string;
-  field: string; // "stena_date", "omc_date", or "pe3_date"
+  field: string; // "stena_date", "omc_date", "pe3_date", "repayment_needed_omc", or "repayment_needed_pe3"
   dateCategory: string; // "Stena Dates", "ÖMC Dates", or "PE3 Dates"
   allDates: ImportantDate[];
   canEdit?: boolean;
   isChanged?: boolean; // Story 16.5: Flag for field highlighting
+  isRepaymentMode?: boolean; // Story 19.14: Show all current year dates without capacity filtering
   className?: string; // Support for styling props
   isCompact?: boolean; // Support for density preference
   onSave: (id: string, field: string, value: string | null) => Promise<void>;
@@ -44,6 +47,7 @@ export function EditableDateCell({
   allDates,
   canEdit = true,
   isChanged = false, // Story 16.5: Default to false for backward compatibility
+  isRepaymentMode = false, // Story 19.14: Default to false for backward compatibility
   className,
   isCompact,
   onSave,
@@ -68,14 +72,40 @@ export function EditableDateCell({
     isPE3Date && isEditing // Only fetch when it's a PE3 date AND we're editing
   );
 
+  // Story 19.8: For ÖMC dates, use the hook to get available dates with Jan 1 exception
+  const isOMCDate = dateCategory === "ÖMC Dates";
+  const { availableDates: omcAvailableDates, isLoading: omcLoading } = useAvailableOMCDates(
+    isOMCDate ? value : null,
+    isOMCDate && isEditing // Only fetch when it's an ÖMC date AND we're editing
+  );
+
   // Filter dates by category and future dates
   const filteredDates = useMemo(() => {
+    // Story 19.14: Repayment mode - show all current year dates without capacity filtering
+    if (isRepaymentMode) {
+      const currentYear = new Date().getFullYear();
+      return allDates.filter((date) => {
+        // Filter by category
+        if (date.category !== dateCategory) return false;
+        // Filter to current year only
+        if (date.year !== currentYear) return false;
+        // Filter out archived dates
+        if (!date.is_active) return false;
+        return true;
+      }).sort((a, b) => a.date_value.localeCompare(b.date_value));
+    }
+
     if (dateCategory === "PE3 Dates") {
-      // Use available PE3 dates from the hook (handles uniqueness)
+      // Use available PE3 dates from the hook (handles uniqueness and Jan 1 exception)
       return pe3AvailableDates;
     }
 
-    // For Stena and ÖMC dates, filter by category, future dates, and active status
+    if (dateCategory === "ÖMC Dates") {
+      // Story 19.8: Use available ÖMC dates from the hook (handles Jan 1 exception)
+      return omcAvailableDates;
+    }
+
+    // For Stena dates, filter by category, future dates, and active status
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -91,7 +121,7 @@ export function EditableDateCell({
       dateValue.setHours(0, 0, 0, 0);
       return dateValue >= today;
     });
-  }, [dateCategory, pe3AvailableDates, allDates]);
+  }, [dateCategory, pe3AvailableDates, omcAvailableDates, allDates, isRepaymentMode]);
 
   // Auto-open dropdown when entering edit mode
   useEffect(() => {
@@ -334,48 +364,88 @@ export function EditableDateCell({
               });
           }, 0);
         }}
-        disabled={isLoading || (dateCategory === "PE3 Dates" && pe3Loading)}
+        disabled={isLoading || (dateCategory === "PE3 Dates" && pe3Loading) || (dateCategory === "ÖMC Dates" && omcLoading)}
       >
         <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-11 touch-manipulation", isCompact && "min-h-8 h-8 text-xs")}>
           <SelectValue placeholder="Select a date..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__NONE__">(None)</SelectItem>
-          {filteredDates.map((date) => {
-            const remainingSpots = date.remaining_spots ?? 0;
-            const maxSpots = date.max_spots ?? 99;
-            const isFull = remainingSpots === 0;
-            const isAlmostFull = remainingSpots < 5 && remainingSpots > 0;
-
-            return (
-              <SelectItem
-                key={date.id}
-                value={date.id}
-                disabled={isFull}
-                className={cn(
-                  "min-h-11 touch-manipulation",
-                  isFull && "opacity-50 cursor-not-allowed",
-                  isCompact && "min-h-8 h-8 text-xs"
-                )}
+          {/* Show loading spinner when fetching PE3 or ÖMC dates */}
+          {((dateCategory === "PE3 Dates" && pe3Loading) || (dateCategory === "ÖMC Dates" && omcLoading)) ? (
+            <div className="flex items-center justify-center gap-2 px-2 py-4 text-sm text-muted-foreground">
+              <svg
+                className="animate-spin h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
               >
-                <div className="flex items-center justify-between gap-2 w-full">
-                  <span className={cn(isFull && "text-muted-foreground")}>
-                    {date.date_description} (Week {date.week_number}, {date.year}) ({remainingSpots})
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <CapacityBadge
-                      remainingSpots={remainingSpots}
-                      maxSpots={maxSpots}
-                    />
-                  </div>
-                </div>
-              </SelectItem>
-            );
-          })}
-          {filteredDates.length === 0 && (
-            <div className="px-2 py-1.5 text-sm text-muted-foreground">
-              No available dates
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              {t("loadingDates")}
             </div>
+          ) : (
+            <>
+              <SelectItem value="__NONE__">(None)</SelectItem>
+              {filteredDates.map((date) => {
+                const remainingSpots = date.remaining_spots ?? 0;
+                const maxSpots = date.max_spots ?? 99;
+                const isFull = remainingSpots === 0;
+                // Story 19.8: Check if this is a Jan 1 exception date
+                const isExceptionDate = isJan1ExceptionDate(date);
+                // Story 19.14: In repayment mode, never disable options (capacity doesn't matter)
+                const shouldDisable = !isRepaymentMode && isFull && !isExceptionDate;
+                // Story 19.14: In repayment mode, don't show capacity (repayment doesn't consume spots)
+                const showCapacity = !isRepaymentMode && !isExceptionDate;
+
+                return (
+                  <SelectItem
+                    key={date.id}
+                    value={date.id}
+                    disabled={shouldDisable}
+                    className={cn(
+                      "min-h-11 touch-manipulation",
+                      shouldDisable && "opacity-50 cursor-not-allowed",
+                      isCompact && "min-h-8 h-8 text-xs"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2 w-full">
+                      <span className={cn(shouldDisable && "text-muted-foreground")}>
+                        {/* Story 19.8: Use formatDateDropdownOption for unified format */}
+                        {/* Story 19.14: In repayment mode, don't show capacity in label */}
+                        {formatDateDropdownOption(date, showCapacity)}
+                      </span>
+                      {/* Story 19.8: Don't show capacity badge for exception dates */}
+                      {/* Story 19.14: Don't show capacity badge in repayment mode */}
+                      {showCapacity && (
+                        <div className="flex items-center gap-1.5">
+                          <CapacityBadge
+                            remainingSpots={remainingSpots}
+                            maxSpots={maxSpots}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+              {filteredDates.length === 0 && (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                  No available dates
+                </div>
+              )}
+            </>
           )}
         </SelectContent>
       </Select>

@@ -135,7 +135,7 @@ Jane,Smith,19900520-5678,jane@example.com,CHEF,2025-02-01`;
         updated_at: "2025-01-01T00:00:00Z",      },
     ];
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: mockInsertedEmployees,
       errors: [],
@@ -203,7 +203,7 @@ Jane,Smith,19850315-1234,jane@example.com,CHEF,2025-02-01`;
         updated_at: "2025-01-01T00:00:00Z",      },
     ];
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: mockInsertedEmployees,
       errors: [
@@ -274,7 +274,7 @@ Jane,Smith,19850315-1234,jane@example.com,CHEF,2025-02-01`;
 John,Doe,,john@example.com,2025-01-15
 Jane,Smith,19900520-5678,,`;
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: [],
       errors: [],
@@ -300,7 +300,7 @@ Jane,Smith,19900520-5678,,`;
     const csvContent = `First Name,Surname,SSN,Email,Hire Date
 John,Doe,19850315-1234,john@example.com,2025-13-45`;
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: [],
       errors: [],
@@ -325,7 +325,7 @@ John,Doe,19850315-1234,john@example.com,2025-13-45`;
     const csvContent = `First Name,Surname,SSN,Email,Hire Date
 John,Doe,19850315-1234,john@example.com,2025-01-15`;
 
-    vi.mocked(auth.requireHRAdminAPI).mockRejectedValue(
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
       new Error("Insufficient permissions")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
@@ -356,7 +356,7 @@ John,Doe,19850315-1234,john@example.com,2025-01-15`;
   });
 
   it("should return 400 for missing file", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const formData = new FormData();
 
@@ -371,7 +371,7 @@ John,Doe,19850315-1234,john@example.com,2025-01-15`;
   });
 
   it("should return 400 for non-CSV file", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const formData = new FormData();
     formData.append(
@@ -393,7 +393,7 @@ John,Doe,19850315-1234,john@example.com,2025-01-15`;
   it("should return 400 for empty CSV file", async () => {
     const csvContent = "";
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const formData = new FormData();
     formData.append(
@@ -494,7 +494,7 @@ Bob,Johnson,invalid-ssn,bob@example.com,MATE,2025-03-01`;
         updated_at: "2025-01-01T00:00:00Z",      },
     ];
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.createMany).mockResolvedValue({
       inserted: mockInsertedEmployees,
       errors: [],

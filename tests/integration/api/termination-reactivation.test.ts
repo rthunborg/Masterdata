@@ -87,7 +87,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       pe3_date: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [],
@@ -118,6 +118,7 @@ describe('POST /api/employees/[id]/terminate', () => {
     );
   });
 
+  // Story 19.14: repayment fields now store UUIDs, not booleans
   it('should terminate employee with ÖMC date (repayment captured)', async () => {
     const omcDateId = 'omc-date-1';
     const mockEmployee = createMockEmployee({
@@ -125,12 +126,12 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'End of contract',
       is_terminated: true,
-      repayment_needed_omc: true,
+      repayment_needed_omc: omcDateId, // UUID of the date that needs repayment
       stena_date: null,
       pe3_date: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [omcDateId],
@@ -149,7 +150,7 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_omc).toBe(true);
+    expect(json.data.employee.repayment_needed_omc).toBe(omcDateId);
     expect(json.data.employee.omc_date).toBeNull();
     expect(json.data.clearedDates).toContain(omcDateId);
     expect(json.data.releasedSpots).toBe(1);
@@ -162,12 +163,12 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'Retirement',
       is_terminated: true,
-      repayment_needed_pe3: true,
+      repayment_needed_pe3: pe3DateId, // UUID of the date that needs repayment
       stena_date: null,
       omc_date: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [pe3DateId],
@@ -186,7 +187,7 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_pe3).toBe(true);
+    expect(json.data.employee.repayment_needed_pe3).toBe(pe3DateId);
     expect(json.data.employee.pe3_date).toBeNull();
     expect(json.data.clearedDates).toContain(pe3DateId);
   });
@@ -200,12 +201,12 @@ describe('POST /api/employees/[id]/terminate', () => {
       termination_date: '2025-11-13',
       termination_reason: 'End of contract',
       is_terminated: true,
-      repayment_needed_omc: true,
-      repayment_needed_pe3: true,
+      repayment_needed_omc: omcDateId, // UUID of the date that needs repayment
+      repayment_needed_pe3: pe3DateId, // UUID of the date that needs repayment
       stena_date: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [omcDateId, pe3DateId],
@@ -224,8 +225,9 @@ describe('POST /api/employees/[id]/terminate', () => {
     const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(json.data.employee.repayment_needed_omc).toBe(true);
-    expect(json.data.employee.repayment_needed_pe3).toBe(true);
+    // Story 19.14: repayment fields now store UUIDs of the dates that need repayment
+    expect(json.data.employee.repayment_needed_omc).toBe(omcDateId);
+    expect(json.data.employee.repayment_needed_pe3).toBe(pe3DateId);
     expect(json.data.clearedDates).toHaveLength(2);
     expect(json.data.releasedSpots).toBe(2);
   });
@@ -240,7 +242,7 @@ describe('POST /api/employees/[id]/terminate', () => {
       is_terminated: true,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockResolvedValue({
       employee: mockEmployee,
       clearedDates: [],
@@ -264,7 +266,7 @@ describe('POST /api/employees/[id]/terminate', () => {
   });
 
   it('should return 404 when employee not found', async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockRejectedValue(
       new Error('Employee with ID emp-not-found not found')
     );
@@ -286,7 +288,7 @@ describe('POST /api/employees/[id]/terminate', () => {
   });
 
   it('should return 400 when already terminated', async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockRejectedValue(
       new Error('Employee is already terminated')
     );
@@ -380,7 +382,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
       termination_reason: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({
       employee: mockEmployee,
       warnings: [],
@@ -410,7 +412,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
       repayment_needed_omc: null,
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({
       employee: mockEmployee,
       warnings: [],
@@ -430,14 +432,15 @@ describe('POST /api/employees/[id]/reactivate', () => {
   });
 
   it('should reactivate employee with unavailable spots (warnings returned)', async () => {
+    const omcDateId = 'omc-date-1';
     const mockEmployee = createMockEmployee({
       is_terminated: false,
       termination_date: null,
       omc_date: null,
-      repayment_needed_omc: true,
+      repayment_needed_omc: omcDateId, // UUID still set (not restored due to unavailable spots)
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({
       employee: mockEmployee,
       warnings: [
@@ -454,20 +457,22 @@ describe('POST /api/employees/[id]/reactivate', () => {
 
     expect(response.status).toBe(200);
     expect(json.data.omc_date).toBeNull();
-    expect(json.data.repayment_needed_omc).toBe(true);
+    // Story 19.14: repayment fields store UUIDs - UUID still set because couldn't restore date
+    expect(json.data.repayment_needed_omc).toBe(omcDateId);
     expect(json.warnings).toHaveLength(1);
     expect(json.warnings[0]).toContain('fully booked');
   });
 
   it('should reactivate employee with deleted dates (warnings returned)', async () => {
+    const omcDateId = 'omc-date-1';
     const mockEmployee = createMockEmployee({
       is_terminated: false,
       termination_date: null,
       omc_date: null,
-      repayment_needed_omc: true,
+      repayment_needed_omc: omcDateId, // UUID still set (not restored due to deleted date)
     });
 
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockResolvedValue({
       employee: mockEmployee,
       warnings: [
@@ -488,7 +493,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
   });
 
   it('should return 404 when employee not found', async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockRejectedValue(
       new Error('Employee with ID emp-not-found not found')
     );
@@ -506,7 +511,7 @@ describe('POST /api/employees/[id]/reactivate', () => {
   });
 
   it('should return 400 when already active', async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockRejectedValue(
       new Error('Employee is already active')
     );

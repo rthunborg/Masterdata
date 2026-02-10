@@ -11,6 +11,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       ref={ref}
       className={cn(
         "rounded-lg border shadow-sm",
+        // Allow wide content to create page-level scrollbar for better UX
+        "overflow-visible",
         variant === 'default' && "bg-card text-card-foreground",
         variant === 'beige' && "bg-accent text-accent-foreground",
         className

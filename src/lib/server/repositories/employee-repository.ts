@@ -58,8 +58,9 @@ export class EmployeeRepository {
       
       // Story 8.13 AC 9: Filter by repayment needed
       // When needsRepayment is true: show only employees needing repayment
+      // Story 19.14: repayment fields now store UUIDs, so check for non-null values
       if (filters?.needsRepayment === true) {
-        query = query.or("repayment_needed_omc.is.true,repayment_needed_pe3.is.true");
+        query = query.or("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
       }
 
       const { data, error } = await query;
@@ -574,6 +575,62 @@ export class EmployeeRepository {
   }
 
   /**
+   * Get detailed audit history for an employee including who made changes
+   * 
+   * Returns all column changes for an employee with user information.
+   * Useful for displaying audit trails in the UI.
+   * 
+   * @param employeeId - Employee UUID to get changes for
+   * @returns Array of changes with user information
+   */
+  async getEmployeeAuditHistory(
+    employeeId: string
+  ): Promise<Array<{
+    columnName: string;
+    changedAt: string;
+    changedBy: string | null;
+    changedByEmail: string | null;
+  }>> {
+    try {
+      const supabase = await this.getSupabaseClient();
+
+      // Query employee_column_changes with user information
+      const { data: changes, error } = await supabase
+        .from("employee_column_changes")
+        .select(`
+          column_name,
+          changed_at,
+          changed_by,
+          users!employee_column_changes_changed_by_fkey (
+            email
+          )
+        `)
+        .eq("employee_id", employeeId)
+        .order("changed_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching employee audit history:", error);
+        return [];
+      }
+
+      if (!changes || changes.length === 0) {
+        return [];
+      }
+
+      // Transform the response
+      return changes.map(change => ({
+        columnName: change.column_name,
+        changedAt: change.changed_at,
+        changedBy: change.changed_by,
+        changedByEmail: (change.users as any)?.email || null,
+      }));
+    } catch (error) {
+      console.error("Unexpected error fetching employee audit history:", error);
+      return [];
+    }
+  }
+
+  /**
    * Get employee column changes since a specific timestamp
    * 
    * Story: 16.2 - API Endpoint for Change Detection
@@ -609,13 +666,15 @@ export class EmployeeRepository {
       // Get masterdata columns that the user has view permission for
       const { columnConfigRepository } = await import("./column-config-repository");
       const allColumns = await columnConfigRepository.findAll();
+      // admin_limited inherits view permissions from hr_admin
+      const roleForView = userRole === 'admin_limited' ? 'hr_admin' : userRole;
       const visibleMasterdataColumns = allColumns
         .filter(col => {
           // Only masterdata columns
           if (!col.is_masterdata) return false;
           
           // Check if user role has view permission
-          const rolePerms = col.role_permissions[userRole as keyof typeof col.role_permissions];
+          const rolePerms = col.role_permissions[roleForView as keyof typeof col.role_permissions];
           return rolePerms?.view === true;
         })
         .map(col => col.db_column_name.toLowerCase().trim()); // Normalize to lowercase for consistent matching

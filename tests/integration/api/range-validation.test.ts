@@ -45,7 +45,7 @@ describe("API Range Validation - Lönenivå", () => {
   });
 
   it("should validate lönenivå range via API", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
 
     const invalidData = {
       ...baseEmployeeData,
@@ -67,7 +67,7 @@ describe("API Range Validation - Lönenivå", () => {
   });
 
   it("should validate lönenivå range on PATCH", async () => {
-    vi.mocked(auth.requireHRAdminAPI).mockResolvedValue(mockHRAdminUser);
+    vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     const employee = createTestEmployee();
     vi.mocked(employeeRepository.findById).mockResolvedValue(employee);
 
