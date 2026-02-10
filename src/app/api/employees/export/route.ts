@@ -7,6 +7,7 @@ import * as ExcelJS from "exceljs";
 import type { Employee } from "@/lib/types/employee";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { createAPIClient } from "@/lib/supabase/server-api";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/types/user";
 import { resolveImportantDateId } from "@/lib/utils/important-date-resolver";
 
@@ -214,7 +215,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch all important dates to resolve date UUIDs
-    const { data: importantDates, error: datesError } = await supabase
+    // Use service role client to bypass RLS — important_dates is shared reference
+    // data needed by all authenticated roles for resolving date UUID fields.
+    const serviceClient = createServiceRoleClient();
+    const { data: importantDates, error: datesError } = await serviceClient
       .from('important_dates')
       .select('*')
       .eq('is_active', true);
