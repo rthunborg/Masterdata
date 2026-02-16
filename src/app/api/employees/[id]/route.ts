@@ -93,17 +93,19 @@ export async function PATCH(
       validatedData = updateEmployeeSchema.parse(body);
     } catch (validationError) {
       if (validationError instanceof z.ZodError) {
+        const details = validationError.issues.reduce((acc, err) => {
+          const field = err.path.join(".");
+          if (!acc[field]) acc[field] = [];
+          acc[field].push(err.message);
+          return acc;
+        }, {} as Record<string, string[]>);
+        const firstMessage = validationError.issues[0]?.message;
         return NextResponse.json(
           {
             error: {
               code: "VALIDATION_ERROR",
-              message: "Invalid input data",
-              details: validationError.issues.reduce((acc, err) => {
-                const field = err.path.join(".");
-                if (!acc[field]) acc[field] = [];
-                acc[field].push(err.message);
-                return acc;
-              }, {} as Record<string, string[]>),
+              message: firstMessage ? `${firstMessage}` : "Invalid input data",
+              details,
               timestamp: new Date().toISOString(),
             },
           },

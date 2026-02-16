@@ -186,8 +186,12 @@ function getBaseEmployeeSchemaObject(t?: (key: string) => string) {
     // Story 14.1: ÖMC Masterdata Reminder Notification
     omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
 
-    // Stena ID / Origo number - free-text field, any string allowed
-    stena_id_origo_nummer: z.union([z.string(), z.null()]).optional().transform(val => (val === "" || val === undefined ? null : val)),
+    // Stena ID / Origo number - free-text field; accept any value and coerce to string or null
+    stena_id_origo_nummer: z
+      .unknown()
+      .optional()
+      .nullable()
+      .transform((val) => (val === "" || val === undefined || val === null ? null : String(val))),
   });
 }
 
@@ -320,8 +324,12 @@ const baseEmployeeSchema = z.object({
   // Story 14.1: ÖMC Masterdata Reminder Notification
   omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
 
-  // Stena ID / Origo number - free-text field, any string allowed
-  stena_id_origo_nummer: z.union([z.string(), z.null()]).optional().transform(val => (val === "" || val === undefined ? null : val)),
+  // Stena ID / Origo number - free-text field; accept any value and coerce to string or null
+  stena_id_origo_nummer: z
+    .unknown()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" || val === undefined || val === null ? null : String(val))),
 });
 
 export const createEmployeeSchema = baseEmployeeSchema.refine(
