@@ -12,6 +12,20 @@ import { Button } from "@/components/ui/button";
 // No need for mock translations or provider - Swedish-only app
 // Tests validate tooltip functionality without i18n complexity
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("Tooltip Component", () => {
   const renderWithProvider = (component: React.ReactNode) => {
     return render(

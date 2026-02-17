@@ -1,9 +1,28 @@
 import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableCell } from "@/components/dashboard/editable-cell";
 
 describe("EditableCell - Loneiva (Salary Level)", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
     const mockOnSave = vi.fn().mockResolvedValue(undefined);
 
     beforeEach(() => {
@@ -11,7 +30,7 @@ describe("EditableCell - Loneiva (Salary Level)", () => {
     });
 
     it("renders a Select component (combobox) for loneiva field", () => {
-        renderWithI18n(
+        renderWithQueryClient(
             <EditableCell
                 value={null}
                 employeeId="emp-1"
@@ -32,7 +51,7 @@ describe("EditableCell - Loneiva (Salary Level)", () => {
     });
 
     it("contains options 0-7 and Not Set", async () => {
-        renderWithI18n(
+        renderWithQueryClient(
             <EditableCell
                 value={null}
                 employeeId="emp-1"
@@ -59,7 +78,7 @@ describe("EditableCell - Loneiva (Salary Level)", () => {
     });
 
     it("calls onSave with selected number when an option is chosen", async () => {
-        renderWithI18n(
+        renderWithQueryClient(
             <EditableCell
                 value={null}
                 employeeId="emp-1"
@@ -88,7 +107,7 @@ describe("EditableCell - Loneiva (Salary Level)", () => {
     });
 
     it("calls onSave with null when 'Not Set' is chosen", async () => {
-        renderWithI18n(
+        renderWithQueryClient(
             <EditableCell
                 value={3}
                 employeeId="emp-1"
@@ -117,7 +136,7 @@ describe("EditableCell - Loneiva (Salary Level)", () => {
     });
 
     it("does NOT call onSave if the same value is selected (no-op)", async () => {
-        renderWithI18n(
+        renderWithQueryClient(
             <EditableCell
                 value={5}
                 employeeId="emp-1"

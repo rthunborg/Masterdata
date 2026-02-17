@@ -5,6 +5,7 @@
  */
 
 import { screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
@@ -70,7 +71,38 @@ vi.mock("@/lib/stores/ui-store", () => ({
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useColumns } from "@/lib/hooks/use-columns";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("Employee Table Actions Column Visibility", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: "emp-1",
@@ -211,7 +243,7 @@ describe("Employee Table Actions Column Visibility", () => {
   describe("HR Admin - Should see Actions column", () => {
     it("shows action buttons for HR Admin (archive/terminate)", () => {
       setupMocks(UserRole.HR_ADMIN);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -243,7 +275,7 @@ describe("Employee Table Actions Column Visibility", () => {
     externalRoles.forEach((role) => {
       it(`hides Actions column for ${role} users`, () => {
         setupMocks(role);
-        renderWithI18n(
+        renderWithQueryClient(
           <EmployeeTable employees={mockEmployees} isLoading={false} />
         );
 
@@ -260,7 +292,7 @@ describe("Employee Table Actions Column Visibility", () => {
   describe("Actions buttons in rows", () => {
     it("shows archive/terminate buttons in rows for HR Admin", () => {
       setupMocks(UserRole.HR_ADMIN);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -280,7 +312,7 @@ describe("Employee Table Actions Column Visibility", () => {
 
     it("does not show archive/terminate buttons for non-HR Admin users", () => {
       setupMocks(UserRole.SODEXO);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 

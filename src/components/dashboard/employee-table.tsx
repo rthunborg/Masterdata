@@ -98,18 +98,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 
  
-import {
-  Select,
-
-  SelectContent,
-
-  SelectItem,
-
-  SelectTrigger,
-
-  SelectValue,
-
-} from "@/components/ui/select";
+// Story 20.1: Select components removed (crew ready dropdown)
 
  
 import {
@@ -127,6 +116,14 @@ import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, Arro
 
  
 import { EditableCell } from "./editable-cell";
+
+
+ 
+import { FilterButton, FilterPanel } from "./FilterPanel";
+import { useEmployeeFilters } from "@/hooks/useEmployeeFilters";
+import { ClearFilterButton } from "./ClearFilterButton";
+import { FilteredCountDisplay } from "./FilteredCountDisplay";
+import { EmptyFilterState } from "./EmptyFilterState";
 
 
  
@@ -180,6 +177,7 @@ import { loadColumnWidths, saveColumnWidths } from "@/lib/utils/column-width-sto
 
  
 import { ExportFieldSelectionDialog } from "./export-field-selection-dialog";
+import { ExportConfirmationDialog } from "./ExportConfirmationDialog";
 
  
 import { getEmployeeFieldValue, mapColumnToEmployeeField } from "@/lib/utils/column-mapping";
@@ -352,8 +350,27 @@ export function EmployeeTable({
     setStatsRefreshToken((v) => v + 1);
   }, []);
 
-  // Story 8.5: Crew-ready filter state
-  const [crewReadyFilter, setCrewReadyFilter] = React.useState<'all' | 'ready' | 'not-ready'>('all');
+  // Story 8.5: Crew-ready filter state - REMOVED in Story 20.1
+
+  // Story 20.2: Filter panel state
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = React.useState(false);
+
+  // Story 20.4: Advanced filtering with filter engine
+  const {
+    activeFilters,
+    filteredEmployees: filterEngineEmployees,
+    clearAllFilters,
+    setFilters: setActiveFilters,
+    filterCount,
+    isFilterActive,
+    filteredCount,
+    totalCount,
+    isFiltering, // Story 20.5: Loading state for slow filters
+  } = useEmployeeFilters({
+    employees,
+    columnConfigs: columnConfigs, // Use columnConfigs from useColumns, not allColumnConfigs (which is only for preview mode)
+    enableUrlSync: true,
+  });
 
   // Story 13.2: Employee selection state
   const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
@@ -409,12 +426,19 @@ export function EmployeeTable({
   // Story 9.11: Row click selection removed - selection only via checkbox
   // Row clicks do not trigger selection, allowing normal row interactions (inline editing, buttons)
 
+  // Story 8.5: Apply crew-ready filter to employees - REMOVED in Story 20.1
+  // Story 20.4: Now using advanced filter engine
+  const filteredEmployees = React.useMemo(() => {
+    return filterEngineEmployees;
+  }, [filterEngineEmployees]);
+
   // Story 8.5: Calculate count of eligible employees for crew-ready export
+  // Story 20.7: Count only from filtered employees (respects active filters)
   const eligibleCrewReadyCount = React.useMemo(() => {
-    return employees.filter((emp) => {
+    return filteredEmployees.filter((emp) => {
       return canEditCrewingDone(emp) && emp.crewing_done !== true;
     }).length;
-  }, [employees]);
+  }, [filteredEmployees]);
 
   // Poll every 60 seconds to update One field badge statuses (Story 8.3)
   // The One field status is calculated based on one_marked_at timestamp vs current time
@@ -732,17 +756,29 @@ export function EmployeeTable({
   };
 
   // Story 8.5: Export crew-ready employees (with all prerequisites met but not yet marked)
+  // Story 20.7: Crew-ready export respects filtered state
 
 
   const handleExportCrewReady = async () => {
 
     try {
 
+      // Story 20.7: Pass filtered employee IDs to respect active filters
+      const filteredEmployeeIds = filteredEmployees.map(e => e.id);
+
       const response = await fetch('/api/employees/export-crew-ready', {
 
         method: 'POST',
 
         credentials: 'include',
+
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          selectedEmployeeIds: filteredEmployeeIds,
+        }),
 
       });
 
@@ -809,17 +845,6 @@ export function EmployeeTable({
     }
 
   };
-
-  // Story 8.5: Apply crew-ready filter to employees
-  const filteredEmployees = React.useMemo(() => {
-    if (crewReadyFilter === 'ready') {
-      return employees.filter(emp => emp.crewing_done === true);
-    } else if (crewReadyFilter === 'not-ready') {
-      return employees.filter(emp => emp.crewing_done !== true);
-    }
-
-    return employees; // 'all'
-  }, [employees, crewReadyFilter]);
 
   // Build dynamic columns from column configs
 
@@ -1746,29 +1771,26 @@ export function EmployeeTable({
     selectedEmployeeIds,
   ]); // Story 16.5: Include checkColumnChanged so columns re-render when highlighting state changes
 
-  // Story 13.5: Reset Crew Ready filter when Terminated filter is enabled
+  // Story 13.5: Reset Crew Ready filter when Terminated filter is enabled - REMOVED in Story 20.1
+  // Crew ready filter dropdown removed; clear selection when switching filter contexts
   React.useEffect(() => {
     if (includeTerminated || includeArchived || needsRepayment) {
-      setCrewReadyFilter('all');
       setSelectedEmployeeIds(new Set()); // Explicitly clear selection when switching context
     }
   }, [includeTerminated, includeArchived, needsRepayment]);
 
-  // Story 13.5: Auto-select employees when Crew Ready filter is activated
-  React.useEffect(() => {
-    if (crewReadyFilter === 'ready') {
-      const readyEmployeeIds = employees
-        .filter(emp => emp.crewing_done === true)
-        .map(emp => emp.id);
-      setSelectedEmployeeIds(new Set(readyEmployeeIds));
-    }
-    // Removed else block to prevent clearing selection when employees list updates in 'all' mode
-    // or when switching filters, preserving user selection (Story 13.5 improvement)
-  }, [crewReadyFilter, employees]);
+  // Story 13.5: Auto-select employees when Crew Ready filter is activated - REMOVED in Story 20.1
+  // Crew ready filter and auto-selection removed; users select employees manually
 
   // Story 13.6: General export with field selection
+  // Story 20.7: Export respects filtered state
 
   const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
+  const [exportConfirmationOpen, setExportConfirmationOpen] = React.useState(false);
+  const [pendingExport, setPendingExport] = React.useState<{
+    selectedIds: string[];
+    isFiltered: boolean;
+  } | null>(null);
 
 
   const handleExportClick = () => {
@@ -1783,8 +1805,23 @@ export function EmployeeTable({
 
     }
 
-    setExportDialogOpen(true);
+    // Story 20.7: Show confirmation if filters are active and user hasn't dismissed it
+    const dismissedConfirmation = typeof window !== 'undefined' 
+      ? localStorage.getItem("export-confirmation-dismissed") === "true"
+      : false;
 
+    if (isFilterActive && !dismissedConfirmation) {
+      setPendingExport({ selectedIds, isFiltered: true });
+      setExportConfirmationOpen(true);
+    } else {
+      setExportDialogOpen(true);
+    }
+
+  };
+
+  const handleExportConfirmed = () => {
+    setExportConfirmationOpen(false);
+    setExportDialogOpen(true);
   };
 
   const handleExportWithFields = async (selectedFields: string[], impersonatedRole?: string) => {
@@ -2200,37 +2237,21 @@ export function EmployeeTable({
 
             </div>
 
-            {/* Story 8.5: Crew-Ready Filter - HR Admin only (simulated in preview mode) */}
-            {/* Story 17.5: Hide premade filters dropdown for external users */}
-            {isEffectivelyHRAdmin && (
-              <div className="flex items-center gap-2">
-                <Select
+            {/* Story 8.5: Crew-Ready Filter - REMOVED in Story 20.1 */}
+            {/* Dropdown filter removed to consolidate filtering in new advanced filter panel (Epic 20) */}
 
-                  value={crewReadyFilter}
+            {/* Story 20.2: Filter Button */}
+            <FilterButton
+              onClick={() => setIsFilterPanelOpen(true)}
+              isActive={isFilterActive}
+              filterCount={filterCount}
+            />
 
-                  onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
-
-                >
-
-                  <SelectTrigger className="w-[180px]" aria-label="Crew Status" data-testid="crew-status-filter">
-
-                    <SelectValue placeholder="Crew Status" />
-
-                  </SelectTrigger>
-
-                  <SelectContent>
-
-                    <SelectItem value="all">Alla anställda</SelectItem>
-
-                    <SelectItem value="ready">Crew Ready</SelectItem>
-
-                    <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
-
-                  </SelectContent>
-
-                </Select>
-              </div>
-            )}
+            {/* Story 20.5: Clear Filter Button */}
+            <ClearFilterButton
+              onClick={clearAllFilters}
+              show={isFilterActive}
+            />
 
             {/* Density Toggle - Visible to everyone */}
             <Tooltip>
@@ -2251,6 +2272,7 @@ export function EmployeeTable({
 
             {/* Story 13.6: General Export Button with Field Selection */}
             {/* Story 17.4: Export Button for External Users - visible to all users */}
+            {/* Story 20.7: Export button label reflects filter/selection state */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -2260,15 +2282,20 @@ export function EmployeeTable({
                   disabled={selectedEmployeeIds.size === 0}
                   className="whitespace-nowrap"
                 >
-                  {tDashboard("exportSelected") || "Exportera markerade anställda"}
-                  {selectedEmployeeIds.size > 0 && ` (${selectedEmployeeIds.size})`}
+                  {selectedEmployeeIds.size > 0
+                    ? `Export Selected (${selectedEmployeeIds.size})`
+                    : isFilterActive
+                      ? `Export Filtered (${filteredCount})`
+                      : tDashboard("exportSelected") || "Export All Employees"}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>
                   {selectedEmployeeIds.size === 0
-                    ? tDashboard("noEmployeesSelected") || "Inga anställda valda"
-                    : tDashboard("exportSelectedEmployees") || `Exportera ${selectedEmployeeIds.size} markerade anställda`}
+                    ? isFilterActive
+                      ? `Export ${filteredCount} filtered employees`
+                      : tDashboard("noEmployeesSelected") || "Inga anställda valda"
+                    : `Export ${selectedEmployeeIds.size} selected employees`}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -2335,9 +2362,36 @@ export function EmployeeTable({
 
           </div>
 
+          {/* Story 20.5: Filtered Count Display */}
+          <FilteredCountDisplay
+            filteredCount={filteredCount}
+            totalCount={totalCount}
+            show={isFilterActive}
+            className="mb-2"
+          />
+
+          {/* Story 20.5: ARIA live region for screen reader announcements */}
           <div 
-            className="rounded-md border"
+            role="status" 
+            aria-live="polite" 
+            aria-atomic="true"
+            className="sr-only"
           >
+            {isFilterActive && `${filterCount} filters active. Showing ${filteredCount} of ${totalCount} employees.`}
+          </div>
+
+          <div 
+            className="rounded-md border relative"
+          >
+            {/* Story 20.5: Loading overlay for slow filter operations (>50ms) */}
+            {isFiltering && (
+              <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50 rounded-md">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full" />
+                  <span className="text-sm text-muted-foreground">Filtering...</span>
+                </div>
+              </div>
+            )}
 
             {/* Story 19.9: Pass container ref for sticky scrollbar */}
             {/* Story 19.13: maxHeight enables vertical scrolling within the table container, 
@@ -2529,15 +2583,25 @@ export function EmployeeTable({
 
                       colSpan={columns.length}
 
-                      className="h-24 text-center text-muted-foreground"
+                      className="h-24 text-center"
 
                     >
 
-                      {globalFilter
-
-                        ? tDashboard("noEmployeesMatchSearch")
-
-                        : tDashboard("noEmployeesToDisplay")}
+                      {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message */}
+                      {isFilterActive ? (
+                        <EmptyFilterState
+                          activeFilters={activeFilters}
+                          columnConfigs={allColumnConfigs}
+                          onClearFilters={clearAllFilters}
+                          importantDates={allImportantDates}
+                        />
+                      ) : (
+                        <div className="text-muted-foreground">
+                          {globalFilter
+                            ? tDashboard("noEmployeesMatchSearch")
+                            : tDashboard("noEmployeesToDisplay")}
+                        </div>
+                      )}
 
                     </TableCell>
 
@@ -2858,6 +2922,15 @@ export function EmployeeTable({
         visibleColumnIds={visibleColumnIds}
       />
 
+      {/* Story 20.7: Export Confirmation Dialog */}
+      <ExportConfirmationDialog
+        open={exportConfirmationOpen}
+        onOpenChange={setExportConfirmationOpen}
+        filteredCount={filteredCount}
+        totalCount={totalCount}
+        onConfirm={handleExportConfirmed}
+      />
+
       <BulkActionsBar
         selectedCount={selectedEmployeeIds.size}
         onArchive={() => handleBulkAction('archive')}
@@ -2866,6 +2939,16 @@ export function EmployeeTable({
         isArchivedView={includeArchived}
         isProcessing={isBulkProcessing}
         isHRAdmin={isEffectivelyHRAdmin}
+      />
+
+      {/* Story 20.2: Filter Panel */}
+      <FilterPanel
+        isOpen={isFilterPanelOpen}
+        onClose={() => setIsFilterPanelOpen(false)}
+        columnConfigs={allColumnConfigs}
+        activeFilters={activeFilters}
+        onFiltersChange={setActiveFilters}
+        importantDates={allImportantDates}
       />
 
     </>

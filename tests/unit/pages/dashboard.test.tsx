@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import DashboardPage from "@/app/dashboard/page";
 import { UserRole } from "@/lib/types/user";
@@ -71,6 +72,24 @@ vi.mock("@/components/dashboard/role-selector", () => ({
 }));
 
 describe("DashboardPage", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -94,7 +113,7 @@ describe("DashboardPage", () => {
     });
 
     await act(async () => {
-      renderWithI18n(<DashboardPage />);
+      renderWithQueryClient(<DashboardPage />);
     });
 
     expect(screen.queryByText("Sign Out")).not.toBeInTheDocument();
@@ -119,7 +138,7 @@ describe("DashboardPage", () => {
     });
 
     await act(async () => {
-      renderWithI18n(<DashboardPage />);
+      renderWithQueryClient(<DashboardPage />);
     });
 
     expect(screen.getByText("Lägg till anställd")).toBeInTheDocument();

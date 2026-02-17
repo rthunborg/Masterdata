@@ -17,6 +17,20 @@ vi.mock('@/lib/hooks/use-important-dates', () => ({
   useImportantDates: () => ({ dates: [] }),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 const mockEmployee: Employee = {
   id: '1',
   first_name: 'John',

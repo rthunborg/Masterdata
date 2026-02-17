@@ -622,7 +622,7 @@ export class EmployeeRepository {
         columnName: change.column_name,
         changedAt: change.changed_at,
         changedBy: change.changed_by,
-        changedByEmail: (change.users as any)?.email || null,
+        changedByEmail: (change.users as { email?: string | null })?.email || null,
       }));
     } catch (error) {
       console.error("Unexpected error fetching employee audit history:", error);

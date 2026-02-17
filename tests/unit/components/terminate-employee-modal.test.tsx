@@ -13,6 +13,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { TerminateEmployeeModal } from '@/components/dashboard/terminate-employee-modal';
@@ -41,6 +42,24 @@ vi.mock('sonner', () => ({
 }));
 
 describe('TerminateEmployeeModal', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnOpenChange = vi.fn();
   const mockOnSuccess = vi.fn();
 
@@ -116,7 +135,7 @@ describe('TerminateEmployeeModal', () => {
   });
 
   it('should render modal with employee data', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={mockEmployee}
         open={true}
@@ -164,7 +183,7 @@ describe('TerminateEmployeeModal', () => {
         }),
       });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={mockEmployee}
         open={true}
@@ -217,7 +236,7 @@ describe('TerminateEmployeeModal', () => {
         }),
       });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={employeeWithRepayment}
         open={true}
@@ -262,7 +281,7 @@ describe('TerminateEmployeeModal', () => {
         }),
       });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={mockEmployee}
         open={true}
@@ -289,7 +308,7 @@ describe('TerminateEmployeeModal', () => {
       })
     );
 
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={mockEmployee}
         open={true}
@@ -330,7 +349,7 @@ describe('TerminateEmployeeModal', () => {
       new Error('Termination failed')
     );
 
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={mockEmployee}
         open={true}
@@ -355,7 +374,7 @@ describe('TerminateEmployeeModal', () => {
   it('should validate required fields', async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={mockEmployee}
         open={true}
@@ -384,7 +403,7 @@ describe('TerminateEmployeeModal', () => {
       releasedSpots: 1,
     });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={mockEmployee}
         open={true}
@@ -421,7 +440,7 @@ describe('TerminateEmployeeModal', () => {
       pe3_date: null,
     };
 
-    renderWithI18n(
+    renderWithQueryClient(
       <TerminateEmployeeModal
         employee={employeeWithoutDates}
         open={true}

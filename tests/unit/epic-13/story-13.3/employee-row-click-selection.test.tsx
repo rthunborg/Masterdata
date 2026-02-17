@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, render } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -58,7 +59,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch for hooks
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock the columns hook
 vi.mock('@/lib/hooks/use-columns', () => ({
@@ -129,6 +153,24 @@ vi.mock('@/lib/i18n', () => ({
 }));
 
 describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: '1',
@@ -158,7 +200,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
 
   describe('Task 1.1: Row Click Handler (REMOVED in Story 9.11)', () => {
     it('clicking row does NOT select employee (Story 9.11)', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -175,7 +217,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
     });
 
     it('clicking row does NOT change selection state (Story 9.11)', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -193,7 +235,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
     });
 
     it('clicking button in row does NOT change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -215,7 +257,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
     });
 
     it('clicking input field in row does NOT change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -239,7 +281,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
     });
 
     it('clicking editable cell display div does NOT change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -276,7 +318,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
 
   describe('Task 1.2: Selection State (Checkbox Only in Story 9.11)', () => {
     it('row click does NOT update selection state - only checkbox works (Story 9.11)', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -293,7 +335,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
     });
 
     it('row clicks do NOT select multiple rows (Story 9.11)', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -315,7 +357,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
 
   describe('Task 1.3: Prevent Selection on Interactive Elements', () => {
     it('clicking Edit button does not change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -337,7 +379,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
     });
 
     it('clicking action menu does not change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -361,7 +403,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
 
   describe('Task 1.5: Visual Feedback (Row Clicks Removed in Story 9.11)', () => {
     it('greyish tint does NOT appear on row click (Story 9.11)', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}

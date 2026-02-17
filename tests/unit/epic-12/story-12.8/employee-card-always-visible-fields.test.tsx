@@ -5,6 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { EmployeeCard } from '@/components/dashboard/employee-card';
 import { employeeService } from '@/lib/services/employee-service';
@@ -73,6 +74,24 @@ function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnCo
 }
 
 describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnEmployeeUpdated = vi.fn();
   let mockEmployee: Employee;
   let mockColumnConfigs: ColumnConfig[];
@@ -141,7 +160,7 @@ describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
   });
 
   it('should display always-visible fields in CardContent on mobile', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeCard
         employee={mockEmployee}
         isHRAdmin={true}
@@ -163,7 +182,7 @@ describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
   it('should not duplicate always-visible fields in expanded section on mobile', async () => {
     const user = userEvent.setup();
     
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeCard
         employee={mockEmployee}
         isHRAdmin={true}
@@ -197,7 +216,7 @@ describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
   it('should show "Less" button in CardHeader when expanded on mobile', async () => {
     const user = userEvent.setup();
     
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeCard
         employee={mockEmployee}
         isHRAdmin={true}
@@ -221,7 +240,7 @@ describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
   it('should collapse card when "Less" button is clicked', async () => {
     const user = userEvent.setup();
     
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeCard
         employee={mockEmployee}
         isHRAdmin={true}
@@ -250,7 +269,7 @@ describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
   });
 
   it('should hide Archive/Delete buttons when card is NOT expanded on mobile', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeCard
         employee={mockEmployee}
         isHRAdmin={true}
@@ -274,7 +293,7 @@ describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
   it('should show Archive/Delete buttons when card is expanded on mobile', async () => {
     const user = userEvent.setup();
     
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeCard
         employee={mockEmployee}
         isHRAdmin={true}
@@ -322,7 +341,7 @@ describe('EmployeeCard - Always-Visible Fields (Story 12.8)', () => {
     const mockUpdate = vi.fn().mockResolvedValue({});
     (employeeService.update as ReturnType<typeof vi.fn>).mockImplementation(mockUpdate);
     
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeCard
         employee={mockEmployee}
         isHRAdmin={true}

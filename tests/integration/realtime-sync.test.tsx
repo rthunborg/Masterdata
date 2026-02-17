@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import type { Employee } from "@/lib/types/employee";
@@ -88,7 +89,30 @@ vi.mock("@/lib/supabase/client", () => ({
 }));
 
 // Mock fetch for hooks
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 const mockEmployees: Employee[] = [
   {
@@ -170,6 +194,24 @@ const mockEmployees: Employee[] = [
 ];
 
 describe("Real-time Employee Sync Integration", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     // Mock fetch to return empty data for hooks
@@ -183,7 +225,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should render employee table with real-time connection indicator", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -197,7 +239,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should show offline status when not connected", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -210,7 +252,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should highlight updated employee row", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -226,7 +268,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should not highlight non-updated rows", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -240,7 +282,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should display all employees in table", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -261,7 +303,7 @@ describe("Real-time Employee Sync Integration", () => {
       },
     ];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={archivedEmployees}
         isLoading={false}
@@ -283,7 +325,7 @@ describe("Real-time Employee Sync Integration", () => {
       },
     ];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={terminatedEmployees}
         isLoading={false}
@@ -295,7 +337,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should show loading state", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={[]}
         isLoading={true}
@@ -306,7 +348,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should show empty state when no employees", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={[]}
         isLoading={false}
@@ -321,7 +363,7 @@ describe("Real-time Employee Sync Integration", () => {
   });
 
   it("should display search functionality", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={mockEmployees}
         isLoading={false}
@@ -342,7 +384,7 @@ describe("Real-time Employee Sync Integration", () => {
       },
     ];
 
-    renderWithI18n(
+    renderWithQueryClient(
       <EmployeeTable
         employees={archivedEmployees}
         isLoading={false}

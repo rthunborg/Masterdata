@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { EmployeeCard } from "@/components/dashboard/employee-card";
 import { employeeService } from "@/lib/services/employee-service";
@@ -78,6 +79,24 @@ function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnCo
 }
 
 describe("EmployeeCard - Performance Tests", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnEmployeeUpdated = vi.fn();
   let mockEmployee: Employee;
 
@@ -99,7 +118,7 @@ describe("EmployeeCard - Performance Tests", () => {
       const user = userEvent.setup();
       const columns = [createTestColumnConfig()];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -140,7 +159,7 @@ describe("EmployeeCard - Performance Tests", () => {
         })
       );
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -170,7 +189,7 @@ describe("EmployeeCard - Performance Tests", () => {
       const user = userEvent.setup();
       const columns = [createTestColumnConfig()];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -213,7 +232,7 @@ describe("EmployeeCard - Performance Tests", () => {
         })
       );
 
-      const { unmount } = renderWithI18n(
+      const { unmount } = renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -249,7 +268,7 @@ describe("EmployeeCard - Performance Tests", () => {
       const user = userEvent.setup();
       const columns = [createTestColumnConfig()];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}

@@ -8,11 +8,30 @@
  */
 
 import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { EditableCell } from "@/components/dashboard/editable-cell";
 
 describe("Talmundo Field - Component Tests", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnSave = vi.fn().mockResolvedValue(undefined);
 
   beforeEach(() => {
@@ -28,7 +47,7 @@ describe("Talmundo Field - Component Tests", () => {
     it("should show lock icon and disable editing", () => {
       vi.setSystemTime(new Date('2025-01-16T15:00:00'));
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={false}
           employeeId="emp-1"
@@ -53,7 +72,7 @@ describe("Talmundo Field - Component Tests", () => {
     it("should show tooltip with lock message when clicked", async () => {
       vi.setSystemTime(new Date('2025-01-16T15:00:00'));
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={false}
           employeeId="emp-1"
@@ -85,7 +104,7 @@ describe("Talmundo Field - Component Tests", () => {
       // Marked at 3 PM today - unlock is Jan 17 00:01 AM
       const markedAt = '2025-01-16T15:00:00';
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={false}
           employeeId="emp-1"
@@ -113,7 +132,7 @@ describe("Talmundo Field - Component Tests", () => {
       // Marked at 3 PM today - unlock is Jan 17 00:01 AM
       const markedAt = '2025-01-16T15:00:00';
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={false}
           employeeId="emp-1"
@@ -145,7 +164,7 @@ describe("Talmundo Field - Component Tests", () => {
       // Marked yesterday at 3 PM - unlock was Jan 17 00:01 AM
       const markedAt = '2025-01-16T15:00:00';
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={false}
           employeeId="emp-1"
@@ -173,7 +192,7 @@ describe("Talmundo Field - Component Tests", () => {
       // Marked yesterday at 3 PM - unlock was Jan 17 00:01 AM
       const markedAt = '2025-01-16T15:00:00';
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={false}
           employeeId="emp-1"

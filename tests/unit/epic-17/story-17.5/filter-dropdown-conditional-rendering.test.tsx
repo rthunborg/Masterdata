@@ -1,11 +1,20 @@
 /**
  * Unit Tests for Story 17.5: Search Filter Improvements for External Users
  * 
+ * **PARTIALLY SKIPPED - Story 20.1: Crew Ready Dropdown Removed**
+ * The crew ready dropdown filter was removed in Story 20.1 to consolidate
+ * all filtering into the new advanced filter panel (Epic 20).
+ * 
+ * Tests that verify the dropdown is hidden for external users are now obsolete
+ * since the dropdown no longer exists for any role. Search functionality tests
+ * remain valid and active.
+ * 
  * Tests that the premade filters dropdown (Crew Ready filter) is conditionally
  * rendered based on user role, while search input remains visible for all users.
  */
 
 import { render, screen, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from "@/components/dashboard/employee-table";
@@ -60,7 +69,30 @@ vi.mock("@/lib/supabase/client", () => ({
 }));
 
 // Mock fetch for hooks
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock the columns hook
 vi.mock("@/lib/hooks/use-columns", () => ({
@@ -114,6 +146,24 @@ vi.mock('@/lib/store/ui-store', () => ({
 }));
 
 describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: "emp-1",
@@ -159,7 +209,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
     vi.clearAllMocks();
   });
 
-  describe("AC1: Remove Premade Filters Dropdown for External Users", () => {
+  describe.skip("AC1: Remove Premade Filters Dropdown for External Users - SKIPPED (Story 20.1)", () => {
     it("should hide crew ready filter dropdown for sodexo user", async () => {
       mockUseAuth.mockReturnValue({
         user: {
@@ -174,7 +224,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(
+        renderWithQueryClient(
           <EmployeeTable
             employees={mockEmployees}
             isLoading={false}
@@ -205,7 +255,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(
+        renderWithQueryClient(
           <EmployeeTable
             employees={mockEmployees}
             isLoading={false}
@@ -236,7 +286,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(
+        renderWithQueryClient(
           <EmployeeTable
             employees={mockEmployees}
             isLoading={false}
@@ -267,7 +317,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(
+        renderWithQueryClient(
           <EmployeeTable
             employees={mockEmployees}
             isLoading={false}
@@ -300,7 +350,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(
+        renderWithQueryClient(
           <EmployeeTable
             employees={mockEmployees}
             isLoading={false}
@@ -315,7 +365,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
     });
   });
 
-  describe("AC3: HR Admin Unaffected", () => {
+  describe.skip("AC3: HR Admin Unaffected - SKIPPED (Story 20.1: Dropdown removed for all roles)", () => {
     it("should show crew ready filter dropdown for HR Admin", async () => {
       mockUseAuth.mockReturnValue({
         user: {
@@ -330,7 +380,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(
+        renderWithQueryClient(
           <EmployeeTable
             employees={mockEmployees}
             isLoading={false}
@@ -348,7 +398,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
     });
   });
 
-  describe("AC4: Role-Based Conditional Rendering", () => {
+  describe.skip("AC4: Role-Based Conditional Rendering - SKIPPED (Story 20.1)", () => {
     it("should conditionally render dropdown based on isHRAdmin check", async () => {
       // Test external user
       mockUseAuth.mockReturnValue({
@@ -364,7 +414,7 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
       });
 
       const { rerender } = await act(async () => {
-        return renderWithI18n(
+        return renderWithQueryClient(
           <EmployeeTable
             employees={mockEmployees}
             isLoading={false}

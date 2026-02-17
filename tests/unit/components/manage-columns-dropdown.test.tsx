@@ -7,6 +7,7 @@
  */
 
 import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ManageColumnsDialog } from "@/components/dashboard/manage-columns-dropdown";
@@ -28,6 +29,24 @@ vi.mock("sonner", () => ({
 }));
 
 describe("ManageColumnsDialog - Translations", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOpenEditColumnModal = vi.fn();
 
   const mockCustomColumns: ColumnConfig[] = [
@@ -94,7 +113,7 @@ describe("ManageColumnsDialog - Translations", () => {
   });
 
   it("should display Swedish translation for 'Manage Columns' button", () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // AC1: Button should display "Hantera kolumner"
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -102,7 +121,7 @@ describe("ManageColumnsDialog - Translations", () => {
   });
 
   it("should display Swedish translations in modal when opened", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -118,7 +137,7 @@ describe("ManageColumnsDialog - Translations", () => {
   });
 
   it("should display 'Okategoriserad' for uncategorized columns", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -131,7 +150,7 @@ describe("ManageColumnsDialog - Translations", () => {
   });
 
   it("should display category name for categorized columns", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -144,7 +163,7 @@ describe("ManageColumnsDialog - Translations", () => {
   });
 
   it("should display column names in the list", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -165,12 +184,13 @@ describe("ManageColumnsDialog - Translations", () => {
       refetch: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<ManageColumnsDialog />);
+    const { container } = renderWithQueryClient(<ManageColumnsDialog />);
     expect(container.firstChild).toBeNull();
   });
 });
 
 describe("ManageColumnsDialog - Delete Functionality", () => {
+  let queryClient: QueryClient;
   const mockOpenEditColumnModal = vi.fn();
   const mockRefetch = vi.fn();
 
@@ -193,7 +213,20 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
     },
   ];
 
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
     vi.clearAllMocks();
     
     vi.mocked(useColumns).mockReturnValue({
@@ -224,7 +257,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
   });
 
   it("should display delete button for each column", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -238,7 +271,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
   });
 
   it("should open confirmation dialog when delete button is clicked", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -260,7 +293,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
   });
 
   it("should delete column when confirmed", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -291,7 +324,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
   });
 
   it("should show success toast after successful deletion", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -323,7 +356,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
   it("should show error toast on deletion failure", async () => {
     vi.mocked(columnService.deleteCustomColumn).mockRejectedValue(new Error("Failed to delete"));
 
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });
@@ -353,7 +386,7 @@ describe("ManageColumnsDialog - Delete Functionality", () => {
   });
 
   it("should close confirmation dialog when cancel is clicked", async () => {
-    renderWithI18n(<ManageColumnsDialog />);
+    renderWithQueryClient(<ManageColumnsDialog />);
     
     // Open the modal
     const button = screen.getByRole("button", { name: /Hantera kolumner/i });

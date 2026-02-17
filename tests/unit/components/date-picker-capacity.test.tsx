@@ -12,6 +12,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { EditableDateCell } from '@/components/dashboard/editable-date-cell';
 import type { ImportantDate } from '@/lib/types/important-date';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';

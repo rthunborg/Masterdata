@@ -1,9 +1,28 @@
 import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableCell } from "@/components/dashboard/editable-cell";
 
 describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
     const mockOnSave = vi.fn().mockResolvedValue(undefined);
     const mockOnError = vi.fn();
 
@@ -13,7 +32,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
 
     describe("AC1 - Dropdown instead of checkbox in edit mode", () => {
         it("shows dropdown instead of checkbox when entering edit mode", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -35,7 +54,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
         });
 
         it("dropdown options are 'Klart' and 'Nej'", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -57,7 +76,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
         });
 
         it("preselects 'Nej' when value is false", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={false}
                     employeeId="emp-1"
@@ -80,7 +99,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
 
     describe("AC3 - Correct persistence", () => {
         it("selecting 'Klart' saves true", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={false}
                     employeeId="emp-1"
@@ -108,7 +127,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
         });
 
         it("selecting 'Nej' saves false", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -138,7 +157,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
 
     describe("AC4 - Keyboard and accessibility", () => {
         it("dropdown can be focused", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -158,7 +177,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
         });
 
         it("has correct ARIA attributes", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -182,7 +201,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
 
     describe("AC5 - No-op edit does not cause updates or extra renders", () => {
         it("entering edit mode with true and selecting 'Klart' does not call onSave", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -210,7 +229,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
         });
 
         it("entering edit mode with false and selecting 'Nej' does not call onSave", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={false}
                     employeeId="emp-1"
@@ -238,7 +257,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
         });
 
         it("changing value from true to false DOES call onSave", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -268,7 +287,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
 
     describe("Display Mode", () => {
         it("displays 'Klart' for true value in read mode", () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -283,7 +302,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
         });
 
         it("displays 'Nej' for false value in read mode", () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={false}
                     employeeId="emp-1"
@@ -303,7 +322,7 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
             const errorMessage = "Network error";
             mockOnSave.mockRejectedValueOnce(new Error(errorMessage));
 
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -334,16 +353,30 @@ describe("EditableCell - Boolean Dropdown (Story 9.9)", () => {
 });
 
 describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", () => {
+    let queryClient: QueryClient;
     const mockOnSave = vi.fn().mockResolvedValue(undefined);
     const mockOnError = vi.fn();
 
+    const renderWithQueryClient = (component: React.ReactElement) => {
+        return renderWithI18n(
+            <QueryClientProvider client={queryClient}>
+                {component}
+            </QueryClientProvider>
+        );
+    };
+
     beforeEach(() => {
+        queryClient = new QueryClient({
+            defaultOptions: {
+                queries: { retry: false },
+            },
+        });
         vi.clearAllMocks();
     });
 
     describe("Display Mode - Shows 'Ja' instead of 'Klart' when isChecklistItem=false", () => {
         it("displays 'Ja' for true value in read mode when isChecklistItem=false", () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -360,7 +393,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
         });
 
         it("displays 'Nej' for false value in read mode when isChecklistItem=false", () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={false}
                     employeeId="emp-1"
@@ -378,7 +411,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
 
     describe("Edit Mode - Dropdown options show 'Ja/Nej' when isChecklistItem=false", () => {
         it("dropdown preselects 'Ja' when value is true and isChecklistItem=false", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -400,7 +433,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
         });
 
         it("dropdown shows 'Ja' option instead of 'Klart' when isChecklistItem=false", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={false}
                     employeeId="emp-1"
@@ -428,7 +461,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
         });
 
         it("selecting 'Ja' saves true when isChecklistItem=false", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={false}
                     employeeId="emp-1"
@@ -457,7 +490,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
         });
 
         it("selecting 'Nej' saves false when isChecklistItem=false", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -488,7 +521,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
 
     describe("No-op Edit - Does not trigger save when value unchanged", () => {
         it("entering edit mode with true and selecting 'Ja' does not call onSave when isChecklistItem=false", async () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -519,7 +552,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
 
     describe("Read-only mode - Shows 'Ja' instead of 'Klart' when isChecklistItem=false", () => {
         it("displays 'Ja' for read-only true value when isChecklistItem=false", () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -538,7 +571,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
 
     describe("Comparison - isChecklistItem=true shows 'Klart', isChecklistItem=false shows 'Ja'", () => {
         it("shows 'Klart' when isChecklistItem=true (default behavior)", () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"
@@ -555,7 +588,7 @@ describe("EditableCell - Non-Checklist Boolean Fields (isChecklistItem=false)", 
         });
 
         it("shows 'Ja' when isChecklistItem=false", () => {
-            renderWithI18n(
+            renderWithQueryClient(
                 <EditableCell
                     value={true}
                     employeeId="emp-1"

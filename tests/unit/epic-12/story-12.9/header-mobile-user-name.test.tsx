@@ -38,6 +38,20 @@ vi.mock('@/components/layout/mobile-nav', () => ({
   MobileNav: () => <div data-testid="mobile-nav">Mobile Nav</div>,
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 const mockUser: SessionUser = {
   id: '1',
   email: 'test@example.com',
