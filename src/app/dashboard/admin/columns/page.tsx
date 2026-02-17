@@ -23,9 +23,10 @@ export default function ColumnSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
 
-  const loadColumns = useCallback(async () => {
+  const loadColumns = useCallback(async (options?: { showLoading?: boolean }) => {
+    const showLoading = options?.showLoading !== false;
     try {
-      setIsLoading(true);
+      if (showLoading) setIsLoading(true);
       const data = await columnService.getAllColumns();
       // Sort by display_order to ensure correct order after reordering
       const sortedData = [...data].sort((a, b) => a.display_order - b.display_order);
@@ -36,7 +37,7 @@ export default function ColumnSettingsPage() {
         error instanceof Error ? error.message : tErrors('loadFailed')
       );
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   }, [tErrors]);
 
@@ -60,7 +61,7 @@ export default function ColumnSettingsPage() {
   }, [filterMode, columns]);
 
   const handlePermissionsUpdated = () => {
-    loadColumns();
+    loadColumns({ showLoading: false });
   };
 
   return (
@@ -120,7 +121,7 @@ export default function ColumnSettingsPage() {
         />
       )}
       
-      <AddColumnModal onColumnCreated={loadColumns} />
+      <AddColumnModal onColumnCreated={() => loadColumns({ showLoading: false })} />
     </div>
   );
 }
