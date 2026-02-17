@@ -14,7 +14,7 @@ describe('canEditCrewingDone', () => {
     photo: true,
     origo: true,
     mail_lon: true,
-    loneiva: 1, // Number field (any non-zero number counts as complete)
+    loneiva: 1, // Number field (0–7, 0 = Lönenivå 0 is valid)
     bankuppgifter: true,
     li: true,
     passport: true,
@@ -58,9 +58,9 @@ describe('canEditCrewingDone', () => {
       expect(result).toBe(false);
     });
 
-    it('returns false when loneiva is false', () => {
+    it('returns true when loneiva is 0 (Lönenivå 0)', () => {
       const result = canEditCrewingDone({ ...completeEmployee, loneiva: 0 });
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
     it('returns false when bankuppgifter is false', () => {
@@ -149,7 +149,7 @@ describe('canEditCrewingDone', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: 0,
+        loneiva: null,
       });
       expect(result).toBe(false);
     });
@@ -168,7 +168,7 @@ describe('canEditCrewingDone', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: 0,
+        loneiva: null,
         bankuppgifter: false,
         li: false,
         passport: false,
@@ -216,7 +216,7 @@ describe('getIncompleteFields', () => {
     photo: true,
     origo: true,
     mail_lon: true,
-    loneiva: 1, // Number field (any non-zero number counts as complete)
+    loneiva: 1, // Number field (0–7, 0 = Lönenivå 0 is valid)
     bankuppgifter: true,
     li: true,
     passport: true,
@@ -247,9 +247,14 @@ describe('getIncompleteFields', () => {
       expect(result).toEqual(['Mail']);
     });
 
-    it('returns correct field name for loneiva', () => {
+    it('returns correct field name for loneiva when null', () => {
       const result = getIncompleteFields({ ...completeEmployee, loneiva: null });
       expect(result).toEqual(['lön']);
+    });
+
+    it('returns empty array for loneiva when 0 (Lönenivå 0)', () => {
+      const result = getIncompleteFields({ ...completeEmployee, loneiva: 0 });
+      expect(result).toEqual([]);
     });
 
     it('returns correct field name for kvitto_c17_18', () => {
@@ -275,7 +280,7 @@ describe('getIncompleteFields', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: 0,
+        loneiva: null,
       });
       expect(result).toEqual(['ISP', 'Photo', 'Origo', 'Mail', 'lön']);
     });
@@ -286,7 +291,7 @@ describe('getIncompleteFields', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: 0,
+        loneiva: null,
         bankuppgifter: false,
         li: false,
         passport: false,

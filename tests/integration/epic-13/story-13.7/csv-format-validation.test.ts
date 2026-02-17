@@ -21,11 +21,13 @@ import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import type { Employee } from "@/lib/types/employee";
 import { UserRole } from "@/lib/types/user";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import Papa from "papaparse";
 
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
+vi.mock("@/lib/supabase/server-api", () => ({ createAPIClient: vi.fn() }));
 vi.mock("@/lib/server/repositories/column-config-repository", () => ({
   columnConfigRepository: {
     findAll: vi.fn().mockResolvedValue([
@@ -42,7 +44,7 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
     ]),
   },
 }));
-vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: vi.fn() }));
 vi.mock("papaparse");
 
 describe("Story 13.7: CSV Format Validation", () => {
@@ -118,7 +120,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -150,7 +153,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -186,7 +190,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -220,7 +225,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -254,7 +260,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -288,7 +295,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -322,7 +330,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -357,7 +366,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -389,7 +399,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -423,7 +434,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -456,7 +468,8 @@ describe("Story 13.7: CSV Format Validation", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",

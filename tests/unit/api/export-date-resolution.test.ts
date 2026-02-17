@@ -12,7 +12,8 @@ import { NextRequest } from "next/server";
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
 vi.mock("@/lib/server/repositories/column-config-repository");
-vi.mock("@/lib/supabase/server-api");
+vi.mock("@/lib/supabase/server-api", () => ({ createAPIClient: vi.fn() }));
+vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: vi.fn() }));
 
 describe("Export Date Resolution", () => {
   beforeEach(() => {
@@ -214,7 +215,9 @@ describe("Export Date Resolution", () => {
       }),
     };
 
+    const { createServiceRoleClient } = await import("@/lib/supabase/server");
     vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as any);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabaseClient as any);
 
     // Import the route handler
     const { POST } = await import("@/app/api/employees/export/route");
@@ -287,8 +290,10 @@ describe("Export Date Resolution", () => {
 
     vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
 
-    // Mock important dates (empty - date was deleted)
-    const mockImportantDates: any[] = [];
+    // Mock important dates: non-empty so resolver looks up UUID; deleted-date-uuid not in list -> "Date Deleted"
+    const mockImportantDates: any[] = [
+      { id: "other-date-uuid", date_value: "2025-01-01", category: "Stena Dates", time_value: null },
+    ];
 
     // Mock column config
     vi.mocked(columnConfigRepository.findAll).mockResolvedValue([
@@ -319,7 +324,9 @@ describe("Export Date Resolution", () => {
       }),
     };
 
+    const { createServiceRoleClient } = await import("@/lib/supabase/server");
     vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as any);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabaseClient as any);
 
     // Import the route handler
     const { POST } = await import("@/app/api/employees/export/route");
