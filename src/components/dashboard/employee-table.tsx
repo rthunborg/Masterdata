@@ -1291,6 +1291,8 @@ export function EmployeeTable({
 
                   className={cn(
 
+                    "w-full min-w-0",
+
                     column.getCanSort()
 
                       ? "flex items-center gap-1.5 cursor-pointer select-none hover:text-foreground"
@@ -1341,8 +1343,8 @@ export function EmployeeTable({
 
                 >
 
-                  {/* Header text with truncation */}
-                  <span className="truncate max-w-[160px]" title={displayName}>
+                  {/* Header text with truncation - min-w-0 lets it shrink with column width so header aligns with values */}
+                  <span className="truncate min-w-0" title={displayName}>
                     {displayName}
                   </span>
 
@@ -2452,12 +2454,12 @@ export function EmployeeTable({
                           {isCheckboxColumn ? (
                             headerContent
                           ) : (
-                            <div className="flex flex-col items-center justify-center leading-none gap-0.5">
+                            <div className="flex flex-col items-start justify-center w-full leading-none gap-0.5 text-left">
 
-                              {/* Primary header text */}
+                              {/* Primary header text - left-aligned to match cell values for consistent column alignment */}
 
                               <div className={cn(
-                                "font-semibold leading-none",
+                                "font-semibold leading-none w-full min-w-0",
                                 // Compact mode text size
                                 isCompact ? "text-xs" : "text-sm"
                               )}>
@@ -2667,7 +2669,8 @@ export function EmployeeTable({
                               <div className={cn(
                                 "flex items-center gap-2 w-full",
                                 // Story 16.6: Center checkbox/action columns, left-align text content
-                                (isCheckboxCell || isActionColumn) ? "justify-center" : "justify-start"
+                                // Left alignment ensures column values align with header regardless of column name length
+                                (isCheckboxCell || isActionColumn) ? "justify-center" : "justify-start text-left"
                               )}>
 
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}

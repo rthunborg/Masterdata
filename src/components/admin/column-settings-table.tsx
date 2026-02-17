@@ -124,11 +124,10 @@ function EditableColumnNameCell({
         onClick={() => !isUpdating && setIsEditing(true)}
         className={cn(
           "cursor-pointer px-2 py-1 rounded hover:bg-blue-50 transition-colors",
-          "min-h-8 font-medium break-words",
+          "min-h-8 font-medium min-w-0 truncate",
           isUpdating && "cursor-not-allowed opacity-50"
         )}
-        title="Click to edit display name"
-        style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}
+        title={value || "Click to edit display name"}
       >
         {value}
       </div>
@@ -222,7 +221,7 @@ function EditableCategoryCell({
             )}
             disabled={isUpdating}
           >
-            <span className="truncate flex-1">{value || "Ingen kategori"}</span>
+            <span className="truncate flex-1 min-w-0">{value || "Ingen kategori"}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="start">
@@ -428,7 +427,7 @@ function DraggableRow({
 
       {/* Story 19.10: Sticky Column Name (Display Name - Editable) */}
       <TableCell 
-        className="lg:p-2 sticky z-10 bg-inherit"
+        className="lg:p-2 sticky z-10 bg-inherit min-w-0 overflow-hidden text-left"
         style={{ left: 40 }}
       >
         <EditableColumnNameCell
@@ -441,10 +440,10 @@ function DraggableRow({
 
       {/* Story 19.10: Sticky Database Column Name (Read-only) - rightmost sticky with shadow */}
       <TableCell 
-        className="text-gray-600 lg:truncate lg:p-2 sticky z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
+        className="text-gray-600 lg:p-2 sticky z-10 bg-inherit shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] min-w-0 overflow-hidden text-left"
         style={{ left: 190 }}
       >
-        <span className="font-mono text-sm">{column.db_column_name}</span>
+        <span className="font-mono text-sm block truncate" title={column.db_column_name}>{column.db_column_name}</span>
       </TableCell>
 
       {/* Type */}
@@ -483,7 +482,7 @@ function DraggableRow({
       </TableCell>
 
       {/* Category */}
-      <TableCell className="w-40 lg:w-auto lg:p-2">
+      <TableCell className="w-40 lg:w-auto lg:p-2 min-w-0 overflow-hidden text-left">
         <EditableCategoryCell
           value={column.category || ""}
           columnId={column.id}
@@ -904,11 +903,11 @@ export function ColumnSettingsTable({
                   style={{ left: 0 }}
                 ></TableHead>
                 <TableHead 
-                  className="min-w-[150px] lg:min-w-0 lg:p-2 sticky z-20 bg-background"
+                  className="min-w-[150px] lg:min-w-0 lg:p-2 sticky z-20 bg-background text-left"
                   style={{ left: 40 }}
                 >Visningsnamn</TableHead>
                 <TableHead 
-                  className="min-w-[150px] lg:min-w-0 lg:p-2 sticky z-20 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
+                  className="min-w-[150px] lg:min-w-0 lg:p-2 sticky z-20 bg-background shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-left"
                   style={{ left: 190 }}
                 >Databasnamn</TableHead>
                 <TableHead className="w-16 lg:w-auto lg:p-2">{tAdmin("type")}</TableHead>
@@ -926,7 +925,7 @@ export function ColumnSettingsTable({
                     </TooltipContent>
                   </Tooltip>
                 </TableHead>
-                <TableHead className="w-40 lg:w-auto lg:p-2">{tAdmin("category")}</TableHead>
+                <TableHead className="w-40 lg:w-auto lg:p-2 text-left">{tAdmin("category")}</TableHead>
                 {allRoles.map((role) => (
                   <TableHead key={role} className="w-40 lg:w-auto lg:p-2">
                       {role === UserRole.HR_ADMIN ? tAdmin("hrAdmin") : role.toUpperCase()}
