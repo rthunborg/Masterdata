@@ -322,3 +322,71 @@ describe('csvImportEmployeeSchema - Complete Validation', () => {
     expect(result.success).toBe(true);
   });
 });
+
+describe('csvImportEmployeeSchema - Repayment fields (Story 8.13 & 19.14)', () => {
+  const validBaseData = {
+    first_name: 'John',
+    surname: 'Doe',
+    ssn: '19900101-1234',
+    rank: 'SEV',
+    hire_date: '2025-01-15',
+  };
+
+  const validUuid = '550e8400-e29b-41d4-a716-446655440002';
+
+  it('accepts empty string for repayment fields (coerced to null)', () => {
+    const data = {
+      ...validBaseData,
+      repayment_needed_omc: '',
+      repayment_needed_pe3: '',
+    };
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.repayment_needed_omc).toBeNull();
+      expect(result.data.repayment_needed_pe3).toBeNull();
+    }
+  });
+
+  it('accepts null for repayment fields', () => {
+    const data = {
+      ...validBaseData,
+      repayment_needed_omc: null,
+      repayment_needed_pe3: null,
+    };
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts valid UUID for repayment_needed_omc and repayment_needed_pe3', () => {
+    const data = {
+      ...validBaseData,
+      repayment_needed_omc: validUuid,
+      repayment_needed_pe3: validUuid,
+    };
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.repayment_needed_omc).toBe(validUuid);
+      expect(result.data.repayment_needed_pe3).toBe(validUuid);
+    }
+  });
+
+  it('rejects invalid UUID for repayment_needed_omc', () => {
+    const data = {
+      ...validBaseData,
+      repayment_needed_omc: 'not-a-uuid',
+    };
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects invalid UUID for repayment_needed_pe3', () => {
+    const data = {
+      ...validBaseData,
+      repayment_needed_pe3: 'not-a-uuid',
+    };
+    const result = csvImportEmployeeSchema.safeParse(data);
+    expect(result.success).toBe(false);
+  });
+});
