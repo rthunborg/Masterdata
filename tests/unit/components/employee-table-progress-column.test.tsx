@@ -6,6 +6,7 @@
  */
 
 import { screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
@@ -81,7 +82,38 @@ vi.mock("sonner", () => ({
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useColumns } from "@/lib/hooks/use-columns";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("Framsteg Column Visibility", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: "emp-1",
@@ -238,7 +270,7 @@ describe("Framsteg Column Visibility", () => {
   describe("Internal Users - Should see Framsteg column", () => {
     it("shows Framsteg column for HR Admin", () => {
       setupMocks(UserRole.HR_ADMIN);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -247,7 +279,7 @@ describe("Framsteg Column Visibility", () => {
 
     it("shows Framsteg column for Recruiter", () => {
       setupMocks(UserRole.RECRUITER);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -256,7 +288,7 @@ describe("Framsteg Column Visibility", () => {
 
     it("shows Framsteg column for Admin Limited", () => {
       setupMocks(UserRole.ADMIN_LIMITED);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -267,7 +299,7 @@ describe("Framsteg Column Visibility", () => {
   describe("External Parties - Should NOT see Framsteg column", () => {
     it("hides Framsteg column for Sodexo users", () => {
       setupMocks(UserRole.SODEXO);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -276,7 +308,7 @@ describe("Framsteg Column Visibility", () => {
 
     it("hides Framsteg column for OMC users", () => {
       setupMocks(UserRole.OMC);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -285,7 +317,7 @@ describe("Framsteg Column Visibility", () => {
 
     it("hides Framsteg column for Payroll users", () => {
       setupMocks(UserRole.PAYROLL);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -294,7 +326,7 @@ describe("Framsteg Column Visibility", () => {
 
     it("hides Framsteg column for Toplux users", () => {
       setupMocks(UserRole.TOPLUX);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -303,7 +335,7 @@ describe("Framsteg Column Visibility", () => {
 
     it("hides Framsteg column for Crewing users", () => {
       setupMocks(UserRole.CREWING);
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 
@@ -353,7 +385,7 @@ describe("Framsteg Column Visibility", () => {
 
       mockUseUIStore.mockReturnValue(createMockUIStore(null));
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable employees={mockEmployees} isLoading={false} />
       );
 

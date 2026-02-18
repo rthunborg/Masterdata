@@ -6,6 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, act, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
 import { importantDateService } from "@/lib/services/important-date-service";
@@ -29,6 +30,24 @@ vi.mock("sonner", () => ({
 }));
 
 describe("PE3 Auto-Description Population", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnClose = vi.fn();
   const mockOnSuccess = vi.fn();
 
@@ -40,7 +59,7 @@ describe("PE3 Auto-Description Population", () => {
     it("should auto-populate description when date and time are set for PE3", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -75,7 +94,7 @@ describe("PE3 Auto-Description Population", () => {
     it("should update description when date changes for PE3", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -119,7 +138,7 @@ describe("PE3 Auto-Description Population", () => {
     it("should update description when time changes for PE3", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -164,7 +183,7 @@ describe("PE3 Auto-Description Population", () => {
     it("should use Swedish locale formatting for description", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}
@@ -201,7 +220,7 @@ describe("PE3 Auto-Description Population", () => {
     it("should allow manual override of auto-generated description", { timeout: 15000 }, async () => {
       const user = userEvent.setup();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <AddImportantDateModal
           isOpen={true}
           onClose={mockOnClose}

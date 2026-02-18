@@ -11,6 +11,7 @@
  */
 
 import { screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { AddUserModal } from '@/components/admin/add-user-modal';
@@ -35,6 +36,24 @@ vi.mock('@/lib/services/admin-service', () => ({
 import { adminService } from '@/lib/services/admin-service';
 
 describe('AddUserModal', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnClose = vi.fn();
   const mockOnSuccess = vi.fn();
 
@@ -45,7 +64,7 @@ describe('AddUserModal', () => {
   });
 
   it('renders modal when open', () => {
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     expect(screen.getByText('Lägg till ny användare')).toBeInTheDocument();
     expect(screen.getByLabelText('E-post')).toBeInTheDocument();
@@ -55,7 +74,7 @@ describe('AddUserModal', () => {
   });
 
   it('does not render modal when closed', () => {
-    renderWithI18n(<AddUserModal open={false} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={false} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     expect(screen.queryByText('Lägg till ny användare')).not.toBeInTheDocument();
   });
@@ -64,7 +83,7 @@ describe('AddUserModal', () => {
     const user = userEvent.setup();
     const mockCreateUser = vi.mocked(adminService.createUser);
     
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     const emailInput = screen.getByLabelText('E-post');
     const passwordInput = screen.getByLabelText('Lösenord');
@@ -86,7 +105,7 @@ describe('AddUserModal', () => {
 
   it('validates password length', async () => {
     const user = userEvent.setup();
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     const passwordInput = screen.getByLabelText('Lösenord');
     
@@ -103,7 +122,7 @@ describe('AddUserModal', () => {
 
   it('accepts valid email format', async () => {
     const user = userEvent.setup();
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     const emailInput = screen.getByLabelText('E-post');
     await user.type(emailInput, 'valid@example.com');
@@ -117,7 +136,7 @@ describe('AddUserModal', () => {
 
   it('accepts valid password length', async () => {
     const user = userEvent.setup();
-    renderWithI18n(<AddUserModal open={true} onClose=  {mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose=  {mockOnClose} onSuccess={mockOnSuccess} />);
 
     const passwordInput = screen.getByLabelText('Lösenord');
     await user.type(passwordInput, 'validPassword123');
@@ -130,7 +149,7 @@ describe('AddUserModal', () => {
   });
 
   it('role dropdown renders with default value', () => {
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Find the role select - verify it's present
     const roleSelect = screen.getByRole('combobox', { name: /roll/i });
@@ -142,7 +161,7 @@ describe('AddUserModal', () => {
   });
 
   it('active checkbox is checked by default', () => {
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     const activeCheckbox = screen.getByRole('checkbox', { name: /aktiv/i });
     expect(activeCheckbox).toBeChecked();
@@ -161,7 +180,7 @@ describe('AddUserModal', () => {
       last_active_at: new Date().toISOString(),
     });
 
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill form
     await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
@@ -194,7 +213,7 @@ describe('AddUserModal', () => {
       last_active_at: new Date().toISOString(),
     });
 
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
     await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
@@ -222,7 +241,7 @@ describe('AddUserModal', () => {
       last_active_at: new Date().toISOString(),
     });
 
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
     await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
@@ -239,7 +258,7 @@ describe('AddUserModal', () => {
     const mockCreateUser = vi.mocked(adminService.createUser);
     mockCreateUser.mockRejectedValueOnce(new Error('User with this email already exists'));
 
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
     await user.type(screen.getByLabelText('E-post'), 'duplicate@test.com');
@@ -271,7 +290,7 @@ describe('AddUserModal', () => {
       () => new Promise((resolve) => setTimeout(resolve, 500))
     );
 
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
     await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
@@ -308,7 +327,7 @@ describe('AddUserModal', () => {
       () => new Promise((resolve) => setTimeout(resolve, 100))
     );
 
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
     await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');
@@ -338,7 +357,7 @@ describe('AddUserModal', () => {
 
   it('closes modal on Cancel button click', async () => {
     const user = userEvent.setup();
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     const cancelButton = screen.getByRole('button', { name: /avbryt/i });
     await user.click(cancelButton);
@@ -353,7 +372,7 @@ describe('AddUserModal', () => {
       () => new Promise((resolve) => setTimeout(resolve, 500))
     );
 
-    renderWithI18n(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 
     // Fill and submit form
     await user.type(screen.getByLabelText('E-post'), 'newuser@test.com');

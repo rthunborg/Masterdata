@@ -6,6 +6,20 @@ import { UnsavedChangesDialog } from '@/components/dashboard/unsaved-changes-dia
 // No need for mock messages - component uses @/lib/i18n directly
 // Tests now validate the Swedish translations in the actual component
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('UnsavedChangesDialog', () => {
   it('renders dialog with correct title and description (Swedish)', () => {
     render(

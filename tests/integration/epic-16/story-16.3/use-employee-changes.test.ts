@@ -31,6 +31,20 @@ vi.mock("@/lib/hooks/use-auth", () => ({
   })),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RoleSelector } from "@/components/dashboard/role-selector";
@@ -11,6 +12,24 @@ vi.mock("@/lib/store/ui-store");
 vi.mock("@/lib/hooks/use-auth");
 
 describe("RoleSelector", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockSetPreviewRole = vi.fn();
 
   beforeEach(() => {
@@ -56,7 +75,7 @@ describe("RoleSelector", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    renderWithI18n(<RoleSelector />);
+    renderWithQueryClient(<RoleSelector />);
 
     expect(screen.getByLabelText(/Visa som/i)).toBeInTheDocument();
   });
@@ -100,7 +119,7 @@ describe("RoleSelector", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    const { container } = renderWithI18n(<RoleSelector />);
+    const { container } = renderWithQueryClient(<RoleSelector />);
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -143,7 +162,7 @@ describe("RoleSelector", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    renderWithI18n(<RoleSelector />);
+    renderWithQueryClient(<RoleSelector />);
 
     expect(screen.getByText(/Preview Mode Active/i)).toBeInTheDocument();
   });
@@ -187,7 +206,7 @@ describe("RoleSelector", () => {
       closeEditColumnModal: vi.fn(),
     });
 
-    renderWithI18n(<RoleSelector />);
+    renderWithQueryClient(<RoleSelector />);
 
     expect(screen.queryByText(/Preview Mode Active/i)).not.toBeInTheDocument();
   });

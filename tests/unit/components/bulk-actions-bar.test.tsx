@@ -5,18 +5,37 @@
  */
 
 import { screen, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import { describe, it, expect, vi } from "vitest";
 import { BulkActionsBar } from "@/components/dashboard/bulk-actions-bar";
 
 describe("BulkActionsBar", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnArchive = vi.fn();
   const mockOnRestore = vi.fn();
   const mockOnClear = vi.fn();
 
   describe("Visibility", () => {
     it("should not render when no employees are selected", () => {
-      const { container } = renderWithI18n(
+      const { container } = renderWithQueryClient(
         <BulkActionsBar
           selectedCount={0}
           onArchive={mockOnArchive}
@@ -31,7 +50,7 @@ describe("BulkActionsBar", () => {
     });
 
     it("should render when employees are selected", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={3}
           onArchive={mockOnArchive}
@@ -48,7 +67,7 @@ describe("BulkActionsBar", () => {
 
   describe("HR Admin Only - Archive/Restore Buttons", () => {
     it("should show Archive button for HR Admin in normal view", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -64,7 +83,7 @@ describe("BulkActionsBar", () => {
     });
 
     it("should show Restore button for HR Admin in archived view", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -80,7 +99,7 @@ describe("BulkActionsBar", () => {
     });
 
     it("should NOT show Archive button for non-HR Admin users", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -97,7 +116,7 @@ describe("BulkActionsBar", () => {
     });
 
     it("should NOT show Restore button for non-HR Admin users in archived view", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -114,7 +133,7 @@ describe("BulkActionsBar", () => {
     });
 
     it("should default isHRAdmin to false when not provided", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -132,7 +151,7 @@ describe("BulkActionsBar", () => {
 
   describe("Clear Selection", () => {
     it("should always show clear button regardless of isHRAdmin", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -149,7 +168,7 @@ describe("BulkActionsBar", () => {
     });
 
     it("should call onClear when clear button is clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -169,7 +188,7 @@ describe("BulkActionsBar", () => {
 
   describe("Button Callbacks", () => {
     it("should call onArchive when Archive button is clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -187,7 +206,7 @@ describe("BulkActionsBar", () => {
     });
 
     it("should call onRestore when Restore button is clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -207,7 +226,7 @@ describe("BulkActionsBar", () => {
 
   describe("Processing State", () => {
     it("should disable Archive button when processing", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}
@@ -224,7 +243,7 @@ describe("BulkActionsBar", () => {
     });
 
     it("should disable Restore button when processing", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <BulkActionsBar
           selectedCount={2}
           onArchive={mockOnArchive}

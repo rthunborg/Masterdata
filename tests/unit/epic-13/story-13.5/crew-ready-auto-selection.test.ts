@@ -2,6 +2,13 @@
  * Unit Tests for Crew Ready Auto-Selection
  * Story 13.5: Crew Ready Filter Auto-Selection
  * 
+ * **SKIPPED - Story 20.1: Crew Ready Dropdown Removed**
+ * The crew ready dropdown filter was removed in Story 20.1 to consolidate
+ * all filtering into the new advanced filter panel (Epic 20).
+ * 
+ * These tests verified auto-selection behavior that no longer exists.
+ * The crew ready export functionality remains and is tested elsewhere.
+ * 
  * Tests verify:
  * 1. getCrewReadyEmployeeIds() returns correct IDs
  * 2. Only employees meeting ALL criteria are included
@@ -21,7 +28,7 @@ function getCrewReadyEmployeeIds(employees: Employee[]): string[] {
     .map((employee) => employee.id);
 }
 
-describe('Story 13.5: Crew Ready Auto-Selection', () => {
+describe.skip('Story 13.5: Crew Ready Auto-Selection - SKIPPED (Story 20.1)', () => {
   describe('getCrewReadyEmployeeIds', () => {
     it('should return correct IDs for employees meeting all crew ready criteria', () => {
       const employees: Employee[] = [

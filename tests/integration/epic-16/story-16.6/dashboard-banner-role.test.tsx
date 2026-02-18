@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import DashboardPage from "@/app/dashboard/page";
 import { UserRole } from "@/lib/types/user";
@@ -81,6 +82,24 @@ vi.mock("@/components/dashboard/change-notification-banner", () => ({
 }));
 
 describe("Dashboard Banner Role-Based Rendering", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -108,7 +127,7 @@ describe("Dashboard Banner Role-Based Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<DashboardPage />);
+        renderWithQueryClient(<DashboardPage />);
       });
 
       expect(screen.queryByText("Change Notification Banner")).not.toBeInTheDocument();
@@ -132,7 +151,7 @@ describe("Dashboard Banner Role-Based Rendering", () => {
       mockUseEmployees.mockReturnValue({ employees: [], isLoading: false });
       mockUseEmployeeChanges.mockReturnValue({ totalCount: 5, isLoading: false }); // Changes exist
 
-      const { unmount } = renderWithI18n(<DashboardPage />);
+      const { unmount } = renderWithQueryClient(<DashboardPage />);
       expect(screen.queryByText("Change Notification Banner")).not.toBeInTheDocument();
       unmount();
 
@@ -145,7 +164,7 @@ describe("Dashboard Banner Role-Based Rendering", () => {
       mockUseEmployeeChanges.mockReturnValue({ totalCount: 5, isLoading: false });
 
       await act(async () => {
-        renderWithI18n(<DashboardPage />);
+        renderWithQueryClient(<DashboardPage />);
       });
       
       expect(screen.getByText("Change Notification Banner")).toBeInTheDocument();

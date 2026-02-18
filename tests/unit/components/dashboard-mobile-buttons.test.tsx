@@ -92,6 +92,20 @@ vi.mock("@/lib/hooks/use-employee-changes", () => ({
   }),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 describe("Dashboard Mobile Button Tests (AC1)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

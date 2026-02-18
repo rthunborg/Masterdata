@@ -26,6 +26,16 @@ vi.mock("@/lib/store/ui-store", () => ({
   }),
 }));
 
+// Avoid async useColumns fetch so React 19 setState does not run after render (window is not defined in CI)
+vi.mock("@/lib/hooks/use-columns", () => ({
+  useColumns: () => ({
+    columns: [],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+}));
+
 vi.mock("@/lib/i18n", () => ({
   useTranslations: () => (key: string) => key,
 }));
@@ -45,6 +55,20 @@ vi.mock("sonner", () => ({
     warning: vi.fn(),
   },
 }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 
 // Mock minimal props
 const mockProps = {

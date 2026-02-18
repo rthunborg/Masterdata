@@ -246,7 +246,7 @@ describe("Export Field Selection Integration", () => {
       { 
         id: "emp1", 
         first_name: "John", 
-        repayment_needed_omc: true,
+        repayment_needed_omc: "omc-date-uuid-123", // exported as-is (UUID), not resolved
         termination_date: null, // null
         // mobile is undefined
       },
@@ -279,7 +279,9 @@ describe("Export Field Selection Integration", () => {
      
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
-    // Check data row
-    expect(unparseCall.data[0]).toEqual(["John", "Yes", "", ""]);
+    // Check data row: first_name, repayment_needed_omc, termination_date, mobile
+    // repayment_needed_omc is currently exported as-is (UUID) per route; only stena_date/omc_date/pe3_date are resolved.
+    // null -> "", undefined -> ""
+    expect(unparseCall.data[0]).toEqual(["John", "omc-date-uuid-123", "", ""]);
   });
 });

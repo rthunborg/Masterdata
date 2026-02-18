@@ -5,6 +5,7 @@
  */
 
 import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { ChangeNotificationBanner } from "@/components/dashboard/change-notification-banner";
@@ -31,7 +32,39 @@ Object.defineProperty(window, "sessionStorage", {
   writable: true,
 });
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("ChangeNotificationBanner", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     sessionStorageMock.clear();
   });
@@ -42,7 +75,7 @@ describe("ChangeNotificationBanner", () => {
 
   describe("Banner Display (AC1)", () => {
     it("renders banner when there are changes", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={5}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -58,7 +91,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("displays correct singular form for single employee", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={1}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -72,7 +105,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("displays formatted date in banner", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={3}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -89,7 +122,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("has dismiss button with X icon", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={2}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -103,7 +136,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("has correct ARIA attributes", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={1}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -120,7 +153,7 @@ describe("ChangeNotificationBanner", () => {
 
   describe("Dismiss Functionality (AC2)", () => {
     it("hides banner when dismiss button is clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={3}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -137,7 +170,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("stores dismissal state in sessionStorage", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={2}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -155,7 +188,7 @@ describe("ChangeNotificationBanner", () => {
     it("restores dismissal state from sessionStorage on mount", () => {
       sessionStorageMock.setItem("employee-changes-banner-dismissed", "true");
 
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={5}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -169,7 +202,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("banner remains hidden after dismissal in same session", () => {
-      const { rerender } = renderWithI18n(
+      const { rerender } = renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={3}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -198,7 +231,7 @@ describe("ChangeNotificationBanner", () => {
 
   describe("No Changes State (AC3)", () => {
     it("does not render when totalCount is 0", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={0}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -211,7 +244,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("does not render when changesBaseline is null (first-time user)", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={0}
           changesBaseline={null}
@@ -226,7 +259,7 @@ describe("ChangeNotificationBanner", () => {
 
   describe("Date/Time Formatting (AC4)", () => {
     it("formats date correctly", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={1}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -242,7 +275,7 @@ describe("ChangeNotificationBanner", () => {
 
     it("handles invalid date gracefully", () => {
       // Should not throw error, should display the invalid date string
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={1}
           changesBaseline="invalid-date"
@@ -258,7 +291,7 @@ describe("ChangeNotificationBanner", () => {
 
   describe("Loading State (AC6)", () => {
     it("does not render when loading", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={5}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -271,7 +304,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("renders when loading completes and changes exist", async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={3}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -288,7 +321,7 @@ describe("ChangeNotificationBanner", () => {
 
   describe("Error State (AC7)", () => {
     it("does not render when error occurs", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={5}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -303,7 +336,7 @@ describe("ChangeNotificationBanner", () => {
 
   describe("Banner Styling (AC5)", () => {
     it("has correct styling classes", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={2}
           changesBaseline="2025-01-15T08:00:00Z"
@@ -319,7 +352,7 @@ describe("ChangeNotificationBanner", () => {
     });
 
     it("is responsive (flex layout)", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <ChangeNotificationBanner
           totalCount={1}
           changesBaseline="2025-01-15T08:00:00Z"

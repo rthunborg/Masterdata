@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,12 +19,30 @@ import {
 } from '@/../tests/helpers/responsive-test-helpers';
 
 describe('Touch Target Validation Tests (AC5)', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     setViewportSize(375, 667); // Mobile viewport
   });
 
   it('AC5: All buttons 44x44 pixels on mobile', () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <div>
         <Button>Test Button</Button>
         <Button size="sm">Small Button</Button>
@@ -43,7 +62,7 @@ describe('Touch Target Validation Tests (AC5)', () => {
   });
 
   it('AC5: Form inputs 44px height on mobile', () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <div>
         <Input type="text" placeholder="Text input" />
         <Input type="email" placeholder="Email input" />
@@ -63,7 +82,7 @@ describe('Touch Target Validation Tests (AC5)', () => {
   });
 
   it('AC5: Checkbox/radio inputs have 44px clickable area', () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <div>
         <input type="checkbox" id="checkbox1" />
         <label htmlFor="checkbox1">Checkbox 1</label>
@@ -89,7 +108,7 @@ describe('Touch Target Validation Tests (AC5)', () => {
   });
 
   it('AC5: Icon-only buttons have sufficient padding', () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <div>
         <Button size="icon" aria-label="Icon button">
           <span>X</span>
@@ -112,7 +131,7 @@ describe('Touch Target Validation Tests (AC5)', () => {
   });
 
   it('AC5: Links in cards have adequate spacing', () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <div className="card p-4">
         <a href="#link1" className="block py-2">Link 1</a>
         <a href="#link2" className="block py-2">Link 2</a>

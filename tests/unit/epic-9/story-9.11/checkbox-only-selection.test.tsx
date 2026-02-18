@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, render, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -58,7 +59,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch for hooks
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock the columns hook
 vi.mock('@/lib/hooks/use-columns', () => ({
@@ -127,6 +151,24 @@ vi.mock('@/lib/i18n', () => ({
 }));
 
 describe('Story 9.11: Checkbox Only Selection', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployees: Employee[] = [
     {
       id: '1',
@@ -156,7 +198,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
 
   describe('AC 1: Row click does NOT change selection', () => {
     it('clicking row does not change selection state', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -176,7 +218,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
     });
 
     it('row click does not add greyish tint', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -193,7 +235,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
     });
 
     it('row click does not change checkbox state', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -216,7 +258,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
 
   describe('AC 2: Checkbox click DOES change selection', () => {
     it('clicking checkbox selects employee', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -243,7 +285,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
     });
 
     it('clicking checkbox deselects employee when already selected', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -273,7 +315,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
     });
 
     it('checkbox selection adds greyish tint', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -293,7 +335,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
 
   describe('AC 6: Inline editing does not change selection', () => {
     it('clicking editable field does not change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -322,7 +364,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
     });
 
     it('editing field value does not change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -359,7 +401,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
 
   describe('AC 7: Button clicks do not change selection', () => {
     it('clicking button in row does not change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}
@@ -381,7 +423,7 @@ describe('Story 9.11: Checkbox Only Selection', () => {
     });
 
     it('clicking action menu button does not change selection', () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={mockEmployees}
           isLoading={false}

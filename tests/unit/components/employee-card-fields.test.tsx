@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { EmployeeCard } from "@/components/dashboard/employee-card";
 import { employeeService } from "@/lib/services/employee-service";
@@ -16,7 +17,7 @@ import { useImportantDates } from "@/lib/hooks/use-important-dates";
 import { createTestEmployee } from "@/../tests/helpers/validation-test-helpers";
 import type { Employee } from "@/lib/types/employee";
 import type { ColumnConfig } from "@/lib/types/column-config";
-import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
+import { renderWithI18n, I18nWrapper } from "@/../tests/utils/i18n-test-wrapper";
 
 // Mock services
 vi.mock("@/lib/services/employee-service", () => ({
@@ -56,6 +57,20 @@ vi.mock("@/hooks/use-long-press", () => ({
   })),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 // Helper to create test column configs
 function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnConfig {
   return {
@@ -79,6 +94,24 @@ function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnCo
 }
 
 describe("EmployeeCard - Field Visibility and Permissions", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnEmployeeUpdated = vi.fn();
   let mockEmployee: Employee;
   let hrAdminColumns: ColumnConfig[];
@@ -162,7 +195,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
     it("should display all masterdata fields for HR Admin", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -184,7 +217,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
     it("should display limited fields for external parties (ÖMC)", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={false}
@@ -231,7 +264,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         }),
       ];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -267,7 +300,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         }),
       ];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -318,7 +351,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         }),
       ];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={employeeWithVariousTypes}
           isHRAdmin={true}
@@ -363,7 +396,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         }),
       ];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={employeeWithNulls}
           isHRAdmin={true}
@@ -403,7 +436,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         }),
       ];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -426,10 +459,20 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
     it("should dynamically show/hide fields based on user role", async () => {
       const user = userEvent.setup();
 
+      // Create employee with custom data
+      const employeeWithCustomData = {
+        ...mockEmployee,
+        customData: {
+          public_field: "Public value",
+          hr_admin_field: "Admin only value",
+        },
+      };
+
       const roleBasedColumns = [
         createTestColumnConfig({
           column_name: "Public Field",
           db_column_name: "public_field",
+          is_masterdata: false,
           role_permissions: {
             hr_admin: { view: true, edit: true },
             omc: { view: true, edit: false },
@@ -440,6 +483,7 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         createTestColumnConfig({
           column_name: "HR Admin Only",
           db_column_name: "hr_admin_field",
+          is_masterdata: false,
           role_permissions: {
             hr_admin: { view: true, edit: true },
             omc: { view: false, edit: false },
@@ -449,12 +493,20 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         }),
       ];
 
+      // HR Admin columns - include both fields
+      const hrAdminFilteredColumns = roleBasedColumns;
+
+      // ÖMC columns - only include public field
+      const omcFilteredColumns = roleBasedColumns.filter(col =>
+        col.db_column_name === "public_field"
+      );
+
       // Test as HR Admin
-      const { rerender } = renderWithI18n(
+      const { rerender } = renderWithQueryClient(
         <EmployeeCard
-          employee={mockEmployee}
+          employee={employeeWithCustomData}
           isHRAdmin={true}
-          columnConfigs={roleBasedColumns}
+          columnConfigs={hrAdminFilteredColumns}
           onEmployeeUpdated={mockOnEmployeeUpdated}
         />
       );
@@ -467,21 +519,28 @@ describe("EmployeeCard - Field Visibility and Permissions", () => {
         expect(screen.getByText("HR Admin Only")).toBeInTheDocument();
       });
 
-      // Re-render as non-HR Admin (ÖMC)
+      // Re-render as non-HR Admin (ÖMC) with filtered columns
       rerender(
-        <EmployeeCard
-          employee={mockEmployee}
-          isHRAdmin={false}
-          columnConfigs={roleBasedColumns}
-          onEmployeeUpdated={mockOnEmployeeUpdated}
-        />
+        <I18nWrapper>
+          <QueryClientProvider client={queryClient}>
+            <EmployeeCard
+              employee={employeeWithCustomData}
+              isHRAdmin={false}
+              columnConfigs={omcFilteredColumns}
+              onEmployeeUpdated={mockOnEmployeeUpdated}
+            />
+          </QueryClientProvider>
+        </I18nWrapper>
       );
 
+      // Expand the card again after rerender
+      const moreButton2 = screen.getByLabelText(/Expand details/i);
+      await user.click(moreButton2);
+
       // Should still show public field but not HR Admin only field
-      // Note: The component filters based on role_permissions, but we need to check
-      // if the component actually filters correctly. For now, we test that visible fields are shown.
       await waitFor(() => {
         expect(screen.getByText("Public Field")).toBeInTheDocument();
+        expect(screen.queryByText("HR Admin Only")).not.toBeInTheDocument();
       });
     });
   });

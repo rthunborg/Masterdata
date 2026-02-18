@@ -265,8 +265,10 @@ export async function POST(request: NextRequest) {
       'hotel_required': 'hotel_required',
     };
 
-    // Define date fields that store UUIDs and need resolution (repayment fields are boolean)
+    // Define date fields that store UUIDs and need resolution
+    // Note: repayment_needed_omc/pe3 store UUID references but should be exported as-is (Story 19.14)
     const dateFields = ['stena_date', 'omc_date', 'pe3_date'];
+    const exportAsIsFields = ['repayment_needed_omc', 'repayment_needed_pe3'];
 
     // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {
@@ -295,6 +297,9 @@ export async function POST(request: NextRequest) {
           // Format the value appropriately
           if (value === null || value === undefined) {
             row[fieldKey] = '';
+          } else if (exportAsIsFields.includes(actualPropertyName)) {
+            // Repayment fields: export UUID as-is (Story 19.14)
+            row[fieldKey] = String(value);
           } else if (typeof value === 'boolean') {
             row[fieldKey] = value ? 'Yes' : 'No';
           } else if (dateFields.includes(actualPropertyName) && typeof value === 'string') {

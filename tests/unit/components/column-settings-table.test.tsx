@@ -11,6 +11,7 @@
  */
 
 import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ColumnSettingsTable } from "@/components/admin/column-settings-table";
@@ -34,6 +35,24 @@ vi.mock("@/lib/services/column-service", () => ({
 import { columnService } from "@/lib/services/column-service";
 
 describe("ColumnSettingsTable", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockColumns: ColumnConfig[] = [
     {
       id: "col-1",
@@ -82,7 +101,7 @@ describe("ColumnSettingsTable", () => {
   });
 
   it("renders column list correctly", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -103,7 +122,7 @@ describe("ColumnSettingsTable", () => {
   });
 
   it("displays permission toggles for all roles", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -126,7 +145,7 @@ describe("ColumnSettingsTable", () => {
       mockUpdatedColumn
     );
 
-    renderWithI18n(
+    renderWithQueryClient(
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -157,7 +176,7 @@ describe("ColumnSettingsTable", () => {
   });
 
   it("displays empty state when no columns", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <ColumnSettingsTable
         columns={[]}
         onPermissionsUpdated={mockOnPermissionsUpdated}
@@ -174,7 +193,7 @@ describe("ColumnSettingsTable", () => {
       new Error("Failed to update permissions")
     );
 
-    renderWithI18n(
+    renderWithQueryClient(
       <ColumnSettingsTable
         columns={mockColumns}
         onPermissionsUpdated={mockOnPermissionsUpdated}

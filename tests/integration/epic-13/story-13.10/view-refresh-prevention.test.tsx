@@ -45,6 +45,20 @@ vi.mock("@/lib/hooks/use-available-omc-dates", () => ({
   })),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 describe("View Refresh Prevention - Integration Tests", () => {
   beforeEach(() => {
     vi.clearAllMocks();
