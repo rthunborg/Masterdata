@@ -174,8 +174,8 @@ describe('Story 13.9: Repayment Column Visibility', () => {
     is_anonymized: false,
     special_diet: false,
     diet_details: null,
-    repayment_needed_omc: 'omc-date-uuid-123', // UUID reference to Important Date
-    repayment_needed_pe3: 'pe3-date-uuid-456', // UUID reference to Important Date
+    repayment_needed_omc: true,
+    repayment_needed_pe3: true,
     comments: null,
     one: false,
     one_marked_at: null,
@@ -272,7 +272,7 @@ describe('Story 13.9: Repayment Column Visibility', () => {
       
       expect(repaymentHeaders.length).toBeGreaterThan(0);
       
-      // Cells should show repayment date values
+      // Cells should show repayment checkbox values
       const table = container.querySelector('table');
       expect(table).toBeTruthy();
     });

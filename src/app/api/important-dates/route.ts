@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
  *   - category: Optional category filter (e.g., "Stena Dates", "ÖMC Dates", "PE3 Dates")
  *   - id: Optional ID filter to fetch a single date
  */
-export async function GET(request?: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Require authentication
     await requireAuthAPI(request);
@@ -28,7 +28,7 @@ export async function GET(request?: NextRequest) {
     // important_dates (e.g. Toplux) would get an empty result, causing date
     // columns to render as dashes instead of formatted dates.
     const supabase = createServiceRoleClient();
-    const { searchParams } = new URL(request?.url ?? 'http://localhost');
+    const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const id = searchParams.get("id");
 

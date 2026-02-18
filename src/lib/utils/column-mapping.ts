@@ -94,17 +94,13 @@ export function getEmployeeFieldValue(
   // Get the raw value from the employee object
   const rawValue = employee[fieldName as keyof Employee] as string | number | boolean | null;
 
-  // Check if this is an Important Date field (by checking the actual field names)
-  // Story 19.14: Include repayment fields which now store UUID references to Important Dates
+  // Check if this is an Important Date field (UUID); repayment fields are boolean
   const isDateField = [
-    "stena_date", 
-    "omc_date", 
+    "stena_date",
+    "omc_date",
     "pe3_date",
-    "repayment_needed_omc",
-    "repayment_needed_pe3"
   ].includes(fieldName);
 
-  // If it's a date field and we have Important Dates available, resolve the UUID to description
   if (isDateField && allImportantDates && typeof rawValue === "string") {
     return resolveImportantDateId(rawValue, allImportantDates, dateDeletedText);
   }

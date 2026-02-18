@@ -413,9 +413,7 @@ describe("createEmployeeSchema", () => {
     });
   });
 
-  describe("repayment fields validation (Story 8.13 & 19.14)", () => {
-    const validUuid = "550e8400-e29b-41d4-a716-446655440000";
-
+  describe("repayment fields validation (Story 8.13 - boolean checkbox)", () => {
     it("should accept null for repayment_needed_omc and repayment_needed_pe3", () => {
       const data = { ...validEmployeeData, repayment_needed_omc: null, repayment_needed_pe3: null };
       const result = createEmployeeSchema.parse(data);
@@ -423,35 +421,23 @@ describe("createEmployeeSchema", () => {
       expect(result.repayment_needed_pe3).toBeNull();
     });
 
-    it("should accept valid UUID for repayment fields", () => {
+    it("should accept true for repayment fields", () => {
       const data = {
         ...validEmployeeData,
-        repayment_needed_omc: validUuid,
-        repayment_needed_pe3: validUuid,
+        repayment_needed_omc: true,
+        repayment_needed_pe3: true,
       };
       const result = createEmployeeSchema.parse(data);
-      expect(result.repayment_needed_omc).toBe(validUuid);
-      expect(result.repayment_needed_pe3).toBe(validUuid);
+      expect(result.repayment_needed_omc).toBe(true);
+      expect(result.repayment_needed_pe3).toBe(true);
     });
 
-    it("should coerce empty string to null for repayment fields", () => {
+    it("should reject empty string for repayment fields (use null for unchecked)", () => {
       const data = {
         ...validEmployeeData,
         repayment_needed_omc: "",
         repayment_needed_pe3: "",
       };
-      const result = createEmployeeSchema.parse(data);
-      expect(result.repayment_needed_omc).toBeNull();
-      expect(result.repayment_needed_pe3).toBeNull();
-    });
-
-    it("should reject invalid UUID for repayment_needed_omc", () => {
-      const data = { ...validEmployeeData, repayment_needed_omc: "not-a-uuid" };
-      expect(() => createEmployeeSchema.parse(data)).toThrow();
-    });
-
-    it("should reject invalid UUID for repayment_needed_pe3", () => {
-      const data = { ...validEmployeeData, repayment_needed_pe3: "not-a-uuid" };
       expect(() => createEmployeeSchema.parse(data)).toThrow();
     });
   });
@@ -563,17 +549,15 @@ describe("updateEmployeeSchema", () => {
     expect(result.surname).toBeUndefined();
   });
 
-  describe("repayment fields (Story 8.13 & 19.14)", () => {
-    const validUuid = "550e8400-e29b-41d4-a716-446655440001";
-
-    it("should accept valid UUID for repayment_needed_omc and repayment_needed_pe3", () => {
+  describe("repayment fields (Story 8.13 - boolean checkbox)", () => {
+    it("should accept true for repayment_needed_omc and repayment_needed_pe3", () => {
       const update = {
-        repayment_needed_omc: validUuid,
-        repayment_needed_pe3: validUuid,
+        repayment_needed_omc: true,
+        repayment_needed_pe3: true,
       };
       const result = updateEmployeeSchema.parse(update);
-      expect(result.repayment_needed_omc).toBe(validUuid);
-      expect(result.repayment_needed_pe3).toBe(validUuid);
+      expect(result.repayment_needed_omc).toBe(true);
+      expect(result.repayment_needed_pe3).toBe(true);
     });
 
     it("should accept null to clear repayment fields", () => {
@@ -586,23 +570,11 @@ describe("updateEmployeeSchema", () => {
       expect(result.repayment_needed_pe3).toBeNull();
     });
 
-    it("should coerce empty string to null for repayment fields (avoids UI error snackbar)", () => {
+    it("should reject empty string for repayment fields (use null for unchecked)", () => {
       const update = {
         repayment_needed_omc: "",
         repayment_needed_pe3: "",
       };
-      const result = updateEmployeeSchema.parse(update);
-      expect(result.repayment_needed_omc).toBeNull();
-      expect(result.repayment_needed_pe3).toBeNull();
-    });
-
-    it("should reject invalid UUID for repayment_needed_omc", () => {
-      const update = { repayment_needed_omc: "not-a-uuid" };
-      expect(() => updateEmployeeSchema.parse(update)).toThrow();
-    });
-
-    it("should reject invalid UUID for repayment_needed_pe3", () => {
-      const update = { repayment_needed_pe3: "not-a-uuid" };
       expect(() => updateEmployeeSchema.parse(update)).toThrow();
     });
   });

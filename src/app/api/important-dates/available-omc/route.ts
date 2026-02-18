@@ -16,7 +16,7 @@ function getJan1CurrentYear(): string {
   return `${currentYear}-01-01`;
 }
 
-export async function GET(request?: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Verify authentication (all authenticated users can view)
     await requireAuthAPI(request);

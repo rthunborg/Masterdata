@@ -48,11 +48,11 @@ export async function captureRepaymentDates(
 /**
  * Apply repayment capture to employee record.
  *
- * Updates repayment_needed_omc and repayment_needed_pe3 fields based on
- * current date assignments. Called as part of termination transaction.
+ * Sets repayment_needed_omc/pe3 to true when the employee had that date assigned; otherwise null.
+ * Called as part of termination transaction.
  *
  * @param employeeId - UUID of employee being terminated
- * @param repaymentDates - Date IDs captured from captureRepaymentDates()
+ * @param repaymentDates - Date IDs captured from captureRepaymentDates() (used to derive boolean)
  */
 export async function applyRepaymentCapture(
   employeeId: string,
@@ -60,13 +60,11 @@ export async function applyRepaymentCapture(
 ): Promise<void> {
   const supabase = await createClient();
 
-  // Story 19.14: Store the actual date UUID for repayment tracking (not just boolean)
-  // This allows HR Admin to see which specific date requires repayment
   const { error } = await supabase
     .from('employees')
     .update({
-      repayment_needed_omc: repaymentDates.omc, // Store UUID or null
-      repayment_needed_pe3: repaymentDates.pe3, // Store UUID or null
+      repayment_needed_omc: repaymentDates.omc != null,
+      repayment_needed_pe3: repaymentDates.pe3 != null,
     })
     .eq('id', employeeId);
 

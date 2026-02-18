@@ -24,23 +24,15 @@ export interface Employee {
   archived_at: string | null;
   is_anonymized: boolean;
   
-  // Story 8.13: Repayment tracking fields (auto-managed by termination workflow)
-  // Story 19.14: Changed from boolean to UUID reference - stores the ÖMC/PE3 date that requires repayment
+  // Story 8.13: Repayment tracking fields (checkbox: null/false = unchecked, true = checked)
   /**
-   * UUID reference to ÖMC Dates (important_dates.id) indicating which date requires repayment.
-   * Auto-populated when employee is terminated with an assigned ÖMC date.
-   * Cleared when employee is reactivated and date is restored.
-   * Editable by HR Admin to select from current year's ÖMC dates.
+   * True if employee owes repayment for ÖMC date. Set on termination when omc_date was assigned; editable as checkbox.
    */
-  repayment_needed_omc: string | null;
-  
+  repayment_needed_omc: boolean | null;
   /**
-   * UUID reference to PE3 Dates (important_dates.id) indicating which date requires repayment.
-   * Auto-populated when employee is terminated with an assigned PE3 date.
-   * Cleared when employee is reactivated and date is restored.
-   * Editable by HR Admin to select from current year's PE3 dates.
+   * True if employee owes repayment for PE3 date. Set on termination when pe3_date was assigned; editable as checkbox.
    */
-  repayment_needed_pe3: string | null;
+  repayment_needed_pe3: boolean | null;
 
   // Story 8.17: Dietary Requirements
   special_diet: boolean;

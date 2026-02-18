@@ -63,7 +63,7 @@ describe('Story 13.5: Crew Ready Auto-Selection', () => {
       expect(result).toEqual(['1', '2']);
     });
 
-    it('should exclude employees without loneiva value (null)', () => {
+    it('should include employees with loneiva null when other 8 prerequisites are true', () => {
       const employees: Employee[] = [
         {
           id: '1',
@@ -74,7 +74,7 @@ describe('Story 13.5: Crew Ready Auto-Selection', () => {
           photo: true,
           origo: true,
           mail_lon: true,
-          loneiva: null, // Missing loneiva
+          loneiva: null, // loneiva no longer required for Crewing
           bankuppgifter: true,
           li: true,
           passport: true,
@@ -84,7 +84,7 @@ describe('Story 13.5: Crew Ready Auto-Selection', () => {
       ];
 
       const result = getCrewReadyEmployeeIds(employees);
-      expect(result).toEqual([]);
+      expect(result).toEqual(['1']);
     });
 
     it('should include employees with loneiva 0 (Lönenivå 0)', () => {
