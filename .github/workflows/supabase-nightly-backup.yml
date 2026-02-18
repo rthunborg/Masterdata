@@ -1,6 +1,7 @@
 # Nightly Supabase backup: dump production, keep last 14 days, restore oldest to staging.
 # Requires: Supabase Storage bucket "db-backups" in production project (see docs/SUPABASE-BACKUP-AND-STAGING.md).
-# Secrets: SUPABASE_DB_URL (prod), STAGING_SUPABASE_DB_URL, and production URL/key for storage (see docs).
+# Secrets: SUPABASE_DB_URL (prod), STAGING_SUPABASE_DB_URL (use pooler URIs, not direct - GitHub Actions has no IPv6).
+# Production env also: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 
 name: Supabase Nightly Backup
 
@@ -58,7 +59,7 @@ jobs:
         run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/schema.sql
 
       - name: Dump data (production)
-        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/data.sql --data-only --use-copy
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/data.sql --data-only --use-copy -x public.buckets_vectors -x storage.buckets_vectors
 
       - name: Upload backup to Supabase Storage
         run: node scripts/supabase-backup-storage.mjs upload "$(date -u +%Y-%m-%d)"
