@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import type { DeleteSavedFilterResponse } from "@/lib/types/saved-filter";
 
@@ -24,7 +24,7 @@ export async function DELETE(
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     // Delete filter - RLS ensures user can only delete their own filters
     const { error } = await supabase
