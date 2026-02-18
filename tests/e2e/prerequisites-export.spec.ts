@@ -47,12 +47,12 @@ test.describe('Prerequisites & Export E2E Journey', () => {
     const lockIcon = page.locator('[data-testid="lock-icon"], svg[class*="lock"], .lock').first();
     await expect(lockIcon).toBeVisible({ timeout: 2000 });
 
-    // Step 3: Complete all 10 prerequisites (check boxes)
+    // Step 3: Complete all 8 prerequisites (check boxes); loneiva and kvitto_c17_18 are not required for Crewing
     // Navigate to employee edit/view page
     // Check each prerequisite checkbox
     const prerequisites = [
-      'isps', 'photo', 'origo', 'mail_lon', 'loneiva',
-      'bankuppgifter', 'li', 'passport', 'kvitto_c17_18', 'c17'
+      'isps', 'photo', 'origo', 'mail_lon',
+      'bankuppgifter', 'li', 'passport', 'c17'
     ];
 
     for (const prereq of prerequisites) {

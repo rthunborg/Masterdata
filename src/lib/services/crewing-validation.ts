@@ -5,19 +5,18 @@
  * onboarding. When marked true, it indicates the employee has completed all mandatory 
  * requirements and is ready for crew assignment and operational deployment.
  * 
- * All 10 prerequisite masterdata fields must be true before an employee can be marked 
- * as crew-ready (Crewing/Done = true).
+ * All 8 prerequisite masterdata fields must be true before an employee can be marked 
+ * as crew-ready (Crewing/Done = true). kvitto_c17_18 and loneiva (Lönenivå) are not required:
+ * loneiva defaults to Lönenivå 0 and any value 0–7 is acceptable.
  * 
- * The 10 prerequisite fields represent critical onboarding steps:
+ * The 8 prerequisite fields represent critical onboarding steps:
  * - ISP: International Safety Passport certification
  * - Photo: Employee photo on file
  * - Origo: Origo system registration
  * - Mail: Email setup complete
- * - lön: Payroll setup complete
  * - Bankuppgifter: Bank account details verified
  * - LI: Life Insurance enrollment
  * - Passport: Passport verification complete
- * - Kvitto C17/18: Mandatory certification receipt
  * - C17: Mandatory certification
  * 
  * Dependencies:
@@ -29,18 +28,17 @@ import type { Employee } from '@/lib/types/employee';
 
 /**
  * Prerequisite fields required for Crewing/Done editability.
- * All 10 fields must be true before Crewing/Done can be edited.
+ * All 8 fields must be true before Crewing/Done can be edited.
+ * kvitto_c17_18 and loneiva (Lönenivå) are not required; loneiva defaults to 0 and any 0–7 is fine.
  */
 const REQUIRED_FIELDS = [
   'isps',
   'photo',
   'origo',
   'mail_lon',
-  'loneiva', // "lön" in Swedish (payroll)
   'bankuppgifter',
   'li',
   'passport',
-  'kvitto_c17_18',
   'c17',
 ] as const;
 
@@ -53,19 +51,17 @@ const FIELD_LABELS: Record<string, string> = {
   photo: 'Photo',
   origo: 'Origo',
   mail_lon: 'Mail',
-  loneiva: 'lön',
   bankuppgifter: 'Bankuppgifter',
   li: 'LI',
   passport: 'Passport',
-  kvitto_c17_18: 'Kvitto C17/18',
   c17: 'C17',
 };
 
 /**
  * Determine if Crewing/Done field can be edited based on prerequisite completion.
  * 
- * Business Rule: All 10 prerequisite masterdata fields must be true before
- * an employee can be marked as crew-ready (Crewing/Done = true).
+ * Business Rule: All 8 prerequisite masterdata fields must be true before
+ * an employee can be marked as crew-ready (Crewing/Done = true). loneiva and kvitto_c17_18 are not required.
  * 
  * @param employee - Employee object with prerequisite fields
  * @returns true if all prerequisites are met, false otherwise
@@ -77,11 +73,9 @@ const FIELD_LABELS: Record<string, string> = {
  *   photo: true,
  *   origo: true,
  *   mail_lon: true,
- *   loneiva: true,
  *   bankuppgifter: true,
  *   li: true,
  *   passport: true,
- *   kvitto_c17_18: true,
  *   c17: true,
  * };
  * canEditCrewingDone(completeEmployee) // Returns true
@@ -93,11 +87,9 @@ const FIELD_LABELS: Record<string, string> = {
  *   photo: true,
  *   origo: true,
  *   mail_lon: true,
- *   loneiva: true,
  *   bankuppgifter: true,
  *   li: true,
  *   passport: true,
- *   kvitto_c17_18: true,
  *   c17: true,
  * };
  * canEditCrewingDone(incompleteEmployee) // Returns false
@@ -109,25 +101,15 @@ const FIELD_LABELS: Record<string, string> = {
  *   photo: null, // Null value
  *   origo: true,
  *   mail_lon: true,
- *   loneiva: true,
  *   bankuppgifter: true,
  *   li: true,
  *   passport: true,
- *   kvitto_c17_18: true,
  *   c17: true,
  * };
  * canEditCrewingDone(nullEmployee) // Returns false
  */
 export function canEditCrewingDone(employee: Partial<Employee>): boolean {
-  return REQUIRED_FIELDS.every((field) => {
-    const value = employee[field];
-    // loneiva (Lönenivå) is a number 0–7; 0 is a valid level (Lönenivå 0), so any number in range means complete
-    if (field === 'loneiva') {
-      return typeof value === 'number' && value >= 0 && value <= 7;
-    }
-    // All other fields are booleans - must be explicitly true
-    return value === true;
-  });
+  return REQUIRED_FIELDS.every((field) => employee[field] === true);
 }
 
 /**
@@ -146,11 +128,9 @@ export function canEditCrewingDone(employee: Partial<Employee>): boolean {
  *   photo: true,
  *   origo: true,
  *   mail_lon: true,
- *   loneiva: true,
  *   bankuppgifter: true,
  *   li: true,
  *   passport: true,
- *   kvitto_c17_18: true,
  *   c17: true,
  * };
  * getIncompleteFields(completeEmployee) // Returns []
@@ -162,26 +142,16 @@ export function canEditCrewingDone(employee: Partial<Employee>): boolean {
  *   photo: null,
  *   origo: true,
  *   mail_lon: true,
- *   loneiva: true,
  *   bankuppgifter: true,
  *   li: true,
  *   passport: true,
- *   kvitto_c17_18: true,
  *   c17: true,
  * };
  * getIncompleteFields(incompleteEmployee) // Returns ["ISP", "Photo"]
  */
 export function getIncompleteFields(employee: Partial<Employee>): string[] {
   return REQUIRED_FIELDS
-    .filter((field) => {
-      const value = employee[field];
-      // loneiva (Lönenivå): complete when number in 0–7 (0 is valid)
-      if (field === 'loneiva') {
-        return !(typeof value === 'number' && value >= 0 && value <= 7);
-      }
-      // All other fields are booleans - must be explicitly true
-      return value !== true;
-    })
+    .filter((field) => employee[field] !== true)
     .map((field) => FIELD_LABELS[field]);
 }
 

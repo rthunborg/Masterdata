@@ -8,17 +8,15 @@ import { canEditCrewingDone, getIncompleteFields } from '@/lib/services/crewing-
 import type { Employee } from '@/lib/types/employee';
 
 describe('canEditCrewingDone', () => {
-  // Complete employee with all 10 prerequisites set to true
+  // Complete employee with all 8 prerequisites set to true (loneiva and kvitto_c17_18 not required)
   const completeEmployee: Partial<Employee> = {
     isps: true,
     photo: true,
     origo: true,
     mail_lon: true,
-    loneiva: 1, // Number field (0–7, 0 = Lönenivå 0 is valid)
     bankuppgifter: true,
     li: true,
     passport: true,
-    kvitto_c17_18: true,
     c17: true,
   };
 
@@ -58,11 +56,6 @@ describe('canEditCrewingDone', () => {
       expect(result).toBe(false);
     });
 
-    it('returns true when loneiva is 0 (Lönenivå 0)', () => {
-      const result = canEditCrewingDone({ ...completeEmployee, loneiva: 0 });
-      expect(result).toBe(true);
-    });
-
     it('returns false when bankuppgifter is false', () => {
       const result = canEditCrewingDone({ ...completeEmployee, bankuppgifter: false });
       expect(result).toBe(false);
@@ -78,9 +71,9 @@ describe('canEditCrewingDone', () => {
       expect(result).toBe(false);
     });
 
-    it('returns false when kvitto_c17_18 is false', () => {
+    it('returns true when kvitto_c17_18 is false (not required for Crewing)', () => {
       const result = canEditCrewingDone({ ...completeEmployee, kvitto_c17_18: false });
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
     it('returns false when c17 is false', () => {
@@ -110,11 +103,6 @@ describe('canEditCrewingDone', () => {
       expect(result).toBe(false);
     });
 
-    it('returns false when loneiva is null', () => {
-      const result = canEditCrewingDone({ ...completeEmployee, loneiva: null });
-      expect(result).toBe(false);
-    });
-
     it('returns false when bankuppgifter is null', () => {
       const result = canEditCrewingDone({ ...completeEmployee, bankuppgifter: null });
       expect(result).toBe(false);
@@ -130,9 +118,9 @@ describe('canEditCrewingDone', () => {
       expect(result).toBe(false);
     });
 
-    it('returns false when kvitto_c17_18 is null', () => {
+    it('returns true when kvitto_c17_18 is null (not required for Crewing)', () => {
       const result = canEditCrewingDone({ ...completeEmployee, kvitto_c17_18: null });
-      expect(result).toBe(false);
+      expect(result).toBe(true);
     });
 
     it('returns false when c17 is null', () => {
@@ -142,19 +130,18 @@ describe('canEditCrewingDone', () => {
   });
 
   describe('when multiple prerequisites are incomplete', () => {
-    it('returns false when 5 prerequisites are false', () => {
+    it('returns false when 4 prerequisites are false', () => {
       const result = canEditCrewingDone({
         ...completeEmployee,
         isps: false,
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: null,
       });
       expect(result).toBe(false);
     });
 
-    it('returns false when 9 prerequisites are true and 1 is false', () => {
+    it('returns false when 7 prerequisites are true and 1 is false', () => {
       const result = canEditCrewingDone({
         ...completeEmployee,
         c17: false,
@@ -168,11 +155,9 @@ describe('canEditCrewingDone', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: null,
         bankuppgifter: false,
         li: false,
         passport: false,
-        kvitto_c17_18: false,
         c17: false,
       });
       expect(result).toBe(false);
@@ -184,11 +169,9 @@ describe('canEditCrewingDone', () => {
         photo: null,
         origo: null,
         mail_lon: null,
-        loneiva: null,
         bankuppgifter: null,
         li: null,
         passport: null,
-        kvitto_c17_18: null,
         c17: null,
       });
       expect(result).toBe(false);
@@ -216,11 +199,9 @@ describe('getIncompleteFields', () => {
     photo: true,
     origo: true,
     mail_lon: true,
-    loneiva: 1, // Number field (0–7, 0 = Lönenivå 0 is valid)
     bankuppgifter: true,
     li: true,
     passport: true,
-    kvitto_c17_18: true,
     c17: true,
   };
 
@@ -247,19 +228,9 @@ describe('getIncompleteFields', () => {
       expect(result).toEqual(['Mail']);
     });
 
-    it('returns correct field name for loneiva when null', () => {
-      const result = getIncompleteFields({ ...completeEmployee, loneiva: null });
-      expect(result).toEqual(['lön']);
-    });
-
-    it('returns empty array for loneiva when 0 (Lönenivå 0)', () => {
-      const result = getIncompleteFields({ ...completeEmployee, loneiva: 0 });
-      expect(result).toEqual([]);
-    });
-
-    it('returns correct field name for kvitto_c17_18', () => {
-      const result = getIncompleteFields({ ...completeEmployee, kvitto_c17_18: false });
-      expect(result).toEqual(['Kvitto C17/18']);
+    it('returns correct field name for c17', () => {
+      const result = getIncompleteFields({ ...completeEmployee, c17: false });
+      expect(result).toEqual(['C17']);
     });
   });
 
@@ -273,16 +244,15 @@ describe('getIncompleteFields', () => {
       expect(result).toEqual(['ISP', 'Photo']);
     });
 
-    it('returns correct field names for 5 incomplete fields', () => {
+    it('returns correct field names for 4 incomplete fields', () => {
       const result = getIncompleteFields({
         ...completeEmployee,
         isps: false,
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: null,
       });
-      expect(result).toEqual(['ISP', 'Photo', 'Origo', 'Mail', 'lön']);
+      expect(result).toEqual(['ISP', 'Photo', 'Origo', 'Mail']);
     });
 
     it('returns all field names when all prerequisites are incomplete', () => {
@@ -291,11 +261,9 @@ describe('getIncompleteFields', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: null,
         bankuppgifter: false,
         li: false,
         passport: false,
-        kvitto_c17_18: false,
         c17: false,
       });
       expect(result).toEqual([
@@ -303,11 +271,9 @@ describe('getIncompleteFields', () => {
         'Photo',
         'Origo',
         'Mail',
-        'lön',
         'Bankuppgifter',
         'LI',
         'Passport',
-        'Kvitto C17/18',
         'C17',
       ]);
     });
@@ -320,14 +286,12 @@ describe('getIncompleteFields', () => {
         photo: true,
         origo: true,
         // mail_lon missing
-        // loneiva missing
         bankuppgifter: true,
         li: true,
         passport: true,
-        kvitto_c17_18: true,
         c17: true,
       });
-      expect(result).toEqual(['Mail', 'lön']);
+      expect(result).toEqual(['Mail']);
     });
 
     it('handles empty employee object', () => {
@@ -337,11 +301,9 @@ describe('getIncompleteFields', () => {
         'Photo',
         'Origo',
         'Mail',
-        'lön',
         'Bankuppgifter',
         'LI',
         'Passport',
-        'Kvitto C17/18',
         'C17',
       ]);
     });
