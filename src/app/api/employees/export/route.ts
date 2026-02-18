@@ -265,8 +265,8 @@ export async function POST(request: NextRequest) {
       'hotel_required': 'hotel_required',
     };
 
-    // Define date fields that store UUIDs and need resolution
-    const dateFields = ['stena_date', 'omc_date', 'pe3_date', 'repayment_needed_omc', 'repayment_needed_pe3'];
+    // Define date fields that store UUIDs and need resolution (repayment fields are boolean)
+    const dateFields = ['stena_date', 'omc_date', 'pe3_date'];
 
     // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {

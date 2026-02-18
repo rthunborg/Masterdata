@@ -1093,41 +1093,20 @@ export function EmployeeTable({
 
           }
 
-          // Story 19.14: Special handling for repayment date columns
-          // These show a dropdown of all dates from the current year (no capacity filtering)
+          // Repayment columns: boolean checkboxes (null/false = unchecked, true = checked)
           if (["repayment_needed_omc", "repayment_needed_pe3"].includes(config.db_column_name)) {
-            const repaymentFieldMap: Record<string, keyof Employee> = {
-              "repayment_needed_omc": "repayment_needed_omc",
-              "repayment_needed_pe3": "repayment_needed_pe3"
-            };
-
-            const repaymentCategoryMap: Record<string, string> = {
-              "repayment_needed_omc": "ÖMC Dates",
-              "repayment_needed_pe3": "PE3 Dates"
-            };
-
-            const repaymentField = repaymentFieldMap[config.db_column_name];
-            const repaymentCategory = repaymentCategoryMap[config.db_column_name];
-            const repaymentValue = row.original[repaymentField] as string | null;
-            
-            // Get display value for repayment field
-            const repaymentDisplayValue = repaymentValue
-              ? allImportantDates.find(d => d.id === repaymentValue)?.date_description || tDashboard("dateDeleted")
-              : null;
-
+            const repaymentField = config.db_column_name as "repayment_needed_omc" | "repayment_needed_pe3";
+            const repaymentValue = row.original[repaymentField] as boolean | null;
             const isRepaymentChanged = checkColumnChanged(row.original.id, config.db_column_name);
-
             return (
-              <EditableDateCell
-                value={repaymentValue}
-                displayValue={repaymentDisplayValue || "—"}
+              <EditableCell
+                value={repaymentValue === true}
                 employeeId={row.original.id}
                 field={repaymentField}
-                dateCategory={repaymentCategory}
-                allDates={allImportantDates}
+                type="boolean"
                 canEdit={canEdit}
                 isChanged={isRepaymentChanged}
-                isRepaymentMode={true} // Show all current year dates without capacity filtering
+                isChecklistItem={false}
                 className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
                 isCompact={isCompact}
                 onSave={handleMasterdataUpdate}
@@ -1410,7 +1389,7 @@ export function EmployeeTable({
           sortingFn: (rowA, rowB) => {
             // For Important Date fields (stena_date, omc_date, pe3_date), we need to look up
             // the actual date_value from the ImportantDate object, not use the formatted display string
-            const importantDateFields = ["stena_date", "omc_date", "pe3_date", "repayment_needed_omc", "repayment_needed_pe3"];
+            const importantDateFields = ["stena_date", "omc_date", "pe3_date"];
             const dbField = config.db_column_name.toLowerCase();
             
             let dateAStr: string | null = null;

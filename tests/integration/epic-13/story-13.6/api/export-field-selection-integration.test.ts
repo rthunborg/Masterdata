@@ -246,7 +246,7 @@ describe("Export Field Selection Integration", () => {
       { 
         id: "emp1", 
         first_name: "John", 
-        repayment_needed_omc: 'omc-date-uuid-123', // Story 19.14: Now stores UUID
+        repayment_needed_omc: true,
         termination_date: null, // null
         // mobile is undefined
       },
@@ -280,9 +280,6 @@ describe("Export Field Selection Integration", () => {
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
     // Check data row
-    // Story 19.14: repayment_needed_omc stores UUID; export resolves via important_dates.
-    // With empty important_dates mock, unresolved UUID is shown as "" (resolver returns "" when list empty).
-    // null -> "", undefined -> ""
-    expect(unparseCall.data[0]).toEqual(["John", "", "", ""]);
+    expect(unparseCall.data[0]).toEqual(["John", "Yes", "", ""]);
   });
 });

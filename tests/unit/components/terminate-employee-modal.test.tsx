@@ -182,12 +182,11 @@ describe('TerminateEmployeeModal', () => {
   });
 
   it('should display repayment fields preview', async () => {
-    // Mock employee with repayment dates set (for repayment preview)
-    // Story 19.14: repayment fields now store UUIDs
+    // Mock employee with repayment set (for repayment preview)
     const employeeWithRepayment = {
       ...mockEmployee,
-      repayment_needed_omc: 'omc-date-uuid-123',
-      repayment_needed_pe3: 'pe3-date-uuid-456',
+      repayment_needed_omc: true,
+      repayment_needed_pe3: true,
     };
 
     // Mock fetch responses for date info API calls

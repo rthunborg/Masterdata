@@ -56,11 +56,9 @@ export class EmployeeRepository {
         query = query.eq("is_terminated", false);
       }
       
-      // Story 8.13 AC 9: Filter by repayment needed
-      // When needsRepayment is true: show only employees needing repayment
-      // Story 19.14: repayment fields now store UUIDs, so check for non-null values
+      // Story 8.13 AC 9: Filter by repayment needed (repayment fields are boolean)
       if (filters?.needsRepayment === true) {
-        query = query.or("repayment_needed_omc.not.is.null,repayment_needed_pe3.not.is.null");
+        query = query.or("repayment_needed_omc.eq.true,repayment_needed_pe3.eq.true");
       }
 
       const { data, error } = await query;

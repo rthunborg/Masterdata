@@ -174,13 +174,12 @@ function getBaseEmployeeSchemaObject(t?: (key: string) => string) {
     termination_date: z.string().nullable().optional(),
     termination_reason: z.string().nullable().optional(),
 
-    // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
-    // Transform empty string to null so UI/API edge cases don't fail validation
+    // Story 8.13: Repayment tracking fields - boolean checkbox (null/false = unchecked, true = checked)
     repayment_needed_omc: z
-      .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+      .union([z.boolean(), z.literal('').transform(() => null), z.null()])
       .optional(),
     repayment_needed_pe3: z
-      .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+      .union([z.boolean(), z.literal('').transform(() => null), z.null()])
       .optional(),
 
     // Story 8.17: Dietary Requirements
@@ -312,14 +311,12 @@ const baseEmployeeSchema = z.object({
   termination_date: z.string().nullable().optional(),
   termination_reason: z.string().nullable().optional(),
 
-  // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
-  // Changed from boolean to string (UUID) to allow selecting specific date for repayment
-  // Transform empty string to null so UI/API edge cases don't fail validation
+  // Story 8.13: Repayment tracking fields - boolean checkbox (null/false = unchecked, true = checked)
   repayment_needed_omc: z
-    .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+    .union([z.boolean(), z.literal('').transform(() => null), z.null()])
     .optional(),
   repayment_needed_pe3: z
-    .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+    .union([z.boolean(), z.literal('').transform(() => null), z.null()])
     .optional(),
   
   // Story 8.17: Dietary Requirements
@@ -564,18 +561,17 @@ export const csvImportEmployeeSchema = z.object({
   termination_date: z.string().nullable().default(null).optional(),
   termination_reason: z.string().nullable().default(null).optional(),
 
-  // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
-  // Union with null and empty string for import/UI handling
-  repayment_needed_omc: z
-    .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
-    .nullable()
-    .default(null)
-    .optional(),
-  repayment_needed_pe3: z
-    .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
-    .nullable()
-    .default(null)
-    .optional(),
+  // Story 8.13: Repayment tracking fields - boolean checkbox; coerce string for CSV import
+  repayment_needed_omc: z.union([
+    z.boolean(),
+    z.string().transform((v) => (v === '' || v === 'false' || v === '0' ? null : true)),
+    z.null(),
+  ]).nullable().default(null).optional(),
+  repayment_needed_pe3: z.union([
+    z.boolean(),
+    z.string().transform((v) => (v === '' || v === 'false' || v === '0' ? null : true)),
+    z.null(),
+  ]).nullable().default(null).optional(),
 
   // Story 8.17: Dietary Requirements
   special_diet: z.union([z.boolean(), z.string(), z.null()]).nullable().default(false).optional(),

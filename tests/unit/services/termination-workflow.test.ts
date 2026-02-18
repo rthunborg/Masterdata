@@ -233,10 +233,9 @@ describe('Termination Workflow Service', () => {
 
       await applyRepaymentCapture(employeeId, { omc: omcDateId, pe3: null });
 
-      // Story 19.14: Now stores the actual UUID, not boolean
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: omcDateId,
-        repayment_needed_pe3: null,
+        repayment_needed_omc: true,
+        repayment_needed_pe3: false,
       });
       expect(mockUpdateEq).toHaveBeenCalledWith('id', employeeId);
     });
@@ -266,8 +265,8 @@ describe('Termination Workflow Service', () => {
       await applyRepaymentCapture(employeeId, { omc: null, pe3: pe3DateId });
 
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: null,
-        repayment_needed_pe3: pe3DateId,
+        repayment_needed_omc: false,
+        repayment_needed_pe3: true,
       });
     });
 
@@ -297,8 +296,8 @@ describe('Termination Workflow Service', () => {
       await applyRepaymentCapture(employeeId, { omc: omcDateId, pe3: pe3DateId });
 
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: omcDateId,
-        repayment_needed_pe3: pe3DateId,
+        repayment_needed_omc: true,
+        repayment_needed_pe3: true,
       });
     });
 
@@ -324,10 +323,10 @@ describe('Termination Workflow Service', () => {
       });
 
       await applyRepaymentCapture(employeeId, { omc: null, pe3: null });
-      
+
       expect(mockUpdate).toHaveBeenCalledWith({
-        repayment_needed_omc: null,
-        repayment_needed_pe3: null,
+        repayment_needed_omc: false,
+        repayment_needed_pe3: false,
       });
     });
 
@@ -666,13 +665,12 @@ describe('Termination Workflow Service', () => {
       const employeeId = 'emp-123';
       const omcDateId = 'omc-date-uuid-1';
       
-      // Mock employee fetch - repayment fields now store UUIDs
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
         data: {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: omcDateId, // UUID of the date
+          repayment_needed_omc: true,
           repayment_needed_pe3: null,
         },
         error: null,
@@ -720,14 +718,13 @@ describe('Termination Workflow Service', () => {
       const employeeId = 'emp-123';
       const pe3DateId = 'pe3-date-uuid-1';
       
-      // Mock employee fetch - repayment fields now store UUIDs
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
         data: {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
           repayment_needed_omc: null,
-          repayment_needed_pe3: pe3DateId, // UUID of the date
+          repayment_needed_pe3: true,
         },
         error: null,
       });
@@ -775,14 +772,13 @@ describe('Termination Workflow Service', () => {
       const omcDateId = 'omc-date-uuid-1';
       const pe3DateId = 'pe3-date-uuid-1';
       
-      // Mock employee fetch
       const mockEmployeeSingle = vi.fn().mockResolvedValue({
         data: {
           id: employeeId,
           first_name: 'John',
           surname: 'Doe',
-          repayment_needed_omc: omcDateId,
-          repayment_needed_pe3: pe3DateId,
+          repayment_needed_omc: true,
+          repayment_needed_pe3: true,
         },
         error: null,
       });

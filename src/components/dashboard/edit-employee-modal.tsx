@@ -706,7 +706,7 @@ export function EditEmployeeModal({
                 )}
               />
 
-              {/* Story 13.9: Repayment fields - only visible for terminated employees */}
+              {/* Story 13.9: Repayment fields - checkboxes, only visible for terminated employees */}
               {employee.is_terminated && (
                 <>
                   {/* Repayment Needed (ÖMC) */}
@@ -714,23 +714,22 @@ export function EditEmployeeModal({
                     control={form.control}
                     name="repayment_needed_omc"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {tDashboard('repaymentNeededOMC') || 'Repayment Needed (ÖMC)'}
-                        </FormLabel>
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                         <FormControl>
-                          <Input
-                            type="text"
-                            {...field}
-                            value={field.value ? 'Yes' : 'No'}
-                            disabled={true}
-                            className="h-12 md:h-10 bg-muted cursor-not-allowed"
+                          <Checkbox
+                            checked={field.value === true}
+                            onCheckedChange={(checked) => field.onChange(checked === true ? true : null)}
                           />
                         </FormControl>
-                        <FormDescription>
-                          {tDashboard('repaymentFieldDescription') || 'Auto-managed by termination workflow. Read-only.'}
-                        </FormDescription>
-                        <FormMessage />
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            {tDashboard('repaymentNeededOMC') || 'Repayment Needed (ÖMC)'}
+                          </FormLabel>
+                          <FormDescription>
+                            {tDashboard('repaymentFieldDescription') || 'Unchecked = no repayment; check if repayment is needed.'}
+                          </FormDescription>
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -740,23 +739,22 @@ export function EditEmployeeModal({
                     control={form.control}
                     name="repayment_needed_pe3"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {tDashboard('repaymentNeededPE3') || 'Repayment Needed (PE3)'}
-                        </FormLabel>
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                         <FormControl>
-                          <Input
-                            type="text"
-                            {...field}
-                            value={field.value ? 'Yes' : 'No'}
-                            disabled={true}
-                            className="h-12 md:h-10 bg-muted cursor-not-allowed"
+                          <Checkbox
+                            checked={field.value === true}
+                            onCheckedChange={(checked) => field.onChange(checked === true ? true : null)}
                           />
                         </FormControl>
-                        <FormDescription>
-                          {tDashboard('repaymentFieldDescription') || 'Auto-managed by termination workflow. Read-only.'}
-                        </FormDescription>
-                        <FormMessage />
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            {tDashboard('repaymentNeededPE3') || 'Repayment Needed (PE3)'}
+                          </FormLabel>
+                          <FormDescription>
+                            {tDashboard('repaymentFieldDescription') || 'Unchecked = no repayment; check if repayment is needed.'}
+                          </FormDescription>
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />

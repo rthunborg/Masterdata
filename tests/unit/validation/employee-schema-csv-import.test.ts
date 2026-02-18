@@ -332,8 +332,6 @@ describe('csvImportEmployeeSchema - Repayment fields (Story 8.13 & 19.14)', () =
     hire_date: '2025-01-15',
   };
 
-  const validUuid = '550e8400-e29b-41d4-a716-446655440002';
-
   it('accepts empty string for repayment fields (coerced to null)', () => {
     const data = {
       ...validBaseData,
@@ -358,35 +356,17 @@ describe('csvImportEmployeeSchema - Repayment fields (Story 8.13 & 19.14)', () =
     expect(result.success).toBe(true);
   });
 
-  it('accepts valid UUID for repayment_needed_omc and repayment_needed_pe3', () => {
+  it('accepts boolean true for repayment_needed_omc and repayment_needed_pe3', () => {
     const data = {
       ...validBaseData,
-      repayment_needed_omc: validUuid,
-      repayment_needed_pe3: validUuid,
+      repayment_needed_omc: true,
+      repayment_needed_pe3: true,
     };
     const result = csvImportEmployeeSchema.safeParse(data);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.repayment_needed_omc).toBe(validUuid);
-      expect(result.data.repayment_needed_pe3).toBe(validUuid);
+      expect(result.data.repayment_needed_omc).toBe(true);
+      expect(result.data.repayment_needed_pe3).toBe(true);
     }
-  });
-
-  it('rejects invalid UUID for repayment_needed_omc', () => {
-    const data = {
-      ...validBaseData,
-      repayment_needed_omc: 'not-a-uuid',
-    };
-    const result = csvImportEmployeeSchema.safeParse(data);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects invalid UUID for repayment_needed_pe3', () => {
-    const data = {
-      ...validBaseData,
-      repayment_needed_pe3: 'not-a-uuid',
-    };
-    const result = csvImportEmployeeSchema.safeParse(data);
-    expect(result.success).toBe(false);
   });
 });
