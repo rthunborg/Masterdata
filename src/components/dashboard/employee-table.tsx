@@ -375,7 +375,10 @@ export function EmployeeTable({
   // Story 13.2: Employee selection state
   const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
   const [globalFilter, setGlobalFilter] = React.useState("");
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  // Default sort: checklist progress ascending (employees with fewest completed items at top)
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: "checklist_progress", desc: false },
+  ]);
 
   // Story 19.11: Column width persistence
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {

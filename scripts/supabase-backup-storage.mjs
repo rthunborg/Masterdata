@@ -27,7 +27,7 @@ function dateFromPrefix(prefix) {
 
 async function upload(date) {
   const supabase = getClient();
-  const files = ["schema.sql", "data.sql", "roles.sql"];
+  const files = ["schema.sql", "data.sql", "roles.sql", "employees-column_config.sql"];
   for (const name of files) {
     const path = join(OUT_DIR, name);
     if (!existsSync(path)) {
@@ -78,9 +78,17 @@ async function downloadOldest() {
   const oldest = dates[0];
   console.log(`Downloading oldest backup: ${oldest}`);
   if (!existsSync(RESTORE_DIR)) mkdirSync(RESTORE_DIR, { recursive: true });
-  for (const name of ["schema.sql", "data.sql", "roles.sql"]) {
+  const required = ["schema.sql", "data.sql", "roles.sql"];
+  const optional = ["employees-column_config.sql"];
+  for (const name of [...required, ...optional]) {
     const { data, error } = await supabase.storage.from(BUCKET).download(`backup/${oldest}/${name}`);
-    if (error) throw new Error(`Download backup/${oldest}/${name}: ${error.message}`);
+    if (error) {
+      if (optional.includes(name)) {
+        console.warn(`Skip ${name} (not in backup, may be pre-partial-restore): ${error.message}`);
+        continue;
+      }
+      throw new Error(`Download backup/${oldest}/${name}: ${error.message}`);
+    }
     const buf = Buffer.from(await data.arrayBuffer());
     writeFileSync(join(RESTORE_DIR, name), buf);
     console.log(`Downloaded ${name}`);
