@@ -59,7 +59,7 @@ jobs:
         run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/schema.sql
 
       - name: Dump data (production)
-        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/data.sql --data-only --use-copy -x public.buckets_vectors -x storage.buckets_vectors
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/data.sql --data-only --use-copy -x public.buckets_vectors -x storage.buckets_vectors -x auth.audit_log_entries
 
       - name: Upload backup to Supabase Storage
         run: node scripts/supabase-backup-storage.mjs upload "$(date -u +%Y-%m-%d)"
