@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/employees/export/route";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { createAPIClient } from "@/lib/supabase/server-api";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import Papa from "papaparse";
 
 // Mock dependencies
@@ -163,6 +164,9 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
 vi.mock("@/lib/supabase/server-api", () => ({
   createAPIClient: vi.fn(),
 }));
+vi.mock("@/lib/supabase/server", () => ({
+  createServiceRoleClient: vi.fn(),
+}));
 
 vi.mock("papaparse", () => ({
   default: {
@@ -210,6 +214,7 @@ describe("Export Field Selection Integration", () => {
     };
      
     vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
     // Execute request
     const request = new Request("http://localhost/api/employees/export", {
@@ -259,6 +264,7 @@ describe("Export Field Selection Integration", () => {
     };
      
     vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",
@@ -273,11 +279,9 @@ describe("Export Field Selection Integration", () => {
      
     const unparseCall = vi.mocked(Papa.unparse).mock.calls[0][0] as { fields: string[], data: string[][] };
     
-    // Check data row
-    // Story 19.14: repayment_needed_omc now stores UUID instead of boolean
-    // UUID -> exported as-is
-    // null -> ""
-    // undefined -> ""
+    // Check data row: first_name, repayment_needed_omc, termination_date, mobile
+    // repayment_needed_omc is currently exported as-is (UUID) per route; only stena_date/omc_date/pe3_date are resolved.
+    // null -> "", undefined -> ""
     expect(unparseCall.data[0]).toEqual(["John", "omc-date-uuid-123", "", ""]);
   });
 });

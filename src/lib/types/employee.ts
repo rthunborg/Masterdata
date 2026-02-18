@@ -72,6 +72,8 @@ export interface Employee {
   // Story 14.1: ÖMC Masterdata Reminder Notification
   /** Timestamp when reminder notification was sent for incomplete masterdata after ÖMC completion */
   omc_masterdata_reminder_sent_at?: string | null;
+  /** Stena ID / Origo number - free-text, any string value allowed */
+  stena_id_origo_nummer?: string | null;
   created_at: string;
   updated_at: string;
   customData?: Record<string, string | number | boolean | null>; // Custom column data from party tables

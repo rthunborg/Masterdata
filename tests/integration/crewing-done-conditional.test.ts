@@ -243,7 +243,7 @@ describe('Crewing/Done Conditional Editability Integration', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: 0, // 0 counts as false for number fields
+        loneiva: null, // null = not set (0 is valid Lönenivå 0)
         bankuppgifter: false,
         li: false,
         passport: false,
@@ -272,7 +272,7 @@ describe('Crewing/Done Conditional Editability Integration', () => {
         photo: false,
         origo: false,
         mail_lon: false,
-        loneiva: 0,
+        loneiva: null, // null = not set (0 is valid Lönenivå 0)
         bankuppgifter: false,
         li: false,
         passport: false,

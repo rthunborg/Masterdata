@@ -1,7 +1,8 @@
 /**
- * Component Tests for Column Settings Display Name Text Wrapping
+ * Component Tests for Column Settings Display Name Text Handling
  * Story 11.10: PE3 Validation & UI Component Tests
- * AC5: Column Settings Display Name Wrapping Tests
+ * AC5: Column Settings Display Name - long names are truncated with ellipsis
+ * to prevent horizontal overflow and keep column alignment consistent.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -82,8 +83,8 @@ describe("Column Settings Display Name Text Wrapping", () => {
   });
 
   describe("AC5: Column Settings Display Name Wrapping Tests", () => {
-    it("should wrap long display names (>50 chars) to multiple lines", () => {
-      renderWithQueryClient(
+    it("should show long display names (>50 chars) with truncation", () => {
+      renderWithI18n(
         <ColumnSettingsTable
           columns={mockColumns}
           allColumns={mockAllColumns}
@@ -91,24 +92,21 @@ describe("Column Settings Display Name Text Wrapping", () => {
         />
       );
 
-      // Find the long column name cell
+      // Find the long column name (truncated text shows the start)
       const longNameCell = screen.getByText(/This is a very long display name/i);
       const cellElement = longNameCell.closest('td');
       
       expect(cellElement).toBeTruthy();
       
-      // Check that the cell allows text wrapping
-      // The cell should not have text truncation classes like 'truncate' or 'overflow-hidden'
-      const styles = window.getComputedStyle(cellElement!);
-      expect(styles.whiteSpace).not.toBe('nowrap');
-      
-      // Check that the text content is present (not truncated with ellipsis)
-      expect(longNameCell.textContent).toContain('This is a very long display name');
-      expect(longNameCell.textContent?.length).toBeGreaterThan(50);
+      // Long names use truncate class to prevent overflow; full text in title
+      const displayDiv = longNameCell.closest('div');
+      expect(displayDiv).toBeTruthy();
+      expect(displayDiv!.className).toMatch(/truncate/);
+      expect(displayDiv!.getAttribute('title')).toContain('This is a very long display name');
     });
 
-    it("should expand row height to accommodate wrapped text", () => {
-      renderWithQueryClient(
+    it("should keep display name cell to single-line height when truncated", () => {
+      renderWithI18n(
         <ColumnSettingsTable
           columns={mockColumns}
           allColumns={mockAllColumns}
@@ -117,32 +115,15 @@ describe("Column Settings Display Name Text Wrapping", () => {
       );
 
       const longNameCell = screen.getByText(/This is a very long display name/i);
-      // The min-h-8 class is on the inner div, not the td
       const textElement = longNameCell.closest('div');
       const cellElement = longNameCell.closest('td');
       
       expect(cellElement).toBeTruthy();
       expect(textElement).toBeTruthy();
       
-      // Check if inner div has min-height class (min-h-8 = 32px)
-      const hasMinHeightClass = textElement!.classList.contains('min-h-8') ||
-                               textElement!.className.includes('min-h-8');
-      
-      // Check computed styles on the inner div
-      const textStyles = window.getComputedStyle(textElement!);
-      const minHeight = parseFloat(textStyles.minHeight) || 0;
-      const actualHeight = parseFloat(textStyles.height) || textElement!.getBoundingClientRect().height;
-      
-      // Either has the class OR computed size should accommodate wrapped text
-      // Long text should make the element taller than a single line
-      if (!hasMinHeightClass) {
-        const effectiveHeight = Math.max(minHeight, actualHeight);
-        // Text wrapping should make element taller than typical single-line height (~20-24px)
-        expect(effectiveHeight).toBeGreaterThanOrEqual(25);
-      } else {
-        // If class is present, that's sufficient
-        expect(hasMinHeightClass).toBe(true);
-      }
+      expect(textElement!.className).toMatch(/min-h-8/);
+      // truncate class applies nowrap + overflow hidden + ellipsis
+      expect(textElement!.className).toMatch(/truncate/);
     });
 
     it("should keep database column name visible below display name", () => {
@@ -169,8 +150,8 @@ describe("Column Settings Display Name Text Wrapping", () => {
       expect(dbColumnRow).toBe(row);
     });
 
-    it("should maintain readable line-height for wrapped text", () => {
-      renderWithQueryClient(
+    it("should maintain readable line-height for display name text", () => {
+      renderWithI18n(
         <ColumnSettingsTable
           columns={mockColumns}
           allColumns={mockAllColumns}
@@ -186,26 +167,21 @@ describe("Column Settings Display Name Text Wrapping", () => {
       const styles = window.getComputedStyle(cellElement!);
       const lineHeight = styles.lineHeight;
       
-      // Line height should be reasonable (not too small)
-      // Check if it's a number (px) or a multiplier (like "1.5")
       if (lineHeight !== 'normal') {
         const lineHeightValue = parseFloat(lineHeight);
         if (!isNaN(lineHeightValue)) {
-          // If it's a multiplier (less than 10), multiply by font size
           const fontSize = parseFloat(styles.fontSize) || 16;
           const actualLineHeight = lineHeightValue < 10 ? lineHeightValue * fontSize : lineHeightValue;
           expect(actualLineHeight).toBeGreaterThan(15);
         }
       }
-      // If lineHeight is 'normal', that's also acceptable (browser default)
     });
 
-    it("should prevent horizontal overflow on narrow screens", () => {
-      // Set a narrow viewport
+    it("should prevent horizontal overflow on narrow screens via truncation", () => {
       Object.defineProperty(window, 'innerWidth', {
         writable: true,
         configurable: true,
-        value: 375, // Mobile width
+        value: 375,
       });
 
       renderWithQueryClient(
@@ -217,23 +193,14 @@ describe("Column Settings Display Name Text Wrapping", () => {
       );
 
       const longNameCell = screen.getByText(/This is a very long display name/i);
-      // Find the div element that contains the text (EditableColumnNameCell's display div)
-      // The text is inside a div with inline styles for wordWrap
       const textElement = longNameCell.closest('div') as HTMLElement;
       
       expect(textElement).toBeTruthy();
       
-      // Check that text wrapping is enabled via inline styles or classes
-      const textStyles = window.getComputedStyle(textElement);
-      // Implementation uses: wordWrap: 'break-word', overflowWrap: 'break-word' (inline style)
-      // OR break-words class (Tailwind) which sets word-break: break-word
-      // Check for either inline style or computed style
-      const hasWordWrap = textStyles.wordWrap === 'break-word' || 
-                         textStyles.overflowWrap === 'break-word' ||
-                         textStyles.wordBreak === 'break-word';
-      expect(hasWordWrap).toBeTruthy();
-      // Should not prevent wrapping
-      expect(textStyles.whiteSpace).not.toBe('nowrap');
+      // Truncate class prevents overflow (overflow-hidden, text-ellipsis, whitespace-nowrap)
+      expect(textElement.className).toMatch(/truncate/);
+      // Full text available via title
+      expect(textElement.getAttribute('title')).toBeTruthy();
     });
 
     it("should handle multiple long display names in the same table", () => {
@@ -262,14 +229,13 @@ describe("Column Settings Display Name Text Wrapping", () => {
         />
       );
 
-      // Both long names should be visible and wrapped
+      // Both long names visible (truncated); each row has its own display name
       const firstLongName = screen.getByText(/This is a very long display name/i);
       const secondLongName = screen.getByText(/Another extremely long column display name/i);
       
       expect(firstLongName).toBeInTheDocument();
       expect(secondLongName).toBeInTheDocument();
       
-      // Both should be in separate rows
       const firstRow = firstLongName.closest('tr');
       const secondRow = secondLongName.closest('tr');
       

@@ -12,7 +12,8 @@ import { NextRequest } from "next/server";
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/employee-repository");
 vi.mock("@/lib/server/repositories/column-config-repository");
-vi.mock("@/lib/supabase/server-api");
+vi.mock("@/lib/supabase/server-api", () => ({ createAPIClient: vi.fn() }));
+vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: vi.fn() }));
 
 describe("Export Date Resolution", () => {
   beforeEach(() => {
@@ -214,7 +215,9 @@ describe("Export Date Resolution", () => {
       }),
     };
 
+    const { createServiceRoleClient } = await import("@/lib/supabase/server");
     vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as ReturnType<typeof createAPIClient>);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabaseClient as ReturnType<typeof createServiceRoleClient>);
 
     // Import the route handler
     const { POST } = await import("@/app/api/employees/export/route");
@@ -381,7 +384,9 @@ describe("Export Date Resolution", () => {
       }),
     };
 
+    const { createServiceRoleClient } = await import("@/lib/supabase/server");
     vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as ReturnType<typeof createAPIClient>);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabaseClient as ReturnType<typeof createServiceRoleClient>);
 
     // Import the route handler
     const { POST } = await import("@/app/api/employees/export/route");

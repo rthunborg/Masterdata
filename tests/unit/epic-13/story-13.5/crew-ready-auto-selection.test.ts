@@ -70,7 +70,7 @@ describe.skip('Story 13.5: Crew Ready Auto-Selection - SKIPPED (Story 20.1)', ()
       expect(result).toEqual(['1', '2']);
     });
 
-    it('should exclude employees without loneiva value', () => {
+    it('should exclude employees without loneiva value (null)', () => {
       const employees: Employee[] = [
         {
           id: '1',
@@ -88,16 +88,24 @@ describe.skip('Story 13.5: Crew Ready Auto-Selection - SKIPPED (Story 20.1)', ()
           kvitto_c17_18: true,
           c17: true,
         } as Employee,
+      ];
+
+      const result = getCrewReadyEmployeeIds(employees);
+      expect(result).toEqual([]);
+    });
+
+    it('should include employees with loneiva 0 (Lönenivå 0)', () => {
+      const employees: Employee[] = [
         {
-          id: '2',
-          first_name: 'Jane',
-          surname: 'Smith',
-          ssn: '987654-3210',
+          id: '1',
+          first_name: 'John',
+          surname: 'Doe',
+          ssn: '123456-7890',
           isps: true,
           photo: true,
           origo: true,
           mail_lon: true,
-          loneiva: 0, // Zero is not valid
+          loneiva: 0, // Lönenivå 0 is valid
           bankuppgifter: true,
           li: true,
           passport: true,
@@ -107,7 +115,7 @@ describe.skip('Story 13.5: Crew Ready Auto-Selection - SKIPPED (Story 20.1)', ()
       ];
 
       const result = getCrewReadyEmployeeIds(employees);
-      expect(result).toEqual([]);
+      expect(result).toEqual(['1']);
     });
 
     it('should exclude employees with any false boolean field', () => {

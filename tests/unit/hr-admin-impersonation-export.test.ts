@@ -32,8 +32,9 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
   },
 }));
 
+vi.mock("@/lib/supabase/server-api", () => ({ createAPIClient: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(),
+  createServiceRoleClient: vi.fn(),
 }));
 
 vi.mock("papaparse", () => ({
@@ -71,11 +72,9 @@ vi.mock("exceljs", () => {
 import { requireAuthAPI } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { columnConfigRepository } from "@/lib/server/repositories/column-config-repository";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import * as ExcelJS from "exceljs";
-
-// Type for mocked Supabase client
-type MockSupabaseClient = ReturnType<typeof createClient>;
 
 describe("HR Admin Impersonation Export", () => {
   const mockHRAdminUser = {
@@ -189,10 +188,12 @@ describe("HR Admin Impersonation Export", () => {
             ],
             error: null,
           }),
+          eq: vi.fn().mockReturnValue({ data: [], error: null }),
         }),
       }),
     };
-    vi.mocked(createClient).mockReturnValue(mockSupabase as unknown as MockSupabaseClient);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
   });
 
   describe("Impersonation Permission Validation", () => {

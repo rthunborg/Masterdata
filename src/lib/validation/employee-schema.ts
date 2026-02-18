@@ -175,9 +175,13 @@ function getBaseEmployeeSchemaObject(t?: (key: string) => string) {
     termination_reason: z.string().nullable().optional(),
 
     // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
-    // Changed from boolean to string (UUID) to allow selecting specific date for repayment
-    repayment_needed_omc: z.string().uuid().nullable().optional(),
-    repayment_needed_pe3: z.string().uuid().nullable().optional(),
+    // Transform empty string to null so UI/API edge cases don't fail validation
+    repayment_needed_omc: z
+      .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+      .optional(),
+    repayment_needed_pe3: z
+      .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+      .optional(),
 
     // Story 8.17: Dietary Requirements
     special_diet: z.boolean().default(false),
@@ -185,6 +189,9 @@ function getBaseEmployeeSchemaObject(t?: (key: string) => string) {
 
     // Story 14.1: ÖMC Masterdata Reminder Notification
     omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
+
+    // Stena ID / Origo number - free-text field (column_type is text; form and API use string | null)
+    stena_id_origo_nummer: z.string().nullable().optional(),
   });
 }
 
@@ -307,8 +314,13 @@ const baseEmployeeSchema = z.object({
 
   // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
   // Changed from boolean to string (UUID) to allow selecting specific date for repayment
-  repayment_needed_omc: z.string().uuid().nullable().optional(),
-  repayment_needed_pe3: z.string().uuid().nullable().optional(),
+  // Transform empty string to null so UI/API edge cases don't fail validation
+  repayment_needed_omc: z
+    .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+    .optional(),
+  repayment_needed_pe3: z
+    .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+    .optional(),
   
   // Story 8.17: Dietary Requirements
   special_diet: z.boolean().default(false),
@@ -316,6 +328,9 @@ const baseEmployeeSchema = z.object({
 
   // Story 14.1: ÖMC Masterdata Reminder Notification
   omc_masterdata_reminder_sent_at: z.string().datetime().nullable(),
+
+  // Stena ID / Origo number - free-text field (column_type is text; form and API use string | null)
+  stena_id_origo_nummer: z.string().nullable().optional(),
 });
 
 export const createEmployeeSchema = baseEmployeeSchema.refine(
@@ -550,10 +565,17 @@ export const csvImportEmployeeSchema = z.object({
   termination_reason: z.string().nullable().default(null).optional(),
 
   // Story 8.13 & 19.14: Repayment tracking fields - UUID reference to Important Dates
-  // Changed from boolean to string (UUID) to allow selecting specific date for repayment
-  // Union with null for import handling
-  repayment_needed_omc: z.union([z.string().uuid(), z.null()]).nullable().default(null).optional(),
-  repayment_needed_pe3: z.union([z.string().uuid(), z.null()]).nullable().default(null).optional(),
+  // Union with null and empty string for import/UI handling
+  repayment_needed_omc: z
+    .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+    .nullable()
+    .default(null)
+    .optional(),
+  repayment_needed_pe3: z
+    .union([z.string().uuid(), z.literal('').transform(() => null), z.null()])
+    .nullable()
+    .default(null)
+    .optional(),
 
   // Story 8.17: Dietary Requirements
   special_diet: z.union([z.boolean(), z.string(), z.null()]).nullable().default(false).optional(),

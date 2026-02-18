@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAPIClient } from "@/lib/supabase/server-api";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireAuthAPI, requireRoleAPI, createErrorResponse } from "@/lib/server/auth";
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
 import { createImportantDateSchema } from "@/lib/validation/important-date-schema";
@@ -20,7 +21,13 @@ export async function GET(request?: NextRequest) {
     // Require authentication
     await requireAuthAPI(request);
 
-    const supabase = createAPIClient(request);
+    // Use service role client to bypass RLS for reading shared reference data.
+    // Important dates are needed by ALL authenticated roles to resolve date UUID
+    // fields (stena_date, omc_date, pe3_date) into formatted display strings.
+    // Without this, roles whose RLS context doesn't include a SELECT policy on
+    // important_dates (e.g. Toplux) would get an empty result, causing date
+    // columns to render as dashes instead of formatted dates.
+    const supabase = createServiceRoleClient();
     const { searchParams } = new URL(request?.url ?? 'http://localhost');
     const category = searchParams.get("category");
     const id = searchParams.get("id");

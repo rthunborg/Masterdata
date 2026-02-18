@@ -40,6 +40,9 @@ const COLUMN_TO_FIELD_MAP: Record<string, string> = {
   "Repayment Needed ÖMC": "repayment_needed_omc",
   "Återbetalningsskyldig PE3": "repayment_needed_pe3",
   "Repayment Needed PE3": "repayment_needed_pe3",
+  // Stena ID / Origo number - display name may have hyphen (e.g. "Stena ID- Origo nummer")
+  "Stena ID- Origo nummer": "stena_id_origo_nummer",
+  "Stena ID-Origo nummer": "stena_id_origo_nummer",
 };
 
 /**

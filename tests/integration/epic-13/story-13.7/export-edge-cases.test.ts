@@ -19,7 +19,8 @@ import * as auth from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import type { Employee } from "@/lib/types/employee";
 import { UserRole } from "@/lib/types/user";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import Papa from "papaparse";
 import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 
@@ -39,7 +40,8 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
     ]),
   },
 }));
-vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/supabase/server-api", () => ({ createAPIClient: vi.fn() }));
+vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: vi.fn() }));
 vi.mock("@/lib/services/crewing-validation");
 vi.mock("papaparse");
 
@@ -116,7 +118,8 @@ describe("Story 13.7: Export Edge Cases", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -154,7 +157,8 @@ describe("Story 13.7: Export Edge Cases", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const allEmployeeIds = employees.map(emp => emp.id);
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
@@ -204,7 +208,8 @@ describe("Story 13.7: Export Edge Cases", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       // Select some from page 1 and some from page 2
       const selectedIds = [
@@ -255,7 +260,8 @@ describe("Story 13.7: Export Edge Cases", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -296,7 +302,8 @@ describe("Story 13.7: Export Edge Cases", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -337,7 +344,8 @@ describe("Story 13.7: Export Edge Cases", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const request = new NextRequest("http://localhost:3000/api/employees/export", {
         method: "POST",
@@ -386,7 +394,8 @@ describe("Story 13.7: Export Edge Cases", () => {
           }),
         }),
       };
-      vi.mocked(createClient).mockResolvedValue(mockSupabase as never);
+      vi.mocked(createAPIClient).mockReturnValue(mockSupabase as never);
+      vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabase as never);
 
       const allEmployeeIds = employees.map(emp => emp.id);
       const request = new NextRequest("http://localhost:3000/api/employees/export", {

@@ -10,6 +10,10 @@ import { UserRole } from "@/lib/types/user";
 vi.mock("@/lib/server/auth");
 vi.mock("@/lib/server/repositories/important-date-repository");
 vi.mock("@/lib/supabase/server-api");
+vi.mock("@/lib/supabase/server", () => ({
+  createServiceRoleClient: vi.fn(),
+  createClient: vi.fn(),
+}));
 
 describe("GET /api/important-dates", () => {
   const mockHRAdminUser = {
@@ -62,8 +66,9 @@ describe("GET /api/important-dates", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     
-    // Mock createAPIClient for all GET tests
-    const { createAPIClient } = await import("@/lib/supabase/server-api");
+    // Mock createServiceRoleClient for all GET tests (GET handler uses service role
+    // client to bypass RLS for reading shared reference data)
+    const { createServiceRoleClient } = await import("@/lib/supabase/server");
     
     // Create chainable order mock
     const createOrderChain = (data: ImportantDate[], error: unknown = null) => {
@@ -73,7 +78,7 @@ describe("GET /api/important-dates", () => {
       return orderMock;
     };
     
-    vi.mocked(createAPIClient).mockReturnValue({
+    vi.mocked(createServiceRoleClient).mockReturnValue({
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
@@ -82,7 +87,7 @@ describe("GET /api/important-dates", () => {
           order: createOrderChain(mockImportantDates),
         }),
       }),
-    } as ReturnType<typeof createAPIClient>);
+    } as ReturnType<typeof createServiceRoleClient>);
   });
 
   it("should return important dates for HR Admin users", async () => {
@@ -100,7 +105,7 @@ describe("GET /api/important-dates", () => {
     const stenaDates = [mockImportantDates[0]];
     vi.mocked(auth.requireAuthAPI).mockResolvedValue(mockHRAdminUser);
     
-    const { createAPIClient } = await import("@/lib/supabase/server-api");
+    const { createServiceRoleClient } = await import("@/lib/supabase/server");
     
     // The route flow with category: from().select().order().order().eq()
     // Create a query object that has .eq() method returning a promise
@@ -111,11 +116,11 @@ describe("GET /api/important-dates", () => {
     const secondOrder = vi.fn().mockReturnValue(queryObject);
     const firstOrder = vi.fn().mockReturnValue({ order: secondOrder });
     
-    vi.mocked(createAPIClient).mockReturnValue({
+    vi.mocked(createServiceRoleClient).mockReturnValue({
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({ order: firstOrder }),
       }),
-    } as ReturnType<typeof createAPIClient>);
+    } as ReturnType<typeof createServiceRoleClient>);
 
     const request = new NextRequest(
       "http://localhost:3000/api/important-dates?category=Stena%20Dates"
@@ -161,8 +166,8 @@ describe("GET /api/important-dates", () => {
       order: vi.fn().mockResolvedValue({ data: null, error: { message: "Database error" } }),
     });
     
-    const { createAPIClient } = await import("@/lib/supabase/server-api");
-    vi.mocked(createAPIClient).mockReturnValue({
+    const { createServiceRoleClient } = await import("@/lib/supabase/server");
+    vi.mocked(createServiceRoleClient).mockReturnValue({
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
@@ -171,7 +176,7 @@ describe("GET /api/important-dates", () => {
           order: orderChain,
         }),
       }),
-    } as ReturnType<typeof createAPIClient>);
+    } as ReturnType<typeof createServiceRoleClient>);
 
     const request = new NextRequest("http://localhost:3000/api/important-dates");
     const response = await GET(request);

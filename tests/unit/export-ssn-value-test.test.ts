@@ -38,19 +38,19 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
   },
 }));
 
-// Mock Supabase
+// Mock Supabase (export route uses createAPIClient + createServiceRoleClient)
 type MockSupabaseQueryChain = {
   select: ReturnType<typeof vi.fn>;
   in: ReturnType<typeof vi.fn>;
+  eq: ReturnType<typeof vi.fn>;
 };
 
 const mockSupabaseClient = {
   from: vi.fn(),
 };
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(() => mockSupabaseClient),
-}));
+vi.mock("@/lib/supabase/server-api", () => ({ createAPIClient: vi.fn() }));
+vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: vi.fn() }));
 
 vi.mock("papaparse", () => ({
   default: {
@@ -64,6 +64,8 @@ vi.mock("papaparse", () => ({
 import { requireAuthAPI } from "@/lib/server/auth";
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import { columnConfigRepository } from "@/lib/server/repositories/column-config-repository";
+import { createAPIClient } from "@/lib/supabase/server-api";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 
 describe("Export SSN Value Test", () => {
   const mockHRAdmin = {
@@ -84,15 +86,15 @@ describe("Export SSN Value Test", () => {
     // Mock auth
     vi.mocked(requireAuthAPI).mockResolvedValue(mockHRAdmin);
 
-    // Mock Supabase custom_data query
+    // Mock Supabase custom_data + important_dates (export route uses createAPIClient + createServiceRoleClient)
     const mockQueryChain: MockSupabaseQueryChain = {
       select: vi.fn().mockReturnThis(),
-      in: vi.fn().mockResolvedValue({
-        data: [],
-        error: null,
-      }),
+      in: vi.fn().mockResolvedValue({ data: [], error: null }),
+      eq: vi.fn().mockResolvedValue({ data: [], error: null }),
     };
-    vi.mocked(mockSupabaseClient.from).mockReturnValue(mockQueryChain as never);
+    mockSupabaseClient.from.mockReturnValue(mockQueryChain as never);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as never);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabaseClient as never);
 
     // Mock employee with SSN
     const mockEmployee = {
@@ -239,15 +241,15 @@ describe("Export SSN Value Test", () => {
   it("should handle multiple employees with different SSN values", async () => {
     vi.mocked(requireAuthAPI).mockResolvedValue(mockHRAdmin);
 
-    // Mock Supabase custom_data query
+    // Mock Supabase custom_data + important_dates
     const mockQueryChain2: MockSupabaseQueryChain = {
       select: vi.fn().mockReturnThis(),
-      in: vi.fn().mockResolvedValue({
-        data: [],
-        error: null,
-      }),
+      in: vi.fn().mockResolvedValue({ data: [], error: null }),
+      eq: vi.fn().mockResolvedValue({ data: [], error: null }),
     };
-    vi.mocked(mockSupabaseClient.from).mockReturnValue(mockQueryChain2 as never);
+    mockSupabaseClient.from.mockReturnValue(mockQueryChain2 as never);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as never);
+    vi.mocked(createServiceRoleClient).mockReturnValue(mockSupabaseClient as never);
 
     const mockEmployees = [
       {

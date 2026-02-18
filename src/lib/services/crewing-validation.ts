@@ -121,9 +121,9 @@ const FIELD_LABELS: Record<string, string> = {
 export function canEditCrewingDone(employee: Partial<Employee>): boolean {
   return REQUIRED_FIELDS.every((field) => {
     const value = employee[field];
-    // loneiva is a number field - truthy number means complete (non-zero, non-null)
+    // loneiva (Lönenivå) is a number 0–7; 0 is a valid level (Lönenivå 0), so any number in range means complete
     if (field === 'loneiva') {
-      return typeof value === 'number' && value !== 0;
+      return typeof value === 'number' && value >= 0 && value <= 7;
     }
     // All other fields are booleans - must be explicitly true
     return value === true;
@@ -175,9 +175,9 @@ export function getIncompleteFields(employee: Partial<Employee>): string[] {
   return REQUIRED_FIELDS
     .filter((field) => {
       const value = employee[field];
-      // loneiva is a number field - truthy number means complete
+      // loneiva (Lönenivå): complete when number in 0–7 (0 is valid)
       if (field === 'loneiva') {
-        return !(typeof value === 'number' && value !== 0);
+        return !(typeof value === 'number' && value >= 0 && value <= 7);
       }
       // All other fields are booleans - must be explicitly true
       return value !== true;
