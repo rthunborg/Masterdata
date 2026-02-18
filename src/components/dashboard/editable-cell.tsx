@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,8 @@ interface EditableCellProps {
   canEdit?: boolean; // Permission flag for edit access
   isChanged?: boolean; // Story 16.5: Flag for field highlighting
   isChecklistItem?: boolean; // Story 19.x: When true, boolean fields show "Klart/Nej", otherwise "Ja/Nej"
+  /** When 'checkbox', boolean shows only a checkbox (no "Ja"/"Nej" text). Used for repayment fields. */
+  booleanDisplay?: "checkbox" | "select";
   oneMarkedAt?: string | null; // Timestamp for One field (Story 8.3)
   oneValue?: boolean | null; // One field value for Talmundo conditional editability (Story 8.4)
   employeeData?: Partial<Employee>; // For Crewing/Done field conditional editability (Story 8.5)
@@ -69,6 +72,7 @@ export function EditableCell({
   canEdit = true, // Default to true for backward compatibility
   isChanged = false, // Story 16.5: Default to false for backward compatibility
   isChecklistItem = true, // Story 19.x: Default to true for backward compatibility (existing boolean fields use "Klart")
+  booleanDisplay = "select", // Repayment fields use "checkbox" for checkbox-only UI
   oneMarkedAt, // Timestamp for One field (Story 8.3)
   oneValue, // One field value for Talmundo conditional editability (Story 8.4)
   employeeData, // Employee data for Crewing/Done conditional editability (Story 8.5)
@@ -355,6 +359,14 @@ export function EditableCell({
   if (!isEditing) {
     // Read-only cell - show tooltip on click
     if (!effectiveCanEdit) {
+      // Repayment-style: show only a disabled checkbox (no "Nej" text)
+      if (type === "boolean" && booleanDisplay === "checkbox") {
+        return (
+          <div ref={cellRef} className={cn("flex items-center px-3 py-2 min-h-10", className)}>
+            <Checkbox checked={value === true} disabled />
+          </div>
+        );
+      }
       // Story 8.9: Format ÖMC dates as two-day range in display mode
       // Story 9.9: Show Swedish labels for boolean fields
       // Story 19.3: Format all date type fields in Swedish format
@@ -528,6 +540,30 @@ export function EditableCell({
     } else if (isLoneivaField && value !== null && value !== undefined) {
       // Story 8.6: Show green badge for Lönenivå when value is set (0-7)
       badgeStatus = 'green';
+    }
+
+    // Repayment-style: show only a checkbox (no "Ja"/"Nej"); click toggles and saves
+    if (type === "boolean" && booleanDisplay === "checkbox") {
+      return (
+        <div ref={cellRef} className={cn("flex items-center px-3 py-2 min-h-10", className)}>
+          <Checkbox
+            checked={value === true}
+            disabled={isLoading}
+            onCheckedChange={async (checked) => {
+              const newVal = checked === true ? true : null;
+              if (!hasValueChanged(value, newVal)) return;
+              setIsLoading(true);
+              try {
+                await onSave(employeeId, field, newVal);
+              } catch (err) {
+                onError?.(err instanceof Error ? err.message : "Update failed");
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+          />
+        </div>
+      );
     }
 
     return (

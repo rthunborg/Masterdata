@@ -1107,6 +1107,7 @@ export function EmployeeTable({
                 canEdit={canEdit}
                 isChanged={isRepaymentChanged}
                 isChecklistItem={false}
+                booleanDisplay="checkbox"
                 className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
                 isCompact={isCompact}
                 onSave={handleMasterdataUpdate}
