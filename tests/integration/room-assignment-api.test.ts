@@ -28,6 +28,7 @@ import {
 } from "@/../tests/helpers/room-assignment-helpers";
 import type { EmployeeWithRoom } from "@/../tests/helpers/room-assignment-helpers";
 import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import * as dateCapacity from "@/lib/services/date-capacity";
 
 vi.mock("@/lib/services/date-capacity");
@@ -56,6 +57,10 @@ vi.mock("@/lib/server/repositories/employee-repository");
 // Mock Supabase server client to avoid cookies() error
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
+}));
+// Route uses createAPIClient(request) for room assignment; must return same mock
+vi.mock("@/lib/supabase/server-api", () => ({
+  createAPIClient: vi.fn(),
 }));
 
 describe("Room Assignment API Integration Tests", () => {
@@ -96,6 +101,7 @@ describe("Room Assignment API Integration Tests", () => {
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     } as unknown as ReturnType<typeof createClient>;
     (createClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabaseClient);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient);
   });
 
   describe("POST /api/employees - Room assignment on creation", () => {

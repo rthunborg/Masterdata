@@ -22,6 +22,7 @@ vi.mock("@/lib/server/auth", async () => {
 });
 
 vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/supabase/server-api", () => ({ createAPIClient: vi.fn() }));
 
 describe("GET /api/users/filters", () => {
   beforeEach(() => {
@@ -31,7 +32,7 @@ describe("GET /api/users/filters", () => {
 
   it("should return saved filters for authenticated user", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { GET } = await import("@/app/api/users/filters/route");
 
     // Mock authenticated user
@@ -45,7 +46,7 @@ describe("GET /api/users/filters", () => {
       auth_id: "auth-user-1",
     });
 
-    // Mock Supabase client
+    // Mock Supabase client (route uses createAPIClient(request))
     const mockSupabase = {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
@@ -65,7 +66,7 @@ describe("GET /api/users/filters", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as ReturnType<typeof createAPIClient>);
 
     const request = new NextRequest("http://localhost/api/users/filters");
     const response = await GET(request);
@@ -79,7 +80,7 @@ describe("GET /api/users/filters", () => {
 
   it("should return empty array if user has no saved filters", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { GET } = await import("@/app/api/users/filters/route");
 
     vi.mocked(requireAuthAPI).mockResolvedValue({
@@ -102,7 +103,7 @@ describe("GET /api/users/filters", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as ReturnType<typeof createClient>);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as ReturnType<typeof createAPIClient>);
 
     const request = new NextRequest("http://localhost/api/users/filters");
     const response = await GET(request);
@@ -142,7 +143,7 @@ describe("POST /api/users/filters", () => {
 
   it("should create saved filter with valid data", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { POST } = await import("@/app/api/users/filters/route");
 
     vi.mocked(requireAuthAPI).mockResolvedValue({
@@ -174,8 +175,7 @@ describe("POST /api/users/filters", () => {
       }),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as ReturnType<typeof createAPIClient>);
 
     const body = {
       name: "Test Filter",
@@ -302,7 +302,6 @@ describe("POST /api/users/filters", () => {
 
   it("should return 409 if filter name already exists", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
     const { POST } = await import("@/app/api/users/filters/route");
 
     vi.mocked(requireAuthAPI).mockResolvedValue({
@@ -325,8 +324,8 @@ describe("POST /api/users/filters", () => {
       }),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any);
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as ReturnType<typeof createAPIClient>);
 
     const request = new NextRequest("http://localhost/api/users/filters", {
       method: "POST",
@@ -349,7 +348,7 @@ describe("DELETE /api/users/filters/:id", () => {
 
   it("should delete filter successfully", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { DELETE } = await import("@/app/api/users/filters/[id]/route");
 
     vi.mocked(requireAuthAPI).mockResolvedValue({
@@ -373,8 +372,7 @@ describe("DELETE /api/users/filters/:id", () => {
       .mockReturnValueOnce(mockSupabase)
       .mockResolvedValueOnce({ data: null, error: null });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as ReturnType<typeof createAPIClient>);
 
     const request = new NextRequest(
       "http://localhost/api/users/filters/550e8400-e29b-41d4-a716-446655440000"

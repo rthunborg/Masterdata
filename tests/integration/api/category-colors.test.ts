@@ -53,6 +53,9 @@ const mockSupabaseClient = {
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(() => mockSupabaseClient),
 }));
+vi.mock("@/lib/supabase/server-api", () => ({
+  createAPIClient: vi.fn(() => mockSupabaseClient),
+}));
 
 // Mock the auth helpers BEFORE importing route handlers
 const mockRequireHRAdminAPI = vi.fn();
