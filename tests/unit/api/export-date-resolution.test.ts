@@ -223,7 +223,7 @@ describe("Export Date Resolution", () => {
     const { POST } = await import("@/app/api/employees/export/route");
 
     // Create mock request
-    const request = new NextRequest("http://localhost:3000/api/employees/export", {t
+    const request = new NextRequest("http://localhost:3000/api/employees/export", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
