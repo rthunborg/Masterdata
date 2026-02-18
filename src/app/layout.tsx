@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toast';
 import { PerformanceTracker } from '@/components/performance/performance-tracker';
 import { ServiceWorkerUnregister } from '@/components/pwa/service-worker-unregister';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { EnvStagingBanner } from '@/components/env-staging-banner';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -55,6 +56,7 @@ export default function RootLayout({
         <QueryProvider>
           <PerformanceTracker />
           <ServiceWorkerUnregister />
+          <EnvStagingBanner />
           {children}
           <Toaster />
         </QueryProvider>
