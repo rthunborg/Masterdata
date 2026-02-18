@@ -1,5 +1,5 @@
- import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { z } from "zod";
 
@@ -33,7 +33,7 @@ export async function PATCH(
     const { categoryName } = await params;
     const decodedCategoryName = decodeURIComponent(categoryName);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const body = await request.json();
 
     // Validate request body

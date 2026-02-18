@@ -11,7 +11,7 @@ import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber, recalculateRoomsForDate, recalculateRoomsForEmployee } from "@/lib/services/room-assignment";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { z } from "zod";
 import type { Employee } from "@/lib/types/employee";
 
@@ -248,7 +248,7 @@ export async function PATCH(
     }
 
     // Story 8.20: Handle room assignment changes
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const needsRoomRecalculation: boolean = 
       ('omc_date' in validatedData && validatedData.omc_date !== currentEmployee.omc_date) ||
       ('rank' in validatedData && validatedData.rank !== currentEmployee.rank) ||
@@ -536,7 +536,7 @@ export async function DELETE(
     // Story 8.20: Recalculate rooms for ÖMC date after deletion (for remaining employees)
     if (omcDateId && hadHotelRequired) {
       try {
-        const supabase = await createClient();
+        const supabase = createAPIClient(request);
         await recalculateRoomsForDate(omcDateId, supabase);
       } catch (roomError) {
         // Error handling strategy: Log warning but allow deletion to complete

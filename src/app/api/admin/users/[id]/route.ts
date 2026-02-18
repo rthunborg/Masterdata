@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { updateUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
@@ -12,7 +13,7 @@ export const runtime = 'nodejs';
  * Returns true if the operation would remove the last active HR Admin
  */
 async function wouldRemoveLastHRAdmin(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof createAPIClient>,
   targetUserId: string
 ): Promise<boolean> {
   // Get the target user to check if they're an active HR Admin
@@ -55,7 +56,7 @@ export async function PATCH(
     // Enforce HR Admin role and get current user
     const currentUser = await requireHRAdminAPI(request);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const body = await request.json();
     const { id } = await params;
 
@@ -168,7 +169,7 @@ export async function DELETE(
     // Enforce HR Admin role and get current user
     const currentUser = await requireHRAdminAPI(request);
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const { id } = await params;
 
     // Prevent self-deletion

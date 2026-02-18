@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import { CustomDataRepository } from "@/lib/server/repositories/custom-data-repository";
 import { updateCustomDataSchema } from "@/lib/validation/column-validation";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { z } from "zod";
 
 // Force Node.js runtime for cookies() support
@@ -21,13 +21,13 @@ export async function GET(
 ) {
   try {
     // Verify authentication
-    await requireAuthAPI();
+    await requireAuthAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { id: employeeId } = await params;
 
     // Create repository instance
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const repository = new CustomDataRepository(supabase);
 
     // Get custom data for this employee (simplified - no role-based table selection)
@@ -62,7 +62,7 @@ export async function PATCH(
 ) {
   try {
     // Verify authentication
-    await requireAuthAPI();
+    await requireAuthAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { id: employeeId} = await params;
@@ -96,7 +96,7 @@ export async function PATCH(
     }
 
     // Create repository instance
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const repository = new CustomDataRepository(supabase);
 
     // Update custom data (simplified - no role-based branching)

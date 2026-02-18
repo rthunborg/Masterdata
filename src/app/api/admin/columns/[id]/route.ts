@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { updateColumnConfigSchema } from "@/lib/validation/column-validation";
 import { ZodError } from "zod";
@@ -23,7 +23,7 @@ export async function PATCH(
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     const body = await request.json();
 
     // Validate request body
@@ -184,7 +184,7 @@ export async function DELETE(
     // Await params (Next.js 15+ requirement)
     const { id: columnId } = await params;
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     // Fetch column to verify it exists and is not masterdata
     const { data: column, error: fetchError } = await supabase

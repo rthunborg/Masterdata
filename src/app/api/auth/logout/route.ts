@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import type { APIResponse, LogoutResponse } from "@/lib/types/api";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     // Sign out the user
     const { error } = await supabase.auth.signOut();

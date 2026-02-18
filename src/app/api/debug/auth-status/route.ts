@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { cookies, headers } from "next/headers";
 
 /**
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const headersList = await headers();
     const cookieHeader = headersList.get('cookie');
     
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
     
     // Check 1: Can we connect to Supabase?
     const { data: { user }, error: userError } = await supabase.auth.getUser();

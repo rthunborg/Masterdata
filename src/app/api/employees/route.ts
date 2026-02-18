@@ -12,7 +12,6 @@ import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber } from "@/lib/services/room-assignment";
 import { createAPIClient } from "@/lib/supabase/server-api";
-import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import type { EmployeeFormData } from "@/lib/types/employee";
 
@@ -100,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get server-side Supabase client for room assignment and date operations
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     // Story 8.20: Calculate room number before employee creation
     let roomNumber: number | null = null;
