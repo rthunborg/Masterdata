@@ -10,7 +10,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { FilterPanel } from "@/components/dashboard/FilterPanel/FilterPanel";
@@ -418,8 +418,10 @@ describe("Story 20.6: Saved Filters Integration", () => {
     const input = await screen.findByLabelText("Filternamn");
     await userEvent.type(input, "New Hires");
 
-    // Click Save
-    const dialogSaveButton = screen.getByRole("button", { name: /^spara filter$/i });
+    // Click Save in the save-filter dialog (not the toolbar or filter panel; there are two dialogs when this is open)
+    const dialogs = screen.getAllByRole("dialog");
+    const saveDialog = dialogs.find((d) => within(d).queryByLabelText("Filternamn") != null) ?? dialogs[1];
+    const dialogSaveButton = within(saveDialog).getByRole("button", { name: /^spara filter$/i });
     await userEvent.click(dialogSaveButton);
 
     // Verify error toast
