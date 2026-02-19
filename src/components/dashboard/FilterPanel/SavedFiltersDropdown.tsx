@@ -77,15 +77,17 @@ export function SavedFiltersDropdown({
 
   const filterToDelete = savedFilters.find((f) => f.id === deleteId);
 
-  if (savedFilters.length === 0) {
-    return null;
-  }
-
   return (
     <>
       <div className="mb-4 space-y-2">
         <Label htmlFor="saved-filters-select">My Saved Filters</Label>
-        <div className="flex items-center gap-2">
+        {savedFilters.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            No saved filters yet. Add filters below, then use &quot;Save Filter&quot; in the header to save.
+          </p>
+        ) : (
+          <>
+          <div className="flex items-center gap-2">
           <Select
             onValueChange={(id) => {
               const saved = savedFilters.find((f) => f.id === id);
@@ -141,6 +143,8 @@ export function SavedFiltersDropdown({
         <p className="text-xs text-muted-foreground">
           {savedFilters.length} saved {savedFilters.length === 1 ? "filter" : "filters"}
         </p>
+          </>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, Save } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ColumnConfig } from "@/lib/types/column-config";
@@ -32,6 +33,9 @@ export function FilterPanel({
 }: FilterPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const onCloseRef = useRef(onClose);
+  const initialFocusDoneRef = useRef(false);
+  onCloseRef.current = onClose;
 
   // Story 20.6: Saved Filters integration
   const { savedFilters, saveFilter, deleteFilter } = useSavedFilters();
@@ -45,11 +49,17 @@ export function FilterPanel({
     )
     .sort((a, b) => a.display_order - b.display_order);
 
-  // Handle ESC key press and focus trap
+  // Reset initial-focus flag when panel closes so we focus again on next open
+  useEffect(() => {
+    if (!isOpen) initialFocusDoneRef.current = false;
+  }, [isOpen]);
+
+  // Handle ESC key press and focus trap. Depends only on isOpen so we don't re-run on every
+  // parent re-render (inline onClose would otherwise cause focus to be stolen from inputs).
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        onCloseRef.current();
       }
 
       // Focus trap: Handle Tab key to keep focus within panel
@@ -63,13 +73,11 @@ export function FilterPanel({
         ] as HTMLElement;
 
         if (e.shiftKey) {
-          // Shift+Tab: If on first element, go to last
           if (document.activeElement === firstElement) {
             e.preventDefault();
             lastElement?.focus();
           }
         } else {
-          // Tab: If on last element, go to first
           if (document.activeElement === lastElement) {
             e.preventDefault();
             firstElement?.focus();
@@ -80,19 +88,24 @@ export function FilterPanel({
 
     if (isOpen) {
       document.addEventListener("keydown", handleKeyDown);
-      // Focus the close button when panel opens
-      setTimeout(() => {
-        const closeButton = panelRef.current?.querySelector(
-          '[data-testid="close-filter-panel"]'
-        ) as HTMLElement;
-        closeButton?.focus();
-      }, 100);
+      // Focus close button only once when panel opens (so typing in filter inputs isn't interrupted)
+      if (!initialFocusDoneRef.current) {
+        initialFocusDoneRef.current = true;
+        const t = setTimeout(() => {
+          const closeButton = panelRef.current?.querySelector(
+            '[data-testid="close-filter-panel"]'
+          ) as HTMLElement;
+          closeButton?.focus();
+        }, 100);
+        return () => {
+          document.removeEventListener("keydown", handleKeyDown);
+          clearTimeout(t);
+        };
+      }
     }
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   // Handle overlay click
   const handleOverlayClick = () => {
