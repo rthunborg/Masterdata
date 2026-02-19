@@ -375,10 +375,26 @@ export function EmployeeTable({
   // Story 13.2: Employee selection state
   const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
   const [globalFilter, setGlobalFilter] = React.useState("");
-  // Default sort: checklist progress ascending (employees with fewest completed items at top)
-  const [sorting, setSorting] = React.useState<SortingState>([
-    { id: "checklist_progress", desc: false },
-  ]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  // Default sort: internal users (see progress column) → checklist progress asc; others → hire_date desc (most recent first)
+  const hasChecklistItemsForSort = columnConfigs.some(
+    (col) => col.column_type === "boolean" && col.is_checklist_item
+  );
+  const showProgressColumnForSort = hasChecklistItemsForSort && isEffectivelyInternalUser;
+  const hireDateColumnId = columnConfigs.find(
+    (c) => c.db_column_name?.toLowerCase() === "hire_date"
+  )?.id;
+  const hasSetDefaultSortRef = React.useRef(false);
+  React.useLayoutEffect(() => {
+    if (hasSetDefaultSortRef.current || sorting.length !== 0) return;
+    if (showProgressColumnForSort) {
+      hasSetDefaultSortRef.current = true;
+      setSorting([{ id: "checklist_progress", desc: false }]);
+    } else if (hireDateColumnId) {
+      hasSetDefaultSortRef.current = true;
+      setSorting([{ id: hireDateColumnId, desc: true }]);
+    }
+  }, [showProgressColumnForSort, hireDateColumnId, sorting.length]);
 
   // Story 19.11: Column width persistence
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {
@@ -1712,6 +1728,19 @@ export function EmployeeTable({
           return value === true;
         }).length;
         return (completed / checklistColumns.length) * 100;
+      },
+      sortingFn: (rowA, rowB) => {
+        // Primary: progress (asc = fewest at top). Tiebreaker: surname then first_name for stable order.
+        const a = rowA.getValue("checklist_progress") as number;
+        const b = rowB.getValue("checklist_progress") as number;
+        if (a !== b) return a - b;
+        const surnameA = (rowA.original.surname ?? "").toLowerCase();
+        const surnameB = (rowB.original.surname ?? "").toLowerCase();
+        const surnameCmp = surnameA.localeCompare(surnameB);
+        if (surnameCmp !== 0) return surnameCmp;
+        const firstA = (rowA.original.first_name ?? "").toLowerCase();
+        const firstB = (rowB.original.first_name ?? "").toLowerCase();
+        return firstA.localeCompare(firstB);
       },
       cell: ({ row }) => (
         <div className={cn(cellPaddingClass, cellHeightClass, "flex items-center")}>
