@@ -27,6 +27,7 @@ vi.mock('next/navigation', () => ({
     push: mockPush,
   }),
   useSearchParams: () => mockSearchParams,
+  usePathname: () => '/dashboard',
 }));
 
 // Mock fetch for important dates
