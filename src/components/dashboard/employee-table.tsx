@@ -120,7 +120,9 @@ import { EditableCell } from "./editable-cell";
 
  
 import { FilterButton, FilterPanel } from "./FilterPanel";
+import { SaveFilterDialog } from "./FilterPanel/SaveFilterDialog";
 import { useEmployeeFilters } from "@/hooks/useEmployeeFilters";
+import { useSavedFilters } from "@/hooks/useSavedFilters";
 import { ClearFilterButton } from "./ClearFilterButton";
 import { FilteredCountDisplay } from "./FilteredCountDisplay";
 import { EmptyFilterState } from "./EmptyFilterState";
@@ -356,6 +358,9 @@ export function EmployeeTable({
   // Story 20.2: Filter panel state
   const [isFilterPanelOpen, setIsFilterPanelOpen] = React.useState(false);
   const [saveFilterDialogOpen, setSaveFilterDialogOpen] = React.useState(false);
+
+  // Story 20.6: Saved filters (used by SaveFilterDialog in toolbar)
+  const { saveFilter } = useSavedFilters();
 
   // Story 20.4: Advanced filtering with filter engine
   const {
@@ -2981,8 +2986,18 @@ export function EmployeeTable({
         activeFilters={activeFilters}
         onFiltersChange={setActiveFilters}
         importantDates={allImportantDates}
-        saveDialogOpen={saveFilterDialogOpen}
-        onSaveDialogOpenChange={setSaveFilterDialogOpen}
+      />
+
+      {/* Story 20.6: Save Filter Dialog - rendered here so it opens when toolbar "Spara filter" is clicked even when panel is closed */}
+      <SaveFilterDialog
+        open={saveFilterDialogOpen}
+        onOpenChange={setSaveFilterDialogOpen}
+        activeFilters={activeFilters}
+        columnConfigs={columnConfigs}
+        onSave={async (name) => {
+          await saveFilter({ name, filters: activeFilters });
+          setSaveFilterDialogOpen(false);
+        }}
       />
 
     </>
