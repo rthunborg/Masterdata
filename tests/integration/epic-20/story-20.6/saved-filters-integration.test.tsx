@@ -14,7 +14,9 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { FilterPanel } from "@/components/dashboard/FilterPanel/FilterPanel";
+import { SaveFilterDialog } from "@/components/dashboard/FilterPanel/SaveFilterDialog";
 import { Button } from "@/components/ui/button";
+import { useSavedFilters } from "@/hooks/useSavedFilters";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
 
@@ -169,10 +171,12 @@ describe("Story 20.6: Saved Filters Integration", () => {
   const renderFilterPanel = (activeFilters: FilterState[] = []) => {
     const onFiltersChange = vi.fn();
     const onClose = vi.fn();
-    const Wrapper = () => {
+
+    function PanelWithSaveDialog() {
       const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
+      const { saveFilter } = useSavedFilters();
       return (
-        <QueryClientProvider client={queryClient}>
+        <>
           {activeFilters.length > 0 && (
             <Button
               data-testid="save-filter-button"
@@ -188,15 +192,27 @@ describe("Story 20.6: Saved Filters Integration", () => {
             activeFilters={activeFilters}
             onFiltersChange={onFiltersChange}
             importantDates={[]}
-            saveDialogOpen={saveDialogOpen}
-            onSaveDialogOpenChange={setSaveDialogOpen}
           />
-        </QueryClientProvider>
+          <SaveFilterDialog
+            open={saveDialogOpen}
+            onOpenChange={setSaveDialogOpen}
+            activeFilters={activeFilters}
+            columnConfigs={mockColumns}
+            onSave={async (name) => {
+              await saveFilter({ name, filters: activeFilters });
+              setSaveDialogOpen(false);
+            }}
+          />
+        </>
       );
-    };
+    }
 
     return {
-      ...render(<Wrapper />),
+      ...render(
+        <QueryClientProvider client={queryClient}>
+          <PanelWithSaveDialog />
+        </QueryClientProvider>
+      ),
       onFiltersChange,
       onClose,
     };
@@ -367,7 +383,6 @@ describe("Story 20.6: Saved Filters Integration", () => {
   });
 
   it("shows error when saving filter with duplicate name", async () => {
-    const { toast } = await import("sonner");
     const activeFilters: FilterState[] = [
       { columnId: "col-1", type: "text", textValue: "Test" },
     ];
@@ -424,11 +439,9 @@ describe("Story 20.6: Saved Filters Integration", () => {
     const dialogSaveButton = within(saveDialog).getByRole("button", { name: /^spara filter$/i });
     await userEvent.click(dialogSaveButton);
 
-    // Verify error toast
+    // Verify duplicate-name error is shown in the dialog (translated message)
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(
-        "A filter with this name already exists"
-      );
+      expect(screen.getByText("Ett filter med det här namnet finns redan.")).toBeInTheDocument();
     });
   });
 

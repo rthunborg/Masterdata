@@ -697,5 +697,8 @@
       "dataRefreshed": "Data uppdaterad",
       "refreshFailed": "Kunde inte uppdatera. Kontrollera din anslutning och försök igen."
     }
+  },
+  "env": {
+    "stagingBanner": "🧪 TESTMILJÖ — Detta är inte produktion. Data kommer från en säkerhetskopia och kan vara inaktuell."
   }
 }

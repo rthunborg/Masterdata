@@ -183,24 +183,11 @@ function CalendarDayButton({
 }: React.ComponentProps<typeof DayButton>) {
   const defaultClassNames = getDefaultClassNames()
 
-  const ref = React.useRef<HTMLButtonElement>(null)
-  const didFocusRef = React.useRef(false)
-  React.useEffect(() => {
-    if (!modifiers.focused) {
-      didFocusRef.current = false
-      return
-    }
-    const el = ref.current
-    if (!el) return
-    if (document.activeElement === el) return
-    if (didFocusRef.current) return
-    didFocusRef.current = true
-    el.focus()
-  }, [modifiers.focused])
-
+  // Do not programmatically focus on modifiers.focused change: it causes hover flicker
+  // when the library sets focused on mouse-over and we call focus(), triggering re-renders.
+  // Keyboard navigation is still handled by react-day-picker via tabIndex and roving tabindex.
   return (
     <Button
-      ref={ref}
       variant="ghost"
       size="icon"
       data-day={day.date.toLocaleDateString()}

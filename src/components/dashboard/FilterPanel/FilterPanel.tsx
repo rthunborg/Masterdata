@@ -11,7 +11,6 @@ import type { FilterState } from "@/lib/types/filter";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { FilterColumnItem } from "./FilterColumnItem";
 import { ActiveFiltersList } from "./ActiveFiltersList";
-import { SaveFilterDialog } from "./SaveFilterDialog";
 import { SavedFiltersDropdown } from "./SavedFiltersDropdown";
 import { useSavedFilters } from "@/hooks/useSavedFilters";
 
@@ -22,9 +21,6 @@ interface FilterPanelProps {
   activeFilters: FilterState[];
   onFiltersChange: (filters: FilterState[]) => void;
   importantDates?: ImportantDate[]; // Story 20.5: For date filter display
-  /** Controlled save-dialog open state when Save button is rendered outside the panel (e.g. in toolbar). */
-  saveDialogOpen?: boolean;
-  onSaveDialogOpenChange?: (open: boolean) => void;
 }
 
 export function FilterPanel({
@@ -34,14 +30,9 @@ export function FilterPanel({
   activeFilters,
   onFiltersChange,
   importantDates = [],
-  saveDialogOpen,
-  onSaveDialogOpenChange,
 }: FilterPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [internalSaveDialogOpen, setInternalSaveDialogOpen] = useState(false);
   const [flushTrigger, setFlushTrigger] = useState(0);
-  const showSaveDialog = saveDialogOpen ?? internalSaveDialogOpen;
-  const setShowSaveDialog = onSaveDialogOpenChange ?? setInternalSaveDialogOpen;
   const onCloseRef = useRef(onClose);
   const initialFocusDoneRef = useRef(false);
 
@@ -51,7 +42,7 @@ export function FilterPanel({
 
   const tFilter = useTranslations("filter");
   // Story 20.6: Saved Filters integration
-  const { savedFilters, saveFilter, deleteFilter } = useSavedFilters();
+  const { savedFilters, deleteFilter } = useSavedFilters();
 
   // Filter out non-filterable columns
   const filterableColumns = columnConfigs
@@ -136,12 +127,6 @@ export function FilterPanel({
     setTimeout(() => onClose(), 50);
   };
 
-  // Story 20.6: Handle saving filters
-  const handleSaveFilter = async (name: string) => {
-    await saveFilter({ name, filters: activeFilters });
-    setShowSaveDialog(false);
-  };
-
   // Story 20.6: Handle applying saved filter
   const handleApplySavedFilter = (filters: FilterState[]) => {
     onFiltersChange(filters);
@@ -185,11 +170,6 @@ export function FilterPanel({
             <h2 id="filter-panel-title" className="text-lg font-semibold">
               {tFilter("panelTitle")}
             </h2>
-            {activeFilters.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {tFilter("saveHint")}
-              </p>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -269,15 +249,6 @@ export function FilterPanel({
           </Button>
         </div>
       </div>
-
-      {/* Story 20.6: Save Filter Dialog */}
-      <SaveFilterDialog
-        open={showSaveDialog}
-        onOpenChange={setShowSaveDialog}
-        activeFilters={activeFilters}
-        columnConfigs={columnConfigs}
-        onSave={handleSaveFilter}
-      />
     </>
   );
 }
