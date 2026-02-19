@@ -2595,25 +2595,26 @@ export function EmployeeTable({
 
                       colSpan={columns.length}
 
-                      className="h-24 text-center"
+                      className="h-24 text-center p-0"
 
                     >
 
-                      {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message */}
-                      {isFilterActive ? (
-                        <EmptyFilterState
-                          activeFilters={activeFilters}
-                          columnConfigs={allColumnConfigs}
-                          onClearFilters={clearAllFilters}
-                          importantDates={allImportantDates}
-                        />
-                      ) : (
-                        <div className="text-muted-foreground">
-                          {globalFilter
-                            ? tDashboard("noEmployeesMatchSearch")
-                            : tDashboard("noEmployeesToDisplay")}
-                        </div>
-                      )}
+                      <div className="sticky left-0 w-[calc(100vw-4rem)] max-w-full">
+                        {isFilterActive ? (
+                          <EmptyFilterState
+                            activeFilters={activeFilters}
+                            columnConfigs={allColumnConfigs}
+                            onClearFilters={clearAllFilters}
+                            importantDates={allImportantDates}
+                          />
+                        ) : (
+                          <div className="text-muted-foreground py-12">
+                            {globalFilter
+                              ? tDashboard("noEmployeesMatchSearch")
+                              : tDashboard("noEmployeesToDisplay")}
+                          </div>
+                        )}
+                      </div>
 
                     </TableCell>
 

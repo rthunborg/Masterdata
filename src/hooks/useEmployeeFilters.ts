@@ -8,7 +8,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import type { Employee } from "@/lib/types/employee";
 import type { FilterState } from "@/lib/types/filter";
 import type { ImportantDate } from "@/lib/types/important-date";
@@ -36,6 +36,7 @@ export function useEmployeeFilters({
 }: UseEmployeeFiltersOptions) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   // Fetch all important dates for date filtering
   const [importantDates, setImportantDates] = useState<ImportantDate[]>([]);
@@ -102,11 +103,11 @@ export function useEmployeeFilters({
           params.delete("filters");
         }
 
-        // Use shallow routing to avoid page reload
-        const newUrl = params.toString() ? `?${params.toString()}` : "";
+        const query = params.toString();
+        const newUrl = query ? `${pathname}?${query}` : pathname;
         router.push(newUrl, { scroll: false });
       }, 500),
-    [enableUrlSync, router, searchParams]
+    [enableUrlSync, router, searchParams, pathname]
   );
 
   // Calculate filtered employees (memoized for performance)
