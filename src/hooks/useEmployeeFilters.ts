@@ -61,7 +61,7 @@ export function useEmployeeFilters({
         setImportantDates(result.data || []);
       } catch (error) {
         console.error("Error fetching important dates:", error);
-        setImportantDates([]);
+        if (isMounted) setImportantDates([]);
       } finally {
         if (isMounted) {
           setIsLoadingDates(false);
