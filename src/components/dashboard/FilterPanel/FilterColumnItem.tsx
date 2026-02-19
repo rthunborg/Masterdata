@@ -14,12 +14,15 @@ interface FilterColumnItemProps {
   column: ColumnConfig;
   activeFilter?: FilterState;
   onFilterChange: (filter: FilterState | null) => void;
+  /** When this changes, text filters flush pending debounced value (used when Apply Filters is clicked). */
+  flushTrigger?: number;
 }
 
 export function FilterColumnItem({
   column,
   activeFilter,
   onFilterChange,
+  flushTrigger,
 }: FilterColumnItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -122,6 +125,7 @@ export function FilterColumnItem({
           }
         }}
         onClear={() => onFilterChange(null)}
+        flushTrigger={flushTrigger}
       />
     );
   };

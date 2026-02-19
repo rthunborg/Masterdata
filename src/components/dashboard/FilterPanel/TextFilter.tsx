@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, ChangeEvent } from "react";
+import { useState, useMemo, useEffect, useRef, ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ interface TextFilterProps {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  /** When this value changes, any pending debounced onChange is flushed immediately (e.g. when user clicks Apply Filters). */
+  flushTrigger?: number;
 }
 
 export function TextFilter({
@@ -19,6 +21,7 @@ export function TextFilter({
   value,
   onChange,
   onClear,
+  flushTrigger,
 }: TextFilterProps) {
   const [localValue, setLocalValue] = useState(value);
 
@@ -27,28 +30,39 @@ export function TextFilter({
     setLocalValue(value);
   }, [value]);
 
-  // Debounce onChange to prevent excessive filtering
-  const debouncedOnChange = useMemo(
-    () => debounce(onChange, 300),
-    [onChange]
-  );
-
-  // Cleanup debounce on unmount
+  const onChangeRef = useRef(onChange);
   useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Debounce created in effect so the closure over onChangeRef is not created during render (satisfies react-hooks/refs).
+  const debouncedOnChangeRef = useRef<ReturnType<typeof debounce<(v: string) => void>> | null>(null);
+  useEffect(() => {
+    debouncedOnChangeRef.current = debounce((value: string) => {
+      onChangeRef.current(value);
+    }, 300);
     return () => {
-      debouncedOnChange.cancel();
+      debouncedOnChangeRef.current?.cancel();
+      debouncedOnChangeRef.current = null;
     };
-  }, [debouncedOnChange]);
+  }, []);
+
+  // Flush pending debounced value when Apply Filters is clicked (so filter is applied before panel closes)
+  useEffect(() => {
+    if (flushTrigger !== undefined && flushTrigger > 0) {
+      debouncedOnChangeRef.current?.flush();
+    }
+  }, [flushTrigger]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    debouncedOnChange(newValue);
+    debouncedOnChangeRef.current?.(newValue);
   };
 
   const handleClear = () => {
     setLocalValue("");
-    debouncedOnChange.cancel();
+    debouncedOnChangeRef.current?.cancel();
     onClear();
   };
 

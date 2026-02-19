@@ -28,10 +28,10 @@ test.describe("Story 20.6: Saved Filters", () => {
     await expect(page.getByText("Filter Employees")).toBeVisible();
 
     // Step 2: Apply a filter (e.g., search for "John" in first name)
-    const firstNameColumn = page.locator('[data-testid="filter-column-first_name"]').first();
-    if (await firstNameColumn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await firstNameColumn.click();
-      const firstNameInput = page.locator('input[placeholder*="first"], input[name*="first"]').first();
+    const firstNameToggle = page.getByTestId("filter-column-toggle-first_name");
+    if (await firstNameToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstNameToggle.click();
+      const firstNameInput = page.getByTestId("text-filter-input-first_name");
       await firstNameInput.fill("John");
     }
 
@@ -103,10 +103,10 @@ test.describe("Story 20.6: Saved Filters", () => {
     await expect(page.getByText("Filter Employees")).toBeVisible();
 
     // Apply a filter
-    const hotelRequiredColumn = page.locator('[data-testid="filter-column-hotel_required"]').first();
-    if (await hotelRequiredColumn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await hotelRequiredColumn.click();
-      const yesOption = page.locator('text="Yes"').first();
+    const hotelRequiredToggle = page.getByTestId("filter-column-toggle-hotel_required");
+    if (await hotelRequiredToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await hotelRequiredToggle.click();
+      const yesOption = page.getByTestId("boolean-filter-yes-hotel_required");
       await yesOption.click();
     }
 
@@ -166,11 +166,10 @@ test.describe("Story 20.6: Saved Filters", () => {
     await expect(page.getByText("Filter Employees")).toBeVisible();
 
     // Apply a filter
-    const firstNameColumn = page.locator('[data-testid="filter-column-first_name"]').first();
-    if (await firstNameColumn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await firstNameColumn.click();
-      const input = page.locator('input[placeholder*="first"]').first();
-      await input.fill("Test");
+    const firstNameToggle = page.getByTestId("filter-column-toggle-first_name");
+    if (await firstNameToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstNameToggle.click();
+      await page.getByTestId("text-filter-input-first_name").fill("Test");
     }
 
     // Save first filter
@@ -190,11 +189,10 @@ test.describe("Story 20.6: Saved Filters", () => {
     }
 
     // Step 2: Apply different filter
-    const surnameColumn = page.locator('[data-testid="filter-column-surname"]').first();
-    if (await surnameColumn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await surnameColumn.click();
-      const input = page.locator('input[placeholder*="surname"]').first();
-      await input.fill("Different");
+    const surnameToggle = page.getByTestId("filter-column-toggle-surname");
+    if (await surnameToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await surnameToggle.click();
+      await page.getByTestId("text-filter-input-surname").fill("Different");
     }
 
     // Step 3: Try to save with same name
@@ -219,11 +217,10 @@ test.describe("Story 20.6: Saved Filters", () => {
     await filterButton.click();
     await expect(page.getByText("Filter Employees")).toBeVisible();
 
-    const firstNameColumn = page.locator('[data-testid="filter-column-first_name"]').first();
-    if (await firstNameColumn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await firstNameColumn.click();
-      const input = page.locator('input[placeholder*="first"]').first();
-      await input.fill("Test");
+    const firstNameToggle = page.getByTestId("filter-column-toggle-first_name");
+    if (await firstNameToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstNameToggle.click();
+      await page.getByTestId("text-filter-input-first_name").fill("Test");
     }
 
     // Open save dialog
@@ -255,11 +252,10 @@ test.describe("Story 20.6: Saved Filters", () => {
     await filterButton.click();
     await expect(page.getByText("Filter Employees")).toBeVisible();
 
-    const firstNameColumn = page.locator('[data-testid="filter-column-first_name"]').first();
-    if (await firstNameColumn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await firstNameColumn.click();
-      const input = page.locator('input[placeholder*="first"]').first();
-      await input.fill("Test");
+    const firstNameToggle = page.getByTestId("filter-column-toggle-first_name");
+    if (await firstNameToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await firstNameToggle.click();
+      await page.getByTestId("text-filter-input-first_name").fill("Test");
     }
 
     // Open save dialog
