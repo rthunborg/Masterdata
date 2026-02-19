@@ -61,7 +61,7 @@ export function useEmployeeFilters({
         setImportantDates(result.data || []);
       } catch (error) {
         console.error("Error fetching important dates:", error);
-        setImportantDates([]);
+        if (isMounted) setImportantDates([]);
       } finally {
         if (isMounted) {
           setIsLoadingDates(false);
@@ -117,18 +117,20 @@ export function useEmployeeFilters({
   // Story 20.5: Show loading state briefly when filters change
   // Only show if filtering takes >50ms (user won't notice faster operations)
   useEffect(() => {
-    // Set loading state after 50ms delay
-    const timeoutId: NodeJS.Timeout = setTimeout(() => {
+    // Set loading state after 50ms delay (only if still filtering)
+    const showLoadingId = setTimeout(() => {
       setIsFiltering(true);
     }, 50);
 
-    // Clear loading state immediately after render with new filtered results
+    // Clear loading immediately - filtering is synchronous (useMemo). Cancel the
+    // 50ms timer so we never show loading for fast operations.
     const clearLoadingId = setTimeout(() => {
+      clearTimeout(showLoadingId);
       setIsFiltering(false);
     }, 0);
 
     return () => {
-      clearTimeout(timeoutId);
+      clearTimeout(showLoadingId);
       clearTimeout(clearLoadingId);
     };
   }, [activeFilters]);

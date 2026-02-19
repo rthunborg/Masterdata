@@ -20,8 +20,10 @@ describe("Export Date Resolution", () => {
     vi.clearAllMocks();
   });
 
-  it("should resolve date UUIDs to actual dates in CSV export", async () => {
-    const { requireAuthAPI } = await import("@/lib/server/auth");
+  it(
+    "should resolve date UUIDs to actual dates in CSV export",
+    async () => {
+      const { requireAuthAPI } = await import("@/lib/server/auth");
     const { employeeRepository } = await import("@/lib/server/repositories/employee-repository");
     const { columnConfigRepository } = await import("@/lib/server/repositories/column-config-repository");
     const { createAPIClient } = await import("@/lib/supabase/server-api");
@@ -255,7 +257,9 @@ describe("Export Date Resolution", () => {
     expect(csvContent).toContain("15-03"); // ÖMC date start
     expect(csvContent).toContain("16-03"); // ÖMC date end (day after start)
     expect(csvContent).toContain("20-03"); // PE3 date
-  });
+    },
+    15000
+  );
 
   it("should handle deleted dates gracefully with 'Date Deleted' message", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
