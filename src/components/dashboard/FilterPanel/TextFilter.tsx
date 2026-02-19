@@ -35,38 +35,34 @@ export function TextFilter({
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  // Debounce with stable ref so flushTrigger doesn't create a new debounce (which would lose pending lastArgs)
-  const debouncedOnChange = useMemo(
-    () =>
-      debounce((value: string) => {
-        onChangeRef.current(value);
-      }, 300),
-    []
-  );
+  // Debounce created in effect so the closure over onChangeRef is not created during render (satisfies react-hooks/refs).
+  const debouncedOnChangeRef = useRef<ReturnType<typeof debounce<(v: string) => void>> | null>(null);
+  useEffect(() => {
+    debouncedOnChangeRef.current = debounce((value: string) => {
+      onChangeRef.current(value);
+    }, 300);
+    return () => {
+      debouncedOnChangeRef.current?.cancel();
+      debouncedOnChangeRef.current = null;
+    };
+  }, []);
 
   // Flush pending debounced value when Apply Filters is clicked (so filter is applied before panel closes)
   useEffect(() => {
     if (flushTrigger !== undefined && flushTrigger > 0) {
-      debouncedOnChange.flush();
+      debouncedOnChangeRef.current?.flush();
     }
-  }, [flushTrigger, debouncedOnChange]);
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      debouncedOnChange.cancel();
-    };
-  }, [debouncedOnChange]);
+  }, [flushTrigger]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    debouncedOnChange(newValue);
+    debouncedOnChangeRef.current?.(newValue);
   };
 
   const handleClear = () => {
     setLocalValue("");
-    debouncedOnChange.cancel();
+    debouncedOnChangeRef.current?.cancel();
     onClear();
   };
 
