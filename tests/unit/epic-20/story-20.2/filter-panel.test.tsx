@@ -128,7 +128,7 @@ describe('Story 20.2: FilterPanel', () => {
     );
 
     expect(screen.getByTestId('filter-panel')).toBeInTheDocument();
-    expect(screen.getByText('Filter Employees')).toBeInTheDocument();
+    expect(screen.getByText('Filtrera anställda')).toBeInTheDocument();
   });
 
   it('should not render when closed', () => {
@@ -268,7 +268,7 @@ describe('Story 20.2: FilterPanel', () => {
       />
     );
 
-    await user.click(screen.getByText('Filter Employees'));
+    await user.click(screen.getByText('Filtrera anställda'));
     expect(handleClose).not.toHaveBeenCalled();
   });
 
@@ -337,6 +337,6 @@ describe('Story 20.2: FilterPanel', () => {
       />
     );
 
-    expect(screen.getByText('No filterable columns available.')).toBeInTheDocument();
+    expect(screen.getByText('Inga filterbara kolumner tillgängliga.')).toBeInTheDocument();
   });
 });

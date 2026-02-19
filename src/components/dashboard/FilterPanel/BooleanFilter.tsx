@@ -2,6 +2,7 @@
 
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useTranslations } from "@/lib/i18n";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 interface BooleanFilterProps {
@@ -11,6 +12,7 @@ interface BooleanFilterProps {
 }
 
 export function BooleanFilter({ column, value, onChange }: BooleanFilterProps) {
+  const tFilter = useTranslations("filter");
   const stringValue =
     value === null ? "either" : value === true ? "true" : "false";
 
@@ -41,7 +43,7 @@ export function BooleanFilter({ column, value, onChange }: BooleanFilterProps) {
             data-testid={`boolean-filter-either-${column.db_column_name}`}
           />
           <Label htmlFor={`${column.id}-either`} className="cursor-pointer">
-            Either
+            {tFilter("either")}
           </Label>
         </div>
         <div className="flex items-center space-x-2">
@@ -51,7 +53,7 @@ export function BooleanFilter({ column, value, onChange }: BooleanFilterProps) {
             data-testid={`boolean-filter-yes-${column.db_column_name}`}
           />
           <Label htmlFor={`${column.id}-yes`} className="cursor-pointer">
-            Yes
+            {tFilter("yes")}
           </Label>
         </div>
         <div className="flex items-center space-x-2">
@@ -61,7 +63,7 @@ export function BooleanFilter({ column, value, onChange }: BooleanFilterProps) {
             data-testid={`boolean-filter-no-${column.db_column_name}`}
           />
           <Label htmlFor={`${column.id}-no`} className="cursor-pointer">
-            No
+            {tFilter("no")}
           </Label>
         </div>
       </RadioGroup>

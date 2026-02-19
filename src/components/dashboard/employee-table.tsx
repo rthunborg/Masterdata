@@ -2595,11 +2595,11 @@ export function EmployeeTable({
 
                       colSpan={columns.length}
 
-                      className="h-24 text-center"
+                      className="min-h-[calc(100vh-12rem)] flex flex-col items-center justify-center text-center py-12"
 
                     >
 
-                      {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message */}
+                      {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message. Centered in visible viewport. */}
                       {isFilterActive ? (
                         <EmptyFilterState
                           activeFilters={activeFilters}

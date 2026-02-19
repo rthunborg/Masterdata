@@ -5,6 +5,7 @@ import { X, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/lib/i18n";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
 import type { ImportantDate } from "@/lib/types/important-date";
@@ -41,6 +42,7 @@ export function FilterPanel({
     onCloseRef.current = onClose;
   }, [onClose]);
 
+  const tFilter = useTranslations("filter");
   // Story 20.6: Saved Filters integration
   const { savedFilters, saveFilter, deleteFilter } = useSavedFilters();
 
@@ -172,9 +174,16 @@ export function FilterPanel({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 id="filter-panel-title" className="text-lg font-semibold">
-            Filter Employees
-          </h2>
+          <div>
+            <h2 id="filter-panel-title" className="text-lg font-semibold">
+              {tFilter("panelTitle")}
+            </h2>
+            {activeFilters.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {tFilter("saveHint")}
+              </p>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {/* Story 20.6: Save Filter button */}
             {activeFilters.length > 0 && (
@@ -182,18 +191,18 @@ export function FilterPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => setShowSaveDialog(true)}
-                aria-label="Save current filters"
+                aria-label={tFilter("saveCurrentFilters")}
                 data-testid="save-filter-button"
               >
                 <Save className="h-4 w-4 mr-2" />
-                Save Filter
+                {tFilter("saveFilter")}
               </Button>
             )}
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              aria-label="Close filter panel"
+              aria-label={tFilter("closePanel")}
               data-testid="close-filter-panel"
             >
               <X className="h-4 w-4" />
@@ -224,7 +233,7 @@ export function FilterPanel({
           
           {filterableColumns.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No filterable columns available.
+              {tFilter("noFilterableColumns")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -262,7 +271,7 @@ export function FilterPanel({
         {/* Footer */}
         <div className="p-4 border-t">
           <Button onClick={handleApplyFilters} className="w-full" data-testid="apply-filters">
-            Apply Filters
+            {tFilter("applyFilters")}
           </Button>
         </div>
       </div>

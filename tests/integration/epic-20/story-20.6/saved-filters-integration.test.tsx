@@ -191,7 +191,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
     const dropdown = await waitFor(
-      () => screen.getByRole("combobox", { name: /select a saved filter/i }),
+      () => screen.getByRole("combobox", { name: /välj ett sparat filter/i }),
       { timeout: 3000 }
     );
     await userEvent.click(dropdown);
@@ -204,7 +204,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
     });
 
     // Verify filter count
-    expect(screen.getByText("2 saved filters")).toBeInTheDocument();
+    expect(screen.getByText("2 sparade filter")).toBeInTheDocument();
   });
 
   it("saves a new filter when user clicks Save Filter button", async () => {
@@ -217,7 +217,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Wait for component to load
     await waitFor(() => {
-      expect(screen.getByText("Filter Employees")).toBeInTheDocument();
+      expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
     });
 
     // Click Save Filter button using test-id
@@ -226,15 +226,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Dialog should open
     await waitFor(() => {
-      expect(screen.getByText(/give this filter combination a name/i)).toBeInTheDocument();
+      expect(screen.getByText(/ge denna filterkombination ett namn/i)).toBeInTheDocument();
     });
 
     // Type filter name
-    const input = screen.getByLabelText("Filter Name");
+    const input = screen.getByLabelText("Filternamn");
     await userEvent.type(input, "My Test Filter");
 
     // Click Save in dialog (use getAllByRole and find the enabled one)
-    const saveButtons = screen.getAllByRole("button", { name: /^save filter$/i });
+    const saveButtons = screen.getAllByRole("button", { name: /^spara filter$/i });
     const dialogSaveButton = saveButtons.find(btn => !btn.hasAttribute("disabled"));
     await userEvent.click(dialogSaveButton!);
 
@@ -260,7 +260,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
     const dropdown = await waitFor(
-      () => screen.getByRole("combobox", { name: /select a saved filter/i }),
+      () => screen.getByRole("combobox", { name: /välj ett sparat filter/i }),
       { timeout: 3000 }
     );
     await userEvent.click(dropdown);
@@ -291,14 +291,14 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
     const dropdown = await waitFor(
-      () => screen.getByRole("combobox", { name: /select a saved filter/i }),
+      () => screen.getByRole("combobox", { name: /välj ett sparat filter/i }),
       { timeout: 3000 }
     );
     await userEvent.click(dropdown);
 
     // Verify "current" indicator appears for matching filter
     await waitFor(() => {
-      const currentLabels = screen.getAllByText("current");
+      const currentLabels = screen.getAllByText("aktuell");
       expect(currentLabels.length).toBeGreaterThan(0);
     });
   });
@@ -312,15 +312,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
     // Wait for saved filters to load
     await waitFor(
       () => {
-        expect(screen.getByText("My Saved Filters")).toBeInTheDocument();
-        expect(screen.getByText("2 saved filters")).toBeInTheDocument();
+        expect(screen.getByText("Mina sparade filter")).toBeInTheDocument();
+        expect(screen.getByText("2 sparade filter")).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
     // Verify the saved filters dropdown component has the delete functionality
     // by checking that saved filters are displayed
-    const savedFiltersText = screen.getByText("2 saved filters");
+    const savedFiltersText = screen.getByText("2 sparade filter");
     expect(savedFiltersText).toBeInTheDocument();
 
     // Note: Full E2E test of delete button interaction is complex due to Radix UI Select portals
@@ -330,7 +330,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
     // 3. Manual QA in development
     
     // Verify that the SavedFiltersDropdown component is rendered with delete handlers
-    expect(screen.getByLabelText("Select a saved filter")).toBeInTheDocument();
+    expect(screen.getByLabelText("Välj ett sparat filter")).toBeInTheDocument();
     
     // Test the delete mutation directly by calling it
     const { useSavedFilters } = await import("@/hooks/useSavedFilters");
@@ -377,21 +377,21 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Wait for component to load
     await waitFor(() => {
-      expect(screen.getByText("Filter Employees")).toBeInTheDocument();
+      expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
     });
 
     // Click Save Filter button
     const saveButton = screen.getByRole("button", {
-      name: /save current filters/i,
+      name: /spara aktuella filter/i,
     });
     await userEvent.click(saveButton);
 
     // Enter duplicate name
-    const input = await screen.findByLabelText("Filter Name");
+    const input = await screen.findByLabelText("Filternamn");
     await userEvent.type(input, "New Hires");
 
     // Click Save
-    const dialogSaveButton = screen.getByRole("button", { name: /^save filter$/i });
+    const dialogSaveButton = screen.getByRole("button", { name: /^spara filter$/i });
     await userEvent.click(dialogSaveButton);
 
     // Verify error toast
@@ -415,16 +415,16 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Dialog should open
     await waitFor(() => {
-      expect(screen.getByText(/give this filter combination a name/i)).toBeInTheDocument();
+      expect(screen.getByText(/ge denna filterkombination ett namn/i)).toBeInTheDocument();
     });
 
     // Save button should be disabled when input is empty
-    const saveButtons = screen.getAllByRole("button", { name: /^save filter$/i });
+    const saveButtons = screen.getAllByRole("button", { name: /^spara filter$/i });
     const dialogSaveButton = saveButtons.find(btn => btn.hasAttribute("disabled"));
     expect(dialogSaveButton).toBeDisabled();
 
     // Type whitespace only
-    const input = screen.getByLabelText("Filter Name");
+    const input = screen.getByLabelText("Filternamn");
     await userEvent.type(input, "   ");
 
     // Save button should still be disabled

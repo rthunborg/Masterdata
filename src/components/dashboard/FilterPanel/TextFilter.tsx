@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { debounce } from "@/lib/utils/animation-helpers";
+import { useTranslations } from "@/lib/i18n";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 interface TextFilterProps {
@@ -23,6 +24,7 @@ export function TextFilter({
   onClear,
   flushTrigger,
 }: TextFilterProps) {
+  const tFilter = useTranslations("filter");
   const [localValue, setLocalValue] = useState(value);
 
   // Update local value when external value changes
@@ -72,7 +74,7 @@ export function TextFilter({
         type="text"
         value={localValue}
         onChange={handleChange}
-        placeholder={`Search ${column.column_name}...`}
+        placeholder={tFilter("searchColumnPlaceholder", { column: column.column_name })}
         className="pr-8"
         aria-label={`Filter ${column.column_name}`}
         data-testid={`text-filter-input-${column.db_column_name}`}
@@ -83,7 +85,7 @@ export function TextFilter({
           size="icon"
           onClick={handleClear}
           className="absolute right-0 top-0 h-full w-8 hover:bg-transparent"
-          aria-label="Clear filter"
+          aria-label={tFilter("clearFilter")}
           data-testid={`text-filter-clear-${column.db_column_name}`}
         >
           <X className="h-4 w-4" />

@@ -29,17 +29,17 @@ test.describe('Story 20.7: Export with Filters', () => {
     await filterButton.click();
 
     // Wait for filter panel to open
-    await expect(page.getByText('Filter Employees')).toBeVisible();
+    await expect(page.getByText('Filtrera anställda')).toBeVisible();
 
     // Find and expand First Name filter
     await page.getByText('First Name').click();
 
     // Enter filter value
-    const firstNameInput = page.getByPlaceholder(/contains/i).first();
+    const firstNameInput = page.getByPlaceholder(/sök/i).first();
     await firstNameInput.fill('John');
 
     // Apply filter
-    const applyButton = page.getByRole('button', { name: /apply filter/i });
+    const applyButton = page.getByRole('button', { name: /tillämpa filter/i });
     await applyButton.click();
 
     // Wait for filter to be applied
@@ -56,14 +56,14 @@ test.describe('Story 20.7: Export with Filters', () => {
 
     // Apply a filter
     await page.getByRole('button', { name: /filter/i }).click();
-    await expect(page.getByText('Filter Employees')).toBeVisible();
+    await expect(page.getByText('Filtrera anställda')).toBeVisible();
 
     // Apply text filter on First Name
     await page.getByText('First Name').click();
-    const firstNameInput = page.getByPlaceholder(/contains/i).first();
+    const firstNameInput = page.getByPlaceholder(/sök/i).first();
     await firstNameInput.fill('J'); // Match names starting with J
 
-    await page.getByRole('button', { name: /apply filter/i }).click();
+    await page.getByRole('button', { name: /tillämpa filter/i }).click();
     await page.waitForTimeout(500);
 
     // Get filtered row count
@@ -89,8 +89,8 @@ test.describe('Story 20.7: Export with Filters', () => {
     // State 2: Apply filter - button should show "Export Filtered (X)"
     await page.getByRole('button', { name: /filter/i }).click();
     await page.getByText('First Name').click();
-    await page.getByPlaceholder(/contains/i).first().fill('John');
-    await page.getByRole('button', { name: /apply filter/i }).click();
+    await page.getByPlaceholder(/sök/i).first().fill('John');
+    await page.getByRole('button', { name: /tillämpa filter/i }).click();
     await page.waitForTimeout(500);
 
     await expect(exportButton).toContainText(/filtered/i);
@@ -110,8 +110,8 @@ test.describe('Story 20.7: Export with Filters', () => {
     // Apply filter to narrow down employees
     await page.getByRole('button', { name: /filter/i }).click();
     await page.getByText('First Name').click();
-    await page.getByPlaceholder(/contains/i).first().fill('John');
-    await page.getByRole('button', { name: /apply filter/i }).click();
+    await page.getByPlaceholder(/sök/i).first().fill('John');
+    await page.getByRole('button', { name: /tillämpa filter/i }).click();
     await page.waitForTimeout(500);
 
     // Verify filtered count display
@@ -156,8 +156,8 @@ test.describe('Story 20.7: Export with Filters', () => {
     // Apply filter
     await page.getByRole('button', { name: /filter/i }).click();
     await page.getByText('First Name').click();
-    await page.getByPlaceholder(/contains/i).first().fill('John');
-    await page.getByRole('button', { name: /apply filter/i }).click();
+    await page.getByPlaceholder(/sök/i).first().fill('John');
+    await page.getByRole('button', { name: /tillämpa filter/i }).click();
     await page.waitForTimeout(500);
 
     // Select filtered employees
@@ -190,8 +190,8 @@ test.describe('Story 20.7: Export with Filters', () => {
     // Apply filter and select employees
     await page.getByRole('button', { name: /filter/i }).click();
     await page.getByText('First Name').click();
-    await page.getByPlaceholder(/contains/i).first().fill('John');
-    await page.getByRole('button', { name: /apply filter/i }).click();
+    await page.getByPlaceholder(/sök/i).first().fill('John');
+    await page.getByRole('button', { name: /tillämpa filter/i }).click();
     await page.waitForTimeout(500);
 
     const selectAllCheckbox = page.getByRole('checkbox', { name: /select all/i });
@@ -228,7 +228,7 @@ test.describe('Story 20.7: Export with Filters', () => {
     await page.getByRole('button', { name: /filter/i }).click();
     await page.getByText('Rank').click();
     await page.getByRole('combobox').selectOption('SEV');
-    await page.getByRole('button', { name: /apply filter/i }).click();
+    await page.getByRole('button', { name: /tillämpa filter/i }).click();
     await page.waitForTimeout(500);
 
     // Check if Crew Ready export button exists and is visible
@@ -259,8 +259,8 @@ test.describe('Story 20.7: Export with Filters', () => {
     // Apply filter
     await page.getByRole('button', { name: /filter/i }).click();
     await page.getByText('First Name').click();
-    await page.getByPlaceholder(/contains/i).first().fill('John');
-    await page.getByRole('button', { name: /apply filter/i }).click();
+    await page.getByPlaceholder(/sök/i).first().fill('John');
+    await page.getByRole('button', { name: /tillämpa filter/i }).click();
     await page.waitForTimeout(500);
 
     // Export button should show filtered state
@@ -282,8 +282,8 @@ test.describe('Story 20.7: Export with Filters', () => {
     // Apply filter
     await page.getByRole('button', { name: /filter/i }).click();
     await page.getByText('First Name').click();
-    await page.getByPlaceholder(/contains/i).first().fill('J');
-    await page.getByRole('button', { name: /apply filter/i }).click();
+    await page.getByPlaceholder(/sök/i).first().fill('J');
+    await page.getByRole('button', { name: /tillämpa filter/i }).click();
     await page.waitForTimeout(500);
 
     // Get filtered count from display

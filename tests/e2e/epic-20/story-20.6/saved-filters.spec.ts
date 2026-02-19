@@ -25,7 +25,7 @@ test.describe("Story 20.6: Saved Filters", () => {
     await filterButton.click();
 
     // Wait for filter panel to open
-    await expect(page.getByText("Filter Employees")).toBeVisible();
+    await expect(page.getByText("Filtrera anställda")).toBeVisible();
 
     // Step 2: Apply a filter (e.g., search for "John" in first name)
     const firstNameToggle = page.getByTestId("filter-column-toggle-first_name");
@@ -36,33 +36,33 @@ test.describe("Story 20.6: Saved Filters", () => {
     }
 
     // Step 3: Verify Save Filter button appears when filters are active
-    await expect(page.getByRole("button", { name: /save filter/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /spara filter/i })).toBeVisible();
 
     // Step 4: Click Save Filter button
-    await page.getByRole("button", { name: /save filter/i }).click();
+    await page.getByRole("button", { name: /spara filter/i }).click();
 
     // Step 5: Verify Save Filter dialog opens
-    await expect(page.getByText("Give this filter combination a name")).toBeVisible();
+    await expect(page.getByText(/ge denna filterkombination ett namn/i)).toBeVisible();
 
     // Step 6: Enter filter name
-    const filterNameInput = page.getByLabel("Filter Name");
+    const filterNameInput = page.getByLabel("Filternamn");
     await filterNameInput.fill("My Test Filter E2E");
 
     // Step 7: Verify filter summary is shown
-    await expect(page.getByText("This will save:")).toBeVisible();
+    await expect(page.getByText("Detta sparas:")).toBeVisible();
 
     // Step 8: Click Save in dialog
-    const saveButton = page.getByRole("button", { name: /^save filter$/i }).last();
+    const saveButton = page.getByRole("button", { name: /^spara filter$/i }).last();
     await saveButton.click();
 
     // Step 9: Verify success toast (optional, depends on toast implementation)
     // await expect(page.getByText("Filter saved successfully")).toBeVisible();
 
     // Step 10: Verify dialog closes
-    await expect(page.getByText("Give this filter combination a name")).not.toBeVisible();
+    await expect(page.getByText(/ge denna filterkombination ett namn/i)).not.toBeVisible();
 
     // Step 11: Close filter panel and reload page
-    const applyFiltersButton = page.getByRole("button", { name: /apply filters/i });
+    const applyFiltersButton = page.getByRole("button", { name: /tillämpa filter/i });
     await applyFiltersButton.click();
 
     await page.reload();
@@ -70,13 +70,13 @@ test.describe("Story 20.6: Saved Filters", () => {
 
     // Step 12: Open filter panel again
     await filterButton.click();
-    await expect(page.getByText("Filter Employees")).toBeVisible();
+    await expect(page.getByText("Filtrera anställda")).toBeVisible();
 
     // Step 13: Verify saved filter appears in dropdown
-    await expect(page.getByText("My Saved Filters")).toBeVisible();
+    await expect(page.getByText("Mina sparade filter")).toBeVisible();
 
     // Step 14: Open saved filters dropdown
-    const dropdown = page.getByRole("combobox", { name: /select a saved filter/i });
+    const dropdown = page.getByRole("combobox", { name: /välj ett sparat filter/i });
     await dropdown.click();
 
     // Step 15: Verify saved filter is in the list
@@ -92,7 +92,7 @@ test.describe("Story 20.6: Saved Filters", () => {
 
     // Step 18: Verify "current" indicator shows
     await dropdown.click();
-    const currentFilter = page.locator('text="My Test Filter E2E"').locator('..').locator('text="current"');
+    const currentFilter = page.locator('text="My Test Filter E2E"').locator('..').locator('text="aktuell"');
     await expect(currentFilter).toBeVisible();
   });
 
@@ -100,7 +100,7 @@ test.describe("Story 20.6: Saved Filters", () => {
     // Prerequisite: Create a filter first
     const filterButton = page.getByRole("button", { name: /filter/i });
     await filterButton.click();
-    await expect(page.getByText("Filter Employees")).toBeVisible();
+    await expect(page.getByText("Filtrera anställda")).toBeVisible();
 
     // Apply a filter
     const hotelRequiredToggle = page.getByTestId("filter-column-toggle-hotel_required");
@@ -111,17 +111,17 @@ test.describe("Story 20.6: Saved Filters", () => {
     }
 
     // Save filter
-    await page.getByRole("button", { name: /save filter/i }).click();
-    const filterNameInput = page.getByLabel("Filter Name");
+    await page.getByRole("button", { name: /spara filter/i }).click();
+    const filterNameInput = page.getByLabel("Filternamn");
     await filterNameInput.fill("Filter to Delete E2E");
-    const saveButton = page.getByRole("button", { name: /^save filter$/i }).last();
+    const saveButton = page.getByRole("button", { name: /^spara filter$/i }).last();
     await saveButton.click();
 
     // Wait for dialog to close
     await page.waitForTimeout(500);
 
     // Step 1: Open saved filters dropdown
-    const dropdown = page.getByRole("combobox", { name: /select a saved filter/i });
+    const dropdown = page.getByRole("combobox", { name: /välj ett sparat filter/i });
     await dropdown.click();
 
     // Step 2: Hover over saved filter to reveal delete button
@@ -133,23 +133,23 @@ test.describe("Story 20.6: Saved Filters", () => {
     await deleteButton.click();
 
     // Step 4: Verify confirmation dialog appears
-    await expect(page.getByText("Delete saved filter?")).toBeVisible();
-    await expect(page.getByText(/are you sure you want to delete/i)).toBeVisible();
+    await expect(page.getByText("Radera sparat filter?")).toBeVisible();
+    await expect(page.getByText(/är du säker på att du vill radera/i)).toBeVisible();
     await expect(page.getByText(/"Filter to Delete E2E"/)).toBeVisible();
-    await expect(page.getByText("This action cannot be undone")).toBeVisible();
+    await expect(page.getByText(/åtgärden kan inte ångras/i)).toBeVisible();
 
     // Step 5: Click Cancel to test cancellation
-    await page.getByRole("button", { name: /cancel/i }).last().click();
+    await page.getByRole("button", { name: /avbryt/i }).last().click();
 
     // Step 6: Verify dialog closes and filter still exists
-    await expect(page.getByText("Delete saved filter?")).not.toBeVisible();
+    await expect(page.getByText("Radera sparat filter?")).not.toBeVisible();
     await expect(page.getByText("Filter to Delete E2E")).toBeVisible();
 
     // Step 7: Click delete button again
     await deleteButton.click();
 
     // Step 8: Confirm deletion
-    await page.getByRole("button", { name: /^delete$/i }).last().click();
+    await page.getByRole("button", { name: /^radera$/i }).last().click();
 
     // Step 9: Verify filter is removed from list
     await page.waitForTimeout(500);
@@ -163,7 +163,7 @@ test.describe("Story 20.6: Saved Filters", () => {
     // Prerequisite: Create first filter
     const filterButton = page.getByRole("button", { name: /filter/i });
     await filterButton.click();
-    await expect(page.getByText("Filter Employees")).toBeVisible();
+    await expect(page.getByText("Filtrera anställda")).toBeVisible();
 
     // Apply a filter
     const firstNameToggle = page.getByTestId("filter-column-toggle-first_name");
@@ -173,17 +173,17 @@ test.describe("Story 20.6: Saved Filters", () => {
     }
 
     // Save first filter
-    await page.getByRole("button", { name: /save filter/i }).click();
-    let filterNameInput = page.getByLabel("Filter Name");
+    await page.getByRole("button", { name: /spara filter/i }).click();
+    let filterNameInput = page.getByLabel("Filternamn");
     await filterNameInput.fill("Duplicate Test Filter");
-    let saveButton = page.getByRole("button", { name: /^save filter$/i }).last();
+    let saveButton = page.getByRole("button", { name: /^spara filter$/i }).last();
     await saveButton.click();
 
     // Wait for save to complete
     await page.waitForTimeout(500);
 
     // Step 1: Clear filters
-    const clearButton = page.getByRole("button", { name: /clear all/i });
+    const clearButton = page.getByRole("button", { name: /rensa alla/i });
     if (await clearButton.isVisible({ timeout: 1000 }).catch(() => false)) {
       await clearButton.click();
     }
@@ -196,26 +196,26 @@ test.describe("Story 20.6: Saved Filters", () => {
     }
 
     // Step 3: Try to save with same name
-    await page.getByRole("button", { name: /save filter/i }).click();
-    filterNameInput = page.getByLabel("Filter Name");
+    await page.getByRole("button", { name: /spara filter/i }).click();
+    filterNameInput = page.getByLabel("Filternamn");
     await filterNameInput.fill("Duplicate Test Filter");
     saveButton = page.getByRole("button", { name: /^save filter$/i }).last();
     await saveButton.click();
 
     // Step 4: Verify error message appears
-    await expect(page.getByText(/a filter with this name already exists/i)).toBeVisible({
+    await expect(page.getByText(/ett filter med det här namnet finns redan/i)).toBeVisible({
       timeout: 3000,
     });
 
     // Step 5: Verify dialog stays open
-    await expect(page.getByText("Save Filter")).toBeVisible();
+    await expect(page.getByText("Spara filter")).toBeVisible();
   });
 
   test("AC6: Empty name validation", async ({ page }) => {
     // Open filter panel and apply a filter
     const filterButton = page.getByRole("button", { name: /filter/i });
     await filterButton.click();
-    await expect(page.getByText("Filter Employees")).toBeVisible();
+    await expect(page.getByText("Filtrera anställda")).toBeVisible();
 
     const firstNameToggle = page.getByTestId("filter-column-toggle-first_name");
     if (await firstNameToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -224,15 +224,15 @@ test.describe("Story 20.6: Saved Filters", () => {
     }
 
     // Open save dialog
-    await page.getByRole("button", { name: /save filter/i }).click();
-    await expect(page.getByText("Give this filter combination a name")).toBeVisible();
+    await page.getByRole("button", { name: /spara filter/i }).click();
+    await expect(page.getByText(/ge denna filterkombination ett namn/i)).toBeVisible();
 
     // Step 1: Verify Save button is disabled when name is empty
-    const saveButton = page.getByRole("button", { name: /^save filter$/i }).last();
+    const saveButton = page.getByRole("button", { name: /^spara filter$/i }).last();
     await expect(saveButton).toBeDisabled();
 
     // Step 2: Type whitespace only
-    const filterNameInput = page.getByLabel("Filter Name");
+    const filterNameInput = page.getByLabel("Filternamn");
     await filterNameInput.fill("   ");
 
     // Step 3: Verify Save button is still disabled
@@ -250,7 +250,7 @@ test.describe("Story 20.6: Saved Filters", () => {
     // Open filter panel and apply a filter
     const filterButton = page.getByRole("button", { name: /filter/i });
     await filterButton.click();
-    await expect(page.getByText("Filter Employees")).toBeVisible();
+    await expect(page.getByText("Filtrera anställda")).toBeVisible();
 
     const firstNameToggle = page.getByTestId("filter-column-toggle-first_name");
     if (await firstNameToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -259,10 +259,10 @@ test.describe("Story 20.6: Saved Filters", () => {
     }
 
     // Open save dialog
-    await page.getByRole("button", { name: /save filter/i }).click();
+    await page.getByRole("button", { name: /spara filter/i }).click();
 
     // Step 1: Try to type more than 50 characters
-    const filterNameInput = page.getByLabel("Filter Name");
+    const filterNameInput = page.getByLabel("Filternamn");
     const longName = "a".repeat(60);
     await filterNameInput.fill(longName);
 
@@ -271,6 +271,6 @@ test.describe("Story 20.6: Saved Filters", () => {
     expect(actualValue.length).toBeLessThanOrEqual(50);
 
     // Step 3: Verify hint text is shown
-    await expect(page.getByText("Maximum 50 characters")).toBeVisible();
+    await expect(page.getByText("Max 50 tecken")).toBeVisible();
   });
 });

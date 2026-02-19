@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "@/lib/i18n";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -33,18 +34,30 @@ export function DateFilter({
   onDateRangeChange,
   onDateSelectionChange,
 }: DateFilterProps) {
+  const tFilter = useTranslations("filter");
   const [isFromOpen, setIsFromOpen] = useState(false);
   const [isToOpen, setIsToOpen] = useState(false);
 
-  const handleFromDateSelect = (date: Date | undefined) => {
-    onDateRangeChange({ from: date || null, to: dateRange.to });
-    setIsFromOpen(false);
-  };
+  const dateRangeRef = useRef(dateRange);
+  const onDateRangeChangeRef = useRef(onDateRangeChange);
+  useEffect(() => {
+    dateRangeRef.current = dateRange;
+  }, [dateRange]);
+  useEffect(() => {
+    onDateRangeChangeRef.current = onDateRangeChange;
+  }, [onDateRangeChange]);
 
-  const handleToDateSelect = (date: Date | undefined) => {
-    onDateRangeChange({ from: dateRange.from, to: date || null });
+  const handleFromDateSelect = useCallback((date: Date | undefined) => {
+    const range = dateRangeRef.current;
+    onDateRangeChangeRef.current({ from: date || null, to: range.to });
+    setIsFromOpen(false);
+  }, []);
+
+  const handleToDateSelect = useCallback((date: Date | undefined) => {
+    const range = dateRangeRef.current;
+    onDateRangeChangeRef.current({ from: range.from, to: date || null });
     setIsToOpen(false);
-  };
+  }, []);
 
   const handleClearRange = () => {
     onDateRangeChange({ from: null, to: null });
@@ -72,7 +85,7 @@ export function DateFilter({
       {/* Date Range Picker */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Date Range</Label>
+          <Label className="text-sm font-medium">{tFilter("dateRange")}</Label>
           {hasDateRange && (
             <Button
               variant="ghost"
@@ -81,14 +94,14 @@ export function DateFilter({
               className="h-auto p-1 text-xs"
               data-testid={`date-filter-clear-range-${column.db_column_name}`}
             >
-              Clear
+              {tFilter("clear")}
             </Button>
           )}
         </div>
         <div className="grid grid-cols-2 gap-2">
           {/* From Date */}
           <div>
-            <Label className="text-xs text-muted-foreground">From</Label>
+            <Label className="text-xs text-muted-foreground">{tFilter("from")}</Label>
             <Popover open={isFromOpen} onOpenChange={setIsFromOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -103,7 +116,7 @@ export function DateFilter({
                   {dateRange.from ? (
                     format(dateRange.from, "MMM d, yyyy")
                   ) : (
-                    <span>Pick date</span>
+                    <span>{tFilter("pickDate")}</span>
                   )}
                 </Button>
               </PopoverTrigger>
@@ -112,7 +125,6 @@ export function DateFilter({
                   mode="single"
                   selected={dateRange.from || undefined}
                   onSelect={handleFromDateSelect}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>
@@ -120,7 +132,7 @@ export function DateFilter({
 
           {/* To Date */}
           <div>
-            <Label className="text-xs text-muted-foreground">To</Label>
+            <Label className="text-xs text-muted-foreground">{tFilter("to")}</Label>
             <Popover open={isToOpen} onOpenChange={setIsToOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -135,7 +147,7 @@ export function DateFilter({
                   {dateRange.to ? (
                     format(dateRange.to, "MMM d, yyyy")
                   ) : (
-                    <span>Pick date</span>
+                    <span>{tFilter("pickDate")}</span>
                   )}
                 </Button>
               </PopoverTrigger>
@@ -144,7 +156,6 @@ export function DateFilter({
                   mode="single"
                   selected={dateRange.to || undefined}
                   onSelect={handleToDateSelect}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>
@@ -155,7 +166,7 @@ export function DateFilter({
             className="text-xs text-red-500"
             data-testid={`date-filter-error-${column.db_column_name}`}
           >
-            &quot;From&quot; date must be before &quot;To&quot; date
+            {tFilter("fromToError")}
           </p>
         )}
       </div>
@@ -163,7 +174,7 @@ export function DateFilter({
       {/* Specific Dates Checkboxes */}
       {availableDates.length > 0 && (
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Or select specific dates:</Label>
+          <Label className="text-sm font-medium">{tFilter("orSelectSpecificDates")}</Label>
           <div
             className="max-h-48 overflow-y-auto space-y-2 border rounded-md p-2"
             data-testid={`date-filter-checkboxes-${column.db_column_name}`}
