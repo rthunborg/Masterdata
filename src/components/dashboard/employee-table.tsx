@@ -2603,7 +2603,7 @@ export function EmployeeTable({
                       {isFilterActive ? (
                         <EmptyFilterState
                           activeFilters={activeFilters}
-                          columnConfigs={allColumnConfigs}
+                          columnConfigs={columnConfigs}
                           onClearFilters={clearAllFilters}
                           importantDates={allImportantDates}
                         />
@@ -2953,11 +2953,11 @@ export function EmployeeTable({
         isHRAdmin={isEffectivelyHRAdmin}
       />
 
-      {/* Story 20.2: Filter Panel */}
+      {/* Story 20.2: Filter Panel - use columnConfigs (role-based) so filterable columns are available when not impersonating */}
       <FilterPanel
         isOpen={isFilterPanelOpen}
         onClose={() => setIsFilterPanelOpen(false)}
-        columnConfigs={allColumnConfigs}
+        columnConfigs={columnConfigs}
         activeFilters={activeFilters}
         onFiltersChange={setActiveFilters}
         importantDates={allImportantDates}

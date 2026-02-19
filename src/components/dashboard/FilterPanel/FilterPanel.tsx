@@ -126,7 +126,7 @@ export function FilterPanel({
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-30 z-40"
+        className="fixed inset-0 bg-black/30 z-40"
         onClick={handleOverlayClick}
         data-testid="filter-panel-overlay"
       />
