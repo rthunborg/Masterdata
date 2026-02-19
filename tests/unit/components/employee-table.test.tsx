@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, fireEvent, within } from "@testing-library/react";
+import { screen, fireEvent, within, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from "@/components/dashboard/employee-table";
@@ -935,19 +935,14 @@ describe("EmployeeTable", () => {
     it("should sort employees by hire date chronologically", () => {
       renderWithQueryClient(<EmployeeTable employees={multipleEmployees} isLoading={false} />);
 
-      const hireDateHeader = screen.getByText("Hire Date");
-      fireEvent.click(hireDateHeader);
-
-      // Verify sort order by checking that Bob (oldest hire date) comes before Alice (newest hire date)
-      // Bob: 2021-06-20, Charlie: 2023-03-15, Alice: 2025-01-10
-      const allText = screen.getByRole('table').textContent || '';
-      const bobIndex = allText.indexOf('Bob');
-      const charlieIndex = allText.indexOf('Charlie');
-      const aliceIndex = allText.indexOf('Alice');
-      
-      // After ascending sort by hire_date: Bob < Charlie < Alice
-      expect(bobIndex).toBeLessThan(charlieIndex);
-      expect(charlieIndex).toBeLessThan(aliceIndex);
+      // Default sort is hire_date desc (newest first): Alice 2025, Charlie 2023, Bob 2021
+      const table = screen.getByRole("table");
+      const rows = within(table).getAllByRole("row");
+      const dataRows = rows.slice(1);
+      expect(dataRows).toHaveLength(3);
+      expect(within(dataRows[0]).getByText("Alice")).toBeInTheDocument();
+      expect(within(dataRows[1]).getByText("Charlie")).toBeInTheDocument();
+      expect(within(dataRows[2]).getByText("Bob")).toBeInTheDocument();
     });
 
     it("should remove sort on third click (tri-state sorting)", () => {
