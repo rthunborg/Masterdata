@@ -372,10 +372,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
       { columnId: "col-1", type: "text", textValue: "Test" },
     ];
 
-    // Mock duplicate name error
+    // Mock duplicate name error (match URL like beforeEach: include path for relative or absolute)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global.fetch as any).mockImplementation((url: string, options?: any) => {
-      if (url === "/api/users/filters" && options?.method === "POST") {
+      const isPostFilters =
+        typeof url === "string" &&
+        url.includes("/api/users/filters") &&
+        !url.includes("/api/users/filters/") &&
+        options?.method === "POST";
+      if (isPostFilters) {
         return Promise.resolve({
           ok: false,
           status: 409,
@@ -383,10 +388,19 @@ describe("Story 20.6: Saved Filters Integration", () => {
             Promise.resolve({ error: "A filter with this name already exists" }),
         });
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ data: mockSavedFilters }),
-      });
+      const isGetFilters =
+        typeof url === "string" &&
+        url.includes("/api/users/filters") &&
+        !url.includes("/api/users/filters/") &&
+        (!options || options?.method !== "POST");
+      if (isGetFilters) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ data: mockSavedFilters }),
+        });
+      }
+      return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
     });
 
     renderFilterPanel(activeFilters);
