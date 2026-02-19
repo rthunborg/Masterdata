@@ -9,10 +9,12 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { FilterPanel } from "@/components/dashboard/FilterPanel/FilterPanel";
+import { Button } from "@/components/ui/button";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
 
@@ -167,10 +169,18 @@ describe("Story 20.6: Saved Filters Integration", () => {
   const renderFilterPanel = (activeFilters: FilterState[] = []) => {
     const onFiltersChange = vi.fn();
     const onClose = vi.fn();
-
-    return {
-      ...render(
+    const Wrapper = () => {
+      const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
+      return (
         <QueryClientProvider client={queryClient}>
+          {activeFilters.length > 0 && (
+            <Button
+              data-testid="save-filter-button"
+              onClick={() => setSaveDialogOpen(true)}
+            >
+              Spara filter
+            </Button>
+          )}
           <FilterPanel
             isOpen={true}
             onClose={onClose}
@@ -178,9 +188,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
             activeFilters={activeFilters}
             onFiltersChange={onFiltersChange}
             importantDates={[]}
+            saveDialogOpen={saveDialogOpen}
+            onSaveDialogOpenChange={setSaveDialogOpen}
           />
         </QueryClientProvider>
-      ),
+      );
+    };
+
+    return {
+      ...render(<Wrapper />),
       onFiltersChange,
       onClose,
     };
@@ -380,10 +396,8 @@ describe("Story 20.6: Saved Filters Integration", () => {
       expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
     });
 
-    // Click Save Filter button
-    const saveButton = screen.getByRole("button", {
-      name: /spara aktuella filter/i,
-    });
+    // Click Save Filter button (outside panel, next to Rensa filter)
+    const saveButton = screen.getByTestId("save-filter-button");
     await userEvent.click(saveButton);
 
     // Enter duplicate name
