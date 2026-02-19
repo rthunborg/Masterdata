@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FilterPanel } from '@/components/dashboard/FilterPanel';
@@ -251,7 +251,7 @@ describe('Story 20.2: FilterPanel', () => {
     );
 
     await user.click(screen.getByTestId('apply-filters'));
-    expect(handleClose).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(handleClose).toHaveBeenCalledTimes(1));
   });
 
   it('should not call onClose when clicking inside panel', async () => {
@@ -270,6 +270,42 @@ describe('Story 20.2: FilterPanel', () => {
 
     await user.click(screen.getByText('Filter Employees'));
     expect(handleClose).not.toHaveBeenCalled();
+  });
+
+  it('should apply pending text filter when Apply Filters is clicked (flush debounce)', async () => {
+    const onFiltersChange = vi.fn();
+    const onClose = vi.fn();
+    const user = userEvent.setup();
+
+    renderWithQueryClient(
+      <FilterPanel
+        isOpen={true}
+        onClose={onClose}
+        columnConfigs={mockColumnConfigs}
+        activeFilters={[]}
+        onFiltersChange={onFiltersChange}
+      />
+    );
+
+    await user.click(screen.getByTestId('filter-column-toggle-first_name'));
+    const input = screen.getByTestId('text-filter-input-first_name');
+    await user.type(input, 'John');
+    await user.click(screen.getByTestId('apply-filters'));
+
+    await waitFor(
+      () => {
+        expect(onFiltersChange).toHaveBeenCalled();
+        const call = onFiltersChange.mock.calls[0]?.[0];
+        expect(Array.isArray(call) && call.length === 1).toBe(true);
+        expect(call[0]).toMatchObject({
+          columnId: '1',
+          type: 'text',
+        });
+        expect(typeof call[0].textValue === 'string' && call[0].textValue.length > 0).toBe(true);
+      },
+      { timeout: 2000 }
+    );
+    await waitFor(() => expect(onClose).toHaveBeenCalled(), { timeout: 2000 });
   });
 
   it('should display message when no filterable columns available', () => {

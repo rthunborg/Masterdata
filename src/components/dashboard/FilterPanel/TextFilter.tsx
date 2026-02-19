@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, ChangeEvent } from "react";
+import { useState, useMemo, useEffect, useRef, ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ interface TextFilterProps {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  /** When this value changes, any pending debounced onChange is flushed immediately (e.g. when user clicks Apply Filters). */
+  flushTrigger?: number;
 }
 
 export function TextFilter({
@@ -19,6 +21,7 @@ export function TextFilter({
   value,
   onChange,
   onClear,
+  flushTrigger,
 }: TextFilterProps) {
   const [localValue, setLocalValue] = useState(value);
 
@@ -27,11 +30,26 @@ export function TextFilter({
     setLocalValue(value);
   }, [value]);
 
-  // Debounce onChange to prevent excessive filtering
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Debounce with stable ref so flushTrigger doesn't create a new debounce (which would lose pending lastArgs)
   const debouncedOnChange = useMemo(
-    () => debounce(onChange, 300),
-    [onChange]
+    () =>
+      debounce((value: string) => {
+        onChangeRef.current(value);
+      }, 300),
+    []
   );
+
+  // Flush pending debounced value when Apply Filters is clicked (so filter is applied before panel closes)
+  useEffect(() => {
+    if (flushTrigger !== undefined && flushTrigger > 0) {
+      debouncedOnChange.flush();
+    }
+  }, [flushTrigger, debouncedOnChange]);
 
   // Cleanup debounce on unmount
   useEffect(() => {

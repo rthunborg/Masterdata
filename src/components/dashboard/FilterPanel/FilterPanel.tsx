@@ -33,6 +33,7 @@ export function FilterPanel({
 }: FilterPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [flushTrigger, setFlushTrigger] = useState(0);
   const onCloseRef = useRef(onClose);
   const initialFocusDoneRef = useRef(false);
 
@@ -118,6 +119,12 @@ export function FilterPanel({
   // Prevent panel clicks from closing
   const handlePanelClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+  };
+
+  // Apply Filters: flush any pending debounced text filter values, then close (so dashboard updates with filters)
+  const handleApplyFilters = () => {
+    setFlushTrigger((prev) => prev + 1);
+    setTimeout(() => onClose(), 50);
   };
 
   // Story 20.6: Handle saving filters
@@ -230,6 +237,7 @@ export function FilterPanel({
                     key={column.id}
                     column={column}
                     activeFilter={activeFilter}
+                    flushTrigger={flushTrigger}
                     onFilterChange={(filter) => {
                       if (filter) {
                         // Add or update filter
@@ -253,7 +261,7 @@ export function FilterPanel({
 
         {/* Footer */}
         <div className="p-4 border-t">
-          <Button onClick={onClose} className="w-full" data-testid="apply-filters">
+          <Button onClick={handleApplyFilters} className="w-full" data-testid="apply-filters">
             Apply Filters
           </Button>
         </div>
