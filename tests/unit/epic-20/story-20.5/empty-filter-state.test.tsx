@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { EmptyFilterState } from "@/components/dashboard/EmptyFilterState";
 import type { FilterState } from "@/lib/types/filter";
 import type { ColumnConfig } from "@/lib/types/column-config";
+import type { ImportantDate } from "@/lib/types/important-date";
 
 
 vi.mock("next/navigation", () => ({
@@ -70,9 +71,9 @@ describe("EmptyFilterState - Story 20.5", () => {
       />
     );
 
-    expect(screen.getByText("No employees found")).toBeInTheDocument();
+    expect(screen.getByText("Inga anställda hittades")).toBeInTheDocument();
     expect(
-      screen.getByText("No employees match your current filter criteria.")
+      screen.getByText("Inga anställda matchar dina aktuella filterkriterier.")
     ).toBeInTheDocument();
   });
 
@@ -98,11 +99,11 @@ describe("EmptyFilterState - Story 20.5", () => {
       />
     );
 
-    expect(screen.getByText("Active filters:")).toBeInTheDocument();
+    expect(screen.getByText("Aktiva filter:")).toBeInTheDocument();
     expect(screen.getByText(/First Name:/)).toBeInTheDocument();
     expect(screen.getByText(/"john"/)).toBeInTheDocument();
     expect(screen.getByText(/Active:/)).toBeInTheDocument();
-    expect(screen.getByText(/Yes/)).toBeInTheDocument();
+    expect(screen.getByText(/Ja/)).toBeInTheDocument();
   });
 
   it("calls onClearFilters when button clicked", async () => {
@@ -124,7 +125,7 @@ describe("EmptyFilterState - Story 20.5", () => {
       />
     );
 
-    const button = screen.getByRole("button", { name: /clear all filters/i });
+    const button = screen.getByRole("button", { name: /rensa alla filter/i });
     await user.click(button);
 
     expect(handleClear).toHaveBeenCalledTimes(1);
@@ -172,7 +173,7 @@ describe("EmptyFilterState - Story 20.5", () => {
     // Check for "Active: No" specifically (the filter value, not the "No employees found" heading)
     expect(screen.getByText(/Active:/)).toBeInTheDocument();
     const filterItem = screen.getByText(/Active:/).closest('li');
-    expect(filterItem).toHaveTextContent('No');
+    expect(filterItem).toHaveTextContent('Nej');
   });
 
   it("formats date filter values correctly with count fallback", () => {
@@ -192,7 +193,7 @@ describe("EmptyFilterState - Story 20.5", () => {
       />
     );
 
-    expect(screen.getByText(/2 date\(s\) selected/)).toBeInTheDocument();
+    expect(screen.getByText(/2 datum valda/)).toBeInTheDocument();
   });
 
   it("displays actual date names when importantDates provided", () => {
@@ -246,6 +247,6 @@ describe("EmptyFilterState - Story 20.5", () => {
       />
     );
 
-    expect(screen.getByText(/Week 15, Week 16 \+2 more/)).toBeInTheDocument();
+    expect(screen.getByText(/Week 15, Week 16 \+2/)).toBeInTheDocument();
   });
 });

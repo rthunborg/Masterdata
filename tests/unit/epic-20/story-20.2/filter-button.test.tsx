@@ -39,7 +39,7 @@ describe('Story 20.2: FilterButton', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: /open filter panel/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /öppna filterpanelen/i })).toBeInTheDocument();
     expect(screen.getByText('Filter')).toBeInTheDocument();
   });
 
