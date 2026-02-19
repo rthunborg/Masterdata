@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FilterPanel } from '@/components/dashboard/FilterPanel';
@@ -97,6 +97,16 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/dashboard",
 }));
 
+vi.mock("@/hooks/useSavedFilters", () => ({
+  useSavedFilters: () => ({
+    savedFilters: [],
+    saveFilter: vi.fn(),
+    deleteFilter: vi.fn(),
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 describe('Story 20.2: FilterPanel', () => {
   let queryClient: QueryClient;
 
@@ -128,7 +138,7 @@ describe('Story 20.2: FilterPanel', () => {
     );
 
     expect(screen.getByTestId('filter-panel')).toBeInTheDocument();
-    expect(screen.getByText('Filter Employees')).toBeInTheDocument();
+    expect(screen.getByText('Filtrera anställda')).toBeInTheDocument();
   });
 
   it('should not render when closed', () => {
@@ -268,7 +278,7 @@ describe('Story 20.2: FilterPanel', () => {
       />
     );
 
-    await user.click(screen.getByText('Filter Employees'));
+    await user.click(screen.getByText('Filtrera anställda'));
     expect(handleClose).not.toHaveBeenCalled();
   });
 
@@ -290,7 +300,10 @@ describe('Story 20.2: FilterPanel', () => {
     await user.click(screen.getByTestId('filter-column-toggle-first_name'));
     const input = screen.getByTestId('text-filter-input-first_name');
     await user.type(input, 'John');
-    await user.click(screen.getByTestId('apply-filters'));
+    // Allow debounced state to be scheduled, then click Apply (flush runs on flushTrigger change)
+    await act(async () => {
+      await user.click(screen.getByTestId('apply-filters'));
+    });
 
     await waitFor(
       () => {
@@ -337,6 +350,6 @@ describe('Story 20.2: FilterPanel', () => {
       />
     );
 
-    expect(screen.getByText('No filterable columns available.')).toBeInTheDocument();
+    expect(screen.getByText('Inga filterbara kolumner tillgängliga.')).toBeInTheDocument();
   });
 });

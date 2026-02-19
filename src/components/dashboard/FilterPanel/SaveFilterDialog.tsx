@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "@/lib/i18n";
 import type { FilterState } from "@/lib/types/filter";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
@@ -37,6 +38,7 @@ export function SaveFilterDialog({
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const tFilter = useTranslations("filter");
 
   // Reset state when dialog closes
   useEffect(() => {
@@ -57,7 +59,12 @@ export function SaveFilterDialog({
       await onSave(trimmedName);
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save filter");
+      const msg = err instanceof Error ? err.message : "";
+      setError(
+        msg.includes("already exists")
+          ? tFilter("filterNameAlreadyExists")
+          : msg || tFilter("saveFilterFailed")
+      );
     } finally {
       setIsSaving(false);
     }
@@ -84,16 +91,16 @@ export function SaveFilterDialog({
     }
 
     if (filter.type === "boolean" && filter.boolValue !== undefined) {
-      const value = filter.boolValue === null ? "Either" : filter.boolValue ? "Yes" : "No";
+      const value = filter.boolValue === null ? tFilter("either") : filter.boolValue ? tFilter("yes") : tFilter("no");
       return `${columnName}: ${value}`;
     }
 
     if (filter.type === "date") {
       if (filter.selectedDateIds && filter.selectedDateIds.length > 0) {
-        return `${columnName}: ${filter.selectedDateIds.length} date(s) selected`;
+        return `${columnName}: ${tFilter("datesSelected", { count: filter.selectedDateIds.length })}`;
       }
       if (filter.dateRange?.from || filter.dateRange?.to) {
-        return `${columnName}: Date range`;
+        return `${columnName}: ${tFilter("dateRangeSelected")}`;
       }
     }
 
@@ -104,21 +111,21 @@ export function SaveFilterDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Save Filter</DialogTitle>
+          <DialogTitle>{tFilter("saveFilterDialogTitle")}</DialogTitle>
           <DialogDescription>
-            Give this filter combination a name so you can reuse it later.
+            {tFilter("saveFilterDialogDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="filter-name">Filter Name</Label>
+            <Label htmlFor="filter-name">{tFilter("filterName")}</Label>
             <Input
               id="filter-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="e.g., New Hires This Month"
+              placeholder={tFilter("filterNamePlaceholder")}
               maxLength={50}
               autoFocus
               aria-invalid={!!error}
@@ -130,13 +137,13 @@ export function SaveFilterDialog({
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Maximum 50 characters
+              {tFilter("maxCharacters")}
             </p>
           </div>
 
           {activeFilters.length > 0 && (
             <div className="rounded-md bg-muted p-3">
-              <p className="text-sm font-medium mb-2">This will save:</p>
+              <p className="text-sm font-medium mb-2">{tFilter("thisWillSave")}</p>
               <ul className="space-y-1 text-sm text-muted-foreground">
                 {activeFilters.map((filter, index) => (
                   <li key={index} className="flex items-start">
@@ -155,10 +162,10 @@ export function SaveFilterDialog({
             onClick={() => onOpenChange(false)}
             disabled={isSaving}
           >
-            Cancel
+            {tFilter("cancel")}
           </Button>
           <Button onClick={handleSave} disabled={!name.trim() || isSaving}>
-            {isSaving ? "Saving..." : "Save Filter"}
+            {isSaving ? tFilter("saving") : tFilter("saveFilter")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,6 +2,7 @@
 
 import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ export function FilterButton({
   filterCount = 0,
   className,
 }: FilterButtonProps) {
+  const tFilter = useTranslations("filter");
   return (
     <Button
       variant="outline"
@@ -27,11 +29,11 @@ export function FilterButton({
         isActive && "border-primary bg-primary/5",
         className
       )}
-      aria-label="Open filter panel"
+      aria-label={tFilter("openFilterPanel")}
       data-testid="filter-button"
     >
       <Filter className="h-4 w-4" />
-      <span>Filter</span>
+      <span>{tFilter("filterButton")}</span>
       {filterCount > 0 && (
         <Badge
           variant="default"

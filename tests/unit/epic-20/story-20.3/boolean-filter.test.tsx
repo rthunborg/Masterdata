@@ -57,9 +57,9 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    expect(screen.getByLabelText('Either')).toBeInTheDocument();
-    expect(screen.getByLabelText('Yes')).toBeInTheDocument();
-    expect(screen.getByLabelText('No')).toBeInTheDocument();
+    expect(screen.getByLabelText('Antingen')).toBeInTheDocument();
+    expect(screen.getByLabelText('Ja')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nej')).toBeInTheDocument();
   });
 
   it('should select "Either" when value is null', () => {
@@ -113,7 +113,7 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    const yesLabel = screen.getByText('Yes');
+    const yesLabel = screen.getByText('Ja');
     await user.click(yesLabel);
 
     expect(handleChange).toHaveBeenCalledTimes(1);
@@ -132,7 +132,7 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    const noLabel = screen.getByText('No');
+    const noLabel = screen.getByText('Nej');
     await user.click(noLabel);
 
     expect(handleChange).toHaveBeenCalledTimes(1);
@@ -151,7 +151,7 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    const eitherLabel = screen.getByText('Either');
+    const eitherLabel = screen.getByText('Antingen');
     await user.click(eitherLabel);
 
     expect(handleChange).toHaveBeenCalledTimes(1);
@@ -171,7 +171,7 @@ describe('Story 20.3: BooleanFilter', () => {
     );
 
     // Click Yes
-    await user.click(screen.getByText('Yes'));
+    await user.click(screen.getByText('Ja'));
     expect(handleChange).toHaveBeenCalledWith(true);
 
     // Rerender with new value
@@ -184,7 +184,7 @@ describe('Story 20.3: BooleanFilter', () => {
     );
 
     // Click No
-    await user.click(screen.getByText('No'));
+    await user.click(screen.getByText('Nej'));
     expect(handleChange).toHaveBeenCalledWith(false);
 
     // Rerender with new value
@@ -197,7 +197,7 @@ describe('Story 20.3: BooleanFilter', () => {
     );
 
     // Click Either
-    await user.click(screen.getByText('Either'));
+    await user.click(screen.getByText('Antingen'));
     expect(handleChange).toHaveBeenCalledWith(null);
   });
 

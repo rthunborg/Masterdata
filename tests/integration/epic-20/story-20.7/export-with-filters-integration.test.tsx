@@ -108,8 +108,8 @@ vi.mock('@/lib/i18n', () => ({
       switchToCompact: 'Switch to compact view',
       switchToCards: 'Switch to cards view',
       filter: 'Filter',
-      applyFilters: 'Apply Filters',
-      clearFilters: 'Clear Filters',
+      applyFilters: 'Tillämpa filter',
+      clearFilters: 'Rensa filter',
       selectAll: 'Select All',
       deselectAll: 'Deselect All',
     };
@@ -381,16 +381,16 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
 
     // Wait for filter panel to open
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Apply Filters/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Tillämpa filter/i })).toBeInTheDocument();
     });
 
     // Close panel without applying filters for now - just verify the UI exists
-    const applyButton = screen.getByRole('button', { name: /Apply Filters/i });
+    const applyButton = screen.getByRole('button', { name: /Tillämpa filter/i });
     await user.click(applyButton);
 
     // Panel should close
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: /Apply Filters/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Tillämpa filter/i })).not.toBeInTheDocument();
     });
   });
 

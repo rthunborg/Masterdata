@@ -90,7 +90,7 @@ describe("ActiveFiltersList - Story 20.5", () => {
       />
     );
 
-    expect(screen.getByText("Active Filters (2)")).toBeInTheDocument();
+    expect(screen.getByText("Aktiva filter (2)")).toBeInTheDocument();
   });
 
   it("displays each filter with column name and value", () => {
@@ -185,7 +185,7 @@ describe("ActiveFiltersList - Story 20.5", () => {
       />
     );
 
-    expect(screen.getByText(/No/)).toBeInTheDocument();
+    expect(screen.getByText("Nej")).toBeInTheDocument();
   });
 
   it("formats date filter values correctly", () => {
@@ -206,7 +206,7 @@ describe("ActiveFiltersList - Story 20.5", () => {
       />
     );
 
-    expect(screen.getByText(/3 date\(s\)/)).toBeInTheDocument();
+    expect(screen.getByText(/3 datum valda/)).toBeInTheDocument();
   });
 
   it("renders multiple filters correctly", () => {

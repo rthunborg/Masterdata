@@ -68,7 +68,7 @@ describe('Story 20.3: TextFilter', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Search First Name...');
+    const input = screen.getByPlaceholderText('Sök First Name...');
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute('type', 'text');
   });
@@ -83,7 +83,7 @@ describe('Story 20.3: TextFilter', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Search First Name...');
+    const input = screen.getByPlaceholderText('Sök First Name...');
     expect(input).toHaveValue('John');
   });
 
@@ -99,7 +99,7 @@ describe('Story 20.3: TextFilter', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Search First Name...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText('Sök First Name...') as HTMLInputElement;
     
     // Simulate typing quickly using fireEvent
     await act(async () => {
@@ -136,7 +136,7 @@ describe('Story 20.3: TextFilter', () => {
     expect(screen.queryByTestId(`text-filter-clear-${mockColumn.db_column_name}`)).not.toBeInTheDocument();
 
     // Type some text
-    const input = screen.getByPlaceholderText('Search First Name...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText('Sök First Name...') as HTMLInputElement;
     await act(async () => {
       fireEvent.change(input, { target: { value: 'John' } });
       await vi.advanceTimersByTimeAsync(0);
@@ -176,7 +176,7 @@ describe('Story 20.3: TextFilter', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Search First Name...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText('Sök First Name...') as HTMLInputElement;
     expect(input.value).toBe('John');
 
     const clearButton = screen.getByTestId(`text-filter-clear-${mockColumn.db_column_name}`);
@@ -199,7 +199,7 @@ describe('Story 20.3: TextFilter', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Search First Name...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText('Sök First Name...') as HTMLInputElement;
     
     // Type a character
     await act(async () => {
@@ -226,7 +226,7 @@ describe('Story 20.3: TextFilter', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Search First Name...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText('Sök First Name...') as HTMLInputElement;
     
     await act(async () => {
       fireEvent.change(input, { target: { value: 'John' } });
