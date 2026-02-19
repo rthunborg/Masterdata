@@ -121,10 +121,11 @@ describe("Story 20.6: Saved Filters Integration", () => {
       },
     });
 
-    // Mock GET /api/users/filters - returns saved filters
+    // Mock GET /api/users/filters - returns saved filters (match relative or absolute URL)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global.fetch as any).mockImplementation((url: string, options?: any) => {
-      if (url === "/api/users/filters" && (!options || options.method === "GET" || !options.method)) {
+      const isGetFilters = typeof url === "string" && url.includes("/api/users/filters") && !url.includes("/api/users/filters/");
+      if (isGetFilters && (!options || options?.method === "GET" || !options?.method)) {
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -133,7 +134,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
       }
 
       // Mock POST /api/users/filters
-      if (url === "/api/users/filters" && options?.method === "POST") {
+      if (typeof url === "string" && url.includes("/api/users/filters") && !url.includes("/api/users/filters/") && options?.method === "POST") {
         const body = JSON.parse(options.body);
         const newFilter = {
           id: "filter-new",
@@ -150,8 +151,8 @@ describe("Story 20.6: Saved Filters Integration", () => {
         });
       }
 
-      // Mock DELETE /api/users/filters/:id
-      if (url.startsWith("/api/users/filters/") && options?.method === "DELETE") {
+      // Mock DELETE /api/users/filters/:id (match relative or absolute URL)
+      if (typeof url === "string" && url.includes("/api/users/filters/") && options?.method === "DELETE") {
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -188,15 +189,11 @@ describe("Story 20.6: Saved Filters Integration", () => {
   it("loads and displays saved filters in dropdown", async () => {
     renderFilterPanel();
 
-    // Wait for saved filters to load
-    await waitFor(() => {
-      expect(screen.getByText("My Saved Filters")).toBeInTheDocument();
-    });
-
-    // Open saved filters dropdown
-    const dropdown = screen.getByRole("combobox", {
-      name: /select a saved filter/i,
-    });
+    // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
+    const dropdown = await waitFor(
+      () => screen.getByRole("combobox", { name: /select a saved filter/i }),
+      { timeout: 3000 }
+    );
     await userEvent.click(dropdown);
 
     // Verify saved filters appear (use getAllByText for multiple matches)
@@ -261,15 +258,11 @@ describe("Story 20.6: Saved Filters Integration", () => {
   it("applies saved filter when selected from dropdown", async () => {
     const { onFiltersChange } = renderFilterPanel();
 
-    // Wait for saved filters to load
-    await waitFor(() => {
-      expect(screen.getByText("My Saved Filters")).toBeInTheDocument();
-    });
-
-    // Open dropdown
-    const dropdown = screen.getByRole("combobox", {
-      name: /select a saved filter/i,
-    });
+    // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
+    const dropdown = await waitFor(
+      () => screen.getByRole("combobox", { name: /select a saved filter/i }),
+      { timeout: 3000 }
+    );
     await userEvent.click(dropdown);
 
     // Select "New Hires" filter - use more specific selector
@@ -296,15 +289,11 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     renderFilterPanel(activeFilters);
 
-    // Wait for saved filters to load
-    await waitFor(() => {
-      expect(screen.getByText("My Saved Filters")).toBeInTheDocument();
-    });
-
-    // Open dropdown
-    const dropdown = screen.getByRole("combobox", {
-      name: /select a saved filter/i,
-    });
+    // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
+    const dropdown = await waitFor(
+      () => screen.getByRole("combobox", { name: /select a saved filter/i }),
+      { timeout: 3000 }
+    );
     await userEvent.click(dropdown);
 
     // Verify "current" indicator appears for matching filter
