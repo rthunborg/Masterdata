@@ -2605,31 +2605,35 @@ export function EmployeeTable({
 
                 {filteredRowCount === 0 ? (
 
-                  <TableRow>
+                  <TableRow className="min-h-[calc(100vh-350px)] [&>td]:h-full [&>td]:align-top">
 
                     <TableCell
 
                       colSpan={columns.length}
 
-                      className="min-h-[calc(100vh-12rem)] flex flex-col items-center justify-center text-center py-12"
+                      className="p-0 h-full"
 
                     >
 
-                      {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message. Centered in visible viewport. */}
-                      {isFilterActive ? (
-                        <EmptyFilterState
-                          activeFilters={activeFilters}
-                          columnConfigs={columnConfigs}
-                          onClearFilters={clearAllFilters}
-                          importantDates={allImportantDates}
-                        />
-                      ) : (
-                        <div className="text-muted-foreground">
-                          {globalFilter
-                            ? tDashboard("noEmployeesMatchSearch")
-                            : tDashboard("noEmployeesToDisplay")}
-                        </div>
-                      )}
+                      <div className="min-h-[calc(100vh-350px)] w-full flex flex-col items-center justify-center text-center py-12">
+
+                        {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message. Centered in visible viewport. */}
+                        {isFilterActive ? (
+                          <EmptyFilterState
+                            activeFilters={activeFilters}
+                            columnConfigs={columnConfigs}
+                            onClearFilters={clearAllFilters}
+                            importantDates={allImportantDates}
+                          />
+                        ) : (
+                          <div className="text-muted-foreground">
+                            {globalFilter
+                              ? tDashboard("noEmployeesMatchSearch")
+                              : tDashboard("noEmployeesToDisplay")}
+                          </div>
+                        )}
+
+                      </div>
 
                     </TableCell>
 
