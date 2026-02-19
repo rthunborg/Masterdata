@@ -35,7 +35,10 @@ export function FilterPanel({
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const onCloseRef = useRef(onClose);
   const initialFocusDoneRef = useRef(false);
-  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   // Story 20.6: Saved Filters integration
   const { savedFilters, saveFilter, deleteFilter } = useSavedFilters();
