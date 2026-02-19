@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Save } from "lucide-react";
+import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,9 @@ interface FilterPanelProps {
   activeFilters: FilterState[];
   onFiltersChange: (filters: FilterState[]) => void;
   importantDates?: ImportantDate[]; // Story 20.5: For date filter display
+  /** Controlled save-dialog open state when Save button is rendered outside the panel (e.g. in toolbar). */
+  saveDialogOpen?: boolean;
+  onSaveDialogOpenChange?: (open: boolean) => void;
 }
 
 export function FilterPanel({
@@ -31,10 +34,14 @@ export function FilterPanel({
   activeFilters,
   onFiltersChange,
   importantDates = [],
+  saveDialogOpen,
+  onSaveDialogOpenChange,
 }: FilterPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [internalSaveDialogOpen, setInternalSaveDialogOpen] = useState(false);
   const [flushTrigger, setFlushTrigger] = useState(0);
+  const showSaveDialog = saveDialogOpen ?? internalSaveDialogOpen;
+  const setShowSaveDialog = onSaveDialogOpenChange ?? setInternalSaveDialogOpen;
   const onCloseRef = useRef(onClose);
   const initialFocusDoneRef = useRef(false);
 
@@ -185,19 +192,6 @@ export function FilterPanel({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {/* Story 20.6: Save Filter button */}
-            {activeFilters.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowSaveDialog(true)}
-                aria-label={tFilter("saveCurrentFilters")}
-                data-testid="save-filter-button"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {tFilter("saveFilter")}
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="icon"

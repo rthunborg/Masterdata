@@ -111,7 +111,7 @@ import {
 } from "@/components/ui/tooltip";
 
  
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit } from "lucide-react";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit, Save } from "lucide-react";
 
 
  
@@ -286,6 +286,7 @@ export function EmployeeTable({
   const isHRAdmin = user?.role === "hr_admin";
   const t = useTranslations("tooltips");
   const tDashboard = useTranslations("dashboard");
+  const tFilter = useTranslations("filter");
   const tModals = useTranslations("modals");
   const tAdmin = useTranslations("admin");
   const tToasts = useTranslations("toasts");
@@ -354,6 +355,7 @@ export function EmployeeTable({
 
   // Story 20.2: Filter panel state
   const [isFilterPanelOpen, setIsFilterPanelOpen] = React.useState(false);
+  const [saveFilterDialogOpen, setSaveFilterDialogOpen] = React.useState(false);
 
   // Story 20.4: Advanced filtering with filter engine
   const {
@@ -2265,6 +2267,20 @@ export function EmployeeTable({
               show={isFilterActive}
             />
 
+            {/* Story 20.6: Save Filter Button (next to Rensa filter, outside panel) */}
+            {isFilterActive && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSaveFilterDialogOpen(true)}
+                aria-label={tFilter("saveCurrentFilters")}
+                data-testid="save-filter-button"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {tFilter("saveFilter")}
+              </Button>
+            )}
+
             {/* Density Toggle - Visible to everyone */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2589,31 +2605,35 @@ export function EmployeeTable({
 
                 {filteredRowCount === 0 ? (
 
-                  <TableRow>
+                  <TableRow className="min-h-[calc(100vh-350px)] [&>td]:h-full [&>td]:align-top">
 
                     <TableCell
 
                       colSpan={columns.length}
 
-                      className="min-h-[calc(100vh-12rem)] flex flex-col items-center justify-center text-center py-12"
+                      className="p-0 h-full"
 
                     >
 
-                      {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message. Centered in visible viewport. */}
-                      {isFilterActive ? (
-                        <EmptyFilterState
-                          activeFilters={activeFilters}
-                          columnConfigs={columnConfigs}
-                          onClearFilters={clearAllFilters}
-                          importantDates={allImportantDates}
-                        />
-                      ) : (
-                        <div className="text-muted-foreground">
-                          {globalFilter
-                            ? tDashboard("noEmployeesMatchSearch")
-                            : tDashboard("noEmployeesToDisplay")}
-                        </div>
-                      )}
+                      <div className="min-h-[calc(100vh-350px)] w-full flex flex-col items-center justify-center text-center py-12">
+
+                        {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message. Centered in visible viewport. */}
+                        {isFilterActive ? (
+                          <EmptyFilterState
+                            activeFilters={activeFilters}
+                            columnConfigs={columnConfigs}
+                            onClearFilters={clearAllFilters}
+                            importantDates={allImportantDates}
+                          />
+                        ) : (
+                          <div className="text-muted-foreground">
+                            {globalFilter
+                              ? tDashboard("noEmployeesMatchSearch")
+                              : tDashboard("noEmployeesToDisplay")}
+                          </div>
+                        )}
+
+                      </div>
 
                     </TableCell>
 
@@ -2961,6 +2981,8 @@ export function EmployeeTable({
         activeFilters={activeFilters}
         onFiltersChange={setActiveFilters}
         importantDates={allImportantDates}
+        saveDialogOpen={saveFilterDialogOpen}
+        onSaveDialogOpenChange={setSaveFilterDialogOpen}
       />
 
     </>

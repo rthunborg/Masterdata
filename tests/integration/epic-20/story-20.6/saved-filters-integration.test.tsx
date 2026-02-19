@@ -9,10 +9,12 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { FilterPanel } from "@/components/dashboard/FilterPanel/FilterPanel";
+import { Button } from "@/components/ui/button";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
 
@@ -167,10 +169,18 @@ describe("Story 20.6: Saved Filters Integration", () => {
   const renderFilterPanel = (activeFilters: FilterState[] = []) => {
     const onFiltersChange = vi.fn();
     const onClose = vi.fn();
-
-    return {
-      ...render(
+    const Wrapper = () => {
+      const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
+      return (
         <QueryClientProvider client={queryClient}>
+          {activeFilters.length > 0 && (
+            <Button
+              data-testid="save-filter-button"
+              onClick={() => setSaveDialogOpen(true)}
+            >
+              Spara filter
+            </Button>
+          )}
           <FilterPanel
             isOpen={true}
             onClose={onClose}
@@ -178,9 +188,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
             activeFilters={activeFilters}
             onFiltersChange={onFiltersChange}
             importantDates={[]}
+            saveDialogOpen={saveDialogOpen}
+            onSaveDialogOpenChange={setSaveDialogOpen}
           />
         </QueryClientProvider>
-      ),
+      );
+    };
+
+    return {
+      ...render(<Wrapper />),
       onFiltersChange,
       onClose,
     };
@@ -356,10 +372,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
       { columnId: "col-1", type: "text", textValue: "Test" },
     ];
 
-    // Mock duplicate name error
+    // Mock duplicate name error (match URL like beforeEach: include path for relative or absolute)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global.fetch as any).mockImplementation((url: string, options?: any) => {
-      if (url === "/api/users/filters" && options?.method === "POST") {
+      const isPostFilters =
+        typeof url === "string" &&
+        url.includes("/api/users/filters") &&
+        !url.includes("/api/users/filters/") &&
+        options?.method === "POST";
+      if (isPostFilters) {
         return Promise.resolve({
           ok: false,
           status: 409,
@@ -367,10 +388,19 @@ describe("Story 20.6: Saved Filters Integration", () => {
             Promise.resolve({ error: "A filter with this name already exists" }),
         });
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ data: mockSavedFilters }),
-      });
+      const isGetFilters =
+        typeof url === "string" &&
+        url.includes("/api/users/filters") &&
+        !url.includes("/api/users/filters/") &&
+        (!options || options?.method !== "POST");
+      if (isGetFilters) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ data: mockSavedFilters }),
+        });
+      }
+      return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
     });
 
     renderFilterPanel(activeFilters);
@@ -380,18 +410,18 @@ describe("Story 20.6: Saved Filters Integration", () => {
       expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
     });
 
-    // Click Save Filter button
-    const saveButton = screen.getByRole("button", {
-      name: /spara aktuella filter/i,
-    });
+    // Click Save Filter button (outside panel, next to Rensa filter)
+    const saveButton = screen.getByTestId("save-filter-button");
     await userEvent.click(saveButton);
 
     // Enter duplicate name
     const input = await screen.findByLabelText("Filternamn");
     await userEvent.type(input, "New Hires");
 
-    // Click Save
-    const dialogSaveButton = screen.getByRole("button", { name: /^spara filter$/i });
+    // Click Save in the save-filter dialog (not the toolbar or filter panel; there are two dialogs when this is open)
+    const dialogs = screen.getAllByRole("dialog");
+    const saveDialog = dialogs.find((d) => within(d).queryByLabelText("Filternamn") != null) ?? dialogs[1];
+    const dialogSaveButton = within(saveDialog).getByRole("button", { name: /^spara filter$/i });
     await userEvent.click(dialogSaveButton);
 
     // Verify error toast

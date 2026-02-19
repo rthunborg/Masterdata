@@ -129,6 +129,7 @@
     "savedFilterCount": "{count} sparad filter",
     "savedFilterCountPlural": "{count} sparade filter",
     "deleteSavedFilter": "Radera sparat filter?",
+    "deleteSavedFilterAria": "Radera \"{name}\"",
     "deleteSavedFilterConfirm": "Är du säker på att du vill radera \"{name}\"? Åtgärden kan inte ångras.",
     "cancel": "Avbryt",
     "delete": "Radera",

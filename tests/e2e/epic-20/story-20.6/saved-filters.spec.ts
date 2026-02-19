@@ -129,7 +129,7 @@ test.describe("Story 20.6: Saved Filters", () => {
     await filterItem.hover();
 
     // Step 3: Click delete button (X icon)
-    const deleteButton = page.getByLabel(/delete.*filter to delete e2e/i);
+    const deleteButton = page.getByLabel(/radera.*filter to delete e2e/i);
     await deleteButton.click();
 
     // Step 4: Verify confirmation dialog appears
