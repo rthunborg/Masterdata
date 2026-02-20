@@ -111,7 +111,7 @@ import {
 } from "@/components/ui/tooltip";
 
  
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit, Save } from "lucide-react";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit, Save, BedDouble } from "lucide-react";
 
 
  
@@ -138,6 +138,7 @@ import { EditableDateCell } from "./editable-date-cell";
 
  
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
+import { RoomManagementModal } from "./room-management-modal";
 
 
  
@@ -343,6 +344,7 @@ export function EmployeeTable({
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = React.useState(false);
   const [terminateModalOpen, setTerminateModalOpen] = React.useState(false);
   const [reactivateDialogOpen, setReactivateDialogOpen] = React.useState(false);
+  const [roomManagementModalOpen, setRoomManagementModalOpen] = React.useState(false);
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
   const [isArchiving, setIsArchiving] = React.useState(false);
   const [isReactivating, setIsReactivating] = React.useState(false);
@@ -1725,17 +1727,12 @@ export function EmployeeTable({
         return (completed / checklistColumns.length) * 100;
       },
       sortingFn: (rowA, rowB) => {
-        // Primary: progress (asc = fewest at top). Tiebreaker: surname then first_name for stable order.
         const a = rowA.getValue("checklist_progress") as number;
         const b = rowB.getValue("checklist_progress") as number;
         if (a !== b) return a - b;
-        const surnameA = (rowA.original.surname ?? "").toLowerCase();
-        const surnameB = (rowB.original.surname ?? "").toLowerCase();
-        const surnameCmp = surnameA.localeCompare(surnameB);
-        if (surnameCmp !== 0) return surnameCmp;
-        const firstA = (rowA.original.first_name ?? "").toLowerCase();
-        const firstB = (rowB.original.first_name ?? "").toLowerCase();
-        return firstA.localeCompare(firstB);
+        const createdA = rowA.original.created_at ?? "";
+        const createdB = rowB.original.created_at ?? "";
+        return createdA < createdB ? -1 : createdA > createdB ? 1 : 0;
       },
       cell: ({ row }) => (
         <div className={cn(cellPaddingClass, cellHeightClass, "flex items-center")}>
@@ -2290,6 +2287,40 @@ export function EmployeeTable({
                 <p>{density === 'compact' ? t("switchToComfortable") : t("switchToCompact")}</p>
               </TooltipContent>
             </Tooltip>
+
+            {/* Room Management Button (HR Admin only, single selection) */}
+            {isEffectivelyHRAdmin && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (selectedEmployeeIds.size === 1) {
+                        const selectedId = Array.from(selectedEmployeeIds)[0];
+                        const emp = employees.find((e) => e.id === selectedId);
+                        if (emp) {
+                          setSelectedEmployee(emp);
+                          setRoomManagementModalOpen(true);
+                        }
+                      }
+                    }}
+                    disabled={selectedEmployeeIds.size !== 1}
+                    className="whitespace-nowrap"
+                  >
+                    <BedDouble className="h-4 w-4 mr-1" />
+                    {tDashboard("roomManagement")}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {selectedEmployeeIds.size === 1
+                      ? tDashboard("roomManagementTooltip")
+                      : tDashboard("roomManagementTooltipDisabled")}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
             {/* Story 13.6: General Export Button with Field Selection */}
             {/* Story 17.4: Export Button for External Users - visible to all users */}
@@ -2899,6 +2930,16 @@ export function EmployeeTable({
 
         }}
 
+      />
+
+      <RoomManagementModal
+        employee={selectedEmployee}
+        open={roomManagementModalOpen}
+        onOpenChange={setRoomManagementModalOpen}
+        onSuccess={() => {
+          setRoomManagementModalOpen(false);
+          onEmployeeUpdated?.();
+        }}
       />
 
       <AlertDialog open={reactivateDialogOpen} onOpenChange={setReactivateDialogOpen}>

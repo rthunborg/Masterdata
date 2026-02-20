@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "@/lib/i18n";
 import type { ColumnConfig } from "@/lib/types/column-config";
@@ -52,6 +54,33 @@ export function FilterPanel({
         !["id", "created_at", "updated_at"].includes(col.db_column_name)
     )
     .sort((a, b) => a.display_order - b.display_order);
+
+  // Quick-filter: "Hide crewing done" toggle
+  const crewingDoneColumn = columnConfigs.find(
+    (col) => col.db_column_name === "crewing_done"
+  );
+  const isHideCrewingDoneActive = crewingDoneColumn
+    ? activeFilters.some(
+        (f) => f.columnId === crewingDoneColumn.id && f.type === "boolean" && f.boolValue === false
+      )
+    : false;
+
+  const handleToggleHideCrewingDone = (checked: boolean) => {
+    if (!crewingDoneColumn) return;
+    if (checked) {
+      const withoutExisting = activeFilters.filter(
+        (f) => f.columnId !== crewingDoneColumn.id
+      );
+      onFiltersChange([
+        ...withoutExisting,
+        { columnId: crewingDoneColumn.id, type: "boolean", boolValue: false },
+      ]);
+    } else {
+      onFiltersChange(
+        activeFilters.filter((f) => f.columnId !== crewingDoneColumn.id)
+      );
+    }
+  };
 
   // Reset initial-focus flag when panel closes so we focus again on next open
   useEffect(() => {
@@ -205,7 +234,22 @@ export function FilterPanel({
             onClearAll={() => onFiltersChange([])}
             importantDates={importantDates}
           />
-          
+
+          {/* Quick-filter: Hide crewing done employees */}
+          {crewingDoneColumn && (
+            <div className="flex items-center gap-2 pb-3 mb-3 border-b" data-testid="hide-crewing-done-toggle">
+              <Checkbox
+                id="hide-crewing-done"
+                checked={isHideCrewingDoneActive}
+                onCheckedChange={(checked) => handleToggleHideCrewingDone(checked === true)}
+                data-testid="hide-crewing-done-checkbox"
+              />
+              <Label htmlFor="hide-crewing-done" className="cursor-pointer text-sm font-medium">
+                {tFilter("hideCrewingDone")}
+              </Label>
+            </div>
+          )}
+
           {filterableColumns.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               {tFilter("noFilterableColumns")}

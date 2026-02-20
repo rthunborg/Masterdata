@@ -254,6 +254,10 @@ export async function PATCH(
       ('rank' in validatedData && validatedData.rank !== currentEmployee.rank) ||
       ('gender' in validatedData && validatedData.gender !== currentEmployee.gender);
 
+    const hotelRequiredChanged: boolean =
+      'hotel_required' in validatedData &&
+      (validatedData.hotel_required ?? false) !== (currentEmployee.hotel_required ?? false);
+
     // Handle hotel_required changes
     if ('hotel_required' in validatedData) {
       const newHotelRequired = validatedData.hotel_required ?? false;
@@ -429,10 +433,20 @@ export async function PATCH(
           await recalculateRoomsForDate(employee.omc_date, supabase);
         }
       } catch (roomError) {
-        // Error handling strategy: Log warning but allow update to continue
-        // Room recalculation can be retried later if needed
         console.warn(
           'Warning: Failed to recalculate rooms after employee update. Update succeeded but rooms may need manual recalculation.',
+          roomError
+        );
+      }
+    }
+
+    // Recalculate rooms when hotel_required changes (reorganize remaining/new rooms for the date)
+    if (hotelRequiredChanged && currentEmployee.omc_date && !needsRoomRecalculation) {
+      try {
+        await recalculateRoomsForDate(currentEmployee.omc_date, supabase);
+      } catch (roomError) {
+        console.warn(
+          'Warning: Failed to recalculate rooms after hotel_required change. Update succeeded but rooms may need manual recalculation.',
           roomError
         );
       }
