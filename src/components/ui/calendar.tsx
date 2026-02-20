@@ -181,6 +181,13 @@ function CalendarDayButton({
   modifiers,
   ...props
 }: React.ComponentProps<typeof DayButton>) {
+  // react-day-picker v9 re-renders every DayButton on internal focus-tracking
+  // state changes (mouse-over).  If a re-render replaces the DOM node between
+  // pointerdown and pointerup the browser never synthesises a "click" event,
+  // making the day appear to ignore the click.  Firing the handler on
+  // pointerdown guarantees registration before any reconciliation can occur.
+  const firedRef = React.useRef(false)
+
   return (
     <Button
       variant="ghost"
@@ -196,13 +203,23 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        // transition-none overrides Button's transition-all to prevent hover flicker:
-        // react-day-picker v9 re-renders all DayButtons on internal focus-tracking state
-        // changes (mouse-over), and the 150ms transition animates the brief class swap.
         "transition-none data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) min-h-(--cell-size) h-full flex-col gap-1 leading-none font-normal data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70",
         className
       )}
       {...props}
+      onPointerDown={(e) => {
+        if (e.button === 0 && !modifiers.disabled) {
+          firedRef.current = true
+          props.onClick?.(e as unknown as React.MouseEvent<HTMLButtonElement>)
+        }
+      }}
+      onClick={(e) => {
+        if (firedRef.current) {
+          firedRef.current = false
+          return
+        }
+        props.onClick?.(e)
+      }}
     />
   )
 }
