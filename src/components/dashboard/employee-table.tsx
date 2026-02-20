@@ -2620,9 +2620,8 @@ export function EmployeeTable({
 
                     >
 
-                      <div className="min-h-[calc(100vh-350px)] w-full flex flex-col items-center justify-center text-center py-12">
+                      <div className="sticky left-0 min-h-[calc(100vh-350px)] w-[calc(100vw-4rem)] max-w-full flex flex-col items-center justify-center text-center py-12">
 
-                        {/* Story 20.5: Show EmptyFilterState when filters are active, otherwise show default message. Centered in visible viewport. */}
                         {isFilterActive ? (
                           <EmptyFilterState
                             activeFilters={activeFilters}

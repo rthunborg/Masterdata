@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import equal from "fast-deep-equal";
 import { useTranslations } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -43,15 +43,13 @@ export function SavedFiltersDropdown({
   onSelect,
   onDelete,
 }: SavedFiltersDropdownProps) {
+  const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Check if current filters match a saved filter using deep equality
   const isCurrentFilter = (saved: SavedFilter): boolean => {
     if (activeFilters.length !== saved.filters.length) return false;
 
-    // Use fast-deep-equal for robust comparison
-    // Sort both arrays by columnId to ensure order doesn't affect comparison
     const sortedActive = [...activeFilters].sort((a, b) => 
       a.columnId.localeCompare(b.columnId)
     );
@@ -68,6 +66,9 @@ export function SavedFiltersDropdown({
     setIsDeleting(true);
     try {
       await onDelete(deleteId);
+      if (selectedId === deleteId) {
+        setSelectedId(undefined);
+      }
       setDeleteId(null);
     } catch (error) {
       console.error("Failed to delete filter:", error);
@@ -78,6 +79,7 @@ export function SavedFiltersDropdown({
 
   const tFilter = useTranslations("filter");
   const filterToDelete = savedFilters.find((f) => f.id === deleteId);
+  const selectedFilter = savedFilters.find((f) => f.id === selectedId);
 
   return (
     <>
@@ -91,7 +93,9 @@ export function SavedFiltersDropdown({
           <>
           <div className="flex items-center gap-2">
           <Select
+            value={selectedId}
             onValueChange={(id) => {
+              setSelectedId(id);
               const saved = savedFilters.find((f) => f.id === id);
               if (saved) {
                 onSelect(saved.filters);
@@ -112,7 +116,6 @@ export function SavedFiltersDropdown({
                   <SelectItem
                     key={saved.id}
                     value={saved.id}
-                    className="group pr-10 relative"
                   >
                     <div className="flex items-center gap-2">
                       <span>{saved.name}</span>
@@ -122,31 +125,23 @@ export function SavedFiltersDropdown({
                         </span>
                       )}
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onPointerDown={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setDeleteId(saved.id);
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setDeleteId(saved.id);
-                      }}
-                      aria-label={tFilter("deleteSavedFilterAria", { name: saved.name })}
-                      data-testid={`delete-filter-${saved.id}`}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
                   </SelectItem>
                 );
               })}
             </SelectContent>
           </Select>
+          {selectedFilter && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
+              onClick={() => setDeleteId(selectedFilter.id)}
+              aria-label={tFilter("deleteSavedFilterAria", { name: selectedFilter.name })}
+              data-testid={`delete-filter-${selectedFilter.id}`}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         <p className="text-xs text-muted-foreground">
           {savedFilters.length === 1
@@ -157,7 +152,6 @@ export function SavedFiltersDropdown({
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

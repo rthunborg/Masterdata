@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
+import { requireAuthAPI, createErrorResponse, createForbiddenResponse } from "@/lib/server/auth";
 import { CustomDataRepository } from "@/lib/server/repositories/custom-data-repository";
 import { updateCustomDataSchema } from "@/lib/validation/column-validation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { z } from "zod";
 
 // Force Node.js runtime for cookies() support
@@ -61,8 +61,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify authentication
-    await requireAuthAPI();
+    // Verify authentication and get user role
+    const user = await requireAuthAPI();
+    const userRole = user.role;
 
     // Await params (Next.js 15+ requirement)
     const { id: employeeId} = await params;
@@ -95,11 +96,38 @@ export async function PATCH(
       throw validationError;
     }
 
-    // Create repository instance
-    const supabase = await createClient();
-    const repository = new CustomDataRepository(supabase);
+    // Authorize: verify the user has edit permission for each column being updated.
+    // Read column_config with the user-scoped client (RLS allows SELECT for everyone).
+    const userSupabase = await createClient();
+    const { data: columnConfigs, error: configError } = await userSupabase
+      .from("column_config")
+      .select("db_column_name, role_permissions")
+      .eq("is_masterdata", false);
 
-    // Update custom data (simplified - no role-based branching)
+    if (configError) {
+      throw new Error(`Failed to fetch column config: ${configError.message}`);
+    }
+
+    const permsByDbColumn = new Map(
+      (columnConfigs ?? []).map((c: { db_column_name: string; role_permissions: Record<string, { view: boolean; edit: boolean }> }) => [c.db_column_name, c.role_permissions])
+    );
+
+    const forbiddenColumns = Object.keys(validatedData).filter((dbCol) => {
+      const perms = permsByDbColumn.get(dbCol);
+      return !perms || !perms[userRole]?.edit;
+    });
+
+    if (forbiddenColumns.length > 0) {
+      return createForbiddenResponse(
+        `You do not have edit permission for column(s): ${forbiddenColumns.join(", ")}`
+      );
+    }
+
+    // Use service role client for the actual update to bypass RLS.
+    // Authorization has already been verified above.
+    const serviceSupabase = createServiceRoleClient();
+    const repository = new CustomDataRepository(serviceSupabase);
+
     await repository.updateCustomData(employeeId, validatedData);
 
     // Return successful response

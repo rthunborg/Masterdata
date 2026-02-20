@@ -120,15 +120,15 @@ test.describe("Story 20.6: Saved Filters", () => {
     // Wait for dialog to close
     await page.waitForTimeout(500);
 
-    // Step 1: Open saved filters dropdown
+    // Step 1: Open saved filters dropdown and select the filter to delete
     const dropdown = page.getByRole("combobox", { name: /välj ett sparat filter/i });
     await dropdown.click();
 
-    // Step 2: Hover over saved filter to reveal delete button
+    // Step 2: Select the filter (this reveals the trash button next to the dropdown)
     const filterItem = page.getByText("Filter to Delete E2E");
-    await filterItem.hover();
+    await filterItem.click();
 
-    // Step 3: Click delete button (X icon)
+    // Step 3: Click the trash button that appeared next to the dropdown
     const deleteButton = page.getByLabel(/radera.*filter to delete e2e/i);
     await deleteButton.click();
 
@@ -141,9 +141,9 @@ test.describe("Story 20.6: Saved Filters", () => {
     // Step 5: Click Cancel to test cancellation
     await page.getByRole("button", { name: /avbryt/i }).last().click();
 
-    // Step 6: Verify dialog closes and filter still exists
+    // Step 6: Verify dialog closes and delete button still visible
     await expect(page.getByText("Radera sparat filter?")).not.toBeVisible();
-    await expect(page.getByText("Filter to Delete E2E")).toBeVisible();
+    await expect(deleteButton).toBeVisible();
 
     // Step 7: Click delete button again
     await deleteButton.click();
