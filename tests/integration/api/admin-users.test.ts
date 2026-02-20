@@ -151,12 +151,12 @@ vi.mock('@/lib/server/auth', () => ({
   requireAuthAPI: mockRequireAuthAPI,
   createErrorResponse: vi.fn((error) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    if (message === 'Authentication required') {
+    if (message === 'Autentisering krävs') {
       return new Response(JSON.stringify({
         error: { code: 'UNAUTHORIZED', message }
       }), { status: 401 });
     }
-    if (message === 'Insufficient permissions') {
+    if (message === 'Saknar behörighet') {
       return new Response(JSON.stringify({
         error: { code: 'FORBIDDEN', message }
       }), { status: 403 });
@@ -246,7 +246,7 @@ describe('GET /api/admin/users', () => {
   });
 
   it('returns 403 for non-admin roles (Sodexo)', async () => {
-    mockRequireHRAdminAPI.mockRejectedValue(new Error('Insufficient permissions'));
+    mockRequireHRAdminAPI.mockRejectedValue(new Error('Saknar behörighet'));
 
     const response = await GET();
     const data = await response.json();
@@ -256,7 +256,7 @@ describe('GET /api/admin/users', () => {
   });
 
   it('returns 401 for unauthenticated requests', async () => {
-    mockRequireHRAdminAPI.mockRejectedValue(new Error('Authentication required'));
+    mockRequireHRAdminAPI.mockRejectedValue(new Error('Autentisering krävs'));
 
     const response = await GET();
     const data = await response.json();
@@ -426,7 +426,7 @@ describe('POST /api/admin/users', () => {
   });
 
   it('returns 403 for non-admin roles', async () => {
-    mockRequireHRAdminAPI.mockRejectedValue(new Error('Insufficient permissions'));
+    mockRequireHRAdminAPI.mockRejectedValue(new Error('Saknar behörighet'));
 
     const request = new NextRequest('http://localhost/api/admin/users', {
       method: 'POST',
@@ -646,7 +646,7 @@ describe('PATCH /api/admin/users/[id]', () => {
 
     expect(response.status).toBe(403);
     expect(data.error).toHaveProperty('code', 'FORBIDDEN');
-    expect(data.error.message).toContain('Cannot deactivate your own account');
+    expect(data.error.message).toContain('Kan inte inaktivera din egen användare');
   });
 
   it('returns 404 for non-existent user', async () => {
@@ -678,7 +678,7 @@ describe('PATCH /api/admin/users/[id]', () => {
   });
 
   it('returns 403 for non-admin roles', async () => {
-    mockRequireHRAdminAPI.mockRejectedValue(new Error('Insufficient permissions'));
+    mockRequireHRAdminAPI.mockRejectedValue(new Error('Saknar behörighet'));
 
     const request = new NextRequest('http://localhost/api/admin/users/test-user-id', {
       method: 'PATCH',
@@ -790,7 +790,7 @@ describe('DELETE /api/admin/users/[id]', () => {
 
     expect(response.status).toBe(403);
     expect(data.error).toHaveProperty('code', 'FORBIDDEN');
-    expect(data.error.message).toContain('Cannot delete your own account');
+    expect(data.error.message).toContain('Kan inte ta bort din egen användare');
   });
 
   it('prevents deleting last HR admin (403)', async () => {
@@ -844,7 +844,7 @@ describe('DELETE /api/admin/users/[id]', () => {
 
     expect(response.status).toBe(403);
     expect(data.error).toHaveProperty('code', 'FORBIDDEN');
-    expect(data.error.message).toContain('Cannot delete the last active HR Admin');
+    expect(data.error.message).toContain('Kan inte ta bort den sista aktiva HR Admin');
   });
 
   it('returns 404 for non-existent user', async () => {
@@ -874,7 +874,7 @@ describe('DELETE /api/admin/users/[id]', () => {
   });
 
   it('returns 403 for non-admin roles', async () => {
-    mockRequireHRAdminAPI.mockRejectedValue(new Error('Insufficient permissions'));
+    mockRequireHRAdminAPI.mockRejectedValue(new Error('Saknar behörighet'));
 
     const request = new NextRequest('http://localhost/api/admin/users/test-user-id', {
       method: 'DELETE',

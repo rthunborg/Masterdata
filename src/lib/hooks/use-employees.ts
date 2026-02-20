@@ -123,7 +123,7 @@ export function useEmployees({
               const customData = await customDataService.getCustomData(employee.id);
               return { ...employee, customData };
             } catch (err) {
-              console.warn(`Failed to fetch custom data for employee ${employee.id}:`, err);
+              console.warn(`Misslyckades att hämta anpassad data för anställd ${employee.id}:`, err);
               return { ...employee, customData: employee.customData || {} };
             }
           })
@@ -133,9 +133,9 @@ export function useEmployees({
         setEmployees(data);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch employees";
+      const errorMessage = err instanceof Error ? err.message : "Misslyckades att hämta anställda";
       setError(new Error(errorMessage));
-      console.error("Failed to fetch employees:", err);
+      console.error("Misslyckades att hämta anställda:", err);
     } finally {
       setIsLoading(false);
     }

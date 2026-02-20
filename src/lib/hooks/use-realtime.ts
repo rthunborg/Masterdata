@@ -112,7 +112,7 @@ export function useRealtime({
           reconnectAttempts.current = 0;
         } else if (status === "CHANNEL_ERROR") {
           setInternalStatus("disconnected");
-          setError(err || new Error("Channel subscription error"));
+          setError(err || new Error("Kanalprenumerationsfel"));
           
           // Attempt reconnection
           if (reconnectAttempts.current < maxReconnectAttempts) {

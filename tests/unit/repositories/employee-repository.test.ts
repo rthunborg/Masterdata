@@ -621,7 +621,7 @@ describe("EmployeeRepository", () => {
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(repository.create(mockEmployeeFormData)).rejects.toThrow(
-        "Failed to create employee"
+        "Misslyckades att skapa anställd"
       );
     });
 
@@ -636,7 +636,7 @@ describe("EmployeeRepository", () => {
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(repository.create(mockEmployeeFormData)).rejects.toThrow(
-        "Failed to create employee: No data returned"
+        "Misslyckades att skapa anställd: Ingen data returnerad"
       );
     });
   });
@@ -709,7 +709,7 @@ describe("EmployeeRepository", () => {
 
     it("should throw error when no fields provided", async () => {
       await expect(repository.update("employee-123", {})).rejects.toThrow(
-        "At least one field must be provided for update"
+        "Minst en fält måste vara angivet för uppdatering"
       );
     });
 
@@ -730,7 +730,7 @@ describe("EmployeeRepository", () => {
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(repository.update("nonexistent-id", { email: "test@example.com" })).rejects.toThrow(
-        "Employee with ID nonexistent-id not found"
+        "Anställd med ID nonexistent-id hittades inte"
       );
     });
 
@@ -772,7 +772,7 @@ describe("EmployeeRepository", () => {
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(repository.update("employee-123", { email: "test@example.com" })).rejects.toThrow(
-        "Failed to update employee"
+        "Misslyckades att uppdatera anställd"
       );
     });
 
@@ -788,7 +788,7 @@ describe("EmployeeRepository", () => {
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(repository.update("employee-123", { email: "test@example.com" })).rejects.toThrow(
-        "Employee with ID employee-123 not found"
+        "Anställd med ID employee-123 hittades inte"
       );
     });
 
@@ -901,7 +901,7 @@ describe("EmployeeRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.archive("nonexistent-id")).rejects.toThrow("not found");
+      await expect(repository.archive("nonexistent-id")).rejects.toThrow("Anställd med ID nonexistent-id saknas");
     });
 
     it("should throw error on database error", async () => {
@@ -922,7 +922,7 @@ describe("EmployeeRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.archive("employee-123")).rejects.toThrow("Failed to archive employee");
+      await expect(repository.archive("employee-123")).rejects.toThrow("Misslyckades att arkivera anställd");
     });
   });
 
@@ -1005,7 +1005,7 @@ describe("EmployeeRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.unarchive("nonexistent-id")).rejects.toThrow("not found");
+      await expect(repository.unarchive("nonexistent-id")).rejects.toThrow("Anställd med ID nonexistent-id saknas");
     });
 
     it("should throw error on database error", async () => {
@@ -1026,7 +1026,7 @@ describe("EmployeeRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.unarchive("employee-123")).rejects.toThrow("Failed to unarchive employee");
+      await expect(repository.unarchive("employee-123")).rejects.toThrow("Misslyckades att avarkivera anställd");
     });
   });
 
@@ -1113,7 +1113,7 @@ describe("EmployeeRepository", () => {
 
       await expect(
         repository.terminate("nonexistent-id", "2025-10-26", "Test reason")
-      ).rejects.toThrow("not found");
+      ).rejects.toThrow("Anställd med ID nonexistent-id saknas");
     });
 
     it("should throw error on database error", async () => {
@@ -1136,7 +1136,7 @@ describe("EmployeeRepository", () => {
 
       await expect(
         repository.terminate("employee-123", "2025-10-26", "Test reason")
-      ).rejects.toThrow("Failed to terminate employee");
+      ).rejects.toThrow("Misslyckades att avsluta anställd");
     });
 
     it("should throw error when no data is returned without error", async () => {
@@ -1156,7 +1156,7 @@ describe("EmployeeRepository", () => {
 
       await expect(
         repository.terminate("employee-123", "2025-10-26", "Test reason")
-      ).rejects.toThrow("Employee with ID employee-123 not found");
+      ).rejects.toThrow("Anställd med ID employee-123 saknas");
     });
   });
 
@@ -1241,7 +1241,7 @@ describe("EmployeeRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.reactivate("nonexistent-id")).rejects.toThrow("not found");
+      await expect(repository.reactivate("nonexistent-id")).rejects.toThrow("Anställd med ID nonexistent-id saknas");
     });
 
     it("should throw error on database error", async () => {
@@ -1262,7 +1262,7 @@ describe("EmployeeRepository", () => {
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
-      await expect(repository.reactivate("employee-123")).rejects.toThrow("Failed to reactivate employee");
+      await expect(repository.reactivate("employee-123")).rejects.toThrow("Misslyckades att återaktivera anställd");
     });
 
     it("should throw error when no data is returned without error", async () => {
@@ -1281,7 +1281,7 @@ describe("EmployeeRepository", () => {
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(repository.reactivate("employee-123")).rejects.toThrow(
-        "Employee with ID employee-123 not found"
+        "Anställd med ID employee-123 saknas"
       );
     });
   });

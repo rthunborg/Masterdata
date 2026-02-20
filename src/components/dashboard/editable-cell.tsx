@@ -299,7 +299,7 @@ export function EditableCell({
 
   // Handle click outside to save
   useEffect(() => {
-    if (!isEditing || showDatePicker) {
+    if (!isEditing || showDatePicker || isLoading) {
       return;
     }
 
@@ -354,7 +354,7 @@ export function EditableCell({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isEditing, editValue, showDatePicker, value, employeeId, field, onSave, onError, tErrors]);
+  }, [isEditing, editValue, showDatePicker, isLoading, value, employeeId, field, onSave, onError, tErrors]);
 
   if (!isEditing) {
     // Read-only cell - show tooltip on click
@@ -490,14 +490,30 @@ export function EditableCell({
         return valueBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
       }
       
-      // For date fields with ÖMC formatting
+      // ÖMC date fields use type="text" in important-dates-table, so check independently of type
       if (field === "date_value" && category && isOMCDate(category) && value) {
         return formatOMCDate(String(value));
       }
-      
-      // Story 19.3: Format date type fields in Swedish format
-      if (type === "date" && value) {
-        return formatDateForDisplay(String(value), category);
+
+      if (type === "date") {
+        const lastSavedDate = lastSavedValueRef.current !== null && lastSavedValueRef.current !== undefined
+          ? String(lastSavedValueRef.current) : null;
+        const valueDate = value !== null && value !== undefined ? String(value) : "";
+
+        if (lastSavedDate !== null && lastSavedDate === "" && valueDate !== "") {
+          return null;
+        }
+        if (lastSavedDate !== null && lastSavedDate !== "" && lastSavedDate !== valueDate) {
+          if (field === "date_value" && category && isOMCDate(category)) {
+            return formatOMCDate(lastSavedDate);
+          }
+          return formatDateForDisplay(lastSavedDate, category);
+        }
+
+        if (value) {
+          return formatDateForDisplay(String(value), category);
+        }
+        return null;
       }
       
       // For select/text fields, compare string values
@@ -850,8 +866,14 @@ export function EditableCell({
 
                   setEditValue(dateStr);
                   setShowDatePicker(false);
-                  setTimeout(() => {
-                    onSave(employeeId, field, dateStr).catch((err) => {
+                  lastSavedValueRef.current = dateStr;
+                  setIsLoading(true);
+                  setError(null);
+                  onSave(employeeId, field, dateStr)
+                    .then(() => {
+                      setIsEditing(false);
+                    })
+                    .catch((err) => {
                       const message = err instanceof Error ? err.message : tErrors("updateFailed");
                       if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
                         const localizedMessage = tErrors("validation.invalidValue");
@@ -861,11 +883,15 @@ export function EditableCell({
                         setError(message);
                         onError?.(message);
                       }
+                      setEditValue(value ? String(value) : "");
+                      lastSavedValueRef.current = null;
+                    })
+                    .finally(() => {
+                      setIsLoading(false);
                     });
-                  }, 0);
                 }
               }}
-              initialFocus
+              autoFocus
             />
             {editValue && (
               <div className="border-t p-2">
@@ -876,13 +902,23 @@ export function EditableCell({
                   onClick={() => {
                     setEditValue("");
                     setShowDatePicker(false);
-                    setTimeout(() => {
-                      onSave(employeeId, field, null).catch((err) => {
+                    lastSavedValueRef.current = "";
+                    setIsLoading(true);
+                    setError(null);
+                    onSave(employeeId, field, null)
+                      .then(() => {
+                        setIsEditing(false);
+                      })
+                      .catch((err) => {
                         const message = err instanceof Error ? err.message : tErrors("updateFailed");
                         setError(message);
                         onError?.(message);
+                        setEditValue(value ? String(value) : "");
+                        lastSavedValueRef.current = null;
+                      })
+                      .finally(() => {
+                        setIsLoading(false);
                       });
-                    }, 0);
                   }}
                 >
                   <XIcon className="mr-1.5 h-3.5 w-3.5" />

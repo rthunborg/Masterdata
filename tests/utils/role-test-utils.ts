@@ -100,7 +100,7 @@ export const mockAuthHelpers = {
   },
 
   // Mock authentication failure
-  mockAuthFailure: (error: string = "Authentication required") => {
+  mockAuthFailure: (error: string = "Autentisering krävs") => {
     return vi.fn().mockRejectedValue(new Error(error));
   },
 
@@ -110,7 +110,7 @@ export const mockAuthHelpers = {
   },
 
   // Mock role validation failure
-  mockRoleFailure: (error: string = "Insufficient permissions") => {
+  mockRoleFailure: (error: string = "Saknar behörighet") => {
     return vi.fn().mockRejectedValue(new Error(error));
   },
 };

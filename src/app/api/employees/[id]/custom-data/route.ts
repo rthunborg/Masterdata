@@ -80,7 +80,7 @@ export async function PATCH(
           {
             error: {
               code: "VALIDATION_ERROR",
-              message: "Invalid custom data format",
+              message: "Ogiltigt anpassat dataformat",
               details: validationError.issues.reduce((acc, err) => {
                 const field = err.path.join(".");
                 if (!acc[field]) acc[field] = [];
@@ -105,7 +105,7 @@ export async function PATCH(
       .eq("is_masterdata", false);
 
     if (configError) {
-      throw new Error(`Failed to fetch column config: ${configError.message}`);
+      throw new Error(`Misslyckades att hämta kolumnkonfiguration: ${configError.message}`);
     }
 
     const permsByDbColumn = new Map(
@@ -119,7 +119,7 @@ export async function PATCH(
 
     if (forbiddenColumns.length > 0) {
       return createForbiddenResponse(
-        `You do not have edit permission for column(s): ${forbiddenColumns.join(", ")}`
+        `Du har inte skrivbehörighet för kolumn(er): ${forbiddenColumns.join(", ")}`
       );
     }
 
@@ -143,10 +143,10 @@ export async function PATCH(
     });
   } catch (error) {
     // Log the actual error for debugging
-    console.error("Error updating custom data:", error);
+    console.error("Misslyckades att uppdatera anpassad data:", error);
     if (error instanceof Error) {
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
+      console.error("Felmeddelande:", error.message);
+      console.error("Felstack:", error.stack);
     }
     return createErrorResponse(error);
   }

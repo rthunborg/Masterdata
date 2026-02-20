@@ -278,7 +278,7 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     expect(response.status).toBe(404);
     expect(json.error.code).toBe("NO_ELIGIBLE_EMPLOYEES");
-    expect(json.error.message).toContain("No selected employees found");
+    expect(json.error.message).toContain("Inga anställda hittade som uppfyller alla förutsättningar och inte har markera crewing_done = true");
   });
 
   it("should handle case where no employees meet prerequisites", async () => {
@@ -304,13 +304,13 @@ describe("POST /api/employees/export-crew-ready", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(new Error("Authentication required"));
+    vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(new Error("Autentisering krävs"));
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required",
+            message: "Autentisering krävs",
           },
         }),
         { status: 401 }
@@ -342,7 +342,7 @@ describe("POST /api/employees/export-crew-ready", () => {
 
     expect(response.status).toBe(400);
     expect(json.error.code).toBe("NO_EMPLOYEES_SELECTED");
-    expect(json.error.message).toContain("No employees selected");
+    expect(json.error.message).toContain("Inga anställda valda");
   });
 
   it("should return 400 when selectedEmployeeIds is missing", async () => {

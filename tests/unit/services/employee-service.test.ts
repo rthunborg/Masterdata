@@ -416,7 +416,7 @@ describe("employeeService", () => {
       const notFoundError = {
         error: {
           code: "NOT_FOUND",
-          message: "Employee with ID nonexistent-id not found",
+          message: "Anställd med ID nonexistent-id hittades inte",
         },
       };
 
@@ -427,7 +427,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.update("nonexistent-id", { email: "test@example.com" })).rejects.toThrow(
-        "Employee with ID nonexistent-id not found"
+        "Anställd med ID nonexistent-id hittades inte"
       );
     });
 
@@ -505,7 +505,7 @@ describe("employeeService", () => {
       const notFoundError = {
         error: {
           code: "NOT_FOUND",
-          message: "Employee with ID nonexistent-id not found",
+          message: "Anställd med ID nonexistent-id hittades inte",
         },
       };
 
@@ -516,7 +516,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.archive("nonexistent-id")).rejects.toThrow(
-        "Employee with ID nonexistent-id not found"
+        "Anställd med ID nonexistent-id hittades inte"
       );
     });
 
@@ -533,7 +533,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.archive("employee-123")).rejects.toThrow(
-        "You do not have permission to archive employees"
+        "Du saknar behörighet att arkivera anställda"
       );
     });
 
@@ -559,7 +559,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.archive("employee-123")).rejects.toThrow(
-        "Failed to archive employee"
+        "Misslyckades att arkivera anställd"
       );
     });
   });
@@ -592,7 +592,7 @@ describe("employeeService", () => {
       const notFoundError = {
         error: {
           code: "NOT_FOUND",
-          message: "Employee with ID nonexistent-id not found",
+          message: "Anställd med ID nonexistent-id hittades inte",
         },
       };
 
@@ -603,7 +603,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.unarchive("nonexistent-id")).rejects.toThrow(
-        "Employee with ID nonexistent-id not found"
+        "Anställd med ID nonexistent-id hittades inte"
       );
     });
 
@@ -620,7 +620,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.unarchive("employee-123")).rejects.toThrow(
-        "You do not have permission to unarchive employees"
+        "Du saknar behörighet att avarkivera anställda"
       );
     });
 
@@ -646,7 +646,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.unarchive("employee-123")).rejects.toThrow(
-        "Failed to unarchive employee"
+        "Misslyckades att avarkivera anställd"
       );
     });
   });
@@ -704,7 +704,7 @@ describe("employeeService", () => {
       const notFoundError = {
         error: {
           code: "NOT_FOUND",
-          message: "Employee with ID nonexistent-id not found",
+          message: "Anställd med ID nonexistent-id hittades inte",
         },
       };
 
@@ -716,7 +716,7 @@ describe("employeeService", () => {
 
       await expect(
         employeeService.terminate("nonexistent-id", "2025-10-26", "Test reason")
-      ).rejects.toThrow("Employee with ID nonexistent-id not found");
+      ).rejects.toThrow("Anställd med ID nonexistent-id hittades inte");
     });
 
     it("should throw error for forbidden (403)", async () => {
@@ -733,7 +733,7 @@ describe("employeeService", () => {
 
       await expect(
         employeeService.terminate("employee-123", "2025-10-26", "Test reason")
-      ).rejects.toThrow("You do not have permission to terminate employees");
+      ).rejects.toThrow("Du saknar behörighet att avsluta anställda");
     });
 
     it("should throw generic error for other failures", async () => {
@@ -759,7 +759,7 @@ describe("employeeService", () => {
 
       await expect(
         employeeService.terminate("employee-123", "2025-10-26", "Test reason")
-      ).rejects.toThrow("Failed to terminate employee");
+      ).rejects.toThrow("Misslyckades att avsluta anställd");
     });
   });
 
@@ -793,7 +793,7 @@ describe("employeeService", () => {
       const notFoundError = {
         error: {
           code: "NOT_FOUND",
-          message: "Employee with ID nonexistent-id not found",
+          message: "Anställd med ID nonexistent-id hittades inte",
         },
       };
 
@@ -804,7 +804,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.reactivate("nonexistent-id")).rejects.toThrow(
-        "Employee with ID nonexistent-id not found"
+        "Anställd med ID nonexistent-id hittades inte"
       );
     });
 
@@ -821,7 +821,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.reactivate("employee-123")).rejects.toThrow(
-        "You do not have permission to reactivate employees"
+        "Du saknar behörighet att återaktivera anställda"
       );
     });
 
@@ -847,7 +847,7 @@ describe("employeeService", () => {
       } as Response);
 
       await expect(employeeService.reactivate("employee-123")).rejects.toThrow(
-        "Failed to reactivate employee"
+        "Misslyckades att återaktivera anställd"
       );
     });
   });

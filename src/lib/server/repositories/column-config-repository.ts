@@ -24,13 +24,13 @@ export class ColumnConfigRepository {
         .order("column_name", { ascending: true });
 
       if (error || !data) {
-        console.error("Error fetching column configurations:", error);
+        console.error("Misslyckades att hämta kolumnkonfigurationer:", error);
         return [];
       }
 
       return data;
     } catch (error) {
-      console.error("Unexpected error fetching column configurations:", error);
+      console.error("Oväntat fel vid hämtning av kolumnkonfigurationer:", error);
       return [];
     }
   }
@@ -53,13 +53,13 @@ export class ColumnConfigRepository {
           // Not found
           return null;
         }
-        console.error("Error fetching column config by id:", id, error);
+        console.error("Misslyckades att hämta kolumnkonfiguration by id:", id, error);
         return null;
       }
 
       return data;
     } catch (error) {
-      console.error("Unexpected error fetching column config by id:", id, error);
+      console.error("Oväntat fel vid hämtning av kolumnkonfiguration by id:", id, error);
       return null;
     }
   }
@@ -83,7 +83,7 @@ export class ColumnConfigRepository {
         return rolePerms && rolePerms.view === true;
       });
     } catch (error) {
-      console.error("Unexpected error fetching columns by role:", role, error);
+      console.error("Oväntat fel vid hämtning av kolumnkonfigurationer by role:", role, error);
       return [];
     }
   }
@@ -135,8 +135,8 @@ export class ColumnConfigRepository {
     });
 
     if (alterError) {
-      console.error("Error creating database column:", alterError);
-      throw new Error(`Failed to create database column: ${alterError.message}`);
+      console.error("Misslyckades att skapa databas kolumn:", alterError);
+      throw new Error(`Misslyckades att skapa databas kolumn: ${alterError.message}`);
     }
 
     // Step 2: Create default role permissions
@@ -178,12 +178,12 @@ export class ColumnConfigRepository {
       .single();
 
     if (error) {
-      console.error("Error creating custom column config:", error);
-      throw new Error(`Failed to create column config: ${error.message}`);
+      console.error("Misslyckades att skapa custom kolumnkonfiguration:", error);
+      throw new Error(`Misslyckades att skapa custom kolumnkonfiguration: ${error.message}`);
     }
 
     if (!data) {
-      throw new Error("Failed to create column: No data returned");
+      throw new Error("Misslyckades att skapa kolumn: Ingen data returnerad");
     }
 
     return data;
@@ -211,17 +211,17 @@ export class ColumnConfigRepository {
     // Verify column exists and user has permission
     const existing = await this.findById(id);
     if (!existing) {
-      throw new Error("Column not found");
+      throw new Error("Kolumn hittades inte");
     }
 
     if (existing.is_masterdata) {
-      throw new Error("Cannot update masterdata column via this endpoint");
+      throw new Error("Kan inte uppdatera masterdata kolumn via denna endpoint");
     }
 
     // Check if user has edit permission for this column
     const rolePerms = existing.role_permissions[userRole];
     if (!rolePerms || !rolePerms.edit) {
-      throw new Error("You do not have permission to edit this column");
+      throw new Error("Du saknar behörighet att uppdatera denna kolumn");
     }
 
     // Only allow updating specific fields
@@ -276,8 +276,8 @@ export class ColumnConfigRepository {
           .in("id", columnIdsToUpdate);
 
         if (bulkError) {
-          console.error("Error updating category color for multiple columns:", bulkError);
-          throw new Error(`Failed to update category color: ${bulkError.message}`);
+          console.error("Misslyckades att uppdatera kategorifärg för flera kolumner:", bulkError);
+          throw new Error(`Misslyckades att uppdatera kategorifärg: ${bulkError.message}`);
         }
       }
 
@@ -300,12 +300,12 @@ export class ColumnConfigRepository {
           .single();
 
         if (finalError) {
-          console.error("Error applying other updates:", finalError);
-          throw new Error(`Failed to update column: ${finalError.message}`);
+          console.error("Misslyckades att uppdatera andra uppdateringar:", finalError);
+          throw new Error(`Misslyckades att uppdatera kolumn: ${finalError.message}`);
         }
 
         if (!finalData) {
-          throw new Error("Failed to update column: No data returned");
+          throw new Error("Misslyckades att uppdatera kolumn: Ingen data returnerad");
         }
 
         return finalData;
@@ -319,12 +319,12 @@ export class ColumnConfigRepository {
         .single();
 
       if (error) {
-        console.error("Error fetching updated column:", error);
-        throw new Error(`Failed to fetch updated column: ${error.message}`);
+        console.error("Misslyckades att hämta uppdaterad kolumn:", error);
+        throw new Error(`Misslyckades att hämta uppdaterad kolumn: ${error.message}`);
       }
 
       if (!data) {
-        throw new Error("Failed to fetch updated column: No data returned");
+        throw new Error("Misslyckades att hämta uppdaterad kolumn: Ingen data returnerad");
       }
 
       return data;
@@ -339,12 +339,12 @@ export class ColumnConfigRepository {
       .single();
 
     if (error) {
-      console.error("Error updating column:", error);
-      throw new Error(`Failed to update column: ${error.message}`);
+      console.error("Misslyckades att uppdatera kolumn:", error);
+      throw new Error(`Misslyckades att uppdatera kolumn: ${error.message}`);
     }
 
     if (!data) {
-      throw new Error("Failed to update column: No data returned");
+      throw new Error("Misslyckades att uppdatera kolumn: Ingen data returnerad");
     }
 
     return data;
@@ -363,26 +363,26 @@ export class ColumnConfigRepository {
     const column = await this.findById(id);
 
     if (!column) {
-      throw new Error("Column not found");
+        throw new Error("Kolumn hittades inte");
     }
 
     if (column.is_masterdata) {
-      throw new Error("Cannot delete masterdata column");
+      throw new Error("Kan inte ta bort masterdata kolumn");
     }
 
     // For external users, check ownership (must have edit permission)
     if (userRole !== "hr_admin") {
       const rolePerms = column.role_permissions[userRole];
       if (!rolePerms || !rolePerms.edit) {
-        throw new Error("You do not have permission to delete this column");
+        throw new Error("Du saknar behörighet att ta bort denna kolumn");
       }
     }
 
     const { error } = await supabase.from("column_config").delete().eq("id", id);
 
     if (error) {
-      console.error("Error deleting column:", error);
-      throw new Error(`Failed to delete column: ${error.message}`);
+      console.error("Misslyckades att ta bort kolumn:", error);
+      throw new Error(`Misslyckades att ta bort kolumn: ${error.message}`);
     }
   }
 
@@ -408,8 +408,8 @@ export class ColumnConfigRepository {
     // Check for errors
     const errors = results.filter((r) => r.error);
     if (errors.length > 0) {
-      console.error("Error updating display order:", errors);
-      throw new Error("Failed to update column display order");
+      console.error("Misslyckades att uppdatera visningsordning:", errors);
+      throw new Error("Misslyckades att uppdatera kolumnvisningsordning");
     }
   }
 
@@ -446,12 +446,12 @@ export class ColumnConfigRepository {
       .single();
 
     if (error) {
-      console.error("Error toggling column visibility:", error);
-      throw new Error(`Failed to toggle visibility: ${error.message}`);
+      console.error("Misslyckades att toggla kolumnvisning:", error);
+      throw new Error(`Misslyckades att toggla kolumnvisning: ${error.message}`);
     }
 
     if (!data) {
-      throw new Error("Failed to toggle visibility: No data returned");
+      throw new Error("Misslyckades att toggla kolumnvisning: Ingen data returnerad");
     }
 
     return data;

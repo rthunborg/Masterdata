@@ -283,7 +283,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Verify success toast
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith("Filter saved successfully");
+      expect(toast.success).toHaveBeenCalledWith("Filter sparat!");
     });
   });
 

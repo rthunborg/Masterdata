@@ -16,7 +16,7 @@ export async function PATCH(
     const currentUser = await getUserFromSession();
     if (!currentUser) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Obehörig" },
         { status: 401 }
       );
     }
@@ -28,9 +28,9 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to update user activity:", error);
+    console.error("Misslyckades att uppdatera användarens aktivitet:", error);
     return NextResponse.json(
-      { error: "Failed to update activity" },
+      { error: "Misslyckades att uppdatera aktivitet" },
       { status: 500 }
     );
   }

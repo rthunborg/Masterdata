@@ -143,14 +143,14 @@ describe("GET /api/employees", () => {
 
   it("should return 401 for unauthenticated requests", async () => {
     vi.mocked(auth.requireAuthAPI).mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required",
+            message: "Autentisering krävs",
           },
         }),
         { status: 401 }
@@ -434,14 +434,14 @@ describe("POST /api/employees", () => {
 
   it("should return 401 for unauthenticated requests", async () => {
     vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required",
+            message: "Autentisering krävs",
           },
         }),
         { status: 401 }
@@ -462,14 +462,14 @@ describe("POST /api/employees", () => {
 
   it("should return 403 for non-HR Admin users", async () => {
     vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
         { status: 403 }
@@ -741,7 +741,7 @@ describe("PATCH /api/employees/[id]", () => {
   it("should return 404 for non-existent employee", async () => {
     vi.mocked(auth.requireEmployeeEditorAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.update).mockRejectedValue(
-      new Error("Employee with ID nonexistent-id not found")
+      new Error("Anställd med ID nonexistent-id hittades inte")
     );
 
     const request = new NextRequest("http://localhost:3000/api/employees/nonexistent-id", {
@@ -754,7 +754,7 @@ describe("PATCH /api/employees/[id]", () => {
 
     expect(response.status).toBe(404);
     expect(json.error.code).toBe("NOT_FOUND");
-    expect(json.error.message).toContain("not found");
+    expect(json.error.message).toContain("hittades inte");
   });
 
   it("should return 409 for duplicate SSN", async () => {
@@ -779,14 +779,14 @@ describe("PATCH /api/employees/[id]", () => {
 
   it("should return 401 for unauthenticated requests", async () => {
     vi.mocked(auth.requireEmployeeEditorAPI).mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required",
+            message: "Autentisering krävs",
           },
         }),
         { status: 401 }
@@ -807,14 +807,14 @@ describe("PATCH /api/employees/[id]", () => {
 
   it("should return 403 for non-HR Admin users", async () => {
     vi.mocked(auth.requireEmployeeEditorAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
         { status: 403 }
@@ -1006,7 +1006,7 @@ describe("POST /api/employees/[id]/terminate", () => {
   it("should return 404 for non-existent employee", async () => {
     vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.terminate).mockRejectedValue(
-      new Error("Employee with ID nonexistent-id not found")
+      new Error("Anställd med ID nonexistent-id saknas")
     );
 
     const request = new NextRequest("http://localhost:3000/api/employees/nonexistent-id/terminate", {
@@ -1022,19 +1022,19 @@ describe("POST /api/employees/[id]/terminate", () => {
 
     expect(response.status).toBe(404);
     expect(json.error.code).toBe("NOT_FOUND");
-    expect(json.error.message).toContain("not found");
+    expect(json.error.message).toContain("saknas");
   });
 
   it("should return 401 for unauthenticated requests", async () => {
     vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required",
+            message: "Autentisering krävs",
           },
         }),
         { status: 401 }
@@ -1058,14 +1058,14 @@ describe("POST /api/employees/[id]/terminate", () => {
 
   it("should return 403 for non-HR Admin users", async () => {
     vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
         { status: 403 }
@@ -1164,7 +1164,7 @@ describe("POST /api/employees/[id]/reactivate", () => {
   it("should return 404 for non-existent employee", async () => {
     vi.mocked(auth.requireEmployeeManagerAPI).mockResolvedValue(mockHRAdminUser);
     vi.mocked(employeeRepository.reactivate).mockRejectedValue(
-      new Error("Employee with ID nonexistent-id not found")
+      new Error("Anställd med ID nonexistent-id saknas")
     );
 
     const request = new NextRequest("http://localhost:3000/api/employees/nonexistent-id/reactivate", {
@@ -1176,19 +1176,19 @@ describe("POST /api/employees/[id]/reactivate", () => {
 
     expect(response.status).toBe(404);
     expect(json.error.code).toBe("NOT_FOUND");
-    expect(json.error.message).toContain("not found");
+    expect(json.error.message).toContain("saknas");
   });
 
   it("should return 401 for unauthenticated requests", async () => {
     vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required",
+            message: "Autentisering krävs",
           },
         }),
         { status: 401 }
@@ -1208,14 +1208,14 @@ describe("POST /api/employees/[id]/reactivate", () => {
 
   it("should return 403 for non-HR Admin users", async () => {
     vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
         { status: 403 }

@@ -531,7 +531,7 @@ describe("ColumnConfigRepository", () => {
           is_masterdata: false,
           role: UserRole.SODEXO,
         })
-      ).rejects.toThrow("Failed to create column");
+      ).rejects.toThrow("Misslyckades att skapa custom kolumnkonfiguration");
     });
   });
 
@@ -597,7 +597,7 @@ describe("ColumnConfigRepository", () => {
 
       await expect(
         repository.updateColumn("col-master", "user-1", UserRole.HR_ADMIN, { category: "HR" })
-      ).rejects.toThrow("Cannot update masterdata column");
+      ).rejects.toThrow("Kan inte uppdatera masterdata kolumn via denna endpoint");
     });
 
     it("should throw error when column not found", async () => {
@@ -615,7 +615,7 @@ describe("ColumnConfigRepository", () => {
 
       await expect(
         repository.updateColumn("nonexistent", "user-1", UserRole.HR_ADMIN, { category: "HR" })
-      ).rejects.toThrow("Column not found");
+      ).rejects.toThrow("Kolumn hittades inte");
     });
   });
 
@@ -715,7 +715,7 @@ describe("ColumnConfigRepository", () => {
 
       await expect(
         repository.deleteColumn("col-custom", "user-id", "sodexo")
-      ).rejects.toThrow("You do not have permission to delete this column");
+      ).rejects.toThrow("Du saknar behörighet att ta bort denna kolumn");
     });
 
     it("should throw error when deleting masterdata column", async () => {
@@ -744,7 +744,7 @@ describe("ColumnConfigRepository", () => {
 
       await expect(
         repository.deleteColumn("col-master", "user-id", "sodexo")
-      ).rejects.toThrow("Cannot delete masterdata column");
+      ).rejects.toThrow("Kan inte ta bort masterdata kolumn");
     });
 
     it("should throw error when column not found", async () => {
@@ -762,7 +762,7 @@ describe("ColumnConfigRepository", () => {
 
       await expect(
         repository.deleteColumn("nonexistent", "user-id", "sodexo")
-      ).rejects.toThrow("Column not found");
+      ).rejects.toThrow("Kolumn hittades inte");
     });
 
     it("should throw error on database delete failure", async () => {
@@ -797,7 +797,7 @@ describe("ColumnConfigRepository", () => {
 
       await expect(
         repository.deleteColumn("col-custom", "user-id", "sodexo")
-      ).rejects.toThrow("Failed to delete column");
+      ).rejects.toThrow("Misslyckades att ta bort kolumn");
     });
   });
 });

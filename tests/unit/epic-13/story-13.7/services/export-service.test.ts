@@ -270,7 +270,7 @@ describe('Story 13.7: Export Service Functions', () => {
       };
 
       await expect(exportEmployeesByCategory(options)).rejects.toThrow(
-        'No selected employees found for the selected criteria'
+        'Inga anställda hittade som uppfyller alla förutsättningar och inte har markera crewing_done = true for the selected criteria'
       );
     });
   });

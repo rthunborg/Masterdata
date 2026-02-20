@@ -49,7 +49,7 @@ export function useColumns(effectiveRole?: UserRole) {
       setError(null);
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error("Failed to fetch columns")
+        err instanceof Error ? err : new Error("Misslyckades att hämta kolumnkonfiguration")
       );
       setColumns([]);
     } finally {

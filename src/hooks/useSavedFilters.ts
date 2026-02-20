@@ -28,7 +28,7 @@ export function useSavedFilters() {
     queryFn: async () => {
       const response = await fetch("/api/users/filters");
       if (!response.ok) {
-        throw new Error("Failed to fetch filters");
+        throw new Error("Misslyckades att hämta filter.");
       }
       const json: GetSavedFiltersResponse = await response.json();
       return json.data;
@@ -53,7 +53,7 @@ export function useSavedFilters() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to save filter");
+        throw new Error(error.error || "Misslyckades att spara filter.");
       }
 
       const json: CreateSavedFilterResponse = await response.json();
@@ -61,7 +61,7 @@ export function useSavedFilters() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user_filters"] });
-      toast.success("Filter saved successfully");
+      toast.success("Filter sparat!");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -76,7 +76,7 @@ export function useSavedFilters() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete filter");
+        throw new Error("Misslyckades att ta bort filter.");
       }
 
       const json: DeleteSavedFilterResponse = await response.json();
@@ -84,10 +84,10 @@ export function useSavedFilters() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user_filters"] });
-      toast.success("Filter deleted");
+      toast.success("Filter borttaget!");
     },
     onError: () => {
-      toast.error("Failed to delete filter");
+      toast.error("Misslyckades att ta bort filter.");
     },
   });
 

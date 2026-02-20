@@ -116,7 +116,7 @@ describe("GET /api/users/filters", () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
     
     // Mock auth failure BEFORE importing the route
-    vi.mocked(requireAuthAPI).mockRejectedValue(new Error("Authentication required"));
+    vi.mocked(requireAuthAPI).mockRejectedValue(new Error("Autentisering krävs"));
     
     // Use vi.importActual to get a fresh module
     const { GET } = await import("@/app/api/users/filters/route");
@@ -426,7 +426,7 @@ describe("DELETE /api/users/filters/:id", () => {
     
     // Mock auth failure BEFORE importing the route
     vi.mocked(requireAuthAPI).mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
     
     const { DELETE } = await import("@/app/api/users/filters/[id]/route");

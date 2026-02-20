@@ -56,7 +56,7 @@ export function useAvailableOMCDates(currentOMCDateId?: string | null, enabled: 
           setIsLoading(false);
           return;
         }
-        throw new Error(`Failed to fetch available ÖMC dates: ${response.statusText}`);
+        throw new Error(`Misslyckades att hämta tillgängliga ÖMC datum: ${response.statusText}`);
       }
 
       const result = await response.json();
@@ -89,7 +89,7 @@ export function useAvailableOMCDates(currentOMCDateId?: string | null, enabled: 
               }
             }
           } catch (error) {
-            console.error("Error fetching current ÖMC date:", error);
+            console.error("Misslyckades att hämta aktuellt ÖMC datum:", error);
           }
         }
       }
@@ -97,8 +97,8 @@ export function useAvailableOMCDates(currentOMCDateId?: string | null, enabled: 
       setAvailableDates(dates);
       setTotalAvailable(result.meta?.total || dates.length);
     } catch (err) {
-      console.error("Error fetching available ÖMC dates:", err);
-      setError(err instanceof Error ? err : new Error("Unknown error"));
+      console.error("Misslyckades att hämta tillgängliga ÖMC datum:", err);
+      setError(err instanceof Error ? err : new Error("Okänt fel"));
       setAvailableDates([]);
       setTotalAvailable(0);
     } finally {

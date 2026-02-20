@@ -29,12 +29,12 @@ vi.mock("@/lib/server/auth", () => ({
   requireHRAdminAPI: mockRequireHRAdminAPI,
   createErrorResponse: vi.fn((error) => {
     const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Authentication required") {
+    if (message === "Autentisering krävs") {
       return new Response(JSON.stringify({
         error: { code: "UNAUTHORIZED", message }
       }), { status: 401 });
     }
-    if (message === "Insufficient permissions") {
+    if (message === "Saknar behörighet") {
       return new Response(JSON.stringify({
         error: { code: "FORBIDDEN", message }
       }), { status: 403 });
@@ -83,14 +83,14 @@ describe("API Route Role Protection Integration", () => {
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      mockRequireAuthAPI.mockRejectedValue(new Error("Authentication required"));
+      mockRequireAuthAPI.mockRejectedValue(new Error("Autentisering krävs"));
 
       const response = await ProfileGET();
       const data = await response.json();
 
       expect(response.status).toBe(401);
       expect(data.error.code).toBe("UNAUTHORIZED");
-      expect(data.error.message).toBe("Authentication required");
+      expect(data.error.message).toBe("Autentisering krävs");
     });
 
     it("should work for HR admin users", async () => {
@@ -135,25 +135,25 @@ describe("API Route Role Protection Integration", () => {
     });
 
     it("should return 403 for external party users", async () => {
-      mockRequireHRAdminAPI.mockRejectedValue(new Error("Insufficient permissions"));
+      mockRequireHRAdminAPI.mockRejectedValue(new Error("Saknar behörighet"));
 
       const response = await AdminUsersGET();
       const data = await response.json();
 
       expect(response.status).toBe(403);
       expect(data.error.code).toBe("FORBIDDEN");
-      expect(data.error.message).toBe("Insufficient permissions");
+      expect(data.error.message).toBe("Saknar behörighet");
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      mockRequireHRAdminAPI.mockRejectedValue(new Error("Authentication required"));
+      mockRequireHRAdminAPI.mockRejectedValue(new Error("Autentisering krävs"));
 
       const response = await AdminUsersGET();
       const data = await response.json();
 
       expect(response.status).toBe(401);
       expect(data.error.code).toBe("UNAUTHORIZED");
-      expect(data.error.message).toBe("Authentication required");
+      expect(data.error.message).toBe("Autentisering krävs");
     });
   });
 
@@ -165,26 +165,26 @@ describe("API Route Role Protection Integration", () => {
       ];
 
       for (const api of apis) {
-        api.mockFn.mockRejectedValue(new Error("Authentication required"));
+        api.mockFn.mockRejectedValue(new Error("Autentisering krävs"));
 
         const response = await api.handler();
         const data = await response.json();
 
         expect(response.status).toBe(401);
         expect(data.error.code).toBe("UNAUTHORIZED");
-        expect(data.error.message).toBe("Authentication required");
+        expect(data.error.message).toBe("Autentisering krävs");
       }
     });
 
     it("should consistently handle permission errors", async () => {
-      mockRequireHRAdminAPI.mockRejectedValue(new Error("Insufficient permissions"));
+      mockRequireHRAdminAPI.mockRejectedValue(new Error("Saknar behörighet"));
 
       const response = await AdminUsersGET();
       const data = await response.json();
 
       expect(response.status).toBe(403);
       expect(data.error.code).toBe("FORBIDDEN");
-      expect(data.error.message).toBe("Insufficient permissions");
+      expect(data.error.message).toBe("Saknar behörighet");
     });
   });
 });

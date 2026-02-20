@@ -155,7 +155,7 @@ export async function exportEmployeesByCategory(
   // Story 13.4: Ensure error handling for empty selection
   if (!employees || employees.length === 0) {
     if (selectedEmployeeIds && selectedEmployeeIds.length > 0) {
-      throw new Error('No selected employees found for the selected criteria');
+      throw new Error('Inga anställda hittade som uppfyller alla förutsättningar och inte har markera crewing_done = true for the selected criteria');
     }
     throw new Error('No employees found for the selected criteria');
   }

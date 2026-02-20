@@ -181,7 +181,7 @@ export function ImportImportantDatesModal({
             }
           }
         } catch (error) {
-          console.error("Failed to calculate deadlines:", error);
+          console.error("Misslyckades att beräkna deadlines:", error);
           toast.error(tToasts("import.deadlineCalculationFailed"));
         }
       },
