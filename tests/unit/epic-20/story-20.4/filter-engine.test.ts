@@ -364,7 +364,7 @@ describe('Story 20.4: Filter Engine', () => {
       expect(result[1].id).toBe('emp-3');
     });
 
-    it('should not filter when boolean is null (Either)', () => {
+    it('should not filter when boolean is null (no selection)', () => {
       const filters: FilterState[] = [
         {
           columnId: 'col-3',
@@ -375,6 +375,151 @@ describe('Story 20.4: Filter Engine', () => {
 
       const result = applyFilters(mockEmployees, filters, mockImportantDates, mockColumnConfigs);
       expect(result).toHaveLength(3); // All employees
+    });
+
+    it('should include null boolean values when filtering for false', () => {
+      const employeesWithNull = [
+        ...mockEmployees,
+        {
+          ...mockEmployees[2],
+          id: 'emp-4',
+          first_name: 'Null Hotel',
+          hotel_required: null as unknown as boolean,
+        },
+      ];
+
+      const filters: FilterState[] = [
+        {
+          columnId: 'col-3',
+          type: 'boolean',
+          boolValue: false,
+        },
+      ];
+
+      const result = applyFilters(employeesWithNull, filters, mockImportantDates, mockColumnConfigs);
+      expect(result).toHaveLength(3); // emp-2, emp-3 (false), emp-4 (null treated as false)
+      expect(result.map(e => e.id)).toContain('emp-4');
+    });
+
+    it('should not include null boolean values when filtering for true', () => {
+      const employeesWithNull = [
+        ...mockEmployees,
+        {
+          ...mockEmployees[2],
+          id: 'emp-4',
+          first_name: 'Null Hotel',
+          hotel_required: null as unknown as boolean,
+        },
+      ];
+
+      const filters: FilterState[] = [
+        {
+          columnId: 'col-3',
+          type: 'boolean',
+          boolValue: true,
+        },
+      ];
+
+      const result = applyFilters(employeesWithNull, filters, mockImportantDates, mockColumnConfigs);
+      expect(result).toHaveLength(1); // Only emp-1
+      expect(result[0].id).toBe('emp-1');
+    });
+
+    it('should filter by select values (case-insensitive)', () => {
+      const genderColumnConfig: ColumnConfig = {
+        id: 'col-gender',
+        column_name: 'Gender',
+        db_column_name: 'gender',
+        column_type: 'text',
+        role_permissions: {},
+        is_masterdata: true,
+        category: null,
+        category_color: null,
+        display_order: 5,
+        is_visible: true,
+        is_checklist_item: false,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      };
+
+      const configs = [...mockColumnConfigs, genderColumnConfig];
+
+      const filters: FilterState[] = [
+        {
+          columnId: 'col-gender',
+          type: 'select',
+          selectedValues: ['Man'],
+        },
+      ];
+
+      const result = applyFilters(mockEmployees, filters, mockImportantDates, configs);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('emp-1');
+    });
+
+    it('should filter by multiple select values (OR logic)', () => {
+      const genderColumnConfig: ColumnConfig = {
+        id: 'col-gender',
+        column_name: 'Gender',
+        db_column_name: 'gender',
+        column_type: 'text',
+        role_permissions: {},
+        is_masterdata: true,
+        category: null,
+        category_color: null,
+        display_order: 5,
+        is_visible: true,
+        is_checklist_item: false,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      };
+
+      const configs = [...mockColumnConfigs, genderColumnConfig];
+
+      const filters: FilterState[] = [
+        {
+          columnId: 'col-gender',
+          type: 'select',
+          selectedValues: ['Man', 'Woman'],
+        },
+      ];
+
+      const result = applyFilters(mockEmployees, filters, mockImportantDates, configs);
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('emp-1');
+      expect(result[1].id).toBe('emp-2');
+    });
+
+    it('should not match null values in select filter', () => {
+      const genderColumnConfig: ColumnConfig = {
+        id: 'col-gender',
+        column_name: 'Gender',
+        db_column_name: 'gender',
+        column_type: 'text',
+        role_permissions: {},
+        is_masterdata: true,
+        category: null,
+        category_color: null,
+        display_order: 5,
+        is_visible: true,
+        is_checklist_item: false,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      };
+
+      const configs = [...mockColumnConfigs, genderColumnConfig];
+
+      const filters: FilterState[] = [
+        {
+          columnId: 'col-gender',
+          type: 'select',
+          selectedValues: ['Man'],
+        },
+      ];
+
+      const result = applyFilters(mockEmployees, filters, mockImportantDates, configs);
+      // emp-3 has gender: null, should not match
+      expect(result.map(e => e.id)).not.toContain('emp-3');
     });
 
     it('should filter by specific date IDs', () => {
@@ -653,6 +798,28 @@ describe('Story 20.4: Filter Engine', () => {
         {
           columnId: 'col-4',
           type: 'date',
+        },
+      ];
+      expect(hasActiveFilters(filters)).toBe(false);
+    });
+
+    it('should return true for select filter with selected values', () => {
+      const filters: FilterState[] = [
+        {
+          columnId: 'col-1',
+          type: 'select',
+          selectedValues: ['Man'],
+        },
+      ];
+      expect(hasActiveFilters(filters)).toBe(true);
+    });
+
+    it('should return false for select filter with empty selected values', () => {
+      const filters: FilterState[] = [
+        {
+          columnId: 'col-1',
+          type: 'select',
+          selectedValues: [],
         },
       ];
       expect(hasActiveFilters(filters)).toBe(false);

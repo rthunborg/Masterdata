@@ -6,8 +6,10 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "@/lib/i18n";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
+import { COLUMN_SELECT_OPTIONS } from "@/lib/constants/options";
 import { TextFilter } from "./TextFilter";
 import { BooleanFilter } from "./BooleanFilter";
+import { SelectFilter } from "./SelectFilter";
 import { DateFilter } from "./DateFilter";
 import { useAvailableDates } from "@/lib/hooks/use-available-dates";
 
@@ -106,6 +108,29 @@ export function FilterColumnItem({
                 columnId: column.id,
                 type: "boolean",
                 boolValue: value,
+              });
+            }
+          }}
+        />
+      );
+    }
+
+    // Select columns (Gender, Rank, Town District, etc.)
+    const selectOptions = COLUMN_SELECT_OPTIONS[column.db_column_name];
+    if (selectOptions) {
+      return (
+        <SelectFilter
+          column={column}
+          options={selectOptions}
+          selectedValues={activeFilter?.selectedValues ?? []}
+          onChange={(values) => {
+            if (values.length === 0) {
+              onFilterChange(null);
+            } else {
+              onFilterChange({
+                columnId: column.id,
+                type: "select",
+                selectedValues: values,
               });
             }
           }}

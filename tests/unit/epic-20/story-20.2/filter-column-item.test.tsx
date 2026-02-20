@@ -198,10 +198,9 @@ describe('Story 20.2: FilterColumnItem', () => {
 
     await user.click(screen.getByTestId('filter-column-toggle-is_active'));
 
-    // Verify BooleanFilter is rendered with Yes/No/Either options
+    // Verify BooleanFilter is rendered with Yes/No options (Either removed)
     expect(screen.getByTestId('boolean-filter-is_active')).toBeInTheDocument();
     expect(screen.getByText('Ja')).toBeInTheDocument();
     expect(screen.getByText('Nej')).toBeInTheDocument();
-    expect(screen.getByText('Antingen')).toBeInTheDocument();
   });
 });

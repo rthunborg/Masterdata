@@ -91,8 +91,14 @@ export function SaveFilterDialog({
     }
 
     if (filter.type === "boolean" && filter.boolValue !== undefined) {
-      const value = filter.boolValue === null ? tFilter("either") : filter.boolValue ? tFilter("yes") : tFilter("no");
+      const col = columnConfigs.find((c) => c.id === filter.columnId);
+      const trueLabel = col?.is_checklist_item ? tFilter("done") : tFilter("yes");
+      const value = filter.boolValue ? trueLabel : tFilter("no");
       return `${columnName}: ${value}`;
+    }
+
+    if (filter.type === "select" && filter.selectedValues && filter.selectedValues.length > 0) {
+      return `${columnName}: ${filter.selectedValues.join(", ")}`;
     }
 
     if (filter.type === "date") {

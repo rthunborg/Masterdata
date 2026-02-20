@@ -3,12 +3,13 @@
  * Story 20.3: Filter Controls by Column Type
  * 
  * Tests verify:
- * 1. Component renders three radio options (Either, Yes, No)
- * 2. "Either" is selected by default when value is null
+ * 1. Component renders two radio options (Yes/Klart, No) — "Either" removed as redundant
+ * 2. No option selected when value is null
  * 3. Correct option is selected based on value prop
  * 4. onChange is called with true when "Yes" is selected
  * 5. onChange is called with false when "No" is selected
- * 6. onChange is called with null when "Either" is selected
+ * 6. onChange is called with null when Clear is clicked
+ * 7. Checklist items show "Klart" instead of "Ja"
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -48,7 +49,15 @@ describe('Story 20.3: BooleanFilter', () => {
     updated_at: '2024-01-01T00:00:00Z',
   };
 
-  it('should render three radio options', () => {
+  const checklistColumn: ColumnConfig = {
+    ...mockColumn,
+    id: 'col-2',
+    column_name: 'ISPS',
+    db_column_name: 'isps',
+    is_checklist_item: true,
+  };
+
+  it('should render two radio options (Ja and Nej) for non-checklist columns', () => {
     render(
       <BooleanFilter
         column={mockColumn}
@@ -57,12 +66,26 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    expect(screen.getByLabelText('Antingen')).toBeInTheDocument();
     expect(screen.getByLabelText('Ja')).toBeInTheDocument();
     expect(screen.getByLabelText('Nej')).toBeInTheDocument();
+    expect(screen.queryByText('Antingen')).not.toBeInTheDocument();
   });
 
-  it('should select "Either" when value is null', () => {
+  it('should render "Klart" instead of "Ja" for checklist columns', () => {
+    render(
+      <BooleanFilter
+        column={checklistColumn}
+        value={null}
+        onChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByLabelText('Klart')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nej')).toBeInTheDocument();
+    expect(screen.queryByText('Ja')).not.toBeInTheDocument();
+  });
+
+  it('should have no option selected when value is null', () => {
     render(
       <BooleanFilter
         column={mockColumn}
@@ -71,8 +94,22 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    const eitherRadio = screen.getByTestId(`boolean-filter-either-${mockColumn.db_column_name}`);
-    expect(eitherRadio).toBeChecked();
+    const yesRadio = screen.getByTestId(`boolean-filter-yes-${mockColumn.db_column_name}`);
+    const noRadio = screen.getByTestId(`boolean-filter-no-${mockColumn.db_column_name}`);
+    expect(yesRadio).not.toBeChecked();
+    expect(noRadio).not.toBeChecked();
+  });
+
+  it('should not show clear button when value is null', () => {
+    render(
+      <BooleanFilter
+        column={mockColumn}
+        value={null}
+        onChange={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByTestId(`boolean-filter-clear-${mockColumn.db_column_name}`)).not.toBeInTheDocument();
   });
 
   it('should select "Yes" when value is true', () => {
@@ -99,6 +136,18 @@ describe('Story 20.3: BooleanFilter', () => {
 
     const noRadio = screen.getByTestId(`boolean-filter-no-${mockColumn.db_column_name}`);
     expect(noRadio).toBeChecked();
+  });
+
+  it('should show clear button when a value is selected', () => {
+    render(
+      <BooleanFilter
+        column={mockColumn}
+        value={true}
+        onChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByTestId(`boolean-filter-clear-${mockColumn.db_column_name}`)).toBeInTheDocument();
   });
 
   it('should call onChange with true when "Yes" is selected', async () => {
@@ -139,7 +188,7 @@ describe('Story 20.3: BooleanFilter', () => {
     expect(handleChange).toHaveBeenCalledWith(false);
   });
 
-  it('should call onChange with null when "Either" is selected', async () => {
+  it('should call onChange with null when Clear is clicked', async () => {
     const handleChange = vi.fn();
     const user = userEvent.setup();
 
@@ -151,8 +200,7 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    const eitherLabel = screen.getByText('Antingen');
-    await user.click(eitherLabel);
+    await user.click(screen.getByTestId(`boolean-filter-clear-${mockColumn.db_column_name}`));
 
     expect(handleChange).toHaveBeenCalledTimes(1);
     expect(handleChange).toHaveBeenCalledWith(null);
@@ -196,8 +244,8 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    // Click Either
-    await user.click(screen.getByText('Antingen'));
+    // Click Clear to reset
+    await user.click(screen.getByTestId(`boolean-filter-clear-${mockColumn.db_column_name}`));
     expect(handleChange).toHaveBeenCalledWith(null);
   });
 
@@ -210,7 +258,6 @@ describe('Story 20.3: BooleanFilter', () => {
       />
     );
 
-    // The RadioGroup should have an aria-label
     const radioGroup = screen.getByRole('radiogroup');
     expect(radioGroup).toHaveAttribute('aria-label', 'Filter Hotel Required');
   });
@@ -225,7 +272,6 @@ describe('Story 20.3: BooleanFilter', () => {
     );
 
     expect(screen.getByTestId(`boolean-filter-${mockColumn.db_column_name}`)).toBeInTheDocument();
-    expect(screen.getByTestId(`boolean-filter-either-${mockColumn.db_column_name}`)).toBeInTheDocument();
     expect(screen.getByTestId(`boolean-filter-yes-${mockColumn.db_column_name}`)).toBeInTheDocument();
     expect(screen.getByTestId(`boolean-filter-no-${mockColumn.db_column_name}`)).toBeInTheDocument();
   });
