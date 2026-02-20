@@ -200,8 +200,7 @@ import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
  
 import { useUIStore } from "@/lib/store/ui-store";
 
-// Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar
-// import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
+import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 
  
@@ -2803,7 +2802,7 @@ export function EmployeeTable({
 
             </Table>
 
-            {/* Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar */}
+            <StickyScrollbar containerRef={tableContainerRef} />
 
           </div>
 
