@@ -66,8 +66,11 @@ function matchesFilter(
     case "date":
       return matchesDateFilter(fieldValue, filter, importantDates);
 
+    case "select":
+      return matchesSelectFilter(fieldValue, filter.selectedValues);
+
     default:
-      return true; // Unknown filter type = no filtering
+      return true;
   }
 }
 
@@ -95,20 +98,31 @@ function matchesTextFilter(
 }
 
 /**
- * Boolean filter: exact match
- * @param value - Field value from employee record
- * @param filterValue - Boolean value from filter (null = "Either")
- * @returns true if value matches filterValue or filterValue is null
+ * Boolean filter: exact match.  Null/undefined field values are treated as
+ * false so that unset booleans show up when the user filters for "No".
  */
 function matchesBooleanFilter(
   value: unknown,
   filterValue: boolean | null | undefined
 ): boolean {
-  // null/undefined = "Either" = no filtering
   if (filterValue === null || filterValue === undefined) return true;
 
-  // Exact match required
-  return value === filterValue;
+  const normalised = value === null || value === undefined ? false : value;
+  return normalised === filterValue;
+}
+
+/**
+ * Select filter: value must be one of the selected options (case-insensitive).
+ */
+function matchesSelectFilter(
+  value: unknown,
+  selectedValues: string[] | undefined
+): boolean {
+  if (!selectedValues || selectedValues.length === 0) return true;
+  if (value === null || value === undefined) return false;
+
+  const valueStr = String(value).toLowerCase();
+  return selectedValues.some((sv) => sv.toLowerCase() === valueStr);
 }
 
 /**
@@ -195,6 +209,8 @@ export function hasActiveFilters(filters: FilterState[]): boolean {
             (filter.dateRange.from || filter.dateRange.to)) ||
           (filter.selectedDateIds && filter.selectedDateIds.length > 0)
         );
+      case "select":
+        return !!filter.selectedValues && filter.selectedValues.length > 0;
       default:
         return false;
     }

@@ -12,7 +12,7 @@ export interface FilterState {
   textValue?: string;
   
   // Boolean filter
-  boolValue?: boolean | null; // null = "Either"
+  boolValue?: boolean | null;
   
   // Date filter
   dateRange?: {
@@ -20,4 +20,7 @@ export interface FilterState {
     to: Date | null;
   };
   selectedDateIds?: string[]; // UUIDs of important_dates
+
+  // Select filter (multi-select from fixed options)
+  selectedValues?: string[];
 }
