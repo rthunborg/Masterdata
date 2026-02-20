@@ -28,7 +28,7 @@ export function BooleanFilter({ column, value, onChange }: BooleanFilterProps) {
 
   return (
     <div
-      className="space-y-3"
+      className="space-y-2"
       data-testid={`boolean-filter-${column.db_column_name}`}
     >
       <RadioGroup
@@ -67,6 +67,17 @@ export function BooleanFilter({ column, value, onChange }: BooleanFilterProps) {
           </Label>
         </div>
       </RadioGroup>
+      {value !== null && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onChange(null)}
+          className="h-auto px-0 py-0 text-xs text-muted-foreground hover:text-foreground"
+          data-testid={`boolean-filter-clear-${column.db_column_name}`}
+        >
+          {tFilter("clearFilter")}
+        </Button>
+      )}
     </div>
   );
 }
