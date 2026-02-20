@@ -21,23 +21,13 @@ export interface StickyScrollbarProps {
 /**
  * StickyScrollbar component
  *
- * Creates a duplicated horizontal scrollbar that stays fixed at the bottom of the viewport
- * when the actual table scrollbar is scrolled out of view. The scrollbars are synchronized
- * bidirectionally.
+ * Creates a duplicated horizontal scrollbar fixed to the bottom of the viewport,
+ * positioned and sized to exactly match the referenced container. Only visible when
+ * the container's native scrollbar is scrolled out of view. The two scrollbars are
+ * synchronized bidirectionally.
  *
- * @example
- * ```tsx
- * const containerRef = React.useRef<HTMLDivElement>(null);
- *
- * return (
- *   <>
- *     <div ref={containerRef} className="overflow-x-auto">
- *       <table>...</table>
- *     </div>
- *     <StickyScrollbar containerRef={containerRef} />
- *   </>
- * );
- * ```
+ * Key design decision: uses getBoundingClientRect() to match the container's exact
+ * position/width instead of 100vw, which prevents page-level horizontal scrollbar.
  */
 export function StickyScrollbar({
   containerRef,
@@ -45,14 +35,12 @@ export function StickyScrollbar({
   zIndex = 40,
 }: StickyScrollbarProps) {
   const stickyScrollbarRef = React.useRef<HTMLDivElement>(null);
-  const stickyContentRef = React.useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = React.useState(false);
   const [contentWidth, setContentWidth] = React.useState(0);
-  const [containerWidth, setContainerWidth] = React.useState(0);
+  const [position, setPosition] = React.useState({ left: 0, width: 0 });
   const isSyncingRef = React.useRef(false);
 
-  // Check if sticky scrollbar should be visible
-  const updateVisibility = React.useCallback(() => {
+  const updateLayout = React.useCallback(() => {
     const container = containerRef.current;
     if (!container) {
       setIsVisible(false);
@@ -65,22 +53,25 @@ export function StickyScrollbar({
       return;
     }
 
-    // Always show sticky scrollbar when there's horizontal overflow
-    // This allows users to scroll horizontally even when at the top of the page
+    const rect = container.getBoundingClientRect();
+
+    // Hide if the container is entirely out of view
+    if (rect.bottom <= 0 || rect.top >= window.innerHeight) {
+      setIsVisible(false);
+      return;
+    }
+
+    // Only show when the native scrollbar (at container bottom) is below the viewport
+    if (rect.bottom <= window.innerHeight) {
+      setIsVisible(false);
+      return;
+    }
+
     setIsVisible(true);
+    setContentWidth(container.scrollWidth);
+    setPosition({ left: rect.left, width: rect.width });
   }, [containerRef]);
 
-  // Update content width to match table scroll width
-  const updateDimensions = React.useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    setContentWidth(container.scrollWidth);
-    setContainerWidth(container.clientWidth);
-    updateVisibility();
-  }, [containerRef, updateVisibility]);
-
-  // Sync scroll position from container to sticky scrollbar
   const handleContainerScroll = React.useCallback(() => {
     if (isSyncingRef.current) return;
 
@@ -90,13 +81,11 @@ export function StickyScrollbar({
 
     isSyncingRef.current = true;
     stickyScrollbar.scrollLeft = container.scrollLeft;
-    // Use requestAnimationFrame to reset the flag after the scroll event has been processed
     requestAnimationFrame(() => {
       isSyncingRef.current = false;
     });
   }, [containerRef]);
 
-  // Sync scroll position from sticky scrollbar to container
   const handleStickyScroll = React.useCallback(() => {
     if (isSyncingRef.current) return;
 
@@ -106,52 +95,40 @@ export function StickyScrollbar({
 
     isSyncingRef.current = true;
     container.scrollLeft = stickyScrollbar.scrollLeft;
-    // Use requestAnimationFrame to reset the flag after the scroll event has been processed
     requestAnimationFrame(() => {
       isSyncingRef.current = false;
     });
   }, [containerRef]);
 
-  // Set up event listeners and observers
   React.useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    // Initial update - use requestAnimationFrame to ensure container is fully rendered
     requestAnimationFrame(() => {
-      updateDimensions();
-      // Double-check after a short delay to catch any late layout changes
-      setTimeout(() => {
-        updateDimensions();
-      }, 100);
+      updateLayout();
+      setTimeout(updateLayout, 100);
     });
 
-    // Listen to container scroll
     container.addEventListener("scroll", handleContainerScroll, { passive: true });
+    window.addEventListener("scroll", updateLayout, { passive: true });
+    window.addEventListener("resize", updateLayout, { passive: true });
 
-    // Listen to resize for dimension updates
-    window.addEventListener("resize", updateDimensions, { passive: true });
-
-    // Use ResizeObserver to detect content size changes
     const resizeObserver = new ResizeObserver(() => {
-      updateDimensions();
+      updateLayout();
     });
     resizeObserver.observe(container);
-
-    // Also observe the first child (table) for size changes
     if (container.firstElementChild) {
       resizeObserver.observe(container.firstElementChild);
     }
 
     return () => {
       container.removeEventListener("scroll", handleContainerScroll);
-      window.removeEventListener("resize", updateDimensions);
+      window.removeEventListener("scroll", updateLayout);
+      window.removeEventListener("resize", updateLayout);
       resizeObserver.disconnect();
     };
-  }, [containerRef, handleContainerScroll, updateDimensions, updateVisibility]);
+  }, [containerRef, handleContainerScroll, updateLayout]);
 
-  // Listen to sticky scrollbar scroll
-  // This effect needs to re-run when isVisible changes because the scrollbar might not exist yet
   React.useEffect(() => {
     const stickyScrollbar = stickyScrollbarRef.current;
     if (!stickyScrollbar || !isVisible) return;
@@ -162,15 +139,13 @@ export function StickyScrollbar({
     };
   }, [handleStickyScroll, isVisible]);
 
-  // Sync initial scroll position when component becomes visible
   React.useEffect(() => {
     if (isVisible && containerRef.current && stickyScrollbarRef.current) {
       stickyScrollbarRef.current.scrollLeft = containerRef.current.scrollLeft;
     }
   }, [isVisible, containerRef]);
 
-  // Don't render if there's no horizontal overflow
-  if (!isVisible || contentWidth <= containerWidth) {
+  if (!isVisible || contentWidth <= position.width) {
     return null;
   }
 
@@ -178,28 +153,20 @@ export function StickyScrollbar({
     <div
       ref={stickyScrollbarRef}
       className={cn(
-        "fixed bottom-0 left-0 right-0 overflow-x-auto overflow-y-hidden",
+        "fixed bottom-0 overflow-x-auto overflow-y-hidden",
         "bg-background/80 backdrop-blur-sm border-t",
-        // Ensure sticky scrollbar doesn't cause page-level overflow
-        "max-w-[100vw]",
         className
       )}
       style={{
         zIndex,
-        height: "17px", // Standard scrollbar height
-        // Explicitly constrain width to viewport
-        width: "100vw",
-        // Create a new containing block and isolate from document width calculations
-        // Using transform creates a containing block that prevents child widths from affecting document scroll
-        transform: "translateZ(0)",
-        // CSS containment to prevent layout from affecting ancestors
-        contain: "layout size style paint",
+        height: "17px",
+        left: position.left,
+        width: position.width,
       }}
       aria-hidden="true"
       data-testid="sticky-scrollbar"
     >
       <div
-        ref={stickyContentRef}
         style={{
           width: contentWidth,
           height: "1px",
