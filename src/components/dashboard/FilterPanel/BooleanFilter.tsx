@@ -32,19 +32,6 @@ export function BooleanFilter({ column, value, onChange }: BooleanFilterProps) {
       className="space-y-2"
       data-testid={`boolean-filter-${column.db_column_name}`}
     >
-      {value !== null && (
-        <div className="flex justify-end">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onChange(null)}
-            className="h-auto p-1 text-xs"
-            data-testid={`boolean-filter-clear-${column.db_column_name}`}
-          >
-            {tFilter("clear")}
-          </Button>
-        </div>
-      )}
       <RadioGroup
         value={stringValue}
         onValueChange={handleValueChange}
