@@ -80,6 +80,8 @@
     "booleanTrue": "Klart",
     "booleanYes": "Ja",
     "booleanFalse": "Nej",
+    "pickDate": "Välj datum",
+    "clearDate": "Rensa datum",
     "export": {
       "selectFields": "Välj fält att exportera",
       "selectFieldsDescription": "Välj vilka fält som ska inkluderas i exporten. Synliga kolumner är förvalda.",
@@ -618,8 +620,8 @@
     },
     "employees": {
       "changeSavedLocally": "Ändring sparad lokalt. Kommer att synkroniseras när online.",
-      "updatedSuccessfully": "Anställd uppdaterad",
-      "customDataUpdated": "Anpassad data uppdaterad",
+      "updatedSuccessfully": "Anställd uppdaterad!",
+      "customDataUpdated": "Kolumnvärde uppdaterat!",
       "archived": "{name} har arkiverats.",
       "restored": "{name} har återställts.",
       "reactivated": "{name} har återaktiverats.",

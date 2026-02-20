@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, XIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./status-badge";
@@ -829,7 +829,7 @@ export function EditableCell({
               {editValue ? (
                 format(new Date(editValue + "T00:00:00"), "PPP")
               ) : (
-                <span>Pick a date</span>
+                <span className="text-muted-foreground">{tDashboard("pickDate")}</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -840,12 +840,9 @@ export function EditableCell({
               onSelect={(date) => {
                 if (date) {
                   const dateStr = format(date, "yyyy-MM-dd");
-                  // Story 13.10: Check if value actually changed before saving
-                  const normalizedCurrent = dateStr;
                   const normalizedOriginal = value ?? null;
 
-                  if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-                    // Value hasn't changed, just exit edit mode without API call
+                  if (!hasValueChanged(normalizedOriginal, dateStr)) {
                     setShowDatePicker(false);
                     setIsEditing(false);
                     return;
@@ -853,11 +850,9 @@ export function EditableCell({
 
                   setEditValue(dateStr);
                   setShowDatePicker(false);
-                  // Trigger save after selecting date (only if value changed)
                   setTimeout(() => {
                     onSave(employeeId, field, dateStr).catch((err) => {
                       const message = err instanceof Error ? err.message : tErrors("updateFailed");
-                      // Story 9.8: Localize validation errors
                       if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
                         const localizedMessage = tErrors("validation.invalidValue");
                         setError(localizedMessage);
@@ -872,6 +867,29 @@ export function EditableCell({
               }}
               initialFocus
             />
+            {editValue && (
+              <div className="border-t p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center text-muted-foreground"
+                  onClick={() => {
+                    setEditValue(null);
+                    setShowDatePicker(false);
+                    setTimeout(() => {
+                      onSave(employeeId, field, null).catch((err) => {
+                        const message = err instanceof Error ? err.message : tErrors("updateFailed");
+                        setError(message);
+                        onError?.(message);
+                      });
+                    }, 0);
+                  }}
+                >
+                  <XIcon className="mr-1.5 h-3.5 w-3.5" />
+                  {tDashboard("clearDate")}
+                </Button>
+              </div>
+            )}
           </PopoverContent>
         </Popover>
       )}
