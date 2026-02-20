@@ -35,8 +35,16 @@ export function ActiveFiltersList({
     switch (filter.type) {
       case 'text':
         return filter.textValue ? `"${filter.textValue}"` : '';
-      case 'boolean':
-        return filter.boolValue === true ? tFilter("yes") : filter.boolValue === false ? tFilter("no") : tFilter("either");
+      case 'boolean': {
+        const col = columnConfigs.find(c => c.id === filter.columnId);
+        const trueLabel = col?.is_checklist_item ? tFilter("done") : tFilter("yes");
+        return filter.boolValue === true ? trueLabel : filter.boolValue === false ? tFilter("no") : '';
+      }
+      case 'select':
+        if (filter.selectedValues && filter.selectedValues.length > 0) {
+          return filter.selectedValues.join(', ');
+        }
+        return '';
       case 'date':
         if (filter.selectedDateIds && filter.selectedDateIds.length > 0) {
           const dateNames = filter.selectedDateIds
