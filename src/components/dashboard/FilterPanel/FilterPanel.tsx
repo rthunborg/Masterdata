@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Save } from "lucide-react";
+import { X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/lib/i18n";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { FilterColumnItem } from "./FilterColumnItem";
 import { ActiveFiltersList } from "./ActiveFiltersList";
-import { SaveFilterDialog } from "./SaveFilterDialog";
 import { SavedFiltersDropdown } from "./SavedFiltersDropdown";
 import { useSavedFilters } from "@/hooks/useSavedFilters";
 
@@ -31,10 +32,17 @@ export function FilterPanel({
   importantDates = [],
 }: FilterPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [flushTrigger, setFlushTrigger] = useState(0);
+  const onCloseRef = useRef(onClose);
+  const initialFocusDoneRef = useRef(false);
 
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  const tFilter = useTranslations("filter");
   // Story 20.6: Saved Filters integration
-  const { savedFilters, saveFilter, deleteFilter } = useSavedFilters();
+  const { savedFilters, deleteFilter } = useSavedFilters();
 
   // Filter out non-filterable columns
   const filterableColumns = columnConfigs
@@ -45,11 +53,17 @@ export function FilterPanel({
     )
     .sort((a, b) => a.display_order - b.display_order);
 
-  // Handle ESC key press and focus trap
+  // Reset initial-focus flag when panel closes so we focus again on next open
+  useEffect(() => {
+    if (!isOpen) initialFocusDoneRef.current = false;
+  }, [isOpen]);
+
+  // Handle ESC key press and focus trap. Depends only on isOpen so we don't re-run on every
+  // parent re-render (inline onClose would otherwise cause focus to be stolen from inputs).
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        onCloseRef.current();
       }
 
       // Focus trap: Handle Tab key to keep focus within panel
@@ -63,13 +77,11 @@ export function FilterPanel({
         ] as HTMLElement;
 
         if (e.shiftKey) {
-          // Shift+Tab: If on first element, go to last
           if (document.activeElement === firstElement) {
             e.preventDefault();
             lastElement?.focus();
           }
         } else {
-          // Tab: If on last element, go to first
           if (document.activeElement === lastElement) {
             e.preventDefault();
             firstElement?.focus();
@@ -80,19 +92,24 @@ export function FilterPanel({
 
     if (isOpen) {
       document.addEventListener("keydown", handleKeyDown);
-      // Focus the close button when panel opens
-      setTimeout(() => {
-        const closeButton = panelRef.current?.querySelector(
-          '[data-testid="close-filter-panel"]'
-        ) as HTMLElement;
-        closeButton?.focus();
-      }, 100);
+      // Focus close button only once when panel opens (so typing in filter inputs isn't interrupted)
+      if (!initialFocusDoneRef.current) {
+        initialFocusDoneRef.current = true;
+        const t = setTimeout(() => {
+          const closeButton = panelRef.current?.querySelector(
+            '[data-testid="close-filter-panel"]'
+          ) as HTMLElement;
+          closeButton?.focus();
+        }, 100);
+        return () => {
+          document.removeEventListener("keydown", handleKeyDown);
+          clearTimeout(t);
+        };
+      }
     }
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   // Handle overlay click
   const handleOverlayClick = () => {
@@ -104,10 +121,10 @@ export function FilterPanel({
     e.stopPropagation();
   };
 
-  // Story 20.6: Handle saving filters
-  const handleSaveFilter = async (name: string) => {
-    await saveFilter({ name, filters: activeFilters });
-    setShowSaveDialog(false);
+  // Apply Filters: flush any pending debounced text filter values, then close (so dashboard updates with filters)
+  const handleApplyFilters = () => {
+    setFlushTrigger((prev) => prev + 1);
+    setTimeout(() => onClose(), 50);
   };
 
   // Story 20.6: Handle applying saved filter
@@ -126,7 +143,7 @@ export function FilterPanel({
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-30 z-40"
+        className="fixed inset-0 bg-black/30 z-40"
         onClick={handleOverlayClick}
         data-testid="filter-panel-overlay"
       />
@@ -149,28 +166,17 @@ export function FilterPanel({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 id="filter-panel-title" className="text-lg font-semibold">
-            Filter Employees
-          </h2>
+          <div>
+            <h2 id="filter-panel-title" className="text-lg font-semibold">
+              {tFilter("panelTitle")}
+            </h2>
+          </div>
           <div className="flex items-center gap-2">
-            {/* Story 20.6: Save Filter button */}
-            {activeFilters.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowSaveDialog(true)}
-                aria-label="Save current filters"
-                data-testid="save-filter-button"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Filter
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              aria-label="Close filter panel"
+              aria-label={tFilter("closePanel")}
               data-testid="close-filter-panel"
             >
               <X className="h-4 w-4" />
@@ -201,7 +207,7 @@ export function FilterPanel({
           
           {filterableColumns.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No filterable columns available.
+              {tFilter("noFilterableColumns")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -214,6 +220,7 @@ export function FilterPanel({
                     key={column.id}
                     column={column}
                     activeFilter={activeFilter}
+                    flushTrigger={flushTrigger}
                     onFilterChange={(filter) => {
                       if (filter) {
                         // Add or update filter
@@ -237,20 +244,11 @@ export function FilterPanel({
 
         {/* Footer */}
         <div className="p-4 border-t">
-          <Button onClick={onClose} className="w-full" data-testid="apply-filters">
-            Apply Filters
+          <Button onClick={handleApplyFilters} className="w-full" data-testid="apply-filters">
+            {tFilter("applyFilters")}
           </Button>
         </div>
       </div>
-
-      {/* Story 20.6: Save Filter Dialog */}
-      <SaveFilterDialog
-        open={showSaveDialog}
-        onOpenChange={setShowSaveDialog}
-        activeFilters={activeFilters}
-        columnConfigs={columnConfigs}
-        onSave={handleSaveFilter}
-      />
     </>
   );
 }

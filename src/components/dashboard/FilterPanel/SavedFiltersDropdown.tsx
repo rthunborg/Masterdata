@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import equal from "fast-deep-equal";
+import { useTranslations } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -76,18 +77,21 @@ export function SavedFiltersDropdown({
     }
   };
 
+  const tFilter = useTranslations("filter");
   const filterToDelete = savedFilters.find((f) => f.id === deleteId);
   const selectedFilter = savedFilters.find((f) => f.id === selectedId);
-
-  if (savedFilters.length === 0) {
-    return null;
-  }
 
   return (
     <>
       <div className="mb-4 space-y-2">
-        <Label htmlFor="saved-filters-select">My Saved Filters</Label>
-        <div className="flex items-center gap-2">
+        <Label htmlFor="saved-filters-select">{tFilter("mySavedFilters")}</Label>
+        {savedFilters.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            {tFilter("noSavedFiltersYet")}
+          </p>
+        ) : (
+          <>
+          <div className="flex items-center gap-2">
           <Select
             value={selectedId}
             onValueChange={(id) => {
@@ -101,9 +105,9 @@ export function SavedFiltersDropdown({
             <SelectTrigger
               id="saved-filters-select"
               className="flex-1"
-              aria-label="Select a saved filter"
+              aria-label={tFilter("selectSavedFilter")}
             >
-              <SelectValue placeholder="Select a saved filter..." />
+              <SelectValue placeholder={tFilter("selectSavedFilterPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {savedFilters.map((saved) => {
@@ -117,7 +121,7 @@ export function SavedFiltersDropdown({
                       <span>{saved.name}</span>
                       {isCurrent && (
                         <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                          current
+                          {tFilter("current")}
                         </span>
                       )}
                     </div>
@@ -132,7 +136,7 @@ export function SavedFiltersDropdown({
               size="icon"
               className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
               onClick={() => setDeleteId(selectedFilter.id)}
-              aria-label={`Delete saved filter "${selectedFilter.name}"`}
+              aria-label={tFilter("deleteSavedFilterAria", { name: selectedFilter.name })}
               data-testid={`delete-filter-${selectedFilter.id}`}
             >
               <Trash2 className="h-4 w-4" />
@@ -140,27 +144,30 @@ export function SavedFiltersDropdown({
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          {savedFilters.length} saved {savedFilters.length === 1 ? "filter" : "filters"}
+          {savedFilters.length === 1
+            ? tFilter("savedFilterCount", { count: savedFilters.length })
+            : tFilter("savedFilterCountPlural", { count: savedFilters.length })}
         </p>
+          </>
+        )}
       </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete saved filter?</AlertDialogTitle>
+            <AlertDialogTitle>{tFilter("deleteSavedFilter")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{filterToDelete?.name}&quot;?
-              This action cannot be undone.
+              {tFilter("deleteSavedFilterConfirm", { name: filterToDelete?.name ?? "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{tFilter("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? tFilter("deleting") : tFilter("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

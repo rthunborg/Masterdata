@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/lib/i18n";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
 import { TextFilter } from "./TextFilter";
@@ -14,13 +15,17 @@ interface FilterColumnItemProps {
   column: ColumnConfig;
   activeFilter?: FilterState;
   onFilterChange: (filter: FilterState | null) => void;
+  /** When this changes, text filters flush pending debounced value (used when Apply Filters is clicked). */
+  flushTrigger?: number;
 }
 
 export function FilterColumnItem({
   column,
   activeFilter,
   onFilterChange,
+  flushTrigger,
 }: FilterColumnItemProps) {
+  const tFilter = useTranslations("filter");
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Determine if this is a date column
@@ -36,6 +41,9 @@ export function FilterColumnItem({
     setIsExpanded(!isExpanded);
   };
 
+  // Stable default so Calendar doesn't re-render every time (avoids date picker highlight flicker)
+  const defaultDateRange = useMemo(() => ({ from: null as Date | null, to: null as Date | null }), []);
+
   // Render appropriate filter control based on column type
   const renderFilterControl = () => {
     // Date columns (UUID references to important_dates)
@@ -43,8 +51,8 @@ export function FilterColumnItem({
       return (
         <DateFilter
           column={column}
-          dateRange={activeFilter?.dateRange || { from: null, to: null }}
-          selectedDateIds={activeFilter?.selectedDateIds || []}
+          dateRange={activeFilter?.dateRange ?? defaultDateRange}
+          selectedDateIds={activeFilter?.selectedDateIds ?? []}
           availableDates={dates}
           onDateRangeChange={(range) => {
             const hasRange = range.from || range.to;
@@ -75,7 +83,7 @@ export function FilterColumnItem({
               onFilterChange({
                 columnId: column.id,
                 type: "date",
-                dateRange: activeFilter?.dateRange || { from: null, to: null },
+                dateRange: activeFilter?.dateRange ?? defaultDateRange,
                 selectedDateIds: dateIds,
               });
             }
@@ -122,6 +130,7 @@ export function FilterColumnItem({
           }
         }}
         onClear={() => onFilterChange(null)}
+        flushTrigger={flushTrigger}
       />
     );
   };
@@ -151,7 +160,7 @@ export function FilterColumnItem({
           <span className="font-medium text-sm">{column.column_name}</span>
         </div>
         {activeFilter && (
-          <span className="text-xs text-primary font-medium">Active</span>
+          <span className="text-xs text-primary font-medium">{tFilter("active")}</span>
         )}
       </button>
 

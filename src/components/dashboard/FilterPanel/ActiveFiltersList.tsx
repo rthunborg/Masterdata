@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "@/lib/i18n";
 import type { FilterState } from "@/lib/types/filter";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { ImportantDate } from "@/lib/types/important-date";
@@ -26,6 +27,7 @@ export function ActiveFiltersList({
   onClearAll,
   importantDates = [],
 }: ActiveFiltersListProps) {
+  const tFilter = useTranslations("filter");
   if (filters.length === 0) return null;
 
   // Format filter value for display
@@ -34,30 +36,28 @@ export function ActiveFiltersList({
       case 'text':
         return filter.textValue ? `"${filter.textValue}"` : '';
       case 'boolean':
-        return filter.boolValue === true ? 'Yes' : filter.boolValue === false ? 'No' : 'Either';
+        return filter.boolValue === true ? tFilter("yes") : filter.boolValue === false ? tFilter("no") : tFilter("either");
       case 'date':
         if (filter.selectedDateIds && filter.selectedDateIds.length > 0) {
-          // Story 20.5: Show actual date names instead of just count
           const dateNames = filter.selectedDateIds
             .map(id => {
               const date = importantDates.find(d => d.id === id);
-              return date?.date_description || 'Unknown';
+              return date?.date_description || tFilter("unknown");
             })
-            .filter(name => name !== 'Unknown');
+            .filter(name => name !== tFilter("unknown"));
           
           if (dateNames.length === 0) {
-            return `${filter.selectedDateIds.length} date(s)`;
+            return tFilter("datesSelected", { count: filter.selectedDateIds.length });
           }
           if (dateNames.length === 1) {
             return dateNames[0];
           }
-          // Show first 2 dates, then count if more
           if (dateNames.length <= 2) {
             return dateNames.join(', ');
           }
-          return `${dateNames.slice(0, 2).join(', ')} +${dateNames.length - 2} more`;
+          return `${dateNames.slice(0, 2).join(', ')} +${dateNames.length - 2}`;
         }
-        return 'Date range';
+        return tFilter("dateRangeSelected");
       default:
         return '';
     }
@@ -66,7 +66,7 @@ export function ActiveFiltersList({
   return (
     <div className="border-b pb-4 mb-4" data-testid="active-filters-list">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium">Active Filters ({filters.length})</h3>
+        <h3 className="text-sm font-medium">{tFilter("activeFiltersCount", { count: filters.length })}</h3>
         <Button
           variant="ghost"
           size="sm"
@@ -74,7 +74,7 @@ export function ActiveFiltersList({
           className="text-xs h-7"
           data-testid="clear-all-filters-button"
         >
-          Clear All
+          {tFilter("clearAll")}
         </Button>
       </div>
       <div className="space-y-2">
@@ -96,7 +96,7 @@ export function ActiveFiltersList({
                 size="sm"
                 onClick={() => onRemove(filter.columnId)}
                 className="h-6 w-6 p-0 ml-2 flex-shrink-0"
-                aria-label={`Remove ${column.column_name} filter`}
+                aria-label={tFilter("removeFilter", { column: column.column_name })}
                 data-testid={`remove-filter-${filter.columnId}`}
               >
                 <X className="h-3 w-3" />

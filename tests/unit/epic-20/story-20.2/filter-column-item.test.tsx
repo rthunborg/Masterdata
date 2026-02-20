@@ -126,7 +126,7 @@ describe('Story 20.2: FilterColumnItem', () => {
       />
     );
 
-    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(screen.getByText('Aktiv')).toBeInTheDocument();
   });
 
   it('should not show "Active" badge when no filter is active', () => {
@@ -137,7 +137,7 @@ describe('Story 20.2: FilterColumnItem', () => {
       />
     );
 
-    expect(screen.queryByText('Active')).not.toBeInTheDocument();
+    expect(screen.queryByText('Aktiv')).not.toBeInTheDocument();
   });
 
   it('should apply active styling when filter is active', () => {
@@ -175,7 +175,7 @@ describe('Story 20.2: FilterColumnItem', () => {
 
     // Verify TextFilter is rendered
     expect(screen.getByTestId('text-filter-first_name')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Search First Name...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Sök First Name...')).toBeInTheDocument();
   });
 
   it('should render boolean filter for boolean columns (Story 20.3)', async () => {
@@ -200,8 +200,8 @@ describe('Story 20.2: FilterColumnItem', () => {
 
     // Verify BooleanFilter is rendered with Yes/No/Either options
     expect(screen.getByTestId('boolean-filter-is_active')).toBeInTheDocument();
-    expect(screen.getByText('Yes')).toBeInTheDocument();
-    expect(screen.getByText('No')).toBeInTheDocument();
-    expect(screen.getByText('Either')).toBeInTheDocument();
+    expect(screen.getByText('Ja')).toBeInTheDocument();
+    expect(screen.getByText('Nej')).toBeInTheDocument();
+    expect(screen.getByText('Antingen')).toBeInTheDocument();
   });
 });

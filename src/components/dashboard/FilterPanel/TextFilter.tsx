@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo, useEffect, ChangeEvent } from "react";
+import { useState, useMemo, useEffect, useRef, ChangeEvent } from "react";
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { debounce } from "@/lib/utils/animation-helpers";
+import { useTranslations } from "@/lib/i18n";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 interface TextFilterProps {
@@ -12,6 +13,8 @@ interface TextFilterProps {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  /** When this value changes, any pending debounced onChange is flushed immediately (e.g. when user clicks Apply Filters). */
+  flushTrigger?: number;
 }
 
 export function TextFilter({
@@ -19,7 +22,9 @@ export function TextFilter({
   value,
   onChange,
   onClear,
+  flushTrigger,
 }: TextFilterProps) {
+  const tFilter = useTranslations("filter");
   const [localValue, setLocalValue] = useState(value);
 
   // Update local value when external value changes
@@ -27,28 +32,39 @@ export function TextFilter({
     setLocalValue(value);
   }, [value]);
 
-  // Debounce onChange to prevent excessive filtering
-  const debouncedOnChange = useMemo(
-    () => debounce(onChange, 300),
-    [onChange]
-  );
-
-  // Cleanup debounce on unmount
+  const onChangeRef = useRef(onChange);
   useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Debounce created in effect so the closure over onChangeRef is not created during render (satisfies react-hooks/refs).
+  const debouncedOnChangeRef = useRef<ReturnType<typeof debounce<(v: string) => void>> | null>(null);
+  useEffect(() => {
+    debouncedOnChangeRef.current = debounce((value: string) => {
+      onChangeRef.current(value);
+    }, 300);
     return () => {
-      debouncedOnChange.cancel();
+      debouncedOnChangeRef.current?.cancel();
+      debouncedOnChangeRef.current = null;
     };
-  }, [debouncedOnChange]);
+  }, []);
+
+  // Flush pending debounced value when Apply Filters is clicked (so filter is applied before panel closes)
+  useEffect(() => {
+    if (flushTrigger !== undefined && flushTrigger > 0) {
+      debouncedOnChangeRef.current?.flush();
+    }
+  }, [flushTrigger]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
-    debouncedOnChange(newValue);
+    debouncedOnChangeRef.current?.(newValue);
   };
 
   const handleClear = () => {
     setLocalValue("");
-    debouncedOnChange.cancel();
+    debouncedOnChangeRef.current?.cancel();
     onClear();
   };
 
@@ -58,7 +74,7 @@ export function TextFilter({
         type="text"
         value={localValue}
         onChange={handleChange}
-        placeholder={`Search ${column.column_name}...`}
+        placeholder={tFilter("searchColumnPlaceholder", { column: column.column_name })}
         className="pr-8"
         aria-label={`Filter ${column.column_name}`}
         data-testid={`text-filter-input-${column.db_column_name}`}
@@ -69,7 +85,7 @@ export function TextFilter({
           size="icon"
           onClick={handleClear}
           className="absolute right-0 top-0 h-full w-8 hover:bg-transparent"
-          aria-label="Clear filter"
+          aria-label={tFilter("clearFilter")}
           data-testid={`text-filter-clear-${column.db_column_name}`}
         >
           <X className="h-4 w-4" />

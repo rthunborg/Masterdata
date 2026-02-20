@@ -91,9 +91,9 @@ describe('Story 20.3: DateFilter', () => {
       />
     );
 
-    expect(screen.getByText('Date Range')).toBeInTheDocument();
-    expect(screen.getByText('From')).toBeInTheDocument();
-    expect(screen.getByText('To')).toBeInTheDocument();
+    expect(screen.getByText('Datumintervall')).toBeInTheDocument();
+    expect(screen.getByText('Från')).toBeInTheDocument();
+    expect(screen.getByText('Till')).toBeInTheDocument();
     expect(screen.getByTestId(`date-filter-from-${mockColumn.db_column_name}`)).toBeInTheDocument();
     expect(screen.getByTestId(`date-filter-to-${mockColumn.db_column_name}`)).toBeInTheDocument();
   });
@@ -113,8 +113,8 @@ describe('Story 20.3: DateFilter', () => {
     const fromButton = screen.getByTestId(`date-filter-from-${mockColumn.db_column_name}`);
     const toButton = screen.getByTestId(`date-filter-to-${mockColumn.db_column_name}`);
     
-    expect(fromButton).toHaveTextContent('Pick date');
-    expect(toButton).toHaveTextContent('Pick date');
+    expect(fromButton).toHaveTextContent('Välj datum');
+    expect(toButton).toHaveTextContent('Välj datum');
   });
 
   it('should display selected From date', () => {
@@ -208,7 +208,7 @@ describe('Story 20.3: DateFilter', () => {
     );
 
     const errorMessage = screen.getByTestId(`date-filter-error-${mockColumn.db_column_name}`);
-    expect(errorMessage).toHaveTextContent('"From" date must be before "To" date');
+    expect(errorMessage).toHaveTextContent('"Från"-datum måste vara före "Till"-datum.');
   });
 
   it('should render list of available dates as checkboxes', () => {
@@ -223,7 +223,7 @@ describe('Story 20.3: DateFilter', () => {
       />
     );
 
-    expect(screen.getByText('Or select specific dates:')).toBeInTheDocument();
+    expect(screen.getByText('Eller välj specifika datum:')).toBeInTheDocument();
     expect(screen.getByText(/Jan 15, 2024 - OMC/)).toBeInTheDocument();
     expect(screen.getByText(/Feb 20, 2024 - OMC/)).toBeInTheDocument();
     expect(screen.getByText(/Mar 25, 2024 - OMC/)).toBeInTheDocument();
@@ -325,6 +325,6 @@ describe('Story 20.3: DateFilter', () => {
       />
     );
 
-    expect(screen.queryByText('Or select specific dates:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Eller välj specifika datum:')).not.toBeInTheDocument();
   });
 });

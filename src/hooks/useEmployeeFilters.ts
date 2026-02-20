@@ -140,11 +140,19 @@ export function useEmployeeFilters({
   const setFilters = useCallback(
     (filters: FilterState[]) => {
       setActiveFilters(filters);
-      if (enableUrlSync) {
-        debouncedUpdateURL(filters);
+      if (enableUrlSync && router && searchParams) {
+        if (filters.length === 0) {
+          debouncedUpdateURL.cancel();
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete("filters");
+          const newUrl = params.toString() ? `?${params.toString()}` : "";
+          router.push(newUrl, { scroll: false });
+        } else {
+          debouncedUpdateURL(filters);
+        }
       }
     },
-    [enableUrlSync, debouncedUpdateURL]
+    [enableUrlSync, router, searchParams, debouncedUpdateURL]
   );
 
   // Apply or update a single filter

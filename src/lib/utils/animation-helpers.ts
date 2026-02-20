@@ -21,29 +21,45 @@ export function highlightRow(
  * Debounces a function call
  * @param func - Function to debounce
  * @param wait - Wait time in milliseconds
- * @returns Debounced function with cancel method
+ * @returns Debounced function with cancel and flush methods
  */
 export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   wait: number
-): T & { cancel: () => void } {
+): T & { cancel: () => void; flush: () => void } {
   let timeout: NodeJS.Timeout | null = null;
+  let lastArgs: Parameters<T> | null = null;
 
   const debounced = function (...args: Parameters<T>) {
-    
+    lastArgs = args;
     if (timeout) {
       clearTimeout(timeout);
     }
-    
     timeout = setTimeout(() => {
-      func(...args);
+      if (lastArgs !== null) {
+        func(...lastArgs);
+        lastArgs = null;
+      }
+      timeout = null;
     }, wait);
-  } as T & { cancel: () => void };
+  } as T & { cancel: () => void; flush: () => void };
 
   debounced.cancel = () => {
     if (timeout) {
       clearTimeout(timeout);
       timeout = null;
+    }
+    lastArgs = null;
+  };
+
+  debounced.flush = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+    if (lastArgs !== null) {
+      func(...lastArgs);
+      lastArgs = null;
     }
   };
 

@@ -9,10 +9,14 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { FilterPanel } from "@/components/dashboard/FilterPanel/FilterPanel";
+import { SaveFilterDialog } from "@/components/dashboard/FilterPanel/SaveFilterDialog";
+import { Button } from "@/components/ui/button";
+import { useSavedFilters } from "@/hooks/useSavedFilters";
 import type { ColumnConfig } from "@/lib/types/column-config";
 import type { FilterState } from "@/lib/types/filter";
 
@@ -121,10 +125,11 @@ describe("Story 20.6: Saved Filters Integration", () => {
       },
     });
 
-    // Mock GET /api/users/filters - returns saved filters
+    // Mock GET /api/users/filters - returns saved filters (match relative or absolute URL)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global.fetch as any).mockImplementation((url: string, options?: any) => {
-      if (url === "/api/users/filters" && (!options || options.method === "GET" || !options.method)) {
+      const isGetFilters = typeof url === "string" && url.includes("/api/users/filters") && !url.includes("/api/users/filters/");
+      if (isGetFilters && (!options || options?.method === "GET" || !options?.method)) {
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -133,7 +138,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
       }
 
       // Mock POST /api/users/filters
-      if (url === "/api/users/filters" && options?.method === "POST") {
+      if (typeof url === "string" && url.includes("/api/users/filters") && !url.includes("/api/users/filters/") && options?.method === "POST") {
         const body = JSON.parse(options.body);
         const newFilter = {
           id: "filter-new",
@@ -150,8 +155,8 @@ describe("Story 20.6: Saved Filters Integration", () => {
         });
       }
 
-      // Mock DELETE /api/users/filters/:id
-      if (url.startsWith("/api/users/filters/") && options?.method === "DELETE") {
+      // Mock DELETE /api/users/filters/:id (match relative or absolute URL)
+      if (typeof url === "string" && url.includes("/api/users/filters/") && options?.method === "DELETE") {
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -167,9 +172,19 @@ describe("Story 20.6: Saved Filters Integration", () => {
     const onFiltersChange = vi.fn();
     const onClose = vi.fn();
 
-    return {
-      ...render(
-        <QueryClientProvider client={queryClient}>
+    function PanelWithSaveDialog() {
+      const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
+      const { saveFilter } = useSavedFilters();
+      return (
+        <>
+          {activeFilters.length > 0 && (
+            <Button
+              data-testid="save-filter-button"
+              onClick={() => setSaveDialogOpen(true)}
+            >
+              Spara filter
+            </Button>
+          )}
           <FilterPanel
             isOpen={true}
             onClose={onClose}
@@ -178,6 +193,24 @@ describe("Story 20.6: Saved Filters Integration", () => {
             onFiltersChange={onFiltersChange}
             importantDates={[]}
           />
+          <SaveFilterDialog
+            open={saveDialogOpen}
+            onOpenChange={setSaveDialogOpen}
+            activeFilters={activeFilters}
+            columnConfigs={mockColumns}
+            onSave={async (name) => {
+              await saveFilter({ name, filters: activeFilters });
+              setSaveDialogOpen(false);
+            }}
+          />
+        </>
+      );
+    }
+
+    return {
+      ...render(
+        <QueryClientProvider client={queryClient}>
+          <PanelWithSaveDialog />
         </QueryClientProvider>
       ),
       onFiltersChange,
@@ -188,15 +221,11 @@ describe("Story 20.6: Saved Filters Integration", () => {
   it("loads and displays saved filters in dropdown", async () => {
     renderFilterPanel();
 
-    // Wait for saved filters to load
-    await waitFor(() => {
-      expect(screen.getByText("My Saved Filters")).toBeInTheDocument();
-    });
-
-    // Open saved filters dropdown
-    const dropdown = screen.getByRole("combobox", {
-      name: /select a saved filter/i,
-    });
+    // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
+    const dropdown = await waitFor(
+      () => screen.getByRole("combobox", { name: /välj ett sparat filter/i }),
+      { timeout: 3000 }
+    );
     await userEvent.click(dropdown);
 
     // Verify saved filters appear (use getAllByText for multiple matches)
@@ -207,7 +236,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
     });
 
     // Verify filter count
-    expect(screen.getByText("2 saved filters")).toBeInTheDocument();
+    expect(screen.getByText("2 sparade filter")).toBeInTheDocument();
   });
 
   it("saves a new filter when user clicks Save Filter button", async () => {
@@ -220,7 +249,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Wait for component to load
     await waitFor(() => {
-      expect(screen.getByText("Filter Employees")).toBeInTheDocument();
+      expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
     });
 
     // Click Save Filter button using test-id
@@ -229,15 +258,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Dialog should open
     await waitFor(() => {
-      expect(screen.getByText(/give this filter combination a name/i)).toBeInTheDocument();
+      expect(screen.getByText(/ge denna filterkombination ett namn/i)).toBeInTheDocument();
     });
 
     // Type filter name
-    const input = screen.getByLabelText("Filter Name");
+    const input = screen.getByLabelText("Filternamn");
     await userEvent.type(input, "My Test Filter");
 
     // Click Save in dialog (use getAllByRole and find the enabled one)
-    const saveButtons = screen.getAllByRole("button", { name: /^save filter$/i });
+    const saveButtons = screen.getAllByRole("button", { name: /^spara filter$/i });
     const dialogSaveButton = saveButtons.find(btn => !btn.hasAttribute("disabled"));
     await userEvent.click(dialogSaveButton!);
 
@@ -261,15 +290,11 @@ describe("Story 20.6: Saved Filters Integration", () => {
   it("applies saved filter when selected from dropdown", async () => {
     const { onFiltersChange } = renderFilterPanel();
 
-    // Wait for saved filters to load
-    await waitFor(() => {
-      expect(screen.getByText("My Saved Filters")).toBeInTheDocument();
-    });
-
-    // Open dropdown
-    const dropdown = screen.getByRole("combobox", {
-      name: /select a saved filter/i,
-    });
+    // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
+    const dropdown = await waitFor(
+      () => screen.getByRole("combobox", { name: /välj ett sparat filter/i }),
+      { timeout: 3000 }
+    );
     await userEvent.click(dropdown);
 
     // Select "New Hires" filter - use more specific selector
@@ -296,20 +321,16 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     renderFilterPanel(activeFilters);
 
-    // Wait for saved filters to load
-    await waitFor(() => {
-      expect(screen.getByText("My Saved Filters")).toBeInTheDocument();
-    });
-
-    // Open dropdown
-    const dropdown = screen.getByRole("combobox", {
-      name: /select a saved filter/i,
-    });
+    // Wait for saved filters to load (dropdown only appears when savedFilters.length > 0)
+    const dropdown = await waitFor(
+      () => screen.getByRole("combobox", { name: /välj ett sparat filter/i }),
+      { timeout: 3000 }
+    );
     await userEvent.click(dropdown);
 
     // Verify "current" indicator appears for matching filter
     await waitFor(() => {
-      const currentLabels = screen.getAllByText("current");
+      const currentLabels = screen.getAllByText("aktuell");
       expect(currentLabels.length).toBeGreaterThan(0);
     });
   });
@@ -323,15 +344,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
     // Wait for saved filters to load
     await waitFor(
       () => {
-        expect(screen.getByText("My Saved Filters")).toBeInTheDocument();
-        expect(screen.getByText("2 saved filters")).toBeInTheDocument();
+        expect(screen.getByText("Mina sparade filter")).toBeInTheDocument();
+        expect(screen.getByText("2 sparade filter")).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
     // Verify the saved filters dropdown component has the delete functionality
     // by checking that saved filters are displayed
-    const savedFiltersText = screen.getByText("2 saved filters");
+    const savedFiltersText = screen.getByText("2 sparade filter");
     expect(savedFiltersText).toBeInTheDocument();
 
     // Note: Full E2E test of delete button interaction is complex due to Radix UI Select portals
@@ -341,7 +362,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
     // 3. Manual QA in development
     
     // Verify that the SavedFiltersDropdown component is rendered with delete handlers
-    expect(screen.getByLabelText("Select a saved filter")).toBeInTheDocument();
+    expect(screen.getByLabelText("Välj ett sparat filter")).toBeInTheDocument();
     
     // Test the delete mutation directly by calling it
     const { useSavedFilters } = await import("@/hooks/useSavedFilters");
@@ -362,15 +383,19 @@ describe("Story 20.6: Saved Filters Integration", () => {
   });
 
   it("shows error when saving filter with duplicate name", async () => {
-    const { toast } = await import("sonner");
     const activeFilters: FilterState[] = [
       { columnId: "col-1", type: "text", textValue: "Test" },
     ];
 
-    // Mock duplicate name error
+    // Mock duplicate name error (match URL like beforeEach: include path for relative or absolute)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global.fetch as any).mockImplementation((url: string, options?: any) => {
-      if (url === "/api/users/filters" && options?.method === "POST") {
+      const isPostFilters =
+        typeof url === "string" &&
+        url.includes("/api/users/filters") &&
+        !url.includes("/api/users/filters/") &&
+        options?.method === "POST";
+      if (isPostFilters) {
         return Promise.resolve({
           ok: false,
           status: 409,
@@ -378,38 +403,45 @@ describe("Story 20.6: Saved Filters Integration", () => {
             Promise.resolve({ error: "A filter with this name already exists" }),
         });
       }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ data: mockSavedFilters }),
-      });
+      const isGetFilters =
+        typeof url === "string" &&
+        url.includes("/api/users/filters") &&
+        !url.includes("/api/users/filters/") &&
+        (!options || options?.method !== "POST");
+      if (isGetFilters) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ data: mockSavedFilters }),
+        });
+      }
+      return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
     });
 
     renderFilterPanel(activeFilters);
 
     // Wait for component to load
     await waitFor(() => {
-      expect(screen.getByText("Filter Employees")).toBeInTheDocument();
+      expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
     });
 
-    // Click Save Filter button
-    const saveButton = screen.getByRole("button", {
-      name: /save current filters/i,
-    });
+    // Click Save Filter button (outside panel, next to Rensa filter)
+    const saveButton = screen.getByTestId("save-filter-button");
     await userEvent.click(saveButton);
 
     // Enter duplicate name
-    const input = await screen.findByLabelText("Filter Name");
+    const input = await screen.findByLabelText("Filternamn");
     await userEvent.type(input, "New Hires");
 
-    // Click Save
-    const dialogSaveButton = screen.getByRole("button", { name: /^save filter$/i });
+    // Click Save in the save-filter dialog (not the toolbar or filter panel; there are two dialogs when this is open)
+    const dialogs = screen.getAllByRole("dialog");
+    const saveDialog = dialogs.find((d) => within(d).queryByLabelText("Filternamn") != null) ?? dialogs[1];
+    const dialogSaveButton = within(saveDialog).getByRole("button", { name: /^spara filter$/i });
     await userEvent.click(dialogSaveButton);
 
-    // Verify error toast
+    // Verify duplicate-name error is shown in the dialog (translated message)
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(
-        "A filter with this name already exists"
-      );
+      expect(screen.getByText("Ett filter med det här namnet finns redan.")).toBeInTheDocument();
     });
   });
 
@@ -426,16 +458,16 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     // Dialog should open
     await waitFor(() => {
-      expect(screen.getByText(/give this filter combination a name/i)).toBeInTheDocument();
+      expect(screen.getByText(/ge denna filterkombination ett namn/i)).toBeInTheDocument();
     });
 
     // Save button should be disabled when input is empty
-    const saveButtons = screen.getAllByRole("button", { name: /^save filter$/i });
+    const saveButtons = screen.getAllByRole("button", { name: /^spara filter$/i });
     const dialogSaveButton = saveButtons.find(btn => btn.hasAttribute("disabled"));
     expect(dialogSaveButton).toBeDisabled();
 
     // Type whitespace only
-    const input = screen.getByLabelText("Filter Name");
+    const input = screen.getByLabelText("Filternamn");
     await userEvent.type(input, "   ");
 
     // Save button should still be disabled
