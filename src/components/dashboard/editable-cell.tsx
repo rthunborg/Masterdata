@@ -874,7 +874,7 @@ export function EditableCell({
                   size="sm"
                   className="w-full justify-center text-muted-foreground"
                   onClick={() => {
-                    setEditValue(null);
+                    setEditValue("");
                     setShowDatePicker(false);
                     setTimeout(() => {
                       onSave(employeeId, field, null).catch((err) => {
