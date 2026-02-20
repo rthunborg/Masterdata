@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       .order("name");
 
     if (error) {
-      console.error("[GET /api/users/filters] Database error:", error);
+      console.error("[GET /api/users/filters] Databasfel:", error);
       throw error;
     }
 
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
           { status: 409 }
         );
       }
-      console.error("[POST /api/users/filters] Database error:", error);
+      console.error("[POST /api/users/filters] Databasfel:", error);
       throw error;
     }
 

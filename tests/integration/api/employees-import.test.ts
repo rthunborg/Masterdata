@@ -326,14 +326,14 @@ John,Doe,19850315-1234,john@example.com,2025-13-45`;
 John,Doe,19850315-1234,john@example.com,2025-01-15`;
 
     vi.mocked(auth.requireEmployeeManagerAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       NextResponse.json(
         {
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         },
         { status: 403 }

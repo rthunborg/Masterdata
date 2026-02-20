@@ -52,9 +52,9 @@ export function useAvailableDates(column: ColumnConfig, enabled = true) {
         const result = await response.json();
         setDates(result.data || []);
       } catch (err) {
-        console.error("Error fetching available dates:", err);
+        console.error("Misslyckades att hämta tillgängliga datum:", err);
         if (isMounted) {
-          setError(err instanceof Error ? err : new Error("Unknown error"));
+          setError(err instanceof Error ? err : new Error("Okänt fel"));
           setDates([]);
         }
       } finally {

@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Login API error:", error);
+    console.error("Login API fel:", error);
     
     return NextResponse.json(
       {

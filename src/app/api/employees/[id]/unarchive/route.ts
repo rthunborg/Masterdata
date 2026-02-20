@@ -32,7 +32,7 @@ export async function POST(
     });
   } catch (error) {
     // Handle not found error
-    if (error instanceof Error && error.message.includes("not found")) {
+    if (error instanceof Error && (error.message.includes("not found") || error.message.includes("hittades inte") || error.message.includes("saknas"))) {
       return NextResponse.json(
         {
           error: {

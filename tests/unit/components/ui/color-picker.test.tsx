@@ -102,14 +102,14 @@ describe('ColorPicker Component', () => {
       // Invalid hex
       fireEvent.change(input, { target: { value: 'invalid' } });
       await waitFor(() => {
-        expect(screen.getByText(/Invalid hex color format/i)).toBeInTheDocument();
+        expect(screen.getByText(/Ogiltigt hexfärgformat/i)).toBeInTheDocument();
       });
       expect(onChange).not.toHaveBeenCalled();
 
       // Valid hex
       fireEvent.change(input, { target: { value: '#FF0000' } });
       await waitFor(() => {
-        expect(screen.queryByText(/Invalid hex color format/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Ogiltigt hexfärgformat/i)).not.toBeInTheDocument();
       });
       expect(onChange).toHaveBeenCalledWith('#FF0000');
     });

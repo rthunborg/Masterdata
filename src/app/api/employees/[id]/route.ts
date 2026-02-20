@@ -55,7 +55,7 @@ export async function GET(
     });
   } catch (error) {
     // Handle not found error
-    if (error instanceof Error && error.message.includes("not found")) {
+    if (error instanceof Error && (error.message.includes("not found") || error.message.includes("hittades inte") || error.message.includes("saknas"))) {
       return NextResponse.json(
         {
           error: {
@@ -448,7 +448,7 @@ export async function PATCH(
     });
   } catch (error) {
     // Handle not found error
-    if (error instanceof Error && error.message.includes("not found")) {
+    if (error instanceof Error && (error.message.includes("not found") || error.message.includes("hittades inte") || error.message.includes("saknas"))) {
       return NextResponse.json(
         {
           error: {
@@ -560,7 +560,7 @@ export async function DELETE(
     });
   } catch (error) {
     // Handle not found error
-    if (error instanceof Error && error.message.includes("not found")) {
+    if (error instanceof Error && (error.message.includes("not found") || error.message.includes("hittades inte") || error.message.includes("saknas"))) {
       return NextResponse.json(
         {
           error: {

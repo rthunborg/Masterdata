@@ -23,13 +23,13 @@ export class ImportantDateRepository {
       const { data, error } = await query;
 
       if (error || !data) {
-        console.error("Error fetching important dates:", error);
+        console.error("Misslyckades att hämta viktiga datum:", error);
         return [];
       }
 
       return data;
     } catch (error) {
-      console.error("Unexpected error fetching important dates:", error);
+      console.error("Oväntat fel vid hämtning av viktiga datum:", error);
       return [];
     }
   }
@@ -45,13 +45,13 @@ export class ImportantDateRepository {
         .single();
 
       if (error || !data) {
-        console.error("Error fetching important date by id:", id, error);
+        console.error("Misslyckades att hämta viktigt datum by id:", id, error);
         return null;
       }
 
       return data;
     } catch (error) {
-      console.error("Unexpected error fetching important date by id:", id, error);
+      console.error("Oväntat fel vid hämtning av viktigt datum by id:", id, error);
       return null;
     }
   }
@@ -67,12 +67,12 @@ export class ImportantDateRepository {
         .single();
 
       if (error) {
-        console.error("Error creating important date:", error);
-        throw new Error("Failed to create important date");
+        console.error("Misslyckades att skapa viktigt datum:", error);
+        throw new Error("Misslyckades att skapa viktigt datum");
       }
 
       if (!importantDate) {
-        throw new Error("Failed to create important date: No data returned");
+        throw new Error("Misslyckades att skapa viktigt datum: Ingen data returnerad");
       }
 
       return importantDate;
@@ -82,8 +82,8 @@ export class ImportantDateRepository {
         throw error;
       }
       // Unexpected errors
-      console.error("Unexpected error creating important date:", error);
-      throw new Error("Failed to create important date");
+      console.error("Oväntat fel vid skapande av viktigt datum:", error);
+      throw new Error("Misslyckades att skapa viktigt datum");
     }
   }
 
@@ -91,7 +91,7 @@ export class ImportantDateRepository {
     try {
       // Validate at least one field provided
       if (Object.keys(data).length === 0) {
-        throw new Error("At least one field must be provided for update");
+        throw new Error("Minst ett fält måste vara angivet för uppdatering");
       }
 
       const supabase = await this.getSupabaseClient();
@@ -106,15 +106,15 @@ export class ImportantDateRepository {
       if (error) {
         // Check for not found (PGRST116 is PostgREST error code for no rows)
         if (error.code === "PGRST116") {
-          throw new Error(`Important date with ID ${id} not found`);
+          throw new Error(`Viktigt datum med ID ${id} hittades inte`);
         }
 
-        console.error("Error updating important date:", error);
-        throw new Error("Failed to update important date");
+        console.error("Misslyckades att uppdatera viktigt datum:", error);
+        throw new Error("Misslyckades att uppdatera viktigt datum");
       }
 
       if (!importantDate) {
-        throw new Error(`Important date with ID ${id} not found`);
+        throw new Error(`Viktigt datum med ID ${id} hittades inte`);
       }
 
       return importantDate;
@@ -124,8 +124,8 @@ export class ImportantDateRepository {
         throw error;
       }
       // Unexpected errors
-      console.error("Unexpected error updating important date:", error);
-      throw new Error("Failed to update important date");
+      console.error("Oväntat fel vid uppdatering av viktigt datum:", error);
+      throw new Error("Misslyckades att uppdatera viktigt datum");
     }
   }
 
@@ -141,8 +141,8 @@ export class ImportantDateRepository {
         .or(`omc_date.eq.${id},stena_date.eq.${id},pe3_date.eq.${id}`);
 
       if (checkError) {
-        console.error("Error checking employee assignments:", checkError);
-        throw new Error("Failed to check employee assignments for date");
+        console.error("Misslyckades att kontrollera anställda för datum:", checkError);
+        throw new Error("Misslyckades att kontrollera anställda för datum");
       }
 
       const assignmentCount = assignedEmployees?.length || 0;
@@ -179,11 +179,11 @@ export class ImportantDateRepository {
       if (error) {
         // Check for not found (PGRST116 is PostgREST error code for no rows)
         if (error.code === "PGRST116") {
-          throw new Error(`Important date with ID ${id} not found`);
+          throw new Error(`Viktigt datum med ID ${id} hittades inte`);
         }
 
-        console.error("Error deleting important date:", error);
-        throw new Error("Failed to delete important date");
+        console.error("Misslyckades att ta bort viktigt datum:", error);
+        throw new Error("Misslyckades att ta bort viktigt datum");
       }
     } catch (error) {
       // Re-throw our custom errors
@@ -191,8 +191,8 @@ export class ImportantDateRepository {
         throw error;
       }
       // Unexpected errors
-      console.error("Unexpected error deleting important date:", error);
-      throw new Error("Failed to delete important date");
+      console.error("Oväntat fel vid borttagning av viktigt datum:", error);
+      throw new Error("Misslyckades att ta bort viktigt datum");
     }
   }
 
@@ -211,7 +211,7 @@ export class ImportantDateRepository {
         .select();
 
       if (error) {
-        console.error("Error batch inserting important dates:", error);
+          console.error("Misslyckades att batch skapa viktiga datum:", error);
         
         // If it's a duplicate error (PostgreSQL code 23505), handle gracefully
         if (error.code === "23505") {
@@ -225,7 +225,7 @@ export class ImportantDateRepository {
           };
         }
 
-        throw new Error("Failed to batch insert important dates");
+        throw new Error("Misslyckades att batch skapa viktiga datum");
       }
 
       return {
@@ -239,8 +239,8 @@ export class ImportantDateRepository {
         throw error;
       }
       // Unexpected errors
-      console.error("Unexpected error batch inserting important dates:", error);
-      throw new Error("Failed to batch insert important dates");
+      console.error("Oväntat fel vid batch skapande av viktiga datum:", error);
+      throw new Error("Misslyckades att batch skapa viktiga datum");
     }
   }
 }

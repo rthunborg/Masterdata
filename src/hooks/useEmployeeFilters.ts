@@ -55,13 +55,13 @@ export function useEmployeeFilters({
         if (!isMounted) return;
 
         if (!response.ok) {
-          throw new Error("Failed to fetch important dates");
+          throw new Error("Misslyckades att hämta viktiga datum");
         }
 
         const result = await response.json();
         setImportantDates(result.data || []);
       } catch (error) {
-        console.error("Error fetching important dates:", error);
+        console.error("Misslyckades att hämta viktiga datum:", error);
         if (isMounted) setImportantDates([]);
       } finally {
         if (isMounted) {

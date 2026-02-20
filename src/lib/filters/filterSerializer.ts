@@ -27,7 +27,7 @@ export function serializeFilters(filters: FilterState[]): string {
       return Buffer.from(json).toString("base64");
     }
   } catch (error) {
-    console.error("Failed to serialize filters:", error);
+    console.error("Misslyckades att serialisera filter:", error);
     return "";
   }
 }
@@ -69,7 +69,7 @@ export function deserializeFilters(encoded: string): FilterState[] {
 
     return validFilters;
   } catch (error) {
-    console.error("Failed to deserialize filters:", error);
+    console.error("Misslyckades att deserialisera filter:", error);
     return [];
   }
 }

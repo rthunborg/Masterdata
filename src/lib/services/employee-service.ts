@@ -133,11 +133,11 @@ export const employeeService = {
 
       // Handle forbidden error
       if (response.status === 403) {
-        throw new Error("You do not have permission to archive employees");
+        throw new Error("Du saknar behörighet att arkivera anställda");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to archive employee");
+      throw new Error(error.error?.message || "Misslyckades att arkivera anställd");
     }
   },
 
@@ -159,11 +159,11 @@ export const employeeService = {
 
       // Handle forbidden error
       if (response.status === 403) {
-        throw new Error("You do not have permission to unarchive employees");
+        throw new Error("Du saknar behörighet att avarkivera anställda");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to unarchive employee");
+      throw new Error(error.error?.message || "Misslyckades att avarkivera anställd");
     }
   },
 
@@ -198,11 +198,11 @@ export const employeeService = {
 
       // Handle forbidden error
       if (response.status === 403) {
-        throw new Error("You do not have permission to terminate employees");
+        throw new Error("Du saknar behörighet att avsluta anställda");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to terminate employee");
+      throw new Error(error.error?.message || "Misslyckades att avsluta anställd");
     }
 
     // Story 8.14 AC 6: Return termination summary for toast display
@@ -231,11 +231,11 @@ export const employeeService = {
 
       // Handle forbidden error
       if (response.status === 403) {
-        throw new Error("You do not have permission to reactivate employees");
+        throw new Error("Du saknar behörighet att återaktivera anställda");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to reactivate employee");
+      throw new Error(error.error?.message || "Misslyckades att återaktivera anställd");
     }
     
     // Story 8.13 AC 7: Return warnings from reactivation
@@ -251,11 +251,11 @@ export const employeeService = {
       
       // Handle not found error
       if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message || `Employee with ID ${id} not found`);
+        throw new Error(error.error.message || `Anställd med ID ${id} hittades inte`);
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to fetch employee");
+      throw new Error(error.error?.message || "Misslyckades att hämta anställd");
     }
 
     const json = await response.json();
@@ -285,11 +285,11 @@ export const employeeService = {
 
       // Handle forbidden error
       if (response.status === 403) {
-        throw new Error("You do not have permission to import employees");
+        throw new Error("Du saknar behörighet att importera anställda");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to import employees");
+      throw new Error(error.error?.message || "Misslyckades att importera anställda");
     }
 
     const json = await response.json();

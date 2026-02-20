@@ -13,12 +13,12 @@ export async function POST() {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      console.error("Logout error:", error);
+      console.error("Logout fel:", error);
       return NextResponse.json(
         {
           error: {
             code: "LOGOUT_FAILED",
-            message: "Failed to log out",
+            message: "Misslyckades att logga ut",
           },
         } as APIResponse,
         { status: 500 }
@@ -28,19 +28,19 @@ export async function POST() {
     // Return successful logout response
     const response: APIResponse<LogoutResponse> = {
       data: {
-        message: "Logged out successfully",
+        message: "Utloggad",
       },
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Logout API error:", error);
+    console.error("Logout API fel:", error);
     
     return NextResponse.json(
       {
         error: {
           code: "INTERNAL_ERROR",
-          message: "An internal error occurred",
+          message: "Ett internt fel uppstod",
         },
       } as APIResponse,
       { status: 500 }

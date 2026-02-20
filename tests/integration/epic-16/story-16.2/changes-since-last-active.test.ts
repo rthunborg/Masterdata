@@ -124,14 +124,14 @@ describe("GET /api/employees/changes-since-last-active", () => {
 
     it("should require authentication", async () => {
       vi.mocked(auth.requireAuthAPI).mockRejectedValue(
-        new Error("Authentication required")
+        new Error("Autentisering krävs")
       );
       vi.mocked(auth.createErrorResponse).mockReturnValue(
         new Response(
           JSON.stringify({
             error: {
               code: "UNAUTHORIZED",
-              message: "Authentication required",
+              message: "Autentisering krävs",
             },
           }),
           { status: 401 }

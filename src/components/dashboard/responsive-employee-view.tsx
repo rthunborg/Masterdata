@@ -113,7 +113,7 @@ export function ResponsiveEmployeeView({
       setArchiveDialogOpen(false);
       onEmployeeUpdated?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to archive employee';
+      const message = error instanceof Error ? error.message : 'Misslyckades att arkivera anställd';
       toast.error(message);
     } finally {
       setIsArchiving(false);
@@ -132,7 +132,7 @@ export function ResponsiveEmployeeView({
       setUnarchiveDialogOpen(false);
       onEmployeeUpdated?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to unarchive employee';
+      const message = error instanceof Error ? error.message : 'Misslyckades att avarkivera anställd';
       toast.error(message);
     } finally {
       setIsArchiving(false);

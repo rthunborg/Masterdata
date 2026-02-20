@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "VALIDATION_ERROR",
-            message: "No file uploaded",
+            message: "Ingen fil uppladdad",
             timestamp: new Date().toISOString(),
           },
         },
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "VALIDATION_ERROR",
-            message: "Column mapping is required",
+            message: "Kolumnmappning är obligatorisk",
             timestamp: new Date().toISOString(),
           },
         },
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "VALIDATION_ERROR",
-            message: "CSV file is empty or could not be parsed",
+            message: "CSV-filen är tom eller kunde inte tolkas",
             timestamp: new Date().toISOString(),
           },
         },
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "VALIDATION_ERROR",
-            message: "Only PE3 dates can be imported via this feature",
+            message: "Endast PE3 datum kan importeras via denna funktion",
             timestamp: new Date().toISOString(),
           },
         },
@@ -128,9 +128,6 @@ export async function POST(request: NextRequest) {
 
     // Log import metadata for auditing
     const userOverride = !!((deadlineSubmit && formData.get("deadlineSubmitOverride")) || (deadlineCancel && formData.get("deadlineCancelOverride")));
-    console.log(
-      `[PE3 Import] Importing ${mappedRows.length} dates | Deadline Submit: ${deadlineSubmit || "N/A"} | Deadline Cancel: ${deadlineCancel || "N/A"} | User Override: ${userOverride ? "Yes" : "No"}`
-    );
 
     // Validate rows
     const { valid, invalid } = validateImportantDatesCSV(mappedRows);
@@ -161,7 +158,7 @@ export async function POST(request: NextRequest) {
           const weekDisplay = weekNum === "null" ? "null" : weekNum;
           errors.push({
             row: index + 2,
-            message: `Duplicate date entry already exists in database (Week ${weekDisplay}, Year ${row.year}, Category ${row.category})`,
+            message: `Dublett datumpost redan finns i databasen (Vecka ${weekDisplay}, År ${row.year}, Kategori ${row.category})`,
           });
           skipped++;
         } else {
@@ -179,12 +176,12 @@ export async function POST(request: NextRequest) {
           skipped += result.skipped;
           errors.push(...result.errors);
         } catch (error) {
-          console.error("Error during batch insert:", error);
+          console.error("Misslyckades att importera datum:", error);
           return NextResponse.json(
             {
               error: {
                 code: "INTERNAL_ERROR",
-                message: "Failed to import dates",
+                message: "Misslyckades att importera datum",
                 timestamp: new Date().toISOString(),
               },
             },

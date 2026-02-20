@@ -72,7 +72,7 @@ export async function requireRole(allowedRoles: UserRole[]): Promise<SessionUser
   const user = await requireAuth();
   
   if (!allowedRoles.includes(user.role as UserRole)) {
-    throw new Error("Insufficient permissions");
+    throw new Error("Saknar behörighet");
   }
   
   return user;
@@ -94,7 +94,7 @@ export async function requireAuthAPI(request?: NextRequest): Promise<SessionUser
     : await getUserFromSession();
   
   if (!user) {
-    throw new Error("Authentication required");
+    throw new Error("Autentisering krävs");
   }
   
   return user;
@@ -161,7 +161,7 @@ export async function requireRoleAPI(allowedRoles: UserRole[], request?: NextReq
   const user = await requireAuthAPI(request);
   
   if (!allowedRoles.includes(user.role as UserRole)) {
-    throw new Error("Insufficient permissions");
+    throw new Error("Saknar behörighet");
   }
   
   return user;
@@ -211,10 +211,10 @@ export function createErrorResponse(error: unknown) {
     console.error("Error message:", error.message);
     console.error("Error stack:", error.stack);
     
-    if (error.message === "Authentication required") {
+    if (error.message === "Autentisering krävs") {
       return createUnauthorizedResponse();
     }
-    if (error.message === "Insufficient permissions") {
+    if (error.message === "Saknar behörighet") {
       return createForbiddenResponse();
     }
     

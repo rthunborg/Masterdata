@@ -263,13 +263,13 @@ describe("importantDateService", () => {
         json: async () => ({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
       } as Response);
 
       await expect(importantDateService.delete("date-1")).rejects.toThrow(
-        "You do not have permission to delete important dates"
+        "Du saknar behörighet att ta bort viktiga datum"
       );
     });
   });

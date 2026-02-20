@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
       .order("date_value", { ascending: true });
 
     if (error) {
-      console.error("Error fetching available PE3 dates:", error);
-      throw new Error("Failed to fetch available PE3 dates");
+      console.error("Misslyckades att hämta tillgängliga PE3 datum:", error);
+      throw new Error("Misslyckades att hämta tillgängliga PE3 datum");
     }
 
     // Filter out dates that are assigned to non-archived employees
@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
       .eq("is_archived", false);
 
     if (assignedError) {
-      console.error("Error checking assigned PE3 dates:", assignedError);
-      throw new Error("Failed to check assigned PE3 dates");
+      console.error("Misslyckades att kontrollera tillgängliga PE3 datum:", assignedError);
+      throw new Error("Misslyckades att kontrollera tillgängliga PE3 datum");
     }
 
     // Create set of assigned PE3 date IDs for efficient lookup

@@ -272,7 +272,7 @@ describe("Story 13.7: Export Crew Ready API Integration", () => {
 
       expect(response.status).toBe(400);
       expect(json.error.code).toBe("NO_EMPLOYEES_SELECTED");
-      expect(json.error.message).toBe("No employees selected. Please select employees to export.");
+      expect(json.error.message).toBe("Inga anställda valda. Välj anställda att exportera.");
       
       // Verify no employees were updated
       expect(employeeRepository.update).not.toHaveBeenCalled();

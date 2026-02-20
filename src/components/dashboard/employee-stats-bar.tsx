@@ -31,7 +31,7 @@ export function EmployeeStatsBar({ refreshToken = 0, className }: EmployeeStatsB
 
       try {
         const res = await fetch("/api/employees/stats");
-        if (!res.ok) throw new Error("Failed to load employee stats");
+        if (!res.ok) throw new Error("Misslyckades att ladda anställda statistik");
         const json = (await res.json()) as { data: EmployeeStats };
         if (!cancelled) setStats(json.data);
       } catch {

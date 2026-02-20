@@ -37,7 +37,7 @@ vi.mock("@/lib/server/auth", () => ({
       JSON.stringify({
         error: {
           code: "FORBIDDEN",
-          message: message || "Insufficient permissions",
+          message: message || "Saknar behörighet",
         },
       }),
       { status: 403 }
@@ -240,14 +240,14 @@ describe("DELETE /api/columns/[id]", () => {
 
   it("should return 401 for unauthenticated requests", async () => {
     vi.mocked(auth.requireAuthAPI).mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required",
+            message: "Autentisering krävs",
           },
         }),
         { status: 401 }

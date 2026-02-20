@@ -55,8 +55,8 @@ export default function ImportantDatesPage() {
       setError(null);
       const data = await importantDateService.getAll();
       setDates(data);
-    } catch (err) {
-      console.error("Failed to fetch important dates:", err);
+      } catch (err) {
+        console.error("Failed to fetch important dates:", err);
       setError(
         err instanceof Error ? err.message : t('noDates')
       );

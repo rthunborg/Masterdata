@@ -64,7 +64,7 @@ export async function POST(
     }
 
     // Handle not found error
-    if (error instanceof Error && error.message.includes("not found")) {
+    if (error instanceof Error && (error.message.includes("not found") || error.message.includes("hittades inte") || error.message.includes("saknas"))) {
       return NextResponse.json(
         {
           error: {

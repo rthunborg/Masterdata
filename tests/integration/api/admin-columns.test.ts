@@ -116,7 +116,7 @@ vi.mock("@/lib/server/auth", () => ({
   requireHRAdminAPI: mockRequireHRAdminAPI,
   createErrorResponse: vi.fn((error) => {
     const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Authentication required") {
+    if (message === "Autentisering krävs") {
       return new Response(
         JSON.stringify({
           error: { code: "UNAUTHORIZED", message },
@@ -124,7 +124,7 @@ vi.mock("@/lib/server/auth", () => ({
         { status: 401 }
       );
     }
-    if (message === "Insufficient permissions") {
+    if (message === "Saknar behörighet") {
       return new Response(
         JSON.stringify({
           error: { code: "FORBIDDEN", message },
@@ -187,7 +187,7 @@ describe("GET /api/admin/columns", () => {
 
   it("returns 403 for non-admin roles (Sodexo)", async () => {
     mockRequireHRAdminAPI.mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
 
     const response = await GET();
@@ -195,12 +195,12 @@ describe("GET /api/admin/columns", () => {
 
     expect(response.status).toBe(403);
     expect(data.error.code).toBe("FORBIDDEN");
-    expect(data.error.message).toBe("Insufficient permissions");
+    expect(data.error.message).toBe("Saknar behörighet");
   });
 
   it("returns 401 for unauthenticated requests", async () => {
     mockRequireHRAdminAPI.mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
 
     const response = await GET();
@@ -290,7 +290,7 @@ describe("PATCH /api/admin/columns/[id]", () => {
 
   it("returns 403 for non-admin roles", async () => {
     mockRequireHRAdminAPI.mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
 
     const request = new NextRequest("http://localhost/api/admin/columns/col-1", {

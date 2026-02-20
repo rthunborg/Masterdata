@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import equal from "fast-deep-equal";
 import { useTranslations } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ interface SavedFiltersDropdownProps {
   activeFilters: FilterState[];
   onSelect: (filters: FilterState[]) => void;
   onDelete: (id: string) => Promise<void>;
+  isDeleting?: boolean;
 }
 
 /**
@@ -42,6 +43,7 @@ export function SavedFiltersDropdown({
   activeFilters,
   onSelect,
   onDelete,
+  isDeleting: isDeletingExternal = false,
 }: SavedFiltersDropdownProps) {
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export function SavedFiltersDropdown({
       }
       setDeleteId(null);
     } catch (error) {
-      console.error("Failed to delete filter:", error);
+      console.error("Misslyckades att ta bort filter:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -84,7 +86,12 @@ export function SavedFiltersDropdown({
   return (
     <>
       <div className="mb-4 space-y-2">
-        <Label htmlFor="saved-filters-select">{tFilter("mySavedFilters")}</Label>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="saved-filters-select">{tFilter("mySavedFilters")}</Label>
+          {isDeletingExternal && (
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+          )}
+        </div>
         {savedFilters.length === 0 ? (
           <p className="text-xs text-muted-foreground">
             {tFilter("noSavedFiltersYet")}

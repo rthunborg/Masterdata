@@ -64,13 +64,13 @@ export class EmployeeRepository {
       const { data, error } = await query;
 
       if (error || !data) {
-        console.error("Error fetching employees:", error);
+        console.error("Misslyckades att hämta anställda:", error);
         return [];
       }
 
       return data;
     } catch (error) {
-      console.error("Unexpected error fetching employees:", error);
+      console.error("Oväntat fel vid hämtning av anställda:", error);
       return [];
     }
   }
@@ -95,8 +95,8 @@ export class EmployeeRepository {
         .eq("is_archived", false);
 
       if (totalError) {
-        console.error("Error counting active employees:", totalError);
-        throw new Error("Failed to count active employees");
+        console.error("Misslyckades att räkna aktiva anställda:", totalError);
+        throw new Error("Misslyckades att räkna aktiva anställda");
       }
 
       const { count: crewedActiveCount, error: crewedError } = await supabase
@@ -106,8 +106,8 @@ export class EmployeeRepository {
         .eq("crewing_done", true);
 
       if (crewedError) {
-        console.error("Error counting crewed employees:", crewedError);
-        throw new Error("Failed to count crewed employees");
+        console.error("Misslyckades att räkna crewade anställda:", crewedError);
+        throw new Error("Misslyckades att räkna crewade anställda");
       }
 
       const totalActive = totalActiveCount ?? 0;
@@ -119,8 +119,8 @@ export class EmployeeRepository {
 
       return { totalActive, crewedActive, crewedPercent };
     } catch (error) {
-      console.error("Unexpected error fetching employee system stats:", error);
-      throw error instanceof Error ? error : new Error("Failed to fetch employee system stats");
+      console.error("Oväntat fel vid hämtning av anställda statistik:", error);
+      throw error instanceof Error ? error : new Error("Misslyckades att hämta anställda statistik");
     }
   }
 
@@ -135,13 +135,13 @@ export class EmployeeRepository {
         .single();
 
       if (error || !data) {
-        console.error("Error fetching employee by id:", id, error);
+        console.error("Misslyckades att hämta anställd by id:", id, error);
         return null;
       }
 
       return data;
     } catch (error) {
-      console.error("Unexpected error fetching employee by id:", id, error);
+      console.error("Oväntat fel vid hämtning av anställd by id:", id, error);
       return null;
     }
   }
@@ -162,7 +162,7 @@ export class EmployeeRepository {
           throw new Error(`Employee with SSN ${data.ssn} already exists`);
         }
         // Log full error details for debugging
-        console.error("Error creating employee:", {
+        console.error("Misslyckades att skapa anställd:", {
           code: error.code,
           message: error.message,
           details: error.details,
@@ -170,11 +170,11 @@ export class EmployeeRepository {
           data: JSON.stringify(data, null, 2),
         });
         // Include error code and message in thrown error for better debugging
-        throw new Error(`Failed to create employee: ${error.code} - ${error.message}`);
+        throw new Error(`Misslyckades att skapa anställd: ${error.code} - ${error.message}`);
       }
 
       if (!employee) {
-        throw new Error("Failed to create employee: No data returned");
+        throw new Error("Misslyckades att skapa anställd: Ingen data returnerad");
       }
 
       return employee;
@@ -185,7 +185,7 @@ export class EmployeeRepository {
       }
       // Unexpected errors
       console.error("Unexpected error creating employee:", error);
-      throw new Error("Failed to create employee");
+      throw new Error("Misslyckades att skapa anställd");
     }
   }
 
@@ -193,7 +193,7 @@ export class EmployeeRepository {
     try {
       // Validate at least one field provided
       if (Object.keys(data).length === 0) {
-        throw new Error("At least one field must be provided for update");
+        throw new Error("Minst en fält måste vara angivet för uppdatering");
       }
 
       const supabase = await this.getSupabaseClient();
@@ -208,7 +208,7 @@ export class EmployeeRepository {
       if (error) {
         // Check for not found (PGRST116 is PostgREST error code for no rows)
         if (error.code === "PGRST116") {
-          throw new Error(`Employee with ID ${id} not found`);
+          throw new Error(`Anställd med ID ${id} hittades inte`);
         }
 
         // Check for duplicate SSN error
@@ -216,23 +216,23 @@ export class EmployeeRepository {
           throw new Error(`Employee with SSN ${data.ssn} already exists`);
         }
 
-        console.error("Error updating employee:", error);
-        throw new Error("Failed to update employee");
+        console.error("Misslyckades att uppdatera anställd:", error);
+        throw new Error("Misslyckades att uppdatera anställd");
       }
 
       if (!employee) {
-        throw new Error(`Employee with ID ${id} not found`);
+        throw new Error(`Anställd med ID ${id} hittades inte`);
       }
 
       return employee;
     } catch (error) {
       // Re-throw our custom errors
       if (error instanceof Error) {
-        throw error;
+        throw error;  
       }
       // Unexpected errors
-      console.error("Unexpected error updating employee:", error);
-      throw new Error("Failed to update employee");
+      console.error("Oväntat fel vid uppdatering av anställd:", error);
+      throw new Error("Misslyckades att uppdatera anställd");
     }
   }
 
@@ -253,15 +253,15 @@ export class EmployeeRepository {
       if (error) {
         // Check for not found (PGRST116 is PostgREST error code for no rows)
         if (error.code === "PGRST116") {
-          throw new Error(`Employee with ID ${id} not found`);
+          throw new Error(`Anställd med ID ${id} saknas`);
         }
 
-        console.error("Error archiving employee:", error);
-        throw new Error("Failed to archive employee");
+        console.error("Misslyckades att arkivera anställd:", error);
+        throw new Error("Misslyckades att arkivera anställd");
       }
 
       if (!employee) {
-        throw new Error(`Employee with ID ${id} not found`);
+        throw new Error(`Anställd med ID ${id} saknas`);
       }
 
       return employee;
@@ -271,8 +271,8 @@ export class EmployeeRepository {
         throw error;
       }
       // Unexpected errors
-      console.error("Unexpected error archiving employee:", error);
-      throw new Error("Failed to archive employee");
+      console.error("Oväntat fel vid arkivering av anställd:", error);
+      throw new Error("Misslyckades att arkivera anställd");
     }
   }
 
@@ -293,15 +293,15 @@ export class EmployeeRepository {
       if (error) {
         // Check for not found (PGRST116 is PostgREST error code for no rows)
         if (error.code === "PGRST116") {
-          throw new Error(`Employee with ID ${id} not found`);
+          throw new Error(`Anställd med ID ${id} saknas`);
         }
 
         console.error("Error unarchiving employee:", error);
-        throw new Error("Failed to unarchive employee");
+        throw new Error("Misslyckades att avarkivera anställd");
       }
 
       if (!employee) {
-        throw new Error(`Employee with ID ${id} not found`);
+        throw new Error(`Anställd med ID ${id} saknas`);
       }
 
       return employee;
@@ -311,8 +311,8 @@ export class EmployeeRepository {
         throw error;
       }
       // Unexpected errors
-      console.error("Unexpected error unarchiving employee:", error);
-      throw new Error("Failed to unarchive employee");
+      console.error("Oväntat fel vid avarkivering av anställd:", error);
+      throw new Error("Misslyckades att avarkivera anställd");
     }
   }
 
@@ -330,11 +330,11 @@ export class EmployeeRepository {
         .in("id", ids);
 
       if (error) {
-        console.error("Error bulk updating archive status:", error);
-        throw new Error("Failed to bulk update status");
+        console.error("Misslyckades att bulk uppdatera arkiveringsstatus:", error);
+        throw new Error("Misslyckades att bulk uppdatera status");
       }
     } catch (error) {
-      console.error("Unexpected error in bulk archive update:", error);
+      console.error("Oväntat fel vid bulk uppdatering av arkiveringsstatus:", error);
       throw error;
     }
   }
@@ -364,13 +364,13 @@ export class EmployeeRepository {
         .select("id");
 
       if (error) {
-        console.error("Error anonymizing employees:", error);
-        throw new Error("Failed to anonymize employees");
+        console.error("Misslyckades att anonymisera anställda:", error);
+        throw new Error("Misslyckades att anonymisera anställda");
       }
 
       return data?.length ?? 0;
     } catch (error) {
-      console.error("Unexpected error in anonymization:", error);
+      console.error("Oväntat fel vid anonymisering av anställda:", error);
       throw error;
     }
   }
@@ -406,15 +406,15 @@ export class EmployeeRepository {
       if (error) {
         // Check for not found (PGRST116 is PostgREST error code for no rows)
         if (error.code === "PGRST116") {
-          throw new Error(`Employee with ID ${id} not found`);
+          throw new Error(`Anställd med ID ${id} saknas`);
         }
 
-        console.error("Error terminating employee:", error);
-        throw new Error("Failed to terminate employee");
+        console.error("Misslyckades att avsluta anställd:", error);
+        throw new Error("Misslyckades att avsluta anställd");
       }
 
       if (!employee) {
-        throw new Error(`Employee with ID ${id} not found`);
+        throw new Error(`Anställd med ID ${id} saknas`);
       }
 
       // Story 8.14 AC 10: Audit logging
@@ -422,7 +422,7 @@ export class EmployeeRepository {
       // Story 8.14 AC 6: Return termination summary for toast display
       return { employee, clearedDates, releasedSpots };
     } catch (error) {
-      console.error("Termination workflow failed:", error);
+      console.error("Misslyckades att avsluta anställd:", error);
       // Re-throw to ensure proper error handling
       throw error;
     }
@@ -452,15 +452,15 @@ export class EmployeeRepository {
     if (error) {
       // Check for not found (PGRST116 is PostgREST error code for no rows)
       if (error.code === "PGRST116") {
-        throw new Error(`Employee with ID ${id} not found`);
+        throw new Error(`Anställd med ID ${id} saknas`);
       }
 
-      console.error("Error reactivating employee:", error);
-      throw new Error("Failed to reactivate employee");
+      console.error("Misslyckades att återaktivera anställd:", error);
+        throw new Error("Misslyckades att återaktivera anställd");
     }
 
     if (!employee) {
-      throw new Error(`Employee with ID ${id} not found`);
+      throw new Error(`Anställd med ID ${id} saknas`);
     }
 
     return { employee, warnings };
@@ -555,20 +555,20 @@ export class EmployeeRepository {
       if (error) {
         // Check for not found (PGRST116 is PostgREST error code for no rows)
         if (error.code === "PGRST116") {
-          throw new Error(`Employee with ID ${id} not found`);
+          throw new Error(`Anställd med ID ${id} saknas`);
         }
 
-        console.error("Error deleting employee:", error);
-        throw new Error("Failed to delete employee");
+        console.error("Misslyckades att ta bort anställd:", error);
+        throw new Error("Misslyckades att ta bort anställd");
       }
     } catch (error) {
       // Re-throw known errors
-      if (error instanceof Error && error.message.includes("not found")) {
+      if (error instanceof Error && error.message.includes("saknas")) {
         throw error;
       }
       // Unexpected errors
-      console.error("Unexpected error deleting employee:", error);
-      throw new Error("Failed to delete employee");
+      console.error("Oväntat fel vid borttagning av anställd:", error);
+      throw new Error("Misslyckades att ta bort anställd");
     }
   }
 
@@ -607,7 +607,7 @@ export class EmployeeRepository {
         .order("changed_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching employee audit history:", error);
+        console.error("Misslyckades att hämta anställda granskningshistorik:", error);
         return [];
       }
 
@@ -623,7 +623,7 @@ export class EmployeeRepository {
         changedByEmail: (change.users as { email?: string | null })?.email || null,
       }));
     } catch (error) {
-      console.error("Unexpected error fetching employee audit history:", error);
+      console.error("Oväntat fel vid hämtning av anställda granskningshistorik:", error);
       return [];
     }
   }
@@ -692,7 +692,7 @@ export class EmployeeRepository {
         .order("changed_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching employee column changes:", error);
+        console.error("Misslyckades att hämta anställda kolumnändringar:", error);
         return [];
       }
 
@@ -711,7 +711,7 @@ export class EmployeeRepository {
         .eq("is_archived", false);
 
       if (employeesError) {
-        console.error("Error fetching employees for change filtering:", employeesError);
+        console.error("Misslyckades att hämta anställda för ändringsfiltrering:", employeesError);
         return [];
       }
 
@@ -762,7 +762,7 @@ export class EmployeeRepository {
         lastChangeAt: data.lastChangeAt.toISOString(),
       }));
     } catch (error) {
-      console.error("Unexpected error fetching changes since last active:", error);
+      console.error("Oväntat fel vid hämtning av ändringar sedan senast aktiv:", error);
       return [];
     }
   }

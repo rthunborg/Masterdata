@@ -42,7 +42,7 @@ export function FilterPanel({
 
   const tFilter = useTranslations("filter");
   // Story 20.6: Saved Filters integration
-  const { savedFilters, deleteFilter } = useSavedFilters();
+  const { savedFilters, deleteFilter, isDeleting: isDeletingFilter } = useSavedFilters();
 
   // Filter out non-filterable columns
   const filterableColumns = columnConfigs
@@ -192,6 +192,7 @@ export function FilterPanel({
             activeFilters={activeFilters}
             onSelect={handleApplySavedFilter}
             onDelete={handleDeleteFilter}
+            isDeleting={isDeletingFilter}
           />
 
           {/* Story 20.5: Active Filters List */}

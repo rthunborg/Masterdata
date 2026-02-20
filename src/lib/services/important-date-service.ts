@@ -99,11 +99,11 @@ export const importantDateService = {
 
       // Handle forbidden error
       if (response.status === 403) {
-        throw new Error("You do not have permission to delete important dates");
+        throw new Error("Du saknar behörighet att ta bort viktiga datum");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to delete important date");
+      throw new Error(error.error?.message || "Misslyckades att ta bort viktigt datum");
     }
   },
 
@@ -125,11 +125,11 @@ export const importantDateService = {
 
       // Handle forbidden error
       if (response.status === 403) {
-        throw new Error("You do not have permission to archive important dates");
+        throw new Error("Du saknar behörighet att arkivera viktiga datum");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to archive important date");
+      throw new Error(error.error?.message || "Misslyckades att arkivera viktigt datum");
     }
 
     const json = await response.json();
@@ -154,11 +154,11 @@ export const importantDateService = {
 
       // Handle forbidden error
       if (response.status === 403) {
-        throw new Error("You do not have permission to restore important dates");
+        throw new Error("Du saknar behörighet att återställa viktiga datum");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to restore important date");
+      throw new Error(error.error?.message || "Misslyckades att återställa viktigt datum");
     }
 
     const json = await response.json();
@@ -202,12 +202,12 @@ export const importantDateService = {
       // Handle forbidden error
       if (response.status === 403) {
         throw new Error(
-          "You do not have permission to import important dates"
+          "Du saknar behörighet att importera viktiga datum"
         );
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to import important dates");
+      throw new Error(error.error?.message || "Misslyckades att importera viktiga datum");
     }
 
     const json = await response.json();

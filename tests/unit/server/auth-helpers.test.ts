@@ -69,7 +69,7 @@ describe("Auth Helper Functions", () => {
         error: null,
       });
 
-      await expect(requireAuthAPI()).rejects.toThrow("Authentication required");
+      await expect(requireAuthAPI()).rejects.toThrow("Autentisering krävs");
     });
   });
 
@@ -128,7 +128,7 @@ describe("Auth Helper Functions", () => {
         }),
       });
 
-      await expect(requireRoleAPI([UserRole.HR_ADMIN])).rejects.toThrow("Insufficient permissions");
+      await expect(requireRoleAPI([UserRole.HR_ADMIN])).rejects.toThrow("Saknar behörighet");
     });
 
     it("should allow multiple roles", async () => {
@@ -168,7 +168,7 @@ describe("Auth Helper Functions", () => {
         error: null,
       });
 
-      await expect(requireRoleAPI([UserRole.HR_ADMIN])).rejects.toThrow("Authentication required");
+      await expect(requireRoleAPI([UserRole.HR_ADMIN])).rejects.toThrow("Autentisering krävs");
     });
   });
 
@@ -227,7 +227,7 @@ describe("Auth Helper Functions", () => {
         }),
       });
 
-      await expect(requireHRAdminAPI()).rejects.toThrow("Insufficient permissions");
+      await expect(requireHRAdminAPI()).rejects.toThrow("Saknar behörighet");
     });
   });
 
@@ -292,14 +292,14 @@ describe("Auth Helper Functions", () => {
 
     describe("createErrorResponse", () => {
       it("should create 401 response for authentication error", () => {
-        const error = new Error("Authentication required");
+        const error = new Error("Autentisering krävs");
         const response = createErrorResponse(error);
 
         expect(response.status).toBe(401);
       });
 
       it("should create 403 response for permission error", () => {
-        const error = new Error("Insufficient permissions");
+        const error = new Error("Saknar behörighet");
         const response = createErrorResponse(error);
 
         expect(response.status).toBe(403);

@@ -34,7 +34,7 @@ export async function DELETE(
       .eq("user_id", user.auth_id); // Explicit check for extra safety
 
     if (error) {
-      console.error("[DELETE /api/users/filters/:id] Database error:", error);
+      console.error("[DELETE /api/users/filters/:id] Databasfel:", error);
       throw error;
     }
 

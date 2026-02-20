@@ -34,14 +34,14 @@ export function useImportantDates(category?: string) {
         if (!isMounted) return;
 
         if (!response.ok) {
-          console.error("Error fetching important dates:", response.status, response.statusText);
+          console.error("Misslyckades att hämta viktiga datum:", response.status, response.statusText);
           setDates([]);
         } else {
           const result = await response.json();
           setDates(result.data || []);
         }
       } catch (err) {
-        console.error("Unexpected error fetching important dates:", err);
+        console.error("Oväntat fel vid hämtning av viktiga datum:", err);
         if (isMounted) {
           setDates([]);
         }

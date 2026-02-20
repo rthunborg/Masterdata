@@ -134,7 +134,7 @@ describe("GET /api/important-dates", () => {
 
   it("should return 403 for external party users", async () => {
     vi.mocked(auth.requireAuthAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
 
     const request = new NextRequest("http://localhost:3000/api/important-dates");
@@ -147,7 +147,7 @@ describe("GET /api/important-dates", () => {
 
   it("should return 401 for unauthenticated requests", async () => {
     vi.mocked(auth.requireAuthAPI).mockRejectedValue(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
 
     const request = new NextRequest("http://localhost:3000/api/important-dates");
@@ -155,7 +155,7 @@ describe("GET /api/important-dates", () => {
     const json = await response.json();
 
     expect(response.status).toBe(401);
-    expect(json.error).toBe("Authentication required");
+    expect(json.error).toBe("Autentisering krävs");
   });
 
   it("should handle database errors gracefully", async () => {
@@ -244,14 +244,14 @@ describe("POST /api/important-dates", () => {
 
   it("should return 403 for external party users", async () => {
     vi.mocked(auth.requireRoleAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
         { status: 403 }
@@ -618,14 +618,14 @@ describe("PATCH /api/important-dates/[id]", () => {
 
   it("should return 403 for external party users", async () => {
     vi.mocked(auth.requireRoleAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
         { status: 403 }
@@ -757,14 +757,14 @@ describe("DELETE /api/important-dates/[id]", () => {
 
   it("should return 403 for external party users", async () => {
     vi.mocked(auth.requireRoleAPI).mockRejectedValue(
-      new Error("Insufficient permissions")
+      new Error("Saknar behörighet")
     );
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
         { status: 403 }

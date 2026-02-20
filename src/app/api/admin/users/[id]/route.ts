@@ -39,7 +39,7 @@ async function wouldRemoveLastHRAdmin(
     .eq("is_active", true);
 
   if (countError) {
-    console.error("Error counting HR Admins:", countError);
+    console.error("Fel vid räkning av HR Admin:er:", countError);
     return false;
   }
 
@@ -68,7 +68,7 @@ export async function PATCH(
         {
           error: {
             code: "FORBIDDEN",
-            message: "Cannot deactivate your own account",
+            message: "Kan inte inaktivera din egen användare",
           },
         },
         { status: 403 }
@@ -81,7 +81,7 @@ export async function PATCH(
         {
           error: {
             code: "FORBIDDEN",
-            message: "Cannot deactivate the last active HR Admin",
+            message: "Kan inte inaktivera den sista aktiva HR Admin:en",
           },
         },
         { status: 403 }
@@ -100,7 +100,7 @@ export async function PATCH(
         {
           error: {
             code: "NOT_FOUND",
-            message: "User not found",
+            message: "Användaren hittades inte",
           },
         },
         { status: 404 }
@@ -121,7 +121,7 @@ export async function PATCH(
         {
           error: {
             code: "INTERNAL_ERROR",
-            message: "Failed to update user status",
+            message: "Misslyckades att uppdatera användarens status",
           },
         },
         { status: 500 }
@@ -134,7 +134,7 @@ export async function PATCH(
         const supabaseServiceRole = createServiceRoleClient();
         await supabaseServiceRole.auth.admin.signOut(userToUpdate.auth_user_id);
       } catch (signOutError) {
-        console.error("Failed to sign out user:", signOutError);
+        console.error("Misslyckades att logga ut användaren:", signOutError);
         // Continue - user is deactivated even if sign out fails
       }
     }
@@ -147,7 +147,7 @@ export async function PATCH(
         {
           error: {
             code: "VALIDATION_ERROR",
-            message: error.issues[0]?.message || "Invalid input data",
+            message: error.issues[0]?.message || "Ogiltiga inmatningsdata",
           },
         },
         { status: 400 }
@@ -177,7 +177,7 @@ export async function DELETE(
         {
           error: {
             code: "FORBIDDEN",
-            message: "Cannot delete your own account",
+            message: "Kan inte ta bort din egen användare",
           },
         },
         { status: 403 }
@@ -190,7 +190,7 @@ export async function DELETE(
         {
           error: {
             code: "FORBIDDEN",
-            message: "Cannot delete the last active HR Admin",
+            message: "Kan inte ta bort den sista aktiva HR Admin:en",
           },
         },
         { status: 403 }
@@ -209,7 +209,7 @@ export async function DELETE(
         {
           error: {
             code: "NOT_FOUND",
-            message: "User not found",
+            message: "Användaren hittades inte",
           },
         },
         { status: 404 }
@@ -226,12 +226,12 @@ export async function DELETE(
       .eq("id", id);
 
     if (deleteError) {
-      console.error("User deletion failed:", deleteError);
+      console.error("Användarens borttagning misslyckades:", deleteError);
       return NextResponse.json(
         {
           error: {
             code: "INTERNAL_ERROR",
-            message: "Failed to delete user record",
+            message: "Misslyckades att ta bort användarens post",
           },
         },
         { status: 500 }
@@ -246,11 +246,11 @@ export async function DELETE(
         );
         
         if (authDeleteError) {
-          console.error("Auth user deletion failed:", authDeleteError);
+          console.error("Misslyckades att ta bort auth-användaren:", authDeleteError);
           // Continue - app user is deleted, auth cleanup failure is acceptable
         }
       } catch (authError) {
-        console.error("Failed to delete auth user:", authError);
+        console.error("Misslyckades att ta bort auth-användaren:", authError);
         // Continue - app user is deleted
       }
     }
@@ -258,7 +258,7 @@ export async function DELETE(
     return NextResponse.json(
       {
         data: {
-          message: "User deleted successfully",
+          message: "Användaren borttagen",
         },
       },
       { status: 200 }
