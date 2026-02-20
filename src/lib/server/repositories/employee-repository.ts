@@ -34,9 +34,7 @@ export class EmployeeRepository {
       
       let query = supabase
         .from("employees")
-        .select("*")
-        .order("surname", { ascending: true })
-        .order("first_name", { ascending: true });
+        .select("*");
 
       // Filter by archived status
       // When includeArchived is true: show only archived employees

@@ -83,6 +83,24 @@ const mockColumnConfigs: ColumnConfig[] = [
   },
 ];
 
+const crewingDoneColumn: ColumnConfig = {
+  id: 'cd-1',
+  db_column_name: 'crewing_done',
+  column_name: 'Crewing/Done',
+  column_type: 'boolean',
+  is_visible: true,
+  display_order: 10,
+  role_permissions: { hr_admin: { view: true, edit: true } },
+  is_masterdata: true,
+  category: null,
+  category_color: null,
+  is_checklist_item: false,
+  created_at: '2024-01-01',
+  updated_at: '2024-01-01',
+};
+
+const mockColumnConfigsWithCrewingDone = [...mockColumnConfigs, crewingDoneColumn];
+
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -351,5 +369,129 @@ describe('Story 20.2: FilterPanel', () => {
     );
 
     expect(screen.getByText('Inga filterbara kolumner tillgängliga.')).toBeInTheDocument();
+  });
+
+  describe('Hide crewing done toggle', () => {
+    it('should show the toggle when crewing_done column exists', () => {
+      renderWithQueryClient(
+        <FilterPanel
+          isOpen={true}
+          onClose={vi.fn()}
+          columnConfigs={mockColumnConfigsWithCrewingDone}
+          activeFilters={[]}
+          onFiltersChange={vi.fn()}
+        />
+      );
+
+      expect(screen.getByTestId('hide-crewing-done-toggle')).toBeInTheDocument();
+      expect(screen.getByText('Dölj klara')).toBeInTheDocument();
+    });
+
+    it('should not show the toggle when crewing_done column is absent', () => {
+      renderWithQueryClient(
+        <FilterPanel
+          isOpen={true}
+          onClose={vi.fn()}
+          columnConfigs={mockColumnConfigs}
+          activeFilters={[]}
+          onFiltersChange={vi.fn()}
+        />
+      );
+
+      expect(screen.queryByTestId('hide-crewing-done-toggle')).not.toBeInTheDocument();
+    });
+
+    it('should add boolean filter with boolValue=false when checked', async () => {
+      const onFiltersChange = vi.fn();
+      const user = userEvent.setup();
+
+      renderWithQueryClient(
+        <FilterPanel
+          isOpen={true}
+          onClose={vi.fn()}
+          columnConfigs={mockColumnConfigsWithCrewingDone}
+          activeFilters={[]}
+          onFiltersChange={onFiltersChange}
+        />
+      );
+
+      await user.click(screen.getByTestId('hide-crewing-done-checkbox'));
+
+      expect(onFiltersChange).toHaveBeenCalledWith([
+        { columnId: 'cd-1', type: 'boolean', boolValue: false },
+      ]);
+    });
+
+    it('should remove the crewing_done filter when unchecked', async () => {
+      const onFiltersChange = vi.fn();
+      const user = userEvent.setup();
+      const existingFilter: import('@/lib/types/filter').FilterState = {
+        columnId: 'cd-1',
+        type: 'boolean',
+        boolValue: false,
+      };
+
+      renderWithQueryClient(
+        <FilterPanel
+          isOpen={true}
+          onClose={vi.fn()}
+          columnConfigs={mockColumnConfigsWithCrewingDone}
+          activeFilters={[existingFilter]}
+          onFiltersChange={onFiltersChange}
+        />
+      );
+
+      await user.click(screen.getByTestId('hide-crewing-done-checkbox'));
+
+      expect(onFiltersChange).toHaveBeenCalledWith([]);
+    });
+
+    it('should preserve other active filters when toggling', async () => {
+      const onFiltersChange = vi.fn();
+      const user = userEvent.setup();
+      const textFilter: import('@/lib/types/filter').FilterState = {
+        columnId: '1',
+        type: 'text',
+        textValue: 'John',
+      };
+
+      renderWithQueryClient(
+        <FilterPanel
+          isOpen={true}
+          onClose={vi.fn()}
+          columnConfigs={mockColumnConfigsWithCrewingDone}
+          activeFilters={[textFilter]}
+          onFiltersChange={onFiltersChange}
+        />
+      );
+
+      await user.click(screen.getByTestId('hide-crewing-done-checkbox'));
+
+      expect(onFiltersChange).toHaveBeenCalledWith([
+        textFilter,
+        { columnId: 'cd-1', type: 'boolean', boolValue: false },
+      ]);
+    });
+
+    it('should reflect active state when crewing_done filter already active', () => {
+      const existingFilter: import('@/lib/types/filter').FilterState = {
+        columnId: 'cd-1',
+        type: 'boolean',
+        boolValue: false,
+      };
+
+      renderWithQueryClient(
+        <FilterPanel
+          isOpen={true}
+          onClose={vi.fn()}
+          columnConfigs={mockColumnConfigsWithCrewingDone}
+          activeFilters={[existingFilter]}
+          onFiltersChange={vi.fn()}
+        />
+      );
+
+      const checkbox = screen.getByTestId('hide-crewing-done-checkbox');
+      expect(checkbox).toHaveAttribute('data-state', 'checked');
+    });
   });
 });

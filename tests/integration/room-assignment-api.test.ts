@@ -501,8 +501,8 @@ describe("Room Assignment API Integration Tests", () => {
       vi.mocked(employeeRepository.findById).mockResolvedValue(employee as Employee);
       vi.mocked(employeeRepository.update).mockResolvedValue(updatedEmployee as Employee);
 
-      // No RPC call needed - hotel_required=false clears room directly
-      // (room_number_shared is set to null in the update handler)
+      // hotel_required=false clears room and triggers recalculation
+      // for remaining employees on the same date
 
       const request = new NextRequest(`http://localhost:3000/api/employees/${employee.id}`, {
         method: "PATCH",
@@ -512,9 +512,11 @@ describe("Room Assignment API Integration Tests", () => {
       const response = await PATCH_EMPLOYEE(request, { params: Promise.resolve({ id: employee.id }) });
       
       expect(response.status).toBe(200);
-      // Room should be cleared (set to null)
-      // RPC should not be called for hotel toggle to false
-      expect(mockSupabaseClient.rpc).not.toHaveBeenCalled();
+      // Room should be cleared (set to null) and remaining rooms recalculated for the date
+      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+        "recalculate_rooms_for_date",
+        { p_date_id: employee.omc_date }
+      );
     });
   });
 
