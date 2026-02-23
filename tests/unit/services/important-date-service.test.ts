@@ -3,7 +3,15 @@ import { importantDateService } from "@/lib/services/important-date-service";
 import type { ImportantDate, ImportantDateFormData } from "@/lib/types/important-date";
 
 // Mock fetch globally
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
 
 describe("importantDateService", () => {
   const mockDates: ImportantDate[] = [
@@ -255,13 +263,13 @@ describe("importantDateService", () => {
         json: async () => ({
           error: {
             code: "FORBIDDEN",
-            message: "Insufficient permissions",
+            message: "Saknar behörighet",
           },
         }),
       } as Response);
 
       await expect(importantDateService.delete("date-1")).rejects.toThrow(
-        "You do not have permission to delete important dates"
+        "Du saknar behörighet att ta bort viktiga datum"
       );
     });
   });

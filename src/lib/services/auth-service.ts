@@ -19,7 +19,7 @@ class AuthService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        const errorMessage = errorData?.error?.message || "Invalid email or password";
+        const errorMessage = errorData?.error?.message || "Ogiltlig email eller lösenord";
         throw new Error(errorMessage);
       }
 
@@ -27,7 +27,7 @@ class AuthService {
       const userData = result.data?.user;
 
       if (!userData) {
-        throw new Error("Invalid email or password");
+        throw new Error("Ogiltlig email eller lösenord");
       }
 
       // Return user data (previous_last_active_at not needed for API-based login)
@@ -44,7 +44,7 @@ class AuthService {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error("An unexpected error occurred");
+      throw new Error("Ett oväntat fel uppstod");
     }
   }
 
@@ -58,13 +58,13 @@ class AuthService {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to log out");
+        throw new Error("Misslyckades att logga ut");
       }
     } catch (error) {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error("Failed to log out");
+      throw new Error("Misslyckades att logga ut");
     }
   }
 

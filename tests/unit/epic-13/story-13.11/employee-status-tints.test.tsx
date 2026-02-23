@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
 import type { Employee } from '@/lib/types/employee';
@@ -58,7 +59,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch for hooks
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock the columns hook
 vi.mock('@/lib/hooks/use-columns', () => ({
@@ -127,6 +151,24 @@ vi.mock('@/lib/i18n', () => ({
 }));
 
 describe('Story 13.11: Employee Status Visual Indicators', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -144,7 +186,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[terminatedEmployee]}
           isLoading={false}
@@ -168,7 +210,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[terminatedEmployee]}
           isLoading={false}
@@ -192,7 +234,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[archivedTerminatedEmployee]}
           isLoading={false}
@@ -218,7 +260,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[crewReadyEmployee]}
           isLoading={false}
@@ -242,7 +284,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[normalEmployee]}
           isLoading={false}
@@ -268,7 +310,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[terminatedCrewReadyEmployee]}
           isLoading={false}
@@ -292,7 +334,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[normalEmployee]}
           isLoading={false}
@@ -346,7 +388,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         updated_at: '2025-01-01T00:00:00Z',
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[terminatedEmployee]}
           isLoading={false}
@@ -415,7 +457,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         updated_at: '2025-01-01T00:00:00Z',
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[crewReadyEmployee]}
           isLoading={false}
@@ -458,7 +500,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[normalEmployee]}
           isLoading={false}
@@ -482,7 +524,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[terminatedEmployee]}
           isLoading={false}
@@ -505,7 +547,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[crewReadyEmployee]}
           isLoading={false}
@@ -528,7 +570,7 @@ describe('Story 13.11: Employee Status Visual Indicators', () => {
         one: null,
       } as Employee;
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[terminatedCrewReadyEmployee]}
           isLoading={false}

@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
       .order("date_value", { ascending: true });
 
     if (error) {
-      console.error("Error fetching available ÖMC dates:", error);
-      throw new Error("Failed to fetch available ÖMC dates");
+      console.error("Misslyckades att hämta tillgängliga ÖMC datum:", error);
+      throw new Error("Misslyckades att hämta tillgängliga ÖMC datum");
     }
 
     // Filter to dates with available capacity that are either future or Jan 1 exception

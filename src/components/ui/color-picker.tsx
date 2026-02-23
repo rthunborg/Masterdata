@@ -92,7 +92,7 @@ export function ColorPicker({
       setError(null);
       checkContrast(newColor);
     } else {
-      setError("Invalid hex color format (use #RGB or #RRGGBB)");
+      setError("Ogiltigt hexfärgformat (använd #RGB eller #RRGGBB)");
       setContrastWarning(null);
     }
   };

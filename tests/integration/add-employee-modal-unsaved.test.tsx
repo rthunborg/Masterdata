@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -13,6 +14,24 @@ vi.mock('@/lib/hooks/use-available-pe3-dates');
 vi.mock('sonner');
 
 describe('Add Employee Modal - Unsaved Changes', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnClose = vi.fn();
   const mockOnSuccess = vi.fn();
 
@@ -49,7 +68,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
   it('shows confirmation dialog when clicking Cancel with dirty form', { timeout: 15000 }, async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
 
@@ -71,7 +90,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
   it('closes modal immediately when clicking Cancel with pristine form', async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
 
@@ -87,7 +106,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
   it('shows confirmation dialog when clicking backdrop with dirty form', async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
 
@@ -111,7 +130,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
   it('shows confirmation dialog when pressing Escape with dirty form', async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
 
@@ -131,7 +150,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
   it('closes modal when clicking Discard Changes in confirmation dialog', async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
 
@@ -161,7 +180,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
   it('returns to form when clicking Continue Editing in confirmation dialog', async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
 
@@ -193,7 +212,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
   it('isDirty becomes true after modifying First Name field', async () => {
     const user = userEvent.setup();
 
-    const { unmount } = renderWithI18n(
+    const { unmount } = renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
     
@@ -209,7 +228,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
     mockOnClose.mockClear();
 
     // Re-render with open modal
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
 
@@ -229,7 +248,7 @@ describe('Add Employee Modal - Unsaved Changes', () => {
   it('isDirty remains false when no fields modified', async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal isOpen={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
 

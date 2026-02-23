@@ -1,9 +1,28 @@
 import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableCell } from "@/components/dashboard/editable-cell";
 
 describe("EditableCell - Localization", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
     const mockOnSave = vi.fn();
 
     beforeEach(() => {
@@ -13,7 +32,7 @@ describe("EditableCell - Localization", () => {
     it("displays localized error message for 'Invalid input data' error", async () => {
         mockOnSave.mockRejectedValue(new Error("Invalid input data"));
 
-        renderWithI18n(
+        renderWithQueryClient(
             <EditableCell
                 value="Original Value"
                 employeeId="emp-1"
@@ -42,7 +61,7 @@ describe("EditableCell - Localization", () => {
     it("displays localized error message for 'VALIDATION_ERROR' error", async () => {
         mockOnSave.mockRejectedValue(new Error("VALIDATION_ERROR: Some detail"));
 
-        renderWithI18n(
+        renderWithQueryClient(
             <EditableCell
                 value="Original Value"
                 employeeId="emp-1"
@@ -71,7 +90,7 @@ describe("EditableCell - Localization", () => {
     it("displays original error message for unknown errors", async () => {
         mockOnSave.mockRejectedValue(new Error("Network error"));
 
-        renderWithI18n(
+        renderWithQueryClient(
             <EditableCell
                 value="Original Value"
                 employeeId="emp-1"

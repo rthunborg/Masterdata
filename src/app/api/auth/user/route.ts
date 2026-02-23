@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      return NextResponse.json({ error: "Ej autentiserad" }, { status: 401 });
     }
 
     // Get user record from users table
@@ -29,20 +29,20 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error("[API /auth/user] Failed to fetch user:", dbError);
+      console.error("[API /auth/user] Misslyckades att hämta användaren:", dbError);
       return NextResponse.json(
-        { error: "Failed to fetch user data" },
+        { error: "Misslyckades att hämta användarens data" },
         { status: 500 }
       );
     }
 
     if (!userData) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Användaren hittades inte" }, { status: 404 });
     }
 
     if (!userData.is_active) {
       return NextResponse.json(
-        { error: "Account is deactivated" },
+        { error: "Kontot är inaktiverat" },
         { status: 403 }
       );
     }
@@ -53,9 +53,9 @@ export async function GET(request: NextRequest) {
       auth_id: user.id,
     });
   } catch (error) {
-    console.error("[API /auth/user] Unexpected error:", error);
+    console.error("[API /auth/user] Oväntat fel:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internt serverfel" },
       { status: 500 }
     );
   }

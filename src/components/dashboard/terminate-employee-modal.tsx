@@ -82,7 +82,7 @@ export function TerminateEmployeeModal({
             return result.data?.[0];
           }
         } catch (error) {
-          console.error("Error fetching date info:", error);
+          console.error("Misslyckades att hämta datuminfo:", error);
         }
         return null;
       }

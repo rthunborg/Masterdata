@@ -21,6 +21,20 @@ const mockEmployee: Employee = {
   is_terminated: false,
 } as Employee;
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('EmployeeContextMenu (Story 12.6)', () => {
   let mockOnClose: () => void;
   let mockOnEdit: (employee: Employee) => void;

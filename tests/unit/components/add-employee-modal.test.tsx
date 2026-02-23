@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import userEvent from "@testing-library/user-event";
 import { AddEmployeeModal } from "@/components/dashboard/add-employee-modal";
@@ -40,6 +41,24 @@ vi.mock("@/lib/hooks/use-available-omc-dates", () => ({
 }));
 
 describe("AddEmployeeModal", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnClose = vi.fn();
   const mockOnSuccess = vi.fn();
 
@@ -107,7 +126,7 @@ describe("AddEmployeeModal", () => {
     updated_at: "2025-10-27T12:00:00Z",      };
 
   it("should render modal with all form fields", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -138,7 +157,7 @@ describe("AddEmployeeModal", () => {
   });
 
   it("should not render modal when isOpen is false", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal
         isOpen={false}
         onClose={mockOnClose}
@@ -152,7 +171,7 @@ describe("AddEmployeeModal", () => {
   it("should display validation errors for missing required fields", async () => {
     const user = userEvent.setup();
     
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -182,7 +201,7 @@ describe("AddEmployeeModal", () => {
     const user = userEvent.setup();
     vi.mocked(employeeService.create).mockResolvedValue(mockEmployee);
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -223,7 +242,7 @@ describe("AddEmployeeModal", () => {
   it("should close modal on cancel button click", async () => {
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -246,7 +265,7 @@ describe("AddEmployeeModal", () => {
     );
     vi.mocked(employeeService.create).mockRejectedValue(duplicateError);
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -288,7 +307,7 @@ describe("AddEmployeeModal", () => {
     const genericError = new Error("Unexpected server error");
     vi.mocked(employeeService.create).mockRejectedValue(genericError);
 
-    renderWithI18n(
+    renderWithQueryClient(
       <AddEmployeeModal
         isOpen={true}
         onClose={mockOnClose}
@@ -380,7 +399,7 @@ describe("AddEmployeeModal", () => {
 
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -488,7 +507,7 @@ describe("AddEmployeeModal", () => {
 
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}
@@ -586,7 +605,7 @@ describe("AddEmployeeModal", () => {
 
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <AddEmployeeModal
           isOpen={true}
           onClose={mockOnClose}

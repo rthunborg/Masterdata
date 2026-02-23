@@ -265,13 +265,13 @@ describe("GET /api/important-dates/available-pe3", () => {
   });
 
   it("should return 401 for unauthenticated requests", async () => {
-    vi.mocked(auth.requireAuthAPI).mockRejectedValue(new Error("Authentication required"));
+    vi.mocked(auth.requireAuthAPI).mockRejectedValue(new Error("Autentisering krävs"));
     vi.mocked(auth.createErrorResponse).mockReturnValue(
       new Response(
         JSON.stringify({
           error: {
             code: "UNAUTHORIZED",
-            message: "Authentication required",
+            message: "Autentisering krävs",
           },
         }),
         { status: 401 }

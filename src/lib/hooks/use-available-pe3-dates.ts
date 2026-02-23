@@ -87,7 +87,7 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
               }
             }
           } catch (error) {
-            console.error("Error fetching current PE3 date:", error);
+            console.error("Misslyckades att hämta aktuellt PE3 datum:", error);
           }
         }
       }
@@ -95,8 +95,8 @@ export function useAvailablePE3Dates(currentPE3DateId?: string | null, enabled: 
       setAvailableDates(dates);
       setTotalAvailable(result.meta?.total || dates.length);
     } catch (err) {
-      console.error("Error fetching available PE3 dates:", err);
-      setError(err instanceof Error ? err : new Error("Unknown error"));
+      console.error("Misslyckades att hämta tillgängliga PE3 datum:", err);
+      setError(err instanceof Error ? err : new Error("Okänt fel"));
       setAvailableDates([]);
       setTotalAvailable(0);
     } finally {

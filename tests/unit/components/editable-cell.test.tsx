@@ -1,9 +1,28 @@
 import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableCell } from "@/components/dashboard/editable-cell";
 
 describe("EditableCell - Permission States", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnSave = vi.fn().mockResolvedValue(undefined);
 
   beforeEach(() => {
@@ -12,7 +31,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("Read-Only State (canEdit = false)", () => {
     it("renders read-only cell with gray background", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -31,7 +50,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("has select-text class to allow text selection in read-only cell", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -47,7 +66,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("shows tooltip when read-only cell is clicked", async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -72,7 +91,7 @@ describe("EditableCell - Permission States", () => {
     // The core tooltip functionality is tested in the previous test.
 
     it("does not enter edit mode when clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -93,7 +112,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("Editable State (canEdit = true)", () => {
     it("renders editable cell with white background and hover effect", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -112,7 +131,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("enters edit mode when clicked", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -133,7 +152,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("enters edit mode on Enter key", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -153,7 +172,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("enters edit mode on Space key", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -175,7 +194,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("Default Behavior (canEdit not specified)", () => {
     it("defaults to editable when canEdit prop is omitted", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -193,7 +212,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("ARIA Attributes", () => {
     it("sets aria-readonly='true' for read-only cells", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -210,7 +229,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("sets aria-readonly='false' for editable cells", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -227,7 +246,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("has role='gridcell' for proper table semantics", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="Test Value"
           employeeId="emp-1"
@@ -244,7 +263,7 @@ describe("EditableCell - Permission States", () => {
 
   describe("Empty Value Handling", () => {
     it("displays em-dash for null value in read-only cell", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={null}
           employeeId="emp-1"
@@ -259,7 +278,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("displays em-dash for null value in editable cell", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={null}
           employeeId="emp-1"
@@ -277,7 +296,7 @@ describe("EditableCell - Permission States", () => {
   // Story 19.4: Text Truncation Tests
   describe("Text Truncation (Story 19.4)", () => {
     it("applies truncate CSS classes to editable cell display", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="henriette.rogstad@outlook.com"
           employeeId="emp-1"
@@ -300,7 +319,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("applies truncate CSS classes to read-only cell display", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="henriette.rogstad@outlook.com"
           employeeId="emp-1"
@@ -320,7 +339,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("sets dir='ltr' for left-to-right text direction", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value="test@example.com"
           employeeId="emp-1"
@@ -340,7 +359,7 @@ describe("EditableCell - Permission States", () => {
     it("shows title attribute with full value for tooltip on hover", () => {
       const longEmail = "henriette.rogstad@outlook.com";
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={longEmail}
           employeeId="emp-1"
@@ -358,7 +377,7 @@ describe("EditableCell - Permission States", () => {
     });
 
     it("does not set title attribute when value is null", () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={null}
           employeeId="emp-1"
@@ -379,7 +398,7 @@ describe("EditableCell - Permission States", () => {
     it("preserves text content in truncated span", () => {
       const emailValue = "test.user@company.com";
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EditableCell
           value={emailValue}
           employeeId="emp-1"

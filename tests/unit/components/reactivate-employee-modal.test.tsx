@@ -17,6 +17,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { employeeService } from '@/lib/services/employee-service';
@@ -101,6 +102,24 @@ function ReactivateEmployeeDialog({
 }
 
 describe('ReactivateEmployeeDialog', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   let mockOnOpenChange: ReturnType<typeof vi.fn>;
   let mockOnSuccess: ReturnType<typeof vi.fn>;
 
@@ -150,7 +169,7 @@ describe('ReactivateEmployeeDialog', () => {
   });
 
   it('should render dialog with employee name', () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <ReactivateEmployeeDialog
         employee={mockTerminatedEmployee}
         open={true}
@@ -166,7 +185,7 @@ describe('ReactivateEmployeeDialog', () => {
   it('should display repayment dates when present', () => {
     // In real implementation, dialog would show repayment dates
     // This test documents the expected behavior
-    renderWithI18n(
+    renderWithQueryClient(
       <ReactivateEmployeeDialog
         employee={mockTerminatedEmployee}
         open={true}
@@ -194,7 +213,7 @@ describe('ReactivateEmployeeDialog', () => {
 
     const user = userEvent.setup();
 
-    renderWithI18n(
+    renderWithQueryClient(
       <ReactivateEmployeeDialog
         employee={mockTerminatedEmployee}
         open={true}
@@ -226,7 +245,7 @@ describe('ReactivateEmployeeDialog', () => {
       ],
     });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <ReactivateEmployeeDialog
         employee={mockTerminatedEmployee}
         open={true}
@@ -258,7 +277,7 @@ describe('ReactivateEmployeeDialog', () => {
       ],
     });
 
-    renderWithI18n(
+    renderWithQueryClient(
       <ReactivateEmployeeDialog
         employee={mockTerminatedEmployee}
         open={true}
@@ -281,7 +300,7 @@ describe('ReactivateEmployeeDialog', () => {
       () => new Promise((resolve) => setTimeout(resolve, 100))
     );
 
-    renderWithI18n(
+    renderWithQueryClient(
       <ReactivateEmployeeDialog
         employee={mockTerminatedEmployee}
         open={true}
@@ -311,7 +330,7 @@ describe('ReactivateEmployeeDialog', () => {
       new Error('Reactivation failed')
     );
 
-    renderWithI18n(
+    renderWithQueryClient(
       <ReactivateEmployeeDialog
         employee={mockTerminatedEmployee}
         open={true}
@@ -350,7 +369,7 @@ describe('ReactivateEmployeeDialog', () => {
       repayment_needed_pe3: true,
     };
 
-    renderWithI18n(
+    renderWithQueryClient(
       <ReactivateEmployeeDialog
         employee={employeeWithRepayment}
         open={true}

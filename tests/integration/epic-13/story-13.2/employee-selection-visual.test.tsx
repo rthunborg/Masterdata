@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, within, act } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
@@ -54,7 +55,30 @@ vi.mock('@/lib/supabase/client', () => ({
 }));
 
 // Mock fetch
-global.fetch = vi.fn();
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({ data: [] }),
+    text: async () => "",
+    status: 200,
+    statusText: "OK",
+  } as Response)
+);
+
+// Mock Next.js navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: '/dashboard',
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ''),
+  }),
+  usePathname: () => '/dashboard',
+}));
+
 
 // Mock columns hook
 vi.mock('@/lib/hooks/use-columns', () => ({
@@ -128,6 +152,24 @@ vi.mock('@/hooks/use-media-query', () => ({
 }));
 
 describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockEmployee: Employee = {
     id: '1',
     first_name: 'John',
@@ -164,7 +206,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
 
   describe('Desktop Table View', () => {
     it('selected rows show greyish tint', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[mockEmployee]}
           isLoading={false}
@@ -187,7 +229,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
     });
 
     it('unselected rows do not show tint', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[mockEmployee]}
           isLoading={false}
@@ -222,7 +264,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
     });
 
     it('tint works in light mode', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[mockEmployee]}
           isLoading={false}
@@ -242,7 +284,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
     });
 
     it('tint works in dark mode', async () => {
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeTable
           employees={[mockEmployee]}
           isLoading={false}
@@ -266,7 +308,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
     it('mobile cards show tint when selected', () => {
       const toggleSelection = vi.fn();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -285,7 +327,7 @@ describe('Story 13.2: Selection Visual Feedback (Integration)', () => {
     it('mobile cards do not show tint when unselected', () => {
       const toggleSelection = vi.fn();
       
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}

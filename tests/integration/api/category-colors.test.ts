@@ -61,7 +61,7 @@ vi.mock("@/lib/server/auth", () => ({
   requireHRAdminAPI: () => mockRequireHRAdminAPI(),
   createErrorResponse: vi.fn((error) => {
     const message = error instanceof Error ? error.message : "Unknown error";
-    if (message === "Authentication required") {
+    if (message === "Autentisering krävs") {
       return new Response(
         JSON.stringify({
           error: { code: "UNAUTHORIZED", message },
@@ -200,7 +200,7 @@ describe("PATCH /api/admin/categories/[categoryName]", () => {
 
     it("should return 401 for unauthenticated request", async () => {
       mockRequireHRAdminAPI.mockRejectedValueOnce(
-        new Error("Authentication required")
+        new Error("Autentisering krävs")
       );
 
       const request = new NextRequest("http://localhost/api/admin/categories/Recruitment", {

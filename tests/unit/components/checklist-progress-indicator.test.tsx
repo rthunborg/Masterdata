@@ -21,9 +21,23 @@ vi.mock('@/lib/utils/column-mapping', () => ({
   },
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 // Mock TooltipProvider
 vi.mock('@/components/ui/tooltip', () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+
   TooltipTrigger: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => 
     asChild ? <>{children}</> : <div>{children}</div>,
   TooltipContent: ({ children }: { children: React.ReactNode }) => <div data-testid="tooltip-content">{children}</div>,

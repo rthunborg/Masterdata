@@ -98,18 +98,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 
  
-import {
-  Select,
-
-  SelectContent,
-
-  SelectItem,
-
-  SelectTrigger,
-
-  SelectValue,
-
-} from "@/components/ui/select";
+// Story 20.1: Select components removed (crew ready dropdown)
 
  
 import {
@@ -122,11 +111,21 @@ import {
 } from "@/components/ui/tooltip";
 
  
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit } from "lucide-react";
+import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit, Save, BedDouble } from "lucide-react";
 
 
  
 import { EditableCell } from "./editable-cell";
+
+
+ 
+import { FilterButton, FilterPanel } from "./FilterPanel";
+import { SaveFilterDialog } from "./FilterPanel/SaveFilterDialog";
+import { useEmployeeFilters } from "@/hooks/useEmployeeFilters";
+import { useSavedFilters } from "@/hooks/useSavedFilters";
+import { ClearFilterButton } from "./ClearFilterButton";
+import { FilteredCountDisplay } from "./FilteredCountDisplay";
+import { EmptyFilterState } from "./EmptyFilterState";
 
 
  
@@ -139,6 +138,7 @@ import { EditableDateCell } from "./editable-date-cell";
 
  
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
+import { RoomManagementModal } from "./room-management-modal";
 
 
  
@@ -180,6 +180,7 @@ import { loadColumnWidths, saveColumnWidths } from "@/lib/utils/column-width-sto
 
  
 import { ExportFieldSelectionDialog } from "./export-field-selection-dialog";
+import { ExportConfirmationDialog } from "./ExportConfirmationDialog";
 
  
 import { getEmployeeFieldValue, mapColumnToEmployeeField } from "@/lib/utils/column-mapping";
@@ -200,14 +201,13 @@ import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
  
 import { useUIStore } from "@/lib/store/ui-store";
 
-// Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar
-// import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
+import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
 
 
  
 import { useTranslations } from "@/lib/i18n";
  
-import { TOWN_DISTRICTS } from "@/lib/constants/options";
+import { COLUMN_SELECT_OPTIONS } from "@/lib/constants/options";
 
 
 interface EmployeeTableProps {
@@ -288,6 +288,7 @@ export function EmployeeTable({
   const isHRAdmin = user?.role === "hr_admin";
   const t = useTranslations("tooltips");
   const tDashboard = useTranslations("dashboard");
+  const tFilter = useTranslations("filter");
   const tModals = useTranslations("modals");
   const tAdmin = useTranslations("admin");
   const tToasts = useTranslations("toasts");
@@ -342,6 +343,7 @@ export function EmployeeTable({
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = React.useState(false);
   const [terminateModalOpen, setTerminateModalOpen] = React.useState(false);
   const [reactivateDialogOpen, setReactivateDialogOpen] = React.useState(false);
+  const [roomManagementModalOpen, setRoomManagementModalOpen] = React.useState(false);
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
   const [isArchiving, setIsArchiving] = React.useState(false);
   const [isReactivating, setIsReactivating] = React.useState(false);
@@ -352,13 +354,55 @@ export function EmployeeTable({
     setStatsRefreshToken((v) => v + 1);
   }, []);
 
-  // Story 8.5: Crew-ready filter state
-  const [crewReadyFilter, setCrewReadyFilter] = React.useState<'all' | 'ready' | 'not-ready'>('all');
+  // Story 8.5: Crew-ready filter state - REMOVED in Story 20.1
+
+  // Story 20.2: Filter panel state
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = React.useState(false);
+  const [saveFilterDialogOpen, setSaveFilterDialogOpen] = React.useState(false);
+
+  // Story 20.6: Saved filters (used by SaveFilterDialog in toolbar)
+  const { saveFilter } = useSavedFilters();
+
+  // Story 20.4: Advanced filtering with filter engine
+  const {
+    activeFilters,
+    filteredEmployees: filterEngineEmployees,
+    clearAllFilters,
+    setFilters: setActiveFilters,
+    filterCount,
+    isFilterActive,
+    filteredCount,
+    totalCount,
+    isFiltering, // Story 20.5: Loading state for slow filters
+  } = useEmployeeFilters({
+    employees,
+    columnConfigs: columnConfigs, // Use columnConfigs from useColumns, not allColumnConfigs (which is only for preview mode)
+    enableUrlSync: true,
+  });
 
   // Story 13.2: Employee selection state
   const [selectedEmployeeIds, setSelectedEmployeeIds] = React.useState<Set<string>>(new Set());
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  // Default sort: internal users (see progress column) → checklist progress asc; others → hire_date desc (most recent first)
+  const hasChecklistItemsForSort = columnConfigs.some(
+    (col) => col.column_type === "boolean" && col.is_checklist_item
+  );
+  const showProgressColumnForSort = hasChecklistItemsForSort && isEffectivelyInternalUser;
+  const hireDateColumnId = columnConfigs.find(
+    (c) => c.db_column_name?.toLowerCase() === "hire_date"
+  )?.id;
+  const hasSetDefaultSortRef = React.useRef(false);
+  React.useLayoutEffect(() => {
+    if (hasSetDefaultSortRef.current || sorting.length !== 0) return;
+    if (showProgressColumnForSort) {
+      hasSetDefaultSortRef.current = true;
+      setSorting([{ id: "checklist_progress", desc: false }]);
+    } else if (hireDateColumnId) {
+      hasSetDefaultSortRef.current = true;
+      setSorting([{ id: hireDateColumnId, desc: true }]);
+    }
+  }, [showProgressColumnForSort, hireDateColumnId, sorting.length]);
 
   // Story 19.11: Column width persistence
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(() => {
@@ -409,12 +453,19 @@ export function EmployeeTable({
   // Story 9.11: Row click selection removed - selection only via checkbox
   // Row clicks do not trigger selection, allowing normal row interactions (inline editing, buttons)
 
+  // Story 8.5: Apply crew-ready filter to employees - REMOVED in Story 20.1
+  // Story 20.4: Now using advanced filter engine
+  const filteredEmployees = React.useMemo(() => {
+    return filterEngineEmployees;
+  }, [filterEngineEmployees]);
+
   // Story 8.5: Calculate count of eligible employees for crew-ready export
+  // Story 20.7: Count only from filtered employees (respects active filters)
   const eligibleCrewReadyCount = React.useMemo(() => {
-    return employees.filter((emp) => {
+    return filteredEmployees.filter((emp) => {
       return canEditCrewingDone(emp) && emp.crewing_done !== true;
     }).length;
-  }, [employees]);
+  }, [filteredEmployees]);
 
   // Poll every 60 seconds to update One field badge statuses (Story 8.3)
   // The One field status is calculated based on one_marked_at timestamp vs current time
@@ -732,17 +783,29 @@ export function EmployeeTable({
   };
 
   // Story 8.5: Export crew-ready employees (with all prerequisites met but not yet marked)
+  // Story 20.7: Crew-ready export respects filtered state
 
 
   const handleExportCrewReady = async () => {
 
     try {
 
+      // Story 20.7: Pass filtered employee IDs to respect active filters
+      const filteredEmployeeIds = filteredEmployees.map(e => e.id);
+
       const response = await fetch('/api/employees/export-crew-ready', {
 
         method: 'POST',
 
         credentials: 'include',
+
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          selectedEmployeeIds: filteredEmployeeIds,
+        }),
 
       });
 
@@ -809,17 +872,6 @@ export function EmployeeTable({
     }
 
   };
-
-  // Story 8.5: Apply crew-ready filter to employees
-  const filteredEmployees = React.useMemo(() => {
-    if (crewReadyFilter === 'ready') {
-      return employees.filter(emp => emp.crewing_done === true);
-    } else if (crewReadyFilter === 'not-ready') {
-      return employees.filter(emp => emp.crewing_done !== true);
-    }
-
-    return employees; // 'all'
-  }, [employees, crewReadyFilter]);
 
   // Build dynamic columns from column configs
 
@@ -1137,23 +1189,11 @@ export function EmployeeTable({
 
             cellType = "boolean";
 
-          } else if (config.column_name === "Gender") {
+          } else if (COLUMN_SELECT_OPTIONS[config.db_column_name]) {
 
             cellType = "select";
 
-            options = ["Man", "Woman"];
-
-          } else if (config.column_name === "Rank") {
-
-            cellType = "select";
-
-            options = ["SEV", "CHEF"];
-
-          } else if (config.column_name === "Town District" || config.db_column_name === "town_district") {
-
-            cellType = "select";
-
-            options = [...TOWN_DISTRICTS];
+            options = COLUMN_SELECT_OPTIONS[config.db_column_name];
 
           }
 
@@ -1271,6 +1311,8 @@ export function EmployeeTable({
 
                   className={cn(
 
+                    "w-full min-w-0",
+
                     column.getCanSort()
 
                       ? "flex items-center gap-1.5 cursor-pointer select-none hover:text-foreground"
@@ -1321,8 +1363,8 @@ export function EmployeeTable({
 
                 >
 
-                  {/* Header text with truncation */}
-                  <span className="truncate max-w-[160px]" title={displayName}>
+                  {/* Header text with truncation - min-w-0 lets it shrink with column width so header aligns with values */}
+                  <span className="truncate min-w-0" title={displayName}>
                     {displayName}
                   </span>
 
@@ -1683,6 +1725,14 @@ export function EmployeeTable({
         }).length;
         return (completed / checklistColumns.length) * 100;
       },
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.getValue("checklist_progress") as number;
+        const b = rowB.getValue("checklist_progress") as number;
+        if (a !== b) return a - b;
+        const createdA = rowA.original.created_at ?? "";
+        const createdB = rowB.original.created_at ?? "";
+        return createdA < createdB ? -1 : createdA > createdB ? 1 : 0;
+      },
       cell: ({ row }) => (
         <div className={cn(cellPaddingClass, cellHeightClass, "flex items-center")}>
           <ChecklistProgressIndicator
@@ -1724,29 +1774,26 @@ export function EmployeeTable({
     selectedEmployeeIds,
   ]); // Story 16.5: Include checkColumnChanged so columns re-render when highlighting state changes
 
-  // Story 13.5: Reset Crew Ready filter when Terminated filter is enabled
+  // Story 13.5: Reset Crew Ready filter when Terminated filter is enabled - REMOVED in Story 20.1
+  // Crew ready filter dropdown removed; clear selection when switching filter contexts
   React.useEffect(() => {
     if (includeTerminated || includeArchived || needsRepayment) {
-      setCrewReadyFilter('all');
       setSelectedEmployeeIds(new Set()); // Explicitly clear selection when switching context
     }
   }, [includeTerminated, includeArchived, needsRepayment]);
 
-  // Story 13.5: Auto-select employees when Crew Ready filter is activated
-  React.useEffect(() => {
-    if (crewReadyFilter === 'ready') {
-      const readyEmployeeIds = employees
-        .filter(emp => emp.crewing_done === true)
-        .map(emp => emp.id);
-      setSelectedEmployeeIds(new Set(readyEmployeeIds));
-    }
-    // Removed else block to prevent clearing selection when employees list updates in 'all' mode
-    // or when switching filters, preserving user selection (Story 13.5 improvement)
-  }, [crewReadyFilter, employees]);
+  // Story 13.5: Auto-select employees when Crew Ready filter is activated - REMOVED in Story 20.1
+  // Crew ready filter and auto-selection removed; users select employees manually
 
   // Story 13.6: General export with field selection
+  // Story 20.7: Export respects filtered state
 
   const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
+  const [exportConfirmationOpen, setExportConfirmationOpen] = React.useState(false);
+  const [pendingExport, setPendingExport] = React.useState<{
+    selectedIds: string[];
+    isFiltered: boolean;
+  } | null>(null);
 
 
   const handleExportClick = () => {
@@ -1761,8 +1808,23 @@ export function EmployeeTable({
 
     }
 
-    setExportDialogOpen(true);
+    // Story 20.7: Show confirmation if filters are active and user hasn't dismissed it
+    const dismissedConfirmation = typeof window !== 'undefined' 
+      ? localStorage.getItem("export-confirmation-dismissed") === "true"
+      : false;
 
+    if (isFilterActive && !dismissedConfirmation) {
+      setPendingExport({ selectedIds, isFiltered: true });
+      setExportConfirmationOpen(true);
+    } else {
+      setExportDialogOpen(true);
+    }
+
+  };
+
+  const handleExportConfirmed = () => {
+    setExportConfirmationOpen(false);
+    setExportDialogOpen(true);
   };
 
   const handleExportWithFields = async (selectedFields: string[], impersonatedRole?: string) => {
@@ -2178,36 +2240,34 @@ export function EmployeeTable({
 
             </div>
 
-            {/* Story 8.5: Crew-Ready Filter - HR Admin only (simulated in preview mode) */}
-            {/* Story 17.5: Hide premade filters dropdown for external users */}
-            {isEffectivelyHRAdmin && (
-              <div className="flex items-center gap-2">
-                <Select
+            {/* Story 8.5: Crew-Ready Filter - REMOVED in Story 20.1 */}
+            {/* Dropdown filter removed to consolidate filtering in new advanced filter panel (Epic 20) */}
 
-                  value={crewReadyFilter}
+            {/* Story 20.2: Filter Button */}
+            <FilterButton
+              onClick={() => setIsFilterPanelOpen(true)}
+              isActive={isFilterActive}
+              filterCount={filterCount}
+            />
 
-                  onValueChange={(value) => setCrewReadyFilter(value as 'all' | 'ready' | 'not-ready')}
+            {/* Story 20.5: Clear Filter Button */}
+            <ClearFilterButton
+              onClick={clearAllFilters}
+              show={isFilterActive}
+            />
 
-                >
-
-                  <SelectTrigger className="w-[180px]" aria-label="Crew Status" data-testid="crew-status-filter">
-
-                    <SelectValue placeholder="Crew Status" />
-
-                  </SelectTrigger>
-
-                  <SelectContent>
-
-                    <SelectItem value="all">Alla anställda</SelectItem>
-
-                    <SelectItem value="ready">Crew Ready</SelectItem>
-
-                    <SelectItem value="not-ready">Inte Crew Ready</SelectItem>
-
-                  </SelectContent>
-
-                </Select>
-              </div>
+            {/* Story 20.6: Save Filter Button (next to Rensa filter, outside panel) */}
+            {isFilterActive && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSaveFilterDialogOpen(true)}
+                aria-label={tFilter("saveCurrentFilters")}
+                data-testid="save-filter-button"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {tFilter("saveFilter")}
+              </Button>
             )}
 
             {/* Density Toggle - Visible to everyone */}
@@ -2227,8 +2287,43 @@ export function EmployeeTable({
               </TooltipContent>
             </Tooltip>
 
+            {/* Room Management Button (HR Admin only, single selection) */}
+            {isEffectivelyHRAdmin && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (selectedEmployeeIds.size === 1) {
+                        const selectedId = Array.from(selectedEmployeeIds)[0];
+                        const emp = employees.find((e) => e.id === selectedId);
+                        if (emp) {
+                          setSelectedEmployee(emp);
+                          setRoomManagementModalOpen(true);
+                        }
+                      }
+                    }}
+                    disabled={selectedEmployeeIds.size !== 1}
+                    className="whitespace-nowrap"
+                  >
+                    <BedDouble className="h-4 w-4 mr-1" />
+                    {tDashboard("roomManagement")}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {selectedEmployeeIds.size === 1
+                      ? tDashboard("roomManagementTooltip")
+                      : tDashboard("roomManagementTooltipDisabled")}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             {/* Story 13.6: General Export Button with Field Selection */}
             {/* Story 17.4: Export Button for External Users - visible to all users */}
+            {/* Story 20.7: Export button label reflects filter/selection state */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -2238,15 +2333,20 @@ export function EmployeeTable({
                   disabled={selectedEmployeeIds.size === 0}
                   className="whitespace-nowrap"
                 >
-                  {tDashboard("exportSelected") || "Exportera markerade anställda"}
-                  {selectedEmployeeIds.size > 0 && ` (${selectedEmployeeIds.size})`}
+                  {selectedEmployeeIds.size > 0
+                    ? `Export Selected (${selectedEmployeeIds.size})`
+                    : isFilterActive
+                      ? `Export Filtered (${filteredCount})`
+                      : tDashboard("exportSelected") || "Export All Employees"}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>
                   {selectedEmployeeIds.size === 0
-                    ? tDashboard("noEmployeesSelected") || "Inga anställda valda"
-                    : tDashboard("exportSelectedEmployees") || `Exportera ${selectedEmployeeIds.size} markerade anställda`}
+                    ? isFilterActive
+                      ? `Export ${filteredCount} filtered employees`
+                      : tDashboard("noEmployeesSelected") || "Inga anställda valda"
+                    : `Export ${selectedEmployeeIds.size} selected employees`}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -2313,9 +2413,36 @@ export function EmployeeTable({
 
           </div>
 
+          {/* Story 20.5: Filtered Count Display */}
+          <FilteredCountDisplay
+            filteredCount={filteredCount}
+            totalCount={totalCount}
+            show={isFilterActive}
+            className="mb-2"
+          />
+
+          {/* Story 20.5: ARIA live region for screen reader announcements */}
           <div 
-            className="rounded-md border"
+            role="status" 
+            aria-live="polite" 
+            aria-atomic="true"
+            className="sr-only"
           >
+            {isFilterActive && `${filterCount} filters active. Showing ${filteredCount} of ${totalCount} employees.`}
+          </div>
+
+          <div 
+            className="rounded-md border relative"
+          >
+            {/* Story 20.5: Loading overlay for slow filter operations (>50ms) */}
+            {isFiltering && (
+              <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50 rounded-md">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full" />
+                  <span className="text-sm text-muted-foreground">Filtering...</span>
+                </div>
+              </div>
+            )}
 
             {/* Story 19.9: Pass container ref for sticky scrollbar */}
             {/* Story 19.13: maxHeight enables vertical scrolling within the table container, 
@@ -2432,12 +2559,12 @@ export function EmployeeTable({
                           {isCheckboxColumn ? (
                             headerContent
                           ) : (
-                            <div className="flex flex-col items-center justify-center leading-none gap-0.5">
+                            <div className="flex flex-col items-start justify-center w-full leading-none gap-0.5 text-left">
 
-                              {/* Primary header text */}
+                              {/* Primary header text - left-aligned to match cell values for consistent column alignment */}
 
                               <div className={cn(
-                                "font-semibold leading-none",
+                                "font-semibold leading-none w-full min-w-0",
                                 // Compact mode text size
                                 isCompact ? "text-xs" : "text-sm"
                               )}>
@@ -2501,21 +2628,34 @@ export function EmployeeTable({
 
                 {filteredRowCount === 0 ? (
 
-                  <TableRow>
+                  <TableRow className="min-h-[calc(100vh-350px)] [&>td]:h-full [&>td]:align-top">
 
                     <TableCell
 
                       colSpan={columns.length}
 
-                      className="h-24 text-center text-muted-foreground"
+                      className="p-0 h-full"
 
                     >
 
-                      {globalFilter
+                      <div className="sticky left-0 min-h-[calc(100vh-350px)] w-[calc(100vw-4rem)] max-w-full flex flex-col items-center justify-center text-center py-12">
 
-                        ? tDashboard("noEmployeesMatchSearch")
+                        {isFilterActive ? (
+                          <EmptyFilterState
+                            activeFilters={activeFilters}
+                            columnConfigs={columnConfigs}
+                            onClearFilters={clearAllFilters}
+                            importantDates={allImportantDates}
+                          />
+                        ) : (
+                          <div className="text-muted-foreground">
+                            {globalFilter
+                              ? tDashboard("noEmployeesMatchSearch")
+                              : tDashboard("noEmployeesToDisplay")}
+                          </div>
+                        )}
 
-                        : tDashboard("noEmployeesToDisplay")}
+                      </div>
 
                     </TableCell>
 
@@ -2647,7 +2787,8 @@ export function EmployeeTable({
                               <div className={cn(
                                 "flex items-center gap-2 w-full",
                                 // Story 16.6: Center checkbox/action columns, left-align text content
-                                (isCheckboxCell || isActionColumn) ? "justify-center" : "justify-start"
+                                // Left alignment ensures column values align with header regardless of column name length
+                                (isCheckboxCell || isActionColumn) ? "justify-center" : "justify-start text-left"
                               )}>
 
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -2692,7 +2833,7 @@ export function EmployeeTable({
 
             </Table>
 
-            {/* Story 19.9: Sticky horizontal scrollbar - REMOVED in favor of natural document scrollbar */}
+            <StickyScrollbar containerRef={tableContainerRef} />
 
           </div>
 
@@ -2790,6 +2931,16 @@ export function EmployeeTable({
 
       />
 
+      <RoomManagementModal
+        employee={selectedEmployee}
+        open={roomManagementModalOpen}
+        onOpenChange={setRoomManagementModalOpen}
+        onSuccess={() => {
+          setRoomManagementModalOpen(false);
+          onEmployeeUpdated?.();
+        }}
+      />
+
       <AlertDialog open={reactivateDialogOpen} onOpenChange={setReactivateDialogOpen}>
 
         <AlertDialogContent>
@@ -2835,6 +2986,15 @@ export function EmployeeTable({
         visibleColumnIds={visibleColumnIds}
       />
 
+      {/* Story 20.7: Export Confirmation Dialog */}
+      <ExportConfirmationDialog
+        open={exportConfirmationOpen}
+        onOpenChange={setExportConfirmationOpen}
+        filteredCount={filteredCount}
+        totalCount={totalCount}
+        onConfirm={handleExportConfirmed}
+      />
+
       <BulkActionsBar
         selectedCount={selectedEmployeeIds.size}
         onArchive={() => handleBulkAction('archive')}
@@ -2843,6 +3003,28 @@ export function EmployeeTable({
         isArchivedView={includeArchived}
         isProcessing={isBulkProcessing}
         isHRAdmin={isEffectivelyHRAdmin}
+      />
+
+      {/* Story 20.2: Filter Panel - use columnConfigs (role-based) so filterable columns are available when not impersonating */}
+      <FilterPanel
+        isOpen={isFilterPanelOpen}
+        onClose={() => setIsFilterPanelOpen(false)}
+        columnConfigs={columnConfigs}
+        activeFilters={activeFilters}
+        onFiltersChange={setActiveFilters}
+        importantDates={allImportantDates}
+      />
+
+      {/* Story 20.6: Save Filter Dialog - rendered here so it opens when toolbar "Spara filter" is clicked even when panel is closed */}
+      <SaveFilterDialog
+        open={saveFilterDialogOpen}
+        onOpenChange={setSaveFilterDialogOpen}
+        activeFilters={activeFilters}
+        columnConfigs={columnConfigs}
+        onSave={async (name) => {
+          await saveFilter({ name, filters: activeFilters });
+          setSaveFilterDialogOpen(false);
+        }}
       />
 
     </>

@@ -234,7 +234,7 @@ describe("HR Admin Impersonation Export", () => {
       
       expect(response.status).toBe(403);
       expect(data.error.code).toBe("IMPERSONATION_FORBIDDEN");
-      expect(data.error.message).toContain("Only HR Admins");
+      expect(data.error.message).toContain("Endast HR Admin");
     });
 
     it("should allow HR Admin to export without impersonation", async () => {

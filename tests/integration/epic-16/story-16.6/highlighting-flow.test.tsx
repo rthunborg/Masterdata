@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
 import DashboardPage from "@/app/dashboard/page";
 import { UserRole } from "@/lib/types/user";
@@ -75,7 +76,39 @@ vi.mock("@/components/dashboard/role-selector", () => ({
   RoleSelector: () => <div>Role Selector</div>,
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 describe("Change Notification Full Flow", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
@@ -100,7 +133,7 @@ describe("Change Notification Full Flow", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<DashboardPage />);
+        renderWithQueryClient(<DashboardPage />);
       });
 
       // Check if responsive view rendered (which uses the isColumnChanged function)
@@ -119,7 +152,7 @@ describe("Change Notification Full Flow", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<DashboardPage />);
+        renderWithQueryClient(<DashboardPage />);
       });
       
       expect(screen.getByTestId("responsive-employee-view")).toBeInTheDocument();
@@ -138,7 +171,7 @@ describe("Change Notification Full Flow", () => {
           });
     
           await act(async () => {
-            renderWithI18n(<DashboardPage />);
+            renderWithQueryClient(<DashboardPage />);
           });
           
           expect(screen.getByTestId("responsive-employee-view")).toBeInTheDocument();
@@ -156,7 +189,7 @@ describe("Change Notification Full Flow", () => {
     
           let rerender: (ui: React.ReactNode) => void;
           await act(async () => {
-            const result = renderWithI18n(<DashboardPage />);
+            const result = renderWithQueryClient(<DashboardPage />);
             rerender = result.rerender;
           });
           

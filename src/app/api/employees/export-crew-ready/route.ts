@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "NO_EMPLOYEES_SELECTED",
-            message: "No employees selected. Please select employees to export.",
+            message: "Inga anställda valda. Välj anställda att exportera.",
             timestamp: new Date().toISOString(),
           },
         },
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "NO_ELIGIBLE_EMPLOYEES",
-            message: "No selected employees found with all prerequisites met and crewing_done not yet marked",
+            message: "Inga anställda hittade som uppfyller alla förutsättningar och inte har markera crewing_done = true",
             timestamp: new Date().toISOString(),
           },
         },
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       .eq('is_active', true);
 
     if (datesError) {
-      console.error("Error fetching important dates:", datesError);
+      console.error("Misslyckades att hämta viktiga datum:", datesError);
     }
 
     const allImportantDates: ImportantDate[] = importantDates || [];
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Export crew-ready employees error:", error);
+    console.error("Misslyckades att exportera besättningsklara anställda:", error);
     return createErrorResponse(error);
   }
 }

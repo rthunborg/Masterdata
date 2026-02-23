@@ -1,4 +1,5 @@
 import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DeleteColumnModal } from "@/components/admin/delete-column-modal";
@@ -10,6 +11,24 @@ vi.mock("@/lib/services/column-service");
 vi.mock("sonner");
 
 describe("DeleteColumnModal", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockColumn: ColumnConfig = {
     id: "test-column-id-123",
     column_name: "Test Column",
@@ -35,7 +54,7 @@ describe("DeleteColumnModal", () => {
   });
 
   it("renders confirmation message with column name", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -55,7 +74,7 @@ describe("DeleteColumnModal", () => {
   });
 
   it("does not render when column is null", () => {
-    const { container } = renderWithI18n(
+    const { container } = renderWithQueryClient(
       <DeleteColumnModal
         column={null}
         isOpen={true}
@@ -71,7 +90,7 @@ describe("DeleteColumnModal", () => {
     const mockDeleteColumn = vi.fn().mockResolvedValue(undefined);
     vi.mocked(columnService).deleteColumn = mockDeleteColumn;
 
-    renderWithI18n(
+    renderWithQueryClient(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -99,7 +118,7 @@ describe("DeleteColumnModal", () => {
     const mockDeleteColumn = vi.fn();
     vi.mocked(columnService).deleteColumn = mockDeleteColumn;
 
-    renderWithI18n(
+    renderWithQueryClient(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -122,7 +141,7 @@ describe("DeleteColumnModal", () => {
       .mockRejectedValue(new Error("Deletion failed"));
     vi.mocked(columnService).deleteColumn = mockDeleteColumn;
 
-    renderWithI18n(
+    renderWithQueryClient(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -152,7 +171,7 @@ describe("DeleteColumnModal", () => {
       );
     vi.mocked(columnService).deleteColumn = mockDeleteColumn;
 
-    renderWithI18n(
+    renderWithQueryClient(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}
@@ -175,7 +194,7 @@ describe("DeleteColumnModal", () => {
   });
 
   it("shows 'cannot be undone' warning", () => {
-    renderWithI18n(
+    renderWithQueryClient(
       <DeleteColumnModal
         column={mockColumn}
         isOpen={true}

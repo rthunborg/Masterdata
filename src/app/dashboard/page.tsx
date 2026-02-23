@@ -73,7 +73,7 @@ export default function DashboardPage() {
           if (parsed.needsRepayment) setNeedsRepayment(true);
         }
       } catch (e) {
-        console.error("Failed to load filters", e);
+        console.error("Misslyckades att ladda filter", e);
       } finally {
         setFiltersLoaded(true);
       }

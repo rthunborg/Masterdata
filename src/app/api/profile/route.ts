@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Profile API error:", error);
+    console.error("Profile API fel:", error);
     return createErrorResponse(error);
   }
 }

@@ -6,6 +6,7 @@
  */
 
 import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditColumnModal } from "@/components/dashboard/edit-column-modal";
@@ -22,6 +23,24 @@ vi.mock("@/lib/services/column-service");
 vi.mock("sonner");
 
 describe("EditColumnModal - Translations", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockCloseEditColumnModal = vi.fn();
   const mockRefetch = vi.fn();
 
@@ -77,21 +96,21 @@ describe("EditColumnModal - Translations", () => {
   });
 
   it("should display Swedish translation for modal title", () => {
-    renderWithI18n(<EditColumnModal />);
+    renderWithQueryClient(<EditColumnModal />);
     
     // Modal title should be in Swedish (from modals.editColumn.title)
     expect(screen.getByText("Redigera kolumn")).toBeInTheDocument();
   });
 
   it("should display Swedish translation for modal description", () => {
-    renderWithI18n(<EditColumnModal />);
+    renderWithQueryClient(<EditColumnModal />);
     
     // Modal description should be in Swedish
     expect(screen.getByText(/Uppdatera kolumnnamn eller kategori/i)).toBeInTheDocument();
   });
 
   it("should display Swedish translation for 'Titel' field label", () => {
-    renderWithI18n(<EditColumnModal />);
+    renderWithQueryClient(<EditColumnModal />);
     
     // AC3: Field label should be "Titel" (not "Column Name")
     const label = screen.getByText(/Titel/i);
@@ -128,7 +147,7 @@ describe("EditColumnModal - Translations", () => {
       toggleColumnVisibility: vi.fn(),
     });
 
-    renderWithI18n(<EditColumnModal />);
+    renderWithQueryClient(<EditColumnModal />);
     
     // AC3: Category combobox placeholder should be "Välj eller skriv en kategori"
     // There are two comboboxes (column type and category), so we need to find the category one
@@ -141,7 +160,7 @@ describe("EditColumnModal - Translations", () => {
   });
 
   it("should display Swedish translation for save button", () => {
-    renderWithI18n(<EditColumnModal />);
+    renderWithQueryClient(<EditColumnModal />);
     
     // AC3: Save button should display "Spara"
     const saveButton = screen.getByRole("button", { name: /Spara/i });
@@ -149,7 +168,7 @@ describe("EditColumnModal - Translations", () => {
   });
 
   it("should display Swedish translation for cancel button", () => {
-    renderWithI18n(<EditColumnModal />);
+    renderWithQueryClient(<EditColumnModal />);
     
     // Cancel button should be in Swedish
     const cancelButton = screen.getByRole("button", { name: /Avbryt/i });
@@ -165,7 +184,7 @@ describe("EditColumnModal - Translations", () => {
       }), 100))
     );
 
-    renderWithI18n(<EditColumnModal />);
+    renderWithQueryClient(<EditColumnModal />);
     
     // Change the column name
     const input = screen.getByDisplayValue("Recruitment Team");
@@ -182,7 +201,7 @@ describe("EditColumnModal - Translations", () => {
   });
 
   it("should populate form with existing column data", () => {
-    renderWithI18n(<EditColumnModal />);
+    renderWithQueryClient(<EditColumnModal />);
     
     // Form should be pre-filled with column data
     expect(screen.getByDisplayValue("Recruitment Team")).toBeInTheDocument();

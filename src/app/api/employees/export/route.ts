@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "NO_EMPLOYEES_SELECTED",
-            message: "No employees selected. Please select employees to export.",
+            message: "Inga anställda valda. Välj anställda att exportera.",
             timestamp: new Date().toISOString(),
           },
         },
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "NO_FIELDS_SELECTED",
-            message: "No fields selected. Please select at least one field to export.",
+            message: "Inga fält valda. Välj minst ett fält att exportera.",
             timestamp: new Date().toISOString(),
           },
         },
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "IMPERSONATION_FORBIDDEN",
-            message: "Only HR Admins can export with impersonated role context.",
+            message: "Endast HR Admin kan exportera med impersonerad rollkontext.",
             timestamp: new Date().toISOString(),
           },
         },
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "INVALID_FORMAT",
-            message: "Export format must be either 'csv' or 'xlsx'.",
+            message: "Exporteraformat måste vara antingen 'csv' eller 'xlsx'.",
             timestamp: new Date().toISOString(),
           },
         },
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "PERMISSION_DENIED",
-            message: `You do not have permission to export the following fields: ${deniedFields.join(", ")}`,
+            message: `Du har inte skrivbehörighet för följande fält: ${deniedFields.join(", ")}`,
             details: {
               deniedFields: deniedFields,
             },
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "NO_PERMITTED_FIELDS",
-            message: "No fields selected that you have permission to export.",
+            message: "Inga fält valda som du har skrivbehörighet för att exportera.",
             timestamp: new Date().toISOString(),
           },
         },
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
         {
           error: {
             code: "NO_EMPLOYEES_FOUND",
-            message: "No employees found matching the selected IDs.",
+            message: "Inga anställda hittade som matchar de valda ID:n.",
             timestamp: new Date().toISOString(),
           },
         },
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
       .in('employee_id', employeeIds);
 
     if (customDataError) {
-      console.error("Error fetching custom data:", customDataError);
+      console.error("Misslyckades att hämta anpassad data:", customDataError);
     }
 
     // Create a map of employee_id -> custom data
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
       .eq('is_active', true);
 
     if (datesError) {
-      console.error("Error fetching important dates:", datesError);
+      console.error("Misslyckades att hämta viktiga datum:", datesError);
     }
 
     const allImportantDates = importantDates || [];
@@ -265,8 +265,10 @@ export async function POST(request: NextRequest) {
       'hotel_required': 'hotel_required',
     };
 
-    // Define date fields that store UUIDs and need resolution (repayment fields are boolean)
+    // Define date fields that store UUIDs and need resolution
+    // Note: repayment_needed_omc/pe3 store UUID references but should be exported as-is (Story 19.14)
     const dateFields = ['stena_date', 'omc_date', 'pe3_date'];
+    const exportAsIsFields = ['repayment_needed_omc', 'repayment_needed_pe3'];
 
     // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {
@@ -295,6 +297,9 @@ export async function POST(request: NextRequest) {
           // Format the value appropriately
           if (value === null || value === undefined) {
             row[fieldKey] = '';
+          } else if (exportAsIsFields.includes(actualPropertyName)) {
+            // Repayment fields: export UUID as-is (Story 19.14)
+            row[fieldKey] = String(value);
           } else if (typeof value === 'boolean') {
             row[fieldKey] = value ? 'Yes' : 'No';
           } else if (dateFields.includes(actualPropertyName) && typeof value === 'string') {
@@ -400,9 +405,9 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error("Export employees error:", error);
+    console.error("Misslyckades att exportera anställda:", error);
     // Handle authentication errors specifically
-    if (error instanceof Error && error.message === "Authentication required") {
+    if (error instanceof Error && error.message === "Autentisering krävs") {
       return createUnauthorizedResponse(error.message);
     }
     return createErrorResponse(error);

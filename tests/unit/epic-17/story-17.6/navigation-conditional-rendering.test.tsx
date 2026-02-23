@@ -9,6 +9,7 @@
  */
 
 import { render, screen, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { Header } from "@/components/layout/header";
@@ -46,7 +47,39 @@ vi.mock("@/components/layout/mobile-nav", () => ({
   ),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
+
 describe("Story 17.6: Navigation Conditional Rendering", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -59,7 +92,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<Header />);
+        renderWithQueryClient(<Header />);
       });
 
       // Mobile navigation should NOT be visible for external users
@@ -74,7 +107,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<Header />);
+        renderWithQueryClient(<Header />);
       });
 
       const mobileNav = screen.queryByTestId("mobile-nav");
@@ -88,7 +121,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<Header />);
+        renderWithQueryClient(<Header />);
       });
 
       const mobileNav = screen.queryByTestId("mobile-nav");
@@ -102,7 +135,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<Header />);
+        renderWithQueryClient(<Header />);
       });
 
       const mobileNav = screen.queryByTestId("mobile-nav");
@@ -118,7 +151,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<Header />);
+        renderWithQueryClient(<Header />);
       });
 
       // Header should be visible
@@ -141,7 +174,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<Header />);
+        renderWithQueryClient(<Header />);
       });
 
       // Header should be visible
@@ -166,7 +199,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
       });
 
       await act(async () => {
-        renderWithI18n(<Header />);
+        renderWithQueryClient(<Header />);
       });
 
       // Mobile navigation SHOULD be visible for HR Admin
@@ -185,7 +218,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
       });
 
       const { rerender } = await act(async () => {
-        return renderWithI18n(<Header />);
+        return renderWithQueryClient(<Header />);
       });
 
       expect(screen.queryByTestId("mobile-nav")).not.toBeInTheDocument();
@@ -220,7 +253,7 @@ describe("Story 17.6: Navigation Conditional Rendering", () => {
         });
 
         const { unmount } = await act(async () => {
-          return renderWithI18n(<Header />);
+          return renderWithQueryClient(<Header />);
         });
 
         if (shouldShowNav) {

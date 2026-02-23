@@ -9,6 +9,7 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { EmployeeCard } from "@/components/dashboard/employee-card";
 import { employeeService } from "@/lib/services/employee-service";
@@ -106,6 +107,24 @@ function createTestColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnCo
 }
 
 describe("EmployeeCard - Inline Editing Integration", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return renderWithI18n(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>
+    );
+  };
+
   const mockOnEmployeeUpdated = vi.fn();
   let mockEmployee: Employee;
   let editableColumns: ColumnConfig[];
@@ -188,7 +207,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
     it("should show edit controls when editable field is clicked", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -220,7 +239,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
     it("should not show edit controls for read-only fields", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -266,7 +285,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
       ];
 
       // Render as HR Admin (but column has no edit permission for any role)
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -298,7 +317,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
     it("should save valid field updates via API", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -351,7 +370,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
         new Error("Validation failed: Invalid value")
       );
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -390,7 +409,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
     it("should trigger optimistic UI updates during save", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -430,7 +449,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
     it("should sync with real-time subscriptions when field updates", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -481,7 +500,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
         }),
       ];
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -528,7 +547,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
     it("should cleanup edit state on component unmount", async () => {
       const user = userEvent.setup();
 
-      const { unmount } = renderWithI18n(
+      const { unmount } = renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}
@@ -560,7 +579,7 @@ describe("EmployeeCard - Inline Editing Integration", () => {
     it("should validate required fields during editing", async () => {
       const user = userEvent.setup();
 
-      renderWithI18n(
+      renderWithQueryClient(
         <EmployeeCard
           employee={mockEmployee}
           isHRAdmin={true}

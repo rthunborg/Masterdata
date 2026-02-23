@@ -7,6 +7,20 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ColorPicker } from '@/components/ui/color-picker';
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('ColorPicker Component', () => {
   describe('Basic Rendering', () => {
     it('should render with label and placeholder', () => {
@@ -88,14 +102,14 @@ describe('ColorPicker Component', () => {
       // Invalid hex
       fireEvent.change(input, { target: { value: 'invalid' } });
       await waitFor(() => {
-        expect(screen.getByText(/Invalid hex color format/i)).toBeInTheDocument();
+        expect(screen.getByText(/Ogiltigt hexfärgformat/i)).toBeInTheDocument();
       });
       expect(onChange).not.toHaveBeenCalled();
 
       // Valid hex
       fireEvent.change(input, { target: { value: '#FF0000' } });
       await waitFor(() => {
-        expect(screen.queryByText(/Invalid hex color format/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Ogiltigt hexfärgformat/i)).not.toBeInTheDocument();
       });
       expect(onChange).toHaveBeenCalledWith('#FF0000');
     });

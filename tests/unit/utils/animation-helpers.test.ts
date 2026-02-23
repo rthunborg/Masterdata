@@ -83,6 +83,21 @@ describe("animation-helpers", () => {
 
       expect(() => debouncedFn.cancel()).not.toThrow();
     });
+
+    it("should flush pending call immediately", () => {
+      const mockFn = vi.fn();
+      const debouncedFn = debounce(mockFn, 100);
+
+      debouncedFn("pending");
+      expect(mockFn).not.toHaveBeenCalled();
+
+      debouncedFn.flush();
+      expect(mockFn).toHaveBeenCalledTimes(1);
+      expect(mockFn).toHaveBeenCalledWith("pending");
+
+      vi.advanceTimersByTime(100);
+      expect(mockFn).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("performanceTracker", () => {

@@ -4,10 +4,20 @@
  * Tests that verify column width state management and localStorage persistence
  * for the Employee table dashboard.
  */
+import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, act } from "@testing-library/react";
+import { render } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { EmployeeTable } from "@/components/dashboard/employee-table";
 import * as columnWidthStorage from "@/lib/utils/column-width-storage";
+
+const queryClient = new QueryClient();
+
+function renderWithProviders(ui: React.ReactElement) {
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  );
+}
 
 // Mock dependencies
 vi.mock("@/lib/hooks/use-auth", () => ({
@@ -23,6 +33,16 @@ vi.mock("@/lib/store/ui-store", () => ({
     columnVisibility: {},
     setColumnVisibility: vi.fn(),
     initColumnVisibility: vi.fn(),
+  }),
+}));
+
+// Avoid async useColumns fetch so React 19 setState does not run after render (window is not defined in CI)
+vi.mock("@/lib/hooks/use-columns", () => ({
+  useColumns: () => ({
+    columns: [],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
   }),
 }));
 
@@ -45,6 +65,20 @@ vi.mock("sonner", () => ({
     warning: vi.fn(),
   },
 }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 
 // Mock minimal props
 const mockProps = {
@@ -75,7 +109,7 @@ describe("Story 19.11: Employee Table Column Width Persistence", () => {
       const loadSpy = vi.spyOn(columnWidthStorage, "loadColumnWidths")
         .mockReturnValue(savedWidths);
 
-      render(<EmployeeTable {...mockProps} />);
+      renderWithProviders(<EmployeeTable {...mockProps} />);
 
       expect(loadSpy).toHaveBeenCalledWith("dashboard", "test-user-123");
     });
@@ -84,7 +118,7 @@ describe("Story 19.11: Employee Table Column Width Persistence", () => {
       const loadSpy = vi.spyOn(columnWidthStorage, "loadColumnWidths")
         .mockReturnValue(null);
 
-      render(<EmployeeTable {...mockProps} />);
+      renderWithProviders(<EmployeeTable {...mockProps} />);
 
       expect(loadSpy).toHaveBeenCalledWith("dashboard", "test-user-123");
     });
@@ -94,7 +128,7 @@ describe("Story 19.11: Employee Table Column Width Persistence", () => {
     it("should have saveColumnWidths available for column resize events", () => {
       const saveSpy = vi.spyOn(columnWidthStorage, "saveColumnWidths");
 
-      render(<EmployeeTable {...mockProps} />);
+      renderWithProviders(<EmployeeTable {...mockProps} />);
 
       // The save function should be available (called via handleColumnSizingChange)
       // We can't easily trigger a resize in unit tests, but we verify the function exists
@@ -107,7 +141,7 @@ describe("Story 19.11: Employee Table Column Width Persistence", () => {
       const loadSpy = vi.spyOn(columnWidthStorage, "loadColumnWidths")
         .mockReturnValue(null);
 
-      render(<EmployeeTable {...mockProps} />);
+      renderWithProviders(<EmployeeTable {...mockProps} />);
 
       // First argument should be 'dashboard'
       expect(loadSpy).toHaveBeenCalledWith("dashboard", expect.any(String));
@@ -117,7 +151,7 @@ describe("Story 19.11: Employee Table Column Width Persistence", () => {
       const loadSpy = vi.spyOn(columnWidthStorage, "loadColumnWidths")
         .mockReturnValue(null);
 
-      render(<EmployeeTable {...mockProps} />);
+      renderWithProviders(<EmployeeTable {...mockProps} />);
 
       // Second argument should be the user ID
       expect(loadSpy).toHaveBeenCalledWith(expect.any(String), "test-user-123");

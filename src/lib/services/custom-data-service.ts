@@ -32,16 +32,16 @@ export const customDataService = {
 
       // Handle forbidden errors
       if (response.status === 403) {
-        throw new Error("You do not have permission to update this data");
+        throw new Error("Du saknar behörighet att uppdatera denna data");
       }
 
       // Handle not found errors
       if (response.status === 404) {
-        throw new Error("Employee not found");
+        throw new Error("Anställd hittades inte");
       }
 
       // Generic error
-      throw new Error(error.error?.message || "Failed to update custom data");
+      throw new Error(error.error?.message || "Misslyckades att uppdatera anpassad data");
     }
   },
 
@@ -62,7 +62,7 @@ export const customDataService = {
       }
 
       const error = await response.json();
-      throw new Error(error.error?.message || "Failed to fetch custom data");
+      throw new Error(error.error?.message || "Misslyckades att hämta anpassad data");
     }
 
     const json = await response.json();

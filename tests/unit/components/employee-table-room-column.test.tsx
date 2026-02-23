@@ -68,6 +68,20 @@ const useRoomSubscription = (employeeId: string, callback: (roomNumber: number |
   }, [employeeId, callback]);
 };
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe("EmployeeTableRoomColumn", () => {
   const mockEmployee: Employee & { hotel_room_number?: number | null } = {
     id: "emp-1",

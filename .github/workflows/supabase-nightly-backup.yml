@@ -1,0 +1,101 @@
+# Nightly Supabase backup: dump production, keep last 14 days, restore oldest to staging.
+# Requires: Supabase Storage bucket "db-backups" in production project (see docs/SUPABASE-BACKUP-AND-STAGING.md).
+# Secrets: SUPABASE_DB_URL (prod), STAGING_SUPABASE_DB_URL (use pooler URIs, not direct - GitHub Actions has no IPv6).
+# Production env also: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
+
+name: Supabase Nightly Backup
+
+on:
+  schedule:
+    # 02:00 UTC daily
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+env:
+  BACKUP_RETENTION_DAYS: 14
+
+jobs:
+  backup-and-restore:
+    name: Backup production & restore oldest to staging
+    runs-on: ubuntu-latest
+    environment: Production
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      STAGING_SUPABASE_DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Create backup output dir
+        run: mkdir -p backup-output
+
+      - name: Dump roles (production)
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/roles.sql --role-only
+        continue-on-error: true
+
+      - name: Dump schema (production)
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/schema.sql
+
+      - name: Dump data (production)
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f backup-output/data.sql --data-only --use-copy -s public
+
+      - name: Install PostgreSQL client (for pg_dump)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump employees and column_config only (for staging partial refresh)
+        run: pg_dump "$SUPABASE_DB_URL" --data-only --schema=public -t public.employees -t public.column_config -f backup-output/employees-column_config.sql
+        continue-on-error: true
+
+      - name: Upload backup to Supabase Storage
+        run: node scripts/supabase-backup-storage.mjs upload "$(date -u +%Y-%m-%d)"
+        env:
+          BACKUP_OUTPUT_DIR: ${{ github.workspace }}/backup-output
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Prune backups older than 14 days
+        run: node scripts/supabase-backup-storage.mjs prune
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Download oldest backup for staging restore
+        run: node scripts/supabase-backup-storage.mjs download-oldest
+        env:
+          BACKUP_OUTPUT_DIR: ${{ github.workspace }}/backup-output
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Restore employees and column_config to staging (partial refresh)
+        run: |
+          RESTORE_DIR="${{ github.workspace }}/backup-output/restore"
+          if [ ! -f "$RESTORE_DIR/employees-column_config.sql" ]; then
+            echo "No backup to restore (first run or no backups yet)."
+            exit 0
+          fi
+          # Only replace employees and column_config; leave auth, users, user_filters, important_dates, etc. as-is
+          psql "$STAGING_SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "TRUNCATE public.employees, public.column_config RESTART IDENTITY CASCADE;"
+          psql "$STAGING_SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$RESTORE_DIR/employees-column_config.sql"
+          echo "Staging: employees and column_config refreshed from oldest backup."

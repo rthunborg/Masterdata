@@ -259,7 +259,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
       expect(response.status).toBe(400);
       expect(json.error.code).toBe("NO_EMPLOYEES_SELECTED");
-      expect(json.error.message).toBe("No employees selected. Please select employees to export.");
+      expect(json.error.message).toBe("Inga anställda valda. Välj anställda att exportera.");
       expect(json.error.timestamp).toBeDefined();
     });
 
@@ -280,7 +280,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
       expect(response.status).toBe(400);
       expect(json.error.code).toBe("NO_FIELDS_SELECTED");
-      expect(json.error.message).toBe("No fields selected. Please select at least one field to export.");
+      expect(json.error.message).toBe("Inga fält valda. Välj minst ett fält att exportera.");
       expect(json.error.timestamp).toBeDefined();
     });
 
@@ -302,7 +302,7 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
       expect(response.status).toBe(404);
       expect(json.error.code).toBe("NO_EMPLOYEES_FOUND");
-      expect(json.error.message).toBe("No employees found matching the selected IDs.");
+      expect(json.error.message).toBe("Inga anställda hittade som matchar de valda ID:n.");
       expect(json.error.timestamp).toBeDefined();
     });
 
@@ -321,18 +321,18 @@ describe("Story 13.7: Export Error Handling Integration", () => {
 
       expect(response.status).toBe(404);
       expect(json.error.code).toBe("NO_ELIGIBLE_EMPLOYEES");
-      expect(json.error.message).toContain("No selected employees found");
+      expect(json.error.message).toContain("Inga anställda hittade som uppfyller alla förutsättningar och inte har markera crewing_done = true");
       expect(json.error.timestamp).toBeDefined();
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(auth.requireAuthAPI).mockRejectedValue(new Error("Authentication required"));
+      vi.mocked(auth.requireAuthAPI).mockRejectedValue(new Error("Autentisering krävs"));
       vi.mocked(createUnauthorizedResponse).mockReturnValue(
         new Response(
           JSON.stringify({
             error: {
               code: "UNAUTHORIZED",
-              message: "Authentication required",
+              message: "Autentisering krävs",
             },
           }),
           { status: 401 }

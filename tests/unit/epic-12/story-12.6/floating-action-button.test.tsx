@@ -9,6 +9,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { FloatingActionButton } from '@/components/dashboard/floating-action-button';
 
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    pathname: "/dashboard",
+  }),
+  useSearchParams: () => ({
+    get: vi.fn(),
+    toString: vi.fn(() => ""),
+  }),
+  usePathname: () => "/dashboard",
+}));
+
 describe('FloatingActionButton (Story 12.6)', () => {
   let mockOnAddEmployee: () => void;
   let mockOnImportCSV: () => void;

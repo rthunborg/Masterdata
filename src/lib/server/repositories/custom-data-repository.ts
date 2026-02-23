@@ -106,17 +106,18 @@ export class CustomDataRepository {
       );
     }
 
-    // Update real table columns directly
-    const { error } = await this.supabase
+    // Update real table columns and return the affected row to confirm the write
+    const { data, error } = await this.supabase
       .from("employees")
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", employeeId);
+      .eq("id", employeeId)
+      .select("id")
+      .maybeSingle();
 
     if (error) {
-      // Check if error is due to column not existing in database
       if (error.message.includes('column') && error.message.includes('does not exist')) {
         const missingColumns = Object.keys(updates).filter(col => 
           error.message.includes(col)
@@ -128,6 +129,12 @@ export class CustomDataRepository {
         );
       }
       throw new Error(`Failed to update custom data: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error(
+        `Update had no effect: employee ${employeeId} was not found or the update was rejected.`
+      );
     }
   }
 

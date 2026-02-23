@@ -277,7 +277,7 @@ describe("Story 13.7: General Export API Integration", () => {
 
       expect(response.status).toBe(400);
       expect(json.error.code).toBe("NO_EMPLOYEES_SELECTED");
-      expect(json.error.message).toBe("No employees selected. Please select employees to export.");
+      expect(json.error.message).toBe("Inga anställda valda. Välj anställda att exportera.");
     });
 
     it("should return 400 when fields is empty", async () => {
@@ -297,7 +297,7 @@ describe("Story 13.7: General Export API Integration", () => {
 
       expect(response.status).toBe(400);
       expect(json.error.code).toBe("NO_FIELDS_SELECTED");
-      expect(json.error.message).toBe("No fields selected. Please select at least one field to export.");
+      expect(json.error.message).toBe("Inga fält valda. Välj minst ett fält att exportera.");
     });
 
     it("should return 400 when employeeIds is missing", async () => {
@@ -356,7 +356,7 @@ describe("Story 13.7: General Export API Integration", () => {
 
       expect(response.status).toBe(404);
       expect(json.error.code).toBe("NO_EMPLOYEES_FOUND");
-      expect(json.error.message).toBe("No employees found matching the selected IDs.");
+      expect(json.error.message).toBe("Inga anställda hittade som matchar de valda ID:n.");
     });
 
     it("should return 404 when selected IDs do not match any employees", async () => {

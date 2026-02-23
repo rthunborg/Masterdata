@@ -66,9 +66,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("[API /important-dates] Unexpected error:", error);
     
-    if (error instanceof Error && error.message === "Authentication required") {
+    if (error instanceof Error && error.message === "Autentisering krävs") {
       return NextResponse.json(
-        { error: "Authentication required" },
+        { error: "Autentisering krävs" },
         { status: 401 }
       );
     }

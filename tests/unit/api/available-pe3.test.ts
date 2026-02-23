@@ -24,7 +24,7 @@ vi.mock("@/lib/server/auth", async () => {
     createErrorResponse: vi.fn((error: unknown) => {
       const message = error instanceof Error ? error.message : "Internal server error";
       // Check if it's an authentication error
-      if (message.includes("Authentication required")) {
+      if (message.includes("Autentisering krävs")) {
         return new Response(
           JSON.stringify({
             error: {
@@ -684,7 +684,7 @@ describe("GET /api/important-dates/available-pe3", () => {
   it("should require authentication", async () => {
     // Mock auth failure
     vi.mocked(auth.requireAuthAPI).mockRejectedValueOnce(
-      new Error("Authentication required")
+      new Error("Autentisering krävs")
     );
 
     const response = await GET();
