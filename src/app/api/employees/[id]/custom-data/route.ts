@@ -112,15 +112,17 @@ export async function PATCH(
       (columnConfigs ?? []).map((c: { db_column_name: string; role_permissions: Record<string, { view: boolean; edit: boolean }> }) => [c.db_column_name, c.role_permissions])
     );
 
-    const forbiddenColumns = Object.keys(validatedData).filter((dbCol) => {
-      const perms = permsByDbColumn.get(dbCol);
-      return !perms || !perms[userRole]?.edit;
-    });
+    if (userRole !== "hr_admin") {
+      const forbiddenColumns = Object.keys(validatedData).filter((dbCol) => {
+        const perms = permsByDbColumn.get(dbCol);
+        return !perms || !perms[userRole]?.edit;
+      });
 
-    if (forbiddenColumns.length > 0) {
-      return createForbiddenResponse(
-        `Du har inte skrivbehörighet för kolumn(er): ${forbiddenColumns.join(", ")}`
-      );
+      if (forbiddenColumns.length > 0) {
+        return createForbiddenResponse(
+          `Du har inte skrivbehörighet för kolumn(er): ${forbiddenColumns.join(", ")}`
+        );
+      }
     }
 
     // Use service role client for the actual update to bypass RLS.

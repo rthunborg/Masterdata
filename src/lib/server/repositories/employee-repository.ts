@@ -36,30 +36,27 @@ export class EmployeeRepository {
         .from("employees")
         .select("*");
 
-      // Filter by archived status
-      // When includeArchived is true: show only archived employees
-      // When includeArchived is false/undefined: show only non-archived employees (default)
-      if (filters?.includeArchived === true) {
-        query = query.eq("is_archived", true);
-      } else {
-        query = query.eq("is_archived", false);
-      }
-
-      // Filter by termination status
-      // When includeTerminated is true: show only terminated employees
-      // When includeTerminated is false/undefined: show only non-terminated employees (default)
-      if (filters?.includeTerminated === true) {
-        query = query.eq("is_terminated", true);
-      } else {
-        query = query.eq("is_terminated", false);
-      }
-      
       // Story 8.13 AC 9: Filter by repayment needed (repayment fields are boolean)
+      // When active, skip archived/terminated filters so all employees with repayments are visible
       if (filters?.needsRepayment === true) {
         query = query.or("repayment_needed_omc.eq.true,repayment_needed_pe3.eq.true");
+      } else {
+        // Filter by archived status
+        if (filters?.includeArchived === true) {
+          query = query.eq("is_archived", true);
+        } else {
+          query = query.eq("is_archived", false);
+        }
+
+        // Filter by termination status
+        if (filters?.includeTerminated === true) {
+          query = query.eq("is_terminated", true);
+        } else {
+          query = query.eq("is_terminated", false);
+        }
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query.order("id");
 
       if (error || !data) {
         console.error("Misslyckades att hämta anställda:", error);
@@ -146,6 +143,10 @@ export class EmployeeRepository {
 
   async create(data: EmployeeFormData): Promise<Employee> {
     try {
+      if (data.special_diet === false) {
+        data.diet_details = null;
+      }
+
       const supabase = await this.getSupabaseClient();
 
       const { data: employee, error } = await supabase
@@ -192,6 +193,10 @@ export class EmployeeRepository {
       // Validate at least one field provided
       if (Object.keys(data).length === 0) {
         throw new Error("Minst en fält måste vara angivet för uppdatering");
+      }
+
+      if (data.special_diet === false) {
+        data.diet_details = null;
       }
 
       const supabase = await this.getSupabaseClient();

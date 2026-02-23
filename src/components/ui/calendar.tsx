@@ -158,6 +158,7 @@ function Calendar({
             <ChevronDownIcon className={cn("size-4", className)} {...props} />
           )
         },
+        Button: CalendarNavButton,
         DayButton: CalendarDayButton,
         WeekNumber: ({ children, ...props }) => {
           return (
@@ -171,6 +172,29 @@ function Calendar({
         ...components,
       }}
       {...props}
+    />
+  )
+}
+
+function CalendarNavButton(props: React.ComponentProps<"button">) {
+  const firedRef = React.useRef(false)
+  const { onClick, ...rest } = props
+  return (
+    <button
+      {...rest}
+      onPointerDown={(e) => {
+        if (e.button === 0) {
+          firedRef.current = true
+          onClick?.(e as unknown as React.MouseEvent<HTMLButtonElement>)
+        }
+      }}
+      onClick={(e) => {
+        if (firedRef.current) {
+          firedRef.current = false
+          return
+        }
+        onClick?.(e)
+      }}
     />
   )
 }
@@ -224,4 +248,4 @@ function CalendarDayButton({
   )
 }
 
-export { Calendar, CalendarDayButton }
+export { Calendar, CalendarDayButton, CalendarNavButton }

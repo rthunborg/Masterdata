@@ -140,6 +140,16 @@ describe("Story 20.6: Saved Filters Integration", () => {
       // Mock POST /api/users/filters
       if (typeof url === "string" && url.includes("/api/users/filters") && !url.includes("/api/users/filters/") && options?.method === "POST") {
         const body = JSON.parse(options.body);
+
+        // Simulate duplicate name constraint (matches real API behaviour)
+        if (mockSavedFilters.some((f) => f.name === body.name)) {
+          return Promise.resolve({
+            ok: false,
+            status: 409,
+            json: () => Promise.resolve({ error: "A filter with this name already exists" }),
+          });
+        }
+
         const newFilter = {
           id: "filter-new",
           user_id: "user-123",
