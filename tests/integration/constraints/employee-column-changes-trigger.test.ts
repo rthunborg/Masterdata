@@ -249,8 +249,7 @@ describe("Employee Column Changes Trigger Tests", () => {
   });
 
   describe("Masterdata column list", () => {
-    it("should track all 28 masterdata columns", () => {
-      // This test documents the expected masterdata columns
+    it("should track all 30 masterdata columns", () => {
       const expectedColumns = [
         'stena_date', 'omc_date', 'pe3_date',
         'first_name', 'surname', 'ssn',
@@ -259,13 +258,11 @@ describe("Employee Column Changes Trigger Tests", () => {
         'comments',
         'one', 'talmundo', 'isps', 'photo', 'origo', 'loneiva',
         'mail_lon', 'bankuppgifter', 'li', 'passport',
-        'kvitto_c17_18', 'c17', 'crewing_done'
+        'kvitto_c17_18', 'c17', 'crewing_done',
+        'special_diet', 'diet_details'
       ];
 
-      expect(expectedColumns.length).toBe(28);
-      
-      // Note: When new masterdata columns are added, this list must be updated
-      // in the trigger function migration file
+      expect(expectedColumns.length).toBe(30);
     });
   });
 

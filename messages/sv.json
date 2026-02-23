@@ -67,7 +67,7 @@
     "loadingDates": "Laddar tillgängliga datum...",
     "dragToResize": "Dra för att ändra storlek",
     "repaymentColumnTooltip": "Endast synligt när uppsagda anställda visas",
-    "readOnlyFieldTooltip": "Detta fält är skrivskyddat. Kontakta HR för att uppdatera.",
+    "readOnlyFieldTooltip": "Detta fältet är skrivskydddat för din användargrupp.",
     "talmundoEditBlocked": "Kan endast redigeras efter One-fältet har slutfört 24-timmars synkronisering till Talmundo-systemet",
     "roomManagement": "Rumshantering",
     "roomManagementTooltip": "Hantera hotellrumstilldelning för vald anställd",

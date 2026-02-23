@@ -82,7 +82,7 @@ describe("EditableCell - Permission States", () => {
 
       // Wait for tooltip to appear (Radix renders it twice - once visible, once for a11y)
       await waitFor(() => {
-        const tooltips = screen.getAllByText("Detta fält är skrivskyddat. Kontakta HR för att uppdatera.");
+        const tooltips = screen.getAllByText("Detta fältet är skrivskydddat för din användargrupp.");
         expect(tooltips.length).toBeGreaterThan(0);
       });
     });
