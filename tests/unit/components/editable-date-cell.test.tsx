@@ -206,7 +206,7 @@ describe("EditableDateCell", () => {
 
       await waitFor(() => {
         const tooltips = screen.getAllByText(
-          "Detta fält är skrivskyddat. Kontakta HR för att uppdatera."
+          "Detta fältet är skrivskydddat för din användargrupp."
         );
         expect(tooltips.length).toBeGreaterThan(0);
       });

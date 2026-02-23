@@ -998,7 +998,7 @@ export function EmployeeTable({
       // Determine if user can edit this column based on role permissions
 
 
-      // In preview mode, all editing is disabled
+      // In preview mode, only HR Admin can edit (other roles cannot)
 
 
       const userRole = effectiveRole || "";
@@ -1009,7 +1009,7 @@ export function EmployeeTable({
       const hasEditPermission = canEditField(userRole as UserRole, config);
 
 
-      const canEdit = hasEditPermission && !isPreviewMode; // Disable editing in preview mode
+      const canEdit = isPreviewMode ? isHRAdmin : hasEditPermission;
 
 
       // Determine cell renderer based on column type and permissions
@@ -1412,7 +1412,7 @@ export function EmployeeTable({
                   <p className="font-medium">{displayName}</p>
                   {isPreviewMode && (
                     <p className="text-xs text-muted-foreground">
-                      {canEdit ? "Editable" : "View only"}
+                      {hasEditPermission ? "Editable" : "View only"}
                     </p>
                   )}
                 </div>

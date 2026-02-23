@@ -391,6 +391,9 @@ describe("EmployeeRepository", () => {
       expect(result.length).toBe(1);
       expect(result[0].repayment_needed_omc).toBe(true);
       expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.eq.true,repayment_needed_pe3.eq.true");
+      // Archived/terminated filters are skipped so repayment results include all statuses
+      expect(chainMock.eq).not.toHaveBeenCalledWith("is_archived", expect.anything());
+      expect(chainMock.eq).not.toHaveBeenCalledWith("is_terminated", expect.anything());
     });
 
     it("should apply multiple filters correctly", async () => {
@@ -444,8 +447,10 @@ describe("EmployeeRepository", () => {
       });
 
       expect(result).toEqual(mockFilteredEmployees);
-      expect(chainMock.eq).toHaveBeenCalledWith("is_terminated", true);
       expect(chainMock.or).toHaveBeenCalledWith("repayment_needed_omc.eq.true,repayment_needed_pe3.eq.true");
+      // needsRepayment overrides archived/terminated filters to show all matching employees
+      expect(chainMock.eq).not.toHaveBeenCalledWith("is_archived", expect.anything());
+      expect(chainMock.eq).not.toHaveBeenCalledWith("is_terminated", expect.anything());
     });
   });
 
@@ -639,6 +644,67 @@ describe("EmployeeRepository", () => {
         "Misslyckades att skapa anställd: Ingen data returnerad"
       );
     });
+
+    it("should clear diet_details when creating employee with special_diet false", async () => {
+      const formDataWithStaleDiet: EmployeeFormData = {
+        ...mockEmployeeFormData,
+        special_diet: false,
+        diet_details: "Vegan",
+      };
+
+      const mockCreated = {
+        id: "new-uuid-456",
+        ...formDataWithStaleDiet,
+        diet_details: null,
+        created_at: "2025-10-27T12:00:00Z",
+        updated_at: "2025-10-27T12:00:00Z",
+      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockCreated, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      await repository.create(formDataWithStaleDiet);
+
+      expect(mockClient.insert).toHaveBeenCalledWith([
+        expect.objectContaining({ special_diet: false, diet_details: null }),
+      ]);
+    });
+
+    it("should preserve diet_details when creating employee with special_diet true", async () => {
+      const formDataWithDiet: EmployeeFormData = {
+        ...mockEmployeeFormData,
+        special_diet: true,
+        diet_details: "Vegan",
+      };
+
+      const mockCreated = {
+        id: "new-uuid-789",
+        ...formDataWithDiet,
+        created_at: "2025-10-27T12:00:00Z",
+        updated_at: "2025-10-27T12:00:00Z",
+      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        insert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockCreated, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      await repository.create(formDataWithDiet);
+
+      expect(mockClient.insert).toHaveBeenCalledWith([
+        expect.objectContaining({ special_diet: true, diet_details: "Vegan" }),
+      ]);
+    });
   });
 
   describe("update", () => {
@@ -790,6 +856,74 @@ describe("EmployeeRepository", () => {
       await expect(repository.update("employee-123", { email: "test@example.com" })).rejects.toThrow(
         "Anställd med ID employee-123 hittades inte"
       );
+    });
+
+    it("should clear diet_details when special_diet is set to false", async () => {
+      const mockUpdatedWithDietCleared = {
+        ...mockEmployee,
+        special_diet: false,
+        diet_details: null,
+        updated_at: "2025-10-27T15:30:00Z",
+      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockUpdatedWithDietCleared, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      await repository.update("employee-123", { special_diet: false, diet_details: "Vegan" });
+
+      expect(mockClient.update).toHaveBeenCalledWith({ special_diet: false, diet_details: null });
+    });
+
+    it("should preserve diet_details when special_diet is set to true", async () => {
+      const mockUpdatedWithDiet = {
+        ...mockEmployee,
+        special_diet: true,
+        diet_details: "Vegan",
+        updated_at: "2025-10-27T15:30:00Z",
+      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockUpdatedWithDiet, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      await repository.update("employee-123", { special_diet: true, diet_details: "Vegan" });
+
+      expect(mockClient.update).toHaveBeenCalledWith({ special_diet: true, diet_details: "Vegan" });
+    });
+
+    it("should not touch diet_details when special_diet is not in the update payload", async () => {
+      const mockUpdatedEmail = {
+        ...mockEmployee,
+        email: "new@example.com",
+        updated_at: "2025-10-27T15:30:00Z",
+      };
+
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: mockUpdatedEmail, error: null }),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      await repository.update("employee-123", { email: "new@example.com" });
+
+      expect(mockClient.update).toHaveBeenCalledWith({ email: "new@example.com" });
     });
 
     it("should update multiple fields simultaneously", async () => {
