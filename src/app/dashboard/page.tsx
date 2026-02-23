@@ -257,6 +257,7 @@ export default function DashboardPage() {
               employees={employees}
               isLoading={isLoadingEmployees}
               isHRAdmin={isHRAdminUser}
+              onEmployeeUpdated={refetch}
               onIncludeArchivedChange={onIncludeArchivedChange}
               onIncludeTerminatedChange={onIncludeTerminatedChange}
               onNeedsRepaymentChange={onNeedsRepaymentChange}
@@ -265,7 +266,7 @@ export default function DashboardPage() {
               needsRepayment={needsRepayment}
               updatedEmployeeId={updatedEmployeeId}
               onOptimisticUpdate={updateEmployeeOptimistically}
-              isColumnChanged={isColumnChanged} // Pass change detection function
+              isColumnChanged={isColumnChanged}
             />
           )}
         </CardContent>
