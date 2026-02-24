@@ -4,6 +4,7 @@ import {
   requireAuthAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
+import { ALL_ROLES } from "@/lib/types/user";
 import { createCustomColumnSchema } from "@/lib/validation/column-validation";
 import { parseOrError, createDuplicateResponse } from "@/lib/server/api-helpers";
 
@@ -35,8 +36,7 @@ export async function GET(request: NextRequest) {
     // Only HR Admin can preview other roles
     if (previewRole && user.role === "hr_admin") {
       // Validate that the preview role is a valid role
-      const validRoles = ["hr_admin", "sodexo", "omc", "payroll", "toplux", "recruiter", "admin_limited", "crewing"];
-      if (validRoles.includes(previewRole)) {
+      if ((ALL_ROLES as string[]).includes(previewRole)) {
         roleToFilter = previewRole as typeof user.role;
       }
     }
