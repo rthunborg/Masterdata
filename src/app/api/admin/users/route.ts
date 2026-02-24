@@ -4,6 +4,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { createUserSchema } from "@/lib/validation/user-validation";
 import { ZodError } from "zod";
+import { createValidationErrorResponse, createDuplicateResponse } from "@/lib/server/api-helpers";
 
 
 // Force Node.js runtime for cookies() support
@@ -63,15 +64,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (existingUser) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "DUPLICATE_ENTRY",
-            message: "User with this email already exists",
-          },
-        },
-        { status: 409 }
-      );
+      return createDuplicateResponse("User with this email already exists");
     }
 
     // Create auth user using admin API
@@ -135,15 +128,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     // Handle validation errors (expected, don't log)
     if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: error.issues[0]?.message || "Invalid input data",
-          },
-        },
-        { status: 400 }
-      );
+      return createValidationErrorResponse(error);
     }
 
     // Log unexpected errors

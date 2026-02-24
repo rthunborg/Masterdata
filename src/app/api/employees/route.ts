@@ -13,7 +13,13 @@ import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber } from "@/lib/services/room-assignment";
 import { createAPIClient } from "@/lib/supabase/server-api";
 import { createClient } from "@/lib/supabase/server";
-import { z } from "zod";
+import { columnConfigRepository } from "@/lib/server/repositories/column-config-repository";
+import {
+  parseOrError,
+  createDuplicateResponse,
+  isDuplicatePE3DateError,
+  createDuplicatePE3Response,
+} from "@/lib/server/api-helpers";
 import type { EmployeeFormData } from "@/lib/types/employee";
 
 // Force Node.js runtime for cookies() support
@@ -47,12 +53,33 @@ export async function GET(request: NextRequest) {
       needsRepayment, // Story 8.13 AC 9
     });
 
-    // Return response with data and metadata
+    // For non-hr_admin users, extract custom column data from the already-fetched
+    // employee rows (select("*") already includes all columns). This replaces the
+    // previous N+1 client-side custom-data fetch pattern with a single server query.
+    let responseData = employees;
+    if (user.role !== "hr_admin") {
+      const allColumns = await columnConfigRepository.findAll();
+      const customColumnNames = allColumns
+        .filter(col => !col.is_masterdata)
+        .map(col => col.db_column_name);
+
+      if (customColumnNames.length > 0) {
+        responseData = employees.map(emp => {
+          const customData: Record<string, string | number | boolean | null> = {};
+          for (const colName of customColumnNames) {
+            const val = (emp as unknown as Record<string, unknown>)[colName];
+            customData[colName] = val as string | number | boolean | null;
+          }
+          return { ...emp, customData };
+        });
+      }
+    }
+
     return NextResponse.json({
-      data: employees,
+      data: responseData,
       meta: {
-        total: employees.length,
-        filtered: employees.length,
+        total: responseData.length,
+        filtered: responseData.length,
       },
     });
   } catch (error) {
@@ -74,30 +101,9 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json();
     
-    let validatedData;
-    try {
-      validatedData = createEmployeeSchema.parse(body);
-    } catch (validationError) {
-      if (validationError instanceof z.ZodError) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "VALIDATION_ERROR",
-              message: "Invalid input data",
-              details: validationError.issues.reduce((acc, err) => {
-                const field = err.path.join(".");
-                if (!acc[field]) acc[field] = [];
-                acc[field].push(err.message);
-                return acc;
-              }, {} as Record<string, string[]>),
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 400 }
-        );
-      }
-      throw validationError;
-    }
+    const parsed = parseOrError(createEmployeeSchema, body);
+    if (parsed instanceof NextResponse) return parsed;
+    const validatedData = parsed;
 
     // Get server-side Supabase client for room assignment and date operations
     const supabase = await createClient();
@@ -226,24 +232,8 @@ export async function POST(request: NextRequest) {
           supabase // Pass server-side client for proper authentication
         );
       } catch (capacityError) {
-        // Check if this is a PE3 duplicate error
-        if (capacityError instanceof Error && (
-          capacityError.message.includes("PE3 date") && capacityError.message.includes("already assigned") ||
-          capacityError.message.includes("duplicate key value") && capacityError.message.includes("pe3_date") ||
-          capacityError.message.includes("unique constraint") && capacityError.message.includes("pe3_date")
-        )) {
-          return NextResponse.json(
-            {
-              error: {
-                code: "DUPLICATE_PE3_DATE",
-                message: capacityError.message.includes("already assigned") 
-                  ? capacityError.message 
-                  : "This PE3 date is already assigned to another employee",
-                timestamp: new Date().toISOString(),
-              },
-            },
-            { status: 409 }
-          );
+        if (isDuplicatePE3DateError(capacityError)) {
+          return createDuplicatePE3Response(capacityError as Error);
         }
         
         // Capacity assignment failed - employee was created but date not assigned
@@ -288,36 +278,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     // Handle duplicate SSN error
     if (error instanceof Error && error.message.includes("already exists")) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "DUPLICATE_ENTRY",
-            message: error.message,
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 409 }
-      );
+      return createDuplicateResponse(error.message);
     }
 
     // Handle duplicate PE3 date error (database unique constraint)
-    if (error instanceof Error && (
-      error.message.includes("PE3 date") && error.message.includes("already assigned") ||
-      error.message.includes("duplicate key value") && error.message.includes("pe3_date") ||
-      error.message.includes("unique constraint") && error.message.includes("pe3_date")
-    )) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "DUPLICATE_PE3_DATE",
-            message: error.message.includes("already assigned") 
-              ? error.message 
-              : "This PE3 date is already assigned to another employee",
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 409 }
-      );
+    if (isDuplicatePE3DateError(error)) {
+      return createDuplicatePE3Response(error as Error);
     }
 
     // Handle other errors

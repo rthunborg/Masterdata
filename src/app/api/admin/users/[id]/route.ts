@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { updateUserSchema } from "@/lib/validation/user-validation";
-import { ZodError } from "zod";
+import { parseOrError, createNotFoundResponse } from "@/lib/server/api-helpers";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -60,7 +60,9 @@ export async function PATCH(
     const { id } = await params;
 
     // Validate request body
-    const validated = updateUserSchema.parse(body);
+    const result = parseOrError(updateUserSchema, body);
+    if (result instanceof NextResponse) return result;
+    const validated = result;
 
     // Prevent self-deactivation
     if (id === currentUser.id && validated.is_active === false) {
@@ -96,15 +98,7 @@ export async function PATCH(
       .single();
 
     if (fetchError || !userToUpdate) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: "Användaren hittades inte",
-          },
-        },
-        { status: 404 }
-      );
+      return createNotFoundResponse("User", id);
     }
 
     // Update user status
@@ -141,19 +135,6 @@ export async function PATCH(
 
     return NextResponse.json({ data: updatedUser });
   } catch (error) {
-    // Handle validation errors (expected, don't log)
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: error.issues[0]?.message || "Ogiltiga inmatningsdata",
-          },
-        },
-        { status: 400 }
-      );
-    }
-
     // Log unexpected errors
     console.error("PATCH /api/admin/users/[id] error:", error);
     return createErrorResponse(error);
@@ -205,15 +186,7 @@ export async function DELETE(
       .single();
 
     if (fetchError || !userToDelete) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: "Användaren hittades inte",
-          },
-        },
-        { status: 404 }
-      );
+      return createNotFoundResponse("User", id);
     }
 
     // Use service role client for all admin operations

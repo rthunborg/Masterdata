@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { z } from "zod";
+import { parseOrError } from "@/lib/server/api-helpers";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -37,7 +38,9 @@ export async function PATCH(
     const body = await request.json();
 
     // Validate request body
-    const validated = updateCategoryColorSchema.parse(body);
+    const result = parseOrError(updateCategoryColorSchema, body);
+    if (result instanceof NextResponse) return result;
+    const validated = result;
 
     // Update all columns with this category
     const { data: updatedColumns, error } = await supabase
@@ -81,19 +84,6 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    // Handle validation errors (expected, don't log)
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: error.issues[0]?.message || "Invalid input data",
-          },
-        },
-        { status: 400 }
-      );
-    }
-
     // Log unexpected errors
     console.error("PATCH /api/admin/categories/[categoryName] error:", error);
     return createErrorResponse(error);

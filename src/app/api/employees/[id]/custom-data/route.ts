@@ -3,7 +3,7 @@ import { requireAuthAPI, createErrorResponse, createForbiddenResponse } from "@/
 import { CustomDataRepository } from "@/lib/server/repositories/custom-data-repository";
 import { updateCustomDataSchema } from "@/lib/validation/column-validation";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { z } from "zod";
+import { parseOrError } from "@/lib/server/api-helpers";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -71,30 +71,9 @@ export async function PATCH(
     // Parse and validate request body
     const body = await request.json();
 
-    let validatedData;
-    try {
-      validatedData = updateCustomDataSchema.parse(body);
-    } catch (validationError) {
-      if (validationError instanceof z.ZodError) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "VALIDATION_ERROR",
-              message: "Ogiltigt anpassat dataformat",
-              details: validationError.issues.reduce((acc, err) => {
-                const field = err.path.join(".");
-                if (!acc[field]) acc[field] = [];
-                acc[field].push(err.message);
-                return acc;
-              }, {} as Record<string, string[]>),
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 400 }
-        );
-      }
-      throw validationError;
-    }
+    const parsed = parseOrError(updateCustomDataSchema, body);
+    if (parsed instanceof NextResponse) return parsed;
+    const validatedData = parsed;
 
     // Authorize: verify the user has edit permission for each column being updated.
     // Read column_config with the user-scoped client (RLS allows SELECT for everyone).

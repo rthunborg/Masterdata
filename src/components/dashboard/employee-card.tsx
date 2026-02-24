@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, memo } from 'react';
+import { useState, useCallback, memo } from 'react';
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
@@ -16,31 +16,32 @@ import type { ColumnConfig } from '@/lib/types/column-config';
 
 import { cn } from '@/lib/utils';
 
-import { EditableCell } from './editable-cell';
-
-import { EditableDateCell } from './editable-date-cell';
-
 import { employeeService } from '@/lib/services/employee-service';
 
 import { customDataService } from '@/lib/services/custom-data-service';
 
 import { toast } from 'sonner';
+import { toastError } from '@/lib/utils/toast-helpers';
 
 import { useTranslations } from '@/lib/i18n';
 
-import { getEmployeeFieldValue } from '@/lib/utils/column-mapping';
-
 import { useImportantDates } from '@/lib/hooks/use-important-dates';
-
 
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { useLongPress } from '@/hooks/use-long-press';
 
+import { useCardSwipe } from '@/lib/hooks/use-card-swipe';
+
 import { EmployeeContextMenu } from './employee-context-menu';
 
 import { Checkbox } from '@/components/ui/checkbox';
+
 import { ChecklistProgressIndicator } from './checklist-progress-indicator';
+
+import { CardMobileFields } from './employee-card/CardMobileFields';
+
+import { CardExpandedDetails } from './employee-card/CardExpandedDetails';
 
 
 interface EmployeeCardProps {
@@ -118,23 +119,22 @@ function EmployeeCardComponent({
   const { dates: allImportantDates } = useImportantDates();
 
   // Story 16.5: Use isColumnChanged from props (passed from dashboard page to avoid duplicate API calls)
-  // Default to no-op function if not provided for backward compatibility
   const checkColumnChanged = isColumnChanged || (() => false);
 
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
+  const actionButtonsWidth = 240;
 
-  // Swipe gesture state
-
-  const [swipeOffset, setSwipeOffset] = useState(0);
-
-  const [isSwiping, setIsSwiping] = useState(false);
-
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const actionButtonsWidth = 240; // 3 buttons * 80px each
+  const {
+    swipeOffset,
+    isSwiping,
+    cardRef,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    resetSwipe,
+    triggerHapticFeedback,
+  } = useCardSwipe({ isMobile, isHRAdmin, actionButtonsWidth });
 
 
   // Long-press context menu state (Story 12.6: AC 1)
@@ -162,8 +162,6 @@ function EmployeeCardComponent({
 
   };
 
-  // Generate screen reader announcement for employee card
-
   const getEmployeeAnnouncement = () => {
 
     const name = `${employee.first_name} ${employee.surname}`;
@@ -178,8 +176,6 @@ function EmployeeCardComponent({
 
   };
 
-  // Handler for masterdata column updates
-
   const handleMasterdataUpdate = useCallback(async (
     id: string,
     field: string,
@@ -192,15 +188,10 @@ function EmployeeCardComponent({
         onEmployeeUpdated();
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to update field";
-      // Optionally, show error to the user here instead of throwing
-      toast.error(message);
-      // throw new Error(message);   // Remove throw to avoid unhandled rejections in UI callbacks
+      toastError(error, "Failed to update field");
     }
   }, [onEmployeeUpdated, tToasts]);
   
-  // Handler for custom data column updates (party tables)
-
   const handleCustomDataUpdate = useCallback(async (
 
     id: string,
@@ -229,84 +220,11 @@ function EmployeeCardComponent({
 
   }, [onEmployeeUpdated]);
 
-  // Group columns by category
-
-  const groupedColumns = columnConfigs.reduce((acc, col) => {
-
-    if (!col.is_visible) return acc;
-
-    const category = col.category || 'General';
-
-    if (!acc[category]) {
-
-      acc[category] = [];
-
-    }
-
-    acc[category].push(col);
-
-    return acc;
-
-  }, {} as Record<string, ColumnConfig[]>);
-
-  // Story 12.8: Fields that should always be visible on mobile (not in expanded section)
-
-  const alwaysVisibleFieldNames = ['First Name', 'Surname', 'Rank', 'Town District', 'Stena Date', 'ÖMC Date', 'PE3 Date'];
-
-  const alwaysVisibleDbFieldNames = ['first_name', 'surname', 'rank', 'town_district', 'stena_date', 'omc_date', 'pe3_date'];
-
-
-  // Filter out always-visible fields from expanded section
-
-  const filteredGroupedColumns = Object.entries(groupedColumns).reduce((acc, [category, columns]) => {
-
-    const filteredColumns = columns.filter((col) => {
-
-      const columnName = col.column_name;
-
-      const dbColumnName = col.db_column_name.toLowerCase();
-
-      // Exclude if it's in the always-visible list
-
-      return !alwaysVisibleFieldNames.includes(columnName) && !alwaysVisibleDbFieldNames.includes(dbColumnName);
-
-    });
-
-    if (filteredColumns.length > 0) {
-
-      acc[category] = filteredColumns;
-
-    }
-
-    return acc;
-
-  }, {} as Record<string, ColumnConfig[]>);
-
-  // Get formatted label for column
-
-  const getColumnLabel = (col: ColumnConfig) => {
-
-    return col.column_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-  };
-
-  // Haptic feedback helper (iOS)
-
-  const triggerHapticFeedback = useCallback(() => {
-
-    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
-
-      navigator.vibrate(10); // Short vibration
-
-    }
-
-  }, []);
-
   // Long-press handler (Story 12.6: AC 1)
 
   const handleLongPress = useCallback((event: React.TouchEvent | React.MouseEvent) => {
 
-    if (!isMobile) return; // Only on mobile
+    if (!isMobile) return;
 
     const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
 
@@ -320,8 +238,6 @@ function EmployeeCardComponent({
 
   }, [isMobile, triggerHapticFeedback]);
 
-  // Long-press hook (Story 12.6: AC 1)
-
   const longPressHandlers = useLongPress({
 
     onLongPress: handleLongPress,
@@ -332,8 +248,6 @@ function EmployeeCardComponent({
 
   });
 
-  // Handle context menu actions
-
   const handleViewDetails = useCallback(() => {
     setExpanded(true);
   }, [setExpanded]);
@@ -341,148 +255,6 @@ function EmployeeCardComponent({
   const handleCall = useCallback((phoneNumber: string) => {
     window.location.href = `tel:${phoneNumber}`;
   }, []);
-
-  // Reset swipe position
-
-  const resetSwipe = useCallback(() => {
-
-    setSwipeOffset(0);
-
-    setIsSwiping(false);
-
-    touchStartRef.current = null;
-
-  }, []);
-
-  // Touch event handlers for swipe gesture
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-
-    if (!isMobile || !isHRAdmin) return; // Only on mobile and for HR admins
-
-    const touch = e.touches[0];
-
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-
-    setIsSwiping(true);
-
-  }, [isMobile, isHRAdmin]);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-
-    if (!isMobile || !isHRAdmin || !touchStartRef.current) return;
-
-    const touch = e.touches[0];
-
-    const deltaX = touch.clientX - touchStartRef.current.x;
-
-    const deltaY = touch.clientY - touchStartRef.current.y;
-
-
-    // Check if gesture is primarily horizontal (AC: prioritize vertical scroll if ambiguous)
-
-    const absDeltaX = Math.abs(deltaX);
-
-    const absDeltaY = Math.abs(deltaY);
-
-
-    // If vertical movement is greater, treat as scroll and ignore
-
-    if (absDeltaY > absDeltaX) {
-
-      return;
-
-    }
-
-
-    // Prevent default scroll during horizontal swipe
-
-    if (absDeltaX > 10) {
-
-      e.preventDefault();
-
-    }
-
-
-    // Only allow left swipe (negative deltaX)
-
-    if (deltaX < 0) {
-
-      const newOffset = Math.max(-actionButtonsWidth, deltaX);
-
-      setSwipeOffset(newOffset);
-
-    }
-
-  }, [isMobile, isHRAdmin, actionButtonsWidth]);
-
-  const handleTouchEnd = useCallback(() => {
-
-    if (!isMobile || !isHRAdmin || !touchStartRef.current) return;
-
-    const threshold = 50; // Minimum 50px horizontal movement (AC requirement)
-
-    const shouldReveal = Math.abs(swipeOffset) >= threshold;
-
-    if (shouldReveal && swipeOffset < -threshold) {
-
-      // Reveal actions (swipe left)
-
-      setSwipeOffset(-actionButtonsWidth);
-
-      triggerHapticFeedback();
-
-    } else {
-
-      // Return to original position
-
-      resetSwipe();
-
-    }
-
-    setIsSwiping(false);
-
-    touchStartRef.current = null;
-
-  }, [isMobile, isHRAdmin, swipeOffset, actionButtonsWidth, triggerHapticFeedback, resetSwipe]);
-
-  // Handle click outside to close swipe
-
-  useEffect(() => {
-
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-
-      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
-
-        if (swipeOffset < 0) {
-
-          resetSwipe();
-
-        }
-
-      }
-
-    };
-
-    if (swipeOffset < 0) {
-
-      document.addEventListener('mousedown', handleClickOutside);
-
-      document.addEventListener('touchstart', handleClickOutside);
-
-    }
-
-    return () => {
-
-      document.removeEventListener('mousedown', handleClickOutside);
-
-      document.removeEventListener('touchstart', handleClickOutside);
-
-    };
-
-  }, [swipeOffset, resetSwipe]);
-
-  // Handle action button clicks
 
   const handleArchiveClick = useCallback(() => {
 
@@ -507,9 +279,6 @@ function EmployeeCardComponent({
     onEdit?.(employee);
 
   }, [resetSwipe, onEdit, employee]);
-
-  // Story 9.11: Card click selection removed - selection only via checkbox
-  // Card clicks do not trigger selection, allowing normal card interactions (buttons, links, inline editing)
 
   return (
 
@@ -675,13 +444,9 @@ function EmployeeCardComponent({
 
           isSwiping && 'transition-none',
 
-          // Story 13.11: Status tints (priority: terminated > crew ready)
           employee.is_terminated && !employee.is_archived && 'bg-red-50 dark:bg-red-950/20',
           employee.crewing_done === true && !employee.is_archived && !employee.is_terminated && 'bg-green-50/50 dark:bg-green-950/20',
-          // Story 13.3: Visual feedback for selected cards (combines with status tints using opacity)
           isSelected && !employee.is_archived && 'bg-gray-100/50 dark:bg-gray-800/50',
-
-          // Removed cursor-pointer - cards are no longer clickable for selection (Story 9.11)
 
           className
 
@@ -806,8 +571,6 @@ function EmployeeCardComponent({
 
               <Mail className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
 
-              {/* Story 12.6: AC 2 - Email with pre-filled subject */}
-
               <a 
 
                 href={`mailto:${employee.email}?subject=${encodeURIComponent(`Re: ${employee.first_name} ${employee.surname}`)}`} 
@@ -832,8 +595,6 @@ function EmployeeCardComponent({
 
               <Phone className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
 
-              {/* Story 12.6: AC 3 - Phone with native styling */}
-
               <a 
 
                 href={`tel:${employee.mobile}`} 
@@ -843,8 +604,6 @@ function EmployeeCardComponent({
                 aria-label={`Call ${employee.first_name} ${employee.surname} at ${employee.mobile}`}
 
                 style={{
-
-                  // iOS native styling for phone links
 
                   WebkitTapHighlightColor: 'rgba(0, 122, 255, 0.3)',
 
@@ -865,386 +624,26 @@ function EmployeeCardComponent({
         {/* Story 12.8: Always-visible fields on mobile */}
 
         {isMobile && (
-
-          <div className="mt-4 pt-4 border-t">
-
-            <div className="grid grid-cols-2 gap-3">
-
-              {/* First Name */}
-
-              <div className="space-y-1">
-
-                <label className="text-xs font-medium text-muted-foreground">First Name</label>
-
-                <EditableCell
-
-                  value={employee.first_name}
-
-                  employeeId={employee.id}
-
-                  field="first_name"
-
-                  type="text"
-
-                  canEdit={true}
-
-                  onSave={handleMasterdataUpdate}
-
-                  onError={(error) => toast.error(error)}
-
-                />
-
-              </div>
-
-              {/* Surname */}
-
-              <div className="space-y-1">
-
-                <label className="text-xs font-medium text-muted-foreground">Surname</label>
-
-                <EditableCell
-
-                  value={employee.surname}
-
-                  employeeId={employee.id}
-
-                  field="surname"
-
-                  type="text"
-
-                  canEdit={true}
-
-                  onSave={handleMasterdataUpdate}
-
-                  onError={(error) => toast.error(error)}
-
-                />
-
-              </div>
-
-              {/* Rank */}
-
-              <div className="space-y-1">
-
-                <label className="text-xs font-medium text-muted-foreground">Rank</label>
-
-                <EditableCell
-
-                  value={employee.rank}
-
-                  employeeId={employee.id}
-
-                  field="rank"
-
-                  type="select"
-
-                  options={['SEV', 'CHEF']}
-
-                  canEdit={true}
-
-                  onSave={handleMasterdataUpdate}
-
-                  onError={(error) => toast.error(error)}
-
-                />
-
-              </div>
-
-              {/* City/Town District */}
-
-              <div className="space-y-1">
-
-                <label className="text-xs font-medium text-muted-foreground">City/Town District</label>
-
-                <EditableCell
-
-                  value={employee.town_district}
-
-                  employeeId={employee.id}
-
-                  field="town_district"
-
-                  type="text"
-
-                  canEdit={true}
-
-                  onSave={handleMasterdataUpdate}
-
-                  onError={(error) => toast.error(error)}
-
-                />
-
-              </div>
-
-              {/* Stena Date */}
-
-              <div className="space-y-1">
-
-                <label className="text-xs font-medium text-muted-foreground">Stena Date</label>
-
-                <EditableDateCell
-
-                  value={employee.stena_date}
-
-                  displayValue={getEmployeeFieldValue(employee, 'Stena Date', true, allImportantDates) as string || '—'}
-
-                  employeeId={employee.id}
-
-                  field="stena_date"
-
-                  dateCategory="Stena Dates"
-
-                  allDates={allImportantDates}
-
-                  canEdit={true}
-
-                  isChanged={checkColumnChanged(employee.id, 'stena_date'.toLowerCase().trim())} // Story 16.5: Pass highlight flag
-
-                  onSave={handleMasterdataUpdate}
-
-                  onError={(error) => toast.error(error)}
-
-                />
-
-              </div>
-
-              {/* ÖMC Date */}
-
-              <div className="space-y-1">
-
-                <label className="text-xs font-medium text-muted-foreground">ÖMC Date</label>
-
-                <EditableDateCell
-
-                  value={employee.omc_date}
-
-                  displayValue={getEmployeeFieldValue(employee, 'ÖMC Date', true, allImportantDates) as string || '—'}
-
-                  employeeId={employee.id}
-
-                  field="omc_date"
-
-                  dateCategory="ÖMC Dates"
-
-                  allDates={allImportantDates}
-
-                  canEdit={true}
-
-                  isChanged={checkColumnChanged(employee.id, 'omc_date'.toLowerCase().trim())} // Story 16.5: Pass highlight flag
-
-                  onSave={handleMasterdataUpdate}
-
-                  onError={(error) => toast.error(error)}
-
-                />
-
-              </div>
-
-              {/* PE3 Date */}
-
-              <div className="space-y-1">
-
-                <label className="text-xs font-medium text-muted-foreground">PE3 Date</label>
-
-                <EditableDateCell
-
-                  value={employee.pe3_date}
-
-                  displayValue={getEmployeeFieldValue(employee, 'PE3 Date', true, allImportantDates) as string || '—'}
-
-                  employeeId={employee.id}
-
-                  field="pe3_date"
-
-                  dateCategory="PE3 Dates"
-
-                  allDates={allImportantDates}
-
-                  canEdit={true}
-
-                  isChanged={checkColumnChanged(employee.id, 'pe3_date'.toLowerCase().trim())} // Story 16.5: Pass highlight flag
-
-                  onSave={handleMasterdataUpdate}
-
-                  onError={(error) => toast.error(error)}
-
-                />
-
-              </div>
-
-            </div>
-
-          </div>
-
+          <CardMobileFields
+            employee={employee}
+            allImportantDates={allImportantDates}
+            checkColumnChanged={checkColumnChanged}
+            onSave={handleMasterdataUpdate}
+          />
         )}
 
-        {/* All fields from column config - shown when expanded (filtered to exclude always-visible fields on mobile) */}
+        {/* All fields from column config - shown when expanded */}
 
         {expanded && (
-
-          <div className="mt-4 pt-4 border-t space-y-4 max-h-[70vh] overflow-y-auto">
-
-            {Object.entries(isMobile ? filteredGroupedColumns : groupedColumns).map(([category, columns]) => (
-
-              <div key={category} className="space-y-2">
-
-                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-
-                  {category}
-
-                </h4>
-
-                <div className="space-y-3">
-
-                  {columns.map((col) => {
-
-                    const value = getEmployeeFieldValue(
-
-                      employee, 
-
-                      col.db_column_name, 
-
-                      col.is_masterdata,
-
-                      allImportantDates
-
-                    );
-
-                    const canEdit = col.role_permissions && 
-
-                      Object.values(col.role_permissions).some(p => p.edit);
-
-                    // Determine select options based on column_name (display name for special columns)
-
-                    let selectOptions: string[] | undefined;
-
-                    if (col.column_name === 'Gender') {
-
-                      selectOptions = ['Man', 'Woman'];
-
-                    } else if (col.column_name === 'Rank') {
-
-                      selectOptions = ['SEV', 'CHEF'];
-
-                    }
-
-
-                    // Special handling for Important Date columns (Stena Date, ÖMC Date, PE3 Date)
-
-                    if (["Stena Date", "ÖMC Date", "PE3 Date"].includes(col.column_name)) {
-
-                      const dateFieldMap: Record<string, keyof Employee> = {
-
-                        "Stena Date": "stena_date",
-
-                        "ÖMC Date": "omc_date",
-
-                        "PE3 Date": "pe3_date"
-
-                      };
-
-                      const dateCategoryMap: Record<string, string> = {
-
-                        "Stena Date": "Stena Dates",
-
-                        "ÖMC Date": "ÖMC Dates",
-
-                        "PE3 Date": "PE3 Dates"
-
-                      };
-
-                      const dateField = dateFieldMap[col.column_name];
-
-                      const dateCategory = dateCategoryMap[col.column_name];
-
-                      const dateValue = employee[dateField] as string | null;
-
-                      return (
-
-                        <div key={col.id} className="space-y-1">
-
-                          <label className="text-xs font-medium text-muted-foreground">
-
-                            {getColumnLabel(col)}
-
-                          </label>
-
-                          <EditableDateCell
-
-                            value={dateValue}
-
-                            displayValue={value as string}
-
-                            employeeId={employee.id}
-
-                            field={dateField}
-
-                            dateCategory={dateCategory}
-
-                            allDates={allImportantDates}
-
-                            canEdit={canEdit}
-
-                            isChanged={checkColumnChanged(employee.id, col.db_column_name?.toLowerCase().trim() || '')} // Story 16.5: Pass highlight flag
-
-                            onSave={handleMasterdataUpdate}
-
-                            onError={(error) => toast.error(error)}
-
-                          />
-
-                        </div>
-
-                      );
-
-                    }
-
-                    return (
-
-                      <div key={col.id} className="space-y-1">
-
-                        <label className="text-xs font-medium text-muted-foreground">
-
-                          {getColumnLabel(col)}
-
-                        </label>
-
-                        <EditableCell
-
-                          value={value}
-
-                          employeeId={employee.id}
-
-                          field={col.db_column_name}
-
-                          type={col.column_type as "text" | "date" | "select" | "number" | "boolean"}
-
-                          options={selectOptions}
-
-                          canEdit={canEdit}
-
-                            isChanged={checkColumnChanged(employee.id, col.db_column_name?.toLowerCase().trim() || '')} // Story 16.5: Pass highlight flag
-
-                          onSave={col.is_masterdata ? handleMasterdataUpdate : handleCustomDataUpdate}
-
-                          onError={(error) => toast.error(error)}
-
-                        />
-
-                      </div>
-
-                    );
-
-                  })}
-
-                </div>
-
-              </div>
-
-            ))}
-
-          </div>
-
+          <CardExpandedDetails
+            employee={employee}
+            columnConfigs={columnConfigs}
+            allImportantDates={allImportantDates}
+            checkColumnChanged={checkColumnChanged}
+            onMasterdataSave={handleMasterdataUpdate}
+            onCustomDataSave={handleCustomDataUpdate}
+            isMobile={isMobile}
+          />
         )}
 
       </CardContent>

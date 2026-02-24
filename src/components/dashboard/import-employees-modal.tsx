@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { employeeService } from "@/lib/services/employee-service";
 import { toast } from "sonner";
+import { toastError } from "@/lib/utils/toast-helpers";
 import Papa from "papaparse";
 
 interface ImportEmployeesModalProps {
@@ -91,8 +92,7 @@ export function ImportEmployeesModal({
         toast.warning(tModals('importEmployees.noEmployeesImported'));
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : tModals('importEmployees.importFailed');
-      toast.error(message);
+      toastError(error, tModals('importEmployees.importFailed'));
     } finally {
       setIsImporting(false);
     }

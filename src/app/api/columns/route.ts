@@ -5,7 +5,7 @@ import {
   createErrorResponse,
 } from "@/lib/server/auth";
 import { createCustomColumnSchema } from "@/lib/validation/column-validation";
-import { z } from "zod";
+import { parseOrError, createDuplicateResponse } from "@/lib/server/api-helpers";
 
 /**
  * GET /api/columns
@@ -44,9 +44,14 @@ export async function GET(request: NextRequest) {
     // Fetch columns visible to the target role
     const columns = await columnConfigRepository.findByRole(roleToFilter);
 
-    return NextResponse.json({
-      data: columns,
-    });
+    return NextResponse.json(
+      { data: columns },
+      {
+        headers: {
+          'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=300',
+        },
+      }
+    );
   } catch (error) {
     return createErrorResponse(error);
   }
@@ -66,7 +71,9 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
-    const validatedData = createCustomColumnSchema.parse(body);
+    const result = parseOrError(createCustomColumnSchema, body);
+    if (result instanceof NextResponse) return result;
+    const validatedData = result;
 
     // Create custom column via repository
     const newColumn = await columnConfigRepository.createCustomColumn({
@@ -76,31 +83,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: newColumn }, { status: 201 });
   } catch (error) {
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: error.issues[0]?.message || "Invalid input",
-            details: error.issues,
-          },
-        },
-        { status: 400 }
-      );
-    }
-
     // Handle duplicate column name error
     if (error instanceof Error && error.message.includes("already exists")) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "DUPLICATE_COLUMN",
-            message: error.message,
-          },
-        },
-        { status: 400 }
-      );
+      return createDuplicateResponse(error.message);
     }
 
     return createErrorResponse(error);

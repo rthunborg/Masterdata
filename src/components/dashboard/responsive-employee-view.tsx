@@ -17,12 +17,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { TerminateEmployeeModal } from './terminate-employee-modal';
 import { EditEmployeeModal } from './edit-employee-modal';
-import { employeeService } from '@/lib/services/employee-service';
-import { toast } from 'sonner';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useColumns } from '@/lib/hooks/use-columns';
- 
 import { useUIStore } from '@/lib/store/ui-store';
+import { useResponsiveEmployeeActions } from '@/lib/hooks/use-responsive-employee-actions';
 
 interface ResponsiveEmployeeViewProps {
   employees: Employee[];
@@ -57,99 +55,43 @@ export function ResponsiveEmployeeView({
   onOptimisticUpdate,
   isColumnChanged, // Story 16.5: Change detection function
 }: ResponsiveEmployeeViewProps) {
-  // Detect if we're on mobile (less than 1024px - lg breakpoint)
   const isMobile = useMediaQuery('(max-width: 1023px)');
 
-  // Get user and preview role for column filtering
   const { user } = useAuth();
   const { previewRole } = useUIStore();
   const effectiveRole = previewRole || user?.role;
-  
-  // isEffectivelyHRAdmin: For UI simulation in preview mode
-  // When previewing as Sodexo, this will be false (simulating what Sodexo sees)
   const isEffectivelyHRAdmin = effectiveRole === "hr_admin";
 
-  // Fetch column configurations for mobile view
   const { columns: columnConfigs } = useColumns(effectiveRole);
 
-  // State for mobile card view dialogs
-  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
-  const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
-  const [terminateModalOpen, setTerminateModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [isArchiving, setIsArchiving] = useState(false);
   const [searchValue, setSearchValue] = useState('');
 
-  const handleArchive = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setArchiveDialogOpen(true);
-  };
-
-  const handleUnarchive = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setUnarchiveDialogOpen(true);
-  };
-
-  const handleTerminate = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setTerminateModalOpen(true);
-  };
-
-  const handleEdit = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setEditModalOpen(true);
-  };
-
-  const handleConfirmArchive = async () => {
-    if (!selectedEmployee) return;
-
-    try {
-      setIsArchiving(true);
-      await employeeService.archive(selectedEmployee.id);
-      toast.success(
-        `${selectedEmployee.first_name} ${selectedEmployee.surname} has been archived.`
-      );
-      setArchiveDialogOpen(false);
-      onEmployeeUpdated?.();
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Misslyckades att arkivera anställd';
-      toast.error(message);
-    } finally {
-      setIsArchiving(false);
-    }
-  };
-
-  const handleConfirmUnarchive = async () => {
-    if (!selectedEmployee) return;
-
-    try {
-      setIsArchiving(true);
-      await employeeService.unarchive(selectedEmployee.id);
-      toast.success(
-        `${selectedEmployee.first_name} ${selectedEmployee.surname} has been restored.`
-      );
-      setUnarchiveDialogOpen(false);
-      onEmployeeUpdated?.();
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Misslyckades att avarkivera anställd';
-      toast.error(message);
-    } finally {
-      setIsArchiving(false);
-    }
-  };
-
-  const handleTerminated = () => {
-    setTerminateModalOpen(false);
-    onEmployeeUpdated?.();
-  };
+  const {
+    selectedEmployee,
+    isArchiving,
+    archiveDialogOpen,
+    setArchiveDialogOpen,
+    unarchiveDialogOpen,
+    setUnarchiveDialogOpen,
+    terminateModalOpen,
+    setTerminateModalOpen,
+    editModalOpen,
+    handleArchive,
+    handleUnarchive,
+    handleTerminate,
+    handleEdit,
+    handleConfirmArchive,
+    handleConfirmUnarchive,
+    handleTerminated,
+    handleCloseEdit,
+    handleEditSuccess,
+  } = useResponsiveEmployeeActions({ onEmployeeUpdated });
 
   const handleSearchChange = (value: string) => {
     setSearchValue(value);
     onGlobalFilterChange?.(value);
   };
 
-  // Filter employees based on search value for mobile view
   const filteredEmployees = searchValue
     ? employees.filter((emp) => {
       const searchLower = searchValue.toLowerCase();
@@ -199,7 +141,6 @@ export function ResponsiveEmployeeView({
         />
       )}
 
-      {/* Archive Dialog for Mobile */}
       <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -219,7 +160,6 @@ export function ResponsiveEmployeeView({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Unarchive Dialog for Mobile */}
       <AlertDialog open={unarchiveDialogOpen} onOpenChange={setUnarchiveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -239,7 +179,6 @@ export function ResponsiveEmployeeView({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Terminate Modal for Mobile */}
       {selectedEmployee && (
         <TerminateEmployeeModal
           employee={selectedEmployee}
@@ -249,19 +188,11 @@ export function ResponsiveEmployeeView({
         />
       )}
 
-      {/* Edit Modal for Mobile */}
       <EditEmployeeModal
         employee={selectedEmployee}
         isOpen={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false);
-          setSelectedEmployee(null);
-        }}
-        onSuccess={() => {
-          setEditModalOpen(false);
-          setSelectedEmployee(null);
-          onEmployeeUpdated?.();
-        }}
+        onClose={handleCloseEdit}
+        onSuccess={handleEditSuccess}
       />
     </>
   );

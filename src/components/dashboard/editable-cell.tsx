@@ -1,31 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarIcon, XIcon } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./status-badge";
-import { getOneFieldStatus, getRemainingTime } from "@/lib/services/one-field-status";
+import { executeSave, type SaveContext } from "./cell-editors/save-handler";
+import { calculateBadge } from "./cell-editors/badge-logic";
+import { TextEditor } from "./cell-editors/TextEditor";
+import { NumberEditor } from "./cell-editors/NumberEditor";
+import { LoneivaEditor } from "./cell-editors/LoneivaEditor";
+import { BooleanEditor } from "./cell-editors/BooleanEditor";
+import { DateEditor } from "./cell-editors/DateEditor";
+import { SelectEditor } from "./cell-editors/SelectEditor";
 import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { useTranslations } from "@/lib/i18n";
@@ -33,13 +24,6 @@ import type { Employee } from "@/lib/types/employee";
 import { formatOMCDate, isOMCDate } from "@/lib/utils/omc-date-formatter";
 import { formatDateForDisplay } from "@/lib/utils/format";
 import { hasValueChanged } from "@/lib/utils/change-detection";
-import dynamic from "next/dynamic";
-
-// Lazy load Calendar component (react-day-picker is heavy) - Story 12.5: Performance optimization
-const Calendar = dynamic(
-  () => import("@/components/ui/calendar").then((mod) => ({ default: mod.Calendar })),
-  { ssr: false }
-);
 
 interface EditableCellProps {
   value: string | number | boolean | null;
@@ -166,6 +150,12 @@ export function EditableCell({
   
   // Track the last saved value to ensure displayValue shows it until value prop updates
   const lastSavedValueRef = useRef<string | number | boolean | null>(null);
+
+  const saveCtx: SaveContext = {
+    employeeId, field, onSave, onError,
+    setIsLoading, setError, setIsEditing,
+    tErrors,
+  };
   
   // Track the previous employeeId to detect row changes (e.g., when filtering)
   const prevEmployeeIdRef = useRef<string>(employeeId);
@@ -246,39 +236,14 @@ export function EditableCell({
   }, [isEditing, type, selectOpen, field]);
 
   const handleSave = async () => {
-    // Check if value actually changed using proper change detection
-    // Story 13.10: Prevent unnecessary view refreshes
-    // Story 9.8: Normalize empty string to null to prevent no-op updates on empty fields
     const normalizedCurrent = editValue === "" ? null : (editValue ?? null);
     const normalizedOriginal = value ?? null;
-
     if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-      // Value hasn't changed, just exit edit mode without API call
       setIsEditing(false);
       setError(null);
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      await onSave(employeeId, field, normalizedCurrent);
-      setIsEditing(false);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : tErrors("updateFailed");
-      // Story 9.8: Localize validation errors
-      if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
-        const localizedMessage = tErrors("validation.invalidValue");
-        setError(localizedMessage);
-        onError?.(localizedMessage);
-      } else {
-        setError(message);
-        onError?.(message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    await executeSave(saveCtx, normalizedCurrent);
   };
 
   const handleCancel = () => {
@@ -303,7 +268,7 @@ export function EditableCell({
       return;
     }
 
-    function handleClickOutside(event: MouseEvent) {
+    async function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
 
       // Check if click is outside this cell
@@ -314,39 +279,14 @@ export function EditableCell({
           (target as Element).closest?.('[role="dialog"]');
 
         if (isInsidePortal) {
-          return; // Don't trigger click outside logic if clicking inside a portal
+          return;
         }
 
-        // Story 13.10: Use proper change detection to prevent unnecessary saves
-        // Story 9.8: Normalize empty string to null
         const normalizedCurrent = editValue === "" ? null : (editValue ?? null);
         const normalizedOriginal = value ?? null;
-
         if (hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-          // Value changed, save it
-          setIsLoading(true);
-          setError(null);
-          onSave(employeeId, field, normalizedCurrent)
-            .then(() => {
-              setIsEditing(false);
-            })
-            .catch((err: unknown) => {
-              const message = err instanceof Error ? err.message : tErrors("updateFailed");
-              // Story 9.8: Localize validation errors
-              if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
-                const localizedMessage = tErrors("validation.invalidValue");
-                setError(localizedMessage);
-                onError?.(localizedMessage);
-              } else {
-                setError(message);
-                onError?.(message);
-              }
-            })
-            .finally(() => {
-              setIsLoading(false);
-            });
+          await executeSave(saveCtx, normalizedCurrent);
         } else {
-          // Value hasn't changed, just exit edit mode without API call
           setIsEditing(false);
         }
       }
@@ -386,23 +326,9 @@ export function EditableCell({
       };
       const displayValue = getReadOnlyDisplayValue();
 
-      // Calculate One field status for visual indicator (Story 8.3)
-      let badgeStatus: 'green' | 'yellow' | null = null;
-      let badgeTooltip: string | null = null;
-
-      if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
-        badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
-        if (badgeStatus === 'yellow' && oneMarkedAt) {
-          badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
-        } else if (badgeStatus === 'green') {
-          badgeTooltip = 'Complete - Ready for editing';
-        }
-      } else if (type === "boolean" && value === true) {
-        badgeStatus = 'green';
-      } else if (isLoneivaField && value !== null && value !== undefined) {
-        // Story 8.6: Show green badge for Lönenivå when value is set (0-7)
-        badgeStatus = 'green';
-      }
+      const { status: badgeStatus, tooltip: badgeTooltip } = calculateBadge(
+        field, type, value, oneMarkedAt, isLoneivaField
+      );
 
       // Use the calculated tooltipMessage or fallback to default (Story 8.4, 8.5)
       const disabledTooltip = tooltipMessage || tDashboard("readOnlyFieldTooltip");
@@ -535,28 +461,9 @@ export function EditableCell({
     
     const displayValue = getDisplayValue();
 
-    // Calculate One field status for visual indicator (Story 8.3)
-    // Show green badge for Talmundo when true and enabled (Story 8.4)
-    // Show green badge for Crewing/Done when true and enabled (Story 8.5)
-    // Show green badge for Lönenivå when value is set (Story 8.6)
-    let badgeStatus: 'green' | 'yellow' | null = null;
-    let badgeTooltip: string | null = null;
-
-    if (type === "boolean" && field.toLowerCase() === 'one' && value === true) {
-      badgeStatus = getOneFieldStatus(value as boolean, oneMarkedAt ? new Date(oneMarkedAt) : null);
-      if (badgeStatus === 'yellow' && oneMarkedAt) {
-        badgeTooltip = `Pending - Will be ready in ${getRemainingTime(new Date(oneMarkedAt))}`;
-      } else if (badgeStatus === 'green') {
-        badgeTooltip = 'Complete - Ready for editing';
-      }
-    } else if (type === "boolean" && value === true && effectiveCanEdit) {
-      // Story 8.4: Show green badge for Talmundo when true and enabled
-      // Story 8.5: Show green badge for Crewing/Done when true and enabled
-      badgeStatus = 'green';
-    } else if (isLoneivaField && value !== null && value !== undefined) {
-      // Story 8.6: Show green badge for Lönenivå when value is set (0-7)
-      badgeStatus = 'green';
-    }
+    const { status: badgeStatus, tooltip: badgeTooltip } = calculateBadge(
+      field, type, value, oneMarkedAt, isLoneivaField
+    );
 
     // Repayment-style: show only a checkbox (no "Ja"/"Nej"); click toggles and saves
     if (type === "boolean" && booleanDisplay === "checkbox") {
@@ -648,374 +555,91 @@ export function EditableCell({
   return (
     <div ref={cellRef} className="relative">
       {isLoneivaField && (
-        <Select
-          value={editValue !== null && editValue !== undefined ? String(editValue) : "null"}
-          onValueChange={(selectedValue) => {
-            const parsedValue = selectedValue === "null" ? null : parseInt(selectedValue, 10);
-            // Story 13.10: Check if value actually changed before saving
-            const normalizedCurrent = parsedValue;
-            const normalizedOriginal = (value !== null && value !== undefined) ? (typeof value === 'number' ? value : parseInt(String(value), 10)) : null;
-
-            if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-              // Value hasn't changed, just exit edit mode without API call
-              setIsEditing(false);
-              return;
-            }
-
-            setEditValue(parsedValue ?? "");
-            // Auto-save on select (only if value changed)
-            setTimeout(() => {
-              onSave(employeeId, field, parsedValue).then(() => {
-                setIsEditing(false);
-              }).catch((err) => {
-                const message = err instanceof Error ? err.message : tErrors("updateFailed");
-                // Story 9.8: Localize validation errors
-                if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
-                  const localizedMessage = tErrors("validation.invalidValue");
-                  setError(localizedMessage);
-                  onError?.(localizedMessage);
-                } else {
-                  setError(message);
-                  onError?.(message);
-                }
-              });
-            }, 0);
-          }}
-          disabled={isLoading}
-        >
-          <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
-            <SelectValue placeholder={tDashboard('selectSalaryLevel') || 'Select salary level'} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="null">{tDashboard('notSet') || 'Not Set'}</SelectItem>
-            {[0, 1, 2, 3, 4, 5, 6, 7].map((level) => (
-              <SelectItem key={level} value={level.toString()}>
-                {level}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <LoneivaEditor
+          value={value}
+          editValue={editValue}
+          setEditValue={setEditValue}
+          isLoading={isLoading}
+          error={error}
+          isCompact={isCompact}
+          saveCtx={saveCtx}
+          tDashboard={tDashboard}
+        />
       )}
 
       {!isLoneivaField && type === "text" && (
-        <>
-          <Input
-            ref={inputRef}
-            value={String(editValue)}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            inputMode="text"
-            className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}
-            aria-invalid={!!error}
-            aria-describedby={error ? `${field}-error` : undefined}
-          />
-          {error && (
-            <p id={`${field}-error`} className="text-xs text-destructive mt-1">
-              {error}
-            </p>
-          )}
-        </>
+        <TextEditor
+          inputRef={inputRef}
+          editValue={editValue}
+          setEditValue={setEditValue}
+          handleKeyDown={handleKeyDown}
+          isLoading={isLoading}
+          error={error}
+          isCompact={isCompact}
+          field={field}
+        />
       )}
 
       {!isLoneivaField && type === "number" && (
-        <>
-          <Input
-            ref={inputRef}
-            type="number"
-            value={String(editValue)}
-            onChange={(e) => {
-              const val = e.target.value;
-              // Allow empty string for clearing
-              if (val === "") {
-                setEditValue("");
-              } else {
-                const num = parseFloat(val);
-                if (!isNaN(num)) {
-                  setEditValue(num);
-                }
-              }
-            }}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            inputMode="numeric"
-            className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}
-          />
-          {error && (
-            <p className="text-xs text-destructive mt-1">
-              {error}
-            </p>
-          )}
-        </>
+        <NumberEditor
+          inputRef={inputRef}
+          editValue={editValue}
+          setEditValue={setEditValue}
+          handleKeyDown={handleKeyDown}
+          isLoading={isLoading}
+          error={error}
+          isCompact={isCompact}
+        />
       )}
 
       {type === "boolean" && (
-        <Select
-          value={editValue !== null && editValue !== undefined ? String(editValue) : "false"}
-          open={selectOpen}
-          onOpenChange={(open) => {
-            setSelectOpen(open);
-            // If dropdown is closed and we're not loading, exit edit mode
-            // This handles the case where user clicks outside without selecting
-            if (!open && !isLoading && isEditing) {
-              // Check if value changed
-              const normalizedCurrent = Boolean(editValue);
-              const normalizedOriginal = value !== null && value !== undefined ? Boolean(value) : false;
-              if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-                setIsEditing(false);
-              }
-            }
-          }}
-          onValueChange={async (selectedValue) => {
-
-            const newValue = selectedValue === "true";
-            // Story 9.9 & 13.10: Check if value actually changed before saving
-            const normalizedCurrent = newValue;
-            const normalizedOriginal = value !== null && value !== undefined ? Boolean(value) : false;
-
-            const changed = hasValueChanged(normalizedOriginal, normalizedCurrent);
-
-            if (!changed) {
-              // Value hasn't changed, just exit edit mode without API call
-              setSelectOpen(false);
-              setIsEditing(false);
-              return;
-            }
-
-            // CRITICAL: Update local state FIRST, before any async operations
-            // This ensures displayValue shows the new value immediately
-            setEditValue(newValue);
-            setSelectOpen(false);
-            
-            // Track saved value immediately for display
-            lastSavedValueRef.current = newValue;
-            
-            // Auto-save on select (only if value changed)
-            setIsLoading(true);
-            setError(null);
-            
-            try {
-              await onSave(employeeId, field, newValue);
-              // After successful save, ensure values are set
-              lastSavedValueRef.current = newValue;
-              setEditValue(newValue);
-              
-              // Exit edit mode - displayValue will show editValue/lastSavedValueRef until value prop updates
-              setIsEditing(false);
-            } catch (err) {
-              const message = err instanceof Error ? err.message : tErrors("updateFailed");
-              // Story 9.8: Localize validation errors
-              if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
-                const localizedMessage = tErrors("validation.invalidValue");
-                setError(localizedMessage);
-                onError?.(localizedMessage);
-              } else {
-                setError(message);
-                onError?.(message);
-              }
-              // Revert editValue on error - restore original value
-              setEditValue(value !== null && value !== undefined ? Boolean(value) : false);
-              lastSavedValueRef.current = null;
-              // Keep edit mode open on error so user can retry
-            } finally {
-              setIsLoading(false);
-            }
-          }}
-          disabled={isLoading}
-        >
-          <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
-            <SelectValue placeholder={tDashboard("booleanFalse")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="true">{getBooleanTrueLabel()}</SelectItem>
-            <SelectItem value="false">{tDashboard("booleanFalse")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <BooleanEditor
+          value={value}
+          editValue={editValue}
+          setEditValue={setEditValue}
+          selectOpen={selectOpen}
+          setSelectOpen={setSelectOpen}
+          isEditing={isEditing}
+          isLoading={isLoading}
+          error={error}
+          isCompact={isCompact}
+          saveCtx={saveCtx}
+          lastSavedValueRef={lastSavedValueRef}
+          getBooleanTrueLabel={getBooleanTrueLabel}
+          tDashboard={tDashboard}
+        />
       )}
 
       {type === "date" && (
-        <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn("w-full justify-start text-left font-normal", isCompact && "h-8 text-xs")}
-              disabled={isLoading}
-            >
-              <CalendarIcon className={cn("mr-2", isCompact ? "h-3 w-3" : "h-4 w-4")} />
-              {editValue ? (
-                format(new Date(editValue + "T00:00:00"), "PPP")
-              ) : (
-                <span className="text-muted-foreground">{tDashboard("pickDate")}</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={editValue ? new Date(editValue + "T00:00:00") : undefined}
-              onSelect={(date) => {
-                if (date) {
-                  const dateStr = format(date, "yyyy-MM-dd");
-                  const normalizedOriginal = value ?? null;
-
-                  if (!hasValueChanged(normalizedOriginal, dateStr)) {
-                    setShowDatePicker(false);
-                    setIsEditing(false);
-                    return;
-                  }
-
-                  setEditValue(dateStr);
-                  setShowDatePicker(false);
-                  lastSavedValueRef.current = dateStr;
-                  setIsLoading(true);
-                  setError(null);
-                  onSave(employeeId, field, dateStr)
-                    .then(() => {
-                      setIsEditing(false);
-                    })
-                    .catch((err) => {
-                      const message = err instanceof Error ? err.message : tErrors("updateFailed");
-                      if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
-                        const localizedMessage = tErrors("validation.invalidValue");
-                        setError(localizedMessage);
-                        onError?.(localizedMessage);
-                      } else {
-                        setError(message);
-                        onError?.(message);
-                      }
-                      setEditValue(value ? String(value) : "");
-                      lastSavedValueRef.current = null;
-                    })
-                    .finally(() => {
-                      setIsLoading(false);
-                    });
-                }
-              }}
-              autoFocus
-            />
-            {editValue && (
-              <div className="border-t p-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center text-muted-foreground"
-                  onClick={() => {
-                    setEditValue("");
-                    setShowDatePicker(false);
-                    lastSavedValueRef.current = "";
-                    setIsLoading(true);
-                    setError(null);
-                    onSave(employeeId, field, null)
-                      .then(() => {
-                        setIsEditing(false);
-                      })
-                      .catch((err) => {
-                        const message = err instanceof Error ? err.message : tErrors("updateFailed");
-                        setError(message);
-                        onError?.(message);
-                        setEditValue(value ? String(value) : "");
-                        lastSavedValueRef.current = null;
-                      })
-                      .finally(() => {
-                        setIsLoading(false);
-                      });
-                  }}
-                >
-                  <XIcon className="mr-1.5 h-3.5 w-3.5" />
-                  {tDashboard("clearDate")}
-                </Button>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
+        <DateEditor
+          value={value}
+          editValue={editValue}
+          setEditValue={setEditValue}
+          showDatePicker={showDatePicker}
+          setShowDatePicker={setShowDatePicker}
+          isLoading={isLoading}
+          isCompact={isCompact}
+          saveCtx={saveCtx}
+          lastSavedValueRef={lastSavedValueRef}
+          tDashboard={tDashboard}
+        />
       )}
 
       {type === "select" && options && (
-        <Select
-          value={editValue !== null && editValue !== undefined ? String(editValue) : ""}
-          open={selectOpen}
-          onOpenChange={(open) => {
-            setSelectOpen(open);
-            // If dropdown is closed and we're not loading, exit edit mode
-            // This handles the case where user clicks outside without selecting
-            if (!open && !isLoading && isEditing) {
-              // Check if value changed
-              const normalizedCurrent = editValue !== null && editValue !== undefined ? String(editValue) : null;
-              const normalizedOriginal = (value !== null && value !== undefined) ? String(value) : null;
-              if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-                setIsEditing(false);
-              }
-            }
-          }}
-          onValueChange={async (selectedValue) => {
-
-            // Story 13.10: Check if value actually changed before saving
-            const normalizedCurrent = selectedValue;
-            const normalizedOriginal = (value !== null && value !== undefined) ? String(value) : null;
-
-            const changed = hasValueChanged(normalizedOriginal, normalizedCurrent);
-
-            if (!changed) {
-              // Value hasn't changed, just exit edit mode without API call
-              setSelectOpen(false);
-              setIsEditing(false);
-              return;
-            }
-
-            // CRITICAL: Update local state FIRST, before any async operations
-            // This ensures displayValue shows the new value immediately
-            setEditValue(selectedValue);
-            setSelectOpen(false);
-            
-            // Track saved value immediately for display
-            lastSavedValueRef.current = selectedValue;
-            
-            // Auto-save on select (only if value changed)
-            setIsLoading(true);
-            setError(null);
-            
-            try {
-
-              await onSave(employeeId, field, selectedValue);
-              
-              // After successful save, ensure values are set
-              lastSavedValueRef.current = selectedValue;
-              setEditValue(selectedValue);
-              
-              // Exit edit mode - displayValue will show editValue/lastSavedValueRef until value prop updates
-              setIsEditing(false);
-            } catch (err) {
-              const message = err instanceof Error ? err.message : tErrors("updateFailed");
-              // Story 9.8: Localize validation errors
-              if (message === "Invalid input data" || message.includes("Invalid value") || message.includes("VALIDATION_ERROR")) {
-                const localizedMessage = tErrors("validation.invalidValue");
-                setError(localizedMessage);
-                onError?.(localizedMessage);
-              } else {
-                setError(message);
-                onError?.(message);
-              }
-              // Revert editValue on error - restore original value
-              setEditValue(value !== null && value !== undefined ? String(value) : "");
-              lastSavedValueRef.current = null;
-              // Keep edit mode open on error so user can retry
-            } finally {
-              setIsLoading(false);
-            }
-          }}
-          disabled={isLoading}
-        >
-          <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
-            <SelectValue placeholder="Select..." />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SelectEditor
+          value={value}
+          editValue={editValue}
+          setEditValue={setEditValue}
+          selectOpen={selectOpen}
+          setSelectOpen={setSelectOpen}
+          isEditing={isEditing}
+          isLoading={isLoading}
+          error={error}
+          isCompact={isCompact}
+          options={options}
+          saveCtx={saveCtx}
+          lastSavedValueRef={lastSavedValueRef}
+        />
       )}
     </div>
   );

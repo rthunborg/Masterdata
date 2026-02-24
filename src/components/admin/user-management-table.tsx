@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { toastError } from "@/lib/utils/toast-helpers";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -336,9 +337,7 @@ export function UserManagementTable({
       onUserStatusChanged();
       setConfirmDialog({ open: false, user: null, action: "deactivate" });
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : tToasts("users.userActionFailed")
-      );
+      toastError(error, tToasts("users.userActionFailed"));
     } finally {
       setIsUpdating(false);
     }

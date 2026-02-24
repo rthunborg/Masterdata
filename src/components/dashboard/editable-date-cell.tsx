@@ -14,26 +14,26 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { hasValueChanged } from "@/lib/utils/change-detection";
 import type { ImportantDate } from "@/lib/types/important-date";
 import { useAvailablePE3Dates } from "@/lib/hooks/use-available-pe3-dates";
 import { useAvailableOMCDates } from "@/lib/hooks/use-available-omc-dates";
 import { useTranslations } from "@/lib/i18n";
 import { CapacityBadge } from "./capacity-badge";
 import { isJan1ExceptionDate, formatDateDropdownOption } from "@/lib/utils/format";
+import { useDateCellEditing } from "@/lib/hooks/use-date-cell-editing";
 
 interface EditableDateCellProps {
-  value: string | null; // UUID of the selected Important Date
-  displayValue: string; // Human-readable date description
+  value: string | null;
+  displayValue: string;
   employeeId: string;
-  field: string; // "stena_date", "omc_date", "pe3_date", "repayment_needed_omc", or "repayment_needed_pe3"
-  dateCategory: string; // "Stena Dates", "ÖMC Dates", or "PE3 Dates"
+  field: string;
+  dateCategory: string;
   allDates: ImportantDate[];
   canEdit?: boolean;
-  isChanged?: boolean; // Story 16.5: Flag for field highlighting
-  isRepaymentMode?: boolean; // Story 19.14: Show all current year dates without capacity filtering
-  className?: string; // Support for styling props
-  isCompact?: boolean; // Support for density preference
+  isChanged?: boolean;
+  isRepaymentMode?: boolean;
+  className?: string;
+  isCompact?: boolean;
   onSave: (id: string, field: string, value: string | null) => Promise<void>;
   onError?: (error: string) => void;
 }
@@ -46,95 +46,73 @@ export function EditableDateCell({
   dateCategory,
   allDates,
   canEdit = true,
-  isChanged = false, // Story 16.5: Default to false for backward compatibility
-  isRepaymentMode = false, // Story 19.14: Default to false for backward compatibility
+  isChanged = false,
+  isRepaymentMode = false,
   className,
   isCompact,
   onSave,
   onError,
 }: EditableDateCellProps) {
   const t = useTranslations("dashboard");
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState<string>(value || "__NONE__");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // Prevent double saves
-  const [error, setError] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const cellRef = useRef<HTMLDivElement>(null);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // For PE3 dates, use the hook to get only available dates - only when editing
-  // Pass enabled flag to prevent fetching when not in edit mode
+  const {
+    isEditing,
+    editValue,
+    isLoading,
+    error,
+    dropdownOpen,
+    cellRef,
+    startEditing,
+    setDropdownOpen,
+    handleDropdownClose,
+    handleValueChange,
+  } = useDateCellEditing({ value, employeeId, field, onSave, onError });
+
   const isPE3Date = dateCategory === "PE3 Dates";
   const { availableDates: pe3AvailableDates, isLoading: pe3Loading } = useAvailablePE3Dates(
     isPE3Date ? value : null,
-    isPE3Date && isEditing // Only fetch when it's a PE3 date AND we're editing
+    isPE3Date && isEditing
   );
 
-  // Story 19.8: For ÖMC dates, use the hook to get available dates with Jan 1 exception
   const isOMCDate = dateCategory === "ÖMC Dates";
   const { availableDates: omcAvailableDates, isLoading: omcLoading } = useAvailableOMCDates(
     isOMCDate ? value : null,
-    isOMCDate && isEditing // Only fetch when it's an ÖMC date AND we're editing
+    isOMCDate && isEditing
   );
 
-  // Filter dates by category and future dates
   const filteredDates = useMemo(() => {
-    // Story 19.14: Repayment mode - show all current year dates without capacity filtering
     if (isRepaymentMode) {
       const currentYear = new Date().getFullYear();
       return allDates.filter((date) => {
-        // Filter by category
         if (date.category !== dateCategory) return false;
-        // Filter to current year only
         if (date.year !== currentYear) return false;
-        // Filter out archived dates
         if (!date.is_active) return false;
         return true;
       }).sort((a, b) => a.date_value.localeCompare(b.date_value));
     }
 
     if (dateCategory === "PE3 Dates") {
-      // Use available PE3 dates from the hook (handles uniqueness and Jan 1 exception)
       return pe3AvailableDates;
     }
 
     if (dateCategory === "ÖMC Dates") {
-      // Story 19.8: Use available ÖMC dates from the hook (handles Jan 1 exception)
       return omcAvailableDates;
     }
 
-    // For Stena dates, filter by category, future dates, and active status
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     return allDates.filter((date) => {
-      // Filter by category
       if (date.category !== dateCategory) return false;
-
-      // Filter out archived dates
       if (!date.is_active) return false;
-
-      // Filter out past dates
       const dateValue = new Date(date.date_value);
       dateValue.setHours(0, 0, 0, 0);
       return dateValue >= today;
     });
   }, [dateCategory, pe3AvailableDates, omcAvailableDates, allDates, isRepaymentMode]);
 
-  // Auto-open dropdown when entering edit mode
-  useEffect(() => {
-    if (isEditing && !dropdownOpen) {
-      // Small delay to ensure the Select is rendered
-      const timer = setTimeout(() => {
-        setDropdownOpen(true);
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [isEditing, dropdownOpen]);
-
-  // Cleanup tooltip timeout on unmount
   useEffect(() => {
     return () => {
       if (tooltipTimeoutRef.current) {
@@ -144,41 +122,6 @@ export function EditableDateCell({
     };
   }, []);
 
-  // Handle click outside to cancel
-  useEffect(() => {
-    if (!isEditing) {
-      return;
-    }
-
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as Node;
-
-      // Check if click is inside the cell
-      if (cellRef.current && cellRef.current.contains(target)) {
-        return;
-      }
-
-      // Check if click is inside a Select portal (SelectContent is rendered in a portal)
-      // The portal has a data-radix-popper-content-wrapper attribute
-      const isInsideSelectPortal = (target as Element).closest?.('[role="listbox"]') ||
-        (target as Element).closest?.('[data-radix-popper-content-wrapper]');
-
-      if (isInsideSelectPortal) {
-        return; // Don't cancel if clicking in the dropdown
-      }
-
-      // Cancel editing
-      setEditValue(value || "__NONE__");
-      setError(null);
-      setIsEditing(false);
-      setDropdownOpen(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isEditing, value]);
-
-  // Get tooltip text for the current date
   const getTooltipText = () => {
     if (!value) return null;
 
@@ -202,7 +145,6 @@ export function EditableDateCell({
   };
 
   if (!isEditing) {
-    // Read-only cell - show tooltip on hover
     if (!canEdit) {
       return (
         <Tooltip open={showTooltip} onOpenChange={setShowTooltip}>
@@ -210,8 +152,7 @@ export function EditableDateCell({
             <div
               ref={cellRef}
               onClick={(e) => {
-                e.stopPropagation(); // Prevent row selection when clicking read-only cell
-                // Clear any existing timeout
+                e.stopPropagation();
                 if (tooltipTimeoutRef.current) {
                   clearTimeout(tooltipTimeoutRef.current);
                 }
@@ -225,8 +166,6 @@ export function EditableDateCell({
                 "px-3 py-2 rounded min-h-10 flex items-center select-text cursor-default",
                 "focus:outline-none focus:ring-2 focus:ring-ring",
                 displayValue === t("dateDeleted") && "text-amber-600",
-                // Story 16.5: Apply highlight styling for changed fields
-                // Use highlight background when changed, otherwise use gray background
                 isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-gray-50",
                 className
               )}
@@ -245,7 +184,6 @@ export function EditableDateCell({
       );
     }
 
-    // Editable cell - can click to edit, show tooltip with date details
     const tooltipText = getTooltipText();
 
     return (
@@ -254,17 +192,13 @@ export function EditableDateCell({
           <div
             ref={cellRef}
             onClick={(e) => {
-              // Update state first, then stop propagation
-              setEditValue(value || "__NONE__"); // Sync before editing
-              setIsEditing(true);
-              e.stopPropagation(); // Prevent row selection when clicking to edit
+              startEditing();
+              e.stopPropagation();
             }}
             className={cn(
               "cursor-pointer px-3 py-2 rounded hover:bg-blue-50 transition-colors",
               "focus:outline-none focus:ring-2 focus:ring-ring min-h-10 flex items-center",
               displayValue === t("dateDeleted") && "text-amber-600",
-              // Story 16.5: Apply highlight styling for changed fields
-              // Use highlight background when changed, otherwise use white background
               isChanged ? "bg-amber-50 dark:bg-amber-950/20" : "bg-white",
               className
             )}
@@ -272,9 +206,8 @@ export function EditableDateCell({
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                e.stopPropagation(); // Prevent row selection when using keyboard
-                setEditValue(value || "__NONE__"); // Sync before editing
-                setIsEditing(true);
+                e.stopPropagation();
+                startEditing();
               }
             }}
             role="gridcell"
@@ -293,14 +226,6 @@ export function EditableDateCell({
     );
   }
 
-  // Editing mode - show dropdown
-  // Note: Story 12.8 requires "native mobile date picker" but also requires showing remaining spots
-  // in parentheses. Native <input type="date"> cannot display custom information like remaining spots.
-  // We use a Select dropdown instead, which provides better UX by showing:
-  // - Remaining spots in parentheses (e.g., "8-9 mars (5 spots left)")
-  // - Capacity badges for visual feedback
-  // - Filtered dates by category and availability
-  // The Select is mobile-optimized with min-h-10 (40px) touch targets and auto-opens on edit.
   return (
     <div ref={cellRef} className="relative">
       <Select
@@ -308,69 +233,17 @@ export function EditableDateCell({
         open={dropdownOpen}
         onOpenChange={(open) => {
           setDropdownOpen(open);
-          // Story 13.10: If dropdown closes without changing value, exit edit mode without save
           if (!open) {
-            setTimeout(() => {
-              // Check if value actually changed
-              const normalizedCurrent = editValue === "__NONE__" ? null : editValue || null;
-              const normalizedOriginal = value ?? null;
-
-              // If value hasn't changed, just exit edit mode (no API call)
-              if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-                setIsEditing(false);
-              }
-              // If value changed, onValueChange will handle the save
-            }, 100);
+            handleDropdownClose();
           }
         }}
-        onValueChange={(newValue) => {
-          // Prevent double saves
-          if (isSaving) {
-            return;
-          }
-
-          setEditValue(newValue);
-          setDropdownOpen(false);
-
-          // Story 13.10: Check if value actually changed before saving
-          // Convert "__NONE__" placeholder to null for comparison
-          const valueToSave = newValue === "__NONE__" ? null : newValue || null;
-          const normalizedOriginal = value ?? null;
-
-          if (!hasValueChanged(normalizedOriginal, valueToSave)) {
-            // Value hasn't changed, just exit edit mode without API call
-            setIsEditing(false);
-            return;
-          }
-
-          // Auto-save on select (only if value changed)
-          setTimeout(() => {
-            setIsSaving(true);
-            setIsLoading(true);
-            setError(null);
-            onSave(employeeId, field, valueToSave)
-              .then(() => {
-                setIsEditing(false);
-              })
-              .catch((err) => {
-                console.error("[EditableDateCell] Save failed:", err);
-                const message = err instanceof Error ? err.message : "Failed to update date";
-                setError(message);
-                onError?.(message);
-              })
-              .finally(() => {
-                setIsLoading(false);
-                setIsSaving(false);
-              });
-          }, 0);
-        }}
+        onValueChange={handleValueChange}
         disabled={isLoading || (dateCategory === "PE3 Dates" && pe3Loading) || (dateCategory === "ÖMC Dates" && omcLoading)}
       >
         <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-11 touch-manipulation", isCompact && "min-h-8 h-8 text-xs")}>
           <SelectValue placeholder="Select a date..." />
         </SelectTrigger>
         <SelectContent>
-          {/* Show loading spinner when fetching PE3 or ÖMC dates */}
           {((dateCategory === "PE3 Dates" && pe3Loading) || (dateCategory === "ÖMC Dates" && omcLoading)) ? (
             <div className="flex items-center justify-center gap-2 px-2 py-4 text-sm text-muted-foreground">
               <svg
@@ -402,11 +275,8 @@ export function EditableDateCell({
                 const remainingSpots = date.remaining_spots ?? 0;
                 const maxSpots = date.max_spots ?? 99;
                 const isFull = remainingSpots === 0;
-                // Story 19.8: Check if this is a Jan 1 exception date
                 const isExceptionDate = isJan1ExceptionDate(date);
-                // Story 19.14: In repayment mode, never disable options (capacity doesn't matter)
                 const shouldDisable = !isRepaymentMode && isFull && !isExceptionDate;
-                // Story 19.14: In repayment mode, don't show capacity (repayment doesn't consume spots)
                 const showCapacity = !isRepaymentMode && !isExceptionDate;
 
                 return (
@@ -422,12 +292,8 @@ export function EditableDateCell({
                   >
                     <div className="flex items-center justify-between gap-2 w-full">
                       <span className={cn(shouldDisable && "text-muted-foreground")}>
-                        {/* Story 19.8: Use formatDateDropdownOption for unified format */}
-                        {/* Story 19.14: In repayment mode, don't show capacity in label */}
                         {formatDateDropdownOption(date, showCapacity)}
                       </span>
-                      {/* Story 19.8: Don't show capacity badge for exception dates */}
-                      {/* Story 19.14: Don't show capacity badge in repayment mode */}
                       {showCapacity && (
                         <div className="flex items-center gap-1.5">
                           <CapacityBadge
