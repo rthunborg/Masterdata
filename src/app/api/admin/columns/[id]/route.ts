@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { updateColumnConfigSchema } from "@/lib/validation/column-validation";
-import { ZodError } from "zod";
+import { parseOrError, createNotFoundResponse } from "@/lib/server/api-helpers";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -27,7 +27,9 @@ export async function PATCH(
     const body = await request.json();
 
     // Validate request body
-    const validated = updateColumnConfigSchema.parse(body);
+    const parseResult = parseOrError(updateColumnConfigSchema, body);
+    if (parseResult instanceof NextResponse) return parseResult;
+    const validated = parseResult;
 
     // If updating permissions, validate constraints
     if (validated.role_permissions) {
@@ -118,15 +120,7 @@ export async function PATCH(
     if (error) {
       // Handle not found error
       if (error.code === "PGRST116") {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_FOUND",
-              message: "Column not found",
-            },
-          },
-          { status: 404 }
-        );
+        return createNotFoundResponse("Column", id);
       }
 
       console.error("PATCH /api/admin/columns/[id] error:", error);
@@ -143,19 +137,6 @@ export async function PATCH(
 
     return NextResponse.json({ data: updatedColumn });
   } catch (error) {
-    // Handle validation errors (expected, don't log)
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: error.issues[0]?.message || "Invalid input data",
-          },
-        },
-        { status: 400 }
-      );
-    }
-
     // Log unexpected errors
     console.error("PATCH /api/admin/columns/[id] error:", error);
     return createErrorResponse(error);
@@ -194,15 +175,7 @@ export async function DELETE(
       .single();
 
     if (fetchError || !column) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: "Column not found",
-          },
-        },
-        { status: 404 }
-      );
+      return createNotFoundResponse("Column", columnId);
     }
 
     // Prevent deletion of masterdata columns

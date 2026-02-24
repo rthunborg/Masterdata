@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,28 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import { useTranslations } from "@/lib/i18n";
-import { employeeService } from "@/lib/services/employee-service";
 import type { Employee } from "@/lib/types/employee";
 import { BedDouble, AlertTriangle } from "lucide-react";
-
-interface RoomPreviewData {
-  current_hotel_required: boolean;
-  current_room_number: number | null;
-  preview_hotel_required: boolean;
-  preview_room_number: number | null;
-  sharing_with: { name: string; rank: string; gender: string } | null;
-  date_label: string | null;
-  date_room_summary: Array<{
-    room_number: number;
-    occupants: Array<{ name: string; rank: string; gender: string }>;
-  }>;
-  missing_requirements: string[];
-  employee_name: string;
-  employee_rank: string | null;
-  employee_gender: string | null;
-}
+import { useRoomManagement } from "@/lib/hooks/use-room-management";
 
 interface RoomManagementModalProps {
   employee: Employee | null;
@@ -51,98 +32,19 @@ export function RoomManagementModal({
   const t = useTranslations("modals");
   const tCommon = useTranslations("common");
 
-  const [previewData, setPreviewData] = useState<RoomPreviewData | null>(null);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [previewError, setPreviewError] = useState<string | null>(null);
-  const [selectedHotelRequired, setSelectedHotelRequired] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [showRoomSummary, setShowRoomSummary] = useState(false);
-
-  const hasChanged = previewData != null && selectedHotelRequired !== previewData.current_hotel_required;
-
-  const fetchPreview = useCallback(async (employeeId: string, hotelRequired: boolean) => {
-    setIsLoadingPreview(true);
-    setPreviewError(null);
-    try {
-      const response = await fetch(
-        `/api/employees/${employeeId}/room-preview?hotel_required=${hotelRequired}`,
-        { credentials: "include" }
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || t("roomManagement.previewFailed"));
-      }
-      const result = await response.json();
-      setPreviewData(result.data);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("roomManagement.previewFailed");
-      setPreviewError(message);
-    } finally {
-      setIsLoadingPreview(false);
-    }
-  }, [t]);
-
-  useEffect(() => {
-    if (open && employee) {
-      setShowRoomSummary(false);
-      const initial = employee.hotel_required ?? false;
-      setSelectedHotelRequired(initial);
-      fetchPreview(employee.id, initial);
-    } else {
-      setPreviewData(null);
-      setPreviewError(null);
-    }
-  }, [open, employee, fetchPreview]);
-
-  const handleHotelToggle = (value: boolean) => {
-    setSelectedHotelRequired(value);
-    if (employee) {
-      fetchPreview(employee.id, value);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!employee || !hasChanged) return;
-
-    setIsSaving(true);
-    try {
-      await employeeService.update(employee.id, {
-        hotel_required: selectedHotelRequired,
-      });
-
-      const name = `${employee.first_name} ${employee.surname}`;
-      if (selectedHotelRequired && previewData?.preview_room_number) {
-        toast.success(
-          t("roomManagement.saveSuccessRoomAssigned", {
-            number: previewData.preview_room_number,
-            name,
-          })
-        );
-      } else if (!selectedHotelRequired) {
-        toast.success(t("roomManagement.saveSuccessRoomCleared", { name }));
-      } else {
-        toast.success(t("roomManagement.saveSuccess", { name }));
-      }
-
-      onSuccess();
-      onOpenChange(false);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("roomManagement.saveFailed");
-      toast.error(message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const getMissingFieldLabels = (fields: string[]): string => {
-    return fields
-      .map((f) => {
-        if (f === "omc_date") return t("roomManagement.missingOmcDate");
-        if (f === "rank") return t("roomManagement.missingRank");
-        return f;
-      })
-      .join(", ");
-  };
+  const {
+    previewData,
+    isLoadingPreview,
+    previewError,
+    selectedHotelRequired,
+    isSaving,
+    showRoomSummary,
+    hasChanged,
+    handleHotelToggle,
+    handleSave,
+    getMissingFieldLabels,
+    toggleRoomSummary,
+  } = useRoomManagement({ employee, open, onOpenChange, onSuccess });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -172,7 +74,6 @@ export function RoomManagementModal({
           </div>
         ) : previewData ? (
           <div className="space-y-4 py-2">
-            {/* Employee details */}
             <div className="rounded-lg border p-4">
               <h4 className="font-medium mb-2">{t("roomManagement.employeeDetails")}</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -195,7 +96,6 @@ export function RoomManagementModal({
               </div>
             </div>
 
-            {/* Current status */}
             <div className="rounded-lg border p-4">
               <h4 className="font-medium mb-2">{t("roomManagement.currentStatus")}</h4>
               <div className="flex items-center justify-between text-sm">
@@ -214,7 +114,6 @@ export function RoomManagementModal({
               </div>
             </div>
 
-            {/* Hotel toggle */}
             <div className="rounded-lg border p-4">
               <Label className="font-medium">{t("roomManagement.changeHotelStatus")}</Label>
               <div className="flex gap-2 mt-2">
@@ -239,7 +138,6 @@ export function RoomManagementModal({
               </div>
             </div>
 
-            {/* Preview */}
             {hasChanged && (
               <div className={`rounded-lg border p-4 ${
                 selectedHotelRequired
@@ -289,12 +187,11 @@ export function RoomManagementModal({
               </div>
             )}
 
-            {/* Collapsible room summary for the date */}
             {previewData.date_room_summary.length > 0 && (
               <div className="rounded-lg border p-4">
                 <button
                   type="button"
-                  onClick={() => setShowRoomSummary(!showRoomSummary)}
+                  onClick={toggleRoomSummary}
                   className="flex items-center justify-between w-full text-sm font-medium text-left"
                 >
                   <span>{t("roomManagement.dateRoomSummary")}</span>

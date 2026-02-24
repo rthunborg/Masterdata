@@ -28,6 +28,7 @@ interface AuthState {
   user: SessionUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  _hasHydrated: boolean;
 }
 
 interface AuthActions {
@@ -48,6 +49,7 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      _hasHydrated: false,
 
       // Actions
       login: async (email: string, password: string) => {
@@ -170,6 +172,11 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => {
+        return () => {
+          useAuthStore.setState({ _hasHydrated: true });
+        };
+      },
     }
   )
 );

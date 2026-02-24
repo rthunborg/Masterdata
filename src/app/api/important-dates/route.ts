@@ -5,7 +5,7 @@ import { requireAuthAPI, requireRoleAPI, createErrorResponse } from "@/lib/serve
 import { importantDateRepository } from "@/lib/server/repositories/important-date-repository";
 import { createImportantDateSchema } from "@/lib/validation/important-date-schema";
 import { UserRole } from "@/lib/types/user";
-import { z } from "zod";
+import { parseOrError } from "@/lib/server/api-helpers";
 
 export const dynamic = 'force-dynamic';
 
@@ -88,30 +88,9 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json();
     
-    let validatedData;
-    try {
-      validatedData = createImportantDateSchema.parse(body);
-    } catch (validationError) {
-      if (validationError instanceof z.ZodError) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "VALIDATION_ERROR",
-              message: "Invalid input data",
-              details: validationError.issues.reduce((acc, err) => {
-                const field = err.path.join(".");
-                if (!acc[field]) acc[field] = [];
-                acc[field].push(err.message);
-                return acc;
-              }, {} as Record<string, string[]>),
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 400 }
-        );
-      }
-      throw validationError;
-    }
+    const result = parseOrError(createImportantDateSchema, body);
+    if (result instanceof NextResponse) return result;
+    const validatedData = result;
 
     // Create important date via repository
     // Ensure undefined values are converted to null for database compatibility

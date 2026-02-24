@@ -9,9 +9,7 @@
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { ImportantDate, AssignedEmployee } from '@/lib/types/important-date';
 import { format, parseISO } from 'date-fns';
-import { toZonedTime, format as formatTz } from 'date-fns-tz';
-
-const STOCKHOLM_TZ = 'Europe/Stockholm';
+import { getTodayStockholm, getHrAdminEmails } from './notification-helpers';
 
 /**
  * PE3 entry with employee assignment information
@@ -26,14 +24,8 @@ export interface Pe3EntryWithEmployee {
   assigned_employees: AssignedEmployee[];
 }
 
-/**
- * Get today's date in Europe/Stockholm timezone as YYYY-MM-DD
- */
-export function getTodayStockholm(): string {
-  const now = new Date();
-  const stockholmNow = toZonedTime(now, STOCKHOLM_TZ);
-  return formatTz(stockholmNow, 'yyyy-MM-dd', { timeZone: STOCKHOLM_TZ });
-}
+// Re-export for backward compatibility with existing callers
+export { getTodayStockholm } from './notification-helpers';
 
 /**
  * Query PE3 entries with submit deadline matching today
@@ -325,27 +317,7 @@ export function generatePe3CancelDeadlineEmailHtml(
   return html;
 }
 
-/**
- * Get HR admin and Recruiter email addresses
- * Reuses function from omc-masterdata-reminder service
- */
-async function getHrAdminEmails(): Promise<string[]> {
-  const supabase = createServiceRoleClient();
-  
-  const { data: recipients, error } = await supabase
-    .from('users')
-    .select('email')
-    .in('role', ['hr_admin', 'recruiter'])
-    .not('email', 'is', null)
-    .eq('is_active', true);
-
-  if (error) {
-    console.error('[PE3 Notifications] Failed to fetch HR admin/recruiter emails:', error);
-    return [];
-  }
-
-  return (recipients || []).map(user => user.email).filter(Boolean);
-}
+// getHrAdminEmails is now imported from notification-helpers
 
 /**
  * Send PE3 submit deadline notification

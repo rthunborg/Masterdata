@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { toastError } from "@/lib/utils/toast-helpers";
 import { useTranslations } from "@/lib/i18n";
 import {
   Dialog,
@@ -149,9 +150,7 @@ export function EditColumnModal() {
       // Close modal and reset form
       closeEditColumnModal();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t('editColumn.updateFailed');
-      toast.error(message);
+      toastError(error, t('editColumn.updateFailed'));
     } finally {
       setIsSubmitting(false);
     }

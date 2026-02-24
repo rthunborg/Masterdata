@@ -1,4 +1,5 @@
 import type { Employee, EmployeeFormData } from "@/lib/types/employee";
+import { throwOnApiError } from "./api-client";
 
 export interface EmployeeFilters {
   includeArchived?: boolean;
@@ -35,10 +36,7 @@ export const employeeService = {
     
     const response = await fetch(url);
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to fetch employees");
-    }
+    await throwOnApiError(response, "Failed to fetch employees");
 
     const json: EmployeeListResponse = await response.json();
     return json.data;
@@ -53,25 +51,7 @@ export const employeeService = {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle validation errors
-      if (response.status === 400 && error.error?.code === "VALIDATION_ERROR") {
-        const validationError = new Error(error.error.message);
-        // Attach validation details to error for form handling
-        (validationError as Error & { details?: Record<string, string[]> }).details = error.error.details;
-        throw validationError;
-      }
-
-      // Handle duplicate SSN error
-      if (response.status === 409 && error.error?.code === "DUPLICATE_ENTRY") {
-        throw new Error(error.error.message);
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Failed to create employee");
-    }
+    await throwOnApiError(response, "Failed to create employee");
 
     const json = await response.json();
     return json.data;
@@ -86,30 +66,7 @@ export const employeeService = {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle validation errors
-      if (response.status === 400 && error.error?.code === "VALIDATION_ERROR") {
-        const validationError = new Error(error.error.message);
-        // Attach validation details to error for form handling
-        (validationError as Error & { details?: Record<string, string[]> }).details = error.error.details;
-        throw validationError;
-      }
-
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle duplicate SSN error
-      if (response.status === 409 && error.error?.code === "DUPLICATE_ENTRY") {
-        throw new Error(error.error.message);
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Failed to update employee");
-    }
+    await throwOnApiError(response, "Failed to update employee");
 
     const json = await response.json();
     return json.data;
@@ -123,22 +80,9 @@ export const employeeService = {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error("Du saknar behörighet att arkivera anställda");
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att arkivera anställd");
-    }
+    await throwOnApiError(response, "Misslyckades att arkivera anställd", {
+      403: "Du saknar behörighet att arkivera anställda",
+    });
   },
 
   async unarchive(id: string): Promise<void> {
@@ -149,22 +93,9 @@ export const employeeService = {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error("Du saknar behörighet att avarkivera anställda");
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att avarkivera anställd");
-    }
+    await throwOnApiError(response, "Misslyckades att avarkivera anställd", {
+      403: "Du saknar behörighet att avarkivera anställda",
+    });
   },
 
   async terminate(
@@ -183,27 +114,9 @@ export const employeeService = {
       }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle validation errors
-      if (response.status === 400 && error.error?.code === "VALIDATION_ERROR") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error("Du saknar behörighet att avsluta anställda");
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att avsluta anställd");
-    }
+    await throwOnApiError(response, "Misslyckades att avsluta anställd", {
+      403: "Du saknar behörighet att avsluta anställda",
+    });
 
     // Story 8.14 AC 6: Return termination summary for toast display
     const result = await response.json();
@@ -221,22 +134,9 @@ export const employeeService = {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error("Du saknar behörighet att återaktivera anställda");
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att återaktivera anställd");
-    }
+    await throwOnApiError(response, "Misslyckades att återaktivera anställd", {
+      403: "Du saknar behörighet att återaktivera anställda",
+    });
     
     // Story 8.13 AC 7: Return warnings from reactivation
     const result = await response.json();
@@ -246,17 +146,7 @@ export const employeeService = {
   async getById(id: string): Promise<Employee> {
     const response = await fetch(`/api/employees/${id}`);
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message || `Anställd med ID ${id} hittades inte`);
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att hämta anställd");
-    }
+    await throwOnApiError(response, "Misslyckades att hämta anställd");
 
     const json = await response.json();
     return json.data;
@@ -275,22 +165,9 @@ export const employeeService = {
       body: formData,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle validation errors
-      if (response.status === 400 && error.error?.code === "VALIDATION_ERROR") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error("Du saknar behörighet att importera anställda");
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att importera anställda");
-    }
+    await throwOnApiError(response, "Misslyckades att importera anställda", {
+      403: "Du saknar behörighet att importera anställda",
+    });
 
     const json = await response.json();
     return json.data;

@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import { columnService } from "@/lib/services/column-service";
 import { toast } from "sonner";
+import { toastError } from "@/lib/utils/toast-helpers";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
 interface DeleteColumnModalProps {
@@ -40,9 +41,7 @@ export function DeleteColumnModal({
       onDeleted();
       onClose();
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Kunde inte ta bort kolumnen";
-      toast.error(errorMessage);
+      toastError(error, "Kunde inte ta bort kolumnen");
       // Don't close modal on error - user might want to retry or cancel manually
     } finally {
       setIsDeleting(false);

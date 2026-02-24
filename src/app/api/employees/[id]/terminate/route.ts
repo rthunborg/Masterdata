@@ -5,7 +5,7 @@ import {
   createErrorResponse,
 } from "@/lib/server/auth";
 import { terminateEmployeeSchema } from "@/lib/validation/employee-schema";
-import { z } from "zod";
+import { parseOrError } from "@/lib/server/api-helpers";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -23,7 +23,9 @@ export async function POST(
 
     // Parse and validate request body
     const body = await request.json();
-    const validatedData = terminateEmployeeSchema.parse(body);
+    const parsed = parseOrError(terminateEmployeeSchema, body);
+    if (parsed instanceof NextResponse) return parsed;
+    const validatedData = parsed;
 
     // Terminate employee via repository (Story 8.14 AC 6: returns termination summary)
     const { employee, clearedDates, releasedSpots } = await employeeRepository.terminate(
@@ -45,24 +47,6 @@ export async function POST(
       },
     });
   } catch (error) {
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Termination date and reason are required",
-            details: error.issues.reduce((acc, err) => {
-              acc[err.path.join(".")] = err.message;
-              return acc;
-            }, {} as Record<string, string>),
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 400 }
-      );
-    }
-
     // Handle not found error
     if (error instanceof Error && (error.message.includes("not found") || error.message.includes("hittades inte") || error.message.includes("saknas"))) {
       return NextResponse.json(

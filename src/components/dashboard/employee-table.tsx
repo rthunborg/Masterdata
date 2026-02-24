@@ -9,24 +9,13 @@ import * as React from "react";
  
 import {
   useReactTable,
-
   getCoreRowModel,
-
   getFilteredRowModel,
-
   getSortedRowModel,
-
-  type ColumnDef,
-
-
   type SortingState,
-
   type Row,
-
   type ColumnSizingState,
-
   flexRender,
-
 } from "@tanstack/react-table";
 
  
@@ -78,19 +67,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 
  
-import { Button } from "@/components/ui/button";
-
-
- 
 import { Checkbox } from "@/components/ui/checkbox";
 
 
  
 import { Label } from "@/components/ui/label";
-
-
- 
-import { Input } from "@/components/ui/input";
 
 
  
@@ -111,20 +92,14 @@ import {
 } from "@/components/ui/tooltip";
 
  
-import { Archive, ArchiveRestore, UserX, UserCheck, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Lock, Clock, Minimize2, Maximize2, Eye, Edit, Save, BedDouble } from "lucide-react";
+import { Clock } from "lucide-react";
 
 
  
-import { EditableCell } from "./editable-cell";
-
-
- 
-import { FilterButton, FilterPanel } from "./FilterPanel";
+import { FilterPanel } from "./FilterPanel";
 import { SaveFilterDialog } from "./FilterPanel/SaveFilterDialog";
 import { useEmployeeFilters } from "@/hooks/useEmployeeFilters";
 import { useSavedFilters } from "@/hooks/useSavedFilters";
-import { ClearFilterButton } from "./ClearFilterButton";
-import { FilteredCountDisplay } from "./FilteredCountDisplay";
 import { EmptyFilterState } from "./EmptyFilterState";
 
 
@@ -133,20 +108,15 @@ import { getReadableTextColor } from "@/lib/utils/color-contrast";
 
 
  
-import { EditableDateCell } from "./editable-date-cell";
-
-
- 
 import { TerminateEmployeeModal } from "./terminate-employee-modal";
 import { RoomManagementModal } from "./room-management-modal";
 
 
  
-import { employeeService } from "@/lib/services/employee-service";
-
-
- 
-import { customDataService } from "@/lib/services/custom-data-service";
+import { useEmployeeTableActions } from "@/lib/hooks/use-employee-table-actions";
+import { useEmployeeExport } from "@/lib/hooks/use-employee-export";
+import { useEmployeeColumns } from "@/lib/hooks/use-employee-columns";
+import { EmployeeTableToolbar } from "./employee-table-toolbar";
 
 
  
@@ -157,7 +127,6 @@ import { canEditCrewingDone } from "@/lib/services/crewing-validation";
 import { mutationQueueService } from "@/lib/services/mutation-queue";
 
  
-import { toast } from "sonner";
 
 
  
@@ -183,20 +152,14 @@ import { ExportFieldSelectionDialog } from "./export-field-selection-dialog";
 import { ExportConfirmationDialog } from "./ExportConfirmationDialog";
 
  
-import { getEmployeeFieldValue, mapColumnToEmployeeField } from "@/lib/utils/column-mapping";
-
- 
 import { cn } from "@/lib/utils";
 
- 
-import { canEditField } from "@/lib/utils/role-utils";
 import { UserRole, INTERNAL_ROLES } from "@/lib/types/user";
 
 
  
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { EmployeeStatsBar } from "./employee-stats-bar";
-import { ChecklistProgressIndicator } from "./checklist-progress-indicator";
 
  
 import { useUIStore } from "@/lib/store/ui-store";
@@ -207,7 +170,6 @@ import { StickyScrollbar } from "@/components/ui/sticky-scrollbar";
  
 import { useTranslations } from "@/lib/i18n";
  
-import { COLUMN_SELECT_OPTIONS } from "@/lib/constants/options";
 
 
 interface EmployeeTableProps {
@@ -286,13 +248,8 @@ export function EmployeeTable({
   const { user } = useAuth();
   // isHRAdmin: The actual logged-in user's role (used for personal preferences & real permissions)
   const isHRAdmin = user?.role === "hr_admin";
-  const t = useTranslations("tooltips");
   const tDashboard = useTranslations("dashboard");
-  const tFilter = useTranslations("filter");
   const tModals = useTranslations("modals");
-  const tAdmin = useTranslations("admin");
-  const tToasts = useTranslations("toasts");
-
   // Get preview mode state and column visibility
   const { previewRole, isPreviewMode, initColumnVisibility, columnVisibility, density, setDensity } = useUIStore();
 
@@ -311,7 +268,7 @@ export function EmployeeTable({
   const isEffectivelyHRAdmin = effectiveRole === "hr_admin";
   
   // isEffectivelyInternalUser: For features only visible to internal users (HR Admin, Recruiter, Admin Limited)
-  const isEffectivelyInternalUser = effectiveRole && INTERNAL_ROLES.includes(effectiveRole as UserRole);
+  const isEffectivelyInternalUser = !!effectiveRole && INTERNAL_ROLES.includes(effectiveRole as UserRole);
 
   // Fetch column configurations based on effective role (for preview mode)
   const { columns: columnConfigs, isLoading: columnsLoading, error: columnsError } = useColumns(effectiveRole);
@@ -339,15 +296,7 @@ export function EmployeeTable({
   // Default to no-op function if not provided for backward compatibility
   const checkColumnChanged = isColumnChanged || (() => false);
 
-  const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
-  const [unarchiveDialogOpen, setUnarchiveDialogOpen] = React.useState(false);
-  const [terminateModalOpen, setTerminateModalOpen] = React.useState(false);
-  const [reactivateDialogOpen, setReactivateDialogOpen] = React.useState(false);
   const [roomManagementModalOpen, setRoomManagementModalOpen] = React.useState(false);
-  const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
-  const [isArchiving, setIsArchiving] = React.useState(false);
-  const [isReactivating, setIsReactivating] = React.useState(false);
-  const [isBulkProcessing, setIsBulkProcessing] = React.useState(false);
   const [statsRefreshToken, setStatsRefreshToken] = React.useState(0);
 
   const bumpStats = React.useCallback(() => {
@@ -467,6 +416,20 @@ export function EmployeeTable({
     }).length;
   }, [filteredEmployees]);
 
+  const actions = useEmployeeTableActions({
+    onEmployeeUpdated,
+    onOptimisticUpdate,
+    bumpStats,
+    filteredEmployees,
+    selectedEmployeeIds,
+    clearSelection: () => setSelectedEmployeeIds(new Set()),
+  });
+
+  const exportActions = useEmployeeExport({
+    selectedEmployeeIds,
+    isFilterActive,
+  });
+
   // Poll every 60 seconds to update One field badge statuses (Story 8.3)
   // The One field status is calculated based on one_marked_at timestamp vs current time
   // We need periodic re-renders to update the badge status as time passes
@@ -535,1244 +498,63 @@ export function EmployeeTable({
     return () => clearInterval(interval);
   }, [employees]);
 
-  // Handler for masterdata column updates
-  const handleMasterdataUpdate = React.useCallback(async (
-    id: string,
-    field: string,
-    value: string | number | boolean | null
-  ) => {
-    let rollback: (() => void) | undefined;
-
-    try {
-      if (onOptimisticUpdate) {
-        rollback = onOptimisticUpdate(id, { [field]: value });
-      } else {
-      }
-
-      await employeeService.update(id, { [field]: value });
-      toast.success(tToasts("employees.updatedSuccessfully"));
-
-      // Don't call onEmployeeUpdated immediately after optimistic update
-      // Real-time sync will handle the update, preventing race conditions
-      // where refetch overwrites the optimistic update before server processes it
-      // Only call onEmployeeUpdated if no optimistic update was performed
-      if (!onOptimisticUpdate) {
-        onEmployeeUpdated?.();
-      }
-
-      // Stats are DB-sourced and need explicit refresh
-      bumpStats();
-    } catch (error: unknown) {
-      // Rollback optimistic update
-      if (rollback) {
-        rollback();
-      }
-
-      const message = error instanceof Error ? error.message : tToasts("employees.updateFailed");
-      throw new Error(message);
-    }
-  }, [bumpStats, onEmployeeUpdated, onOptimisticUpdate, tToasts]);
-
-  // Handler for custom column updates
-  const handleCustomDataUpdate = React.useCallback(async (
-    id: string,
-    columnName: string,
-    value: string | number | boolean | null
-  ) => {
-    try {
-      await customDataService.updateCustomData(id, { [columnName]: value });
-      toast.success(tToasts("employees.customDataUpdated"));
-      onEmployeeUpdated?.();
-      bumpStats();
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to update custom data";
-      throw new Error(message);
-    }
-  }, [bumpStats, onEmployeeUpdated]);
-
-  const handleArchiveClick = (employee: Employee) => {
-
-    setSelectedEmployee(employee);
-
-    setArchiveDialogOpen(true);
-
-  };
-
-  const handleUnarchiveClick = (employee: Employee) => {
-
-    setSelectedEmployee(employee);
-
-    setUnarchiveDialogOpen(true);
-
-  };
-
-  const handleConfirmArchive = async () => {
-
-    if (!selectedEmployee) return;
-
-    try {
-
-      setIsArchiving(true);
-
-      await employeeService.archive(selectedEmployee.id);
-
-      toast.success(
-
-        tToasts("employees.archived", { name: `${selectedEmployee.first_name} ${selectedEmployee.surname}` })
-
-      );
-
-      setArchiveDialogOpen(false);
-
-      onEmployeeUpdated?.();
-      bumpStats();
-
-    } catch (error: unknown) {
-
-      const message = error instanceof Error ? error.message : tToasts("employees.archiveFailed");
-
-      toast.error(message);
-
-    } finally {
-
-      setIsArchiving(false);
-
-    }
-
-  };
-
-  const handleConfirmUnarchive = async () => {
-
-    if (!selectedEmployee) return;
-
-    try {
-
-      setIsArchiving(true);
-
-      await employeeService.unarchive(selectedEmployee.id);
-
-      toast.success(
-
-        tToasts("employees.restored", { name: `${selectedEmployee.first_name} ${selectedEmployee.surname}` })
-
-      );
-
-      setUnarchiveDialogOpen(false);
-
-      onEmployeeUpdated?.();
-      bumpStats();
-
-    } catch (error: unknown) {
-
-      const message = error instanceof Error ? error.message : tToasts("employees.unarchiveFailed");
-
-      toast.error(message);
-
-    } finally {
-
-      setIsArchiving(false);
-
-    }
-
-  };
-
-  const handleBulkAction = async (action: 'archive' | 'restore') => {
-    const selectedIds = Array.from(selectedEmployeeIds);
-    if (selectedIds.length === 0) return;
-
-    try {
-      setIsBulkProcessing(true);
-
-      const response = await fetch('/api/employees/bulk-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          employeeIds: selectedIds,
-          action: action === 'restore' ? 'restore' : 'archive'
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to perform bulk action');
-      }
-
-      toast.success(
-        action === 'archive'
-          ? `Archived ${selectedIds.length} employees`
-          : `Restored ${selectedIds.length} employees`
-      );
-
-      setSelectedEmployeeIds(new Set());
-      onEmployeeUpdated?.();
-      bumpStats();
-    } catch (error) {
-      toast.error('Failed to update employees');
-      console.error(error);
-    } finally {
-      setIsBulkProcessing(false);
-    }
-  };
-
-  const handleTerminateClick = (employee: Employee) => {
-
-    setSelectedEmployee(employee);
-
-    setTerminateModalOpen(true);
-
-  };
-
-  const handleReactivateClick = (employee: Employee) => {
-
-    setSelectedEmployee(employee);
-
-    setReactivateDialogOpen(true);
-
-  };
-
-  const handleConfirmReactivate = async () => {
-
-    if (!selectedEmployee) return;
-
-    try {
-
-      setIsReactivating(true);
-
-      // Story 8.13 AC 7: Handle warnings from reactivation
-
-
-      const { warnings } = await employeeService.reactivate(selectedEmployee.id);
-
-
-      // Display success message
-
-      toast.success(
-
-        tToasts("employees.reactivated", { name: `${selectedEmployee.first_name} ${selectedEmployee.surname}` })
-
-      );
-
-      // Display warnings if any dates couldn't be restored
-
-      if (warnings && warnings.length > 0) {
-
-        warnings.forEach((warning) => {
-
-          toast.warning(warning, { duration: 8000 });
-
-        });
-
-      }
-
-      setReactivateDialogOpen(false);
-
-      onEmployeeUpdated?.();
-      bumpStats();
-
-    } catch (error: unknown) {
-
-      const message = error instanceof Error ? error.message : tToasts("employees.reactivateFailed");
-
-      toast.error(message);
-
-    } finally {
-
-      setIsReactivating(false);
-
-    }
-
-  };
-
-  // Story 8.5: Export crew-ready employees (with all prerequisites met but not yet marked)
-  // Story 20.7: Crew-ready export respects filtered state
-
-
-  const handleExportCrewReady = async () => {
-
-    try {
-
-      // Story 20.7: Pass filtered employee IDs to respect active filters
-      const filteredEmployeeIds = filteredEmployees.map(e => e.id);
-
-      const response = await fetch('/api/employees/export-crew-ready', {
-
-        method: 'POST',
-
-        credentials: 'include',
-
-        headers: {
-          'Content-Type': 'application/json',
-        },
-
-        body: JSON.stringify({
-          selectedEmployeeIds: filteredEmployeeIds,
-        }),
-
-      });
-
-      if (!response.ok) {
-
-        const errorData = await response.json();
-
-        if (response.status === 404) {
-
-          toast.info(tToasts('employees.noCrewReadyFound'));
-
-          return;
-
-        }
-
-        throw new Error(errorData.error?.message || 'Failed to export crew-ready employees');
-
-      }
-
-
-      // Get the count from headers
-
-
-      const countHeader = response.headers.get('X-Employees-Exported');
-      const count = countHeader ? parseInt(countHeader, 10) : 0;
-
-
-      // Download the CSV file
-
-
-      const blob = await response.blob();
-
-
-      const url = window.URL.createObjectURL(blob);
-
-
-      const a = document.createElement('a');
-
-      a.href = url;
-
-      a.download = `crew_ready_employees_${new Date().toISOString().split('T')[0]}.csv`;
-
-      document.body.appendChild(a);
-
-      a.click();
-
-      document.body.removeChild(a);
-
-      window.URL.revokeObjectURL(url);
-
-      toast.success(tToasts("employees.exportedCrewReady", { count }));
-
-      // Refresh the table to show updated crewing_done values
-
-      onEmployeeUpdated?.();
-      bumpStats();
-
-    } catch (error: unknown) {
-
-      const message = error instanceof Error ? error.message : tToasts('employees.exportCrewReadyFailed');
-
-      toast.error(message);
-
-    }
-
-  };
-
-  // Build dynamic columns from column configs
-
-
-  const columns: ColumnDef<Employee>[] = React.useMemo(() => {
-
-    // Define styles based on density
-    const isCompact = density === 'compact';
-    const cellPaddingClass = isCompact ? 'px-2 py-1' : 'px-3 py-2';
-    const cellHeightClass = isCompact ? 'min-h-8' : 'min-h-10';
-    const fontSizeClass = isCompact ? 'text-xs' : 'text-sm';
-    const iconSizeClass = isCompact ? 'h-3 w-3' : 'h-4 w-4';
-
-
-    // Story 13.2: Selection checkbox column (first column)
-
-
-    const selectionColumn: ColumnDef<Employee> = {
-
-      id: "select",
-
-      header: () => {
-        const allVisibleIds = filteredEmployees.map(e => e.id);
-        const allSelected = allVisibleIds.length > 0 && allVisibleIds.every(id => selectedEmployeeIds.has(id));
-        const someSelected = allVisibleIds.some(id => selectedEmployeeIds.has(id));
-
-        return (
-          <div className="flex items-center justify-center w-full h-full gap-2">
-            <Checkbox
-              checked={allSelected ? true : someSelected ? "indeterminate" : false}
-              onCheckedChange={(value) => {
-                setSelectedEmployeeIds((prev) => {
-                  const next = new Set(prev);
-                  if (value === true) {
-                    allVisibleIds.forEach((id) => next.add(id));
-                  } else {
-                    allVisibleIds.forEach((id) => next.delete(id));
-                  }
-                  return next;
-                });
-              }}
-              aria-label="Select all"
-              className="w-4 h-4 cursor-pointer"
-            />
-          </div>
-        );
-      },
-
-      enableSorting: false,
-
-      enableResizing: false, // Story 16.6: Disable resize for checkbox column to prevent alignment issues
-
-      size: 40, // Story 16.6: Match checkbox cell width (40px for checkbox + minimal padding)
-
-      cell: ({ row }) => (
-
-        <div>
-
-          <Checkbox
-
-            checked={isEmployeeSelected(row.original.id)}
-
-            onCheckedChange={(checked) => {
-              // Only toggle if this is a direct checkbox interaction
-              toggleEmployeeSelection(row.original.id);
-            }}
-            onClick={(e) => {
-              // Explicitly stop propagation for checkbox click to be safe
-              e.stopPropagation();
-            }}
-
-            aria-label={`Select ${row.original.first_name} ${row.original.surname}`}
-
-            className="w-4 h-4 cursor-pointer"
-
-            data-testid={`employee-select-checkbox-${row.original.id}`}
-
-          />
-
-        </div>
-
-      ),
-
-    };
-
-    // First filter by role permissions
-
-
-    const roleFilteredColumns = columnConfigs;
-
-
-    // Story 8.13 AC 3 & Story 13.9: Filter repayment columns - only show when viewing terminated employees
-    // Repayment columns are included in column definitions when includeTerminated is true,
-    // but will be conditionally rendered per-row based on employee.is_terminated status
-
-
-    const repaymentColumns = ['Återbetalningsskyldig ÖMC', 'Återbetalningsskyldig PE3'];
-
-
-    const terminatedFilteredColumns = includeTerminated
-
-      ? roleFilteredColumns
-
-      : roleFilteredColumns.filter((config) => !repaymentColumns.includes(config.column_name));
-
-    // Then apply visibility preferences (for HR Admin only)
-
-
-    const visibleColumns = isHRAdmin
-
-      ? terminatedFilteredColumns.filter((config) => {
-
-        const isVisible = columnVisibility[config.id] !== false;
-
-        return isVisible;
-
-      })
-
-      : terminatedFilteredColumns;
-
-    const dataColumns: ColumnDef<Employee>[] = visibleColumns.map((config) => {
-
-
-      // Determine if user can edit this column based on role permissions
-
-
-      // In preview mode, only HR Admin can edit (other roles cannot)
-
-
-      const userRole = effectiveRole || "";
-
-
-      // Use canEditField helper which handles Administrator's special edit restrictions
-      // (can only edit checklist items + loneniva)
-      const hasEditPermission = canEditField(userRole as UserRole, config);
-
-
-      const canEdit = isPreviewMode ? isHRAdmin : hasEditPermission;
-
-
-      // Determine cell renderer based on column type and permissions
-
-
-      const getCellRenderer = (): ColumnDef<Employee>['cell'] => {
-
-
-        // Special handling for Status column (computed field)
-
-        if (config.column_name === "Status") {
-
-          const StatusCell = ({ row }: { row: Row<Employee> }) => {
-
-            if (row.original.is_archived) return <span className="text-muted-foreground">Archived</span>;
-
-            if (row.original.is_terminated) return <span className="text-red-600">Terminated</span>;
-
-            return <span className="text-green-600">Active</span>;
-
-          };
-
-          StatusCell.displayName = "StatusCell";
-
-          return StatusCell;
-
-        }
-
-
-        // Get the field key for the employee object
-        // Use mapColumnToEmployeeField for masterdata to ensure correct DB field name (e.g. "Lönenivå" -> "loneiva")
-        // For custom columns, use db_column_name directly as fallback, but prefer consistent mapping
-        const fieldKey = config.is_masterdata
-          ? mapColumnToEmployeeField(config.column_name)
-          : config.db_column_name.toLowerCase().replace(/ /g, "_");
-
-        const DataCell = ({ row }: { row: Row<Employee> }) => {
-          // Story 16.5: Re-compute isChanged on every render to ensure it's reactive
-          // This ensures the cell updates when checkColumnChanged function changes
-          const columnNameForChangeCheck = config.db_column_name?.toLowerCase().trim() || '';
-          const isChanged = React.useMemo(
-            () => checkColumnChanged(row.original.id, columnNameForChangeCheck),
-            [checkColumnChanged, row.original.id, columnNameForChangeCheck]
-          );
-
-          // Story 13.9: Hide repayment columns for non-terminated employees
-          const isRepaymentColumn = repaymentColumns.includes(config.column_name);
-          if (isRepaymentColumn && !row.original.is_terminated) {
-            return <div className="text-muted-foreground">—</div>;
-          }
-
-
-          // For masterdata columns, use column_name (display name like "ÖMC Date")
-
-
-          // For custom columns, use db_column_name (the actual database column name)
-
-
-          const columnIdentifier = config.is_masterdata ? config.column_name : config.db_column_name;
-
-
-          const value = getEmployeeFieldValue(row.original, columnIdentifier, config.is_masterdata, allImportantDates, tDashboard("dateDeleted"));
-
-
-          // Special handling for Important Date columns (Stena Date, ÖMC Date, PE3 Date)
-
-          if (["Stena Date", "ÖMC Date", "PE3 Date"].includes(config.column_name)) {
-
-            const dateFieldMap: Record<string, keyof Employee> = {
-
-              "Stena Date": "stena_date",
-
-              "ÖMC Date": "omc_date",
-
-              "PE3 Date": "pe3_date"
-
-            };
-
-            const dateCategoryMap: Record<string, string> = {
-
-              "Stena Date": "Stena Dates",
-
-              "ÖMC Date": "ÖMC Dates",
-
-              "PE3 Date": "PE3 Dates"
-
-            };
-
-            const dateField = dateFieldMap[config.column_name];
-
-
-            const dateCategory = dateCategoryMap[config.column_name];
-
-
-            const dateValue = row.original[dateField] as string | null;
-
-            // Story 16.5: Check if this date column has changed for highlighting
-            // Map column_name to db_column_name for change detection
-            const dateColumnDbName = config.db_column_name;
-            const isDateChanged = checkColumnChanged(row.original.id, dateColumnDbName);
-
-            return (
-
-              <EditableDateCell
-
-                value={dateValue}
-
-                displayValue={value as string}
-
-                employeeId={row.original.id}
-
-                field={dateField}
-
-                dateCategory={dateCategory}
-
-                allDates={allImportantDates}
-
-                canEdit={canEdit}
-
-                isChanged={isDateChanged} // Story 16.5: Pass highlight flag
-
-                className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
-
-                isCompact={isCompact}
-
-                onSave={handleMasterdataUpdate}
-
-                onError={(error) => toast.error(error)}
-
-              />
-
-            );
-
-          }
-
-          // Repayment columns: boolean checkboxes (null/false = unchecked, true = checked)
-          if (["repayment_needed_omc", "repayment_needed_pe3"].includes(config.db_column_name)) {
-            const repaymentField = config.db_column_name as "repayment_needed_omc" | "repayment_needed_pe3";
-            const repaymentValue = row.original[repaymentField] as boolean | null;
-            const isRepaymentChanged = checkColumnChanged(row.original.id, config.db_column_name);
-            return (
-              <EditableCell
-                value={repaymentValue === true}
-                employeeId={row.original.id}
-                field={repaymentField}
-                type="boolean"
-                canEdit={canEdit}
-                isChanged={isRepaymentChanged}
-                isChecklistItem={false}
-                booleanDisplay="checkbox"
-                className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
-                isCompact={isCompact}
-                onSave={handleMasterdataUpdate}
-                onError={(error) => toast.error(error)}
-              />
-            );
-          }
-
-          // Standard cell rendering for other columns
-          // Determine EditableCell type based on column_type
-
-
-          let cellType: "text" | "date" | "select" | "number" | "boolean" = "text";
-
-          let options: string[] | undefined;
-
-          // Note: repayment_needed_omc and repayment_needed_pe3 are handled above with EditableDateCell
-          if (config.column_type === "date") {
-
-            cellType = "date";
-
-          } else if (config.column_type === "number") {
-
-            cellType = "number";
-
-          } else if (config.column_type === "boolean") {
-
-            cellType = "boolean";
-
-          } else if (COLUMN_SELECT_OPTIONS[config.db_column_name]) {
-
-            cellType = "select";
-
-            options = COLUMN_SELECT_OPTIONS[config.db_column_name];
-
-          }
-
-          // Choose the appropriate save handler based on column type
-          const handleSave = config.is_masterdata
-
-            ? handleMasterdataUpdate
-
-            : handleCustomDataUpdate;
-
-          // Pass oneMarkedAt prop for One field (Story 8.3)
-
-
-          const oneMarkedAtProp = (config.column_name === "One" || fieldKey === "one")
-
-            ? { oneMarkedAt: row.original.one_marked_at }
-
-            : {};
-
-          // Story 8.4: Pass oneValue and oneMarkedAt for Talmundo field conditional editability
-
-
-          const talmundoConditionalProps = (config.column_name === "Talmundo" || fieldKey === "talmundo")
-
-            ? {
-
-              oneValue: row.original.one,
-
-              oneMarkedAt: row.original.one_marked_at
-
-            }
-
-            : {};
-
-          // Story 8.5: Pass full employee data for Crewing/Done field conditional editability
-
-
-          const crewingDoneConditionalProps = (config.column_name === "Crewing/Done" || fieldKey === "crewing_done")
-
-            ? { employeeData: row.original }
-
-            : {};
-
-          // Story 16.5: isChanged is now computed above using useMemo for reactivity
-
-          return (
-
-            <EditableCell
-
-              value={value}
-
-              employeeId={row.original.id}
-
-              field={config.is_masterdata ? fieldKey : config.db_column_name}
-
-              type={cellType}
-
-              options={options}
-
-              canEdit={canEdit} // Pass permission flag
-
-              isChanged={isChanged} // Story 16.5: Pass highlight flag
-
-              isChecklistItem={config.is_checklist_item} // Story 19.x: Boolean fields show "Ja/Nej" or "Klart/Nej" based on this flag
-
-              {...oneMarkedAtProp} // Conditionally pass oneMarkedAt for One field
-
-              {...talmundoConditionalProps} // Conditionally pass One field data for Talmundo
-
-              {...crewingDoneConditionalProps} // Conditionally pass employee data for Crewing/Done
-
-              className={cn(cellPaddingClass, cellHeightClass, fontSizeClass)}
-
-              isCompact={isCompact}
-
-              onSave={handleSave}
-
-              onError={(error) => toast.error(error)}
-
-            />
-
-          );
-
-        };
-
-        DataCell.displayName = `${config.db_column_name}Cell`;
-
-        return DataCell;
-
-      };
-
-      return {
-
-        accessorKey: config.db_column_name.toLowerCase().replace(/ /g, "_"),
-
-        header: ({ column }) => {
-
-          // Use column_name for header display (this is now the display name)
-
-
-          const displayName = config.column_name;
-
-
-          // Determine permission indicator for preview mode
-          // Show eye icon for view-only, edit icon for editable columns
-          const showPermissionIndicator = isPreviewMode && hasEditPermission;
-          const isViewOnly = isPreviewMode && !hasEditPermission;
-
-
-          return (
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-
-                  className={cn(
-
-                    "w-full min-w-0",
-
-                    column.getCanSort()
-
-                      ? "flex items-center gap-1.5 cursor-pointer select-none hover:text-foreground"
-
-                      : "flex items-center gap-1.5",
-
-                    column.getIsSorted() && "font-semibold"
-
-                  )}
-
-                  onClick={column.getCanSort() ? column.getToggleSortingHandler() : undefined}
-
-                  role={column.getCanSort() ? "button" : undefined}
-
-                  tabIndex={column.getCanSort() ? 0 : undefined}
-
-                  onKeyDown={(e) => {
-
-                    if (column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
-
-                      e.preventDefault();
-
-                      column.getToggleSortingHandler()?.(e);
-
-                    }
-
-                  }}
-
-                  aria-label={
-
-                    column.getCanSort()
-
-                      ? `Sort by ${displayName}${column.getIsSorted() === "asc"
-
-                        ? ", currently sorted ascending"
-
-                        : column.getIsSorted() === "desc"
-
-                          ? ", currently sorted descending"
-
-                          : ""
-
-                      }${!canEdit ? " (read-only)" : ""}`
-
-                      : !canEdit ? `${displayName} (read-only)` : displayName
-
-                  }
-
-                >
-
-                  {/* Header text with truncation - min-w-0 lets it shrink with column width so header aligns with values */}
-                  <span className="truncate min-w-0" title={displayName}>
-                    {displayName}
-                  </span>
-
-                  {/* Permission indicator for preview mode */}
-                  {showPermissionIndicator && (
-                    <Edit className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
-                  )}
-                  {isViewOnly && (
-                    <Eye className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
-                  )}
-
-                  {/* Legacy lock icon (kept for non-preview mode) */}
-                  {!canEdit && !isPreviewMode && (
-
-                    <Lock className={cn(iconSizeClass, "text-gray-400 flex-shrink-0")} aria-hidden="true" />
-
-                  )}
-
-                  {column.getCanSort() && (
-
-                    <span className="ml-auto flex-shrink-0" aria-hidden="true">
-
-                      {column.getIsSorted() === "asc" ? (
-
-                        <ArrowUp className={iconSizeClass} />
-
-                      ) : column.getIsSorted() === "desc" ? (
-
-                        <ArrowDown className={iconSizeClass} />
-
-                      ) : (
-
-                        <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
-
-                      )}
-
-                    </span>
-
-                  )}
-
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="space-y-1">
-                  <p className="font-medium">{displayName}</p>
-                  {isPreviewMode && (
-                    <p className="text-xs text-muted-foreground">
-                      {hasEditPermission ? "Editable" : "View only"}
-                    </p>
-                  )}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-
-          );
-
-        },
-
-        id: config.id,
-
-        enableSorting: true,
-
-        ...(config.column_type === "date" && {
-
-          sortingFn: (rowA, rowB) => {
-            // For Important Date fields (stena_date, omc_date, pe3_date), we need to look up
-            // the actual date_value from the ImportantDate object, not use the formatted display string
-            const importantDateFields = ["stena_date", "omc_date", "pe3_date"];
-            const dbField = config.db_column_name.toLowerCase();
-            
-            let dateAStr: string | null = null;
-            let dateBStr: string | null = null;
-            
-            if (importantDateFields.includes(dbField)) {
-              // Get the UUID from the employee and look up the actual date_value
-              const dateIdA = rowA.original[dbField as keyof Employee] as string | null;
-              const dateIdB = rowB.original[dbField as keyof Employee] as string | null;
-              
-              const dateObjA = dateIdA ? allImportantDates.find(d => d.id === dateIdA) : null;
-              const dateObjB = dateIdB ? allImportantDates.find(d => d.id === dateIdB) : null;
-              
-              dateAStr = dateObjA?.date_value || null;
-              dateBStr = dateObjB?.date_value || null;
-            } else {
-              // For regular date columns, use the value directly
-              dateAStr = getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string | null;
-              dateBStr = getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as string | null;
-            }
-            
-            // Handle null values - sort them to the end
-            if (!dateAStr && !dateBStr) return 0;
-            if (!dateAStr) return 1;
-            if (!dateBStr) return -1;
-
-            const dateA = new Date(dateAStr).getTime();
-            const dateB = new Date(dateBStr).getTime();
-            
-            // Handle invalid dates
-            if (isNaN(dateA) && isNaN(dateB)) return 0;
-            if (isNaN(dateA)) return 1;
-            if (isNaN(dateB)) return -1;
-
-            return dateA - dateB;
-
-          },
-
-        }),
-
-        ...((config.db_column_name.toLowerCase() === 'loneiva' || config.db_column_name.toLowerCase() === 'lönenivå') && {
-
-          sortingFn: (rowA, rowB) => {
-
-            // Story 8.6: Numeric sorting with NULL values at end
-
-
-            const a = getEmployeeFieldValue(rowA.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as number | null;
-
-
-            const b = getEmployeeFieldValue(rowB.original, config.db_column_name, config.is_masterdata, allImportantDates, tDashboard("dateDeleted")) as number | null;
-
-
-            // NULL values always sort to the end
-
-            if (a === null && b === null) return 0;
-
-            if (a === null) return 1; // a after b
-
-            if (b === null) return -1; // b after a
-
-            // Normal numeric comparison
-
-            return a - b;
-
-          },
-
-        }),
-
-        cell: getCellRenderer(),
-
-      };
-
-    });
-
-    // Add Actions column for HR Admin (simulated in preview mode)
-
-    if (isEffectivelyHRAdmin) {
-
-      dataColumns.push({
-
-        id: "actions",
-
-        header: tAdmin("actions"),
-
-        enableSorting: false,
-
-        cell: ({ row }) => {
-
-          const employee = row.original;
-
-          return (
-
-            <div className="flex gap-2">
-
-              {/* Terminate/Reactivate buttons (now first) */}
-
-              {employee.is_terminated ? (
-
-                <Tooltip>
-
-                  <TooltipTrigger asChild>
-
-                    <Button
-
-                      variant="ghost"
-
-                      size="sm"
-
-                      onClick={() => handleReactivateClick(employee)}
-
-                    >
-
-                      <UserCheck className="h-4 w-4" />
-
-                    </Button>
-
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-
-                    <p>{t("reactivateEmployee")}</p>
-
-                  </TooltipContent>
-
-                </Tooltip>
-
-              ) : (
-
-                <Tooltip>
-
-                  <TooltipTrigger asChild>
-
-                    <Button
-
-                      variant="ghost"
-
-                      size="sm"
-
-                      onClick={() => handleTerminateClick(employee)}
-
-                    >
-
-                      <UserX className="h-4 w-4" />
-
-                    </Button>
-
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-
-                    <p>{t("terminateEmployee")}</p>
-
-                  </TooltipContent>
-
-                </Tooltip>
-
-              )}
-
-              {/* Archive/Unarchive buttons (now second) */}
-
-              {employee.is_archived ? (
-
-                <Tooltip>
-
-                  <TooltipTrigger asChild>
-
-                    <Button
-
-                      variant="ghost"
-
-                      size="sm"
-
-                      onClick={() => handleUnarchiveClick(employee)}
-
-                      className={isCompact ? "h-6 w-6 p-0" : ""}
-
-                    >
-
-                      <ArchiveRestore className={iconSizeClass} />
-
-                    </Button>
-
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-
-                    <p>{t("restoreEmployee")}</p>
-
-                  </TooltipContent>
-
-                </Tooltip>
-
-              ) : (
-
-                <Tooltip>
-
-                  <TooltipTrigger asChild>
-
-                    <Button
-
-                      variant="ghost"
-
-                      size="sm"
-
-                      onClick={() => handleArchiveClick(employee)}
-
-                      className={isCompact ? "h-6 w-6 p-0" : ""}
-
-                    >
-
-                      <Archive className={iconSizeClass} />
-
-                    </Button>
-
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-
-                    <p>{t("archiveEmployee")}</p>
-
-                  </TooltipContent>
-
-                </Tooltip>
-
-              )}
-
-            </div>
-
-          );
-
-        },
-
-      });
-
-    }
-
-
-    // Story 19.5: Checklist Progress column (only show if there are checklist items)
-    // Only visible to internal users (hr_admin, recruiter, admin_limited)
-    const hasChecklistItems = columnConfigs.some(
-      (col) => col.column_type === 'boolean' && col.is_checklist_item
-    );
-    // Use isEffectivelyInternalUser for preview mode simulation
-    const showProgressColumn = hasChecklistItems && isEffectivelyInternalUser;
-
-    const progressColumn: ColumnDef<Employee> | null = showProgressColumn ? {
-      id: "checklist_progress",
-      header: ({ column }) => (
-        <div
-          className={cn(
-            "flex items-center gap-1 font-medium cursor-pointer select-none",
-            fontSizeClass
-          )}
-          onClick={column.getToggleSortingHandler()}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              column.getToggleSortingHandler()?.(e);
-            }
-          }}
-          tabIndex={0}
-          role="button"
-          aria-label={`Sort by Framsteg${column.getIsSorted() === "asc" ? ", currently sorted ascending" : column.getIsSorted() === "desc" ? ", currently sorted descending" : ""}`}
-        >
-          <span>Framsteg</span>
-          <span className="ml-auto" aria-hidden="true">
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUp className={iconSizeClass} />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className={iconSizeClass} />
-            ) : (
-              <ArrowUpDown className={cn(iconSizeClass, "opacity-50")} />
-            )}
-          </span>
-        </div>
-      ),
-      enableSorting: true,
-      enableResizing: true,
-      size: 120,
-      accessorFn: (row) => {
-        // Calculate progress for sorting - returns percentage as number
-        const checklistColumns = columnConfigs.filter(
-          (col) => col.column_type === 'boolean' && col.is_checklist_item
-        );
-        if (checklistColumns.length === 0) return 0;
-        const completed = checklistColumns.filter((col) => {
-          const value = getEmployeeFieldValue(row, col.db_column_name);
-          return value === true;
-        }).length;
-        return (completed / checklistColumns.length) * 100;
-      },
-      sortingFn: (rowA, rowB) => {
-        const a = rowA.getValue("checklist_progress") as number;
-        const b = rowB.getValue("checklist_progress") as number;
-        if (a !== b) return a - b;
-        const createdA = rowA.original.created_at ?? "";
-        const createdB = rowB.original.created_at ?? "";
-        return createdA < createdB ? -1 : createdA > createdB ? 1 : 0;
-      },
-      cell: ({ row }) => (
-        <div className={cn(cellPaddingClass, cellHeightClass, "flex items-center")}>
-          <ChecklistProgressIndicator
-            employee={row.original}
-            columns={columnConfigs}
-          />
-        </div>
-      ),
-    } : null;
-
-    // Story 13.2: Return selection column first, then progress column (if any), then data columns
-    const allColumns = progressColumn
-      ? [selectionColumn, progressColumn, ...dataColumns]
-      : [selectionColumn, ...dataColumns];
-
-    return allColumns;
-
-  }, [
+  const { handleMasterdataUpdate, handleCustomDataUpdate } = actions;
+
+  const {
+    handleArchiveClick,
+    handleUnarchiveClick,
+    handleTerminateClick,
+    handleReactivateClick,
+    handleConfirmArchive,
+    handleConfirmUnarchive,
+    handleConfirmReactivate,
+    handleBulkAction,
+    handleExportCrewReady,
+    handleCellError,
+    archiveDialogOpen,
+    setArchiveDialogOpen,
+    unarchiveDialogOpen,
+    setUnarchiveDialogOpen,
+    terminateModalOpen,
+    setTerminateModalOpen,
+    reactivateDialogOpen,
+    setReactivateDialogOpen,
+    selectedEmployee,
+    setSelectedEmployee,
+    isArchiving,
+    isReactivating,
+    isBulkProcessing,
+  } = actions;
+
+  // Build dynamic columns from column configs (extracted to hook)
+  const columns = useEmployeeColumns({
     columnConfigs,
     isHRAdmin,
     isEffectivelyHRAdmin,
     isEffectivelyInternalUser,
-    handleMasterdataUpdate,
-    handleCustomDataUpdate,
     effectiveRole,
     isPreviewMode,
-    t,
-    tAdmin,
-    tDashboard,
+    density,
     columnVisibility,
     allImportantDates,
     includeTerminated,
+    filteredEmployees,
+    selectedEmployeeIds,
+    setSelectedEmployeeIds,
     isEmployeeSelected,
     toggleEmployeeSelection,
     checkColumnChanged,
-    density,
-    // Keep select-all checkbox reactive (avoid stale closures)
-    filteredEmployees,
-    selectedEmployeeIds,
-  ]); // Story 16.5: Include checkColumnChanged so columns re-render when highlighting state changes
+    actions: {
+      handleMasterdataUpdate,
+      handleCustomDataUpdate,
+      handleCellError,
+      handleArchiveClick,
+      handleUnarchiveClick,
+      handleTerminateClick,
+      handleReactivateClick,
+    },
+  });
+
 
   // Story 13.5: Reset Crew Ready filter when Terminated filter is enabled - REMOVED in Story 20.1
   // Crew ready filter dropdown removed; clear selection when switching filter contexts
@@ -1785,180 +567,16 @@ export function EmployeeTable({
   // Story 13.5: Auto-select employees when Crew Ready filter is activated - REMOVED in Story 20.1
   // Crew ready filter and auto-selection removed; users select employees manually
 
-  // Story 13.6: General export with field selection
-  // Story 20.7: Export respects filtered state
-
-  const [exportDialogOpen, setExportDialogOpen] = React.useState(false);
-  const [exportConfirmationOpen, setExportConfirmationOpen] = React.useState(false);
-  const [pendingExport, setPendingExport] = React.useState<{
-    selectedIds: string[];
-    isFiltered: boolean;
-  } | null>(null);
-
-
-  const handleExportClick = () => {
-
-    const selectedIds = Array.from(selectedEmployeeIds);
-
-    if (selectedIds.length === 0) {
-
-      toast.error(tDashboard("noEmployeesSelected") || tToasts("employees.noEmployeesSelected"));
-
-      return;
-
-    }
-
-    // Story 20.7: Show confirmation if filters are active and user hasn't dismissed it
-    const dismissedConfirmation = typeof window !== 'undefined' 
-      ? localStorage.getItem("export-confirmation-dismissed") === "true"
-      : false;
-
-    if (isFilterActive && !dismissedConfirmation) {
-      setPendingExport({ selectedIds, isFiltered: true });
-      setExportConfirmationOpen(true);
-    } else {
-      setExportDialogOpen(true);
-    }
-
-  };
-
-  const handleExportConfirmed = () => {
-    setExportConfirmationOpen(false);
-    setExportDialogOpen(true);
-  };
-
-  const handleExportWithFields = async (selectedFields: string[], impersonatedRole?: string) => {
-
-    try {
-
-      const selectedIds = Array.from(selectedEmployeeIds);
-
-      if (selectedIds.length === 0) {
-
-        toast.error(tDashboard("noEmployeesSelected") || tToasts("employees.noEmployeesSelected"));
-
-        return;
-
-      }
-
-      if (selectedFields.length === 0) {
-
-        toast.error(tDashboard("noFieldsSelected") || tToasts("employees.noFieldsSelected"));
-
-        return;
-
-      }
-
-
-      const response = await fetch('/api/employees/export', {
-
-        method: 'POST',
-
-        headers: {
-
-          'Content-Type': 'application/json',
-
-        },
-
-        credentials: 'include',
-
-        body: JSON.stringify({
-
-          employeeIds: selectedIds,
-
-          fields: selectedFields,
-
-          impersonatedRole: impersonatedRole,
-
-          format: 'xlsx', // Always export as Excel
-
-        }),
-
-      });
-
-      if (!response.ok) {
-
-        const errorData = await response.json();
-
-        // Story 17.4: Translate error codes to Swedish for external users
-        const errorCode = errorData.error?.code;
-        let errorMessage = errorData.error?.message || 'Failed to export employees';
-
-        if (errorCode) {
-          switch (errorCode) {
-            case 'NO_EMPLOYEES_SELECTED':
-              errorMessage = tDashboard("noEmployeesSelected") || errorMessage;
-              break;
-            case 'NO_FIELDS_SELECTED':
-              errorMessage = tDashboard("noFieldsSelected") || errorMessage;
-              break;
-            case 'PERMISSION_DENIED':
-              // Extract field names from details or message
-              const deniedFields = errorData.error?.details?.deniedFields?.join(", ") ||
-                errorData.error?.message?.match(/following fields: (.+)/)?.[1] || '';
-              errorMessage = tDashboard("exportPermissionDenied", { fields: deniedFields }) || errorMessage;
-              break;
-            case 'NO_PERMITTED_FIELDS':
-              errorMessage = tDashboard("exportNoPermittedFields") || errorMessage;
-              break;
-            case 'NO_EMPLOYEES_FOUND':
-              errorMessage = tDashboard("exportNoEmployeesFound") || errorMessage;
-              break;
-            case 'IMPERSONATION_FORBIDDEN':
-              errorMessage = "Only HR Admins can export with impersonated role context.";
-              break;
-            case 'INVALID_FORMAT':
-              errorMessage = "Invalid export format specified.";
-              break;
-            default:
-              // Use original message or fallback
-              errorMessage = errorMessage;
-          }
-        }
-
-        throw new Error(errorMessage);
-
-      }
-
-
-      // Download the file (Excel or CSV based on format)
-
-      const blob = await response.blob();
-
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-
-      a.href = url;
-
-      const dateStr = new Date().toISOString().split('T')[0];
-
-      // Determine file extension from Content-Type header
-      const contentType = response.headers.get('Content-Type') || '';
-      const isExcel = contentType.includes('spreadsheetml') || contentType.includes('excel');
-      const extension = isExcel ? 'xlsx' : 'csv';
-
-      a.download = `employees_export_${dateStr}.${extension}`;
-
-      document.body.appendChild(a);
-
-      a.click();
-
-      document.body.removeChild(a);
-
-      window.URL.revokeObjectURL(url);
-
-      toast.success(tDashboard("exportSuccess", { count: selectedIds.length }) || tToasts("employees.exportSuccess", { count: selectedIds.length }));
-
-    } catch (error: unknown) {
-
-      const message = error instanceof Error ? error.message : tToasts('employees.exportFailed');
-
-      toast.error(message);
-
-    }
-
-  };
+  const {
+    exportDialogOpen,
+    setExportDialogOpen,
+    exportConfirmationOpen,
+    setExportConfirmationOpen,
+    pendingExport,
+    handleExportClick,
+    handleExportConfirmed,
+    handleExportWithFields,
+  } = exportActions;
 
   // Get visible column IDs for the export dialog (Story 13.6)
   const visibleColumnIds = React.useMemo(() => {
@@ -2196,240 +814,27 @@ export function EmployeeTable({
 
         <>
 
-          {/* Search Input and Column Visibility */}
-
-          <div className={cn(
-            "flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4",
-            // Prevent controls from exceeding viewport width
-            "w-full max-w-full"
-          )}>
-
-            <div className="relative flex-1 max-w-sm w-full">
-
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-
-              <Input
-
-                placeholder={tDashboard("searchPlaceholder")}
-
-                value={globalFilter ?? ""}
-
-                onChange={(e) => setGlobalFilter(e.target.value)}
-
-                className="pl-9 pr-9"
-
-              />
-
-              {globalFilter && (
-
-                <button
-
-                  onClick={() => setGlobalFilter("")}
-
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-
-                  aria-label="Clear search"
-
-                >
-
-                  <X className="h-4 w-4" />
-
-                </button>
-
-              )}
-
-            </div>
-
-            {/* Story 8.5: Crew-Ready Filter - REMOVED in Story 20.1 */}
-            {/* Dropdown filter removed to consolidate filtering in new advanced filter panel (Epic 20) */}
-
-            {/* Story 20.2: Filter Button */}
-            <FilterButton
-              onClick={() => setIsFilterPanelOpen(true)}
-              isActive={isFilterActive}
-              filterCount={filterCount}
-            />
-
-            {/* Story 20.5: Clear Filter Button */}
-            <ClearFilterButton
-              onClick={clearAllFilters}
-              show={isFilterActive}
-            />
-
-            {/* Story 20.6: Save Filter Button (next to Rensa filter, outside panel) */}
-            {isFilterActive && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSaveFilterDialogOpen(true)}
-                aria-label={tFilter("saveCurrentFilters")}
-                data-testid="save-filter-button"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {tFilter("saveFilter")}
-              </Button>
-            )}
-
-            {/* Density Toggle - Visible to everyone */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setDensity(density === 'compact' ? 'default' : 'compact')}
-                  aria-label={density === 'compact' ? t("switchToComfortable") : t("switchToCompact")}
-                >
-                  {density === 'compact' ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{density === 'compact' ? t("switchToComfortable") : t("switchToCompact")}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Room Management Button (HR Admin only, single selection) */}
-            {isEffectivelyHRAdmin && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (selectedEmployeeIds.size === 1) {
-                        const selectedId = Array.from(selectedEmployeeIds)[0];
-                        const emp = employees.find((e) => e.id === selectedId);
-                        if (emp) {
-                          setSelectedEmployee(emp);
-                          setRoomManagementModalOpen(true);
-                        }
-                      }
-                    }}
-                    disabled={selectedEmployeeIds.size !== 1}
-                    className="whitespace-nowrap"
-                  >
-                    <BedDouble className="h-4 w-4 mr-1" />
-                    {tDashboard("roomManagement")}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    {selectedEmployeeIds.size === 1
-                      ? tDashboard("roomManagementTooltip")
-                      : tDashboard("roomManagementTooltipDisabled")}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            {/* Story 13.6: General Export Button with Field Selection */}
-            {/* Story 17.4: Export Button for External Users - visible to all users */}
-            {/* Story 20.7: Export button label reflects filter/selection state */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportClick}
-                  disabled={selectedEmployeeIds.size === 0}
-                  className="whitespace-nowrap"
-                >
-                  {selectedEmployeeIds.size > 0
-                    ? `Export Selected (${selectedEmployeeIds.size})`
-                    : isFilterActive
-                      ? `Export Filtered (${filteredCount})`
-                      : tDashboard("exportSelected") || "Export All Employees"}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  {selectedEmployeeIds.size === 0
-                    ? isFilterActive
-                      ? `Export ${filteredCount} filtered employees`
-                      : tDashboard("noEmployeesSelected") || "Inga anställda valda"
-                    : `Export ${selectedEmployeeIds.size} selected employees`}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Story 8.5: Export Crew-Ready Employees (HR Admin only, simulated in preview mode) */}
-
-            {isEffectivelyHRAdmin && (
-
-              <Tooltip>
-
-                <TooltipTrigger asChild>
-
-                  <Button
-
-                    variant="outline"
-
-                    size="sm"
-
-                    onClick={handleExportCrewReady}
-
-                    disabled={eligibleCrewReadyCount === 0}
-
-                    className="whitespace-nowrap"
-
-                  >
-
-                    {tDashboard("exportCrewReady")}
-
-                    {eligibleCrewReadyCount > 0 && ` (${eligibleCrewReadyCount})`}
-
-                  </Button>
-
-                </TooltipTrigger>
-
-                <TooltipContent>
-
-                  <p>
-
-                    {eligibleCrewReadyCount === 0
-
-                      ? tDashboard("exportCrewReadyTooltipDisabled")
-
-                      : tDashboard(
-
-                        eligibleCrewReadyCount === 1
-
-                          ? "exportCrewReadyTooltip"
-
-                          : "exportCrewReadyTooltipPlural",
-
-                        { count: eligibleCrewReadyCount }
-
-                      )
-
-                    }
-
-                  </p>
-
-                </TooltipContent>
-
-              </Tooltip>
-
-            )}
-
-          </div>
-
-          {/* Story 20.5: Filtered Count Display */}
-          <FilteredCountDisplay
+          <EmployeeTableToolbar
+            globalFilter={globalFilter}
+            setGlobalFilter={setGlobalFilter}
+            isFilterActive={isFilterActive}
+            filterCount={filterCount}
             filteredCount={filteredCount}
             totalCount={totalCount}
-            show={isFilterActive}
-            className="mb-2"
+            onOpenFilterPanel={() => setIsFilterPanelOpen(true)}
+            onClearAllFilters={clearAllFilters}
+            onOpenSaveFilterDialog={() => setSaveFilterDialogOpen(true)}
+            density={density}
+            setDensity={setDensity}
+            isEffectivelyHRAdmin={isEffectivelyHRAdmin}
+            selectedEmployeeIds={selectedEmployeeIds}
+            employees={employees}
+            onSelectEmployee={setSelectedEmployee}
+            onOpenRoomManagement={() => setRoomManagementModalOpen(true)}
+            handleExportClick={handleExportClick}
+            handleExportCrewReady={handleExportCrewReady}
+            eligibleCrewReadyCount={eligibleCrewReadyCount}
           />
-
-          {/* Story 20.5: ARIA live region for screen reader announcements */}
-          <div 
-            role="status" 
-            aria-live="polite" 
-            aria-atomic="true"
-            className="sr-only"
-          >
-            {isFilterActive && `${filterCount} filters active. Showing ${filteredCount} of ${totalCount} employees.`}
-          </div>
 
           <div 
             className="rounded-md border relative"

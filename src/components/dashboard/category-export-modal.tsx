@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { EXPORTABLE_EMPLOYEE_FIELDS, DEFAULT_EXPORT_FIELDS } from "@/lib/constants/export-fields";
 import { exportEmployeesByCategory } from "@/lib/services/export-service";
 import { toast } from "sonner";
+import { toastError } from "@/lib/utils/toast-helpers";
 import { useTranslations } from "@/lib/i18n";
 
 interface CategoryExportModalProps {
@@ -93,8 +94,7 @@ export function CategoryExportModal({ isOpen, onClose }: CategoryExportModalProp
       toast.success(tToasts("export.exportCompleted"));
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : tToasts("export.exportFailed");
-      toast.error(message);
+      toastError(error, tToasts("export.exportFailed"));
     } finally {
       setIsExporting(false);
     }
