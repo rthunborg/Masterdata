@@ -218,7 +218,7 @@ function EmployeeCardComponent({
 
     }
 
-  }, [onEmployeeUpdated]);
+  }, [onEmployeeUpdated, tToasts]);
 
   // Long-press handler (Story 12.6: AC 1)
 

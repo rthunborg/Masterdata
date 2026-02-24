@@ -141,7 +141,9 @@ export function useDateInventory(
   // fetchAvailableDates changes (e.g. currentDateId changed). The subscription
   // stays alive and always calls the latest fetch function via the ref.
   const fetchRef = useRef(fetchAvailableDates);
-  fetchRef.current = fetchAvailableDates;
+  useEffect(() => {
+    fetchRef.current = fetchAvailableDates;
+  });
 
   const stableFetch = useCallback(() => fetchRef.current(), []);
 

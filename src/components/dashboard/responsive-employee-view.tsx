@@ -25,7 +25,6 @@ import { useResponsiveEmployeeActions } from '@/lib/hooks/use-responsive-employe
 interface ResponsiveEmployeeViewProps {
   employees: Employee[];
   isLoading: boolean;
-  isHRAdmin: boolean;
   onEmployeeUpdated?: () => void | Promise<void>;
   includeArchived?: boolean;
   onIncludeArchivedChange?: (value: boolean) => void;
@@ -42,7 +41,6 @@ interface ResponsiveEmployeeViewProps {
 export function ResponsiveEmployeeView({
   employees,
   isLoading,
-  isHRAdmin,
   onEmployeeUpdated,
   includeArchived = false,
   onIncludeArchivedChange,

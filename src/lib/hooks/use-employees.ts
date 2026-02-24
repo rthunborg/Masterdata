@@ -302,7 +302,9 @@ export function useEmployees({
   // changes (e.g. filters change). The debounced function is created once and
   // always calls the latest handler via the ref.
   const handleRealtimeEventRef = useRef(handleRealtimeEvent);
-  handleRealtimeEventRef.current = handleRealtimeEvent;
+  useEffect(() => {
+    handleRealtimeEventRef.current = handleRealtimeEvent;
+  });
 
   const stableHandleRealtimeEvent = useCallback(
     (event: RealtimeEvent) => handleRealtimeEventRef.current(event),

@@ -62,7 +62,9 @@ export function useRealtime({
   // Ref-stable callback: prevents subscription teardown/recreation when
   // consumers pass a new onEvent reference (inline arrow, changed deps, etc.)
   const onEventRef = useRef(onEvent);
-  onEventRef.current = onEvent;
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  });
 
   const handleEvent = useCallback(
     (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
