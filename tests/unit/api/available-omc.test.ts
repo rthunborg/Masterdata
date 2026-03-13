@@ -50,8 +50,13 @@ vi.mock("@/lib/server/auth", async () => {
   };
 });
 
+const FROZEN_YEAR = new Date().getFullYear();
+
 describe("GET /api/important-dates/available-omc", () => {
   beforeEach(async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(`${FROZEN_YEAR}-02-01T12:00:00Z`));
+
     vi.clearAllMocks();
     
     // Mock requireAuthAPI to succeed by default
@@ -68,6 +73,10 @@ describe("GET /api/important-dates/available-omc", () => {
     // Mock createAPIClient to return mockSupabaseClient
     const { createAPIClient } = await import("@/lib/supabase/server-api");
     vi.mocked(createAPIClient).mockReturnValue(mockSupabaseClient as any);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("should return ÖMC dates with remaining capacity (not filtered by assignment)", async () => {
