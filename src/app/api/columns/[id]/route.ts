@@ -6,7 +6,7 @@ import {
   createForbiddenResponse,
 } from "@/lib/server/auth";
 import { updateColumnSchema } from "@/lib/validation/column-validation";
-import { z } from "zod";
+import { parseOrError, createNotFoundResponse } from "@/lib/server/api-helpers";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
@@ -21,10 +21,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   try {
-    // Await params (Next.js 15 requirement)
-    const { id } = await params;
-    
     // Verify authentication and get user
     const user = await requireAuthAPI();
 
@@ -37,7 +36,9 @@ export async function PATCH(
 
     // Parse and validate request body
     const body = await request.json();
-    const validatedData = updateColumnSchema.parse(body);
+    const result = parseOrError(updateColumnSchema, body);
+    if (result instanceof NextResponse) return result;
+    const validatedData = result;
 
     // Update column via repository (includes permission check)
     const updatedColumn = await columnConfigRepository.updateColumn(
@@ -49,20 +50,6 @@ export async function PATCH(
 
     return NextResponse.json({ data: updatedColumn });
   } catch (error) {
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: error.issues[0]?.message || "Invalid input",
-            details: error.issues,
-          },
-        },
-        { status: 400 }
-      );
-    }
-
     // Handle permission errors
     if (error instanceof Error && error.message.includes("permission")) {
       return NextResponse.json(
@@ -78,15 +65,7 @@ export async function PATCH(
 
     // Handle not found errors
     if (error instanceof Error && error.message.includes("not found")) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: error.message,
-          },
-        },
-        { status: 404 }
-      );
+      return createNotFoundResponse("Column", id);
     }
 
     // Handle duplicate column name error
@@ -116,10 +95,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   try {
-    // Await params (Next.js 15 requirement)
-    const { id } = await params;
-    
     // Verify authentication and get user
     const user = await requireAuthAPI();
 
@@ -155,15 +133,7 @@ export async function DELETE(
 
     // Handle not found errors
     if (error instanceof Error && error.message.includes("not found")) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: error.message,
-          },
-        },
-        { status: 404 }
-      );
+      return createNotFoundResponse("Column", id);
     }
 
     // Handle masterdata column deletion attempt

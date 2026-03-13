@@ -12,7 +12,13 @@ import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber, recalculateRoomsForDate, recalculateRoomsForEmployee } from "@/lib/services/room-assignment";
 import { createClient } from "@/lib/supabase/server";
-import { z } from "zod";
+import {
+  parseOrError,
+  createNotFoundResponse,
+  createDuplicateResponse,
+  isDuplicatePE3DateError,
+  createDuplicatePE3Response,
+} from "@/lib/server/api-helpers";
 import type { Employee } from "@/lib/types/employee";
 
 // Force Node.js runtime for cookies() support
@@ -33,16 +39,7 @@ export async function GET(
     const employee = await employeeRepository.findById(id);
     
     if (!employee) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: `Employee with ID ${id} not found`,
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 404 }
-      );
+      return createNotFoundResponse("Employee", id);
     }
 
     // Return successful response
@@ -88,32 +85,9 @@ export async function PATCH(
     // Parse and validate request body
     const body = await request.json();
     
-    let validatedData;
-    try {
-      validatedData = updateEmployeeSchema.parse(body);
-    } catch (validationError) {
-      if (validationError instanceof z.ZodError) {
-        const details = validationError.issues.reduce((acc, err) => {
-          const field = err.path.join(".");
-          if (!acc[field]) acc[field] = [];
-          acc[field].push(err.message);
-          return acc;
-        }, {} as Record<string, string[]>);
-        const firstMessage = validationError.issues[0]?.message;
-        return NextResponse.json(
-          {
-            error: {
-              code: "VALIDATION_ERROR",
-              message: firstMessage ? `${firstMessage}` : "Invalid input data",
-              details,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 400 }
-        );
-      }
-      throw validationError;
-    }
+    const parsed = parseOrError(updateEmployeeSchema, body);
+    if (parsed instanceof NextResponse) return parsed;
+    const validatedData = parsed;
 
     // Normalize SSN if it's being updated
     const normalizedData = validatedData.ssn
@@ -128,16 +102,7 @@ export async function PATCH(
       const currentEmployee = await employeeRepository.findById(id);
       
       if (!currentEmployee) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_FOUND",
-              message: `Employee with ID ${id} not found`,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 404 }
-        );
+        return createNotFoundResponse("Employee", id);
       }
       
       // If One is being set to true for the first time or after being false/null
@@ -163,16 +128,7 @@ export async function PATCH(
       }
       
       if (!currentEmployee) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_FOUND",
-              message: `Employee with ID ${id} not found`,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 404 }
-        );
+        return createNotFoundResponse("Employee", id);
       }
 
       // Check if Talmundo can be edited
@@ -202,16 +158,7 @@ export async function PATCH(
       }
       
       if (!currentEmployee) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_FOUND",
-              message: `Employee with ID ${id} not found`,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 404 }
-        );
+        return createNotFoundResponse("Employee", id);
       }
 
       // Check if Crewing/Done can be edited (all 10 prerequisites must be true)
@@ -235,16 +182,7 @@ export async function PATCH(
     // Fetch once and reuse for all validations
     const currentEmployee = await employeeRepository.findById(id);
     if (!currentEmployee) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: `Employee with ID ${id} not found`,
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 404 }
-      );
+      return createNotFoundResponse("Employee", id);
     }
 
     // Story 8.20: Handle room assignment changes
@@ -355,24 +293,8 @@ export async function PATCH(
             supabase // Pass server-side client for proper authentication
           );
         } catch (capacityError) {
-          // Check if this is a PE3 duplicate error
-          if (capacityError instanceof Error && (
-            capacityError.message.includes("PE3 date") && capacityError.message.includes("already assigned") ||
-            capacityError.message.includes("duplicate key value") && capacityError.message.includes("pe3_date") ||
-            capacityError.message.includes("unique constraint") && capacityError.message.includes("pe3_date")
-          )) {
-            return NextResponse.json(
-              {
-                error: {
-                  code: "DUPLICATE_PE3_DATE",
-                  message: capacityError.message.includes("already assigned") 
-                    ? capacityError.message 
-                    : "This PE3 date is already assigned to another employee",
-                  timestamp: new Date().toISOString(),
-                },
-              },
-              { status: 409 }
-            );
+          if (isDuplicatePE3DateError(capacityError)) {
+            return createDuplicatePE3Response(capacityError as Error);
           }
           // Return capacity error to client
           return NextResponse.json(
@@ -403,16 +325,7 @@ export async function PATCH(
       // If only date fields were updated, fetch the updated employee
       employee = await employeeRepository.findById(id);
       if (!employee) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_FOUND",
-              message: `Employee with ID ${id} not found`,
-              timestamp: new Date().toISOString(),
-            },
-          },
-          { status: 404 }
-        );
+        return createNotFoundResponse("Employee", id);
       }
     }
 
@@ -477,36 +390,12 @@ export async function PATCH(
 
     // Handle duplicate SSN error
     if (error instanceof Error && error.message.includes("already exists")) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "DUPLICATE_ENTRY",
-            message: error.message,
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 409 }
-      );
+      return createDuplicateResponse(error.message);
     }
 
     // Handle duplicate PE3 date error (database unique constraint)
-    if (error instanceof Error && (
-      error.message.includes("PE3 date") && error.message.includes("already assigned") ||
-      error.message.includes("duplicate key value") && error.message.includes("pe3_date") ||
-      error.message.includes("unique constraint") && error.message.includes("pe3_date")
-    )) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "DUPLICATE_PE3_DATE",
-            message: error.message.includes("already assigned") 
-              ? error.message 
-              : "This PE3 date is already assigned to another employee",
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 409 }
-      );
+    if (isDuplicatePE3DateError(error)) {
+      return createDuplicatePE3Response(error as Error);
     }
 
     // Handle other errors
@@ -528,16 +417,7 @@ export async function DELETE(
     // Story 8.20: Get employee before deletion to check for ÖMC date
     const employee = await employeeRepository.findById(id);
     if (!employee) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: `Employee with ID ${id} not found`,
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 404 }
-      );
+      return createNotFoundResponse("Employee", id);
     }
 
     // Store ÖMC date for room recalculation after deletion

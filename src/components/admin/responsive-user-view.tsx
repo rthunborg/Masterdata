@@ -88,7 +88,7 @@ export function ResponsiveUserView({
 
       setConfirmDialog({ open: false, user: null, action: 'deactivate' });
       onUserStatusChanged();
-    } catch (error: unknown) {
+    } catch {
       toast.error(tToasts('users.userActionFailed'));
     } finally {
       setIsUpdating(false);

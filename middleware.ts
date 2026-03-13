@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { shouldUpdateActivity } from './src/lib/server/utils/activity-tracker';
@@ -49,43 +49,23 @@ export async function middleware(request: NextRequest) {
     // Refresh session if expired
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Get user role for authorization checks
+    // Single query for role + activity tracking (avoids duplicate DB round-trips)
     let userRole: string | null = null;
     if (user) {
-      const { data: appUser } = await supabase
-        .from('users')
-        .select('role')
-        .eq('auth_user_id', user.id)
-        .single();
-      
-      userRole = appUser?.role || null;
-    }
-
-    // Protect admin-only routes
-    const adminRoutes = ['/dashboard/important-dates', '/dashboard/admin/users', '/dashboard/admin/columns'];
-    const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
-    
-    if (isAdminRoute && userRole !== 'hr_admin') {
-      const redirectUrl = new URL('/dashboard', request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // Track user activity if authenticated
-    if (user) {
-      // Fetch application user record to get last_active_at
       const { data: appUser, error: fetchError } = await supabase
         .from('users')
-        .select('id, last_active_at')
+        .select('id, role, last_active_at')
         .eq('auth_user_id', user.id)
         .single();
-      
+
       if (fetchError) {
-        console.error('Error fetching user activity:', fetchError);
+        console.error('Error fetching user data:', fetchError);
       }
+
+      userRole = appUser?.role || null;
 
       // Update activity asynchronously (fire-and-forget pattern)
       if (appUser && shouldUpdateActivity(appUser.last_active_at)) {
-        // Don't await - let it run in background (non-blocking)
         void (async () => {
           try {
             const { error: updateError } = await supabase
@@ -97,11 +77,19 @@ export async function middleware(request: NextRequest) {
               console.error('[Middleware] Update error:', updateError);
             }
           } catch (error) {
-            // Silently fail - activity tracking shouldn't break requests
             console.error('[Middleware] Failed to update user activity:', error);
           }
         })();
       }
+    }
+
+    // Protect admin-only routes
+    const adminRoutes = ['/dashboard/important-dates', '/dashboard/admin/users', '/dashboard/admin/columns'];
+    const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+    
+    if (isAdminRoute && userRole !== 'hr_admin') {
+      const redirectUrl = new URL('/dashboard', request.url);
+      return NextResponse.redirect(redirectUrl);
     }
 
     // Redirect to login if not authenticated (except on login page itself)

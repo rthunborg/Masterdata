@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { employeeService } from "@/lib/services/employee-service";
 import { toast } from "sonner";
+import { toastError } from "@/lib/utils/toast-helpers";
 import type { Employee } from "@/lib/types/employee";
 import { createClient } from "@/lib/supabase/client";
 
@@ -166,8 +167,7 @@ export function TerminateEmployeeModal({
       onOpenChange(false);
       reset();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : t('terminateEmployee.terminateFailed');
-      toast.error(errorMessage);
+      toastError(error, t('terminateEmployee.terminateFailed'));
     }
   };
 

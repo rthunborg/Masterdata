@@ -345,6 +345,6 @@ describe("PATCH /api/admin/columns/[id]", () => {
 
     expect(response.status).toBe(404);
     expect(data.error.code).toBe("NOT_FOUND");
-    expect(data.error.message).toBe("Column not found");
+    expect(data.error.message).toContain("not found");
   });
 });

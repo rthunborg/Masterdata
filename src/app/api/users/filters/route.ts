@@ -24,7 +24,11 @@ export async function GET(request: NextRequest) {
     }
 
     const response: GetSavedFiltersResponse = { data: data || [] };
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     return createErrorResponse(error);
   }

@@ -256,7 +256,6 @@ export default function DashboardPage() {
             <ResponsiveEmployeeView
               employees={employees}
               isLoading={isLoadingEmployees}
-              isHRAdmin={isHRAdminUser}
               onEmployeeUpdated={refetch}
               onIncludeArchivedChange={onIncludeArchivedChange}
               onIncludeTerminatedChange={onIncludeTerminatedChange}

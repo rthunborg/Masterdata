@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { toastError } from "@/lib/utils/toast-helpers";
 import { useTranslations } from "@/lib/i18n";
 import {
   Dialog,
@@ -153,9 +154,7 @@ export function AddColumnModal({ onColumnCreated }: { onColumnCreated?: () => vo
       closeModal("addColumn");
       form.reset();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : tModals('addColumn.createFailed');
-      toast.error(message);
+      toastError(error, tModals('addColumn.createFailed'));
     } finally {
       setIsSubmitting(false);
     }

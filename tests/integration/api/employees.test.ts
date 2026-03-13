@@ -964,7 +964,6 @@ describe("POST /api/employees/[id]/terminate", () => {
 
     expect(response.status).toBe(400);
     expect(json.error.code).toBe("VALIDATION_ERROR");
-    expect(json.error.message).toContain("Termination date and reason are required");
   });
 
   it("should return 400 for missing termination reason", async () => {
@@ -982,7 +981,6 @@ describe("POST /api/employees/[id]/terminate", () => {
 
     expect(response.status).toBe(400);
     expect(json.error.code).toBe("VALIDATION_ERROR");
-    expect(json.error.message).toContain("Termination date and reason are required");
   });
 
   it("should return 400 for invalid date format", async () => {

@@ -10,7 +10,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { UserRole, getRoleDisplayName } from "@/lib/types/user";
+import { UserRole, ALL_ROLES, getRoleDisplayName } from "@/lib/types/user";
 import { Eye, Edit } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import {
@@ -39,12 +39,11 @@ export function RoleSelector() {
   // Only render for HR Admin
   if (user?.role !== UserRole.HR_ADMIN) return null;
 
-  const roles: { value: UserRole | "hr_admin"; label: string }[] = [
-    { value: "hr_admin", label: "HR Admin (Default)" },
-    { value: UserRole.SODEXO, label: getRoleDisplayName(UserRole.SODEXO) },
-    { value: UserRole.OMC, label: getRoleDisplayName(UserRole.OMC) },
-    { value: UserRole.PAYROLL, label: getRoleDisplayName(UserRole.PAYROLL) },
-    { value: UserRole.TOPLUX, label: getRoleDisplayName(UserRole.TOPLUX) },
+  const roles: { value: UserRole; label: string }[] = [
+    { value: UserRole.HR_ADMIN, label: "HR Admin (Default)" },
+    ...ALL_ROLES
+      .filter((role) => role !== UserRole.HR_ADMIN)
+      .map((role) => ({ value: role, label: getRoleDisplayName(role) })),
   ];
 
   const currentRole = previewRole || UserRole.HR_ADMIN;

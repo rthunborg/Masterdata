@@ -1,4 +1,5 @@
 import type { ImportantDate, ImportantDateFormData } from "@/lib/types/important-date";
+import { throwOnApiError } from "./api-client";
 
 export const importantDateService = {
   async getAll(category?: string): Promise<ImportantDate[]> {
@@ -11,10 +12,7 @@ export const importantDateService = {
     
     const response = await fetch(url);
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to fetch important dates");
-    }
+    await throwOnApiError(response, "Failed to fetch important dates");
 
     const json = await response.json();
     return json.data;
@@ -29,20 +27,7 @@ export const importantDateService = {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle validation errors
-      if (response.status === 400 && error.error?.code === "VALIDATION_ERROR") {
-        const validationError = new Error(error.error.message);
-        // Attach validation details to error for form handling
-        (validationError as Error & { details?: Record<string, string[]> }).details = error.error.details;
-        throw validationError;
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Failed to create important date");
-    }
+    await throwOnApiError(response, "Failed to create important date");
 
     const json = await response.json();
     return json.data;
@@ -57,25 +42,7 @@ export const importantDateService = {
       body: JSON.stringify(data),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle validation errors
-      if (response.status === 400 && error.error?.code === "VALIDATION_ERROR") {
-        const validationError = new Error(error.error.message);
-        // Attach validation details to error for form handling
-        (validationError as Error & { details?: Record<string, string[]> }).details = error.error.details;
-        throw validationError;
-      }
-
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Failed to update important date");
-    }
+    await throwOnApiError(response, "Failed to update important date");
 
     const json = await response.json();
     return json.data;
@@ -89,22 +56,9 @@ export const importantDateService = {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error("Du saknar behörighet att ta bort viktiga datum");
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att ta bort viktigt datum");
-    }
+    await throwOnApiError(response, "Misslyckades att ta bort viktigt datum", {
+      403: "Du saknar behörighet att ta bort viktiga datum",
+    });
   },
 
   async archive(id: string): Promise<ImportantDate> {
@@ -115,22 +69,9 @@ export const importantDateService = {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error("Du saknar behörighet att arkivera viktiga datum");
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att arkivera viktigt datum");
-    }
+    await throwOnApiError(response, "Misslyckades att arkivera viktigt datum", {
+      403: "Du saknar behörighet att arkivera viktiga datum",
+    });
 
     const json = await response.json();
     return json.data;
@@ -144,22 +85,9 @@ export const importantDateService = {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      
-      // Handle not found error
-      if (response.status === 404 && error.error?.code === "NOT_FOUND") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error("Du saknar behörighet att återställa viktiga datum");
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att återställa viktigt datum");
-    }
+    await throwOnApiError(response, "Misslyckades att återställa viktigt datum", {
+      403: "Du saknar behörighet att återställa viktiga datum",
+    });
 
     const json = await response.json();
     return json.data;
@@ -191,24 +119,9 @@ export const importantDateService = {
       body: formData,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-
-      // Handle validation errors
-      if (response.status === 400 && error.error?.code === "VALIDATION_ERROR") {
-        throw new Error(error.error.message);
-      }
-
-      // Handle forbidden error
-      if (response.status === 403) {
-        throw new Error(
-          "Du saknar behörighet att importera viktiga datum"
-        );
-      }
-
-      // Generic error
-      throw new Error(error.error?.message || "Misslyckades att importera viktiga datum");
-    }
+    await throwOnApiError(response, "Misslyckades att importera viktiga datum", {
+      403: "Du saknar behörighet att importera viktiga datum",
+    });
 
     const json = await response.json();
     return json.data;

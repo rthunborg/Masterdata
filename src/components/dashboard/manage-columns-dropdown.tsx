@@ -85,7 +85,7 @@ export function ManageColumnsDialog() {
       refetch(); // Refresh columns list
       setDeleteDialogOpen(false);
       setColumnToDelete(null);
-    } catch (error) {
+    } catch {
       toast.error(tModals("deleteColumn.failed") || tToasts("columns.deleteFailed") || "Kunde inte ta bort kolumnen");
     } finally {
       setIsDeleting(false);

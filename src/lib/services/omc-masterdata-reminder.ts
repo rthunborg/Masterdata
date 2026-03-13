@@ -11,6 +11,7 @@ import { Employee } from '@/lib/types/employee';
 import { ImportantDate } from '@/lib/types/important-date';
 import { format, parseISO, differenceInDays, isAfter } from 'date-fns';
 import { toZonedTime, format as formatTz } from 'date-fns-tz';
+import { getHrAdminEmails } from './notification-helpers';
 
 /**
  * Required boolean masterdata fields that must be true for completion.
@@ -215,28 +216,8 @@ export async function evaluateOmcMasterdataCompletion(
   };
 }
 
-/**
- * Get HR admin and Recruiter email addresses
- * 
- * @returns Array of email addresses for hr_admin and recruiter users
- */
-export async function getHrAdminEmails(): Promise<string[]> {
-  const supabase = createServiceRoleClient();
-  
-  const { data: recipients, error } = await supabase
-    .from('users')
-    .select('email')
-    .in('role', ['hr_admin', 'recruiter'])
-    .not('email', 'is', null)
-    .eq('is_active', true);
-
-  if (error) {
-    console.error('Failed to fetch HR admin/recruiter emails:', error);
-    return [];
-  }
-
-  return (recipients || []).map(user => user.email).filter(Boolean);
-}
+// Re-export for backward compatibility with existing callers
+export { getHrAdminEmails } from './notification-helpers';
 
 /**
  * Format field name for display in email

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { importantDateService } from '@/lib/services/important-date-service';
 import { toast } from 'sonner';
+import { toastError } from '@/lib/utils/toast-helpers';
 import { useTranslations } from '@/lib/i18n';
 import { getDeadlineStatus } from '@/lib/utils/deadline-validator';
 import { format } from 'date-fns';
@@ -76,8 +77,7 @@ export function ImportantDateCardList({
       setDeleteDialogOpen(false);
       onDateDeleted?.();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : tToasts('dates.deleteFailed');
-      toast.error(message);
+      toastError(error, tToasts('dates.deleteFailed'));
     } finally {
       setIsDeleting(false);
     }

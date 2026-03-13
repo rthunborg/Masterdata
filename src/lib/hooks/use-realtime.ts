@@ -59,6 +59,13 @@ export function useRealtime({
   // Compute status based on enabled and internal status to avoid setState in effect
   const status: RealtimeConnectionStatus = !enabled ? "disconnected" : internalStatus;
 
+  // Ref-stable callback: prevents subscription teardown/recreation when
+  // consumers pass a new onEvent reference (inline arrow, changed deps, etc.)
+  const onEventRef = useRef(onEvent);
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  });
+
   const handleEvent = useCallback(
     (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
       const realtimeEvent: RealtimeEvent = {
@@ -71,9 +78,9 @@ export function useRealtime({
       };
 
       setLastEvent(realtimeEvent);
-      onEvent?.(realtimeEvent);
+      onEventRef.current?.(realtimeEvent);
     },
-    [onEvent]
+    []
   );
 
   useEffect(() => {

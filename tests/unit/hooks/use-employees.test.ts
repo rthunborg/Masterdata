@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { useEmployees } from "@/lib/hooks/use-employees";
+import { useEmployees, _clearEmployeeCache } from "@/lib/hooks/use-employees";
 import type { Employee } from "@/lib/types/employee";
 
 // Mock employee service
@@ -69,6 +69,7 @@ vi.mock("@/lib/hooks/use-realtime", () => ({
 describe("useEmployees", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    _clearEmployeeCache();
   });
 
   it("should fetch employees on mount", async () => {
@@ -121,8 +122,13 @@ describe("useEmployees", () => {
     });
   });
 
-  it("should fetch custom data for external party users", async () => {
-    const { customDataService } = await import("@/lib/services/custom-data-service");
+  it("should use customData included inline from the API for external party users", async () => {
+    const { employeeService } = await import("@/lib/services/employee-service");
+    const employeesWithCustomData = mockEmployees.map(e => ({
+      ...e,
+      customData: { custom_field: "value" },
+    }));
+    vi.mocked(employeeService.getAll).mockResolvedValueOnce(employeesWithCustomData);
 
     const { result } = renderHook(() =>
       useEmployees({
@@ -134,13 +140,11 @@ describe("useEmployees", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(customDataService.getCustomData).toHaveBeenCalledWith("1");
     expect(result.current.employees[0]).toHaveProperty("customData");
+    expect(result.current.employees[0].customData).toEqual({ custom_field: "value" });
   });
 
-  it("should not fetch custom data for HR admin", async () => {
-    const { customDataService } = await import("@/lib/services/custom-data-service");
-
+  it("should not include customData for HR admin", async () => {
     const { result } = renderHook(() =>
       useEmployees({
         userRole: "hr_admin",
@@ -151,7 +155,7 @@ describe("useEmployees", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(customDataService.getCustomData).not.toHaveBeenCalled();
+    expect(result.current.employees[0].customData).toBeUndefined();
   });
 
   it("should provide refetch function", async () => {
