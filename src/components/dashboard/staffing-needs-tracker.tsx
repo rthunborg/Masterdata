@@ -52,7 +52,7 @@ export function StaffingNeedsTracker({ refreshToken = 0 }: StaffingNeedsTrackerP
         const res = await fetch("/api/staffing-needs");
         if (!res.ok) throw new Error("Misslyckades att ladda bemanningsbehov");
         const json = (await res.json()) as { data: StaffingNeedWithProgress[] };
-        if (!cancelled) setData(json.data);
+        if (!cancelled) setData(json.data ?? []);
       } catch {
         if (!cancelled) setHasError(true);
       } finally {
