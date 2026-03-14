@@ -5,9 +5,6 @@ import { useTranslations } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StaffingNeedsTracker } from "@/components/dashboard/staffing-needs-tracker";
-import { useAuth } from "@/lib/hooks/use-auth";
-import { isExternalParty } from "@/lib/types/user";
-import { UserRole } from "@/lib/types/user";
 
 type EmployeeStats = {
   totalActive: number;
@@ -21,9 +18,7 @@ interface EmployeeStatsBarProps {
 }
 
 export function EmployeeStatsBar({ refreshToken = 0, className }: EmployeeStatsBarProps) {
-  const { user } = useAuth();
   const tDashboard = useTranslations("dashboard");
-  const showStaffingTracker = !isExternalParty((user?.role as UserRole) ?? UserRole.RECRUITER);
   const [stats, setStats] = React.useState<EmployeeStats | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [hasError, setHasError] = React.useState(false);
@@ -102,7 +97,7 @@ export function EmployeeStatsBar({ refreshToken = 0, className }: EmployeeStatsB
         <TooltipContent sideOffset={6}>{hintText}</TooltipContent>
       </Tooltip>
 
-      {showStaffingTracker && <StaffingNeedsTracker refreshToken={refreshToken} />}
+      <StaffingNeedsTracker refreshToken={refreshToken} />
     </div>
   );
 }
