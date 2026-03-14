@@ -69,12 +69,20 @@ export function isAdminLimited(role: UserRole): boolean {
 }
 
 /**
+ * Check if role can edit staffing needs (headcount targets)
+ * Only HR Admin and Crewing can modify staffing targets
+ */
+export function canEditStaffingNeeds(role: UserRole): boolean {
+  return role === UserRole.HR_ADMIN || role === UserRole.CREWING;
+}
+
+/**
  * Check if a role can edit a specific field based on column config
- * 
+ *
  * Admin Limited role has special edit restrictions:
  * - Can only edit fields where is_checklist_item = true
  * - Exception: Can also edit the 'loneniva' field
- * 
+ *
  * All other roles use the standard role_permissions from column config
  */
 export function canEditField(role: UserRole, columnConfig: ColumnConfig): boolean {
