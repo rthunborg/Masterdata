@@ -77,7 +77,6 @@ export function StaffingNeedsTracker({ refreshToken = 0 }: StaffingNeedsTrackerP
             location={location}
             crewReadyCount={item.crewReadyCount}
             headcount_need={item.headcount_need}
-            crewReadyPercentage={item.crewReadyPercentage}
             lastChange={item.last_change}
             canEdit={canEdit}
             isLoading={isLoading}

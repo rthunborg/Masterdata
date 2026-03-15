@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Pencil } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useTranslations } from "@/lib/i18n";
 import {
   Tooltip,
@@ -16,7 +15,6 @@ interface StaffingNeedsCardProps {
   location: StaffingLocation;
   crewReadyCount: number;
   headcount_need: number;
-  crewReadyPercentage: number;
   lastChange: StaffingNeedLastChange | null;
   canEdit: boolean;
   isLoading: boolean;
@@ -29,7 +27,6 @@ export function StaffingNeedsCard({
   location,
   crewReadyCount,
   headcount_need,
-  crewReadyPercentage,
   lastChange,
   canEdit,
   isLoading,
@@ -48,7 +45,6 @@ export function StaffingNeedsCard({
         newValue: String(lastChange.new_value),
       })
     : t("noChangesMade");
-  const percentage = Math.min(Math.round(crewReadyPercentage), 100);
 
   return (
     <div className="inline-flex items-center gap-1">
@@ -57,7 +53,7 @@ export function StaffingNeedsCard({
           <button
             type="button"
             className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            aria-label={`${locationLabel}: ${hasError ? "—" : isLoading ? "…" : isNotSet ? t("notSet") : `${crewReadyCount}/${headcount_need} (${percentage}%)`}`}
+            aria-label={`${locationLabel}: ${hasError ? "—" : isLoading ? "…" : isNotSet ? t("notSet") : `${crewReadyCount}/${headcount_need}`}`}
             onClick={onCardClick}
           >
             <span className="text-muted-foreground whitespace-nowrap">
@@ -73,33 +69,9 @@ export function StaffingNeedsCard({
                 {t("notSet")}
               </span>
             ) : (
-              <>
-                <span className="font-semibold tabular-nums">
-                  {crewReadyCount}/{headcount_need}
-                </span>
-                <span className="text-muted-foreground tabular-nums">
-                  ({percentage}%)
-                </span>
-                <div
-                  className="h-2 w-16 rounded-full bg-muted overflow-hidden"
-                  role="progressbar"
-                  aria-valuenow={percentage}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                >
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all",
-                      percentage >= 100
-                        ? "bg-green-600 dark:bg-green-500"
-                        : percentage >= 50
-                          ? "bg-primary"
-                          : "bg-amber-500 dark:bg-amber-400"
-                    )}
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-              </>
+              <span className="font-semibold tabular-nums">
+                {crewReadyCount}/{headcount_need}
+              </span>
             )}
           </button>
         </TooltipTrigger>
