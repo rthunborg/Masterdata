@@ -23,7 +23,31 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { StaffingNeedWithProgress } from "@/lib/types/staffing-needs";
+import { STAFFING_LOCATIONS } from "@/lib/types/staffing-needs";
+import type { StaffingNeedWithProgress, StaffingLocation } from "@/lib/types/staffing-needs";
+
+/** Map a location name to its i18n key suffix, e.g. "Göteborg" -> "locationGoteborg" */
+function locationI18nKey(location: StaffingLocation): string {
+  const sanitised = location.replace(/[åäöÅÄÖ]/g, (c) => {
+    const map: Record<string, string> = { 'ö': 'o', 'Ö': 'O', 'å': 'a', 'Å': 'A', 'ä': 'a', 'Ä': 'A' };
+    return map[c] ?? c;
+  });
+  return `location${sanitised.charAt(0).toUpperCase()}${sanitised.slice(1)}`;
+}
+
+/** Build a Zod schema with one integer field per location */
+function buildFormSchema(t: (key: string) => string) {
+  const shape: Record<string, z.ZodNumber> = {};
+  for (const loc of STAFFING_LOCATIONS) {
+    shape[loc] = z
+      .number({ invalid_type_error: t("validationInteger") })
+      .int({ message: t("validationInteger") })
+      .min(0, { message: t("validationMinZero") });
+  }
+  return z.object(shape);
+}
+
+type FormValues = Record<string, number>;
 
 interface EditStaffingNeedsModalProps {
   open: boolean;
@@ -41,68 +65,48 @@ export function EditStaffingNeedsModal({
   const t = useTranslations("staffingNeeds");
   const tCommon = useTranslations("common");
 
-  const editStaffingNeedsFormSchema = z.object({
-    trelleborg: z
-      .number({ invalid_type_error: t("validationInteger") })
-      .int({ message: t("validationInteger") })
-      .min(0, { message: t("validationMinZero") }),
-    goteborg: z
-      .number({ invalid_type_error: t("validationInteger") })
-      .int({ message: t("validationInteger") })
-      .min(0, { message: t("validationMinZero") }),
-  });
+  const editStaffingNeedsFormSchema = buildFormSchema(t);
 
-  type EditStaffingNeedsFormValues = z.infer<typeof editStaffingNeedsFormSchema>;
-  const currentTrelleborg =
-    currentNeeds.find((n) => n.location === "Trelleborg")?.headcount_need ?? 0;
-  const currentGoteborg =
-    currentNeeds.find((n) => n.location === "Göteborg")?.headcount_need ?? 0;
+  // Build default values from STAFFING_LOCATIONS
+  const currentValues: FormValues = {};
+  for (const loc of STAFFING_LOCATIONS) {
+    currentValues[loc] = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
+  }
 
-  const form = useForm<EditStaffingNeedsFormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(editStaffingNeedsFormSchema),
-    defaultValues: {
-      trelleborg: currentTrelleborg,
-      goteborg: currentGoteborg,
-    },
+    defaultValues: currentValues,
   });
 
   const { isSubmitting } = form.formState;
 
   useEffect(() => {
     if (open) {
-      form.reset({
-        trelleborg: currentTrelleborg,
-        goteborg: currentGoteborg,
-      });
+      const resetValues: FormValues = {};
+      for (const loc of STAFFING_LOCATIONS) {
+        resetValues[loc] = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
+      }
+      form.reset(resetValues);
     }
-  }, [open, currentTrelleborg, currentGoteborg, form]);
+  }, [open, currentNeeds, form]);
 
-  async function onSubmit(values: EditStaffingNeedsFormValues) {
+  async function onSubmit(values: FormValues) {
     const updates: Promise<Response>[] = [];
 
-    if (values.trelleborg !== currentTrelleborg) {
-      updates.push(
-        fetch("/api/staffing-needs", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            location: "Trelleborg",
-            headcount_need: values.trelleborg,
-          }),
-        })
-      );
-    }
-    if (values.goteborg !== currentGoteborg) {
-      updates.push(
-        fetch("/api/staffing-needs", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            location: "Göteborg",
-            headcount_need: values.goteborg,
-          }),
-        })
-      );
+    for (const loc of STAFFING_LOCATIONS) {
+      const prev = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
+      if (values[loc] !== prev) {
+        updates.push(
+          fetch("/api/staffing-needs", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: loc,
+              headcount_need: values[loc],
+            }),
+          })
+        );
+      }
     }
 
     if (updates.length === 0) {
@@ -128,56 +132,34 @@ export function EditStaffingNeedsModal({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="trelleborg"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("locationTrelleborg")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={1}
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value === ""
-                            ? undefined
-                            : Number(e.target.value)
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="goteborg"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("locationGoteborg")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={1}
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value === ""
-                            ? undefined
-                            : Number(e.target.value)
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {STAFFING_LOCATIONS.map((loc) => (
+              <FormField
+                key={loc}
+                control={form.control}
+                name={loc}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t(locationI18nKey(loc))}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={1}
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value)
+                          )
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))}
             <DialogFooter>
               <Button
                 type="button"

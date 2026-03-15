@@ -1,4 +1,4 @@
-export const STAFFING_LOCATIONS = ['Trelleborg', 'Göteborg'] as const;
+export const STAFFING_LOCATIONS = ['Göteborg', 'Trelleborg'] as const;
 export type StaffingLocation = (typeof STAFFING_LOCATIONS)[number];
 
 export interface StaffingNeed {

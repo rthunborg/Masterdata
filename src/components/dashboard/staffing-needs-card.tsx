@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { StaffingNeedLastChange } from "@/lib/types/staffing-needs";
+import { STAFFING_LOCATIONS } from "@/lib/types/staffing-needs";
 
 interface StaffingNeedsCardProps {
   location: string;
@@ -22,6 +23,20 @@ interface StaffingNeedsCardProps {
   hasError: boolean;
   onEditClick?: () => void;
   onCardClick?: () => void;
+}
+
+function getLocationLabel(location: string, t: (key: string) => string): string {
+  const locationKeyMap: Record<string, string> = {};
+  for (const loc of STAFFING_LOCATIONS) {
+    // Map location name to i18n key: "Göteborg" -> "locationGoteborg", "Trelleborg" -> "locationTrelleborg"
+    const key = `location${loc.replace(/[åäöÅÄÖ]/g, (c) => {
+      const map: Record<string, string> = { 'ö': 'o', 'Ö': 'O', 'å': 'a', 'Å': 'A', 'ä': 'a', 'Ä': 'A' };
+      return map[c] ?? c;
+    }).replace(/^./, (c) => c.toUpperCase())}`;
+    locationKeyMap[loc] = key;
+  }
+  const key = locationKeyMap[location];
+  return key ? t(key) : location;
 }
 
 export function StaffingNeedsCard({
@@ -37,7 +52,7 @@ export function StaffingNeedsCard({
   onCardClick,
 }: StaffingNeedsCardProps) {
   const t = useTranslations("staffingNeeds");
-  const locationLabel = location === "Trelleborg" ? t("locationTrelleborg") : t("locationGoteborg");
+  const locationLabel = getLocationLabel(location, t);
   const isNotSet = headcount_need === 0;
   const tooltipText = lastChange
     ? t("tooltipChangeFormat", {
@@ -101,28 +116,36 @@ export function StaffingNeedsCard({
           )}
 
           {canEdit && !isLoading && !hasError && (
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditClick?.();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onEditClick?.();
-                }
-              }}
-              aria-label={`${t("editModalTitle")} ${locationLabel}`}
-              data-testid="pencil-icon"
-            >
-              <Pencil
-                className="h-3 w-3 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditClick?.();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onEditClick?.();
+                    }
+                  }}
+                  aria-label={`${t("editModalTitle")} ${locationLabel}`}
+                  data-testid="pencil-icon"
+                  className="inline-flex items-center justify-center rounded p-0.5 hover:bg-muted transition-colors"
+                >
+                  <Pencil
+                    className="h-3 w-3 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={4}>
+                {t("editTooltip")}
+              </TooltipContent>
+            </Tooltip>
           )}
         </button>
       </TooltipTrigger>

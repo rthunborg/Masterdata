@@ -786,13 +786,12 @@ export function EmployeeTable({
             </div>
           )}
 
-          {/* Employee tallies (only when table has data) */}
-          {employees.length > 0 && (
-            <EmployeeStatsBar
-              refreshToken={statsRefreshToken}
-              className="ml-auto"
-            />
-          )}
+          {/* Employee tallies + staffing needs */}
+          <EmployeeStatsBar
+            refreshToken={statsRefreshToken}
+            className="ml-auto"
+            staffingOnly={employees.length === 0}
+          />
         </div>
       )}
 

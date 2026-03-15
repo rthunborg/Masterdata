@@ -746,6 +746,8 @@
   },
   "staffingNeeds": {
     "trackerLabel": "Bemanningsbehov",
+    "sectionLabel": "Behov",
+    "editTooltip": "Redigera maxbemanning",
     "notSet": "Ej angivet",
     "noChangesMade": "Ingen ändring gjord",
     "tooltipChangeFormat": "{email}, {date}: {oldValue} → {newValue}",
