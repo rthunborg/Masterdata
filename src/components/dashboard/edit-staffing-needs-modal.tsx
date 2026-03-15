@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -23,17 +23,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { STAFFING_LOCATIONS } from "@/lib/types/staffing-needs";
+import { STAFFING_LOCATIONS, LOCATION_I18N_KEYS } from "@/lib/types/staffing-needs";
 import type { StaffingNeedWithProgress, StaffingLocation } from "@/lib/types/staffing-needs";
-
-/** Map a location name to its i18n key suffix, e.g. "Göteborg" -> "locationGoteborg" */
-function locationI18nKey(location: StaffingLocation): string {
-  const sanitised = location.replace(/[åäöÅÄÖ]/g, (c) => {
-    const map: Record<string, string> = { 'ö': 'o', 'Ö': 'O', 'å': 'a', 'Å': 'A', 'ä': 'a', 'Ä': 'A' };
-    return map[c] ?? c;
-  });
-  return `location${sanitised.charAt(0).toUpperCase()}${sanitised.slice(1)}`;
-}
 
 /** Build a Zod schema with one integer field per location */
 function buildFormSchema(t: (key: string) => string) {
@@ -47,7 +38,7 @@ function buildFormSchema(t: (key: string) => string) {
   return z.object(shape);
 }
 
-type FormValues = Record<string, number>;
+type FormValues = Record<StaffingLocation, number>;
 
 interface EditStaffingNeedsModalProps {
   open: boolean;
@@ -68,13 +59,13 @@ export function EditStaffingNeedsModal({
   const editStaffingNeedsFormSchema = buildFormSchema(t);
 
   // Build default values from STAFFING_LOCATIONS
-  const currentValues: FormValues = {};
+  const currentValues = {} as FormValues;
   for (const loc of STAFFING_LOCATIONS) {
     currentValues[loc] = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
   }
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(editStaffingNeedsFormSchema),
+    resolver: zodResolver(editStaffingNeedsFormSchema) as unknown as Resolver<FormValues>,
     defaultValues: currentValues,
   });
 
@@ -82,7 +73,7 @@ export function EditStaffingNeedsModal({
 
   useEffect(() => {
     if (open) {
-      const resetValues: FormValues = {};
+      const resetValues = {} as FormValues;
       for (const loc of STAFFING_LOCATIONS) {
         resetValues[loc] = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
       }
@@ -91,35 +82,51 @@ export function EditStaffingNeedsModal({
   }, [open, currentNeeds, form]);
 
   async function onSubmit(values: FormValues) {
-    const updates: Promise<Response>[] = [];
+    const locationUpdates: { loc: StaffingLocation; promise: Promise<Response> }[] = [];
 
     for (const loc of STAFFING_LOCATIONS) {
       const prev = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
       if (values[loc] !== prev) {
-        updates.push(
-          fetch("/api/staffing-needs", {
+        locationUpdates.push({
+          loc,
+          promise: fetch("/api/staffing-needs", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               location: loc,
               headcount_need: values[loc],
             }),
-          })
-        );
+          }),
+        });
       }
     }
 
-    if (updates.length === 0) {
+    if (locationUpdates.length === 0) {
       onOpenChange(false);
       return;
     }
 
-    const results = await Promise.all(updates);
-    if (results.every((r) => r.ok)) {
-      toast.success(t("saveSuccess"));
-      onSuccess();
-      onOpenChange(false);
-    } else {
+    try {
+      const results = await Promise.allSettled(locationUpdates.map((u) => u.promise));
+      const failures: string[] = [];
+
+      results.forEach((result, idx) => {
+        if (result.status === "rejected" || (result.status === "fulfilled" && !result.value.ok)) {
+          failures.push(locationUpdates[idx].loc);
+        }
+      });
+
+      if (failures.length === 0) {
+        toast.success(t("saveSuccess"));
+        onSuccess();
+        onOpenChange(false);
+      } else {
+        toast.error(t("saveError"));
+        // Refresh to reflect any partial updates that did succeed
+        onSuccess();
+      }
+    } catch (err) {
+      console.error("[EditStaffingNeeds] Unexpected error during save:", err);
       toast.error(t("saveError"));
     }
   }
@@ -139,7 +146,7 @@ export function EditStaffingNeedsModal({
                 name={loc}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t(locationI18nKey(loc))}</FormLabel>
+                    <FormLabel>{t(LOCATION_I18N_KEYS[loc])}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"

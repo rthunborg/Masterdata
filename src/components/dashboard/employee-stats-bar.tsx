@@ -27,7 +27,10 @@ export function EmployeeStatsBar({ refreshToken = 0, className, staffingOnly = f
   const [hasError, setHasError] = React.useState(false);
 
   React.useEffect(() => {
-    if (staffingOnly) return;
+    if (staffingOnly) {
+      setIsLoading(false);
+      return;
+    }
 
     let cancelled = false;
 
@@ -40,7 +43,8 @@ export function EmployeeStatsBar({ refreshToken = 0, className, staffingOnly = f
         if (!res.ok) throw new Error("Misslyckades att ladda anställda statistik");
         const json = (await res.json()) as { data: EmployeeStats };
         if (!cancelled) setStats(json.data);
-      } catch {
+      } catch (err) {
+        console.error("[EmployeeStatsBar] Failed to load stats:", err);
         if (!cancelled) setHasError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
