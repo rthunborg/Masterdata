@@ -71,7 +71,7 @@ describe('StaffingNeedsTracker', () => {
     });
   });
 
-  it('displays correct fraction and percentage for each card', async () => {
+  it('displays correct fraction for each card', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: true,
       json: async () => mockApiData,
@@ -81,9 +81,7 @@ describe('StaffingNeedsTracker', () => {
 
     await waitFor(() => {
       expect(screen.getByText('13/30')).toBeInTheDocument();
-      expect(screen.getByText('(43%)')).toBeInTheDocument();
       expect(screen.getByText('18/20')).toBeInTheDocument();
-      expect(screen.getByText('(90%)')).toBeInTheDocument();
     });
   });
 
@@ -125,10 +123,9 @@ describe('StaffingNeedsTracker', () => {
 
 describe('StaffingNeedsCard', () => {
   const defaultProps = {
-    location: 'Trelleborg',
+    location: 'Trelleborg' as const,
     crewReadyCount: 13,
     headcount_need: 30,
-    crewReadyPercentage: 43.33,
     lastChange: null as StaffingNeedLastChange | null,
     canEdit: false,
     isLoading: false,
@@ -141,7 +138,6 @@ describe('StaffingNeedsCard', () => {
         {...defaultProps}
         headcount_need={0}
         crewReadyCount={0}
-        crewReadyPercentage={0}
       />
     );
 
@@ -149,15 +145,12 @@ describe('StaffingNeedsCard', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
-  it('renders progress bar with correct percentage width', () => {
+  it('renders fraction count without progress bar or percentage', () => {
     render(<StaffingNeedsCard {...defaultProps} />);
 
-    const progressbar = screen.getByRole('progressbar');
-    expect(progressbar).toBeInTheDocument();
-    expect(progressbar.getAttribute('aria-valuenow')).toBe('43');
-
-    const bar = progressbar.firstElementChild as HTMLElement;
-    expect(bar.style.width).toBe('43%');
+    expect(screen.getByText('13/30')).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.queryByText(/43%/)).not.toBeInTheDocument();
   });
 
   it('shows tooltip with last change details', async () => {
