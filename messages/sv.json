@@ -3,6 +3,7 @@
     "appName": "Säsongsrekrytering 2026",
     "signOut": "Logga ut",
     "save": "Spara",
+    "saving": "Sparar…",
     "cancel": "Avbryt",
     "delete": "Radera",
     "edit": "Redigera",
@@ -746,6 +747,8 @@
   },
   "staffingNeeds": {
     "trackerLabel": "Bemanningsbehov",
+    "sectionLabel": "Behov",
+    "editTooltip": "Redigera maxbemanning",
     "notSet": "Ej angivet",
     "noChangesMade": "Ingen ändring gjord",
     "tooltipChangeFormat": "{email}, {date}: {oldValue} → {newValue}",

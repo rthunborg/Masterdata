@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -23,7 +23,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { StaffingNeedWithProgress } from "@/lib/types/staffing-needs";
+import { STAFFING_LOCATIONS, LOCATION_I18N_KEYS } from "@/lib/types/staffing-needs";
+import type { StaffingNeedWithProgress, StaffingLocation } from "@/lib/types/staffing-needs";
+
+/** Build a Zod schema with one integer field per location */
+function buildFormSchema(t: (key: string) => string) {
+  const shape: Record<string, z.ZodNumber> = {};
+  for (const loc of STAFFING_LOCATIONS) {
+    shape[loc] = z
+      .number({ invalid_type_error: t("validationInteger") })
+      .int({ message: t("validationInteger") })
+      .min(0, { message: t("validationMinZero") });
+  }
+  return z.object(shape);
+}
+
+type FormValues = Record<StaffingLocation, number>;
 
 interface EditStaffingNeedsModalProps {
   open: boolean;
@@ -41,81 +56,77 @@ export function EditStaffingNeedsModal({
   const t = useTranslations("staffingNeeds");
   const tCommon = useTranslations("common");
 
-  const editStaffingNeedsFormSchema = z.object({
-    trelleborg: z
-      .number({ invalid_type_error: t("validationInteger") })
-      .int({ message: t("validationInteger") })
-      .min(0, { message: t("validationMinZero") }),
-    goteborg: z
-      .number({ invalid_type_error: t("validationInteger") })
-      .int({ message: t("validationInteger") })
-      .min(0, { message: t("validationMinZero") }),
-  });
+  const editStaffingNeedsFormSchema = buildFormSchema(t);
 
-  type EditStaffingNeedsFormValues = z.infer<typeof editStaffingNeedsFormSchema>;
-  const currentTrelleborg =
-    currentNeeds.find((n) => n.location === "Trelleborg")?.headcount_need ?? 0;
-  const currentGoteborg =
-    currentNeeds.find((n) => n.location === "Göteborg")?.headcount_need ?? 0;
+  // Build default values from STAFFING_LOCATIONS
+  const currentValues = {} as FormValues;
+  for (const loc of STAFFING_LOCATIONS) {
+    currentValues[loc] = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
+  }
 
-  const form = useForm<EditStaffingNeedsFormValues>({
-    resolver: zodResolver(editStaffingNeedsFormSchema),
-    defaultValues: {
-      trelleborg: currentTrelleborg,
-      goteborg: currentGoteborg,
-    },
+  const form = useForm<FormValues>({
+    resolver: zodResolver(editStaffingNeedsFormSchema) as unknown as Resolver<FormValues>,
+    defaultValues: currentValues,
   });
 
   const { isSubmitting } = form.formState;
 
   useEffect(() => {
     if (open) {
-      form.reset({
-        trelleborg: currentTrelleborg,
-        goteborg: currentGoteborg,
-      });
+      const resetValues = {} as FormValues;
+      for (const loc of STAFFING_LOCATIONS) {
+        resetValues[loc] = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
+      }
+      form.reset(resetValues);
     }
-  }, [open, currentTrelleborg, currentGoteborg, form]);
+  }, [open, currentNeeds, form]);
 
-  async function onSubmit(values: EditStaffingNeedsFormValues) {
-    const updates: Promise<Response>[] = [];
+  async function onSubmit(values: FormValues) {
+    const locationUpdates: { loc: StaffingLocation; promise: Promise<Response> }[] = [];
 
-    if (values.trelleborg !== currentTrelleborg) {
-      updates.push(
-        fetch("/api/staffing-needs", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            location: "Trelleborg",
-            headcount_need: values.trelleborg,
+    for (const loc of STAFFING_LOCATIONS) {
+      const prev = currentNeeds.find((n) => n.location === loc)?.headcount_need ?? 0;
+      if (values[loc] !== prev) {
+        locationUpdates.push({
+          loc,
+          promise: fetch("/api/staffing-needs", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: loc,
+              headcount_need: values[loc],
+            }),
           }),
-        })
-      );
-    }
-    if (values.goteborg !== currentGoteborg) {
-      updates.push(
-        fetch("/api/staffing-needs", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            location: "Göteborg",
-            headcount_need: values.goteborg,
-          }),
-        })
-      );
+        });
+      }
     }
 
-    if (updates.length === 0) {
+    if (locationUpdates.length === 0) {
       onOpenChange(false);
       return;
     }
 
-    const results = await Promise.all(updates);
-    if (results.every((r) => r.ok)) {
-      toast.success(t("saveSuccess"));
-      onSuccess();
-      onOpenChange(false);
-    } else {
+    try {
+      const results = await Promise.allSettled(locationUpdates.map((u) => u.promise));
+      const failures: string[] = [];
+
+      results.forEach((result, idx) => {
+        if (result.status === "rejected" || (result.status === "fulfilled" && !result.value.ok)) {
+          failures.push(locationUpdates[idx].loc);
+        }
+      });
+
+      if (failures.length === 0) {
+        toast.success(t("saveSuccess"));
+        onSuccess();
+        onOpenChange(false);
+      } else {
+        toast.error(t("saveError"));
+        // Refresh to reflect any partial updates that did succeed
+        onSuccess();
+      }
+    } catch (err) {
+      console.error("[EditStaffingNeeds] Unexpected error during save:", err);
       toast.error(t("saveError"));
     }
   }
@@ -128,56 +139,34 @@ export function EditStaffingNeedsModal({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="trelleborg"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("locationTrelleborg")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={1}
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value === ""
-                            ? undefined
-                            : Number(e.target.value)
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="goteborg"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("locationGoteborg")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={0}
-                      step={1}
-                      {...field}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value === ""
-                            ? undefined
-                            : Number(e.target.value)
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {STAFFING_LOCATIONS.map((loc) => (
+              <FormField
+                key={loc}
+                control={form.control}
+                name={loc}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t(LOCATION_I18N_KEYS[loc])}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={1}
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value)
+                          )
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))}
             <DialogFooter>
               <Button
                 type="button"

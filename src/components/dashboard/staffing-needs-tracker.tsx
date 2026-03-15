@@ -53,7 +53,8 @@ export function StaffingNeedsTracker({ refreshToken = 0 }: StaffingNeedsTrackerP
         if (!res.ok) throw new Error("Misslyckades att ladda bemanningsbehov");
         const json = (await res.json()) as { data: StaffingNeedWithProgress[] };
         if (!cancelled) setData(json.data ?? []);
-      } catch {
+      } catch (err) {
+        console.error("[StaffingNeedsTracker] Failed to load staffing needs:", err);
         if (!cancelled) setHasError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
