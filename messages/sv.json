@@ -572,6 +572,7 @@
     "createNewColumn": "Skapa ny kolumn"
   },
   "errors": {
+    "failedToLoadEmployees": "Kunde inte ladda anställda",
     "loadFailed": "Kunde inte ladda data",
     "saveFailed": "Kunde inte spara ändringar",
     "deleteFailed": "Kunde inte radera",
