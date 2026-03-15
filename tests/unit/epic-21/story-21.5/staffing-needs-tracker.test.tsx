@@ -71,7 +71,7 @@ describe('StaffingNeedsTracker', () => {
     });
   });
 
-  it('displays correct fraction and percentage for each card', async () => {
+  it('displays correct fraction for each card', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: true,
       json: async () => mockApiData,
@@ -81,9 +81,7 @@ describe('StaffingNeedsTracker', () => {
 
     await waitFor(() => {
       expect(screen.getByText('13/30')).toBeInTheDocument();
-      expect(screen.getByText('(43%)')).toBeInTheDocument();
       expect(screen.getByText('18/20')).toBeInTheDocument();
-      expect(screen.getByText('(90%)')).toBeInTheDocument();
     });
   });
 
@@ -149,15 +147,11 @@ describe('StaffingNeedsCard', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
-  it('renders progress bar with correct percentage width', () => {
+  it('renders fraction text without progress bar', () => {
     render(<StaffingNeedsCard {...defaultProps} />);
 
-    const progressbar = screen.getByRole('progressbar');
-    expect(progressbar).toBeInTheDocument();
-    expect(progressbar.getAttribute('aria-valuenow')).toBe('43');
-
-    const bar = progressbar.firstElementChild as HTMLElement;
-    expect(bar.style.width).toBe('43%');
+    expect(screen.getByText('13/30')).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
   it('shows tooltip with last change details', async () => {
