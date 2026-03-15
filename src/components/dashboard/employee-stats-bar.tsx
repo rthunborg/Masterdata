@@ -15,15 +15,23 @@ type EmployeeStats = {
 interface EmployeeStatsBarProps {
   refreshToken?: number;
   className?: string;
+  /** When true, only render the staffing needs row (skip employee stats) */
+  staffingOnly?: boolean;
 }
 
-export function EmployeeStatsBar({ refreshToken = 0, className }: EmployeeStatsBarProps) {
+export function EmployeeStatsBar({ refreshToken = 0, className, staffingOnly = false }: EmployeeStatsBarProps) {
   const tDashboard = useTranslations("dashboard");
+  const tStaffing = useTranslations("staffingNeeds");
   const [stats, setStats] = React.useState<EmployeeStats | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [hasError, setHasError] = React.useState(false);
 
   React.useEffect(() => {
+    if (staffingOnly) {
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     const load = async () => {
@@ -35,7 +43,8 @@ export function EmployeeStatsBar({ refreshToken = 0, className }: EmployeeStatsB
         if (!res.ok) throw new Error("Misslyckades att ladda anställda statistik");
         const json = (await res.json()) as { data: EmployeeStats };
         if (!cancelled) setStats(json.data);
-      } catch {
+      } catch (err) {
+        console.error("[EmployeeStatsBar] Failed to load stats:", err);
         if (!cancelled) setHasError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -46,7 +55,7 @@ export function EmployeeStatsBar({ refreshToken = 0, className }: EmployeeStatsB
     return () => {
       cancelled = true;
     };
-  }, [refreshToken]);
+  }, [refreshToken, staffingOnly]);
 
   const total = stats?.totalActive ?? 0;
   const crewed = stats?.crewedActive ?? 0;

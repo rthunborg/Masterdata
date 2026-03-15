@@ -3,6 +3,7 @@
     "appName": "Säsongsrekrytering 2026",
     "signOut": "Logga ut",
     "save": "Spara",
+    "saving": "Sparar…",
     "cancel": "Avbryt",
     "delete": "Radera",
     "edit": "Redigera",
@@ -744,6 +745,32 @@
       "dataRefreshed": "Data uppdaterad",
       "refreshFailed": "Kunde inte uppdatera. Kontrollera din anslutning och försök igen."
     }
+  },
+  "staffingNeeds": {
+    "trackerLabel": "Bemanningsbehov",
+    "sectionLabel": "Behov",
+    "editTooltip": "Redigera maxbemanning",
+    "notSet": "Ej angivet",
+    "noChangesMade": "Ingen ändring gjord",
+    "tooltipChangeFormat": "{email}, {date}: {oldValue} → {newValue}",
+    "locationTrelleborg": "Trelleborg",
+    "locationGoteborg": "Göteborg",
+    "editModalTitle": "Uppdatera bemanningsbehov",
+    "saveSuccess": "Bemanningsbehov uppdaterat",
+    "saveError": "Kunde inte uppdatera bemanningsbehov",
+    "validationInteger": "Måste vara ett heltal",
+    "validationMinZero": "Måste vara 0 eller högre",
+    "historyModalTitle": "Ändringshistorik — {location}",
+    "noChangesInYear": "Inga ändringar under {year}",
+    "loading": "Laddar…",
+    "fetchError": "Kunde inte hämta ändringshistorik",
+    "emailSubject": "Bemanningsbehov uppdaterat — {location}",
+    "emailHeading": "Bemanningsbehov har uppdaterats",
+    "emailLocation": "Plats",
+    "emailOldValue": "Tidigare värde",
+    "emailNewValue": "Nytt värde",
+    "emailChangedBy": "Ändrat av",
+    "emailTimestamp": "Tidpunkt"
   },
   "env": {
     "stagingBanner": "🧪 TESTMILJÖ — Detta är inte produktion. Data kommer från en säkerhetskopia och kan vara inaktuell."
