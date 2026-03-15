@@ -740,11 +740,12 @@ export function EmployeeTable({
 
       {/* Employee tallies + staffing needs */}
       {employees.length > 0 && (
-        <EmployeeStatsBar
-          refreshToken={statsRefreshToken}
-          className="ml-auto mb-2"
-          staffingOnly={employees.length === 0}
-        />
+        <div className="flex justify-end mb-2">
+          <EmployeeStatsBar
+            refreshToken={statsRefreshToken}
+            staffingOnly={employees.length === 0}
+          />
+        </div>
       )}
 
       {/* Filter checkboxes */}

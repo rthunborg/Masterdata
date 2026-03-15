@@ -69,10 +69,10 @@ export function EmployeeStatsBar({ refreshToken = 0, className, staffingOnly = f
   const crewedLabel = tDashboard("statsCrewedEmployeesLabel") || "Besättningsklara";
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      {/* Row 1: Employee stats */}
+    <div className={cn("flex flex-wrap items-center gap-3", className)}>
+      {/* Employee stats */}
       {!staffingOnly && (
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 justify-end">
+        <>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -111,14 +111,14 @@ export function EmployeeStatsBar({ refreshToken = 0, className, staffingOnly = f
             </TooltipTrigger>
             <TooltipContent sideOffset={6}>{hintText}</TooltipContent>
           </Tooltip>
-        </div>
+
+          <div className="h-5 w-px bg-slate-200" aria-hidden="true" />
+        </>
       )}
 
-      {/* Row 2: Staffing needs (Behov) */}
-      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 justify-end">
-        <span className="text-xs font-medium text-muted-foreground">{tStaffing("sectionLabel")}</span>
-        <StaffingNeedsTracker refreshToken={refreshToken} />
-      </div>
+      {/* Staffing needs (Behov) */}
+      <span className="text-xs font-medium text-muted-foreground">{tStaffing("sectionLabel")}</span>
+      <StaffingNeedsTracker refreshToken={refreshToken} />
     </div>
   );
 }

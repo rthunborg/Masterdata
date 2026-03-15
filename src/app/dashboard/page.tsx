@@ -244,7 +244,7 @@ export default function DashboardPage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle>{t('employeeList')}</CardTitle>
         </CardHeader>
         <CardContent>
