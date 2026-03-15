@@ -738,60 +738,57 @@ export function EmployeeTable({
 
     <>
 
-      {/* Filters + tallies row */}
-      {((isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange)) || employees.length > 0) && (
-        <div className="flex flex-wrap items-center gap-4 mb-4 pt-4 w-full max-w-full">
-          {/* Filter checkboxes - always show for HR Admin (simulated in preview mode) */}
-          {isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
-            <div className="flex flex-wrap items-center gap-4">
-              {onIncludeArchivedChange && (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="show-archived"
-                    checked={includeArchived}
-                    onCheckedChange={onIncludeArchivedChange}
-                  />
-                  <Label htmlFor="show-archived" className="cursor-pointer">
-                    {tDashboard("showArchived")}
-                  </Label>
-                </div>
-              )}
+      {/* Employee tallies + staffing needs */}
+      {employees.length > 0 && (
+        <EmployeeStatsBar
+          refreshToken={statsRefreshToken}
+          className="ml-auto mb-2"
+          staffingOnly={employees.length === 0}
+        />
+      )}
 
-              {onIncludeTerminatedChange && (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="show-terminated"
-                    checked={includeTerminated}
-                    onCheckedChange={onIncludeTerminatedChange}
-                  />
-                  <Label htmlFor="show-terminated" className="cursor-pointer">
-                    {tDashboard("showTerminated")}
-                  </Label>
-                </div>
-              )}
-
-              {/* Story 8.13 AC 9: Needs Repayment filter */}
-              {onNeedsRepaymentChange && (
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="needs-repayment"
-                    checked={needsRepayment}
-                    onCheckedChange={onNeedsRepaymentChange}
-                  />
-                  <Label htmlFor="needs-repayment" className="cursor-pointer">
-                    {tDashboard("needsRepayment")}
-                  </Label>
-                </div>
-              )}
+      {/* Filter checkboxes */}
+      {isEffectivelyHRAdmin && (onIncludeArchivedChange || onIncludeTerminatedChange || onNeedsRepaymentChange) && (
+        <div className="flex flex-wrap items-center gap-4 mb-3 w-full max-w-full">
+          {onIncludeArchivedChange && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="show-archived"
+                checked={includeArchived}
+                onCheckedChange={onIncludeArchivedChange}
+              />
+              <Label htmlFor="show-archived" className="cursor-pointer">
+                {tDashboard("showArchived")}
+              </Label>
             </div>
           )}
 
-          {/* Employee tallies + staffing needs */}
-          <EmployeeStatsBar
-            refreshToken={statsRefreshToken}
-            className="ml-auto"
-            staffingOnly={employees.length === 0}
-          />
+          {onIncludeTerminatedChange && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="show-terminated"
+                checked={includeTerminated}
+                onCheckedChange={onIncludeTerminatedChange}
+              />
+              <Label htmlFor="show-terminated" className="cursor-pointer">
+                {tDashboard("showTerminated")}
+              </Label>
+            </div>
+          )}
+
+          {/* Story 8.13 AC 9: Needs Repayment filter */}
+          {onNeedsRepaymentChange && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="needs-repayment"
+                checked={needsRepayment}
+                onCheckedChange={onNeedsRepaymentChange}
+              />
+              <Label htmlFor="needs-repayment" className="cursor-pointer">
+                {tDashboard("needsRepayment")}
+              </Label>
+            </div>
+          )}
         </div>
       )}
 
