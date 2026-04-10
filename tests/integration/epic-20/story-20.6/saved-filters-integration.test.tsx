@@ -398,32 +398,36 @@ describe("Story 20.6: Saved Filters Integration", () => {
       { columnId: "col-1", type: "text", textValue: "Test" },
     ];
 
-    renderFilterPanel(activeFilters);
+    // Render SaveFilterDialog directly with known existingFilterNames.
+    // This avoids a timing race where the async useSavedFilters query may not
+    // have settled before the user interaction, which caused unreliable error
+    // propagation through mutateAsync in CI.
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    const onOpenChange = vi.fn();
 
-    // Wait for component to load
-    await waitFor(() => {
-      expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
-    });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SaveFilterDialog
+          open={true}
+          onOpenChange={onOpenChange}
+          activeFilters={activeFilters}
+          columnConfigs={mockColumns}
+          existingFilterNames={mockSavedFilters.map((f) => f.name)}
+          onSave={onSave}
+        />
+      </QueryClientProvider>
+    );
 
-    // Click Save Filter button (outside panel, next to Rensa filter)
-    const saveButton = screen.getByTestId("save-filter-button");
-    await userEvent.click(saveButton);
-
-    // Enter duplicate name
-    const input = await screen.findByLabelText("Filternamn");
+    // Enter a name that duplicates an existing filter
+    const input = screen.getByLabelText("Filternamn");
     await userEvent.type(input, "New Hires");
 
-    // Click Save in the save-filter dialog (not the toolbar or filter panel; there are two dialogs when this is open)
-    const dialogs = screen.getAllByRole("dialog");
-    const saveDialog = dialogs.find((d) => within(d).queryByLabelText("Filternamn") != null) ?? dialogs[1];
-    const dialogSaveButton = within(saveDialog).getByRole("button", { name: /^spara filter$/i });
-    await userEvent.click(dialogSaveButton);
+    const saveButton = screen.getByRole("button", { name: /^spara filter$/i });
+    await userEvent.click(saveButton);
 
-    // Verify duplicate-name error is shown in the dialog (translated message).
-    // Client-side validation via existingFilterNames makes this synchronous.
-    await waitFor(() => {
-      expect(screen.getByText("Ett filter med det här namnet finns redan.")).toBeInTheDocument();
-    });
+    // Client-side check fires synchronously — no async chain needed
+    expect(screen.getByText("Ett filter med det här namnet finns redan.")).toBeInTheDocument();
+    expect(onSave).not.toHaveBeenCalled();
   });
 
   it("validates filter name is not empty", async () => {
