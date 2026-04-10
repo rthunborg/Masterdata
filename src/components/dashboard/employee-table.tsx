@@ -310,7 +310,7 @@ export function EmployeeTable({
   const [saveFilterDialogOpen, setSaveFilterDialogOpen] = React.useState(false);
 
   // Story 20.6: Saved filters (used by SaveFilterDialog in toolbar)
-  const { saveFilter } = useSavedFilters();
+  const { saveFilter, savedFilters } = useSavedFilters();
 
   // Story 20.4: Advanced filtering with filter engine
   const {
@@ -1423,6 +1423,7 @@ export function EmployeeTable({
         onOpenChange={setSaveFilterDialogOpen}
         activeFilters={activeFilters}
         columnConfigs={columnConfigs}
+        existingFilterNames={savedFilters.map((f) => f.name)}
         onSave={async (name) => {
           await saveFilter({ name, filters: activeFilters });
           setSaveFilterDialogOpen(false);

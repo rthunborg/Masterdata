@@ -21,6 +21,7 @@ interface SaveFilterDialogProps {
   onOpenChange: (open: boolean) => void;
   activeFilters: FilterState[];
   columnConfigs: ColumnConfig[];
+  existingFilterNames?: string[];
   onSave: (name: string) => Promise<void>;
 }
 
@@ -33,6 +34,7 @@ export function SaveFilterDialog({
   onOpenChange,
   activeFilters,
   columnConfigs,
+  existingFilterNames,
   onSave,
 }: SaveFilterDialogProps) {
   const [name, setName] = useState("");
@@ -51,6 +53,11 @@ export function SaveFilterDialog({
   const handleSave = async () => {
     const trimmedName = name.trim();
     if (!trimmedName) return;
+
+    if (existingFilterNames?.some((n) => n.toLowerCase() === trimmedName.toLowerCase())) {
+      setError(tFilter("filterNameAlreadyExists"));
+      return;
+    }
 
     setIsSaving(true);
     setError("");

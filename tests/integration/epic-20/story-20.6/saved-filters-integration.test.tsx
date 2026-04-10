@@ -184,7 +184,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     function PanelWithSaveDialog() {
       const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
-      const { saveFilter } = useSavedFilters();
+      const { saveFilter, savedFilters } = useSavedFilters();
       return (
         <>
           {activeFilters.length > 0 && (
@@ -208,6 +208,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
             onOpenChange={setSaveDialogOpen}
             activeFilters={activeFilters}
             columnConfigs={mockColumns}
+            existingFilterNames={savedFilters.map((f) => f.name)}
             onSave={async (name) => {
               await saveFilter({ name, filters: activeFilters });
               setSaveDialogOpen(false);
@@ -397,37 +398,6 @@ describe("Story 20.6: Saved Filters Integration", () => {
       { columnId: "col-1", type: "text", textValue: "Test" },
     ];
 
-    // Mock duplicate name error (match URL like beforeEach: include path for relative or absolute)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (global.fetch as any).mockImplementation((url: string, options?: any) => {
-      const isPostFilters =
-        typeof url === "string" &&
-        url.includes("/api/users/filters") &&
-        !url.includes("/api/users/filters/") &&
-        options?.method === "POST";
-      if (isPostFilters) {
-        return Promise.resolve({
-          ok: false,
-          status: 409,
-          json: () =>
-            Promise.resolve({ error: "A filter with this name already exists" }),
-        });
-      }
-      const isGetFilters =
-        typeof url === "string" &&
-        url.includes("/api/users/filters") &&
-        !url.includes("/api/users/filters/") &&
-        (!options || options?.method !== "POST");
-      if (isGetFilters) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({ data: mockSavedFilters }),
-        });
-      }
-      return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
-    });
-
     renderFilterPanel(activeFilters);
 
     // Wait for component to load
@@ -450,12 +420,10 @@ describe("Story 20.6: Saved Filters Integration", () => {
     await userEvent.click(dialogSaveButton);
 
     // Verify duplicate-name error is shown in the dialog (translated message).
-    // Extended timeout: the error surfaces after a deep async chain
-    // (click → handleSave → mutateAsync → fetch mock → TanStack Query error processing → setError)
-    // which can exceed the default 1 s waitFor in resource-constrained CI runners.
+    // Client-side validation via existingFilterNames makes this synchronous.
     await waitFor(() => {
       expect(screen.getByText("Ett filter med det här namnet finns redan.")).toBeInTheDocument();
-    }, { timeout: 5000 });
+    });
   });
 
   it("validates filter name is not empty", async () => {
