@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, MapPin } from "lucide-react";
 import { useTranslations } from "@/lib/i18n";
 import {
   Tooltip,
@@ -47,29 +47,30 @@ export function StaffingNeedsCard({
     : t("noChangesMade");
 
   return (
-    <div className="inline-flex items-center gap-1">
+    <div className="inline-flex items-center gap-1.5">
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             type="button"
-            className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex items-center gap-2.5 rounded-lg bg-sky-50 px-3.5 py-2 text-sm shadow-sm border border-sky-200/60 transition-colors hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             aria-label={`${locationLabel}: ${hasError ? "—" : isLoading ? "…" : isNotSet ? t("notSet") : `${crewReadyCount}/${headcount_need}`}`}
             onClick={onCardClick}
           >
-            <span className="text-muted-foreground whitespace-nowrap">
+            <MapPin className="h-4 w-4 text-sky-500" />
+            <span className="text-sky-700 whitespace-nowrap">
               {locationLabel}
             </span>
 
             {hasError ? (
-              <span className="font-semibold tabular-nums">—</span>
+              <span className="font-semibold tabular-nums text-sky-900">—</span>
             ) : isLoading ? (
-              <span className="font-semibold tabular-nums">…</span>
+              <span className="font-semibold tabular-nums text-sky-900">…</span>
             ) : isNotSet ? (
-              <span className="text-muted-foreground italic" data-testid="ej-angivet">
+              <span className="text-sky-400 italic" data-testid="ej-angivet">
                 {t("notSet")}
               </span>
             ) : (
-              <span className="font-semibold tabular-nums">
+              <span className="font-semibold tabular-nums text-sky-900">
                 {crewReadyCount}/{headcount_need}
               </span>
             )}
@@ -89,10 +90,10 @@ export function StaffingNeedsCard({
               }}
               aria-label={`${t("editModalTitle")} ${locationLabel}`}
               data-testid="pencil-icon"
-              className="inline-flex items-center justify-center rounded p-0.5 hover:bg-muted transition-colors"
+              className="inline-flex items-center justify-center rounded p-1 hover:bg-sky-100 transition-colors"
             >
               <Pencil
-                className="h-3 w-3 text-muted-foreground"
+                className="h-3 w-3 text-sky-400"
                 aria-hidden="true"
               />
             </button>
