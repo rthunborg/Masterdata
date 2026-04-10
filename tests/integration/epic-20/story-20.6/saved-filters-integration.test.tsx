@@ -449,10 +449,13 @@ describe("Story 20.6: Saved Filters Integration", () => {
     const dialogSaveButton = within(saveDialog).getByRole("button", { name: /^spara filter$/i });
     await userEvent.click(dialogSaveButton);
 
-    // Verify duplicate-name error is shown in the dialog (translated message)
+    // Verify duplicate-name error is shown in the dialog (translated message).
+    // Extended timeout: the error surfaces after a deep async chain
+    // (click → handleSave → mutateAsync → fetch mock → TanStack Query error processing → setError)
+    // which can exceed the default 1 s waitFor in resource-constrained CI runners.
     await waitFor(() => {
       expect(screen.getByText("Ett filter med det här namnet finns redan.")).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
   });
 
   it("validates filter name is not empty", async () => {

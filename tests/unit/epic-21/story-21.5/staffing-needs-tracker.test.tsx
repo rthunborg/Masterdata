@@ -123,10 +123,9 @@ describe('StaffingNeedsTracker', () => {
 
 describe('StaffingNeedsCard', () => {
   const defaultProps = {
-    location: 'Trelleborg',
+    location: 'Trelleborg' as const,
     crewReadyCount: 13,
     headcount_need: 30,
-    crewReadyPercentage: 43.33,
     lastChange: null as StaffingNeedLastChange | null,
     canEdit: false,
     isLoading: false,
@@ -139,7 +138,6 @@ describe('StaffingNeedsCard', () => {
         {...defaultProps}
         headcount_need={0}
         crewReadyCount={0}
-        crewReadyPercentage={0}
       />
     );
 
@@ -147,11 +145,12 @@ describe('StaffingNeedsCard', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
-  it('renders fraction text without progress bar', () => {
+  it('renders fraction count without progress bar or percentage', () => {
     render(<StaffingNeedsCard {...defaultProps} />);
 
     expect(screen.getByText('13/30')).toBeInTheDocument();
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.queryByText(/43%/)).not.toBeInTheDocument();
   });
 
   it('shows tooltip with last change details', async () => {

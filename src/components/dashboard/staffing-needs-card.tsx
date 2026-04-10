@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Pencil, MapPin } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useTranslations } from "@/lib/i18n";
 import {
   Tooltip,
@@ -16,7 +15,6 @@ interface StaffingNeedsCardProps {
   location: StaffingLocation;
   crewReadyCount: number;
   headcount_need: number;
-  crewReadyPercentage: number;
   lastChange: StaffingNeedLastChange | null;
   canEdit: boolean;
   isLoading: boolean;
@@ -29,7 +27,6 @@ export function StaffingNeedsCard({
   location,
   crewReadyCount,
   headcount_need,
-  crewReadyPercentage,
   lastChange,
   canEdit,
   isLoading,
@@ -48,7 +45,6 @@ export function StaffingNeedsCard({
         newValue: String(lastChange.new_value),
       })
     : t("noChangesMade");
-  const percentage = Math.min(Math.round(crewReadyPercentage), 100);
 
   return (
     <div className="inline-flex items-center gap-1.5">
