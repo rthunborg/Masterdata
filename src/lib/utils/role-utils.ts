@@ -113,8 +113,9 @@ export function canEditStaffingNeeds(role: UserRole): boolean {
 /**
  * Check if a role can edit a specific field based on column config
  *
- * Admin Limited role has special edit restrictions:
- * - Can only edit fields where is_checklist_item = true
+ * Internal role checklist overrides:
+ * - Recruiter can always edit checklist fields
+ * - Admin Limited can edit checklist fields
  * - Exception: Can also edit the 'loneniva' field
  *
  * All other roles use the standard role_permissions from column config
@@ -123,12 +124,15 @@ export function canEditField(
   role: UserRole,
   columnConfig: ColumnConfig
 ): boolean {
+  if (
+    (role === RECRUITER_ROLE || role === ADMIN_LIMITED_ROLE) &&
+    columnConfig.is_checklist_item
+  ) {
+    return true;
+  }
+
   // Admin Limited has special edit logic
   if (role === ADMIN_LIMITED_ROLE) {
-    // Can edit checklist items
-    if (columnConfig.is_checklist_item) {
-      return true;
-    }
     // Exception: Can edit loneniva field
     const dbColumnName = columnConfig.db_column_name.toLowerCase();
     if (dbColumnName === 'loneniva' || dbColumnName === 'lönenivå') {

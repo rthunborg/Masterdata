@@ -249,6 +249,20 @@ describe('Admin Limited Role - canEditField', () => {
       expect(canEditField(UserRole.RECRUITER, column)).toBe(true);
     });
 
+    it('Recruiter can edit checklist items even when role_permissions.edit is false', () => {
+      const checklistColumn = createMockColumnConfig({
+        column_name: 'Security Awareness Training',
+        db_column_name: 'seably_security',
+        is_checklist_item: true,
+        role_permissions: {
+          hr_admin: { view: true, edit: true },
+          recruiter: { view: false, edit: false },
+        },
+      });
+
+      expect(canEditField(UserRole.RECRUITER, checklistColumn)).toBe(true);
+    });
+
     it('External party uses role_permissions for edit access', () => {
       const column = createMockColumnConfig({
         role_permissions: {
