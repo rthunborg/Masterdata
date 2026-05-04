@@ -6,6 +6,7 @@ import {
   canTerminateEmployee,
   isAdminLimited,
   getRoleDisplayName,
+  getColumnViewRole,
 } from '@/lib/utils/role-utils';
 import { UserRole } from '@/lib/types/user';
 import type { ColumnConfig } from '@/lib/types/column-config';
@@ -50,6 +51,22 @@ function createMockColumnConfig(overrides: Partial<ColumnConfig> = {}): ColumnCo
 }
 
 describe('Admin Limited Role - Permission Helpers', () => {
+  describe('getColumnViewRole', () => {
+    it('uses HR Admin view permissions for all internal HR roles', () => {
+      expect(getColumnViewRole(UserRole.HR_ADMIN)).toBe(UserRole.HR_ADMIN);
+      expect(getColumnViewRole(UserRole.RECRUITER)).toBe(UserRole.HR_ADMIN);
+      expect(getColumnViewRole(UserRole.ADMIN_LIMITED)).toBe(UserRole.HR_ADMIN);
+    });
+
+    it('keeps external party view permissions role-specific', () => {
+      expect(getColumnViewRole(UserRole.SODEXO)).toBe(UserRole.SODEXO);
+      expect(getColumnViewRole(UserRole.OMC)).toBe(UserRole.OMC);
+      expect(getColumnViewRole(UserRole.PAYROLL)).toBe(UserRole.PAYROLL);
+      expect(getColumnViewRole(UserRole.TOPLUX)).toBe(UserRole.TOPLUX);
+      expect(getColumnViewRole(UserRole.CREWING)).toBe(UserRole.CREWING);
+    });
+  });
+
   describe('isAdminLimited', () => {
     it('returns true for admin_limited role', () => {
       expect(isAdminLimited(UserRole.ADMIN_LIMITED)).toBe(true);

@@ -195,6 +195,76 @@ describe("useColumns", () => {
     expect(result.current.error).toBeNull();
   });
 
+  it("should use HR Admin view permissions for Recruiter", async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: {
+        id: "4",
+        email: "recruiter@test.com",
+        role: UserRole.RECRUITER,
+        is_active: true,
+        auth_id: "auth4",
+        created_at: "2025-01-01T00:00:00Z",
+        last_active_at: new Date().toISOString(),
+      },
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      setUser: vi.fn(),
+      checkAuth: vi.fn(),
+      setLoading: vi.fn(),
+    });
+
+    vi.mocked(columnService.getAll).mockResolvedValue(mockColumnConfigs);
+
+    const { result } = renderHook(() => useColumns());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.columns.map(c => c.column_name)).toEqual([
+      "First Name",
+      "SSN",
+      "Email",
+      "Mobile",
+    ]);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("should use HR Admin view permissions for Admin Limited", async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: {
+        id: "5",
+        email: "admin-limited@test.com",
+        role: UserRole.ADMIN_LIMITED,
+        is_active: true,
+        auth_id: "auth5",
+        created_at: "2025-01-01T00:00:00Z",
+        last_active_at: new Date().toISOString(),
+      },
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      setUser: vi.fn(),
+      checkAuth: vi.fn(),
+      setLoading: vi.fn(),
+    });
+
+    vi.mocked(columnService.getAll).mockResolvedValue(mockColumnConfigs);
+
+    const { result } = renderHook(() => useColumns());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.columns.map(c => c.column_name)).toEqual([
+      "First Name",
+      "SSN",
+      "Email",
+      "Mobile",
+    ]);
+    expect(result.current.error).toBeNull();
+  });
+
   it("should return empty array when user is null", async () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,

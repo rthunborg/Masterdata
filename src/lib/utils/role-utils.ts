@@ -1,9 +1,9 @@
 /**
  * Role Utility Functions
- * 
+ *
  * This module contains all role-based permission helpers.
  * These functions are re-exported from @/lib/types/user for backward compatibility.
- * 
+ *
  * Note: Some helpers (canArchiveEmployee, canTerminateEmployee) are not currently
  * used in UI components but are defined for:
  * 1. API-level validation and authorization
@@ -12,20 +12,35 @@
  * 4. Future use if other roles need these capabilities
  */
 
-import { UserRole } from "@/lib/types/user";
-import type { ColumnConfig } from "@/lib/types/column-config";
+import { UserRole } from '@/lib/types/user';
+import type { ColumnConfig } from '@/lib/types/column-config';
+
+const INTERNAL_COLUMN_VIEW_ROLES = new Set<UserRole>([
+  UserRole.HR_ADMIN,
+  UserRole.RECRUITER,
+  UserRole.ADMIN_LIMITED,
+]);
 
 export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
-    case UserRole.HR_ADMIN: return "HR Superuser";
-    case UserRole.RECRUITER: return "Recruiter";
-    case UserRole.ADMIN_LIMITED: return "Administratör";
-    case UserRole.CREWING: return "Crewing";
-    case UserRole.SODEXO: return "Sodexo";
-    case UserRole.OMC: return "ÖMC";
-    case UserRole.PAYROLL: return "Payroll";
-    case UserRole.TOPLUX: return "Toplux";
-    default: return role;
+    case UserRole.HR_ADMIN:
+      return 'HR Superuser';
+    case UserRole.RECRUITER:
+      return 'Recruiter';
+    case UserRole.ADMIN_LIMITED:
+      return 'Administratör';
+    case UserRole.CREWING:
+      return 'Crewing';
+    case UserRole.SODEXO:
+      return 'Sodexo';
+    case UserRole.OMC:
+      return 'ÖMC';
+    case UserRole.PAYROLL:
+      return 'Payroll';
+    case UserRole.TOPLUX:
+      return 'Toplux';
+    default:
+      return role;
   }
 }
 
@@ -69,6 +84,16 @@ export function isAdminLimited(role: UserRole): boolean {
 }
 
 /**
+ * Resolve which role's column view permissions should be used.
+ *
+ * Internal HR roles share HR Superuser visibility. Edit permissions remain
+ * role-specific and are handled by canEditField.
+ */
+export function getColumnViewRole(role: UserRole): UserRole {
+  return INTERNAL_COLUMN_VIEW_ROLES.has(role) ? UserRole.HR_ADMIN : role;
+}
+
+/**
  * Check if role can edit staffing needs (headcount targets)
  * Only HR Admin and Crewing can modify staffing targets
  */
@@ -85,7 +110,10 @@ export function canEditStaffingNeeds(role: UserRole): boolean {
  *
  * All other roles use the standard role_permissions from column config
  */
-export function canEditField(role: UserRole, columnConfig: ColumnConfig): boolean {
+export function canEditField(
+  role: UserRole,
+  columnConfig: ColumnConfig
+): boolean {
   // Admin Limited has special edit logic
   if (role === UserRole.ADMIN_LIMITED) {
     // Can edit checklist items
@@ -105,4 +133,3 @@ export function canEditField(role: UserRole, columnConfig: ColumnConfig): boolea
   const rolePerms = columnConfig.role_permissions[role];
   return rolePerms?.edit ?? false;
 }
-

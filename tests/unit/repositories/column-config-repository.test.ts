@@ -217,6 +217,50 @@ describe("ColumnConfigRepository", () => {
       expect(result.every(col => col.role_permissions.hr_admin?.view === true)).toBe(true);
     });
 
+    it("should return HR Admin visible columns for recruiter role", async () => {
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null })
+          })
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      const result = await repository.findByRole(UserRole.RECRUITER);
+
+      expect(result.length).toBe(3);
+      expect(result.map((col) => col.column_name)).toEqual([
+        "First Name",
+        "SSN",
+        "Hire Date",
+      ]);
+    });
+
+    it("should return HR Admin visible columns for admin_limited role", async () => {
+      const mockClient = {
+        from: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn()
+          .mockReturnValueOnce({
+            order: vi.fn().mockResolvedValue({ data: mockColumnConfigs, error: null })
+          })
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      const result = await repository.findByRole(UserRole.ADMIN_LIMITED);
+
+      expect(result.length).toBe(3);
+      expect(result.map((col) => col.column_name)).toEqual([
+        "First Name",
+        "SSN",
+        "Hire Date",
+      ]);
+    });
+
     it("should return empty array when role has no permissions", async () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),

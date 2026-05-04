@@ -1,12 +1,12 @@
 export enum UserRole {
-  HR_ADMIN = "hr_admin",
-  RECRUITER = "recruiter",
-  ADMIN_LIMITED = "admin_limited",
-  CREWING = "crewing",
-  SODEXO = "sodexo",
-  OMC = "omc",
-  PAYROLL = "payroll",
-  TOPLUX = "toplux",
+  HR_ADMIN = 'hr_admin',
+  RECRUITER = 'recruiter',
+  ADMIN_LIMITED = 'admin_limited',
+  CREWING = 'crewing',
+  SODEXO = 'sodexo',
+  OMC = 'omc',
+  PAYROLL = 'payroll',
+  TOPLUX = 'toplux',
 }
 
 export const USER_ROLES = Object.values(UserRole);
@@ -15,9 +15,22 @@ export const USER_ROLES = Object.values(UserRole);
 export const ADMIN_ROLES: UserRole[] = [UserRole.HR_ADMIN];
 // Recruiter has admin-like privileges but is distinct
 // Admin Limited is internal but with restricted edit permissions
-export const INTERNAL_ROLES: UserRole[] = [UserRole.HR_ADMIN, UserRole.RECRUITER, UserRole.ADMIN_LIMITED];
-export const EXTERNAL_PARTY_ROLES: UserRole[] = [UserRole.SODEXO, UserRole.OMC, UserRole.PAYROLL, UserRole.TOPLUX, UserRole.CREWING];
-export const ALL_ROLES: UserRole[] = [...INTERNAL_ROLES, ...EXTERNAL_PARTY_ROLES];
+export const INTERNAL_ROLES: UserRole[] = [
+  UserRole.HR_ADMIN,
+  UserRole.RECRUITER,
+  UserRole.ADMIN_LIMITED,
+];
+export const EXTERNAL_PARTY_ROLES: UserRole[] = [
+  UserRole.SODEXO,
+  UserRole.OMC,
+  UserRole.PAYROLL,
+  UserRole.TOPLUX,
+  UserRole.CREWING,
+];
+export const ALL_ROLES: UserRole[] = [
+  ...INTERNAL_ROLES,
+  ...EXTERNAL_PARTY_ROLES,
+];
 
 // Role Utility Functions
 export function isHRAdmin(role: UserRole): boolean {
@@ -42,7 +55,8 @@ export {
   canArchiveEmployee,
   canTerminateEmployee,
   isAdminLimited,
-} from "@/lib/utils/role-utils";
+  getColumnViewRole,
+} from '@/lib/utils/role-utils';
 
 export interface User {
   id: string;
