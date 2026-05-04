@@ -12,32 +12,41 @@
  * 4. Future use if other roles need these capabilities
  */
 
-import { UserRole } from '@/lib/types/user';
+import type { UserRole } from '@/lib/types/user';
 import type { ColumnConfig } from '@/lib/types/column-config';
 
 const INTERNAL_COLUMN_VIEW_ROLES = new Set<UserRole>([
-  UserRole.HR_ADMIN,
-  UserRole.RECRUITER,
-  UserRole.ADMIN_LIMITED,
+  'hr_admin' as UserRole,
+  'recruiter' as UserRole,
+  'admin_limited' as UserRole,
 ]);
+
+const HR_ADMIN_ROLE = 'hr_admin' as UserRole;
+const RECRUITER_ROLE = 'recruiter' as UserRole;
+const ADMIN_LIMITED_ROLE = 'admin_limited' as UserRole;
+const CREWING_ROLE = 'crewing' as UserRole;
+const SODEXO_ROLE = 'sodexo' as UserRole;
+const OMC_ROLE = 'omc' as UserRole;
+const PAYROLL_ROLE = 'payroll' as UserRole;
+const TOPLUX_ROLE = 'toplux' as UserRole;
 
 export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
-    case UserRole.HR_ADMIN:
+    case HR_ADMIN_ROLE:
       return 'HR Superuser';
-    case UserRole.RECRUITER:
+    case RECRUITER_ROLE:
       return 'Recruiter';
-    case UserRole.ADMIN_LIMITED:
+    case ADMIN_LIMITED_ROLE:
       return 'Administratör';
-    case UserRole.CREWING:
+    case CREWING_ROLE:
       return 'Crewing';
-    case UserRole.SODEXO:
+    case SODEXO_ROLE:
       return 'Sodexo';
-    case UserRole.OMC:
+    case OMC_ROLE:
       return 'ÖMC';
-    case UserRole.PAYROLL:
+    case PAYROLL_ROLE:
       return 'Payroll';
-    case UserRole.TOPLUX:
+    case TOPLUX_ROLE:
       return 'Toplux';
     default:
       return role;
@@ -45,11 +54,11 @@ export function getRoleDisplayName(role: UserRole): string {
 }
 
 export function canManageSettings(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN;
+  return role === HR_ADMIN_ROLE;
 }
 
 export function canManageEmployees(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+  return role === HR_ADMIN_ROLE || role === RECRUITER_ROLE;
 }
 
 /**
@@ -57,7 +66,7 @@ export function canManageEmployees(role: UserRole): boolean {
  * Administrator cannot add employees (risk mitigation for new hires)
  */
 export function canAddEmployee(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+  return role === HR_ADMIN_ROLE || role === RECRUITER_ROLE;
 }
 
 /**
@@ -65,7 +74,7 @@ export function canAddEmployee(role: UserRole): boolean {
  * Administrator cannot archive employees
  */
 export function canArchiveEmployee(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+  return role === HR_ADMIN_ROLE || role === RECRUITER_ROLE;
 }
 
 /**
@@ -73,14 +82,14 @@ export function canArchiveEmployee(role: UserRole): boolean {
  * Administrator cannot terminate employees
  */
 export function canTerminateEmployee(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+  return role === HR_ADMIN_ROLE || role === RECRUITER_ROLE;
 }
 
 /**
  * Check if admin_limited role (restricted internal role)
  */
 export function isAdminLimited(role: UserRole): boolean {
-  return role === UserRole.ADMIN_LIMITED;
+  return role === ADMIN_LIMITED_ROLE;
 }
 
 /**
@@ -90,7 +99,7 @@ export function isAdminLimited(role: UserRole): boolean {
  * role-specific and are handled by canEditField.
  */
 export function getColumnViewRole(role: UserRole): UserRole {
-  return INTERNAL_COLUMN_VIEW_ROLES.has(role) ? UserRole.HR_ADMIN : role;
+  return INTERNAL_COLUMN_VIEW_ROLES.has(role) ? HR_ADMIN_ROLE : role;
 }
 
 /**
@@ -98,7 +107,7 @@ export function getColumnViewRole(role: UserRole): UserRole {
  * Only HR Admin and Crewing can modify staffing targets
  */
 export function canEditStaffingNeeds(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.CREWING;
+  return role === HR_ADMIN_ROLE || role === CREWING_ROLE;
 }
 
 /**
@@ -115,7 +124,7 @@ export function canEditField(
   columnConfig: ColumnConfig
 ): boolean {
   // Admin Limited has special edit logic
-  if (role === UserRole.ADMIN_LIMITED) {
+  if (role === ADMIN_LIMITED_ROLE) {
     // Can edit checklist items
     if (columnConfig.is_checklist_item) {
       return true;
