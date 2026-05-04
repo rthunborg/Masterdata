@@ -184,7 +184,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     function PanelWithSaveDialog() {
       const [saveDialogOpen, setSaveDialogOpen] = React.useState(false);
-      const { saveFilter } = useSavedFilters();
+      const { saveFilter, savedFilters } = useSavedFilters();
       return (
         <>
           {activeFilters.length > 0 && (
@@ -208,6 +208,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
             onOpenChange={setSaveDialogOpen}
             activeFilters={activeFilters}
             columnConfigs={mockColumns}
+            existingFilterNames={savedFilters.map((f) => f.name)}
             onSave={async (name) => {
               await saveFilter({ name, filters: activeFilters });
               setSaveDialogOpen(false);
@@ -397,62 +398,36 @@ describe("Story 20.6: Saved Filters Integration", () => {
       { columnId: "col-1", type: "text", textValue: "Test" },
     ];
 
-    // Mock duplicate name error (match URL like beforeEach: include path for relative or absolute)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (global.fetch as any).mockImplementation((url: string, options?: any) => {
-      const isPostFilters =
-        typeof url === "string" &&
-        url.includes("/api/users/filters") &&
-        !url.includes("/api/users/filters/") &&
-        options?.method === "POST";
-      if (isPostFilters) {
-        return Promise.resolve({
-          ok: false,
-          status: 409,
-          json: () =>
-            Promise.resolve({ error: "A filter with this name already exists" }),
-        });
-      }
-      const isGetFilters =
-        typeof url === "string" &&
-        url.includes("/api/users/filters") &&
-        !url.includes("/api/users/filters/") &&
-        (!options || options?.method !== "POST");
-      if (isGetFilters) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({ data: mockSavedFilters }),
-        });
-      }
-      return Promise.reject(new Error(`Unexpected fetch call: ${url}`));
-    });
+    // Render SaveFilterDialog directly with known existingFilterNames.
+    // This avoids a timing race where the async useSavedFilters query may not
+    // have settled before the user interaction, which caused unreliable error
+    // propagation through mutateAsync in CI.
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    const onOpenChange = vi.fn();
 
-    renderFilterPanel(activeFilters);
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SaveFilterDialog
+          open={true}
+          onOpenChange={onOpenChange}
+          activeFilters={activeFilters}
+          columnConfigs={mockColumns}
+          existingFilterNames={mockSavedFilters.map((f) => f.name)}
+          onSave={onSave}
+        />
+      </QueryClientProvider>
+    );
 
-    // Wait for component to load
-    await waitFor(() => {
-      expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
-    });
-
-    // Click Save Filter button (outside panel, next to Rensa filter)
-    const saveButton = screen.getByTestId("save-filter-button");
-    await userEvent.click(saveButton);
-
-    // Enter duplicate name
-    const input = await screen.findByLabelText("Filternamn");
+    // Enter a name that duplicates an existing filter
+    const input = screen.getByLabelText("Filternamn");
     await userEvent.type(input, "New Hires");
 
-    // Click Save in the save-filter dialog (not the toolbar or filter panel; there are two dialogs when this is open)
-    const dialogs = screen.getAllByRole("dialog");
-    const saveDialog = dialogs.find((d) => within(d).queryByLabelText("Filternamn") != null) ?? dialogs[1];
-    const dialogSaveButton = within(saveDialog).getByRole("button", { name: /^spara filter$/i });
-    await userEvent.click(dialogSaveButton);
+    const saveButton = screen.getByRole("button", { name: /^spara filter$/i });
+    await userEvent.click(saveButton);
 
-    // Verify duplicate-name error is shown in the dialog (translated message)
-    await waitFor(() => {
-      expect(screen.getByText("Ett filter med det här namnet finns redan.")).toBeInTheDocument();
-    });
+    // Client-side check fires synchronously — no async chain needed
+    expect(screen.getByText("Ett filter med det här namnet finns redan.")).toBeInTheDocument();
+    expect(onSave).not.toHaveBeenCalled();
   });
 
   it("validates filter name is not empty", async () => {

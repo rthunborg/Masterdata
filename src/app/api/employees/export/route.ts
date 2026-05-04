@@ -1,24 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requireAuthAPI, createErrorResponse, createUnauthorizedResponse } from "@/lib/server/auth";
-import { employeeRepository } from "@/lib/server/repositories/employee-repository";
-import { columnConfigRepository } from "@/lib/server/repositories/column-config-repository";
-import Papa from "papaparse";
-import * as ExcelJS from "exceljs";
-import type { Employee } from "@/lib/types/employee";
-import type { ImportantDate } from "@/lib/types/important-date";
-import { createAPIClient } from "@/lib/supabase/server-api";
-import { createServiceRoleClient } from "@/lib/supabase/server";
-import type { UserRole } from "@/lib/types/user";
-import { resolveImportantDateId } from "@/lib/utils/important-date-resolver";
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  requireAuthAPI,
+  createErrorResponse,
+  createUnauthorizedResponse,
+} from '@/lib/server/auth';
+import { employeeRepository } from '@/lib/server/repositories/employee-repository';
+import { columnConfigRepository } from '@/lib/server/repositories/column-config-repository';
+import Papa from 'papaparse';
+import * as ExcelJS from 'exceljs';
+import type { Employee } from '@/lib/types/employee';
+import { createAPIClient } from '@/lib/supabase/server-api';
+import { createServiceRoleClient } from '@/lib/supabase/server';
+import type { UserRole } from '@/lib/types/user';
+import { resolveImportantDateId } from '@/lib/utils/important-date-resolver';
+import { getColumnViewRole } from '@/lib/utils/role-utils';
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
 /**
  * POST /api/employees/export
- * 
+ *
  * Export selected employees with custom field selection.
- * 
+ *
  * Story 13.6: General Export Button with Field Selection
  * Story 17.4: Export Functionality for External Users - permission-based field filtering
  * Enhancement: HR Admin Impersonation Export - export with impersonated role's view and Excel format
@@ -33,12 +37,16 @@ export async function POST(request: NextRequest) {
     const { employeeIds, fields, impersonatedRole, format = 'csv' } = body;
 
     // Validate: If employeeIds is empty, return error message
-    if (!employeeIds || !Array.isArray(employeeIds) || employeeIds.length === 0) {
+    if (
+      !employeeIds ||
+      !Array.isArray(employeeIds) ||
+      employeeIds.length === 0
+    ) {
       return NextResponse.json(
         {
           error: {
-            code: "NO_EMPLOYEES_SELECTED",
-            message: "Inga anställda valda. Välj anställda att exportera.",
+            code: 'NO_EMPLOYEES_SELECTED',
+            message: 'Inga anställda valda. Välj anställda att exportera.',
             timestamp: new Date().toISOString(),
           },
         },
@@ -51,8 +59,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            code: "NO_FIELDS_SELECTED",
-            message: "Inga fält valda. Välj minst ett fält att exportera.",
+            code: 'NO_FIELDS_SELECTED',
+            message: 'Inga fält valda. Välj minst ett fält att exportera.',
             timestamp: new Date().toISOString(),
           },
         },
@@ -65,8 +73,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            code: "IMPERSONATION_FORBIDDEN",
-            message: "Endast HR Admin kan exportera med impersonerad rollkontext.",
+            code: 'IMPERSONATION_FORBIDDEN',
+            message:
+              'Endast HR Admin kan exportera med impersonerad rollkontext.',
             timestamp: new Date().toISOString(),
           },
         },
@@ -79,7 +88,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            code: "INVALID_FORMAT",
+            code: 'INVALID_FORMAT',
             message: "Exporteraformat måste vara antingen 'csv' eller 'xlsx'.",
             timestamp: new Date().toISOString(),
           },
@@ -92,19 +101,8 @@ export async function POST(request: NextRequest) {
     // If impersonating, use impersonated role for permission checks
     const userRole = (impersonatedRole || user.role) as UserRole;
     const allColumns = await columnConfigRepository.findAll();
-    
-    // Debug: Log column config for SSN
-    const ssnColumn = allColumns.find(col => col.column_name === 'Social Security No.' || col.db_column_name === 'social_security_no' || col.db_column_name === 'ssn');
-    console.log('[Export Debug] SSN Column Config:', ssnColumn ? {
-      id: ssnColumn.id,
-      column_name: ssnColumn.column_name,
-      db_column_name: ssnColumn.db_column_name,
-      is_masterdata: ssnColumn.is_masterdata
-    } : 'NOT_FOUND');
-    
-    // Debug: Log requested fields
-    console.log('[Export Debug] Requested fields:', fields);
-    
+    const roleForView = getColumnViewRole(userRole);
+
     // Filter fields based on permissions
     const permittedFields: string[] = [];
     const deniedFields: string[] = [];
@@ -115,7 +113,10 @@ export async function POST(request: NextRequest) {
       const matchingColumn = allColumns.find((col) => {
         if (col.is_masterdata) {
           // For masterdata, match db_column_name (snake_case) with fieldKey
-          return col.db_column_name.toLowerCase().replace(/ /g, "_") === fieldKey.toLowerCase();
+          return (
+            col.db_column_name.toLowerCase().replace(/ /g, '_') ===
+            fieldKey.toLowerCase()
+          );
         } else {
           // For custom columns, match db_column_name exactly
           return col.db_column_name === fieldKey;
@@ -128,9 +129,8 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Check view permission for user's role
-      const rolePerms = matchingColumn.role_permissions[userRole];
-      if (rolePerms && rolePerms.view === true) {
+      // Internal HR roles share HR Superuser view permissions.
+      if (matchingColumn.role_permissions[roleForView]?.view === true) {
         permittedFields.push(fieldKey);
       } else {
         deniedFields.push(fieldKey);
@@ -142,8 +142,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            code: "PERMISSION_DENIED",
-            message: `Du har inte skrivbehörighet för följande fält: ${deniedFields.join(", ")}`,
+            code: 'PERMISSION_DENIED',
+            message: `Du har inte skrivbehörighet för följande fält: ${deniedFields.join(', ')}`,
             details: {
               deniedFields: deniedFields,
             },
@@ -159,8 +159,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            code: "NO_PERMITTED_FIELDS",
-            message: "Inga fält valda som du har skrivbehörighet för att exportera.",
+            code: 'NO_PERMITTED_FIELDS',
+            message:
+              'Inga fält valda som du har skrivbehörighet för att exportera.',
             timestamp: new Date().toISOString(),
           },
         },
@@ -186,8 +187,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: {
-            code: "NO_EMPLOYEES_FOUND",
-            message: "Inga anställda hittade som matchar de valda ID:n.",
+            code: 'NO_EMPLOYEES_FOUND',
+            message: 'Inga anställda hittade som matchar de valda ID:n.',
             timestamp: new Date().toISOString(),
           },
         },
@@ -203,11 +204,14 @@ export async function POST(request: NextRequest) {
       .in('employee_id', employeeIds);
 
     if (customDataError) {
-      console.error("Misslyckades att hämta anpassad data:", customDataError);
+      console.error('Misslyckades att hämta anpassad data:', customDataError);
     }
 
     // Create a map of employee_id -> custom data
-    const customDataMap = new Map<string, Record<string, string | number | boolean | null>>();
+    const customDataMap = new Map<
+      string,
+      Record<string, string | number | boolean | null>
+    >();
     if (customDataRows) {
       customDataRows.forEach((row) => {
         customDataMap.set(row.employee_id, row.data || {});
@@ -224,7 +228,7 @@ export async function POST(request: NextRequest) {
       .eq('is_active', true);
 
     if (datesError) {
-      console.error("Misslyckades att hämta viktiga datum:", datesError);
+      console.error('Misslyckades att hämta viktiga datum:', datesError);
     }
 
     const allImportantDates = importantDates || [];
@@ -232,37 +236,37 @@ export async function POST(request: NextRequest) {
     // Map db_column_name to actual Employee property names for masterdata fields
     // Some column_config.db_column_name values don't match Employee property names
     const dbColumnToEmployeeProperty: Record<string, string> = {
-      'social_security_no': 'ssn',
-      'first_name': 'first_name',
-      'surname': 'surname',
-      'email': 'email',
-      'mobile': 'mobile',
-      'rank': 'rank',
-      'gender': 'gender',
-      'town_district': 'town_district',
-      'hire_date': 'hire_date',
-      'stena_date': 'stena_date',
-      'omc_date': 'omc_date',
-      'pe3_date': 'pe3_date',
-      'termination_date': 'termination_date',
-      'termination_reason': 'termination_reason',
-      'comments': 'comments',
-      'special_diet': 'special_diet',
-      'diet_details': 'diet_details',
-      'one': 'one',
-      'talmundo': 'talmundo',
-      'isps': 'isps',
-      'photo': 'photo',
-      'origo': 'origo',
-      'loneiva': 'loneiva',
-      'mail_lon': 'mail_lon',
-      'bankuppgifter': 'bankuppgifter',
-      'li': 'li',
-      'passport': 'passport',
-      'kvitto_c17_18': 'kvitto_c17_18',
-      'c17': 'c17',
-      'crewing_done': 'crewing_done',
-      'hotel_required': 'hotel_required',
+      social_security_no: 'ssn',
+      first_name: 'first_name',
+      surname: 'surname',
+      email: 'email',
+      mobile: 'mobile',
+      rank: 'rank',
+      gender: 'gender',
+      town_district: 'town_district',
+      hire_date: 'hire_date',
+      stena_date: 'stena_date',
+      omc_date: 'omc_date',
+      pe3_date: 'pe3_date',
+      termination_date: 'termination_date',
+      termination_reason: 'termination_reason',
+      comments: 'comments',
+      special_diet: 'special_diet',
+      diet_details: 'diet_details',
+      one: 'one',
+      talmundo: 'talmundo',
+      isps: 'isps',
+      photo: 'photo',
+      origo: 'origo',
+      loneiva: 'loneiva',
+      mail_lon: 'mail_lon',
+      bankuppgifter: 'bankuppgifter',
+      li: 'li',
+      passport: 'passport',
+      kvitto_c17_18: 'kvitto_c17_18',
+      c17: 'c17',
+      crewing_done: 'crewing_done',
+      hotel_required: 'hotel_required',
     };
 
     // Define date fields that store UUIDs and need resolution
@@ -276,24 +280,13 @@ export async function POST(request: NextRequest) {
 
       fieldsToExport.forEach((fieldKey) => {
         // Map db_column_name to actual Employee property if it's a masterdata field
-        const actualPropertyName = dbColumnToEmployeeProperty[fieldKey] || fieldKey;
-
-        // Debug logging for SSN field
-        if (fieldKey === 'social_security_no') {
-          console.log('[Export Debug] SSN Field Processing:', {
-            fieldKey,
-            actualPropertyName,
-            employeeId: emp.id,
-            hasProperty: actualPropertyName in emp,
-            ssnValue: emp.ssn,
-            mappedValue: actualPropertyName in emp ? emp[actualPropertyName as keyof Employee] : 'NOT_FOUND'
-          });
-        }
+        const actualPropertyName =
+          dbColumnToEmployeeProperty[fieldKey] || fieldKey;
 
         // Try to get value from employee object first (masterdata)
         if (actualPropertyName in emp) {
           const value = emp[actualPropertyName as keyof Employee];
-          
+
           // Format the value appropriately
           if (value === null || value === undefined) {
             row[fieldKey] = '';
@@ -302,9 +295,16 @@ export async function POST(request: NextRequest) {
             row[fieldKey] = String(value);
           } else if (typeof value === 'boolean') {
             row[fieldKey] = value ? 'Yes' : 'No';
-          } else if (dateFields.includes(actualPropertyName) && typeof value === 'string') {
+          } else if (
+            dateFields.includes(actualPropertyName) &&
+            typeof value === 'string'
+          ) {
             // Resolve date UUID to actual date string
-            row[fieldKey] = resolveImportantDateId(value, allImportantDates, 'Date Deleted');
+            row[fieldKey] = resolveImportantDateId(
+              value,
+              allImportantDates,
+              'Date Deleted'
+            );
           } else {
             row[fieldKey] = String(value);
           }
@@ -313,12 +313,10 @@ export async function POST(request: NextRequest) {
           const customData = customDataMap.get(emp.id);
           if (customData && fieldKey in customData) {
             const value = customData[fieldKey];
-            row[fieldKey] = value !== null && value !== undefined ? String(value) : '';
+            row[fieldKey] =
+              value !== null && value !== undefined ? String(value) : '';
           } else {
             // Field not found, set empty
-            if (fieldKey === 'social_security_no') {
-              console.log('[Export Debug] SSN NOT FOUND in employee or custom data');
-            }
             row[fieldKey] = '';
           }
         }
@@ -329,11 +327,11 @@ export async function POST(request: NextRequest) {
 
     // Get column labels from column configs for accurate header names
     const fieldLabels: Record<string, string> = {};
-    
+
     // Build field labels map from column configs (preserves user-visible names)
     allColumns.forEach((col) => {
       if (col.is_masterdata) {
-        const fieldKey = col.db_column_name.toLowerCase().replace(/ /g, "_");
+        const fieldKey = col.db_column_name.toLowerCase().replace(/ /g, '_');
         fieldLabels[fieldKey] = col.column_name;
       } else {
         fieldLabels[col.db_column_name] = col.column_name;
@@ -342,21 +340,21 @@ export async function POST(request: NextRequest) {
 
     // Fallback labels for fields not in column config
     const defaultFieldLabels: Record<string, string> = {
-      'first_name': 'First Name',
-      'surname': 'Surname',
-      'ssn': 'SSN',
-      'email': 'Email',
-      'mobile': 'Mobile',
-      'rank': 'Rank',
-      'gender': 'Gender',
-      'town_district': 'Town District',
-      'hire_date': 'Hire Date',
-      'termination_date': 'Termination Date',
-      'termination_reason': 'Termination Reason',
-      'repayment_needed_omc': 'Repayment Needed (ÖMC)',
-      'repayment_needed_pe3': 'Repayment Needed (PE3)',
-      'comments': 'Comments',
-      'loneiva': 'Lönenivå',
+      first_name: 'First Name',
+      surname: 'Surname',
+      ssn: 'SSN',
+      email: 'Email',
+      mobile: 'Mobile',
+      rank: 'Rank',
+      gender: 'Gender',
+      town_district: 'Town District',
+      hire_date: 'Hire Date',
+      termination_date: 'Termination Date',
+      termination_reason: 'Termination Reason',
+      repayment_needed_omc: 'Repayment Needed (ÖMC)',
+      repayment_needed_pe3: 'Repayment Needed (PE3)',
+      comments: 'Comments',
+      loneiva: 'Lönenivå',
     };
 
     const headers = fieldsToExport.map((fieldKey: string) => {
@@ -378,36 +376,39 @@ export async function POST(request: NextRequest) {
       return new NextResponse(uint8Array, {
         status: 200,
         headers: {
-          "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "Content-Disposition": `attachment; filename="employees_export_${new Date().toISOString().split('T')[0]}.xlsx"`,
-          "X-Employees-Exported": selectedEmployees.length.toString(),
-          "X-Timestamp": new Date().toISOString(),
-          "X-Impersonated-Role": impersonatedRole || '',
+          'Content-Type':
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Content-Disposition': `attachment; filename="employees_export_${new Date().toISOString().split('T')[0]}.xlsx"`,
+          'X-Employees-Exported': selectedEmployees.length.toString(),
+          'X-Timestamp': new Date().toISOString(),
+          'X-Impersonated-Role': impersonatedRole || '',
         },
       });
     } else {
       // Generate CSV
       const csv = Papa.unparse({
         fields: headers,
-        data: csvData.map((row) => fieldsToExport.map((fieldKey: string) => row[fieldKey] || '')),
+        data: csvData.map((row) =>
+          fieldsToExport.map((fieldKey: string) => row[fieldKey] || '')
+        ),
       });
 
       // Return CSV file
       return new NextResponse(csv, {
         status: 200,
         headers: {
-          "Content-Type": "text/csv; charset=utf-8",
-          "Content-Disposition": `attachment; filename="employees_export_${new Date().toISOString().split('T')[0]}.csv"`,
-          "X-Employees-Exported": selectedEmployees.length.toString(),
-          "X-Timestamp": new Date().toISOString(),
-          "X-Impersonated-Role": impersonatedRole || '',
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': `attachment; filename="employees_export_${new Date().toISOString().split('T')[0]}.csv"`,
+          'X-Employees-Exported': selectedEmployees.length.toString(),
+          'X-Timestamp': new Date().toISOString(),
+          'X-Impersonated-Role': impersonatedRole || '',
         },
       });
     }
   } catch (error) {
-    console.error("Misslyckades att exportera anställda:", error);
+    console.error('Misslyckades att exportera anställda:', error);
     // Handle authentication errors specifically
-    if (error instanceof Error && error.message === "Autentisering krävs") {
+    if (error instanceof Error && error.message === 'Autentisering krävs') {
       return createUnauthorizedResponse(error.message);
     }
     return createErrorResponse(error);
@@ -422,13 +423,13 @@ export async function POST(request: NextRequest) {
 function getExcelColumnLetter(columnNumber: number): string {
   let columnLetter = '';
   let temp = columnNumber;
-  
+
   while (temp > 0) {
     const remainder = (temp - 1) % 26;
     columnLetter = String.fromCharCode(65 + remainder) + columnLetter;
     temp = Math.floor((temp - 1) / 26);
   }
-  
+
   return columnLetter;
 }
 
@@ -443,7 +444,7 @@ async function generateExcelExport(
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Employees', {
-    views: [{ state: 'frozen', ySplit: 1 }] // Freeze header row
+    views: [{ state: 'frozen', ySplit: 1 }], // Freeze header row
   });
 
   // Add header row
@@ -455,7 +456,7 @@ async function generateExcelExport(
   headerRow.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { argb: 'FF1F4788' } // Dark blue background
+    fgColor: { argb: 'FF1F4788' }, // Dark blue background
   };
   headerRow.alignment = { vertical: 'middle', horizontal: 'left' };
   headerRow.height = 20;
@@ -469,7 +470,7 @@ async function generateExcelExport(
   // Auto-fit columns based on content
   worksheet.columns.forEach((column, index) => {
     let maxLength = headers[index]?.length || 10;
-    
+
     // Check data rows for max length
     data.forEach((row) => {
       const fieldKey = fieldKeys[index];
@@ -490,7 +491,7 @@ async function generateExcelExport(
     // Get proper Excel column letter (handles 27+ columns correctly: AA, AB, etc.)
     const lastColumn = getExcelColumnLetter(fieldKeys.length);
     const tableRef = `A1:${lastColumn}${data.length + 1}`;
-    
+
     worksheet.addTable({
       name: 'EmployeeTable',
       ref: tableRef,
@@ -501,13 +502,13 @@ async function generateExcelExport(
         showRowStripes: true,
       },
       columns: headers.map((header) => ({ name: header, filterButton: true })),
-      rows: data.map((row) => fieldKeys.map((fieldKey) => row[fieldKey] || ''))
+      rows: data.map((row) => fieldKeys.map((fieldKey) => row[fieldKey] || '')),
     });
   } else {
     // If no data, just enable auto-filter on headers
     worksheet.autoFilter = {
       from: { row: 1, column: 1 },
-      to: { row: 1, column: fieldKeys.length }
+      to: { row: 1, column: fieldKeys.length },
     };
   }
 

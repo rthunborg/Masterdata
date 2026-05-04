@@ -1,9 +1,9 @@
 /**
  * Role Utility Functions
- * 
+ *
  * This module contains all role-based permission helpers.
  * These functions are re-exported from @/lib/types/user for backward compatibility.
- * 
+ *
  * Note: Some helpers (canArchiveEmployee, canTerminateEmployee) are not currently
  * used in UI components but are defined for:
  * 1. API-level validation and authorization
@@ -12,29 +12,53 @@
  * 4. Future use if other roles need these capabilities
  */
 
-import { UserRole } from "@/lib/types/user";
-import type { ColumnConfig } from "@/lib/types/column-config";
+import type { UserRole } from '@/lib/types/user';
+import type { ColumnConfig } from '@/lib/types/column-config';
+
+const INTERNAL_COLUMN_VIEW_ROLES = new Set<UserRole>([
+  'hr_admin' as UserRole,
+  'recruiter' as UserRole,
+  'admin_limited' as UserRole,
+]);
+
+const HR_ADMIN_ROLE = 'hr_admin' as UserRole;
+const RECRUITER_ROLE = 'recruiter' as UserRole;
+const ADMIN_LIMITED_ROLE = 'admin_limited' as UserRole;
+const CREWING_ROLE = 'crewing' as UserRole;
+const SODEXO_ROLE = 'sodexo' as UserRole;
+const OMC_ROLE = 'omc' as UserRole;
+const PAYROLL_ROLE = 'payroll' as UserRole;
+const TOPLUX_ROLE = 'toplux' as UserRole;
 
 export function getRoleDisplayName(role: UserRole): string {
   switch (role) {
-    case UserRole.HR_ADMIN: return "HR Superuser";
-    case UserRole.RECRUITER: return "Recruiter";
-    case UserRole.ADMIN_LIMITED: return "Administratör";
-    case UserRole.CREWING: return "Crewing";
-    case UserRole.SODEXO: return "Sodexo";
-    case UserRole.OMC: return "ÖMC";
-    case UserRole.PAYROLL: return "Payroll";
-    case UserRole.TOPLUX: return "Toplux";
-    default: return role;
+    case HR_ADMIN_ROLE:
+      return 'HR Superuser';
+    case RECRUITER_ROLE:
+      return 'Recruiter';
+    case ADMIN_LIMITED_ROLE:
+      return 'Administratör';
+    case CREWING_ROLE:
+      return 'Crewing';
+    case SODEXO_ROLE:
+      return 'Sodexo';
+    case OMC_ROLE:
+      return 'ÖMC';
+    case PAYROLL_ROLE:
+      return 'Payroll';
+    case TOPLUX_ROLE:
+      return 'Toplux';
+    default:
+      return role;
   }
 }
 
 export function canManageSettings(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN;
+  return role === HR_ADMIN_ROLE;
 }
 
 export function canManageEmployees(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+  return role === HR_ADMIN_ROLE || role === RECRUITER_ROLE;
 }
 
 /**
@@ -42,7 +66,7 @@ export function canManageEmployees(role: UserRole): boolean {
  * Administrator cannot add employees (risk mitigation for new hires)
  */
 export function canAddEmployee(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+  return role === HR_ADMIN_ROLE || role === RECRUITER_ROLE;
 }
 
 /**
@@ -50,7 +74,7 @@ export function canAddEmployee(role: UserRole): boolean {
  * Administrator cannot archive employees
  */
 export function canArchiveEmployee(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+  return role === HR_ADMIN_ROLE || role === RECRUITER_ROLE;
 }
 
 /**
@@ -58,28 +82,49 @@ export function canArchiveEmployee(role: UserRole): boolean {
  * Administrator cannot terminate employees
  */
 export function canTerminateEmployee(role: UserRole): boolean {
-  return role === UserRole.HR_ADMIN || role === UserRole.RECRUITER;
+  return role === HR_ADMIN_ROLE || role === RECRUITER_ROLE;
 }
 
 /**
  * Check if admin_limited role (restricted internal role)
  */
 export function isAdminLimited(role: UserRole): boolean {
-  return role === UserRole.ADMIN_LIMITED;
+  return role === ADMIN_LIMITED_ROLE;
+}
+
+/**
+ * Resolve which role's column view permissions should be used.
+ *
+ * Internal HR roles share HR Superuser visibility. Edit permissions remain
+ * role-specific and are handled by canEditField.
+ */
+export function getColumnViewRole(role: UserRole): UserRole {
+  return INTERNAL_COLUMN_VIEW_ROLES.has(role) ? HR_ADMIN_ROLE : role;
+}
+
+/**
+ * Check if role can edit staffing needs (headcount targets)
+ * Only HR Admin and Crewing can modify staffing targets
+ */
+export function canEditStaffingNeeds(role: UserRole): boolean {
+  return role === HR_ADMIN_ROLE || role === CREWING_ROLE;
 }
 
 /**
  * Check if a role can edit a specific field based on column config
- * 
+ *
  * Admin Limited role has special edit restrictions:
  * - Can only edit fields where is_checklist_item = true
  * - Exception: Can also edit the 'loneniva' field
- * 
+ *
  * All other roles use the standard role_permissions from column config
  */
-export function canEditField(role: UserRole, columnConfig: ColumnConfig): boolean {
+export function canEditField(
+  role: UserRole,
+  columnConfig: ColumnConfig
+): boolean {
   // Admin Limited has special edit logic
-  if (role === UserRole.ADMIN_LIMITED) {
+  if (role === ADMIN_LIMITED_ROLE) {
     // Can edit checklist items
     if (columnConfig.is_checklist_item) {
       return true;
@@ -97,4 +142,3 @@ export function canEditField(role: UserRole, columnConfig: ColumnConfig): boolea
   const rolePerms = columnConfig.role_permissions[role];
   return rolePerms?.edit ?? false;
 }
-

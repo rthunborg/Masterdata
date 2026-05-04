@@ -44,7 +44,7 @@ const ImportEmployeesModal = dynamic(
 );
 
 export default function DashboardPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { openModal, previewRole } = useUIStore();
   const t = useTranslations('dashboard');
   
@@ -244,11 +244,11 @@ export default function DashboardPage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle>{t('employeeList')}</CardTitle>
         </CardHeader>
         <CardContent>
-          {error ? (
+          {error && isAuthenticated ? (
             <div className="rounded-md bg-red-50 p-4 text-sm text-red-500">
               {tErrors('failedToLoadEmployees')}
             </div>

@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from '@/lib/supabase/server';
+import type { UserRole } from '@/lib/types/user';
 
 /**
  * Handles audit history and change detection queries.
@@ -9,9 +10,7 @@ export class EmployeeAuditRepository {
     return await createClient();
   }
 
-  async getEmployeeAuditHistory(
-    employeeId: string
-  ): Promise<
+  async getEmployeeAuditHistory(employeeId: string): Promise<
     Array<{
       columnName: string;
       changedAt: string;
@@ -23,7 +22,7 @@ export class EmployeeAuditRepository {
       const supabase = await this.getSupabaseClient();
 
       const { data: changes, error } = await supabase
-        .from("employee_column_changes")
+        .from('employee_column_changes')
         .select(
           `
           column_name,
@@ -34,11 +33,14 @@ export class EmployeeAuditRepository {
           )
         `
         )
-        .eq("employee_id", employeeId)
-        .order("changed_at", { ascending: false });
+        .eq('employee_id', employeeId)
+        .order('changed_at', { ascending: false });
 
       if (error) {
-        console.error("Misslyckades att hämta anställda granskningshistorik:", error);
+        console.error(
+          'Misslyckades att hämta anställda granskningshistorik:',
+          error
+        );
         return [];
       }
 
@@ -54,7 +56,10 @@ export class EmployeeAuditRepository {
           (change.users as { email?: string | null })?.email || null,
       }));
     } catch (error) {
-      console.error("Oväntat fel vid hämtning av anställda granskningshistorik:", error);
+      console.error(
+        'Oväntat fel vid hämtning av anställda granskningshistorik:',
+        error
+      );
       return [];
     }
   }
@@ -83,20 +88,15 @@ export class EmployeeAuditRepository {
         return [];
       }
 
-      const { columnConfigRepository } = await import(
-        "./column-config-repository"
-      );
+      const { columnConfigRepository } =
+        await import('./column-config-repository');
+      const { getColumnViewRole } = await import('@/lib/utils/role-utils');
       const allColumns = await columnConfigRepository.findAll();
-      const roleForView =
-        userRole === "admin_limited" ? "hr_admin" : userRole;
+      const roleForView = getColumnViewRole(userRole as UserRole);
       const visibleMasterdataColumns = allColumns
         .filter((col) => {
           if (!col.is_masterdata) return false;
-          const rolePerms =
-            col.role_permissions[
-              roleForView as keyof typeof col.role_permissions
-            ];
-          return rolePerms?.view === true;
+          return col.role_permissions[roleForView]?.view === true;
         })
         .map((col) => col.db_column_name.toLowerCase().trim());
 
@@ -105,14 +105,17 @@ export class EmployeeAuditRepository {
       }
 
       const { data: changes, error } = await supabase
-        .from("employee_column_changes")
-        .select("employee_id, column_name, changed_at")
-        .gt("changed_at", lastActiveAt)
-        .in("column_name", visibleMasterdataColumns)
-        .order("changed_at", { ascending: false });
+        .from('employee_column_changes')
+        .select('employee_id, column_name, changed_at')
+        .gt('changed_at', lastActiveAt)
+        .in('column_name', visibleMasterdataColumns)
+        .order('changed_at', { ascending: false });
 
       if (error) {
-        console.error("Misslyckades att hämta anställda kolumnändringar:", error);
+        console.error(
+          'Misslyckades att hämta anställda kolumnändringar:',
+          error
+        );
         return [];
       }
 
@@ -125,14 +128,14 @@ export class EmployeeAuditRepository {
       );
 
       const { data: employees, error: employeesError } = await supabase
-        .from("employees")
-        .select("id, is_archived")
-        .in("id", employeeIds)
-        .eq("is_archived", false);
+        .from('employees')
+        .select('id, is_archived')
+        .in('id', employeeIds)
+        .eq('is_archived', false);
 
       if (employeesError) {
         console.error(
-          "Misslyckades att hämta anställda för ändringsfiltrering:",
+          'Misslyckades att hämta anställda för ändringsfiltrering:',
           employeesError
         );
         return [];
@@ -183,7 +186,10 @@ export class EmployeeAuditRepository {
         })
       );
     } catch (error) {
-      console.error("Oväntat fel vid hämtning av ändringar sedan senast aktiv:", error);
+      console.error(
+        'Oväntat fel vid hämtning av ändringar sedan senast aktiv:',
+        error
+      );
       return [];
     }
   }

@@ -1,6 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
-import type { ColumnConfig } from "@/lib/types/column-config";
-import type { UserRole } from "@/lib/types/user";
+import { createClient } from '@/lib/supabase/server';
+import type { ColumnConfig } from '@/lib/types/column-config';
+import type { UserRole } from '@/lib/types/user';
+import { getColumnViewRole } from '@/lib/utils/role-utils';
 
 /**
  * Repository for column configuration data access
@@ -16,21 +17,24 @@ export class ColumnConfigRepository {
   async findAll(): Promise<ColumnConfig[]> {
     try {
       const supabase = await this.getSupabaseClient();
-      
+
       const { data, error } = await supabase
-        .from("column_config")
-        .select("*")
-        .order("display_order", { ascending: true })
-        .order("column_name", { ascending: true });
+        .from('column_config')
+        .select('*')
+        .order('display_order', { ascending: true })
+        .order('column_name', { ascending: true });
 
       if (error || !data) {
-        console.error("Misslyckades att hämta kolumnkonfigurationer:", error);
+        console.error('Misslyckades att hämta kolumnkonfigurationer:', error);
         return [];
       }
 
       return data;
     } catch (error) {
-      console.error("Oväntat fel vid hämtning av kolumnkonfigurationer:", error);
+      console.error(
+        'Oväntat fel vid hämtning av kolumnkonfigurationer:',
+        error
+      );
       return [];
     }
   }
@@ -41,25 +45,33 @@ export class ColumnConfigRepository {
   async findById(id: string): Promise<ColumnConfig | null> {
     try {
       const supabase = await this.getSupabaseClient();
-      
+
       const { data, error } = await supabase
-        .from("column_config")
-        .select("*")
-        .eq("id", id)
+        .from('column_config')
+        .select('*')
+        .eq('id', id)
         .single();
 
       if (error || !data) {
-        if (error?.code === "PGRST116") {
+        if (error?.code === 'PGRST116') {
           // Not found
           return null;
         }
-        console.error("Misslyckades att hämta kolumnkonfiguration by id:", id, error);
+        console.error(
+          'Misslyckades att hämta kolumnkonfiguration by id:',
+          id,
+          error
+        );
         return null;
       }
 
       return data;
     } catch (error) {
-      console.error("Oväntat fel vid hämtning av kolumnkonfiguration by id:", id, error);
+      console.error(
+        'Oväntat fel vid hämtning av kolumnkonfiguration by id:',
+        id,
+        error
+      );
       return null;
     }
   }
@@ -67,8 +79,8 @@ export class ColumnConfigRepository {
   /**
    * Fetch columns visible to a specific role
    * Filters by role_permissions[role].view = true
-   * 
-   * Note: admin_limited inherits view permissions from hr_admin
+   *
+   * Note: internal HR roles inherit view permissions from hr_admin
    */
   async findByRole(role: UserRole): Promise<ColumnConfig[]> {
     try {
@@ -76,14 +88,17 @@ export class ColumnConfigRepository {
       // (JSONB filtering in PostgreSQL is complex; simpler to filter in code)
       const allColumns = await this.findAll();
 
-      // admin_limited inherits view permissions from hr_admin
-      const roleForView = role === 'admin_limited' ? 'hr_admin' : role;
-      return allColumns.filter((column) => {
-        const rolePerms = column.role_permissions[roleForView];
-        return rolePerms && rolePerms.view === true;
-      });
+      // Internal HR roles share HR Superuser column visibility.
+      const roleForView = getColumnViewRole(role);
+      return allColumns.filter(
+        (column) => column.role_permissions[roleForView]?.view === true
+      );
     } catch (error) {
-      console.error("Oväntat fel vid hämtning av kolumnkonfigurationer by role:", role, error);
+      console.error(
+        'Oväntat fel vid hämtning av kolumnkonfigurationer by role:',
+        role,
+        error
+      );
       return [];
     }
   }
@@ -93,13 +108,13 @@ export class ColumnConfigRepository {
    * Can create custom columns (is_masterdata = false) or masterdata columns (is_masterdata = true)
    * - HR Admin: Creates with HR Admin having full access, other roles no access by default
    * - External parties: Creates with creating role having full access
-   * 
+   *
    * Automatically creates the actual database column in the employees table
    */
   async createCustomColumn(input: {
     column_name: string; // Display name
     db_column_name: string; // Database column name
-    column_type: "text" | "number" | "date" | "boolean";
+    column_type: 'text' | 'number' | 'date' | 'boolean';
     is_masterdata: boolean; // Whether this is a masterdata column
     role: UserRole;
     category?: string;
@@ -111,32 +126,40 @@ export class ColumnConfigRepository {
     // Check for duplicate db_column_name
     const allColumns = await this.findAll();
     const duplicate = allColumns.find(
-      (col) => col.db_column_name.toLowerCase() === input.db_column_name.toLowerCase()
+      (col) =>
+        col.db_column_name.toLowerCase() === input.db_column_name.toLowerCase()
     );
 
     if (duplicate) {
-      throw new Error(`Column with database name "${input.db_column_name}" already exists`);
+      throw new Error(
+        `Column with database name "${input.db_column_name}" already exists`
+      );
     }
 
     // Map column type to SQL type
     const sqlTypeMap: Record<string, string> = {
-      text: "TEXT",
-      number: "NUMERIC(20,2)",
-      date: "DATE",
-      boolean: "BOOLEAN",
+      text: 'TEXT',
+      number: 'NUMERIC(20,2)',
+      date: 'DATE',
+      boolean: 'BOOLEAN',
     };
     const sqlType = sqlTypeMap[input.column_type];
 
     // Step 1: Create the actual database column in the employees table
     // Use the add_custom_column_to_employees database function
-    const { error: alterError } = await supabase.rpc('add_custom_column_to_employees', { 
-      column_name_param: input.db_column_name,
-      column_type_param: sqlType
-    });
+    const { error: alterError } = await supabase.rpc(
+      'add_custom_column_to_employees',
+      {
+        column_name_param: input.db_column_name,
+        column_type_param: sqlType,
+      }
+    );
 
     if (alterError) {
-      console.error("Misslyckades att skapa databas kolumn:", alterError);
-      throw new Error(`Misslyckades att skapa databas kolumn: ${alterError.message}`);
+      console.error('Misslyckades att skapa databas kolumn:', alterError);
+      throw new Error(
+        `Misslyckades att skapa databas kolumn: ${alterError.message}`
+      );
     }
 
     // Step 2: Create default role permissions
@@ -159,7 +182,8 @@ export class ColumnConfigRepository {
     // Step 3: Create column config entry
     // Story 19.5: Include is_checklist_item (only valid for boolean masterdata columns)
     // Non-masterdata columns can never be checklist items
-    const canBeChecklistItem = input.column_type === 'boolean' && input.is_masterdata;
+    const canBeChecklistItem =
+      input.column_type === 'boolean' && input.is_masterdata;
     const columnData = {
       column_name: input.column_name,
       db_column_name: input.db_column_name,
@@ -168,22 +192,29 @@ export class ColumnConfigRepository {
       category: input.category || null,
       category_color: input.category_color || null,
       role_permissions: rolePermissions,
-      is_checklist_item: canBeChecklistItem ? (input.is_checklist_item ?? false) : false,
+      is_checklist_item: canBeChecklistItem
+        ? (input.is_checklist_item ?? false)
+        : false,
     };
 
     const { data, error } = await supabase
-      .from("column_config")
+      .from('column_config')
       .insert(columnData)
       .select()
       .single();
 
     if (error) {
-      console.error("Misslyckades att skapa custom kolumnkonfiguration:", error);
-      throw new Error(`Misslyckades att skapa custom kolumnkonfiguration: ${error.message}`);
+      console.error(
+        'Misslyckades att skapa custom kolumnkonfiguration:',
+        error
+      );
+      throw new Error(
+        `Misslyckades att skapa custom kolumnkonfiguration: ${error.message}`
+      );
     }
 
     if (!data) {
-      throw new Error("Misslyckades att skapa kolumn: Ingen data returnerad");
+      throw new Error('Misslyckades att skapa kolumn: Ingen data returnerad');
     }
 
     return data;
@@ -192,7 +223,7 @@ export class ColumnConfigRepository {
   /**
    * Update a column configuration
    * Validates user has permission to edit the column based on role_permissions
-   * 
+   *
    * @param id - Column ID to update
    * @param userId - User ID attempting the update
    * @param userRole - Role of the user attempting the update
@@ -204,24 +235,28 @@ export class ColumnConfigRepository {
     id: string,
     userId: string,
     userRole: UserRole,
-    updates: Partial<Pick<ColumnConfig, "column_name" | "category" | "category_color">>
+    updates: Partial<
+      Pick<ColumnConfig, 'column_name' | 'category' | 'category_color'>
+    >
   ): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
     // Verify column exists and user has permission
     const existing = await this.findById(id);
     if (!existing) {
-      throw new Error("Kolumn hittades inte");
+      throw new Error('Kolumn hittades inte');
     }
 
     if (existing.is_masterdata) {
-      throw new Error("Kan inte uppdatera masterdata kolumn via denna endpoint");
+      throw new Error(
+        'Kan inte uppdatera masterdata kolumn via denna endpoint'
+      );
     }
 
     // Check if user has edit permission for this column
     const rolePerms = existing.role_permissions[userRole];
     if (!rolePerms || !rolePerms.edit) {
-      throw new Error("Du saknar behörighet att uppdatera denna kolumn");
+      throw new Error('Du saknar behörighet att uppdatera denna kolumn');
     }
 
     // Only allow updating specific fields
@@ -238,7 +273,8 @@ export class ColumnConfigRepository {
 
     // Determine the category to use for shared color updates
     // Use the new category if provided, otherwise use the existing category
-    const targetCategory = updates.category !== undefined ? updates.category : existing.category;
+    const targetCategory =
+      updates.category !== undefined ? updates.category : existing.category;
 
     // If category_color is being updated and we have a category, update all columns with that category
     // (AC4: "the color is applied to all columns sharing that category")
@@ -248,14 +284,14 @@ export class ColumnConfigRepository {
       const columnsToUpdate = allColumns.filter((col) => {
         // Only update custom columns (not masterdata)
         if (col.is_masterdata) return false;
-        
+
         // Only update columns with the same category (the target category after update)
         if (col.category !== targetCategory) return false;
-        
+
         // Only update columns the user has edit permission for
         const colRolePerms = col.role_permissions[userRole];
         if (!colRolePerms || !colRolePerms.edit) return false;
-        
+
         return true;
       });
 
@@ -263,21 +299,26 @@ export class ColumnConfigRepository {
       const columnIdsToUpdate = columnsToUpdate
         .map((col) => col.id)
         .filter((colId) => colId !== id); // Remove original if already in list
-      
+
       // Add the original column ID to ensure it's updated
       columnIdsToUpdate.push(id);
-      
+
       if (columnIdsToUpdate.length > 0) {
         // Update all columns with the same category (including the original column)
         // First update category_color for all matching columns
         const { error: bulkError } = await supabase
-          .from("column_config")
+          .from('column_config')
           .update({ category_color: updates.category_color })
-          .in("id", columnIdsToUpdate);
+          .in('id', columnIdsToUpdate);
 
         if (bulkError) {
-          console.error("Misslyckades att uppdatera kategorifärg för flera kolumner:", bulkError);
-          throw new Error(`Misslyckades att uppdatera kategorifärg: ${bulkError.message}`);
+          console.error(
+            'Misslyckades att uppdatera kategorifärg för flera kolumner:',
+            bulkError
+          );
+          throw new Error(
+            `Misslyckades att uppdatera kategorifärg: ${bulkError.message}`
+          );
         }
       }
 
@@ -293,19 +334,26 @@ export class ColumnConfigRepository {
       // If we have other updates, apply them to the original column
       if (Object.keys(otherUpdates).length > 0) {
         const { data: finalData, error: finalError } = await supabase
-          .from("column_config")
+          .from('column_config')
           .update(otherUpdates)
-          .eq("id", id)
+          .eq('id', id)
           .select()
           .single();
 
         if (finalError) {
-          console.error("Misslyckades att uppdatera andra uppdateringar:", finalError);
-          throw new Error(`Misslyckades att uppdatera kolumn: ${finalError.message}`);
+          console.error(
+            'Misslyckades att uppdatera andra uppdateringar:',
+            finalError
+          );
+          throw new Error(
+            `Misslyckades att uppdatera kolumn: ${finalError.message}`
+          );
         }
 
         if (!finalData) {
-          throw new Error("Misslyckades att uppdatera kolumn: Ingen data returnerad");
+          throw new Error(
+            'Misslyckades att uppdatera kolumn: Ingen data returnerad'
+          );
         }
 
         return finalData;
@@ -313,18 +361,22 @@ export class ColumnConfigRepository {
 
       // If no other updates, just fetch and return the updated original column
       const { data, error } = await supabase
-        .from("column_config")
-        .select("*")
-        .eq("id", id)
+        .from('column_config')
+        .select('*')
+        .eq('id', id)
         .single();
 
       if (error) {
-        console.error("Misslyckades att hämta uppdaterad kolumn:", error);
-        throw new Error(`Misslyckades att hämta uppdaterad kolumn: ${error.message}`);
+        console.error('Misslyckades att hämta uppdaterad kolumn:', error);
+        throw new Error(
+          `Misslyckades att hämta uppdaterad kolumn: ${error.message}`
+        );
       }
 
       if (!data) {
-        throw new Error("Misslyckades att hämta uppdaterad kolumn: Ingen data returnerad");
+        throw new Error(
+          'Misslyckades att hämta uppdaterad kolumn: Ingen data returnerad'
+        );
       }
 
       return data;
@@ -332,19 +384,21 @@ export class ColumnConfigRepository {
 
     // If not updating category_color with a category, or if no category exists, update only the single column
     const { data, error } = await supabase
-      .from("column_config")
+      .from('column_config')
       .update(safeUpdates)
-      .eq("id", id)
+      .eq('id', id)
       .select()
       .single();
 
     if (error) {
-      console.error("Misslyckades att uppdatera kolumn:", error);
+      console.error('Misslyckades att uppdatera kolumn:', error);
       throw new Error(`Misslyckades att uppdatera kolumn: ${error.message}`);
     }
 
     if (!data) {
-      throw new Error("Misslyckades att uppdatera kolumn: Ingen data returnerad");
+      throw new Error(
+        'Misslyckades att uppdatera kolumn: Ingen data returnerad'
+      );
     }
 
     return data;
@@ -356,32 +410,39 @@ export class ColumnConfigRepository {
    * For external users: Only allows deleting columns they have edit permission for (ownership check)
    * For HR Admin: Can delete any custom column
    */
-  async deleteColumn(id: string, userId: string, userRole: UserRole): Promise<void> {
+  async deleteColumn(
+    id: string,
+    userId: string,
+    userRole: UserRole
+  ): Promise<void> {
     const supabase = await this.getSupabaseClient();
 
     // Verify column exists and is not masterdata
     const column = await this.findById(id);
 
     if (!column) {
-        throw new Error("Kolumn hittades inte");
+      throw new Error('Kolumn hittades inte');
     }
 
     if (column.is_masterdata) {
-      throw new Error("Kan inte ta bort masterdata kolumn");
+      throw new Error('Kan inte ta bort masterdata kolumn');
     }
 
     // For external users, check ownership (must have edit permission)
-    if (userRole !== "hr_admin") {
+    if (userRole !== 'hr_admin') {
       const rolePerms = column.role_permissions[userRole];
       if (!rolePerms || !rolePerms.edit) {
-        throw new Error("Du saknar behörighet att ta bort denna kolumn");
+        throw new Error('Du saknar behörighet att ta bort denna kolumn');
       }
     }
 
-    const { error } = await supabase.from("column_config").delete().eq("id", id);
+    const { error } = await supabase
+      .from('column_config')
+      .delete()
+      .eq('id', id);
 
     if (error) {
-      console.error("Misslyckades att ta bort kolumn:", error);
+      console.error('Misslyckades att ta bort kolumn:', error);
       throw new Error(`Misslyckades att ta bort kolumn: ${error.message}`);
     }
   }
@@ -397,10 +458,7 @@ export class ColumnConfigRepository {
 
     // Update each column's display_order
     const updatePromises = columns.map(({ id, display_order }) =>
-      supabase
-        .from("column_config")
-        .update({ display_order })
-        .eq("id", id)
+      supabase.from('column_config').update({ display_order }).eq('id', id)
     );
 
     const results = await Promise.all(updatePromises);
@@ -408,20 +466,26 @@ export class ColumnConfigRepository {
     // Check for errors
     const errors = results.filter((r) => r.error);
     if (errors.length > 0) {
-      console.error("Misslyckades att uppdatera visningsordning:", errors);
-      throw new Error("Misslyckades att uppdatera kolumnvisningsordning");
+      console.error('Misslyckades att uppdatera visningsordning:', errors);
+      throw new Error('Misslyckades att uppdatera kolumnvisningsordning');
     }
   }
 
   /**
    * Toggle column visibility
    */
-  async toggleVisibility(id: string, isVisible: boolean): Promise<ColumnConfig> {
+  async toggleVisibility(
+    id: string,
+    isVisible: boolean
+  ): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
 
     // If setting column as inactive, clear all permissions
-    const updateData: { is_visible: boolean; role_permissions?: Record<string, { view: boolean; edit: boolean }> } = {
-      is_visible: isVisible
+    const updateData: {
+      is_visible: boolean;
+      role_permissions?: Record<string, { view: boolean; edit: boolean }>;
+    } = {
+      is_visible: isVisible,
     };
 
     if (!isVisible) {
@@ -434,24 +498,28 @@ export class ColumnConfigRepository {
         omc: { view: false, edit: false },
         payroll: { view: false, edit: false },
         toplux: { view: false, edit: false },
-        crewing: { view: false, edit: false }
+        crewing: { view: false, edit: false },
       };
     }
 
     const { data, error } = await supabase
-      .from("column_config")
+      .from('column_config')
       .update(updateData)
-      .eq("id", id)
+      .eq('id', id)
       .select()
       .single();
 
     if (error) {
-      console.error("Misslyckades att toggla kolumnvisning:", error);
-      throw new Error(`Misslyckades att toggla kolumnvisning: ${error.message}`);
+      console.error('Misslyckades att toggla kolumnvisning:', error);
+      throw new Error(
+        `Misslyckades att toggla kolumnvisning: ${error.message}`
+      );
     }
 
     if (!data) {
-      throw new Error("Misslyckades att toggla kolumnvisning: Ingen data returnerad");
+      throw new Error(
+        'Misslyckades att toggla kolumnvisning: Ingen data returnerad'
+      );
     }
 
     return data;

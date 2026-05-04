@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/employees/export/route";
 import { NextResponse } from "next/server";
+import { requireAuthAPI } from "@/lib/server/auth";
+import { UserRole } from "@/lib/types/user";
 
 // Mock dependencies
 vi.mock("@/lib/server/auth", () => ({
@@ -84,6 +86,16 @@ vi.mock("@/lib/supabase/server-api", () => ({
   })),
 }));
 
+vi.mock("@/lib/supabase/server", () => ({
+  createServiceRoleClient: vi.fn(() => ({
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({ data: [], error: null })),
+      })),
+    })),
+  })),
+}));
+
 vi.mock("papaparse", () => ({
   default: {
     unparse: vi.fn(() => "csv_content"),
@@ -105,6 +117,15 @@ interface Employee {
 describe("POST /api/employees/export", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(requireAuthAPI).mockResolvedValue({
+      id: "user-1",
+      email: "test@example.com",
+      role: UserRole.HR_ADMIN,
+      is_active: true,
+      created_at: "2025-01-01T00:00:00Z",
+      last_active_at: null,
+      auth_id: "auth-1",
+    });
   });
 
   it("returns 400 if employeeIds is missing or empty", async () => {
@@ -134,6 +155,30 @@ describe("POST /api/employees/export", () => {
   });
 
   it("returns 404 if no employees found matching IDs", async () => {
+    vi.mocked(employeeRepository.findAll).mockResolvedValue([]);
+
+    const request = new Request("http://localhost/api/employees/export", {
+      method: "POST",
+      body: JSON.stringify({ employeeIds: ["emp1"], fields: ["first_name"] }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(data.error.code).toBe("NO_EMPLOYEES_FOUND");
+  });
+
+  it("allows Recruiter to export fields with HR Admin view permission", async () => {
+    vi.mocked(requireAuthAPI).mockResolvedValue({
+      id: "user-2",
+      email: "recruiter@example.com",
+      role: UserRole.RECRUITER,
+      is_active: true,
+      created_at: "2025-01-01T00:00:00Z",
+      last_active_at: null,
+      auth_id: "auth-2",
+    });
     vi.mocked(employeeRepository.findAll).mockResolvedValue([]);
 
     const request = new Request("http://localhost/api/employees/export", {

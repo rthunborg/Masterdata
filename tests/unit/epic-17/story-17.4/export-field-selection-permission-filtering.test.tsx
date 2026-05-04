@@ -197,6 +197,39 @@ describe("Story 17.4: Permission-Based Field Filtering", () => {
   });
 
   describe("External User Permission Filtering", () => {
+    it("should use HR Admin view permissions for Recruiter", () => {
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: "user-4",
+          email: "recruiter@example.com",
+          role: "recruiter" as UserRole,
+          is_active: true,
+          created_at: "2025-01-01T00:00:00Z",
+          last_active_at: null,
+          auth_id: "auth-4",
+        },
+      });
+
+      mockUseUIStore.mockReturnValue({
+        previewRole: null,
+      });
+
+      render(
+        <ExportFieldSelectionDialog
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          columnConfigs={mockColumnConfigs}
+          visibleColumnIds={mockVisibleColumnIds}
+          onExport={mockOnExport}
+        />
+      );
+
+      expect(screen.getByText("First Name")).toBeDefined();
+      expect(screen.getByText("Surname")).toBeDefined();
+      expect(screen.getByText("Email")).toBeDefined();
+      expect(screen.getByText("SSN")).toBeDefined();
+    });
+
     it("should only show masterdata fields with view permission for Sodexo user", () => {
       mockUseAuth.mockReturnValue({
         user: {
