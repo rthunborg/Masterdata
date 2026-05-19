@@ -15,7 +15,7 @@ import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber, recalculateRoomsForDate, recalculateRoomsForEmployee } from "@/lib/services/room-assignment";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { t } from "@/lib/i18n";
 import {
   parseOrError,
@@ -38,6 +38,7 @@ type EmployeeUpdateValue = string | number | boolean | null;
 type EmployeeUpdatePayload = Partial<Employee> & Record<string, unknown>;
 
 const knownEmployeeUpdateFields = new Set(employeeUpdateFieldNames);
+const ADMIN_LIMITED_ROLE = "admin_limited" as UserRole;
 
 const updateEmployeeSchema = updateEmployeeSchemaWithMessages((key) => {
   const keys = key.split(".");
@@ -117,38 +118,44 @@ async function parseEmployeeUpdatePayload(
     validatedKnown = parsed as EmployeeUpdatePayload;
   }
 
-  const validatedDynamic: Record<string, EmployeeUpdateValue> = {};
-  if (dynamicEntries.length > 0) {
+  const requestedFields = Object.keys(body);
+  const shouldLoadColumnConfig =
+    dynamicEntries.length > 0 || userRole === ADMIN_LIMITED_ROLE;
+  let columnsByField = new Map<string, ColumnConfig>();
+
+  if (shouldLoadColumnConfig) {
     if (!userRole) {
       return createForbiddenResponse("Du saknar behörighet att uppdatera dynamiska masterdatafält");
     }
 
-    const dynamicFieldNames = dynamicEntries.map(([field]) => field);
     const supabase = await createClient();
-    const { data: dynamicColumns, error } = await supabase
+    const { data: editableColumns, error } = await supabase
       .from("column_config")
       .select("*")
       .eq("is_masterdata", true)
-      .in("db_column_name", dynamicFieldNames);
+      .in("db_column_name", requestedFields);
 
     if (error) {
       throw new Error(`Misslyckades att hämta kolumnkonfiguration: ${error.message}`);
     }
 
-    const columnsByField = new Map(
-      ((dynamicColumns ?? []) as ColumnConfig[]).map((column) => [
+    columnsByField = new Map(
+      ((editableColumns ?? []) as ColumnConfig[]).map((column) => [
         column.db_column_name,
         column,
       ])
     );
+  }
 
+  const validatedDynamic: Record<string, EmployeeUpdateValue> = {};
+  if (dynamicEntries.length > 0) {
     for (const [field, value] of dynamicEntries) {
       const column = columnsByField.get(field);
       if (!column) {
         return validationError(`Ogiltigt uppdateringsfält: ${field}`, field);
       }
 
-      if (!canEditField(userRole, column)) {
+      if (!userRole || !canEditField(userRole, column)) {
         return createForbiddenResponse(`Du saknar behörighet att uppdatera kolumnen ${column.column_name}`);
       }
 
@@ -167,7 +174,84 @@ async function parseEmployeeUpdatePayload(
     return parseOrError(updateEmployeeSchema, {});
   }
 
+  if (userRole === ADMIN_LIMITED_ROLE) {
+    for (const field of Object.keys(merged)) {
+      const column = columnsByField.get(field);
+      if (!column || !canEditField(userRole, column)) {
+        return createForbiddenResponse(
+          column
+            ? `Du saknar behörighet att uppdatera kolumnen ${column.column_name}`
+            : `Du saknar behörighet att uppdatera fältet ${field}`
+        );
+      }
+    }
+  }
+
   return merged;
+}
+
+async function findEmployeeForPatch(
+  id: string,
+  useServiceRole: boolean
+): Promise<Employee | null> {
+  if (!useServiceRole) {
+    return employeeRepository.findById(id);
+  }
+
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from("employees")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) {
+    console.error("Misslyckades att hämta anställd med service role:", id, error);
+    return null;
+  }
+
+  return data as Employee;
+}
+
+async function updateEmployeeWithServiceRole(
+  id: string,
+  data: EmployeeUpdatePayload
+): Promise<Employee> {
+  if (Object.keys(data).length === 0) {
+    throw new Error("Minst en fält måste vara angivet för uppdatering");
+  }
+
+  const updateData =
+    data.special_diet === false ? { ...data, diet_details: null } : data;
+
+  const supabase = createServiceRoleClient();
+  const { data: employee, error } = await supabase
+    .from("employees")
+    .update(updateData)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      throw new Error(`Anställd med ID ${id} hittades inte`);
+    }
+    if (
+      error.code === "23505" &&
+      typeof updateData.ssn === "string" &&
+      error.message.includes("ssn")
+    ) {
+      throw new Error(`Employee with SSN ${updateData.ssn} already exists`);
+    }
+    console.error("Misslyckades att uppdatera anställd med service role:", error);
+    throw new Error("Misslyckades att uppdatera anställd");
+  }
+
+  if (!employee) {
+    throw new Error(`Anställd med ID ${id} hittades inte`);
+  }
+
+  return employee as Employee;
 }
 
 export async function GET(
@@ -222,8 +306,9 @@ export async function PATCH(
 ) {
   try {
     // Verify HR Admin, Recruiter, or Admin Limited role
-    // Note: Admin Limited can only edit checklist fields + lönenivå (enforced at UI/field level)
+    // Note: Admin Limited can only edit checklist fields (enforced below per column_config)
     const user = await requireEmployeeEditorAPI(request);
+    const useServiceRoleForEmployeeWrite = user?.role === ADMIN_LIMITED_ROLE;
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
@@ -245,7 +330,10 @@ export async function PATCH(
     
     if ('one' in validatedData) {
       // Fetch current employee to check previous One field value
-      const currentEmployee = await employeeRepository.findById(id);
+      const currentEmployee = await findEmployeeForPatch(
+        id,
+        useServiceRoleForEmployeeWrite
+      );
       
       if (!currentEmployee) {
         return createNotFoundResponse("Employee", id);
@@ -268,9 +356,15 @@ export async function PATCH(
       let currentEmployee;
       if ('one' in validatedData) {
         // Already fetched above for One field logic
-        currentEmployee = await employeeRepository.findById(id);
+        currentEmployee = await findEmployeeForPatch(
+          id,
+          useServiceRoleForEmployeeWrite
+        );
       } else {
-        currentEmployee = await employeeRepository.findById(id);
+        currentEmployee = await findEmployeeForPatch(
+          id,
+          useServiceRoleForEmployeeWrite
+        );
       }
       
       if (!currentEmployee) {
@@ -298,9 +392,15 @@ export async function PATCH(
       let currentEmployee;
       if ('one' in validatedData || 'talmundo' in validatedData) {
         // Already fetched above
-        currentEmployee = await employeeRepository.findById(id);
+        currentEmployee = await findEmployeeForPatch(
+          id,
+          useServiceRoleForEmployeeWrite
+        );
       } else {
-        currentEmployee = await employeeRepository.findById(id);
+        currentEmployee = await findEmployeeForPatch(
+          id,
+          useServiceRoleForEmployeeWrite
+        );
       }
       
       if (!currentEmployee) {
@@ -326,7 +426,10 @@ export async function PATCH(
 
     // Story 8.20: Get current employee for room assignment logic
     // Fetch once and reuse for all validations
-    const currentEmployee = await employeeRepository.findById(id);
+    const currentEmployee = await findEmployeeForPatch(
+      id,
+      useServiceRoleForEmployeeWrite
+    );
     if (!currentEmployee) {
       return createNotFoundResponse("Employee", id);
     }
@@ -466,10 +569,12 @@ export async function PATCH(
     // Only call update if there are non-date fields remaining
     let employee;
     if (Object.keys(updates).length > 0) {
-      employee = await employeeRepository.update(id, updates);
+      employee = useServiceRoleForEmployeeWrite
+        ? await updateEmployeeWithServiceRole(id, updates)
+        : await employeeRepository.update(id, updates);
     } else {
       // If only date fields were updated, fetch the updated employee
-      employee = await employeeRepository.findById(id);
+      employee = await findEmployeeForPatch(id, useServiceRoleForEmployeeWrite);
       if (!employee) {
         return createNotFoundResponse("Employee", id);
       }
