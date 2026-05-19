@@ -3,12 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 interface EditableColumnNameCellProps {
   value: string;
   columnId: string;
   onUpdate: (columnId: string, newName: string) => Promise<void>;
   isUpdating: boolean;
+  isSaving?: boolean;
 }
 
 export function EditableColumnNameCell({
@@ -16,6 +18,7 @@ export function EditableColumnNameCell({
   columnId,
   onUpdate,
   isUpdating,
+  isSaving = false,
 }: EditableColumnNameCellProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value);
@@ -82,9 +85,16 @@ export function EditableColumnNameCell({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         disabled={isUpdating}
-        className="h-8 pr-12"
+        className={cn("h-8", isSaving ? "pr-16" : "pr-12")}
         maxLength={50}
       />
+      {isSaving && (
+        <Loader2
+          className="absolute right-10 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-blue-600"
+          role="status"
+          aria-label="Sparar"
+        />
+      )}
       <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
         {inputValue.length}/50
       </div>

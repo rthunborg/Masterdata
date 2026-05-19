@@ -244,6 +244,89 @@ describe('Status Badges Integration', () => {
 
       expect(screen.getByTestId('status-badge')).toBeInTheDocument();
     });
+
+    it('shows a field spinner and keeps the original checklist value while save is pending', async () => {
+      const user = userEvent.setup();
+      const save = deferred<void>();
+      mockOnSave.mockReturnValue(save.promise);
+
+      render(
+        <EditableCell
+          value={false}
+          employeeId="test-123"
+          field="isps"
+          type="boolean"
+          canEdit={true}
+          isChecklistItem={true}
+          onSave={mockOnSave}
+          onError={mockOnError}
+        />
+      );
+
+      await user.click(screen.getByText('Nej'));
+      fireEvent.click(await screen.findByText('Klart'));
+
+      await waitFor(() => {
+        expect(mockOnSave).toHaveBeenCalledWith('test-123', 'isps', true);
+      });
+
+      expect(screen.getByRole('status', { name: 'Sparar' })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { hidden: true })).toHaveTextContent('Nej');
+      expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
+
+      await act(async () => {
+        save.resolve();
+        await save.promise;
+      });
+    });
+
+    it('reverts a failed checklist save to the confirmed original value', async () => {
+      const user = userEvent.setup();
+      mockOnSave.mockRejectedValue(new Error('Save failed'));
+
+      render(
+        <EditableCell
+          value={false}
+          employeeId="test-123"
+          field="isps"
+          type="boolean"
+          canEdit={true}
+          isChecklistItem={true}
+          onSave={mockOnSave}
+          onError={mockOnError}
+        />
+      );
+
+      await user.click(screen.getByText('Nej'));
+      fireEvent.click(await screen.findByText('Klart'));
+
+      await waitFor(() => {
+        expect(mockOnError).toHaveBeenCalledWith('Save failed');
+      });
+
+      expect(screen.getByRole('gridcell')).toHaveTextContent('Nej');
+      expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
+    });
+
+    it('shows a green badge for true non-checklist boolean fields', () => {
+      render(
+        <EditableCell
+          value={true}
+          employeeId="test-123"
+          field="hotel_required"
+          type="boolean"
+          canEdit={true}
+          isChecklistItem={false}
+          onSave={mockOnSave}
+          onError={mockOnError}
+        />
+      );
+
+      expect(screen.getByText('Ja')).toBeInTheDocument();
+      const badge = screen.getByTestId('status-badge');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveClass('badge-green');
+    });
   });
 
   describe('Multiple Boolean Fields', () => {
@@ -320,6 +403,42 @@ describe('Status Badges Integration', () => {
           field="age"
           type="number"
           canEdit={true}
+          onSave={mockOnSave}
+          onError={mockOnError}
+        />
+      );
+
+      expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
+    });
+
+    it('displays green badge for lönenivå when it has a non-default value', () => {
+      render(
+        <EditableCell
+          value={3}
+          employeeId="test-123"
+          field="loneiva"
+          type="number"
+          canEdit={true}
+          isChecklistItem={false}
+          onSave={mockOnSave}
+          onError={mockOnError}
+        />
+      );
+
+      const badge = screen.getByTestId('status-badge');
+      expect(badge).toBeInTheDocument();
+      expect(badge).toHaveClass('badge-green');
+    });
+
+    it('does not display badge for lönenivå when it is the default value', () => {
+      render(
+        <EditableCell
+          value={0}
+          employeeId="test-123"
+          field="loneiva"
+          type="number"
+          canEdit={true}
+          isChecklistItem={false}
           onSave={mockOnSave}
           onError={mockOnError}
         />

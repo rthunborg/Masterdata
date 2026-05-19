@@ -83,7 +83,6 @@ export function useDateCellEditing({
       return;
     }
 
-    setEditValue(newValue);
     setDropdownOpen(false);
 
     const valueToSave = newValue === "__NONE__" ? null : newValue || null;
@@ -100,12 +99,16 @@ export function useDateCellEditing({
       setError(null);
       onSave(employeeId, field, valueToSave)
         .then(() => {
+          setEditValue(newValue);
           setIsEditing(false);
         })
         .catch((err) => {
           console.error("[EditableDateCell] Save failed:", err);
           const message = err instanceof Error ? err.message : "Failed to update date";
+          setEditValue(value || "__NONE__");
           setError(message);
+          setIsEditing(false);
+          setDropdownOpen(false);
           onError?.(message);
         })
         .finally(() => {

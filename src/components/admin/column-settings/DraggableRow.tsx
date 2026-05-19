@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { PermissionToggle } from "../permission-toggle";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, X, Eye, EyeOff } from "lucide-react";
+import { Trash2, GripVertical, ChevronUp, ChevronDown, Check, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -27,6 +27,7 @@ export interface DraggableRowProps {
   allRoles: UserRole[];
   allColumns: ColumnConfig[];
   updatingColumnId: string | null;
+  updatingColumnField: { columnId: string; field: string } | null;
   isPermissionDisabled: () => boolean;
   handlePermissionChange: (
     column: ColumnConfig,
@@ -53,6 +54,7 @@ export function DraggableRow({
   allRoles,
   allColumns,
   updatingColumnId,
+  updatingColumnField,
   isPermissionDisabled,
   handlePermissionChange,
   handleCategoryUpdate,
@@ -84,6 +86,9 @@ export function DraggableRow({
   };
 
   const isUpdating = updatingColumnId === column.id;
+  const isFieldUpdating = (field: string) =>
+    updatingColumnField?.columnId === column.id &&
+    updatingColumnField.field === field;
 
   return (
     <TableRow 
@@ -140,6 +145,7 @@ export function DraggableRow({
           columnId={column.id}
           onUpdate={handleColumnNameUpdate}
           isUpdating={isUpdating}
+          isSaving={isFieldUpdating("column_name")}
         />
       </TableCell>
 
@@ -165,12 +171,20 @@ export function DraggableRow({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center justify-center">
-                <Checkbox
-                  checked={column.is_checklist_item ?? false}
-                  onCheckedChange={(checked: boolean) => handleChecklistItemToggle(column.id, checked)}
-                  disabled={isUpdating}
-                  aria-label="Toggle checklist item"
-                />
+                {isFieldUpdating("is_checklist_item") ? (
+                  <Loader2
+                    className="h-4 w-4 animate-spin text-blue-600"
+                    role="status"
+                    aria-label="Sparar"
+                  />
+                ) : (
+                  <Checkbox
+                    checked={column.is_checklist_item ?? false}
+                    onCheckedChange={(checked: boolean) => handleChecklistItemToggle(column.id, checked)}
+                    disabled={isUpdating}
+                    aria-label="Toggle checklist item"
+                  />
+                )}
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -190,6 +204,7 @@ export function DraggableRow({
           onUpdate={handleCategoryUpdate}
           onColorUpdate={handleCategoryColorUpdate}
           isUpdating={isUpdating}
+          isSaving={isFieldUpdating("category")}
         />
       </TableCell>
 
@@ -209,6 +224,7 @@ export function DraggableRow({
                 permissionType="view"
                 value={permissions.view}
                 disabled={viewDisabled || isUpdating}
+                isLoading={isFieldUpdating(`permission:${role}:view`)}
                 onChange={(value: boolean) =>
                   handlePermissionChange(column, role, "view", value)
                 }
@@ -219,6 +235,7 @@ export function DraggableRow({
                 permissionType="edit"
                 value={permissions.edit}
                 disabled={editDisabled || isUpdating}
+                isLoading={isFieldUpdating(`permission:${role}:edit`)}
                 onChange={(value: boolean) =>
                   handlePermissionChange(column, role, "edit", value)
                 }
@@ -240,7 +257,9 @@ export function DraggableRow({
                 disabled={isUpdating}
                 className="h-8 w-8 p-0 bg-gray-500 hover:bg-gray-600 border border-gray-400 rounded"
               >
-                {column.is_visible ? (
+                {isFieldUpdating("is_visible") ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                ) : column.is_visible ? (
                   <Eye className="h-4 w-4 text-white" />
                 ) : (
                   <EyeOff className="h-4 w-4 text-white" />

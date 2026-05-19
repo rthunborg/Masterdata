@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -47,6 +48,26 @@ interface EditableCellProps {
   onError?: (error: string) => void;
 }
 
+function getInitialEditValue(
+  value: string | number | boolean | null,
+  type: EditableCellProps["type"]
+): string | number | boolean {
+  return value ?? (type === "boolean" ? false : type === "number" ? 0 : "");
+}
+
+function PendingSpinner() {
+  return (
+    <span
+      role="status"
+      aria-label="Sparar"
+      data-testid="cell-save-spinner"
+      className="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-blue-600"
+    >
+      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+    </span>
+  );
+}
+
 export function EditableCell({
   value,
   employeeId,
@@ -76,64 +97,21 @@ export function EditableCell({
   const [isEditing, setIsEditing] = useState(false);
 
   const [editValue, setEditValue] = useState<string | number | boolean>(
-    value ?? (type === "boolean" ? false : type === "number" ? 0 : "")
+    getInitialEditValue(value, type)
   );
   
   const [isLoading, setIsLoading] = useState(false);
   
-  // Sync editValue when value prop changes (important for controlled Select component)
-  // Story 9.10: Don't reset editValue immediately after save - keep it until value prop updates
+  // Sync editValue from confirmed props. Pending values are kept inside editors only
+  // while the save request is active and must not leak into read mode.
   useEffect(() => {
 
     if (!isEditing) {
-      // When not editing, sync editValue with value prop only if they match
-      // This allows editValue to persist after save until value prop catches up
-      const newEditValue = value ?? (type === "boolean" ? false : type === "number" ? 0 : "");
-      const currentEditValue = editValue;
-      
-      // Compare values based on type
-      let valuesMatch = false;
-      if (type === "boolean") {
-        valuesMatch = Boolean(newEditValue) === Boolean(currentEditValue);
-      } else if (type === "select" || type === "text") {
-        const newString = String(newEditValue);
-        const currentString = String(currentEditValue ?? "");
-        valuesMatch = newString === currentString;
-      } else {
-        valuesMatch = newEditValue === currentEditValue;
-      }
-      
-      
-      // Only sync if values match (save confirmed)
-      // This prevents resetting editValue immediately after save before value prop updates
-      // CRITICAL: If values don't match, keep editValue to show the updated value
-      if (valuesMatch) {
-        // Values match (save confirmed) - sync and clear the saved value ref
-        setEditValue(newEditValue);
-        // Only clear lastSavedValueRef if the value prop matches what we saved
-        // IMPORTANT: Don't clear if we're still waiting for the server to process our update
-        if (lastSavedValueRef.current !== null) {
-          const savedString = String(lastSavedValueRef.current);
-          const propString = String(newEditValue);
-          if (savedString === propString) {
-            lastSavedValueRef.current = null;
-          } else {
-            // If value prop doesn't match what we saved, it's likely a stale update
-            // Keep lastSavedValueRef so displayValue continues to show the correct value
-          }
-        }
-      } else {
-        // Values don't match - keep editValue as-is to show the updated value until parent catches up
-        // But if editValue was reset somehow, restore it from lastSavedValueRef
-
-        if (lastSavedValueRef.current !== null && String(editValue) === String(value)) {
-          setEditValue(lastSavedValueRef.current);
-        } else {
-        }
-      }
+      setEditValue(getInitialEditValue(value, type));
+      lastSavedValueRef.current = null;
     } else {
       // When editing, sync editValue if value prop updates (e.g., from real-time)
-      const newEditValue = value ?? (type === "boolean" ? false : type === "number" ? 0 : "");
+      const newEditValue = getInitialEditValue(value, type);
       if (type === "select" && String(newEditValue) !== String(editValue) && !isLoading) {
         // Value prop updated during edit (real-time sync) - update editValue
         setEditValue(newEditValue);
@@ -166,7 +144,7 @@ export function EditableCell({
     if (prevEmployeeIdRef.current !== employeeId) {
       // Row has changed - reset internal state
       lastSavedValueRef.current = null;
-      setEditValue(value ?? (type === "boolean" ? false : type === "number" ? 0 : ""));
+      setEditValue(getInitialEditValue(value, type));
       setIsEditing(false);
       setError(null);
       prevEmployeeIdRef.current = employeeId;
@@ -243,11 +221,15 @@ export function EditableCell({
       setError(null);
       return;
     }
-    await executeSave(saveCtx, normalizedCurrent);
+    const success = await executeSave(saveCtx, normalizedCurrent);
+    if (!success) {
+      setEditValue(getInitialEditValue(value, type));
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
-    setEditValue(value ?? (type === "boolean" ? false : type === "number" ? 0 : ""));
+    setEditValue(getInitialEditValue(value, type));
     setError(null);
     setIsEditing(false);
   };
@@ -285,7 +267,11 @@ export function EditableCell({
         const normalizedCurrent = editValue === "" ? null : (editValue ?? null);
         const normalizedOriginal = value ?? null;
         if (hasValueChanged(normalizedOriginal, normalizedCurrent)) {
-          await executeSave(saveCtx, normalizedCurrent);
+          const success = await executeSave(saveCtx, normalizedCurrent);
+          if (!success) {
+            setEditValue(getInitialEditValue(value, type));
+            setIsEditing(false);
+          }
         } else {
           setIsEditing(false);
         }
@@ -395,24 +381,11 @@ export function EditableCell({
     // Editable cell - can click to edit
     // Story 8.9: Format ÖMC dates as two-day range in display mode
     // Story 9.9: Show Swedish labels for boolean fields
-    // Story 9.10: Use editValue for display when it differs from value prop (shows updated value immediately after save)
+    // Read mode always reflects confirmed props. Pending edits stay in the editor.
     // Story 19.3: Format all date type fields in Swedish format
     const getDisplayValue = () => {
-      
-      // For boolean fields, compare boolean values
       if (type === "boolean") {
-        const editBool = Boolean(editValue);
         const valueBool = Boolean(value);
-        const lastSavedBool = lastSavedValueRef.current !== null && lastSavedValueRef.current !== undefined ? Boolean(lastSavedValueRef.current) : null;
-        
-        // Priority: If we have a saved value that differs from the prop, show it (save in progress)
-        // Otherwise, if editValue differs from value, show editValue (transitioning state)
-        if (lastSavedBool !== null && lastSavedBool !== valueBool) {
-          return lastSavedBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
-        }
-        if (editBool !== valueBool) {
-          return editBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
-        }
         return valueBool ? getBooleanTrueLabel() : tDashboard("booleanFalse");
       }
       
@@ -442,20 +415,7 @@ export function EditableCell({
         return null;
       }
       
-      // For select/text fields, compare string values
-      const editString = editValue !== null && editValue !== undefined ? String(editValue) : "";
       const valueString = value !== null && value !== undefined ? String(value) : "";
-      const lastSavedString = lastSavedValueRef.current !== null && lastSavedValueRef.current !== undefined ? String(lastSavedValueRef.current) : "";
-      
-      // Priority: If we have a saved value that differs from the prop, show it (save in progress)
-      // Otherwise, if editValue differs from value, show editValue (transitioning state)
-      // This ensures we always show the most recent saved value until the prop updates
-      if (lastSavedString !== "" && lastSavedString !== valueString) {
-        return lastSavedString;
-      }
-      if (editString !== "" && editString !== valueString) {
-        return editString;
-      }
       return valueString || null;
     };
     
@@ -468,7 +428,11 @@ export function EditableCell({
     // Repayment-style: show only a checkbox (no "Ja"/"Nej"); click toggles and saves
     if (type === "boolean" && booleanDisplay === "checkbox") {
       return (
-        <div ref={cellRef} className={cn("flex items-center px-3 py-2 min-h-10", className)}>
+        <div
+          ref={cellRef}
+          className={cn("relative flex items-center px-3 py-2 min-h-10", className)}
+          aria-busy={isLoading}
+        >
           <Checkbox
             checked={value === true}
             disabled={isLoading}
@@ -485,6 +449,7 @@ export function EditableCell({
               }
             }}
           />
+          {isLoading && <PendingSpinner />}
         </div>
       );
     }
@@ -553,7 +518,7 @@ export function EditableCell({
   }
 
   return (
-    <div ref={cellRef} className="relative">
+    <div ref={cellRef} className="relative" aria-busy={isLoading}>
       {isLoneivaField && (
         <LoneivaEditor
           value={value}
@@ -641,6 +606,7 @@ export function EditableCell({
           lastSavedValueRef={lastSavedValueRef}
         />
       )}
+      {isLoading && <PendingSpinner />}
     </div>
   );
 }

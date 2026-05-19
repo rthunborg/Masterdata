@@ -95,6 +95,7 @@ import { cn } from '@/lib/utils';
 
 import { UserRole, INTERNAL_ROLES } from '@/lib/types/user';
 import { getColumnViewRole } from '@/lib/utils/role-utils';
+import { getEmployeeFieldValue } from '@/lib/utils/column-mapping';
 
 import { BulkActionsBar } from './bulk-actions-bar';
 import { EmployeeStatsBar } from './employee-stats-bar';
@@ -119,6 +120,123 @@ interface EmployeeTableProps {
   onGlobalFilterChange?: (value: string) => void;
   onOptimisticUpdate?: (id: string, updates: Partial<Employee>) => () => void;
   isColumnChanged?: (employeeId: string, columnName: string) => boolean; // Story 16.5: Change detection function
+}
+
+type DefaultEmployeeSortMode = 'checklist_progress' | 'hire_date' | null;
+
+function getChecklistProgressValue(
+  employee: Employee,
+  columnConfigs: ColumnConfig[]
+): number {
+  const checklistColumns = columnConfigs.filter(
+    (col) => col.column_type === 'boolean' && col.is_checklist_item
+  );
+
+  if (checklistColumns.length === 0) {
+    return 0;
+  }
+
+  const completed = checklistColumns.filter((col) => {
+    const value = getEmployeeFieldValue(employee, col.db_column_name);
+    return value === true;
+  }).length;
+
+  return (completed / checklistColumns.length) * 100;
+}
+
+function compareEmployeesForDefaultSort(
+  a: Employee,
+  b: Employee,
+  mode: DefaultEmployeeSortMode,
+  columnConfigs: ColumnConfig[]
+): number {
+  if (mode === 'checklist_progress') {
+    const progressA = getChecklistProgressValue(a, columnConfigs);
+    const progressB = getChecklistProgressValue(b, columnConfigs);
+    if (progressA !== progressB) {
+      return progressA - progressB;
+    }
+
+    const createdA = a.created_at ?? '';
+    const createdB = b.created_at ?? '';
+    return createdA < createdB ? -1 : createdA > createdB ? 1 : 0;
+  }
+
+  if (mode === 'hire_date') {
+    const hireDateA = a.hire_date ?? '';
+    const hireDateB = b.hire_date ?? '';
+
+    if (!hireDateA && !hireDateB) {
+      return 0;
+    }
+    if (!hireDateA) {
+      return 1;
+    }
+    if (!hireDateB) {
+      return -1;
+    }
+
+    return hireDateB.localeCompare(hireDateA);
+  }
+
+  return 0;
+}
+
+function sortEmployeesByDefault(
+  employees: Employee[],
+  mode: DefaultEmployeeSortMode,
+  columnConfigs: ColumnConfig[]
+): Employee[] {
+  if (!mode) {
+    return employees;
+  }
+
+  return [...employees].sort((a, b) =>
+    compareEmployeesForDefaultSort(a, b, mode, columnConfigs)
+  );
+}
+
+function getColumnConfigsSignature(columnConfigs: ColumnConfig[]): string {
+  return columnConfigs
+    .map((col) =>
+      [
+        col.id,
+        col.column_name,
+        col.db_column_name,
+        col.column_type,
+        col.is_masterdata ? '1' : '0',
+        col.category ?? '',
+        col.category_color ?? '',
+        col.display_order,
+        col.is_visible ? '1' : '0',
+        col.is_checklist_item ? '1' : '0',
+        JSON.stringify(col.role_permissions),
+      ].join('\u001f')
+    )
+    .join('\u001e');
+}
+
+function useSemanticallyStableColumnConfigs(
+  columnConfigs: ColumnConfig[]
+): ColumnConfig[] {
+  const signature = React.useMemo(
+    () => getColumnConfigsSignature(columnConfigs),
+    [columnConfigs]
+  );
+  const [stableColumnConfigs, setStableColumnConfigs] = React.useState(() => ({
+    signature,
+    columnConfigs,
+  }));
+
+  React.useEffect(() => {
+    setStableColumnConfigs((current) =>
+      current.signature === signature ? current : { signature, columnConfigs }
+    );
+  }, [columnConfigs, signature]);
+
+  return stableColumnConfigs.signature === signature
+    ? stableColumnConfigs.columnConfigs
+    : columnConfigs;
 }
 
 // Custom global filter function for multi-column search
@@ -218,10 +336,13 @@ export function EmployeeTable({
 
   // Fetch column configurations based on effective role (for preview mode)
   const {
-    columns: columnConfigs,
+    columns: fetchedColumnConfigs,
     isLoading: columnsLoading,
     error: columnsError,
   } = useColumns(effectiveRole);
+  const columnConfigs = useSemanticallyStableColumnConfigs(
+    fetchedColumnConfigs
+  );
 
   // When impersonating, fetch ALL columns (unfiltered) for the export dialog
   // This ensures the export dialog can see all columns in the system, then filter by impersonated role's permissions
@@ -288,7 +409,12 @@ export function EmployeeTable({
   >(new Set());
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  // Default sort: internal users (see progress column) → checklist progress asc; others → hire_date desc (most recent first)
+  const [hasUserSorted, setHasUserSorted] = React.useState(false);
+  const defaultRowOrderRef = React.useRef<string[]>([]);
+  const defaultSortSignatureRef = React.useRef<string | null>(null);
+
+  // Default order: internal users (see progress column) → checklist progress asc; others → hire_date desc.
+  // This order is applied to the data once and then kept stable until the user explicitly sorts a column.
   const hasChecklistItemsForSort = columnConfigs.some(
     (col) => col.column_type === 'boolean' && col.is_checklist_item
   );
@@ -297,17 +423,130 @@ export function EmployeeTable({
   const hireDateColumnId = columnConfigs.find(
     (c) => c.db_column_name?.toLowerCase() === 'hire_date'
   )?.id;
-  const hasSetDefaultSortRef = React.useRef(false);
-  React.useLayoutEffect(() => {
-    if (hasSetDefaultSortRef.current || sorting.length !== 0) return;
-    if (showProgressColumnForSort) {
-      hasSetDefaultSortRef.current = true;
-      setSorting([{ id: 'checklist_progress', desc: false }]);
-    } else if (hireDateColumnId) {
-      hasSetDefaultSortRef.current = true;
-      setSorting([{ id: hireDateColumnId, desc: true }]);
+  const defaultSortMode: DefaultEmployeeSortMode = showProgressColumnForSort
+    ? 'checklist_progress'
+    : hireDateColumnId
+      ? 'hire_date'
+      : null;
+  const defaultSortSignature = React.useMemo(() => {
+    if (defaultSortMode === 'checklist_progress') {
+      const checklistColumns = columnConfigs
+        .filter((col) => col.column_type === 'boolean' && col.is_checklist_item)
+        .map((col) => col.db_column_name)
+        .sort()
+        .join('|');
+
+      return `checklist_progress:${checklistColumns}`;
     }
-  }, [showProgressColumnForSort, hireDateColumnId, sorting.length]);
+
+    return defaultSortMode ?? 'none';
+  }, [columnConfigs, defaultSortMode]);
+
+  const defaultRowOrder = React.useMemo(() => {
+    if (hasUserSorted) {
+      return defaultRowOrderRef.current;
+    }
+
+    const sortConfigChanged =
+      defaultSortSignatureRef.current !== defaultSortSignature;
+    defaultSortSignatureRef.current = defaultSortSignature;
+
+    if (sortConfigChanged || defaultRowOrderRef.current.length === 0) {
+      defaultRowOrderRef.current = sortEmployeesByDefault(
+        filterEngineEmployees,
+        defaultSortMode,
+        columnConfigs
+      ).map((employee) => employee.id);
+      return defaultRowOrderRef.current;
+    }
+
+    const visibleIds = new Set(
+      filterEngineEmployees.map((employee) => employee.id)
+    );
+    const preservedOrder = defaultRowOrderRef.current.filter((id) =>
+      visibleIds.has(id)
+    );
+    const preservedIds = new Set(preservedOrder);
+    const newEmployees = filterEngineEmployees.filter(
+      (employee) => !preservedIds.has(employee.id)
+    );
+    const newEmployeeIds = sortEmployeesByDefault(
+      newEmployees,
+      defaultSortMode,
+      columnConfigs
+    ).map((employee) => employee.id);
+
+    const nextOrder = [...preservedOrder, ...newEmployeeIds];
+    if (
+      nextOrder.length !== defaultRowOrderRef.current.length ||
+      nextOrder.some((id, index) => id !== defaultRowOrderRef.current[index])
+    ) {
+      defaultRowOrderRef.current = nextOrder;
+    }
+
+    return defaultRowOrderRef.current;
+  }, [
+    columnConfigs,
+    defaultSortMode,
+    defaultSortSignature,
+    filterEngineEmployees,
+    hasUserSorted,
+  ]);
+
+  const tableEmployees = React.useMemo(() => {
+    if (hasUserSorted) {
+      return filterEngineEmployees;
+    }
+
+    if (defaultRowOrder.length === 0) {
+      return sortEmployeesByDefault(
+        filterEngineEmployees,
+        defaultSortMode,
+        columnConfigs
+      );
+    }
+
+    const orderIndex = new Map(
+      defaultRowOrder.map((id, index) => [id, index] as const)
+    );
+    const orderedEmployees: Employee[] = [];
+    const unorderedEmployees: Employee[] = [];
+
+    filterEngineEmployees.forEach((employee) => {
+      if (orderIndex.has(employee.id)) {
+        orderedEmployees.push(employee);
+      } else {
+        unorderedEmployees.push(employee);
+      }
+    });
+
+    orderedEmployees.sort((a, b) => {
+      return (orderIndex.get(a.id) ?? 0) - (orderIndex.get(b.id) ?? 0);
+    });
+
+    return [
+      ...orderedEmployees,
+      ...sortEmployeesByDefault(unorderedEmployees, defaultSortMode, columnConfigs),
+    ];
+  }, [
+    columnConfigs,
+    defaultRowOrder,
+    defaultSortMode,
+    filterEngineEmployees,
+    hasUserSorted,
+  ]);
+
+  const handleSortingChange = React.useCallback(
+    (
+      updater:
+        | SortingState
+        | ((old: SortingState) => SortingState)
+    ) => {
+      setHasUserSorted(true);
+      setSorting(updater);
+    },
+    []
+  );
 
   // Story 19.11: Column width persistence
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>(
@@ -577,7 +816,7 @@ export function EmployeeTable({
   }, [columnConfigs, columnVisibility, isHRAdmin, effectiveRole]);
 
   const table = useReactTable({
-    data: filteredEmployees,
+    data: tableEmployees,
     columns,
     getRowId: (row) => row.id,
     state: {
@@ -595,7 +834,7 @@ export function EmployeeTable({
 
     onGlobalFilterChange: setGlobalFilter,
 
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange,
 
     onColumnSizingChange: handleColumnSizingChange,
 

@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import { executeSave } from "./save-handler";
 import { hasValueChanged } from "@/lib/utils/change-detection";
@@ -25,13 +26,15 @@ export function BooleanEditor({
   getBooleanTrueLabel,
   tDashboard,
 }: BooleanEditorProps) {
+  const pendingSaveRef = useRef(false);
+
   return (
     <Select
       value={editValue !== null && editValue !== undefined ? String(editValue) : "false"}
       open={selectOpen}
       onOpenChange={(open) => {
         setSelectOpen(open);
-        if (!open && !isLoading && isEditing) {
+        if (!open && !isLoading && isEditing && !pendingSaveRef.current) {
           const normalizedCurrent = Boolean(editValue);
           const normalizedOriginal = value !== null && value !== undefined ? Boolean(value) : false;
           if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
@@ -47,21 +50,21 @@ export function BooleanEditor({
           saveCtx.setIsEditing(false);
           return;
         }
-        setEditValue(newValue);
         setSelectOpen(false);
-        lastSavedValueRef.current = newValue;
+        pendingSaveRef.current = true;
         const success = await executeSave(saveCtx, newValue);
         if (success) {
-          lastSavedValueRef.current = newValue;
           setEditValue(newValue);
         } else {
           setEditValue(value !== null && value !== undefined ? Boolean(value) : false);
-          lastSavedValueRef.current = null;
+          saveCtx.setIsEditing(false);
         }
+        pendingSaveRef.current = false;
+        lastSavedValueRef.current = null;
       }}
       disabled={isLoading}
     >
-      <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
+      <SelectTrigger className={cn(error ? "border-destructive" : "", isLoading && "pr-8", isCompact && "h-8 text-xs")}>
         <SelectValue placeholder={tDashboard("booleanFalse")} />
       </SelectTrigger>
       <SelectContent>

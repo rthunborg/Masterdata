@@ -178,6 +178,7 @@ export function CardExpandedDetails({
                       employee.id,
                       col.db_column_name?.toLowerCase().trim() || ""
                     )}
+                    isChecklistItem={col.is_checklist_item}
                     onSave={
                       col.is_masterdata ? onMasterdataSave : onCustomDataSave
                     }

@@ -21,6 +21,7 @@ import { useTranslations } from "@/lib/i18n";
 import { CapacityBadge } from "./capacity-badge";
 import { isJan1ExceptionDate, formatDateDropdownOption } from "@/lib/utils/format";
 import { useDateCellEditing } from "@/lib/hooks/use-date-cell-editing";
+import { Loader2 } from "lucide-react";
 
 interface EditableDateCellProps {
   value: string | null;
@@ -227,7 +228,7 @@ export function EditableDateCell({
   }
 
   return (
-    <div ref={cellRef} className="relative">
+    <div ref={cellRef} className="relative" aria-busy={isLoading}>
       <Select
         value={editValue}
         open={dropdownOpen}
@@ -240,7 +241,7 @@ export function EditableDateCell({
         onValueChange={handleValueChange}
         disabled={isLoading || (dateCategory === "PE3 Dates" && pe3Loading) || (dateCategory === "ÖMC Dates" && omcLoading)}
       >
-        <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-11 touch-manipulation", isCompact && "min-h-8 h-8 text-xs")}>
+        <SelectTrigger className={cn(error ? "border-destructive" : "", "min-h-11 touch-manipulation", isLoading && "pr-8", isCompact && "min-h-8 h-8 text-xs")}>
           <SelectValue placeholder="Select a date..." />
         </SelectTrigger>
         <SelectContent>
@@ -315,6 +316,16 @@ export function EditableDateCell({
           )}
         </SelectContent>
       </Select>
+      {isLoading && (
+        <span
+          role="status"
+          aria-label="Sparar"
+          data-testid="date-cell-save-spinner"
+          className="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-blue-600"
+        >
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        </span>
+      )}
       {error && (
         <p id={`${field}-error`} className="text-xs text-destructive mt-1">
           {error}

@@ -21,7 +21,7 @@ export function TextEditor({
         onKeyDown={handleKeyDown}
         disabled={isLoading}
         inputMode="text"
-        className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}
+        className={cn(error ? "border-destructive" : "", isLoading && "pr-8", isCompact && "h-8 text-xs")}
         aria-invalid={!!error}
         aria-describedby={error ? `${field}-error` : undefined}
       />
