@@ -21,7 +21,6 @@ import { employeeService } from '@/lib/services/employee-service';
 import { customDataService } from '@/lib/services/custom-data-service';
 
 import { toast } from 'sonner';
-import { toastError } from '@/lib/utils/toast-helpers';
 
 import { useTranslations } from '@/lib/i18n';
 
@@ -188,7 +187,8 @@ function EmployeeCardComponent({
         onEmployeeUpdated();
       }
     } catch (error: unknown) {
-      toastError(error, "Failed to update field");
+      const message = error instanceof Error ? error.message : "Failed to update field";
+      throw new Error(message);
     }
   }, [onEmployeeUpdated, tToasts]);
   

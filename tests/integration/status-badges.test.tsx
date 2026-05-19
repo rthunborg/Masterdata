@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { act, render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EditableCell } from '@/components/dashboard/editable-cell';
 
@@ -24,6 +24,17 @@ vi.mock('@/components/dashboard/status-badge', () => ({
     return <span data-testid="status-badge" className={`badge-${status}`}>✓</span>;
   }
 }));
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  return { promise, resolve, reject };
+}
 
 describe('Status Badges Integration', () => {
   const mockOnSave = vi.fn();
@@ -181,6 +192,56 @@ describe('Status Badges Integration', () => {
       );
 
       // Badge should now be present
+      expect(screen.getByTestId('status-badge')).toBeInTheDocument();
+    });
+
+    it('does not show the green badge until the saved value is confirmed by props', async () => {
+      const user = userEvent.setup();
+      const save = deferred<void>();
+      mockOnSave.mockReturnValue(save.promise);
+
+      const { rerender } = render(
+        <EditableCell
+          value={false}
+          employeeId="test-123"
+          field="isps"
+          type="boolean"
+          canEdit={true}
+          isChecklistItem={true}
+          onSave={mockOnSave}
+          onError={mockOnError}
+        />
+      );
+
+      expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
+
+      await user.click(screen.getByText('Nej'));
+      fireEvent.click(await screen.findByText('Klart'));
+
+      await waitFor(() => {
+        expect(mockOnSave).toHaveBeenCalledWith('test-123', 'isps', true);
+      });
+      expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
+
+      await act(async () => {
+        save.resolve();
+        await save.promise;
+      });
+      expect(screen.queryByTestId('status-badge')).not.toBeInTheDocument();
+
+      rerender(
+        <EditableCell
+          value={true}
+          employeeId="test-123"
+          field="isps"
+          type="boolean"
+          canEdit={true}
+          isChecklistItem={true}
+          onSave={mockOnSave}
+          onError={mockOnError}
+        />
+      );
+
       expect(screen.getByTestId('status-badge')).toBeInTheDocument();
     });
   });

@@ -10,7 +10,7 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { loginAsUser } from "../../../helpers/e2e-helpers";
+import { loginAsUser } from "../../helpers/e2e-helpers";
 
 test.describe("Story 17.6: Navigation Hiding for External Users", () => {
   test.beforeEach(async ({ page }) => {

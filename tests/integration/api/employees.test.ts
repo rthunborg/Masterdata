@@ -735,7 +735,7 @@ describe("PATCH /api/employees/[id]", () => {
 
     expect(response.status).toBe(400);
     expect(json.error.code).toBe("VALIDATION_ERROR");
-    expect(json.error.message).toMatch(/Invalid input data|At least one field must be provided/);
+    expect(json.error.message).toBe("Minst ett fält måste anges för uppdatering");
   });
 
   it("should return 404 for non-existent employee", async () => {

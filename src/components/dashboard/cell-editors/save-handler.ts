@@ -14,6 +14,24 @@ export interface SaveContext {
 }
 
 function localizeError(message: string, tErrors: (key: string) => string): string {
+  if (message === "At least one field must be provided for update") {
+    return "Minst ett fält måste anges för uppdatering";
+  }
+  if (message === "Boolean value expected") {
+    return "Värdet måste vara sant eller falskt";
+  }
+  if (message === "Number value expected") {
+    return "Värdet måste vara ett tal";
+  }
+  if (message === "Date value must use YYYY-MM-DD format") {
+    return "Datum måste anges i formatet ÅÅÅÅ-MM-DD";
+  }
+  if (message === "Text value expected") {
+    return "Värdet måste vara text";
+  }
+  if (message.startsWith("Invalid update field: ")) {
+    return `Ogiltigt uppdateringsfält: ${message.replace("Invalid update field: ", "")}`;
+  }
   if (
     message === "Invalid input data" ||
     message.includes("Invalid value") ||

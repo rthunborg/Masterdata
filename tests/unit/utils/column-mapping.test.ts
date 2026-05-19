@@ -64,6 +64,10 @@ describe("column-mapping", () => {
       expect(mapColumnToEmployeeField("Department")).toBe("department");
     });
 
+    it("should derive display names differently than configured Seably database columns", () => {
+      expect(mapColumnToEmployeeField("PRM")).toBe("prm");
+    });
+
     // Story 8.17: Dietary Requirements field mappings
     describe("dietary requirements mappings", () => {
       it("should map 'Specialkost' (Swedish) to 'special_diet'", () => {
@@ -153,6 +157,15 @@ describe("column-mapping", () => {
 
     it("should get hire date value", () => {
       expect(getEmployeeFieldValue(mockEmployee, "Hire Date")).toBe("2020-01-15");
+    });
+
+    it("should get dynamic masterdata values by db_column_name", () => {
+      const employeeWithDynamicMasterdata = {
+        ...mockEmployee,
+        seably_prm: true,
+      } as Employee & { seably_prm: boolean };
+
+      expect(getEmployeeFieldValue(employeeWithDynamicMasterdata, "seably_prm")).toBe(true);
     });
 
     it("should return 'Active' status for active employee", () => {

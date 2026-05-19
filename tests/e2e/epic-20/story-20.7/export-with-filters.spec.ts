@@ -5,12 +5,12 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { login } from '../../../helpers/auth-helper';
+import { loginAsHRAdmin } from '../../helpers/e2e-helpers';
 
 test.describe('Story 20.7: Export with Filters', () => {
   test.beforeEach(async ({ page }) => {
     // Login as HR Admin
-    await login(page, 'hr_admin');
+    await loginAsHRAdmin(page);
     
     // Navigate to dashboard
     await page.goto('/dashboard');

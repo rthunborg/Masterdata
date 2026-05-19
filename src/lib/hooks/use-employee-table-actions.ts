@@ -160,25 +160,32 @@ export function useEmployeeTableActions({
     field: string,
     value: string | number | boolean | null
   ) => {
-    let rollback: (() => void) | undefined;
-
     try {
-      if (onOptimisticUpdate) {
-        rollback = onOptimisticUpdate(id, { [field]: value });
-      }
+      const updatedEmployee = await employeeService.update(id, { [field]: value });
+      const confirmedRecord =
+        updatedEmployee && typeof updatedEmployee === "object"
+          ? (updatedEmployee as unknown as Record<string, unknown>)
+          : {};
+      const hasConfirmedField = Object.prototype.hasOwnProperty.call(
+        confirmedRecord,
+        field
+      );
 
-      await employeeService.update(id, { [field]: value });
-      toast.success(tToasts("employees.updatedSuccessfully"));
-
-      if (!onOptimisticUpdate) {
+      if (onOptimisticUpdate && hasConfirmedField) {
+        const confirmedValue = confirmedRecord[field] as
+          | string
+          | number
+          | boolean
+          | null;
+        onOptimisticUpdate(id, { [field]: confirmedValue } as Partial<Employee>);
+      } else {
         onEmployeeUpdated?.();
       }
 
+      toast.success(tToasts("employees.updatedSuccessfully"));
+
       bumpStats();
     } catch (error: unknown) {
-      if (rollback) {
-        rollback();
-      }
       const message = error instanceof Error ? error.message : tToasts("employees.updateFailed");
       throw new Error(message);
     }

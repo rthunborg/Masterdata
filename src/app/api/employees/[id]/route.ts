@@ -4,25 +4,171 @@ import {
   requireEmployeeManagerAPI,
   requireEmployeeEditorAPI,
   createErrorResponse,
+  createForbiddenResponse,
 } from "@/lib/server/auth";
-import { updateEmployeeSchema } from "@/lib/validation/employee-schema";
+import {
+  employeeUpdateFieldNames,
+  updateEmployeeSchemaWithMessages,
+} from "@/lib/validation/employee-schema";
 import { normalizeSSN } from "@/lib/utils/ssn-formatter";
 import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber, recalculateRoomsForDate, recalculateRoomsForEmployee } from "@/lib/services/room-assignment";
 import { createClient } from "@/lib/supabase/server";
+import { t } from "@/lib/i18n";
 import {
   parseOrError,
+  createValidationErrorResponse,
   createNotFoundResponse,
   createDuplicateResponse,
   isDuplicatePE3DateError,
   createDuplicatePE3Response,
 } from "@/lib/server/api-helpers";
 import type { Employee } from "@/lib/types/employee";
+import type { ColumnConfig } from "@/lib/types/column-config";
+import type { UserRole } from "@/lib/types/user";
+import { canEditField } from "@/lib/utils/role-utils";
+import { ZodError } from "zod";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
+
+type EmployeeUpdateValue = string | number | boolean | null;
+type EmployeeUpdatePayload = Partial<Employee> & Record<string, unknown>;
+
+const knownEmployeeUpdateFields = new Set(employeeUpdateFieldNames);
+
+const updateEmployeeSchema = updateEmployeeSchemaWithMessages((key) => {
+  const keys = key.split(".");
+  let value: unknown = t;
+
+  for (const part of keys) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      value = (value as Record<string, unknown>)[part];
+    } else {
+      return key;
+    }
+  }
+
+  return typeof value === "string" ? value : key;
+});
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function validationError(message: string, field: string) {
+  return createValidationErrorResponse(
+    new ZodError([
+      {
+        code: "custom",
+        message,
+        path: field ? [field] : [],
+      },
+    ])
+  );
+}
+
+function validateDynamicMasterdataValue(
+  field: string,
+  value: unknown,
+  columnType: ColumnConfig["column_type"]
+): EmployeeUpdateValue | NextResponse {
+  if (value === null) return null;
+
+  switch (columnType) {
+    case "boolean":
+      if (typeof value === "boolean") return value;
+      return validationError("Värdet måste vara sant eller falskt", field);
+    case "number":
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+      return validationError("Värdet måste vara ett tal", field);
+    case "date":
+      if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+      return validationError("Datum måste anges i formatet ÅÅÅÅ-MM-DD", field);
+    case "text":
+      if (typeof value === "string") return value;
+      return validationError("Värdet måste vara text", field);
+    default:
+      return validationError("Kolumntypen stöds inte", field);
+  }
+}
+
+async function parseEmployeeUpdatePayload(
+  body: unknown,
+  userRole?: UserRole
+): Promise<EmployeeUpdatePayload | NextResponse> {
+  if (!isPlainObject(body)) {
+    return parseOrError(updateEmployeeSchema, body);
+  }
+
+  const knownEntries = Object.entries(body).filter(([field]) =>
+    knownEmployeeUpdateFields.has(field)
+  );
+  const dynamicEntries = Object.entries(body).filter(
+    ([field]) => !knownEmployeeUpdateFields.has(field)
+  );
+
+  let validatedKnown: EmployeeUpdatePayload = {};
+  if (knownEntries.length > 0) {
+    const parsed = parseOrError(updateEmployeeSchema, Object.fromEntries(knownEntries));
+    if (parsed instanceof NextResponse) return parsed;
+    validatedKnown = parsed as EmployeeUpdatePayload;
+  }
+
+  const validatedDynamic: Record<string, EmployeeUpdateValue> = {};
+  if (dynamicEntries.length > 0) {
+    if (!userRole) {
+      return createForbiddenResponse("Du saknar behörighet att uppdatera dynamiska masterdatafält");
+    }
+
+    const dynamicFieldNames = dynamicEntries.map(([field]) => field);
+    const supabase = await createClient();
+    const { data: dynamicColumns, error } = await supabase
+      .from("column_config")
+      .select("*")
+      .eq("is_masterdata", true)
+      .in("db_column_name", dynamicFieldNames);
+
+    if (error) {
+      throw new Error(`Misslyckades att hämta kolumnkonfiguration: ${error.message}`);
+    }
+
+    const columnsByField = new Map(
+      ((dynamicColumns ?? []) as ColumnConfig[]).map((column) => [
+        column.db_column_name,
+        column,
+      ])
+    );
+
+    for (const [field, value] of dynamicEntries) {
+      const column = columnsByField.get(field);
+      if (!column) {
+        return validationError(`Ogiltigt uppdateringsfält: ${field}`, field);
+      }
+
+      if (!canEditField(userRole, column)) {
+        return createForbiddenResponse(`Du saknar behörighet att uppdatera kolumnen ${column.column_name}`);
+      }
+
+      const validatedValue = validateDynamicMasterdataValue(
+        field,
+        value,
+        column.column_type
+      );
+      if (validatedValue instanceof NextResponse) return validatedValue;
+      validatedDynamic[field] = validatedValue;
+    }
+  }
+
+  const merged = { ...validatedKnown, ...validatedDynamic };
+  if (Object.keys(merged).length === 0) {
+    return parseOrError(updateEmployeeSchema, {});
+  }
+
+  return merged;
+}
 
 export async function GET(
   request: NextRequest,
@@ -77,7 +223,7 @@ export async function PATCH(
   try {
     // Verify HR Admin, Recruiter, or Admin Limited role
     // Note: Admin Limited can only edit checklist fields + lönenivå (enforced at UI/field level)
-    await requireEmployeeEditorAPI();
+    const user = await requireEmployeeEditorAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
@@ -85,17 +231,17 @@ export async function PATCH(
     // Parse and validate request body
     const body = await request.json();
     
-    const parsed = parseOrError(updateEmployeeSchema, body);
+    const parsed = await parseEmployeeUpdatePayload(body, user?.role as UserRole | undefined);
     if (parsed instanceof NextResponse) return parsed;
     const validatedData = parsed;
 
     // Normalize SSN if it's being updated
-    const normalizedData = validatedData.ssn
+    const normalizedData = typeof validatedData.ssn === "string" && validatedData.ssn
       ? { ...validatedData, ssn: normalizeSSN(validatedData.ssn) }
       : validatedData;
 
     // Handle One field timestamp logic (Story 8.3)
-    const updates: Partial<Employee> = { ...normalizedData };
+    const updates: EmployeeUpdatePayload = { ...normalizedData };
     
     if ('one' in validatedData) {
       // Fetch current employee to check previous One field value
