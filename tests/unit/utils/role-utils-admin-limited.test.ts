@@ -16,7 +16,7 @@ import type { ColumnConfig } from '@/lib/types/column-config';
  * 
  * Admin Limited is a restricted internal role with:
  * - Same view permissions as HR Admin/Recruiter
- * - Can only edit: checklist fields (is_checklist_item=true) + loneniva field
+ * - Can only edit: checklist fields (is_checklist_item=true)
  * - Cannot: add employees, archive employees, terminate employees
  * - Cannot access: Important Dates, Admin tabs
  */
@@ -152,35 +152,35 @@ describe('Admin Limited Role - canEditField', () => {
     });
   });
 
-  describe('Loneniva Exception', () => {
-    it('allows admin_limited to edit loneniva field (lowercase)', () => {
+  describe('Checklist-only edit scope', () => {
+    it('prevents admin_limited from editing loneniva when it is not a checklist item', () => {
       const lonenivaColumn = createMockColumnConfig({
         column_name: 'Lönenivå',
         db_column_name: 'loneniva',
         is_checklist_item: false,
       });
 
-      expect(canEditField(UserRole.ADMIN_LIMITED, lonenivaColumn)).toBe(true);
+      expect(canEditField(UserRole.ADMIN_LIMITED, lonenivaColumn)).toBe(false);
     });
 
-    it('allows admin_limited to edit lönenivå field (Swedish characters)', () => {
+    it('prevents admin_limited from editing lönenivå when it is not a checklist item', () => {
       const lonenivaColumn = createMockColumnConfig({
         column_name: 'Lönenivå',
         db_column_name: 'lönenivå',
         is_checklist_item: false,
       });
 
-      expect(canEditField(UserRole.ADMIN_LIMITED, lonenivaColumn)).toBe(true);
+      expect(canEditField(UserRole.ADMIN_LIMITED, lonenivaColumn)).toBe(false);
     });
 
-    it('allows admin_limited to edit LONENIVA field (uppercase)', () => {
+    it('prevents admin_limited from editing LONENIVA when it is not a checklist item', () => {
       const lonenivaColumn = createMockColumnConfig({
         column_name: 'Lönenivå',
         db_column_name: 'LONENIVA',
         is_checklist_item: false,
       });
 
-      expect(canEditField(UserRole.ADMIN_LIMITED, lonenivaColumn)).toBe(true);
+      expect(canEditField(UserRole.ADMIN_LIMITED, lonenivaColumn)).toBe(false);
     });
   });
 

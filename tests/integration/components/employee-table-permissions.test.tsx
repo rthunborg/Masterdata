@@ -1,4 +1,4 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -390,6 +390,69 @@ describe("EmployeeTable Permission Rendering", () => {
         const ariaLabel = sortButton.getAttribute("aria-label");
         expect(ariaLabel).toContain("read-only");
       }
+    });
+  });
+
+  describe("Dynamic Masterdata Columns", () => {
+    beforeEach(() => {
+      vi.mocked(useAuth).mockReturnValue({
+        user: {
+          id: "user-3",
+          email: "recruiter@example.com",
+          role: UserRole.RECRUITER,
+          auth_id: "auth-3",
+          is_active: true,
+          created_at: "2020-01-01T00:00:00Z",
+          last_active_at: new Date().toISOString(),
+        },
+        isAuthenticated: true,
+        isLoading: false,
+        login: vi.fn(),
+        logout: vi.fn(),
+        setUser: vi.fn(),
+        checkAuth: vi.fn(),
+        setLoading: vi.fn(),
+      });
+    });
+
+    it("renders Seably checklist edits with the configured database column name", async () => {
+      const employees = [
+        {
+          ...mockEmployees[0],
+          seably_prm: false,
+        } as Employee & { seably_prm: boolean },
+      ];
+      const prmColumn: ColumnConfig = {
+        id: "col-seably-prm",
+        column_name: "PRM",
+        db_column_name: "seably_prm",
+        column_type: "boolean",
+        role_permissions: {
+          hr_admin: { view: true, edit: true },
+          recruiter: { view: false, edit: false },
+          admin_limited: { view: false, edit: false },
+        },
+        is_masterdata: true,
+        is_checklist_item: true,
+        category: "Seably",
+        category_color: "#22c55e",
+        display_order: 1,
+        is_visible: true,
+        created_at: "2020-01-01T00:00:00Z",
+        updated_at: "2020-01-01T00:00:00Z",
+      };
+
+      vi.mocked(useColumns).mockReturnValue({
+        columns: [prmColumn],
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+      renderWithQueryClient(<EmployeeTable employees={employees} isLoading={false} />);
+
+      const prmCell = screen.getByRole("gridcell", { name: "Edit seably_prm" });
+      expect(prmCell).toHaveTextContent("Nej");
+      expect(screen.queryByRole("gridcell", { name: "Edit prm" })).not.toBeInTheDocument();
     });
   });
 

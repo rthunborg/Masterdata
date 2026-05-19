@@ -179,8 +179,8 @@ export async function requireEmployeeManagerAPI(request?: NextRequest): Promise<
  * Require a role that can edit employee fields.
  * Includes admin_limited who can edit checklist fields + lönenivå (field-level restrictions handled in app code)
  */
-export async function requireEmployeeEditorAPI(): Promise<SessionUser> {
-  return requireRoleAPI(["hr_admin" as UserRole, "recruiter" as UserRole, "admin_limited" as UserRole]);
+export async function requireEmployeeEditorAPI(request?: NextRequest): Promise<SessionUser> {
+  return requireRoleAPI(["hr_admin" as UserRole, "recruiter" as UserRole, "admin_limited" as UserRole], request);
 }
 
 // Error Response Utilities

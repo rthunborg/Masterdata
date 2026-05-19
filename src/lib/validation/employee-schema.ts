@@ -235,6 +235,8 @@ export function createEmployeeSchemaWithMessages(t?: (key: string) => string) {
  */
 const baseSchema = getBaseEmployeeSchemaObject();
 
+export const employeeUpdateFieldNames = Object.keys(baseSchema.shape);
+
 export const createEmployeeSchema = baseSchema.refine(
   validateTalmundoField,
   {

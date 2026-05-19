@@ -210,11 +210,14 @@ export function useEmployeeColumns({
           return StatusCell;
         }
 
-        const fieldKey = config.is_masterdata
-          ? mapColumnToEmployeeField(config.column_name)
-          : config.db_column_name.toLowerCase().replace(/ /g, "_");
-
         const DataCell = ({ row }: { row: Row<Employee> }) => {
+          const mappedFieldKey = mapColumnToEmployeeField(config.column_name);
+          const fieldKey = config.is_masterdata
+            ? Object.prototype.hasOwnProperty.call(row.original, config.db_column_name)
+              ? config.db_column_name
+              : mappedFieldKey
+            : config.db_column_name.toLowerCase().replace(/ /g, "_");
+
           const columnNameForChangeCheck =
             config.db_column_name?.toLowerCase().trim() || "";
           const isChanged = React.useMemo(
@@ -230,12 +233,9 @@ export function useEmployeeColumns({
             return <div className="text-muted-foreground">—</div>;
           }
 
-          const columnIdentifier = config.is_masterdata
-            ? config.column_name
-            : config.db_column_name;
           const value = getEmployeeFieldValue(
             row.original,
-            columnIdentifier,
+            config.is_masterdata ? fieldKey : config.db_column_name,
             config.is_masterdata,
             allImportantDates,
             tDashboard("dateDeleted")

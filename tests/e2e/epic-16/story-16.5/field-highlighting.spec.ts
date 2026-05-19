@@ -12,7 +12,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { setupTestUser, loginAsHRAdmin, loginAsUser } from '../../../helpers/e2e-helpers';
+import { setupTestUser, loginAsHRAdmin, loginAsUser } from '../../helpers/e2e-helpers';
 
 test.describe('Story 16.5: Field Highlighting in Employee Table', () => {
   test.beforeEach(async ({ page }) => {

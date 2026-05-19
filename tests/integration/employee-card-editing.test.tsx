@@ -54,6 +54,10 @@ vi.mock("@/lib/i18n", () => ({
           'fieldUpdated': 'Fält uppdaterat',
         },
       },
+      'dashboard': {
+        'booleanTrue': 'Klart',
+        'booleanFalse': 'Nej',
+      },
     };
     return (key: string) => {
       const keys = key.split('.');
@@ -404,6 +408,66 @@ describe("EmployeeCard - Inline Editing Integration", () => {
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalled();
       });
+    });
+
+    it("does not show a failed checklist update as completed", async () => {
+      const user = userEvent.setup();
+      vi.mocked(employeeService.update).mockRejectedValue(
+        new Error("At least one field must be provided for update")
+      );
+
+      const employeeWithChecklistField = {
+        ...mockEmployee,
+        seably_prm: false,
+      } as Employee & { seably_prm: boolean };
+
+      const checklistColumns = [
+        createTestColumnConfig({
+          column_name: "PRM",
+          db_column_name: "seably_prm",
+          column_type: "boolean",
+          category: "Seably",
+          is_checklist_item: true,
+          role_permissions: {
+            hr_admin: { view: true, edit: true },
+          },
+        }),
+      ];
+
+      renderWithQueryClient(
+        <EmployeeCard
+          employee={employeeWithChecklistField}
+          isHRAdmin={true}
+          columnConfigs={checklistColumns}
+          onEmployeeUpdated={mockOnEmployeeUpdated}
+        />
+      );
+
+      await user.click(screen.getByLabelText(/Expand details/i));
+
+      await waitFor(() => {
+        expect(screen.getByText("PRM")).toBeInTheDocument();
+      });
+
+      const prmCell = findGridcellByLabel("PRM");
+      expect(prmCell).not.toBeNull();
+      await user.click(prmCell!);
+
+      const doneOption = await screen.findByText("Klart");
+      await user.click(doneOption);
+
+      await waitFor(() => {
+        expect(employeeService.update).toHaveBeenCalledWith("emp-123", {
+          seably_prm: true,
+        });
+      });
+
+      await waitFor(() => {
+        const latestCell = findGridcellByLabel("PRM");
+        expect(latestCell).toHaveTextContent("Nej");
+        expect(latestCell).not.toHaveTextContent("Klart");
+      });
+      expect(screen.queryByLabelText("Completed")).not.toBeInTheDocument();
     });
 
     it("should trigger optimistic UI updates during save", async () => {
