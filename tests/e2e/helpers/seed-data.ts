@@ -8,6 +8,17 @@
 import { createClient } from '@supabase/supabase-js';
 
 const E2E_SEED_MARKER = 'E2E seed data';
+const TEST_USER_PASSWORD = 'Test123!';
+
+const E2E_TEST_USERS = [
+  { email: 'admin@test.com', role: 'hr_admin', isActive: true },
+  { email: 'hr@test.com', role: 'hr_admin', isActive: true },
+  { email: 'sodexo@test.com', role: 'sodexo', isActive: true },
+  { email: 'omc@test.com', role: 'omc', isActive: true },
+  { email: 'payroll@test.com', role: 'payroll', isActive: true },
+  { email: 'toplux@test.com', role: 'toplux', isActive: true },
+  { email: 'inactive@test.com', role: 'sodexo', isActive: false },
+];
 
 const E2E_EMPLOYEE_FIXTURES = [
   { first_name: 'Anna', surname: 'Test' },
@@ -46,54 +57,61 @@ function isLocalSupabaseUrl(url: string): boolean {
   }
 }
 
-function getSeedDateFixtures() {
-  const stenaFutureDate = new Date();
-  stenaFutureDate.setFullYear(stenaFutureDate.getFullYear() + 1);
-  const stenaFutureDateStr = stenaFutureDate.toISOString().split('T')[0];
-  const stenaFutureYear = stenaFutureDate.getFullYear();
+function futureDateInCurrentYear(currentYear: number, monthIndex: number, day: number) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const omcFutureDate = new Date();
-  omcFutureDate.setFullYear(omcFutureDate.getFullYear() + 1);
-  const omcFutureDateStr = omcFutureDate.toISOString().split('T')[0];
-  const omcFutureYear = omcFutureDate.getFullYear();
+  const date = new Date(Date.UTC(currentYear, monthIndex, day));
+  if (date < today) {
+    return `${currentYear}-12-31`;
+  }
+
+  return date.toISOString().split('T')[0];
+}
+
+function getSeedDateFixtures() {
+  const currentYear = new Date().getFullYear();
+  const generalDateValue = futureDateInCurrentYear(currentYear, 11, 19);
 
   return {
     stena: {
       category: 'Stena Dates',
-      date_value: stenaFutureDateStr,
-      date_description: `19-20 december ${stenaFutureYear}`,
-      year: stenaFutureYear,
-      max_spots: 20,
-      remaining_spots: 20,
+      date_value: generalDateValue,
+      date_description: `E2E 19-20 december ${currentYear}`,
+      year: currentYear,
+      max_spots: 500,
+      remaining_spots: 500,
       is_active: true,
       notes: E2E_SEED_MARKER,
     },
     omc: {
       category: 'ÖMC Dates',
-      date_value: omcFutureDateStr,
-      date_description: `8-9 mars ${omcFutureYear}`,
-      year: omcFutureYear,
-      max_spots: 3,
-      remaining_spots: 3,
+      date_value: generalDateValue,
+      date_description: `E2E 19-20 december ${currentYear}`,
+      year: currentYear,
+      max_spots: 500,
+      remaining_spots: 500,
       is_active: true,
       notes: E2E_SEED_MARKER,
     },
     pe3: {
       category: 'PE3 Dates',
-      date_value: '2025-04-20',
-      date_description: '20 april',
-      year: 2025,
+      date_value: futureDateInCurrentYear(currentYear, 3, 20),
+      date_description: 'E2E 20 april',
+      year: currentYear,
       max_spots: 1,
       remaining_spots: 1,
+      is_active: true,
       notes: E2E_SEED_MARKER,
     },
     limitedOmc: {
       category: 'ÖMC Dates',
-      date_value: '2025-05-15',
-      date_description: '15-16 maj',
-      year: 2025,
+      date_value: futureDateInCurrentYear(currentYear, 4, 15),
+      date_description: 'E2E 15-16 maj',
+      year: currentYear,
       max_spots: 2,
       remaining_spots: 2,
+      is_active: true,
       notes: E2E_SEED_MARKER,
     },
   };
@@ -138,6 +156,88 @@ function getSupabaseClient() {
 }
 
 /**
+ * Ensure E2E auth users and matching public.users records exist.
+ * Existing auth users are repaired to the standard test password so stale
+ * credentials cannot break the entire Playwright suite.
+ */
+export async function ensureTestUsers() {
+  const supabase = getSupabaseClient();
+  const { data: listedUsers, error: listError } = await supabase.auth.admin.listUsers();
+
+  if (listError) {
+    throw new Error(`Failed to list auth users for E2E setup: ${listError.message}`);
+  }
+
+  for (const testUser of E2E_TEST_USERS) {
+    let authUser = listedUsers.users.find((user) => user.email === testUser.email);
+
+    if (authUser) {
+      const { error: updateAuthError } = await supabase.auth.admin.updateUserById(
+        authUser.id,
+        {
+          password: TEST_USER_PASSWORD,
+          email_confirm: true,
+          user_metadata: { role: testUser.role },
+        }
+      );
+
+      if (updateAuthError) {
+        throw new Error(
+          `Failed to repair E2E auth user ${testUser.email}: ${updateAuthError.message}`
+        );
+      }
+    } else {
+      const { data: createdAuth, error: createAuthError } =
+        await supabase.auth.admin.createUser({
+          email: testUser.email,
+          password: TEST_USER_PASSWORD,
+          email_confirm: true,
+          user_metadata: { role: testUser.role },
+        });
+
+      if (createAuthError || !createdAuth.user) {
+        throw new Error(
+          `Failed to create E2E auth user ${testUser.email}: ${
+            createAuthError?.message ?? 'missing auth user'
+          }`
+        );
+      }
+
+      authUser = createdAuth.user;
+    }
+
+    const { data: existingProfile, error: profileQueryError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', testUser.email)
+      .maybeSingle();
+
+    if (profileQueryError) {
+      throw new Error(
+        `Failed to query E2E profile ${testUser.email}: ${profileQueryError.message}`
+      );
+    }
+
+    const profile = {
+      auth_user_id: authUser.id,
+      email: testUser.email,
+      role: testUser.role,
+      is_active: testUser.isActive,
+    };
+
+    const profileResult = existingProfile
+      ? await supabase.from('users').update(profile).eq('id', existingProfile.id)
+      : await supabase.from('users').insert(profile);
+
+    if (profileResult.error) {
+      throw new Error(
+        `Failed to upsert E2E profile ${testUser.email}: ${profileResult.error.message}`
+      );
+    }
+  }
+}
+
+/**
  * Seed test data for E2E tests
  * Creates important dates with known capacity for testing
  */
@@ -145,9 +245,8 @@ export async function seedTestData() {
   const supabase = getSupabaseClient();
   const fixtures = getSeedDateFixtures();
 
-  // Create Stena Date with capacity (required field in form)
-  // Use a date far in the future to ensure it's always available
-  const { data: stenaDate, error: stenaError } = await supabase
+  // Create Stena Date with capacity (required field in form).
+  const { error: stenaError } = await supabase
     .from('important_dates')
     .insert(fixtures.stena)
     .select()
@@ -157,10 +256,7 @@ export async function seedTestData() {
     console.error('Error seeding Stena date:', stenaError);
   }
 
-  // Create ÖMC date with capacity (set to 3 so that after 1 assignment it becomes "almost-full")
-  // ÖMC threshold is 3, so with max_spots: 3 and remaining_spots: 3, after 1 assignment
-  // remaining_spots becomes 2, which is <= 3, triggering "almost-full" badge
-  // Use a date far in the future to ensure it's always available
+  // Create ÖMC date with high capacity for general employee creation tests.
   const { data: omcDate, error: omcError } = await supabase
     .from('important_dates')
     .insert(fixtures.omc)
@@ -171,7 +267,7 @@ export async function seedTestData() {
     console.error('Error seeding ÖMC date:', omcError);
   }
 
-  // Create PE3 date with limited capacity
+  // Create PE3 date with limited capacity.
   const { data: pe3Date, error: pe3Error } = await supabase
     .from('important_dates')
     .insert(fixtures.pe3)
@@ -182,7 +278,7 @@ export async function seedTestData() {
     console.error('Error seeding PE3 date:', pe3Error);
   }
 
-  // Create ÖMC date with 2 spots (for capacity management test)
+  // Create ÖMC date with 2 spots for legacy/skipped capacity tests.
   const { data: limitedDate, error: limitedError } = await supabase
     .from('important_dates')
     .insert(fixtures.limitedOmc)
@@ -206,6 +302,42 @@ export async function seedTestData() {
  */
 export async function cleanupTestData() {
   const supabase = getSupabaseClient();
+
+  // Employees created through the UI may have non-test names but still point at
+  // E2E-only dates. Remove those rows before deleting the dates to avoid FK
+  // violations during teardown.
+  const [{ data: markedDates, error: markedDateQueryError }, { data: namedDates, error: namedDateQueryError }] =
+    await Promise.all([
+      supabase.from('important_dates').select('id').eq('notes', E2E_SEED_MARKER),
+      supabase
+        .from('important_dates')
+        .select('id')
+        .or('date_description.ilike.%Test%,date_description.ilike.%E2E%'),
+    ]);
+
+  if (markedDateQueryError) {
+    console.error('Error querying marked test dates for cleanup:', markedDateQueryError);
+  }
+
+  if (namedDateQueryError) {
+    console.error('Error querying named test dates for cleanup:', namedDateQueryError);
+  }
+
+  const testDateIds = [
+    ...(markedDates?.map((date) => date.id).filter(Boolean) ?? []),
+    ...(namedDates?.map((date) => date.id).filter(Boolean) ?? []),
+  ];
+
+  for (const dateId of [...new Set(testDateIds)]) {
+    const { error } = await supabase
+      .from('employees')
+      .delete()
+      .or(`stena_date.eq.${dateId},omc_date.eq.${dateId},pe3_date.eq.${dateId}`);
+
+    if (error) {
+      console.error(`Error cleaning up employees by E2E date ${dateId}:`, error);
+    }
+  }
   
   // Delete test employees created by E2E flows. Keep this scoped to known fixtures.
   for (const fixture of E2E_EMPLOYEE_FIXTURES) {
@@ -251,4 +383,3 @@ export async function resetDateCapacity(dateDescription: string, maxSpots: numbe
     console.error(`Error resetting capacity for ${dateDescription}:`, error);
   }
 }
-

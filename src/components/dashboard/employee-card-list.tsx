@@ -140,9 +140,10 @@ export function EmployeeCardList({
   const virtualizer = useVirtualizer({
     count: employees.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => 200, // Estimated card height in pixels
+    estimateSize: () => 360, // Initial mobile card estimate; measured after render.
     overscan: 5, // Render 5 extra items above/below viewport for smooth scrolling
     enabled: shouldUseVirtualScrolling,
+    measureElement: (element) => element?.getBoundingClientRect().height ?? 360,
   });
 
   if (isLoading) {
@@ -159,7 +160,7 @@ export function EmployeeCardList({
   const pullPercentage = Math.min((pullDistance / threshold) * 100, 100);
 
   return (
-    <main className="space-y-4 p-4" aria-label="Employee list">
+    <section className="space-y-4 p-4" aria-label="Employee list">
       {/* Search bar - Story 12.6: AC 5 - Debounced search with history */}
       <form onSubmit={handleSearchSubmit} className="relative">
         <label htmlFor="employee-search" className="sr-only">
@@ -257,6 +258,8 @@ export function EmployeeCardList({
         ) : shouldUseVirtualScrolling ? (
           // Virtual scrolling for large lists (Story 12.5: Performance optimization)
           <div
+            role="list"
+            aria-label={`${employees.length} employee${employees.length !== 1 ? 's' : ''}`}
             style={{
               transform: isPulling && !isRefreshing
                 ? `translateY(${Math.min(pullDistance, threshold)}px)`
@@ -276,12 +279,13 @@ export function EmployeeCardList({
                 return (
                   <div
                     key={virtualItem.key}
+                    ref={virtualizer.measureElement}
+                    data-index={virtualItem.index}
                     style={{
                       position: 'absolute',
                       top: 0,
                       left: 0,
                       width: '100%',
-                      height: `${virtualItem.size}px`,
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
                     role="listitem"
@@ -343,6 +347,6 @@ export function EmployeeCardList({
           </ul>
         )}
       </div>
-    </main>
+    </section>
   );
 }

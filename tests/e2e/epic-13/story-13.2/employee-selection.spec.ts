@@ -10,12 +10,16 @@ test.describe('Story 13.2: Employee Selection Workflow', () => {
     await page.waitForSelector('[data-testid^="employee-row-"]', { timeout: 10000 });
   });
 
+  function employeeCheckbox(page: import('@playwright/test').Page, index: number) {
+    return page.locator('[data-testid^="employee-select-checkbox-"]').nth(index);
+  }
+
   test('user can check checkbox to select employee', async ({ page }) => {
     // Find the first employee row
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
     
     // Find the checkbox in the first column
-    const checkbox = firstRow.locator('input[type="checkbox"]').first();
+    const checkbox = employeeCheckbox(page, 0);
     
     // Initially unchecked
     await expect(checkbox).not.toBeChecked();
@@ -32,7 +36,7 @@ test.describe('Story 13.2: Employee Selection Workflow', () => {
 
   test('user can uncheck checkbox to deselect employee', async ({ page }) => {
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
-    const checkbox = firstRow.locator('input[type="checkbox"]').first();
+    const checkbox = employeeCheckbox(page, 0);
     
     // Select first
     await checkbox.click();
@@ -47,7 +51,7 @@ test.describe('Story 13.2: Employee Selection Workflow', () => {
 
   test('selected employees show greyish tint', async ({ page }) => {
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
-    const checkbox = firstRow.locator('input[type="checkbox"]').first();
+    const checkbox = employeeCheckbox(page, 0);
     
     // Select
     await checkbox.click();
@@ -66,8 +70,8 @@ test.describe('Story 13.2: Employee Selection Workflow', () => {
     const firstRow = rows.first();
     const secondRow = rows.nth(1);
     
-    const checkbox1 = firstRow.locator('input[type="checkbox"]').first();
-    const checkbox2 = secondRow.locator('input[type="checkbox"]').first();
+    const checkbox1 = employeeCheckbox(page, 0);
+    const checkbox2 = employeeCheckbox(page, 1);
     
     // Select both
     await checkbox1.click();
@@ -84,7 +88,7 @@ test.describe('Story 13.2: Employee Selection Workflow', () => {
 
   test('selection persists during scroll', async ({ page }) => {
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
-    const checkbox = firstRow.locator('input[type="checkbox"]').first();
+    const checkbox = employeeCheckbox(page, 0);
     
     // Select
     await checkbox.click();
@@ -114,24 +118,24 @@ test.describe('Story 13.2: Employee Selection Workflow', () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     await page.reload();
-    await page.waitForSelector('[data-testid^="employee-row-"]', { timeout: 10000 });
+    await page.waitForSelector('article[aria-label]', { timeout: 10000 });
     
     // On mobile, we should see cards instead of table
     // Check if cards are rendered (they might have different structure)
-    const cardOrRow = page.locator('[data-testid^="employee-row-"], [class*="Card"]').first();
+    const cardOrRow = page.locator('article[aria-label]').first();
     
     // Try to find checkbox (might be in card header)
-    const checkbox = cardOrRow.locator('input[type="checkbox"]').first();
+    const checkbox = cardOrRow.getByRole('checkbox').first();
     
     if (await checkbox.count() > 0) {
       // Select
-      await checkbox.click();
+      await checkbox.click({ force: true });
       
       // Should be checked
       await expect(checkbox).toBeChecked();
       
       // Card should have selected styling
-      const cardHeader = cardOrRow.locator('[class*="CardHeader"]').first();
+      const cardHeader = cardOrRow.locator('[data-testid="employee-card-header"]').first();
       if (await cardHeader.count() > 0) {
         await expect(cardHeader).toHaveClass(/bg-gray-100/);
       }

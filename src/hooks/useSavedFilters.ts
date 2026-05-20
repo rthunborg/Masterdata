@@ -82,7 +82,10 @@ export function useSavedFilters() {
       const json: DeleteSavedFilterResponse = await response.json();
       return json;
     },
-    onSuccess: () => {
+    onSuccess: (_data, deletedId) => {
+      queryClient.setQueryData<SavedFilter[]>(["user_filters"], (current) =>
+        (current ?? []).filter((filter) => filter.id !== deletedId)
+      );
       queryClient.invalidateQueries({ queryKey: ["user_filters"] });
       toast.success("Filter borttaget!");
     },

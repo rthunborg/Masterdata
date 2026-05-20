@@ -60,7 +60,7 @@ export function Header() {
           <Badge variant="secondary" className="hidden sm:inline-flex">
             {getRoleDisplayName(user.role)}
           </Badge>
-          <Button onClick={handleLogout} variant="outline" size="sm">
+          <Button onClick={handleLogout} variant="outline" size="sm" aria-label={t.common.signOut}>
             <LogOut className="h-4 w-4 md:mr-2" />
             <span className="hidden sm:inline">{t.common.signOut}</span>
           </Button>

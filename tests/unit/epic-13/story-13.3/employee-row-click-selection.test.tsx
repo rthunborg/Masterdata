@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, render } from '@testing-library/react';
+import { screen, fireEvent, render, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
@@ -245,7 +245,7 @@ describe('Story 13.3: Row Click Selection (REMOVED in Story 9.11)', () => {
       const row = screen.getByTestId('employee-row-1');
       
       // Find a button in the row (Archive button for HR Admin)
-      const archiveButton = screen.queryByLabelText(/archive/i);
+      const archiveButton = within(row).queryByLabelText(/archive/i);
       
       if (archiveButton) {
         // Click the button

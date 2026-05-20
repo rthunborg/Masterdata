@@ -11,7 +11,7 @@ test.describe('Story 13.1: Filter Checkbox User Workflow', () => {
 
   test('user can check "Show Archived" and see archived employees', async ({ page }) => {
     // Find and click the "Show Archived" checkbox
-    const archivedCheckbox = page.getByRole('checkbox', { name: /show archived/i });
+    const archivedCheckbox = page.getByRole('checkbox', { name: /visa arkiverade|show archived/i });
     
     // Verify it's initially unchecked
     await expect(archivedCheckbox).not.toBeChecked();
@@ -27,7 +27,7 @@ test.describe('Story 13.1: Filter Checkbox User Workflow', () => {
   });
 
   test('user can uncheck "Show Archived" and hide archived employees', async ({ page }) => {
-    const archivedCheckbox = page.getByRole('checkbox', { name: /show archived/i });
+    const archivedCheckbox = page.getByRole('checkbox', { name: /visa arkiverade|show archived/i });
     
     // Check it first
     await archivedCheckbox.click();
@@ -38,32 +38,26 @@ test.describe('Story 13.1: Filter Checkbox User Workflow', () => {
     await expect(archivedCheckbox).not.toBeChecked();
   });
 
-  test('user can switch between filters (mutually exclusive)', async ({ page }) => {
-    const archivedCheckbox = page.getByRole('checkbox', { name: /show archived/i });
-    const terminatedCheckbox = page.getByRole('checkbox', { name: /show terminated/i });
-    const repaymentCheckbox = page.getByRole('checkbox', { name: /needs repayment/i });
+  test('user can combine status filters', async ({ page }) => {
+    const archivedCheckbox = page.getByRole('checkbox', { name: /visa arkiverade|show archived/i });
+    const terminatedCheckbox = page.getByRole('checkbox', { name: /visa uppsagda|show terminated/i });
+    const repaymentCheckbox = page.getByRole('checkbox', { name: /visa återbetalningskrav|needs repayment/i });
     
-    // Check archived
     await archivedCheckbox.click();
     await expect(archivedCheckbox).toBeChecked();
-    await expect(terminatedCheckbox).not.toBeChecked();
-    await expect(repaymentCheckbox).not.toBeChecked();
-    
-    // Switch to terminated
+
     await terminatedCheckbox.click();
     await expect(terminatedCheckbox).toBeChecked();
-    await expect(archivedCheckbox).not.toBeChecked();
-    await expect(repaymentCheckbox).not.toBeChecked();
-    
-    // Switch to repayment
+    await expect(archivedCheckbox).toBeChecked();
+
     await repaymentCheckbox.click();
     await expect(repaymentCheckbox).toBeChecked();
-    await expect(archivedCheckbox).not.toBeChecked();
-    await expect(terminatedCheckbox).not.toBeChecked();
+    await expect(archivedCheckbox).toBeChecked();
+    await expect(terminatedCheckbox).toBeChecked();
   });
 
   test('checkbox visual state matches filter state', async ({ page }) => {
-    const archivedCheckbox = page.getByRole('checkbox', { name: /show archived/i });
+    const archivedCheckbox = page.getByRole('checkbox', { name: /visa arkiverade|show archived/i });
     
     // Initially unchecked
     await expect(archivedCheckbox).not.toBeChecked();
@@ -78,7 +72,7 @@ test.describe('Story 13.1: Filter Checkbox User Workflow', () => {
   });
 
   test('view updates immediately on checkbox click', async ({ page }) => {
-    const archivedCheckbox = page.getByRole('checkbox', { name: /show archived/i });
+    const archivedCheckbox = page.getByRole('checkbox', { name: /visa arkiverade|show archived/i });
     
     // Click checkbox
     await archivedCheckbox.click();

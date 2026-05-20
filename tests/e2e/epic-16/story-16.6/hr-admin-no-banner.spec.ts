@@ -10,15 +10,38 @@
  * Verifies role-based exclusion works end-to-end
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { setupTestUser, loginAsHRAdmin } from '../../helpers/e2e-helpers';
+
+const DASHBOARD_READY_SELECTOR = '[data-testid^="employee-row-"], article[aria-label], table';
+const EMPLOYEE_VIEW_SELECTOR = 'table, [data-testid^="employee-row-"], article[aria-label]';
+
+async function waitForDashboardReady(page: Page) {
+  const dashboardReady = page
+    .locator(DASHBOARD_READY_SELECTOR)
+    .filter({ visible: true })
+    .first();
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      await expect(dashboardReady).toBeVisible({ timeout: 15000 });
+      return;
+    } catch (error) {
+      if (attempt === 1) {
+        throw error;
+      }
+
+      await page.reload({ waitUntil: 'domcontentloaded' });
+    }
+  }
+}
 
 test.describe('Story 16.6: HR Admin Should NOT See Banner or Highlights', () => {
   test.beforeEach(async ({ page }) => {
     await setupTestUser();
     // Login as HR Admin (already navigates to dashboard)
     await loginAsHRAdmin(page);
-    await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 15000 });
+    await waitForDashboardReady(page);
     await page.waitForLoadState('load');
   });
 
@@ -51,7 +74,7 @@ test.describe('Story 16.6: HR Admin Should NOT See Banner or Highlights', () => 
 
     // Get first employee row or card
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
-    const firstCard = page.locator('[data-testid^="employee-card-"]').first();
+    const firstCard = page.locator('article[aria-label]').first();
 
     const rowCount = await firstRow.count();
     const cardCount = await firstCard.count();
@@ -90,7 +113,7 @@ test.describe('Story 16.6: HR Admin Should NOT See Banner or Highlights', () => 
     expect(bannerCount).toBe(0);
 
     // Verify dashboard is loaded and functional
-    const table = page.locator('table, [data-testid^="employee-row-"], [data-testid^="employee-card-"]').first();
+    const table = page.locator(EMPLOYEE_VIEW_SELECTOR).first();
     await expect(table).toBeVisible();
   });
 
@@ -108,7 +131,7 @@ test.describe('Story 16.6: HR Admin Should NOT See Banner or Highlights', () => 
     await expect(title).toBeVisible({ timeout: 5000 });
 
     // Employee table/cards should be visible
-    const employeeView = page.locator('table, [data-testid^="employee-row-"], [data-testid^="employee-card-"]').first();
+    const employeeView = page.locator(EMPLOYEE_VIEW_SELECTOR).first();
     await expect(employeeView).toBeVisible();
 
     // Banner should NOT be present

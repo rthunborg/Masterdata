@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import type { CreateSavedFilterRequest, GetSavedFiltersResponse, CreateSavedFilterResponse } from "@/lib/types/saved-filter";
 
@@ -10,7 +10,7 @@ import type { CreateSavedFilterRequest, GetSavedFiltersResponse, CreateSavedFilt
 export async function GET(request: NextRequest) {
   try {
     const user = await requireAuthAPI(request);
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     const { data, error } = await supabase
       .from("user_filters")
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const response: GetSavedFiltersResponse = { data: data || [] };
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=120',
+        "Cache-Control": "no-store",
       },
     });
   } catch (error) {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
     const { data, error } = await supabase
       .from("user_filters")

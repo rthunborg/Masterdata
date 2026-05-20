@@ -44,6 +44,7 @@ interface EditableCellProps {
   category?: string; // For formatting ÖMC dates (Story 8.9)
   className?: string;
   isCompact?: boolean;
+  cellRole?: "gridcell" | "button";
   onSave: (id: string, field: string, value: string | number | boolean | null) => Promise<void>;
   onError?: (error: string) => void;
 }
@@ -84,6 +85,7 @@ export function EditableCell({
   category, // Category for formatting ÖMC dates (Story 8.9)
   className,
   isCompact,
+  cellRole = "gridcell",
   onSave,
   onError,
 }: EditableCellProps) {
@@ -125,6 +127,7 @@ export function EditableCell({
   const cellRef = useRef<HTMLDivElement>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
+  const isGridCellRole = cellRole === "gridcell";
   
   // Track the last saved value to ensure displayValue shows it until value prop updates
   const lastSavedValueRef = useRef<string | number | boolean | null>(null);
@@ -341,8 +344,8 @@ export function EditableCell({
                 className
               )}
               tabIndex={0}
-              role="gridcell"
-              aria-readonly="true"
+              role={cellRole}
+              aria-readonly={isGridCellRole ? "true" : undefined}
               aria-label={`${field} (read-only)`}
               aria-disabled={(isTalmundoField || isCrewingField) ? "true" : undefined}
             >
@@ -461,9 +464,9 @@ export function EditableCell({
           // Stop propagation to prevent row selection
           e.stopPropagation();
           setIsEditing(true);
-          // Auto-open dropdown immediately for select/boolean types
+          // Let the mounted Select editor open itself in the effect below.
           if (type === "select" || type === "boolean") {
-            setSelectOpen(true);
+            setSelectOpen(false);
           }
         }}
         className={cn(
@@ -480,14 +483,14 @@ export function EditableCell({
             e.preventDefault();
             e.stopPropagation(); // Prevent row selection when using keyboard
             setIsEditing(true);
-            // Auto-open dropdown immediately for select/boolean types
+            // Let the mounted Select editor open itself in the effect below.
             if (type === "select" || type === "boolean") {
-              setSelectOpen(true);
+              setSelectOpen(false);
             }
           }
         }}
-        role="gridcell"
-        aria-readonly="false"
+        role={cellRole}
+        aria-readonly={isGridCellRole ? "false" : undefined}
         aria-label={`Edit ${field}`}
       >
         {/* Story 19.4: Truncate text with ellipsis at end, show full value on hover */}

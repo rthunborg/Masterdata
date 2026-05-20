@@ -5,52 +5,90 @@
  * End-to-end tests for mobile quick actions functionality.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { loginAsHRAdmin } from '../../helpers/e2e-helpers';
+
+async function waitForMobileDashboard(page: Page) {
+  await expect(page.getByRole('region', { name: /Employee list/i })).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('article[aria-label]').first()).toBeVisible({ timeout: 15000 });
+}
+
+async function openCardContextMenu(page: Page) {
+  const employeeCard = page.locator('article[aria-label]').first();
+  await expect(employeeCard).toBeVisible();
+
+  const cardBox = await employeeCard.boundingBox();
+  if (!cardBox) {
+    throw new Error('Employee card has no bounding box');
+  }
+
+  const x = cardBox.x + cardBox.width / 2;
+  const y = cardBox.y + Math.min(cardBox.height / 2, 180);
+  await employeeCard.evaluate((element, point) => {
+    const touch = new Touch({
+      identifier: 1,
+      target: element,
+      clientX: point.x,
+      clientY: point.y,
+    });
+    element.dispatchEvent(new TouchEvent('touchstart', {
+      touches: [touch],
+      targetTouches: [touch],
+      changedTouches: [touch],
+      bubbles: true,
+      cancelable: true,
+    }));
+  }, { x, y });
+  await page.waitForTimeout(650);
+  await employeeCard.evaluate((element, point) => {
+    const touch = new Touch({
+      identifier: 1,
+      target: element,
+      clientX: point.x,
+      clientY: point.y,
+    });
+    element.dispatchEvent(new TouchEvent('touchend', {
+      touches: [],
+      targetTouches: [],
+      changedTouches: [touch],
+      bubbles: true,
+      cancelable: true,
+    }));
+  }, { x, y });
+
+  const menu = page.getByRole('menu', { name: /Employee quick actions/i });
+  await expect(menu).toBeVisible({ timeout: 2000 });
+  return menu;
+}
 
 test.describe('Mobile Quick Actions (Story 12.6)', () => {
   test.beforeEach(async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     
-    // Navigate to dashboard (assuming auth is handled)
-    await page.goto('/dashboard');
-    
-    // Wait for page to load
-    await page.waitForSelector('[data-testid="employee-list"]', { timeout: 10000 });
+    await loginAsHRAdmin(page);
+    await waitForMobileDashboard(page);
   });
 
   test('[P0] Long-press on employee card shows context menu', async ({ page }) => {
     // Given: I am on the employee list view on mobile
-    const employeeCard = page.locator('article').first();
-    await expect(employeeCard).toBeVisible();
-
-    // When: I long-press (hold for 500ms) on an employee card
-    const cardBox = await employeeCard.boundingBox();
-    if (cardBox) {
-      await page.touchscreen.tap(cardBox.x + cardBox.width / 2, cardBox.y + cardBox.height / 2);
-      await page.waitForTimeout(500); // Wait for long-press delay
-    }
+    // When: I long-press on an employee card
+    const menu = await openCardContextMenu(page);
 
     // Then: A context menu appears with quick actions
-    await expect(page.locator('text=View Details')).toBeVisible({ timeout: 1000 });
-    await expect(page.locator('text=Edit')).toBeVisible();
+    await expect(menu.getByRole('button', { name: /View Details/i })).toBeVisible();
+    await expect(menu.getByRole('button', { name: /^Edit$/i })).toBeVisible();
   });
 
   test('[P0] Context menu closes after selecting action', async ({ page }) => {
     // Given: Context menu is open
-    const employeeCard = page.locator('article').first();
-    const cardBox = await employeeCard.boundingBox();
-    if (cardBox) {
-      await page.touchscreen.tap(cardBox.x + cardBox.width / 2, cardBox.y + cardBox.height / 2);
-      await page.waitForTimeout(500);
-    }
-    await expect(page.locator('text=Edit')).toBeVisible();
+    const menu = await openCardContextMenu(page);
 
     // When: I tap an action
-    await page.locator('text=Edit').click();
+    await menu.getByRole('button', { name: /^Edit$/i }).click();
 
     // Then: The context menu closes automatically
-    await expect(page.locator('text=Edit')).not.toBeVisible({ timeout: 1000 });
+    await expect(menu).not.toBeVisible({ timeout: 1000 });
   });
 
   test('[P1] Email link has pre-filled subject', async ({ page }) => {
@@ -63,7 +101,7 @@ test.describe('Mobile Quick Actions (Story 12.6)', () => {
 
     // Then: The subject line is pre-filled: "Re: [Employee Name]"
     expect(href).toContain('subject=');
-    expect(href).toContain('Re:');
+    expect(decodeURIComponent(href || '')).toContain('Re:');
   });
 
   test('[P1] Phone link opens dialer', async ({ page }) => {
@@ -83,7 +121,7 @@ test.describe('Mobile Quick Actions (Story 12.6)', () => {
     // (Assuming user is logged in as HR Admin)
 
     // Then: A floating action button (FAB) appears in the bottom-right corner
-    const fab = page.locator('button[aria-label*="quick actions"]');
+    const fab = page.getByRole('button', { name: /Open quick actions menu/i });
     await expect(fab).toBeVisible();
     
     // Verify position (bottom-right)
@@ -97,21 +135,21 @@ test.describe('Mobile Quick Actions (Story 12.6)', () => {
 
   test('[P0] FAB menu shows correct options', async ({ page }) => {
     // Given: FAB is visible
-    const fab = page.locator('button[aria-label*="quick actions"]');
+    const fab = page.getByRole('button', { name: /Open quick actions menu/i });
     await expect(fab).toBeVisible();
 
     // When: I tap the FAB
     await fab.click();
 
     // Then: Menu shows: Add Employee, Import CSV, Quick Search
-    await expect(page.locator('text=Add Employee')).toBeVisible();
-    await expect(page.locator('text=Import CSV')).toBeVisible();
-    await expect(page.locator('text=Quick Search')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Add Employee/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Import CSV/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Quick Search/i })).toBeVisible();
   });
 
   test('[P1] Search input uses type="search" for mobile keyboard', async ({ page }) => {
     // Given: I am on the mobile dashboard
-    const searchInput = page.locator('input[type="search"]');
+    const searchInput = page.locator('#employee-search');
 
     // Then: Search input has type="search"
     await expect(searchInput).toBeVisible();
@@ -121,7 +159,7 @@ test.describe('Mobile Quick Actions (Story 12.6)', () => {
 
   test('[P1] Search debounces input (300ms delay)', async ({ page }) => {
     // Given: I am on the mobile dashboard
-    const searchInput = page.locator('input[type="search"]');
+    const searchInput = page.locator('#employee-search');
     await expect(searchInput).toBeVisible();
 
     // When: I type in the search box rapidly
@@ -139,9 +177,9 @@ test.describe('Mobile Quick Actions (Story 12.6)', () => {
     await expect(searchInput).toHaveValue('John');
   });
 
-  test('[P2] Search history is saved to localStorage', async ({ page, context }) => {
+  test('[P2] Search history is saved to localStorage', async ({ page }) => {
     // Given: I am on the mobile dashboard
-    const searchInput = page.locator('input[type="search"]');
+    const searchInput = page.locator('#employee-search');
     const searchForm = searchInput.locator('xpath=ancestor::form');
 
     // When: I submit a search
@@ -149,7 +187,7 @@ test.describe('Mobile Quick Actions (Story 12.6)', () => {
     await searchForm.press('Enter');
 
     // Then: Search history is saved locally (last 5 searches)
-    const history = await context.evaluate(() => {
+    const history = await page.evaluate(() => {
       return JSON.parse(localStorage.getItem('employee_search_history') || '[]');
     });
 

@@ -35,6 +35,7 @@ interface EditableDateCellProps {
   isRepaymentMode?: boolean;
   className?: string;
   isCompact?: boolean;
+  cellRole?: "gridcell" | "button";
   onSave: (id: string, field: string, value: string | null) => Promise<void>;
   onError?: (error: string) => void;
 }
@@ -51,12 +52,14 @@ export function EditableDateCell({
   isRepaymentMode = false,
   className,
   isCompact,
+  cellRole = "gridcell",
   onSave,
   onError,
 }: EditableDateCellProps) {
   const t = useTranslations("dashboard");
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isGridCellRole = cellRole === "gridcell";
 
   const {
     isEditing,
@@ -171,8 +174,8 @@ export function EditableDateCell({
                 className
               )}
               tabIndex={0}
-              role="gridcell"
-              aria-readonly="true"
+              role={cellRole}
+              aria-readonly={isGridCellRole ? "true" : undefined}
               aria-label={`${field} (read-only)`}
             >
               {displayValue || <span className="text-muted-foreground">—</span>}
@@ -211,8 +214,8 @@ export function EditableDateCell({
                 startEditing();
               }
             }}
-            role="gridcell"
-            aria-readonly="false"
+            role={cellRole}
+            aria-readonly={isGridCellRole ? "false" : undefined}
             aria-label={`Edit ${field}`}
           >
             {displayValue || <span className="text-muted-foreground">—</span>}

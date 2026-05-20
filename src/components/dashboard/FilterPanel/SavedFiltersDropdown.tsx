@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import equal from "fast-deep-equal";
 import { useTranslations } from "@/lib/i18n";
@@ -68,9 +68,7 @@ export function SavedFiltersDropdown({
     setIsDeleting(true);
     try {
       await onDelete(deleteId);
-      if (selectedId === deleteId) {
-        setSelectedId(undefined);
-      }
+      setSelectedId(undefined);
       setDeleteId(null);
     } catch (error) {
       console.error("Misslyckades att ta bort filter:", error);
@@ -82,6 +80,12 @@ export function SavedFiltersDropdown({
   const tFilter = useTranslations("filter");
   const filterToDelete = savedFilters.find((f) => f.id === deleteId);
   const selectedFilter = savedFilters.find((f) => f.id === selectedId);
+
+  useEffect(() => {
+    if (selectedId && !selectedFilter) {
+      setSelectedId(undefined);
+    }
+  }, [selectedFilter, selectedId]);
 
   return (
     <>

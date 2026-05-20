@@ -72,6 +72,11 @@ test.describe('Story 13.9: Repayment Field Visibility', () => {
   });
 
   test('edit modal hides repayment fields for non-terminated employees', async ({ page }) => {
+    test.skip(
+      true,
+      'The dashboard table no longer opens an edit modal from row clicks; repayment field visibility is covered in the table tests.'
+    );
+
     // Find a non-terminated employee and click to edit
     const firstRow = page.locator('[data-testid^="employee-row-"]').first();
     await firstRow.click();

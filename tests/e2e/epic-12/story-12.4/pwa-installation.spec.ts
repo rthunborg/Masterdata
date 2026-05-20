@@ -6,7 +6,8 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-test.describe('PWA Installation E2E', () => {
+// PWA/offline support was removed; the app now unregisters any existing service workers.
+test.describe.skip('PWA Installation E2E', () => {
   test.beforeEach(async ({ page, context }) => {
     // Clear service workers before each test
     await context.clearServiceWorkers();

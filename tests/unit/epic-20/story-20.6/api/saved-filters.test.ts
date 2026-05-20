@@ -21,7 +21,7 @@ vi.mock("@/lib/server/auth", async () => {
   };
 });
 
-vi.mock("@/lib/supabase/server");
+vi.mock("@/lib/supabase/server-api");
 
 describe("GET /api/users/filters", () => {
   beforeEach(() => {
@@ -31,7 +31,7 @@ describe("GET /api/users/filters", () => {
 
   it("should return saved filters for authenticated user", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { GET } = await import("@/app/api/users/filters/route");
 
     // Mock authenticated user
@@ -65,13 +65,15 @@ describe("GET /api/users/filters", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as ReturnType<typeof createClient>);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as any);
 
     const request = new NextRequest("http://localhost/api/users/filters");
     const response = await GET(request);
     const json = await response.json();
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(json.data).toHaveLength(1);
     expect(json.data[0].name).toBe("New Hires");
     expect(mockSupabase.eq).toHaveBeenCalledWith("user_id", "auth-user-1");
@@ -79,7 +81,7 @@ describe("GET /api/users/filters", () => {
 
   it("should return empty array if user has no saved filters", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { GET } = await import("@/app/api/users/filters/route");
 
     vi.mocked(requireAuthAPI).mockResolvedValue({
@@ -102,7 +104,8 @@ describe("GET /api/users/filters", () => {
       }),
     };
 
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as ReturnType<typeof createClient>);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as any);
 
     const request = new NextRequest("http://localhost/api/users/filters");
     const response = await GET(request);
@@ -142,7 +145,7 @@ describe("POST /api/users/filters", () => {
 
   it("should create saved filter with valid data", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { POST } = await import("@/app/api/users/filters/route");
 
     vi.mocked(requireAuthAPI).mockResolvedValue({
@@ -175,7 +178,7 @@ describe("POST /api/users/filters", () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as any);
 
     const body = {
       name: "Test Filter",
@@ -302,7 +305,7 @@ describe("POST /api/users/filters", () => {
 
   it("should return 409 if filter name already exists", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { POST } = await import("@/app/api/users/filters/route");
 
     vi.mocked(requireAuthAPI).mockResolvedValue({
@@ -326,7 +329,7 @@ describe("POST /api/users/filters", () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as any);
 
     const request = new NextRequest("http://localhost/api/users/filters", {
       method: "POST",
@@ -349,7 +352,7 @@ describe("DELETE /api/users/filters/:id", () => {
 
   it("should delete filter successfully", async () => {
     const { requireAuthAPI } = await import("@/lib/server/auth");
-    const { createClient } = await import("@/lib/supabase/server");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
     const { DELETE } = await import("@/app/api/users/filters/[id]/route");
 
     vi.mocked(requireAuthAPI).mockResolvedValue({
@@ -365,16 +368,14 @@ describe("DELETE /api/users/filters/:id", () => {
     const mockSupabase = {
       from: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
+      eq: vi.fn(),
     };
-
-    // Mock both .eq() calls to return the expected result
     mockSupabase.eq
       .mockReturnValueOnce(mockSupabase)
-      .mockResolvedValueOnce({ data: null, error: null });
+      .mockResolvedValueOnce({ count: 1, error: null });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(createClient).mockResolvedValue(mockSupabase as any);
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as any);
 
     const request = new NextRequest(
       "http://localhost/api/users/filters/550e8400-e29b-41d4-a716-446655440000"
@@ -388,11 +389,52 @@ describe("DELETE /api/users/filters/:id", () => {
 
     expect(response.status).toBe(200);
     expect(json.success).toBe(true);
+    expect(mockSupabase.delete).toHaveBeenCalledWith({ count: "exact" });
     expect(mockSupabase.eq).toHaveBeenCalledWith(
       "id",
       "550e8400-e29b-41d4-a716-446655440000"
     );
     expect(mockSupabase.eq).toHaveBeenCalledWith("user_id", "auth-user-1");
+  });
+
+  it("should return 404 when no filter row was deleted", async () => {
+    const { requireAuthAPI } = await import("@/lib/server/auth");
+    const { createAPIClient } = await import("@/lib/supabase/server-api");
+    const { DELETE } = await import("@/app/api/users/filters/[id]/route");
+
+    vi.mocked(requireAuthAPI).mockResolvedValue({
+      id: "user-1",
+      email: "test@example.com",
+      role: "hr_admin",
+      is_active: true,
+      created_at: "2025-01-01T00:00:00Z",
+      last_active_at: "2025-01-29T00:00:00Z",
+      auth_id: "auth-user-1",
+    });
+
+    const mockSupabase = {
+      from: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn(),
+    };
+    mockSupabase.eq
+      .mockReturnValueOnce(mockSupabase)
+      .mockResolvedValueOnce({ count: 0, error: null });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as any);
+
+    const request = new NextRequest(
+      "http://localhost/api/users/filters/550e8400-e29b-41d4-a716-446655440000"
+    );
+
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: "550e8400-e29b-41d4-a716-446655440000" }),
+    });
+    const json = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(json.error).toBe("Saved filter not found");
   });
 
   it("should return 400 for invalid UUID format", async () => {

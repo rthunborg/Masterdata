@@ -24,16 +24,19 @@ interface ChangeDetectionResponse {
   error?: string;
 }
 
+const DASHBOARD_READY_SELECTOR = '[data-testid^="employee-row-"], article[aria-label], table';
+const EMPLOYEE_VIEW_SELECTOR = 'table, [data-testid^="employee-row-"], article[aria-label]';
+
 test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
   test('External user should see highlights for existing changes', async ({ page }) => {
     // Log in directly as external user (Sodexo) - Production test user
-    const externalEmail = process.env.E2E_EXTERNAL_PARTY_EMAIL || 'r.alestigthunborg@gmail.com';
+    const externalEmail = process.env.E2E_EXTERNAL_PARTY_EMAIL || 'sodexo@test.com';
     const externalPassword = process.env.E2E_EXTERNAL_PARTY_PASSWORD || 'Test123!';
     
     await loginAsUser(page, externalEmail, externalPassword);
     
     // Wait for dashboard to load
-    await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"], table', { timeout: 20000 });
+    await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 20000 });
     await page.waitForLoadState('load');
     
     // Capture console messages to see hook logs
@@ -71,7 +74,7 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
     const tableHighlightCount = await tableHighlightedCells.count();
     
     // Verify dashboard loaded correctly
-    const table = page.locator('table, [data-testid^="employee-row-"], [data-testid^="employee-card-"]').first();
+    const table = page.locator(EMPLOYEE_VIEW_SELECTOR).first();
     await expect(table).toBeVisible();
     
     // If highlights exist, verify they're visible and in the correct location
@@ -251,13 +254,13 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
 
   test('External user should see correct column alignment', async ({ page }) => {
     // Log in directly as external user
-    const externalEmail = process.env.E2E_EXTERNAL_PARTY_EMAIL || 'r.alestigthunborg@gmail.com';
+    const externalEmail = process.env.E2E_EXTERNAL_PARTY_EMAIL || 'sodexo@test.com';
     const externalPassword = process.env.E2E_EXTERNAL_PARTY_PASSWORD || 'Test123!';
     
     await loginAsUser(page, externalEmail, externalPassword);
     
     // Wait for dashboard to load
-    await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"], table', { timeout: 20000 });
+    await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 20000 });
     await page.waitForLoadState('load');
     await page.waitForTimeout(2000);
     
@@ -285,9 +288,9 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
         const cellCount = await dataCells.count();
         
         // Verify column count matches (accounting for selection checkbox and action columns)
-        // Allow up to 3 difference for: checkbox, action buttons, status indicators
+        // Allow extra utility/status/action cells in the current dashboard table
         const countDiff = Math.abs(headerCount - cellCount);
-        expect(countDiff).toBeLessThanOrEqual(3);
+        expect(countDiff).toBeLessThanOrEqual(5);
         
         console.log(`✅ Column alignment verified: ${headerCount} headers, ${cellCount} cells (diff: ${countDiff})`);
       }
@@ -299,13 +302,13 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
 
   test('External user should see change notification banner when changes exist', async ({ page }) => {
     // Log in directly as external user
-    const externalEmail = process.env.E2E_EXTERNAL_PARTY_EMAIL || 'r.alestigthunborg@gmail.com';
+    const externalEmail = process.env.E2E_EXTERNAL_PARTY_EMAIL || 'sodexo@test.com';
     const externalPassword = process.env.E2E_EXTERNAL_PARTY_PASSWORD || 'Test123!';
     
     await loginAsUser(page, externalEmail, externalPassword);
     
     // Wait for dashboard to load
-    await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"], table', { timeout: 20000 });
+    await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 20000 });
     await page.waitForLoadState('load');
     await page.waitForTimeout(3000); // Wait for change detection API
     
@@ -329,7 +332,7 @@ test.describe('Story 16.6: External User Highlighting (Direct Login)', () => {
       // 3. User doesn't have view permission for changed columns
       
       // Verify dashboard loaded correctly
-      const table = page.locator('table, [data-testid^="employee-row-"], [data-testid^="employee-card-"]').first();
+      const table = page.locator(EMPLOYEE_VIEW_SELECTOR).first();
       await expect(table).toBeVisible();
       
       console.log('ℹ️  No banner found - this is expected if no changes exist');

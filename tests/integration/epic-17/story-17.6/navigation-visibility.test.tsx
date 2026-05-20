@@ -104,29 +104,26 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
   };
 
   describe("AC1: Navigation Area for External Users", () => {
-    it("should show basic navigation but hide admin tabs for sodexo user", async () => {
+    it("should hide navigation for sodexo user", async () => {
       setAuthUser(mockUsers.sodexo);
 
       renderLayout(<div>Dashboard Content</div>);
 
       await waitFor(() => {
-        const nav = screen.getByRole("navigation");
-        expect(nav).toBeInTheDocument();
-
-        expect(screen.getByText("Employees")).toBeInTheDocument();
-
+        expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+        expect(screen.queryByText("Employees")).not.toBeInTheDocument();
         expect(screen.queryByText("User Management")).not.toBeInTheDocument();
         expect(screen.queryByText("Column Settings")).not.toBeInTheDocument();
       });
     });
 
-    it("should show basic navigation but hide admin tabs for omc user", async () => {
+    it("should hide navigation for omc user", async () => {
       setAuthUser(mockUsers.omc);
 
       renderLayout(<div>Dashboard Content</div>);
 
       await waitFor(() => {
-        expect(screen.getByRole("navigation")).toBeInTheDocument();
+        expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
         expect(screen.queryByText("User Management")).not.toBeInTheDocument();
       });
     });
@@ -202,7 +199,7 @@ describe("Story 17.6: Navigation Visibility Integration Tests", () => {
         expect(main).toBeInTheDocument();
 
         const nav = container.querySelector("nav");
-        expect(nav).toBeInTheDocument();
+        expect(nav).not.toBeInTheDocument();
       });
     });
   });

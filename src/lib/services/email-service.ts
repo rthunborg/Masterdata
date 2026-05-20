@@ -27,6 +27,10 @@ export interface EmailResult {
   error?: string;
 }
 
+function isEmailDeliveryDisabled() {
+  return process.env.DISABLE_EMAIL_DELIVERY === 'true';
+}
+
 /**
  * Send email via SMTP
  * 
@@ -42,6 +46,17 @@ export interface EmailResult {
  * @returns Email sending result
  */
 export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
+  if (isEmailDeliveryDisabled()) {
+    console.log('[Email Service] Email delivery disabled; skipping SMTP send:', {
+      to: options.to,
+      subject: options.subject,
+    });
+    return {
+      success: true,
+      messageId: 'email-delivery-disabled',
+    };
+  }
+
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
   const smtpUser = process.env.SMTP_USER;
@@ -137,7 +152,9 @@ export async function sendEmailToMultiple(
     results.push(result);
     
     // Add a small delay between emails to avoid rate limiting (especially with Gmail)
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!isEmailDeliveryDisabled()) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
 
   return results;

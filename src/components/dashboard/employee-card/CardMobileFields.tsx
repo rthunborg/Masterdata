@@ -59,6 +59,7 @@ export function CardMobileFields({
             field="first_name"
             type="text"
             canEdit={true}
+            cellRole="button"
             onSave={onSave}
             onError={handleError}
           />
@@ -74,6 +75,7 @@ export function CardMobileFields({
             field="surname"
             type="text"
             canEdit={true}
+            cellRole="button"
             onSave={onSave}
             onError={handleError}
           />
@@ -90,6 +92,7 @@ export function CardMobileFields({
             type="select"
             options={["SEV", "CHEF"]}
             canEdit={true}
+            cellRole="button"
             onSave={onSave}
             onError={handleError}
           />
@@ -105,6 +108,7 @@ export function CardMobileFields({
             field="town_district"
             type="text"
             canEdit={true}
+            cellRole="button"
             onSave={onSave}
             onError={handleError}
           />
@@ -130,6 +134,7 @@ export function CardMobileFields({
               dateCategory={category}
               allDates={allImportantDates}
               canEdit={true}
+              cellRole="button"
               isChanged={checkColumnChanged(
                 employee.id,
                 field.toLowerCase().trim()

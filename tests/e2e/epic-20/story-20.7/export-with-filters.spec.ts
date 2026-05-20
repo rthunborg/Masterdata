@@ -1,305 +1,262 @@
 /**
  * E2E Tests: Story 20.7 - Export Verification & Fixes
- * 
+ *
  * Tests the complete flow of exporting employees with active filters.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { loginAsHRAdmin } from '../../helpers/e2e-helpers';
+
+const TEXT_FILTER_VALUE = 'J';
+
+async function waitForDashboard(page: Page) {
+  await page.waitForSelector('table tbody tr', { timeout: 10000 });
+}
+
+async function openFilterPanel(page: Page) {
+  const panel = page.getByTestId('filter-panel');
+
+  if (!(await panel.isVisible({ timeout: 500 }).catch(() => false))) {
+    await page.getByTestId('filter-button').click();
+  }
+
+  await expect(panel).toBeVisible();
+  await expect(page.getByText('Filtrera anställda')).toBeVisible();
+}
+
+async function applyTextFilter(
+  page: Page,
+  columnName: string,
+  value = TEXT_FILTER_VALUE
+) {
+  await openFilterPanel(page);
+  await page.getByTestId(`filter-column-toggle-${columnName}`).click();
+
+  const input = page.getByTestId(`text-filter-input-${columnName}`);
+  await expect(input).toBeVisible();
+  await input.fill(value);
+  await expect(input).toHaveValue(value);
+
+  await page.getByTestId('apply-filters').click();
+  await expect(page.getByTestId('filter-panel')).not.toBeVisible();
+  await expect(filteredCountDisplay(page)).toBeVisible({ timeout: 10000 });
+}
+
+async function applySelectFilter(page: Page, columnName: string, option: string) {
+  await openFilterPanel(page);
+  await page.getByTestId(`filter-column-toggle-${columnName}`).click();
+
+  const optionCheckbox = page.getByTestId(
+    `select-filter-option-${columnName}-${option}`
+  );
+  await expect(optionCheckbox).toBeVisible();
+  await optionCheckbox.click();
+
+  await page.getByTestId('apply-filters').click();
+  await expect(page.getByTestId('filter-panel')).not.toBeVisible();
+  await expect(filteredCountDisplay(page)).toBeVisible({ timeout: 10000 });
+}
+
+function filteredCountDisplay(page: Page) {
+  return page.locator('p').filter({ hasText: /Showing \d+ of \d+ employees/i }).first();
+}
+
+async function getFilteredCount(page: Page) {
+  const countText = await filteredCountDisplay(page).textContent();
+  const match = countText?.match(/Showing (\d+) of (\d+) employees/i);
+
+  return {
+    filtered: match ? Number(match[1]) : 0,
+    total: match ? Number(match[2]) : 0,
+  };
+}
+
+async function selectAllVisibleEmployees(page: Page) {
+  const selectAllCheckbox = page.getByRole('checkbox', { name: /select all/i });
+  await selectAllCheckbox.click();
+}
+
+function exportButton(page: Page) {
+  return page.getByRole('button', { name: /export/i }).first();
+}
+
+async function proceedThroughFilteredExportConfirmation(page: Page) {
+  const confirmationTitle = page.getByText('Export Filtered Employees');
+
+  if (await confirmationTitle.isVisible({ timeout: 1500 }).catch(() => false)) {
+    await page.getByRole('button', { name: /export \d+ employees/i }).click();
+  }
+}
+
+async function visibleExportFieldDialog(page: Page) {
+  const dialog = page
+    .locator('div[role="dialog"]')
+    .filter({ hasText: /Välj fält att exportera|Select Fields to Export/i });
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
 
 test.describe('Story 20.7: Export with Filters', () => {
   test.beforeEach(async ({ page }) => {
-    // Login as HR Admin
     await loginAsHRAdmin(page);
-    
-    // Navigate to dashboard
     await page.goto('/dashboard');
-    
-    // Wait for employee table to load
-    await page.waitForSelector('table', { timeout: 10000 });
+    await waitForDashboard(page);
   });
 
   test('AC 1.1: Export button label updates when filters are active', async ({ page }) => {
-    // Initially, export button should show default text (disabled if nothing selected)
-    const exportButton = page.getByRole('button', { name: /export/i }).first();
-    await expect(exportButton).toBeVisible();
+    await expect(exportButton(page)).toBeVisible();
 
-    // Open filter panel
-    const filterButton = page.getByRole('button', { name: /filter/i });
-    await filterButton.click();
+    await applyTextFilter(page, 'first_name');
 
-    // Wait for filter panel to open
-    await expect(page.getByText('Filtrera anställda')).toBeVisible();
-
-    // Find and expand First Name filter
-    await page.getByText('First Name').click();
-
-    // Enter filter value
-    const firstNameInput = page.getByPlaceholder(/sök/i).first();
-    await firstNameInput.fill('John');
-
-    // Apply filter
-    const applyButton = page.getByRole('button', { name: /tillämpa filter/i });
-    await applyButton.click();
-
-    // Wait for filter to be applied
-    await page.waitForTimeout(500);
-
-    // Export button should now show filtered count
-    await expect(exportButton).toContainText(/filtered/i);
+    await expect(exportButton(page)).toContainText(/Export Filtered \(\d+\)/i);
   });
 
   test('AC 2.1: Select All checkbox selects only filtered employees', async ({ page }) => {
-    // Get initial employee count
-    const rows = await page.locator('table tbody tr').count();
-    expect(rows).toBeGreaterThan(1);
+    const initialRows = await page.locator('table tbody tr').count();
+    expect(initialRows).toBeGreaterThan(1);
 
-    // Apply a filter
-    await page.getByRole('button', { name: /filter/i }).click();
-    await expect(page.getByText('Filtrera anställda')).toBeVisible();
+    await applyTextFilter(page, 'first_name');
 
-    // Apply text filter on First Name
-    await page.getByText('First Name').click();
-    const firstNameInput = page.getByPlaceholder(/sök/i).first();
-    await firstNameInput.fill('J'); // Match names starting with J
-
-    await page.getByRole('button', { name: /tillämpa filter/i }).click();
-    await page.waitForTimeout(500);
-
-    // Get filtered row count
     const filteredRows = await page.locator('table tbody tr').count();
-    expect(filteredRows).toBeLessThan(rows);
-    expect(filteredRows).toBeGreaterThan(0);
+    const { filtered, total } = await getFilteredCount(page);
 
-    // Click Select All checkbox
-    const selectAllCheckbox = page.getByRole('checkbox', { name: /select all/i });
-    await selectAllCheckbox.click();
+    expect(filteredRows).toBe(filtered);
+    expect(filtered).toBeGreaterThan(0);
+    expect(filtered).toBeLessThan(total);
 
-    // Verify export button shows count matching filtered employees
-    const exportButton = page.getByRole('button', { name: /export selected/i });
-    await expect(exportButton).toContainText(`(${filteredRows})`);
+    await selectAllVisibleEmployees(page);
+
+    await expect(
+      page.getByRole('button', { name: /export selected/i })
+    ).toContainText(`(${filteredRows})`);
   });
 
   test('AC 3.1: Export button label updates based on state', async ({ page }) => {
-    const exportButton = page.getByRole('button', { name: /export/i }).first();
+    await expect(exportButton(page)).toBeVisible();
 
-    // State 1: No filters, no selection - should be disabled or show default text
-    await expect(exportButton).toBeVisible();
+    await applyTextFilter(page, 'first_name');
+    await expect(exportButton(page)).toContainText(/filtered/i);
 
-    // State 2: Apply filter - button should show "Export Filtered (X)"
-    await page.getByRole('button', { name: /filter/i }).click();
-    await page.getByText('First Name').click();
-    await page.getByPlaceholder(/sök/i).first().fill('John');
-    await page.getByRole('button', { name: /tillämpa filter/i }).click();
-    await page.waitForTimeout(500);
+    await page.locator('[data-testid^="employee-select-checkbox-"]').first().click();
 
-    await expect(exportButton).toContainText(/filtered/i);
-
-    // State 3: Select employee - button should show "Export Selected (X)"
-    const firstCheckbox = page.locator('table tbody tr').first().getByRole('checkbox');
-    await firstCheckbox.click();
-
-    await expect(exportButton).toContainText(/selected/i);
-    await expect(exportButton).toContainText('(1)');
+    await expect(exportButton(page)).toContainText(/selected/i);
+    await expect(exportButton(page)).toContainText('(1)');
   });
 
   test('AC 4.1: Export respects filtered employee list', async ({ page }) => {
-    // Setup download listener
+    await applyTextFilter(page, 'first_name');
+    const { filtered } = await getFilteredCount(page);
+    expect(filtered).toBeGreaterThan(0);
+
+    await selectAllVisibleEmployees(page);
+    await page.getByRole('button', { name: /export selected/i }).click();
+    await proceedThroughFilteredExportConfirmation(page);
+
+    const dialog = await visibleExportFieldDialog(page);
+
+    for (const field of ['first_name', 'surname']) {
+      const checkbox = dialog.locator(`[data-testid="export-field-checkbox-${field}"]`);
+      await expect(checkbox).toBeVisible();
+      if (!(await checkbox.isChecked().catch(() => false))) {
+        await checkbox.click();
+      }
+    }
+
     const downloadPromise = page.waitForEvent('download');
+    await dialog.getByRole('button', { name: /Exportera|Export/i }).click();
 
-    // Apply filter to narrow down employees
-    await page.getByRole('button', { name: /filter/i }).click();
-    await page.getByText('First Name').click();
-    await page.getByPlaceholder(/sök/i).first().fill('John');
-    await page.getByRole('button', { name: /tillämpa filter/i }).click();
-    await page.waitForTimeout(500);
-
-    // Verify filtered count display
-    await expect(page.getByText(/showing \d+ of \d+ employees/i)).toBeVisible();
-
-    // Select the filtered employee(s)
-    const selectAllCheckbox = page.getByRole('checkbox', { name: /select all/i });
-    await selectAllCheckbox.click();
-
-    // Click export button
-    const exportButton = page.getByRole('button', { name: /export selected/i });
-    await exportButton.click();
-
-    // Field selection dialog should appear
-    await expect(page.getByRole('dialog')).toBeVisible();
-
-    // Select some fields
-    const firstNameCheckbox = page.getByLabel('First Name').first();
-    const surnameCheckbox = page.getByLabel('Surname').first();
-    await firstNameCheckbox.click();
-    await surnameCheckbox.click();
-
-    // Confirm export
-    const confirmButton = page.getByRole('button', { name: /^export$/i });
-    await confirmButton.click();
-
-    // Wait for download
     const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/employees_export_.*\.(csv|xlsx)/);
-
-    // Verify file was downloaded
-    const path = await download.path();
-    expect(path).toBeTruthy();
+    expect(download.suggestedFilename()).toMatch(/employees_export_.*\.(csv|xlsx)$/);
+    expect(await download.path()).toBeTruthy();
   });
 
   test('AC 5.1: Shows confirmation dialog when exporting filtered data', async ({ page }) => {
-    // Clear any previous "don't ask again" setting
     await page.evaluate(() => {
       localStorage.removeItem('export-confirmation-dismissed');
     });
 
-    // Apply filter
-    await page.getByRole('button', { name: /filter/i }).click();
-    await page.getByText('First Name').click();
-    await page.getByPlaceholder(/sök/i).first().fill('John');
-    await page.getByRole('button', { name: /tillämpa filter/i }).click();
-    await page.waitForTimeout(500);
+    await applyTextFilter(page, 'first_name');
+    await selectAllVisibleEmployees(page);
+    await page.getByRole('button', { name: /export selected/i }).click();
 
-    // Select filtered employees
-    const selectAllCheckbox = page.getByRole('checkbox', { name: /select all/i });
-    await selectAllCheckbox.click();
-
-    // Click export
-    const exportButton = page.getByRole('button', { name: /export selected/i });
-    await exportButton.click();
-
-    // Confirmation dialog should appear
-    await expect(page.getByText('Export Filtered Employees')).toBeVisible();
-    await expect(page.getByText(/you are about to export/i)).toBeVisible();
-    await expect(page.getByText(/of \d+ employees/i)).toBeVisible();
-
-    // Dialog should have "Don't ask again" checkbox
-    await expect(page.getByLabel(/don't ask/i)).toBeVisible();
-
-    // Dialog should have Cancel and Export buttons
-    await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /export.*employees/i })).toBeVisible();
+    const confirmation = page.getByRole('alertdialog');
+    await expect(confirmation.getByText('Export Filtered Employees')).toBeVisible();
+    await expect(confirmation.getByText(/you are about to export/i)).toBeVisible();
+    await expect(confirmation.getByText(/of \d+/i)).toBeVisible();
+    await expect(confirmation.getByLabel(/don't ask/i)).toBeVisible();
+    await expect(confirmation.getByRole('button', { name: /cancel/i })).toBeVisible();
+    await expect(confirmation.getByRole('button', { name: /export \d+ employees/i })).toBeVisible();
   });
 
   test('AC 5.2: Respects "Don\'t ask again" preference', async ({ page }) => {
-    // Clear previous setting
     await page.evaluate(() => {
       localStorage.removeItem('export-confirmation-dismissed');
     });
 
-    // Apply filter and select employees
-    await page.getByRole('button', { name: /filter/i }).click();
-    await page.getByText('First Name').click();
-    await page.getByPlaceholder(/sök/i).first().fill('John');
-    await page.getByRole('button', { name: /tillämpa filter/i }).click();
-    await page.waitForTimeout(500);
+    await applyTextFilter(page, 'first_name');
+    await selectAllVisibleEmployees(page);
 
-    const selectAllCheckbox = page.getByRole('checkbox', { name: /select all/i });
-    await selectAllCheckbox.click();
-
-    // First export - confirmation should appear
     await page.getByRole('button', { name: /export selected/i }).click();
     await expect(page.getByText('Export Filtered Employees')).toBeVisible();
 
-    // Check "Don't ask again"
     await page.getByLabel(/don't ask/i).click();
+    await page.getByRole('button', { name: /export \d+ employees/i }).click();
 
-    // Confirm
-    await page.getByRole('button', { name: /export.*employees/i }).click();
+    const dialog = await visibleExportFieldDialog(page);
+    await dialog.getByRole('button', { name: /Avbryt|Cancel/i }).click();
+    await expect(dialog).not.toBeVisible();
 
-    // Field selection dialog should appear
-    await expect(page.getByRole('dialog')).toBeVisible();
-    
-    // Cancel the export
-    await page.getByRole('button', { name: /cancel/i }).click();
-
-    // Try to export again - confirmation should NOT appear
     await page.getByRole('button', { name: /export selected/i }).click();
 
-    // Should go directly to field selection dialog
-    await expect(page.getByRole('dialog')).toBeVisible();
-    
-    // Should NOT show confirmation text
     await expect(page.getByText('Export Filtered Employees')).not.toBeVisible();
+    await visibleExportFieldDialog(page);
   });
 
   test('AC 4.2: Crew Ready export respects filtered state', async ({ page }) => {
-    // Apply filter
-    await page.getByRole('button', { name: /filter/i }).click();
-    await page.getByText('Rank').click();
-    await page.getByRole('combobox').selectOption('SEV');
-    await page.getByRole('button', { name: /tillämpa filter/i }).click();
-    await page.waitForTimeout(500);
+    await applySelectFilter(page, 'rank', 'SEV');
 
-    // Check if Crew Ready export button exists and is visible
-    const crewReadyButton = page.getByRole('button', { name: /crew ready/i });
-    
-    if (await crewReadyButton.isVisible()) {
-      const buttonText = await crewReadyButton.textContent();
-      
-      // Button should show count of eligible employees from filtered set
-      expect(buttonText).toMatch(/\(\d+\)/);
+    const crewReadyButton = page.getByRole('button', {
+      name: /Exportera & markera besättningsklar|Export & Mark Crew Ready/i,
+    });
+    await expect(crewReadyButton).toBeVisible();
 
-      // If there are eligible employees, test the export
-      if (!buttonText?.includes('(0)')) {
-        // Setup download listener
-        const downloadPromise = page.waitForEvent('download');
+    test.skip(
+      await crewReadyButton.isDisabled(),
+      'No crew-ready eligible employees are available in the current filtered E2E seed data.'
+    );
 
-        // Click export crew ready
-        await crewReadyButton.click();
+    const buttonText = await crewReadyButton.textContent();
+    expect(buttonText).toMatch(/\(\d+\)/);
 
-        // Wait for download
-        const download = await downloadPromise;
-        expect(download.suggestedFilename()).toMatch(/crew_ready_employees_.*\.csv/);
-      }
-    }
+    const downloadPromise = page.waitForEvent('download');
+    await crewReadyButton.click();
+
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('crew_ready_employees');
   });
 
   test('AC 4.3: Clear filters updates export button state', async ({ page }) => {
-    // Apply filter
-    await page.getByRole('button', { name: /filter/i }).click();
-    await page.getByText('First Name').click();
-    await page.getByPlaceholder(/sök/i).first().fill('John');
-    await page.getByRole('button', { name: /tillämpa filter/i }).click();
-    await page.waitForTimeout(500);
+    await applyTextFilter(page, 'first_name');
+    await expect(exportButton(page)).toContainText(/filtered/i);
 
-    // Export button should show filtered state
-    const exportButton = page.getByRole('button', { name: /export/i }).first();
-    await expect(exportButton).toContainText(/filtered/i);
+    await page.getByTestId('clear-filter-button').click();
+    await expect(filteredCountDisplay(page)).not.toBeVisible();
 
-    // Clear filters
-    const clearButton = page.getByRole('button', { name: /clear.*filter/i });
-    if (await clearButton.isVisible()) {
-      await clearButton.click();
-      await page.waitForTimeout(500);
-
-      // Export button should return to default state
-      await expect(exportButton).not.toContainText(/filtered/i);
-    }
+    await expect(exportButton(page)).not.toContainText(/filtered/i);
   });
 
   test('AC 1.2: Export count matches filtered count', async ({ page }) => {
-    // Apply filter
-    await page.getByRole('button', { name: /filter/i }).click();
-    await page.getByText('First Name').click();
-    await page.getByPlaceholder(/sök/i).first().fill('J');
-    await page.getByRole('button', { name: /tillämpa filter/i }).click();
-    await page.waitForTimeout(500);
+    await applyTextFilter(page, 'first_name');
+    const { filtered } = await getFilteredCount(page);
 
-    // Get filtered count from display
-    const filteredCountText = await page.getByText(/showing \d+ of \d+ employees/i).textContent();
-    const filteredMatch = filteredCountText?.match(/showing (\d+)/);
-    const filteredCount = filteredMatch ? parseInt(filteredMatch[1]) : 0;
+    await selectAllVisibleEmployees(page);
 
-    // Select all filtered employees
-    await page.getByRole('checkbox', { name: /select all/i }).click();
-
-    // Export button should show same count
-    const exportButton = page.getByRole('button', { name: /export selected/i });
-    const buttonText = await exportButton.textContent();
+    const buttonText = await page
+      .getByRole('button', { name: /export selected/i })
+      .textContent();
     const buttonMatch = buttonText?.match(/\((\d+)\)/);
-    const buttonCount = buttonMatch ? parseInt(buttonMatch[1]) : 0;
+    const buttonCount = buttonMatch ? Number(buttonMatch[1]) : 0;
 
-    expect(buttonCount).toBe(filteredCount);
+    expect(buttonCount).toBe(filtered);
   });
 });

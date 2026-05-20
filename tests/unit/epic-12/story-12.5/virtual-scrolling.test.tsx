@@ -53,7 +53,13 @@ function generateEmployees(count: number): Employee[] {
 }
 
 // Mock @tanstack/react-virtual
-const mockUseVirtualizerCalls: Array<{ count: number; enabled: boolean; overscan?: number; estimateSize?: () => number }> = [];
+const mockUseVirtualizerCalls: Array<{
+  count: number;
+  enabled: boolean;
+  overscan?: number;
+  estimateSize?: () => number;
+  measureElement?: (element: HTMLElement | null) => number;
+}> = [];
 const mockUseVirtualizerResults: Array<{ getVirtualItems: () => Array<{ key: string; index: number; start: number; size: number }>; getTotalSize: () => number }> = [];
 
 vi.mock("next/navigation", () => ({
@@ -71,7 +77,13 @@ vi.mock("next/navigation", () => ({
 
 vi.mock('@tanstack/react-virtual', () => ({
 
-  useVirtualizer: (config: { count: number; enabled: boolean; overscan?: number; estimateSize?: () => number }) => {
+  useVirtualizer: (config: {
+    count: number;
+    enabled: boolean;
+    overscan?: number;
+    estimateSize?: () => number;
+    measureElement?: (element: HTMLElement | null) => number;
+  }) => {
     // Track the call
     mockUseVirtualizerCalls.push(config);
     
@@ -171,14 +183,19 @@ describe('Virtual Scrolling (Story 12.5)', () => {
     expect(lastCall.overscan).toBe(5);
   });
 
-  it('should estimate card size correctly', () => {
+  it('should estimate and measure card size correctly', () => {
     render(<EmployeeCardList {...defaultProps} />);
 
     expect(mockUseVirtualizerCalls.length).toBeGreaterThan(0);
     
     const lastCall = mockUseVirtualizerCalls[mockUseVirtualizerCalls.length - 1];
-    // Should estimate card height (typically 200px)
-    expect(lastCall.estimateSize?.()).toBe(200);
+    expect(lastCall.estimateSize?.()).toBe(360);
+
+    const measuredElement = {
+      getBoundingClientRect: () => ({ height: 280 }),
+    } as HTMLElement;
+    expect(lastCall.measureElement?.(measuredElement)).toBe(280);
+    expect(lastCall.measureElement?.(null)).toBe(360);
   });
 });
 
