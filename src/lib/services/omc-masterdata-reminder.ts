@@ -331,6 +331,9 @@ export async function sendOmcMasterdataReminder(
   missingFields: string[],
   omcDateValue: string
 ): Promise<boolean> {
+  let claimTimestamp: string | null = null;
+  let hadSuccessfulSend = false;
+
   try {
     // Get HR admin email addresses
     const hrAdminEmails = await getHrAdminEmails();
@@ -340,11 +343,13 @@ export async function sendOmcMasterdataReminder(
       return false;
     }
 
-    const { claimTimestamp, failed: claimFailed } = await claimOmcMasterdataReminder(employee, omcDateValue);
+    const claim = await claimOmcMasterdataReminder(employee, omcDateValue);
+    const claimFailed = claim.failed;
     if (claimFailed) {
       return false;
     }
 
+    claimTimestamp = claim.claimTimestamp;
     if (!claimTimestamp) {
       console.log(`[ÖMC Reminder] Notification already claimed or sent for employee ${employee.id}, skipping`);
       return true;
@@ -382,6 +387,7 @@ export async function sendOmcMasterdataReminder(
     // Check if all emails were sent successfully
     const allSuccessful = results.every(result => result.success);
     const successCount = results.filter(result => result.success).length;
+    hadSuccessfulSend = successCount > 0;
     
     if (!allSuccessful) {
       const failedCount = results.filter(r => !r.success).length;
@@ -398,6 +404,11 @@ export async function sendOmcMasterdataReminder(
     return true;
   } catch (error) {
     console.error('[ÖMC Reminder] Error sending notification:', error);
+
+    if (claimTimestamp && !hadSuccessfulSend) {
+      await clearOmcMasterdataReminderClaim(employee.id, claimTimestamp);
+    }
+
     return false;
   }
 }

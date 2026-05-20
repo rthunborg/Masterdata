@@ -17,7 +17,8 @@ import { assertSafeE2EDatabase, seedTestData } from './helpers/seed-data';
 function isLocalAppUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+    const hostname = parsed.hostname.replace(/^\[(.*)\]$/, '$1');
+    return ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(hostname);
   } catch {
     return false;
   }
