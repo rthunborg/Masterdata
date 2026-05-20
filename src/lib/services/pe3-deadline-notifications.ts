@@ -114,16 +114,19 @@ export async function hasPe3NotificationBeenSent(
 }
 
 /**
- * Log that a notification was sent
+ * Atomically claim that a notification is being sent.
+ *
+ * The unique database constraint on deadline_type + deadline_date makes this
+ * the duplicate-send guard for overlapping cron/manual invocations.
  * 
  * @param deadlineType - 'submit' or 'cancel'
  * @param deadlineDate - Deadline date in YYYY-MM-DD format
- * @returns true if logged successfully
+ * @returns 'claimed' if this invocation owns the send, 'already-claimed' if another invocation owns it, or 'failed'
  */
-async function logPe3NotificationSent(
+async function claimPe3NotificationSent(
   deadlineType: 'submit' | 'cancel',
   deadlineDate: string
-): Promise<boolean> {
+): Promise<'claimed' | 'already-claimed' | 'failed'> {
   const supabase = createServiceRoleClient();
 
   const { error } = await supabase
@@ -135,11 +138,36 @@ async function logPe3NotificationSent(
     });
 
   if (error) {
-    console.error('[PE3 Notifications] Failed to log notification:', error);
-    return false;
+    if (error.code === '23505') {
+      return 'already-claimed';
+    }
+
+    console.error('[PE3 Notifications] Failed to claim notification:', error);
+    return 'failed';
   }
 
-  return true;
+  return 'claimed';
+}
+
+/**
+ * Clear an unsent claim when every attempted email send failed.
+ * If any recipient received the email, keep the marker to avoid duplicate blasts.
+ */
+async function clearPe3NotificationClaim(
+  deadlineType: 'submit' | 'cancel',
+  deadlineDate: string
+): Promise<void> {
+  const supabase = createServiceRoleClient();
+
+  const { error } = await supabase
+    .from('pe3_notifications_log')
+    .delete()
+    .eq('deadline_type', deadlineType)
+    .eq('deadline_date', deadlineDate);
+
+  if (error) {
+    console.error('[PE3 Notifications] Failed to clear notification claim:', error);
+  }
 }
 
 /**
@@ -330,6 +358,9 @@ export async function sendPe3SubmitDeadlineNotification(
   entries: Pe3EntryWithEmployee[],
   today: string
 ): Promise<boolean> {
+  let claimAcquired = false;
+  let hadSuccessfulSend = false;
+
   try {
     // Check if notification already sent
     const alreadySent = await hasPe3NotificationBeenSent('submit', today);
@@ -346,6 +377,16 @@ export async function sendPe3SubmitDeadlineNotification(
       return false;
     }
 
+    const claimStatus = await claimPe3NotificationSent('submit', today);
+    if (claimStatus === 'already-claimed') {
+      console.log(`[PE3 Notifications] Submit deadline notification already claimed or sent for ${today}`);
+      return true;
+    }
+    if (claimStatus === 'failed') {
+      return false;
+    }
+    claimAcquired = true;
+
     // Generate email content
     const subject = generatePe3SubmitDeadlineEmailSubject();
     const text = generatePe3SubmitDeadlineEmailBody(entries, today);
@@ -357,24 +398,29 @@ export async function sendPe3SubmitDeadlineNotification(
 
     // Check if all emails were sent successfully
     const allSuccessful = results.every(result => result.success);
+    const successCount = results.filter(result => result.success).length;
+    hadSuccessfulSend = successCount > 0;
     
     if (!allSuccessful) {
       const failedCount = results.filter(r => !r.success).length;
       console.error(`[PE3 Notifications] Failed to send ${failedCount} of ${results.length} submit deadline emails`);
-      return false;
-    }
 
-    // Log notification in database
-    const logged = await logPe3NotificationSent('submit', today);
-    if (!logged) {
-      console.warn('[PE3 Notifications] Failed to log submit deadline notification, but email was sent');
-      // Don't fail the entire operation if logging fails
+      if (successCount === 0) {
+        await clearPe3NotificationClaim('submit', today);
+      }
+
+      return false;
     }
 
     console.log(`[PE3 Notifications] Submit deadline notification sent for ${today} to ${hrAdminEmails.length} HR admin(s)`);
     return true;
   } catch (error) {
     console.error('[PE3 Notifications] Error sending submit deadline notification:', error);
+
+    if (claimAcquired && !hadSuccessfulSend) {
+      await clearPe3NotificationClaim('submit', today);
+    }
+
     return false;
   }
 }
@@ -390,6 +436,9 @@ export async function sendPe3CancelDeadlineNotification(
   entries: Pe3EntryWithEmployee[],
   today: string
 ): Promise<boolean> {
+  let claimAcquired = false;
+  let hadSuccessfulSend = false;
+
   try {
     // Check if notification already sent
     const alreadySent = await hasPe3NotificationBeenSent('cancel', today);
@@ -406,6 +455,16 @@ export async function sendPe3CancelDeadlineNotification(
       return false;
     }
 
+    const claimStatus = await claimPe3NotificationSent('cancel', today);
+    if (claimStatus === 'already-claimed') {
+      console.log(`[PE3 Notifications] Cancel deadline notification already claimed or sent for ${today}`);
+      return true;
+    }
+    if (claimStatus === 'failed') {
+      return false;
+    }
+    claimAcquired = true;
+
     // Generate email content
     const subject = generatePe3CancelDeadlineEmailSubject();
     const text = generatePe3CancelDeadlineEmailBody(entries, today);
@@ -417,24 +476,29 @@ export async function sendPe3CancelDeadlineNotification(
 
     // Check if all emails were sent successfully
     const allSuccessful = results.every(result => result.success);
+    const successCount = results.filter(result => result.success).length;
+    hadSuccessfulSend = successCount > 0;
     
     if (!allSuccessful) {
       const failedCount = results.filter(r => !r.success).length;
       console.error(`[PE3 Notifications] Failed to send ${failedCount} of ${results.length} cancel deadline emails`);
-      return false;
-    }
 
-    // Log notification in database
-    const logged = await logPe3NotificationSent('cancel', today);
-    if (!logged) {
-      console.warn('[PE3 Notifications] Failed to log cancel deadline notification, but email was sent');
-      // Don't fail the entire operation if logging fails
+      if (successCount === 0) {
+        await clearPe3NotificationClaim('cancel', today);
+      }
+
+      return false;
     }
 
     console.log(`[PE3 Notifications] Cancel deadline notification sent for ${today} to ${hrAdminEmails.length} HR admin(s)`);
     return true;
   } catch (error) {
     console.error('[PE3 Notifications] Error sending cancel deadline notification:', error);
+
+    if (claimAcquired && !hadSuccessfulSend) {
+      await clearPe3NotificationClaim('cancel', today);
+    }
+
     return false;
   }
 }
