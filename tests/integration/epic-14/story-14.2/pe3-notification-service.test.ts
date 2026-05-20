@@ -31,6 +31,87 @@ function createMockPe3Entry(overrides: Partial<Pe3EntryWithEmployee> = {}): Pe3E
   };
 }
 
+type Pe3LogSelectResult = {
+  data: { id: string } | null;
+  error: { code?: string; message?: string } | null;
+};
+
+type Pe3LogInsertResult = {
+  data: null;
+  error: { code?: string; message?: string } | null;
+};
+
+interface MockSupabaseOptions {
+  emails?: string[];
+  logSelectResult?: Pe3LogSelectResult;
+  logInsertResult?: Pe3LogInsertResult;
+  onLogInsert?: (data: { deadline_type: string; deadline_date: string; sent_at: string }) => void;
+}
+
+function createMockSupabase({
+  emails = ['admin1@example.com'],
+  logSelectResult = {
+    data: null,
+    error: { code: 'PGRST116', message: 'No rows found' },
+  },
+  logInsertResult = { data: null, error: null },
+  onLogInsert,
+}: MockSupabaseOptions = {}) {
+  const insert = vi.fn((data: { deadline_type: string; deadline_date: string; sent_at: string }) => {
+    onLogInsert?.(data);
+    return Promise.resolve(logInsertResult);
+  });
+
+  const secondDeleteEq = vi.fn().mockResolvedValue({ data: null, error: null });
+  const firstDeleteEq = vi.fn(() => ({ eq: secondDeleteEq }));
+  const deleteMock = vi.fn(() => ({ eq: firstDeleteEq }));
+
+  const client = {
+    from: vi.fn((table: string) => {
+      if (table === 'pe3_notifications_log') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                limit: vi.fn(() => ({
+                  single: vi.fn().mockResolvedValue(logSelectResult),
+                })),
+              })),
+            })),
+          })),
+          insert,
+          delete: deleteMock,
+        };
+      }
+
+      if (table === 'users') {
+        return {
+          select: vi.fn(() => ({
+            in: vi.fn(() => ({
+              not: vi.fn(() => ({
+                eq: vi.fn().mockResolvedValue({
+                  data: emails.map(email => ({ email })),
+                  error: null,
+                }),
+              })),
+            })),
+          })),
+        };
+      }
+
+      return {};
+    }),
+  };
+
+  return {
+    client: client as unknown as SupabaseClient,
+    insert,
+    deleteMock,
+    firstDeleteEq,
+    secondDeleteEq,
+  };
+}
+
 describe('PE3 Deadline Notification Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -42,70 +123,11 @@ describe('PE3 Deadline Notification Service', () => {
         createMockPe3Entry({ deadline_submit: '2025-02-10' }),
       ];
       const today = '2025-02-10';
+      const { client } = createMockSupabase({
+        emails: ['admin1@example.com', 'admin2@example.com'],
+      });
 
-      // Mock notification not already sent
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'pe3_notifications_log') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: null,
-                        error: { code: 'PGRST116' },
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-              insert: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            };
-          } else if (table === 'users') {
-            return {
-              select: vi.fn(() => ({
-                in: vi.fn(() => ({
-                  not: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({
-                      data: [{ email: 'admin1@example.com' }, { email: 'admin2@example.com' }],
-                      error: null,
-                    }),
-                  })),
-                })),
-              })),
-            };
-          } else if (table === 'pe3_notifications_log') {
-            // Check if this is a select (checking if already sent) or insert (logging)
-            // We'll handle both in the same mock
-            const mockChain = {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: null,
-                        error: { code: 'PGRST116' },
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-              insert: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            };
-            return mockChain;
-          }
-          return {};
-        }),
-      };
-
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
         { success: true, messageId: 'msg-2' },
@@ -127,67 +149,9 @@ describe('PE3 Deadline Notification Service', () => {
         createMockPe3Entry({ deadline_cancel: '2025-02-12' }),
       ];
       const today = '2025-02-12';
+      const { client } = createMockSupabase();
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'pe3_notifications_log') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: null,
-                        error: { code: 'PGRST116' },
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-              insert: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            };
-          } else if (table === 'users') {
-            return {
-              select: vi.fn(() => ({
-                in: vi.fn(() => ({
-                  not: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({
-                      data: [{ email: 'admin1@example.com' }],
-                      error: null,
-                    }),
-                  })),
-                })),
-              })),
-            };
-          } else if (table === 'pe3_notifications_log') {
-            const mockChain = {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: null,
-                        error: { code: 'PGRST116' },
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-              insert: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            };
-            return mockChain;
-          }
-          return {};
-        }),
-      };
-
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);
@@ -203,98 +167,81 @@ describe('PE3 Deadline Notification Service', () => {
       );
     });
 
-    it('should log notification in database after sending', async () => {
+    it('should claim notification in database before sending', async () => {
       const entries = [createMockPe3Entry()];
       const today = '2025-02-10';
-
-      let insertCalled = false;
-      const mockInsert = vi.fn((data: { deadline_type: string; deadline_date: string }) => {
-        insertCalled = true;
-        expect(data.deadline_type).toBe('submit');
-        expect(data.deadline_date).toBe(today);
-        return Promise.resolve({
-          data: null,
-          error: null,
-        });
+      const { client, insert } = createMockSupabase({
+        onLogInsert: (data) => {
+          expect(emailService.sendEmailToMultiple).not.toHaveBeenCalled();
+          expect(data.deadline_type).toBe('submit');
+          expect(data.deadline_date).toBe(today);
+          expect(data.sent_at).toBeDefined();
+        },
       });
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'pe3_notifications_log') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: null,
-                        error: { code: 'PGRST116' },
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-              insert: mockInsert,
-            };
-          } else if (table === 'users') {
-            return {
-              select: vi.fn(() => ({
-                in: vi.fn(() => ({
-                  not: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({
-                      data: [{ email: 'admin1@example.com' }],
-                      error: null,
-                    }),
-                  })),
-                })),
-              })),
-            };
-          }
-          return {};
-        }),
-      };
-
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);
 
       await sendPe3SubmitDeadlineNotification(entries, today);
 
-      expect(insertCalled).toBe(true);
+      expect(insert).toHaveBeenCalledTimes(1);
     });
 
-    it('should not send duplicate notifications', async () => {
+    it('should not send when an existing notification log is found', async () => {
       const entries = [createMockPe3Entry()];
       const today = '2025-02-10';
+      const { client, insert } = createMockSupabase({
+        logSelectResult: {
+          data: { id: 'log-123' },
+          error: null,
+        },
+      });
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'pe3_notifications_log') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: { id: 'log-123' }, // Notification already sent
-                        error: null,
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-            };
-          }
-          return {};
-        }),
-      };
-
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
 
       const result = await sendPe3SubmitDeadlineNotification(entries, today);
 
-      expect(result).toBe(true); // Returns true if already sent
+      expect(result).toBe(true);
+      expect(insert).not.toHaveBeenCalled();
+      expect(emailService.sendEmailToMultiple).not.toHaveBeenCalled();
+    });
+
+    it('should not send when another invocation already claimed the notification', async () => {
+      const entries = [createMockPe3Entry()];
+      const today = '2025-02-10';
+      const { client, insert } = createMockSupabase({
+        logInsertResult: {
+          data: null,
+          error: { code: '23505', message: 'duplicate key value violates unique constraint' },
+        },
+      });
+
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
+
+      const result = await sendPe3SubmitDeadlineNotification(entries, today);
+
+      expect(result).toBe(true);
+      expect(insert).toHaveBeenCalledTimes(1);
+      expect(emailService.sendEmailToMultiple).not.toHaveBeenCalled();
+    });
+
+    it('should fail closed when the notification claim cannot be written', async () => {
+      const entries = [createMockPe3Entry()];
+      const today = '2025-02-10';
+      const { client } = createMockSupabase({
+        logInsertResult: {
+          data: null,
+          error: { code: 'DATABASE_ERROR', message: 'Database unavailable' },
+        },
+      });
+
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
+
+      const result = await sendPe3SubmitDeadlineNotification(entries, today);
+
+      expect(result).toBe(false);
       expect(emailService.sendEmailToMultiple).not.toHaveBeenCalled();
     });
 
@@ -302,74 +249,9 @@ describe('PE3 Deadline Notification Service', () => {
       const submitEntries = [createMockPe3Entry({ deadline_submit: '2025-02-10' })];
       const cancelEntries = [createMockPe3Entry({ deadline_cancel: '2025-02-10' })];
       const today = '2025-02-10';
+      const { client, insert } = createMockSupabase();
 
-      const callCount = 0;
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'pe3_notifications_log') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: null,
-                        error: { code: 'PGRST116' },
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-              insert: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            };
-          } else if (table === 'users') {
-            return {
-              select: vi.fn(() => ({
-                in: vi.fn(() => ({
-                  not: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({
-                      data: [{ email: 'admin1@example.com' }],
-                      error: null,
-                    }),
-                  })),
-                })),
-              })),
-            };
-          }
-          return {};
-        }),
-      };
-
-      // Fix the pe3_notifications_log mock to support both select and insert
-      const originalFrom = mockSupabase.from;
-      mockSupabase.from = vi.fn((table: string) => {
-        if (table === 'pe3_notifications_log') {
-          return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  limit: vi.fn(() => ({
-                    single: vi.fn().mockResolvedValue({
-                      data: null,
-                      error: { code: 'PGRST116' },
-                    }),
-                  })),
-                })),
-              })),
-            })),
-            insert: vi.fn().mockResolvedValue({
-              data: null,
-              error: null,
-            }),
-          };
-        }
-        return originalFrom(table);
-      });
-
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: true, messageId: 'msg-1' },
       ]);
@@ -379,104 +261,32 @@ describe('PE3 Deadline Notification Service', () => {
 
       expect(submitResult).toBe(true);
       expect(cancelResult).toBe(true);
+      expect(insert).toHaveBeenCalledTimes(2);
       expect(emailService.sendEmailToMultiple).toHaveBeenCalledTimes(2);
     });
 
     it('should return false when no HR admin emails found', async () => {
       const entries = [createMockPe3Entry()];
       const today = '2025-02-10';
+      const { client, insert } = createMockSupabase({
+        emails: [],
+      });
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'pe3_notifications_log') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: null,
-                        error: { code: 'PGRST116' },
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-              insert: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            };
-          } else if (table === 'users') {
-            return {
-              select: vi.fn(() => ({
-                in: vi.fn(() => ({
-                  not: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({
-                      data: [],
-                      error: null,
-                    }),
-                  })),
-                })),
-              })),
-            };
-          }
-          return {};
-        }),
-      };
-
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
 
       const result = await sendPe3SubmitDeadlineNotification(entries, today);
 
       expect(result).toBe(false);
+      expect(insert).not.toHaveBeenCalled();
       expect(emailService.sendEmailToMultiple).not.toHaveBeenCalled();
     });
 
-    it('should handle email sending failures gracefully', async () => {
+    it('should clear the claim when every email send fails', async () => {
       const entries = [createMockPe3Entry()];
       const today = '2025-02-10';
+      const { client, deleteMock, firstDeleteEq, secondDeleteEq } = createMockSupabase();
 
-      const mockSupabase = {
-        from: vi.fn((table: string) => {
-          if (table === 'pe3_notifications_log') {
-            return {
-              select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => ({
-                    limit: vi.fn(() => ({
-                      single: vi.fn().mockResolvedValue({
-                        data: null,
-                        error: { code: 'PGRST116' },
-                      }),
-                    })),
-                  })),
-                })),
-              })),
-              insert: vi.fn().mockResolvedValue({
-                data: null,
-                error: null,
-              }),
-            };
-          } else if (table === 'users') {
-            return {
-              select: vi.fn(() => ({
-                in: vi.fn(() => ({
-                  not: vi.fn(() => ({
-                    eq: vi.fn().mockResolvedValue({
-                      data: [{ email: 'admin1@example.com' }],
-                      error: null,
-                    }),
-                  })),
-                })),
-              })),
-            };
-          }
-          return {};
-        }),
-      };
-
-      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
       vi.mocked(emailService.sendEmailToMultiple).mockResolvedValue([
         { success: false, error: 'SMTP error' },
       ]);
@@ -484,6 +294,9 @@ describe('PE3 Deadline Notification Service', () => {
       const result = await sendPe3SubmitDeadlineNotification(entries, today);
 
       expect(result).toBe(false);
+      expect(deleteMock).toHaveBeenCalledTimes(1);
+      expect(firstDeleteEq).toHaveBeenCalledWith('deadline_type', 'submit');
+      expect(secondDeleteEq).toHaveBeenCalledWith('deadline_date', today);
     });
   });
 });

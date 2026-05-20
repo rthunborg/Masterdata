@@ -60,6 +60,49 @@ function createMockEmployee(overrides: Partial<Employee> = {}): Employee {
   };
 }
 
+function createEmployeeClaimMock({
+  claimData = { id: 'emp-1' },
+  claimError = null,
+  clearError = null,
+  onClaim,
+}: {
+  claimData?: { id: string } | null;
+  claimError?: { message: string } | null;
+  clearError?: { message: string } | null;
+  onClaim?: (data: { omc_masterdata_reminder_sent_at: string }) => void;
+} = {}) {
+  return {
+    update: vi.fn((data: { omc_masterdata_reminder_sent_at: string | null }) => {
+      if (data.omc_masterdata_reminder_sent_at === null) {
+        return {
+          eq: vi.fn(() => ({
+            eq: vi.fn().mockResolvedValue({
+              data: null,
+              error: clearError,
+            }),
+          })),
+        };
+      }
+
+      onClaim?.(data);
+      return {
+        eq: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            or: vi.fn(() => ({
+              select: vi.fn(() => ({
+                maybeSingle: vi.fn().mockResolvedValue({
+                  data: claimData,
+                  error: claimError,
+                }),
+              })),
+            })),
+          })),
+        })),
+      };
+    }),
+  };
+}
+
 describe('ÖMC Masterdata Reminder Notification Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -195,14 +238,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
               })),
             };
           } else if (table === 'employees') {
-            return {
-              update: vi.fn(() => ({
-                eq: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: null,
-                }),
-              })),
-            };
+            return createEmployeeClaimMock();
           }
           return {};
         }),
@@ -227,7 +263,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       );
     });
 
-    it('should update notification marker in database after sending', async () => {
+    it('should claim notification marker before sending', async () => {
       const employee = createMockEmployee();
       const missingFields = ['one'];
       const omcDateValue = '2025-01-01';
@@ -251,18 +287,12 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
               })),
             };
           } else if (table === 'employees') {
-            return {
-              update: vi.fn((data: { omc_masterdata_reminder_sent_at: string }) => {
+            return createEmployeeClaimMock({
+              onClaim: (data) => {
                 updateCalled = true;
                 expect(data.omc_masterdata_reminder_sent_at).toBeDefined();
-                return {
-                  eq: vi.fn().mockResolvedValue({
-                    data: null,
-                    error: null,
-                  }),
-                };
-              }),
-            };
+              },
+            });
           }
           return {};
         }),
@@ -276,6 +306,42 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       await sendOmcMasterdataReminder(employee, missingFields, omcDateValue);
 
       expect(updateCalled).toBe(true);
+    });
+
+    it('should skip email when notification is already claimed or sent', async () => {
+      const employee = createMockEmployee();
+      const missingFields = ['one'];
+      const omcDateValue = '2025-01-01';
+      const mockHrAdmins = [{ email: 'admin1@example.com' }];
+
+      const mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'users') {
+            return {
+              select: vi.fn(() => ({
+                in: vi.fn(() => ({
+                  not: vi.fn(() => ({
+                    eq: vi.fn().mockResolvedValue({
+                      data: mockHrAdmins,
+                      error: null,
+                    }),
+                  })),
+                })),
+              })),
+            };
+          } else if (table === 'employees') {
+            return createEmployeeClaimMock({ claimData: null });
+          }
+          return {};
+        }),
+      };
+
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+
+      const result = await sendOmcMasterdataReminder(employee, missingFields, omcDateValue);
+
+      expect(result).toBe(true);
+      expect(emailService.sendEmailToMultiple).not.toHaveBeenCalled();
     });
 
     it('should return false when no HR admin emails found', async () => {
@@ -298,6 +364,8 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
                 })),
               })),
             };
+          } else if (table === 'employees') {
+            return createEmployeeClaimMock();
           }
           return {};
         }),
@@ -333,6 +401,8 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
                 })),
               })),
             };
+          } else if (table === 'employees') {
+            return createEmployeeClaimMock();
           }
           return {};
         }),
@@ -348,7 +418,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       expect(result).toBe(false);
     });
 
-    it('should handle marker update failure gracefully', async () => {
+    it('should skip email when marker claim fails', async () => {
       const employee = createMockEmployee();
       const missingFields = ['one'];
       const omcDateValue = '2025-01-01';
@@ -371,14 +441,10 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
               })),
             };
           } else if (table === 'employees') {
-            return {
-              update: vi.fn(() => ({
-                eq: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: { message: 'Update failed' },
-                }),
-              })),
-            };
+            return createEmployeeClaimMock({
+              claimData: null,
+              claimError: { message: 'Update failed' },
+            });
           }
           return {};
         }),
@@ -389,10 +455,11 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
         { success: true, messageId: 'msg-1' },
       ]);
 
-      // Should still return true even if marker update fails (email was sent)
+      // Should skip sending if the pre-send marker claim fails.
       const result = await sendOmcMasterdataReminder(employee, missingFields, omcDateValue);
 
-      expect(result).toBe(true);
+      expect(result).toBe(false);
+      expect(emailService.sendEmailToMultiple).not.toHaveBeenCalled();
     });
 
     it('should include all missing fields in email content', async () => {
@@ -418,14 +485,7 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
               })),
             };
           } else if (table === 'employees') {
-            return {
-              update: vi.fn(() => ({
-                eq: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: null,
-                }),
-              })),
-            };
+            return createEmployeeClaimMock();
           }
           return {};
         }),

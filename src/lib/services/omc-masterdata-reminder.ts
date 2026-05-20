@@ -268,6 +268,57 @@ Detta är ett automatiskt genererat meddelande, vänligen svara inte på detta m
 }
 
 /**
+ * Atomically claim the reminder before sending email.
+ *
+ * This prevents duplicate sends when the cron endpoint is invoked twice before
+ * the first invocation has finished sending to all recipients.
+ */
+async function claimOmcMasterdataReminder(
+  employee: Employee,
+  omcDateValue: string
+): Promise<{ claimTimestamp: string | null; failed: boolean }> {
+  if (!employee.omc_date) return { claimTimestamp: null, failed: false };
+
+  const claimTimestamp = new Date().toISOString();
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from('employees')
+    .update({ omc_masterdata_reminder_sent_at: claimTimestamp })
+    .eq('id', employee.id)
+    .eq('omc_date', employee.omc_date)
+    .or(`omc_masterdata_reminder_sent_at.is.null,omc_masterdata_reminder_sent_at.lt.${omcDateValue}`)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    console.error('[ÖMC Reminder] Failed to claim notification marker:', error);
+    return { claimTimestamp: null, failed: true };
+  }
+
+  return { claimTimestamp: data ? claimTimestamp : null, failed: false };
+}
+
+/**
+ * Clear an unsent claim when every attempted email send failed.
+ * If any recipient received the email, keep the marker to avoid duplicate blasts.
+ */
+async function clearOmcMasterdataReminderClaim(
+  employeeId: string,
+  claimTimestamp: string
+): Promise<void> {
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase
+    .from('employees')
+    .update({ omc_masterdata_reminder_sent_at: null })
+    .eq('id', employeeId)
+    .eq('omc_masterdata_reminder_sent_at', claimTimestamp);
+
+  if (error) {
+    console.error('[ÖMC Reminder] Failed to clear notification claim:', error);
+  }
+}
+
+/**
  * Send ÖMC masterdata reminder notification
  * 
  * @param employee - Employee record
@@ -287,6 +338,16 @@ export async function sendOmcMasterdataReminder(
     if (hrAdminEmails.length === 0) {
       console.warn('[ÖMC Reminder] No HR admin emails found, skipping notification');
       return false;
+    }
+
+    const { claimTimestamp, failed: claimFailed } = await claimOmcMasterdataReminder(employee, omcDateValue);
+    if (claimFailed) {
+      return false;
+    }
+
+    if (!claimTimestamp) {
+      console.log(`[ÖMC Reminder] Notification already claimed or sent for employee ${employee.id}, skipping`);
+      return true;
     }
 
     // Generate email content
@@ -320,24 +381,17 @@ export async function sendOmcMasterdataReminder(
 
     // Check if all emails were sent successfully
     const allSuccessful = results.every(result => result.success);
+    const successCount = results.filter(result => result.success).length;
     
     if (!allSuccessful) {
       const failedCount = results.filter(r => !r.success).length;
       console.error(`[ÖMC Reminder] Failed to send ${failedCount} of ${results.length} emails`);
+
+      if (successCount === 0) {
+        await clearOmcMasterdataReminderClaim(employee.id, claimTimestamp);
+      }
+
       return false;
-    }
-
-    // Update notification marker in database
-    const supabase = createServiceRoleClient();
-    const { error: updateError } = await supabase
-      .from('employees')
-      .update({ omc_masterdata_reminder_sent_at: new Date().toISOString() })
-      .eq('id', employee.id);
-
-    if (updateError) {
-      console.error('[ÖMC Reminder] Failed to update notification marker:', updateError);
-      // Don't fail the entire operation if marker update fails
-      // The email was sent, we just couldn't record it
     }
 
     console.log(`[ÖMC Reminder] Notification sent for employee ${employee.id} to ${hrAdminEmails.length} HR admin(s)`);

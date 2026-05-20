@@ -7,6 +7,29 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+function isLocalSupabaseUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+export function assertSafeE2EDatabase() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const allowRemoteDb = process.env.E2E_ALLOW_REMOTE_DB === 'true';
+
+  if (!supabaseUrl || allowRemoteDb || isLocalSupabaseUrl(supabaseUrl)) {
+    return;
+  }
+
+  throw new Error(
+    'Refusing to run E2E database setup/cleanup against a remote Supabase project. ' +
+    'Use a local Supabase instance, or set E2E_ALLOW_REMOTE_DB=true only for an isolated staging database.'
+  );
+}
+
 /**
  * Get Supabase client (lazy-loaded to ensure env vars are available)
  */
@@ -20,6 +43,8 @@ function getSupabaseClient() {
       'Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set in .env.local or .env.test'
     );
   }
+
+  assertSafeE2EDatabase();
 
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
@@ -138,21 +163,35 @@ export async function seedTestData() {
 export async function cleanupTestData() {
   const supabase = getSupabaseClient();
   
-  // Delete test employees (those with "Test" in first_name or created by E2E tests)
+  // Delete test employees created by E2E flows. Keep this in sync with test fixtures.
   const { error: employeeError } = await supabase
     .from('employees')
     .delete()
-    .or('first_name.ilike.%Test%,first_name.ilike.%E2E%');
+    .or([
+      'first_name.ilike.%Test%',
+      'surname.ilike.%Test%',
+      'first_name.ilike.%E2E%',
+      'surname.ilike.%E2E%',
+      'first_name.in.(Anna,Capacity,Concurrent,Prereq,Realtime,Room,Terminate)',
+      'surname.in.(SyncTest,UserA,UserB)',
+    ].join(','));
 
   if (employeeError) {
     console.error('Error cleaning up test employees:', employeeError);
   }
 
-  // Delete test dates (those with test descriptions)
+  // Delete test dates created by seedTestData.
   const { error: dateError } = await supabase
     .from('important_dates')
     .delete()
-    .or('date_description.ilike.%Test%,date_description.ilike.%E2E%');
+    .or([
+      'date_description.ilike.%Test%',
+      'date_description.ilike.%E2E%',
+      'date_description.ilike.%19-20 december%',
+      'date_description.ilike.%8-9 mars%',
+      'date_description.ilike.%15-16 maj%',
+      'date_description.eq.20 april',
+    ].join(','));
 
   if (dateError) {
     console.error('Error cleaning up test dates:', dateError);
