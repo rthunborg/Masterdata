@@ -8,7 +8,11 @@
 import { test, expect } from '@playwright/test';
 import { loginAsUser } from '../../../e2e/helpers/e2e-helpers';
 
-test.describe('PE3 Deadline Notification Workflow', () => {
+const cronDescribe = process.env.RUN_CRON_E2E === 'true'
+  ? test.describe
+  : test.describe.skip;
+
+cronDescribe('PE3 Deadline Notification Workflow', () => {
   test.beforeEach(async ({ page }) => {
     // Login as HR Admin
     await loginAsUser(page, 'admin@test.com', 'Test123!');

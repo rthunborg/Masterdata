@@ -12,7 +12,17 @@ import { chromium, FullConfig } from '@playwright/test';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
-import { seedTestData } from './helpers/seed-data';
+import { assertSafeE2EDatabase, seedTestData } from './helpers/seed-data';
+
+function isLocalAppUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^\[(.*)\]$/, '$1');
+    return ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(hostname);
+  } catch {
+    return false;
+  }
+}
 
 async function globalSetup(config: FullConfig) {
   console.log('🔧 Setting up E2E test environment...');
@@ -45,6 +55,18 @@ async function globalSetup(config: FullConfig) {
     console.log('⚠️  NOTE: Ensure test users exist. Run: npx tsx scripts/apply-hr-admin-migration.ts');
   }
 
+  const baseURL = String(config.projects[0]?.use?.baseURL || process.env.BASE_URL || 'http://localhost:3000');
+  if (!isLocalAppUrl(baseURL) && process.env.E2E_ALLOW_REMOTE_APP !== 'true') {
+    throw new Error(
+      'Refusing to run E2E tests against a remote app URL. ' +
+      'Use localhost, or set E2E_ALLOW_REMOTE_APP=true only for an isolated staging deployment.'
+    );
+  }
+
+  if (supabaseUrl && supabaseServiceKey) {
+    assertSafeE2EDatabase();
+  }
+
   // Seed test data
   try {
     console.log('📦 Seeding test data...');
@@ -56,7 +78,6 @@ async function globalSetup(config: FullConfig) {
   }
 
   // Verify application is accessible
-  const baseURL = config.projects[0]?.use?.baseURL || 'http://localhost:3000';
   console.log(`🌐 Verifying application at ${baseURL}...`);
 
   const browser = await chromium.launch();
