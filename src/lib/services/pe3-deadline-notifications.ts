@@ -358,6 +358,9 @@ export async function sendPe3SubmitDeadlineNotification(
   entries: Pe3EntryWithEmployee[],
   today: string
 ): Promise<boolean> {
+  let claimAcquired = false;
+  let hadSuccessfulSend = false;
+
   try {
     // Check if notification already sent
     const alreadySent = await hasPe3NotificationBeenSent('submit', today);
@@ -382,6 +385,7 @@ export async function sendPe3SubmitDeadlineNotification(
     if (claimStatus === 'failed') {
       return false;
     }
+    claimAcquired = true;
 
     // Generate email content
     const subject = generatePe3SubmitDeadlineEmailSubject();
@@ -395,6 +399,7 @@ export async function sendPe3SubmitDeadlineNotification(
     // Check if all emails were sent successfully
     const allSuccessful = results.every(result => result.success);
     const successCount = results.filter(result => result.success).length;
+    hadSuccessfulSend = successCount > 0;
     
     if (!allSuccessful) {
       const failedCount = results.filter(r => !r.success).length;
@@ -411,6 +416,11 @@ export async function sendPe3SubmitDeadlineNotification(
     return true;
   } catch (error) {
     console.error('[PE3 Notifications] Error sending submit deadline notification:', error);
+
+    if (claimAcquired && !hadSuccessfulSend) {
+      await clearPe3NotificationClaim('submit', today);
+    }
+
     return false;
   }
 }
@@ -426,6 +436,9 @@ export async function sendPe3CancelDeadlineNotification(
   entries: Pe3EntryWithEmployee[],
   today: string
 ): Promise<boolean> {
+  let claimAcquired = false;
+  let hadSuccessfulSend = false;
+
   try {
     // Check if notification already sent
     const alreadySent = await hasPe3NotificationBeenSent('cancel', today);
@@ -450,6 +463,7 @@ export async function sendPe3CancelDeadlineNotification(
     if (claimStatus === 'failed') {
       return false;
     }
+    claimAcquired = true;
 
     // Generate email content
     const subject = generatePe3CancelDeadlineEmailSubject();
@@ -463,6 +477,7 @@ export async function sendPe3CancelDeadlineNotification(
     // Check if all emails were sent successfully
     const allSuccessful = results.every(result => result.success);
     const successCount = results.filter(result => result.success).length;
+    hadSuccessfulSend = successCount > 0;
     
     if (!allSuccessful) {
       const failedCount = results.filter(r => !r.success).length;
@@ -479,6 +494,11 @@ export async function sendPe3CancelDeadlineNotification(
     return true;
   } catch (error) {
     console.error('[PE3 Notifications] Error sending cancel deadline notification:', error);
+
+    if (claimAcquired && !hadSuccessfulSend) {
+      await clearPe3NotificationClaim('cancel', today);
+    }
+
     return false;
   }
 }

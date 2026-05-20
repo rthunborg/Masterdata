@@ -65,15 +65,18 @@ function createEmployeeClaimMock({
   claimError = null,
   clearError = null,
   onClaim,
+  onClear,
 }: {
   claimData?: { id: string } | null;
   claimError?: { message: string } | null;
   clearError?: { message: string } | null;
   onClaim?: (data: { omc_masterdata_reminder_sent_at: string }) => void;
+  onClear?: () => void;
 } = {}) {
   return {
     update: vi.fn((data: { omc_masterdata_reminder_sent_at: string | null }) => {
       if (data.omc_masterdata_reminder_sent_at === null) {
+        onClear?.();
         return {
           eq: vi.fn(() => ({
             eq: vi.fn().mockResolvedValue({
@@ -416,6 +419,48 @@ describe('ÖMC Masterdata Reminder Notification Service', () => {
       const result = await sendOmcMasterdataReminder(employee, missingFields, omcDateValue);
 
       expect(result).toBe(false);
+    });
+
+    it('should clear the claim when email sending throws before any confirmed send', async () => {
+      const employee = createMockEmployee();
+      const missingFields = ['one'];
+      const omcDateValue = '2025-01-01';
+      const mockHrAdmins = [{ email: 'admin1@example.com' }];
+      let clearCalled = false;
+
+      const mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === 'users') {
+            return {
+              select: vi.fn(() => ({
+                in: vi.fn(() => ({
+                  not: vi.fn(() => ({
+                    eq: vi.fn().mockResolvedValue({
+                      data: mockHrAdmins,
+                      error: null,
+                    }),
+                  })),
+                })),
+              })),
+            };
+          } else if (table === 'employees') {
+            return createEmployeeClaimMock({
+              onClear: () => {
+                clearCalled = true;
+              },
+            });
+          }
+          return {};
+        }),
+      };
+
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(mockSupabase as unknown as SupabaseClient);
+      vi.mocked(emailService.sendEmailToMultiple).mockRejectedValue(new Error('Mailer crashed'));
+
+      const result = await sendOmcMasterdataReminder(employee, missingFields, omcDateValue);
+
+      expect(result).toBe(false);
+      expect(clearCalled).toBe(true);
     });
 
     it('should skip email when marker claim fails', async () => {

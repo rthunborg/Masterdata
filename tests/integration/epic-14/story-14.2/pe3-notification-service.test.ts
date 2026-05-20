@@ -298,5 +298,37 @@ describe('PE3 Deadline Notification Service', () => {
       expect(firstDeleteEq).toHaveBeenCalledWith('deadline_type', 'submit');
       expect(secondDeleteEq).toHaveBeenCalledWith('deadline_date', today);
     });
+
+    it('should clear the submit claim when email sending throws before any confirmed send', async () => {
+      const entries = [createMockPe3Entry()];
+      const today = '2025-02-10';
+      const { client, deleteMock, firstDeleteEq, secondDeleteEq } = createMockSupabase();
+
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
+      vi.mocked(emailService.sendEmailToMultiple).mockRejectedValue(new Error('Mailer crashed'));
+
+      const result = await sendPe3SubmitDeadlineNotification(entries, today);
+
+      expect(result).toBe(false);
+      expect(deleteMock).toHaveBeenCalledTimes(1);
+      expect(firstDeleteEq).toHaveBeenCalledWith('deadline_type', 'submit');
+      expect(secondDeleteEq).toHaveBeenCalledWith('deadline_date', today);
+    });
+
+    it('should clear the cancel claim when email sending throws before any confirmed send', async () => {
+      const entries = [createMockPe3Entry()];
+      const today = '2025-02-12';
+      const { client, deleteMock, firstDeleteEq, secondDeleteEq } = createMockSupabase();
+
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue(client);
+      vi.mocked(emailService.sendEmailToMultiple).mockRejectedValue(new Error('Mailer crashed'));
+
+      const result = await sendPe3CancelDeadlineNotification(entries, today);
+
+      expect(result).toBe(false);
+      expect(deleteMock).toHaveBeenCalledTimes(1);
+      expect(firstDeleteEq).toHaveBeenCalledWith('deadline_type', 'cancel');
+      expect(secondDeleteEq).toHaveBeenCalledWith('deadline_date', today);
+    });
   });
 });
