@@ -72,6 +72,15 @@ const E2E_EMPLOYEE_CLEANUP_PATTERNS = [
   'email.ilike.import%@example.com',
 ];
 
+const E2E_DATE_CLEANUP_PATTERNS = [
+  'date_description.ilike.%Test%',
+  'date_description.ilike.%E2E%',
+  'date_description.ilike.%19-20 december%',
+  'date_description.ilike.%8-9 mars%',
+  'date_description.ilike.%15-16 maj%',
+  'date_description.eq.20 april',
+];
+
 function isLocalSupabaseUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -82,28 +91,36 @@ function isLocalSupabaseUrl(url: string): boolean {
   }
 }
 
-function futureDateInCurrentYear(currentYear: number, monthIndex: number, day: number) {
+function futureDateForMonthDay(monthIndex: number, day: number) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const date = new Date(Date.UTC(currentYear, monthIndex, day));
+  let year = today.getFullYear();
+  let date = new Date(Date.UTC(year, monthIndex, day));
+
   if (date < today) {
-    return `${currentYear}-12-31`;
+    year += 1;
+    date = new Date(Date.UTC(year, monthIndex, day));
   }
 
-  return date.toISOString().split('T')[0];
+  return {
+    dateValue: date.toISOString().split('T')[0],
+    year,
+  };
 }
 
 function getSeedDateFixtures() {
-  const currentYear = new Date().getFullYear();
-  const generalDateValue = futureDateInCurrentYear(currentYear, 11, 19);
+  const stenaDate = futureDateForMonthDay(11, 19);
+  const omcDate = futureDateForMonthDay(2, 8);
+  const pe3Date = futureDateForMonthDay(3, 20);
+  const limitedOmcDate = futureDateForMonthDay(4, 15);
 
   return {
     stena: {
       category: 'Stena Dates',
-      date_value: generalDateValue,
-      date_description: `E2E 19-20 december ${currentYear}`,
-      year: currentYear,
+      date_value: stenaDate.dateValue,
+      date_description: `E2E 19-20 december ${stenaDate.year}`,
+      year: stenaDate.year,
       max_spots: 500,
       remaining_spots: 500,
       is_active: true,
@@ -111,9 +128,9 @@ function getSeedDateFixtures() {
     },
     omc: {
       category: 'ÖMC Dates',
-      date_value: generalDateValue,
-      date_description: `E2E 19-20 december ${currentYear}`,
-      year: currentYear,
+      date_value: omcDate.dateValue,
+      date_description: `E2E 8-9 mars ${omcDate.year}`,
+      year: omcDate.year,
       max_spots: 500,
       remaining_spots: 500,
       is_active: true,
@@ -121,9 +138,9 @@ function getSeedDateFixtures() {
     },
     pe3: {
       category: 'PE3 Dates',
-      date_value: futureDateInCurrentYear(currentYear, 3, 20),
+      date_value: pe3Date.dateValue,
       date_description: 'E2E 20 april',
-      year: currentYear,
+      year: pe3Date.year,
       max_spots: 1,
       remaining_spots: 1,
       is_active: true,
@@ -131,9 +148,9 @@ function getSeedDateFixtures() {
     },
     limitedOmc: {
       category: 'ÖMC Dates',
-      date_value: futureDateInCurrentYear(currentYear, 4, 15),
+      date_value: limitedOmcDate.dateValue,
       date_description: 'E2E 15-16 maj',
-      year: currentYear,
+      year: limitedOmcDate.year,
       max_spots: 2,
       remaining_spots: 2,
       is_active: true,
@@ -270,7 +287,7 @@ export async function seedTestData() {
   const supabase = getSupabaseClient();
   const fixtures = getSeedDateFixtures();
 
-  // Create Stena Date with capacity (required field in form).
+  // Create Stena Date with high capacity for general employee creation tests.
   const { error: stenaError } = await supabase
     .from('important_dates')
     .insert(fixtures.stena)
@@ -281,7 +298,7 @@ export async function seedTestData() {
     console.error('Error seeding Stena date:', stenaError);
   }
 
-  // Create ÖMC date with high capacity for general employee creation tests.
+  // Create ÖMC Date with high capacity for general employee creation tests.
   const { data: omcDate, error: omcError } = await supabase
     .from('important_dates')
     .insert(fixtures.omc)
@@ -337,7 +354,7 @@ export async function cleanupTestData() {
       supabase
         .from('important_dates')
         .select('id')
-        .or('date_description.ilike.%Test%,date_description.ilike.%E2E%'),
+        .or(E2E_DATE_CLEANUP_PATTERNS.join(',')),
     ]);
 
   if (markedDateQueryError) {
@@ -352,8 +369,9 @@ export async function cleanupTestData() {
     ...(markedDates?.map((date) => date.id).filter(Boolean) ?? []),
     ...(namedDates?.map((date) => date.id).filter(Boolean) ?? []),
   ];
+  const uniqueTestDateIds = [...new Set(testDateIds)];
 
-  for (const dateId of [...new Set(testDateIds)]) {
+  for (const dateId of uniqueTestDateIds) {
     const { error } = await supabase
       .from('employees')
       .delete()
@@ -385,14 +403,15 @@ export async function cleanupTestData() {
     }
   }
 
-  // Delete test dates created by seedTestData. The notes marker is added only by these fixtures.
-  const { error: dateError } = await supabase
-    .from('important_dates')
-    .delete()
-    .eq('notes', E2E_SEED_MARKER);
+  for (const dateId of uniqueTestDateIds) {
+    const { error } = await supabase
+      .from('important_dates')
+      .delete()
+      .eq('id', dateId);
 
-  if (dateError) {
-    console.error('Error cleaning up test dates:', dateError);
+    if (error) {
+      console.error(`Error cleaning up E2E date ${dateId}:`, error);
+    }
   }
 }
 
