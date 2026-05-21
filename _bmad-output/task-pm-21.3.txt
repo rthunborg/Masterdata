@@ -1,0 +1,39 @@
+# Task Brief: PM Agent — Draft Story 21.3
+
+## Your Role
+You are a Product Manager agent. Draft a complete story file for Story 21.3.
+
+## Context Files to Read (ONLY these)
+1. `docs/epics.md` — Search for "Story 21.3" to find the epic-level spec
+2. `docs/sprint-artifacts/story-21.1.md` — FORMAT REFERENCE for story files
+3. `docs/sprint-artifacts/story-21.2.md` — Repository that 21.3 depends on
+4. `docs/sprint-artifacts/story-21.4.md` — Types and validation schemas used
+
+## What to Produce
+
+Create file: `docs/sprint-artifacts/story-21.3.md`
+
+Story 21.3: API Endpoints for Staffing Needs
+
+From the epics doc:
+- GET /api/staffing-needs — returns { data: StaffingNeedWithProgress[], meta: { timestamp } }
+- PUT /api/staffing-needs — body { location, headcount_need }, returns { data: { location, old_value, new_value }, meta: { timestamp } }. 403 for non-hr_admin/crewing roles. Triggers async email notification.
+- GET /api/staffing-needs/history?location=X — returns { data: StaffingNeedsChangelogEntry[], meta: { timestamp } }
+- 400 for invalid location
+- Zod validation on PUT body using updateStaffingNeedSchema from Story 21.4
+- Email trigger is fire-and-forget
+
+## Story File Structure
+1. Status block (P0, 3 SP, depends on 21.2)
+2. Description
+3. Acceptance Criteria (checkboxes, detailed — AC per endpoint + error cases)
+4. Technical Notes (file paths, middleware, response shapes)
+5. Testing Requirements (4 estimated tests)
+6. Definition of Done
+
+## Constraints
+- Follow existing API route patterns (check src/app/api/ for reference)
+- Use requireAuth/requireRole middleware from existing auth helpers
+- Zod schema validation on PUT body
+- Fire-and-forget email notification (don't await)
+- Response format matches existing API patterns in the project

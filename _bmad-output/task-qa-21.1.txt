@@ -1,0 +1,32 @@
+# Task Brief: QA Agent — Review Story 21.1 Implementation
+
+## Your Role
+You are a QA/Code Review agent. Review the implementation of Story 21.1 against its spec and DoD.
+
+## Context Files to Read (ONLY these)
+1. `docs/sprint-artifacts/story-21.1.md` — Story spec with acceptance criteria
+2. `supabase/migrations/20260313000001_add_staffing_needs.sql` — Migration file
+3. `tests/integration/epic-21/story-21.1/schema-and-rls.test.ts` — Test file
+
+## Review Checklist
+Check each item and report PASS/FAIL with brief notes:
+
+1. **Schema correctness** — Do both tables match the spec exactly? All columns, types, constraints, defaults?
+2. **RLS policies** — Are all 4 policies correct? SELECT for all authenticated, UPDATE restricted, INSERT restricted, no DELETE/INSERT on staffing_needs, no UPDATE/DELETE on changelog?
+3. **Seed data** — Two rows (Trelleborg, Göteborg) with headcount_need=0?
+4. **Index** — Exists on changelog (location, changed_at DESC)?
+5. **Permission change** — crewing_done column_config updated correctly?
+6. **BEGIN/COMMIT wrapping** — Transaction-safe migration?
+7. **Test coverage** — Do tests cover all acceptance criteria?
+8. **No extra/missing code** — Nothing beyond scope?
+
+## Output Format
+Write your review to: `_bmad-output/review-qa-21.1.md`
+
+If all items pass, write "APPROVED" at the top.
+If issues found, write "NEEDS FIX" at the top with specific issues listed.
+
+## DoD Checks
+- Supabase RLS enforcement: verified?
+- Migration patterns: consistent with existing project migrations?
+- No frontend/i18n needed for this story (backend only)

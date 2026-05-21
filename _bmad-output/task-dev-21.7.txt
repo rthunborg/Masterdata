@@ -1,0 +1,36 @@
+# Task Brief: Dev Agent — Implement Story 21.7
+
+## Your Role
+You are a Fullstack Developer agent. Implement Story 21.7 — Staffing Needs History Modal.
+
+## Context Files to Read (ONLY these)
+1. `docs/sprint-artifacts/story-21.7.md` — Your story spec (read FIRST)
+2. `src/components/dashboard/staffing-needs-tracker.tsx` — Parent that triggers history modal
+3. `src/components/dashboard/staffing-needs-card.tsx` — Card component
+4. `src/lib/types/staffing-needs.ts` — Types
+5. `src/components/dashboard/edit-staffing-needs-modal.tsx` — Reference for modal pattern
+6. Only if needed: `docs/architecture.md`
+
+## What to Implement
+
+### 1. New component
+Create: `src/components/dashboard/staffing-needs-history-modal.tsx`
+- Scrollable reverse-chronological list of changelog entries
+- Current year scope
+- Shows: date/time, who changed, old value → new value
+- Fetches from GET /api/staffing-needs/history?location=X
+
+### 2. Update existing
+- Wire up a trigger from the tracker cards (e.g., clicking the card title or a history icon/link)
+
+### 3. Tests
+Create: `tests/unit/epic-21/story-21.7/` with test files covering:
+- Renders changelog entries in reverse chronological order
+- Shows empty state when no history exists
+- Displays correct change details (who, when, old→new)
+
+## Constraints
+- WCAG 2.1 AA contrast
+- Swedish copy
+- Use existing Dialog/Modal pattern from shadcn/ui
+- TanStack Query for data fetching

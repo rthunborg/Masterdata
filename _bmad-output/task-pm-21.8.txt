@@ -1,0 +1,25 @@
+# Task Brief: PM Agent — Draft Story 21.8
+
+## Your Role
+You are a Product Manager agent. Draft a complete story file for Story 21.8.
+
+## Context Files to Read (ONLY these)
+1. `docs/epics.md` — Search for "Story 21.8" for the epic-level spec
+2. `docs/sprint-artifacts/story-21.1.md` — FORMAT REFERENCE
+3. `src/lib/services/email-service.ts` — Existing email service pattern
+
+## What to Produce
+
+Create file: `docs/sprint-artifacts/story-21.8.md`
+
+Story 21.8: Email Notification on Staffing Need Update
+
+From the epics doc: Notify HR users (hr_admin + recruiter roles) when a staffing need is updated, exclude the editor, fire-and-forget (don't await).
+
+## Story File Structure
+1. Status (P1, 2 SP, depends on 21.3)
+2. Description
+3. Acceptance Criteria (checkboxes)
+4. Technical Notes (email template, recipient query, fire-and-forget pattern)
+5. Testing Requirements (2 estimated tests)
+6. Definition of Done

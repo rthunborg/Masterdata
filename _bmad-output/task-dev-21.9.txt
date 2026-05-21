@@ -1,0 +1,28 @@
+# Task Brief: Dev Agent — Implement Story 21.9
+
+## Your Role
+You are a Fullstack Developer agent. Implement Story 21.9 — i18n Swedish translations for staffing needs.
+
+## Context Files to Read (ONLY these)
+1. `docs/sprint-artifacts/story-21.9.md` — Your story spec (read FIRST)
+2. `messages/sv.json` — Existing translation file (ADD to it, do NOT replace)
+3. `src/components/dashboard/staffing-needs-tracker.tsx` — Check what strings are hardcoded
+4. `src/components/dashboard/staffing-needs-card.tsx` — Check what strings are hardcoded
+5. `src/components/dashboard/edit-staffing-needs-modal.tsx` — Check what strings are hardcoded
+6. `src/components/dashboard/staffing-needs-history-modal.tsx` — Check what strings are hardcoded
+
+## What to Implement
+
+### 1. Add translations
+Update: `messages/sv.json`
+- Add a "staffingNeeds" namespace with all user-facing strings from the staffing needs feature
+- Include: card labels, modal titles, button text, tooltips, empty states, error messages, toast messages
+
+### 2. Update components to use i18n
+Update all 4 staffing needs components to use `useTranslations('staffingNeeds')` instead of hardcoded Swedish strings.
+
+## Constraints
+- Do NOT remove or modify existing translations
+- Follow existing namespace patterns in sv.json
+- All user-facing text must go through i18n
+- Use next-intl useTranslations hook (check existing components for pattern)

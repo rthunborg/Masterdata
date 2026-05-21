@@ -1,0 +1,37 @@
+# Task Brief: PM Agent — Draft Story 21.5
+
+## Your Role
+You are a Product Manager agent. Draft a complete story file for Story 21.5.
+
+## Context Files to Read (ONLY these)
+1. `docs/epics.md` — Search for "Story 21.5" for the epic-level spec
+2. `docs/sprint-artifacts/story-21.1.md` — FORMAT REFERENCE
+3. `docs/sprint-artifacts/story-21.4.md` — Types used
+4. `src/components/dashboard/employee-stats-bar.tsx` — Where the tracker cards will be added
+
+## What to Produce
+
+Create file: `docs/sprint-artifacts/story-21.5.md`
+
+Story 21.5: Staffing Needs Tracker Cards & Tooltip
+
+From the epics doc:
+- Two tracker cards in stats bar (right of Crewing Done stat), one per location
+- Each shows location name, fraction (e.g. "13/30"), percentage, progress bar
+- When headcount_need=0, show "Ej angivet" instead of "0/0"
+- Tooltip on hover shows last change: who, when, old→new values
+- If no changes, tooltip shows "Ingen ändring gjord"
+- Pencil icon visible for hr_admin/crewing roles only
+- Modify employee-stats-bar.tsx to render <StaffingNeedsTracker />
+- New files: staffing-needs-tracker.tsx, staffing-needs-card.tsx
+- Fetch from GET /api/staffing-needs
+- Use useAuth() for role check
+- Use existing Tooltip from shadcn/ui
+
+## Story File Structure
+1. Status (P0, 5 SP, depends on 21.3)
+2. Description
+3. Acceptance Criteria (detailed, checkboxes)
+4. Technical Notes
+5. Testing Requirements (3 estimated tests)
+6. Definition of Done (include WCAG 2.1 AA contrast)

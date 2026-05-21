@@ -1,0 +1,39 @@
+# Task Brief: Dev Agent — Implement Story 21.5
+
+## Your Role
+You are a Fullstack Developer agent. Implement Story 21.5 — frontend tracker cards for staffing needs.
+
+## Context Files to Read (ONLY these)
+1. `docs/sprint-artifacts/story-21.5.md` — Your story spec (read FIRST)
+2. `src/components/dashboard/employee-stats-bar.tsx` — Where to ADD the tracker component
+3. `src/lib/types/staffing-needs.ts` — Types from 21.4
+4. `src/lib/utils/role-utils.ts` — canEditStaffingNeeds
+5. `src/lib/hooks/use-auth.ts` — useAuth hook for role check
+6. `src/components/dashboard/capacity-badge.tsx` — Reference for existing stat card pattern
+7. Only if needed: `docs/architecture.md`
+
+## What to Implement
+
+### 1. New components
+Create:
+- `src/components/dashboard/staffing-needs-tracker.tsx` — Container component, fetches data from GET /api/staffing-needs, renders two StaffingNeedsCard
+- `src/components/dashboard/staffing-needs-card.tsx` — Individual card with location name, fraction, percentage, progress bar, tooltip, and conditional pencil icon
+
+### 2. Modify existing
+- `src/components/dashboard/employee-stats-bar.tsx` — Add <StaffingNeedsTracker /> after the Crewing Done stat section
+
+### 3. Tests
+Create: `tests/unit/epic-21/story-21.5/` with test files covering:
+- Renders two cards with location names
+- Shows "Ej angivet" when headcount_need is 0
+- Pencil icon visible only for hr_admin/crewing, hidden for other roles
+- Progress bar width matches percentage
+
+## Constraints
+- WCAG 2.1 AA contrast on all text and progress bar colors
+- Swedish copy (labels, tooltip text)
+- Use existing Tooltip from shadcn/ui (src/components/ui/)
+- Use Lucide icons (Pencil or SquarePen)
+- Use TanStack Query for data fetching (follow existing patterns)
+- Progress bar: simple div with percentage-based width, colored background
+- When headcount_need=0: show "Ej angivet" text, no progress bar
