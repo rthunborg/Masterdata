@@ -10,7 +10,15 @@ import { loginAsHRAdmin } from '../../helpers/e2e-helpers';
 const TEXT_FILTER_VALUE = 'J';
 
 async function waitForDashboard(page: Page) {
-  await page.waitForSelector('table tbody tr', { timeout: 10000 });
+  await expect(
+    page.getByRole('button', { name: /Totalt antal anställda.*\d+/i })
+  ).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('table')).toBeVisible({ timeout: 15000 });
+  await page.waitForFunction(
+    () => document.querySelectorAll('table tbody tr').length > 0,
+    undefined,
+    { timeout: 15000 }
+  );
 }
 
 async function openFilterPanel(page: Page) {

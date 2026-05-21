@@ -47,6 +47,31 @@ const E2E_EMPLOYEE_FIXTURES = [
   { first_name: 'Test', surname: 'Employee10', ssn: '199010101234' },
 ];
 
+const E2E_EMPLOYEE_CLEANUP_PATTERNS = [
+  'first_name.ilike.UpdatedName%',
+  'first_name.ilike.Capacity%',
+  'first_name.ilike.Concurrent%',
+  'and(first_name.ilike.Import%,surname.ilike.Employee%)',
+  'first_name.ilike.Prereq%',
+  'first_name.ilike.Realtime%',
+  'first_name.ilike.Room%',
+  'first_name.ilike.Terminate%',
+  'and(first_name.eq.Anna,surname.eq.Test)',
+  'surname.eq.SyncTest',
+  'and(first_name.eq.Test,surname.ilike.Employee%)',
+  'ssn.ilike.199001%',
+  'ssn.ilike.199002%',
+  'ssn.ilike.199003%',
+  'ssn.ilike.199004%',
+  'ssn.ilike.199005%',
+  'ssn.ilike.199006%',
+  'ssn.ilike.199007%',
+  'ssn.ilike.199008%',
+  'ssn.ilike.199009%',
+  'ssn.ilike.199010%',
+  'email.ilike.import%@example.com',
+];
+
 function isLocalSupabaseUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -340,6 +365,15 @@ export async function cleanupTestData() {
   }
   
   // Delete test employees created by E2E flows. Keep this scoped to known fixtures.
+  const { error: patternCleanupError } = await supabase
+    .from('employees')
+    .delete()
+    .or(E2E_EMPLOYEE_CLEANUP_PATTERNS.join(','));
+
+  if (patternCleanupError) {
+    console.error('Error cleaning up patterned E2E employees:', patternCleanupError);
+  }
+
   for (const fixture of E2E_EMPLOYEE_FIXTURES) {
     const { error } = await supabase
       .from('employees')

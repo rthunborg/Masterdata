@@ -12,7 +12,7 @@ import { chromium, FullConfig, type Browser } from '@playwright/test';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
-import { assertSafeE2EDatabase, ensureTestUsers, seedTestData } from './helpers/seed-data';
+import { assertSafeE2EDatabase, cleanupTestData, ensureTestUsers, seedTestData } from './helpers/seed-data';
 
 const TEST_USER_PASSWORD = 'Test123!';
 
@@ -125,6 +125,10 @@ async function globalSetup(config: FullConfig) {
 
   // Seed test data
   try {
+    console.log('🧹 Cleaning up stale E2E test data...');
+    await cleanupTestData();
+    console.log('✅ Stale E2E test data cleaned up');
+
     console.log('📦 Seeding test data...');
     await seedTestData();
     console.log('✅ Test data seeded successfully');
