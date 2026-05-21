@@ -323,9 +323,7 @@ describe('AddUserModal', () => {
   it('prevents form submission while loading', { timeout: 15000 }, async () => {
     const user = userEvent.setup();
     const mockCreateUser = vi.mocked(adminService.createUser);
-    mockCreateUser.mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 100))
-    );
+    mockCreateUser.mockImplementation(() => new Promise(() => undefined));
 
     renderWithQueryClient(<AddUserModal open={true} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
 

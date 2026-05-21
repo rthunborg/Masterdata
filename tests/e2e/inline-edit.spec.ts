@@ -1,226 +1,146 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { loginAsUser } from './helpers/e2e-helpers';
+
+async function firstEmployeeRow(page: Page) {
+    await expect(
+        page.getByRole('button', { name: /Totalt antal anställda.*\d+/i })
+    ).toBeVisible({ timeout: 15000 });
+
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 15000 });
+
+    const row = page.locator('[data-testid^="employee-row-"]').first();
+    await expect(row).toBeVisible({ timeout: 15000 });
+    await expect(row.getByRole('gridcell', { name: /Edit first_name/i })).toBeVisible({ timeout: 15000 });
+
+    return row;
+}
+
+async function columnIndex(page: Page, label: RegExp) {
+    const headers = page.getByRole('columnheader');
+    const count = await headers.count();
+
+    for (let index = 0; index < count; index += 1) {
+        const headerText = (await headers.nth(index).textContent()) || '';
+        if (label.test(headerText)) {
+            return index;
+        }
+    }
+
+    throw new Error(`Column header not found: ${label}`);
+}
+
+async function tableCellByColumn(page: Page, row: Locator, label: RegExp) {
+    const index = await columnIndex(page, label);
+    const cell = row.locator('td').nth(index);
+    await expect(cell).toBeVisible({ timeout: 10000 });
+    await cell.scrollIntoViewIfNeeded();
+    return cell;
+}
+
+async function openInlineSelect(page: Page, cell: Locator, label: RegExp) {
+    const editor = cell.getByRole('gridcell', { name: label }).first();
+    await expect(editor).toBeVisible({ timeout: 10000 });
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        await editor.scrollIntoViewIfNeeded();
+        await editor.click({ force: attempt > 0 });
+
+        const trigger = cell.getByRole('combobox').first();
+        if (await trigger.waitFor({ state: 'visible', timeout: 3000 }).then(() => true).catch(() => false)) {
+            const listbox = page.getByRole('listbox').first();
+            if (await listbox.waitFor({ state: 'visible', timeout: 1000 }).then(() => true).catch(() => false)) {
+                return listbox;
+            }
+
+            const isExpanded = (await trigger.getAttribute('aria-expanded').catch(() => null)) === 'true';
+            if (!isExpanded) {
+                await trigger.click({ force: true });
+            }
+            await expect(listbox).toBeVisible({ timeout: 10000 });
+            return listbox;
+        }
+
+        const alreadyOpen = page.getByRole('listbox').first();
+        if (await alreadyOpen.waitFor({ state: 'visible', timeout: 1000 }).then(() => true).catch(() => false)) {
+            return alreadyOpen;
+        }
+
+        await editor.press('Enter').catch(() => {});
+    }
+
+    const listbox = page.getByRole('listbox').first();
+    await expect(listbox).toBeVisible({ timeout: 10000 });
+    return listbox;
+}
+
+async function selectInlineOption(page: Page, cell: Locator, label: RegExp, optionName: string) {
+    const listbox = await openInlineSelect(page, cell, label);
+    const option = listbox.getByRole('option', { name: optionName, exact: true }).first();
+
+    await expect(option).toBeVisible({ timeout: 5000 });
+    await option.click();
+    await expect(listbox).not.toBeVisible({ timeout: 5000 });
+}
 
 test.describe('Inline Editing E2E', () => {
     test.beforeEach(async ({ page }) => {
-        // Login as HR Admin using the proper helper
         await loginAsUser(page, 'admin@test.com', 'Test123!');
-        // Wait for dashboard to fully load after login
         await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-        await page.waitForTimeout(1000);
     });
 
     test('Inline edit text field (First Name)', async ({ page }) => {
-        // Wait for table to load
-        await page.waitForSelector('table, [data-testid="employee-table"]', { timeout: 10000 });
-        await page.waitForSelector('table tbody tr, [data-testid*="employee-row"]', { timeout: 10000 });
+        const firstRow = await firstEmployeeRow(page);
+        const targetCell = await tableCellByColumn(page, firstRow, /First Name/i);
+        const initialValue = (await targetCell.textContent())?.trim() || '';
 
-        // Find the first employee row
-        const firstRow = page.locator('table tbody tr, [data-testid*="employee-row"]').first();
+        await targetCell.getByRole('gridcell', { name: /Edit first_name/i }).click();
 
-        // Find the First Name cell (assuming it's one of the first columns)
-        const targetCell = firstRow.locator('td').nth(1);
-        const initialValue = await targetCell.textContent();
-
-        // Click to edit
-        await targetCell.click();
-
-        // Wait for edit mode to activate - input should appear
-        const input = targetCell.locator('input');
+        const input = targetCell.locator('input').first();
         await expect(input).toBeVisible({ timeout: 10000 });
 
-        // Change value
         const newValue = 'UpdatedName';
         await input.fill(newValue);
         await input.press('Enter');
 
-        // Verify update
-        await expect(targetCell).toHaveText(newValue, { timeout: 10000 });
+        await expect(targetCell).toContainText(newValue, { timeout: 10000 });
 
-        // Revert change (optional, but good for cleanup)
-        await targetCell.click();
-        const revertInput = targetCell.locator('input');
+        await targetCell.getByRole('gridcell', { name: /Edit first_name/i }).click();
+        const revertInput = targetCell.locator('input').first();
         await expect(revertInput).toBeVisible({ timeout: 10000 });
-        await revertInput.fill(initialValue || '');
+        await revertInput.fill(initialValue);
         await revertInput.press('Enter');
-        await expect(targetCell).toHaveText(initialValue || '', { timeout: 10000 });
+        await expect(targetCell).toContainText(initialValue, { timeout: 10000 });
     });
 
     test('Inline edit dropdown field (Gender)', async ({ page }) => {
-        // Wait for table to load
-        await page.waitForSelector('table, [data-testid="employee-table"]', { timeout: 10000 });
-        await page.waitForSelector('table tbody tr, [data-testid*="employee-row"]', { timeout: 10000 });
+        const firstRow = await firstEmployeeRow(page);
+        const genderCell = await tableCellByColumn(page, firstRow, /Gender|Kön/i);
+        const currentText = (await genderCell.textContent())?.trim() || '';
+        const newOption = currentText === 'Man' ? 'Woman' : 'Man';
 
-        // Find the Gender column by header
-        const genderHeader = page.locator('th').filter({ hasText: /Gender|Kön/i });
-        if (await genderHeader.count() === 0) {
-            test.skip();
-            return;
-        }
+        await selectInlineOption(page, genderCell, /Edit gender/i, newOption);
 
-        // Get the column index by counting headers before Gender
-        const allHeaders = page.locator('th');
-        const headerCount = await allHeaders.count();
-        let genderColumnIndex = -1;
-        for (let i = 0; i < headerCount; i++) {
-            const headerText = await allHeaders.nth(i).textContent();
-            if (headerText && /Gender|Kön/i.test(headerText)) {
-                genderColumnIndex = i;
-                break;
-            }
-        }
+        await expect(genderCell).toContainText(newOption, { timeout: 10000 });
 
-        if (genderColumnIndex === -1) {
-            test.skip();
-            return;
-        }
+        await selectInlineOption(page, genderCell, /Edit gender/i, currentText);
 
-        // Find the first row and get the gender cell by index
-        const firstRow = page.locator('table tbody tr, [data-testid*="employee-row"]').first();
-        const genderCell = firstRow.locator('td').nth(genderColumnIndex);
-
-        // Wait for cell to be visible and scroll into view
-        await expect(genderCell).toBeVisible({ timeout: 10000 });
-        await genderCell.scrollIntoViewIfNeeded();
-
-        // Get current value before editing
-        const currentText = await genderCell.textContent();
-        const newOption = currentText?.trim() === 'Man' ? 'Woman' : 'Man';
-
-        // Click to edit - this should open the Select dropdown automatically
-        await genderCell.click();
-
-        // Wait for listbox to be visible (dropdown auto-opens on edit)
-        const listbox = page.getByRole('listbox').first();
-        await expect(listbox).toBeVisible({ timeout: 5000 });
-
-        // Select the new option - find it from the page root to avoid detached element issues
-        const option = page.getByRole('option', { name: newOption }).first();
-        await expect(option).toBeVisible({ timeout: 5000 });
-        // Small delay to ensure option is stable
-        await page.waitForTimeout(200);
-        await option.click();
-
-        // Wait for dropdown to close and edit mode to exit
-        await expect(listbox).not.toBeVisible({ timeout: 5000 });
-        
-        // Wait for network request to complete
-        await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {
-            // Network idle might not happen, that's okay
-        });
-        
-        // Wait for the table to update
-        await page.waitForTimeout(1000);
-
-        // Verify update - wait for cell text to change
-        const updatedGenderCell = firstRow.locator('td').nth(genderColumnIndex);
-        await expect(updatedGenderCell).toHaveText(newOption, { timeout: 10000 });
-
-        // Revert to original value
-        await updatedGenderCell.click();
-        await page.waitForTimeout(300);
-        const revertListbox = page.getByRole('listbox').first();
-        await expect(revertListbox).toBeVisible({ timeout: 5000 });
-        const originalOption = revertListbox.getByRole('option', { name: currentText?.trim() || '' }).first();
-        await originalOption.click();
-        await expect(revertListbox).not.toBeVisible({ timeout: 5000 });
-        await expect(updatedGenderCell).toHaveText(currentText?.trim() || '', { timeout: 10000 });
+        await expect(genderCell).toContainText(currentText, { timeout: 10000 });
     });
 
     test('Inline edit boolean field', async ({ page }) => {
-        // Wait for table to load
-        await page.waitForSelector('table, [data-testid="employee-table"]', { timeout: 10000 });
-        await page.waitForSelector('table tbody tr, [data-testid*="employee-row"]', { timeout: 10000 });
+        const firstRow = await firstEmployeeRow(page);
+        const oneCell = await tableCellByColumn(page, firstRow, /\bOne\b/i);
+        const currentText = (await oneCell.textContent())?.trim() || '';
+        const isCurrentlyTrue = /Klart|Ja/i.test(currentText);
+        const newValue = isCurrentlyTrue ? 'Nej' : 'Klart';
 
-        // Find a boolean column (e.g., "One", "Talmundo", "Crewing/Done")
-        // Look for columns that might be boolean
-        const allHeaders = page.locator('th');
-        const headerCount = await allHeaders.count();
-        let booleanColumnIndex = -1;
-        let booleanColumnName = '';
+        await selectInlineOption(page, oneCell, /Edit one/i, newValue);
 
-        // Try to find a boolean column
-        for (let i = 0; i < headerCount; i++) {
-            const headerText = await allHeaders.nth(i).textContent();
-            if (headerText && (/One|Talmundo|Crewing/i.test(headerText))) {
-                booleanColumnIndex = i;
-                booleanColumnName = headerText.trim();
-                break;
-            }
-        }
+        await expect(oneCell).toContainText(newValue, { timeout: 10000 });
 
-        if (booleanColumnIndex === -1) {
-            test.skip();
-            return;
-        }
+        const originalValue = isCurrentlyTrue ? 'Klart' : 'Nej';
+        await selectInlineOption(page, oneCell, /Edit one/i, originalValue);
 
-        // Find the first row and get the boolean cell by index
-        const firstRow = page.locator('table tbody tr, [data-testid*="employee-row"]').first();
-        const booleanCell = firstRow.locator('td').nth(booleanColumnIndex);
-
-        // Wait for cell to be visible and scroll into view
-        await expect(booleanCell).toBeVisible({ timeout: 10000 });
-        await booleanCell.scrollIntoViewIfNeeded();
-
-        // Get current value before editing
-        const currentText = await booleanCell.textContent();
-        // Boolean fields show "Ja" (true) or "Nej" (false) in Swedish
-        const newValue = currentText?.trim().toLowerCase().includes('ja') ? 'Nej' : 'Ja';
-
-        // Click to edit - this should open the Select dropdown automatically
-        await booleanCell.click();
-
-        // Wait for Select trigger to be visible first (ensures Select component is rendered)
-        // Try multiple selectors for the trigger
-        const selectTrigger = page.locator('[role="combobox"], [data-slot="select-trigger"], button[aria-haspopup="listbox"]').first();
-        await expect(selectTrigger).toBeVisible({ timeout: 5000 });
-        
-        // Wait a bit for auto-open to happen
-        await page.waitForTimeout(500);
-
-        // Check if dropdown is open, if not click the trigger
-        let listbox = page.getByRole('listbox').first();
-        const isListboxVisible = await listbox.isVisible().catch(() => false);
-        
-        if (!isListboxVisible) {
-          // Dropdown didn't auto-open, click the trigger to open it
-          await selectTrigger.click({ force: true });
-          await page.waitForTimeout(300);
-          // Re-query listbox after click
-          listbox = page.getByRole('listbox').first();
-        }
-        
-        // Now wait for listbox to be visible
-        await expect(listbox).toBeVisible({ timeout: 5000 });
-
-        // Select the new value
-        const option = listbox.getByRole('option', { name: newValue }).first();
-        await expect(option).toBeVisible({ timeout: 5000 });
-        await option.click();
-
-        // Wait for dropdown to close and edit mode to exit
-        await expect(listbox).not.toBeVisible({ timeout: 5000 });
-        
-        // Wait for network request to complete
-        await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {
-            // Network idle might not happen, that's okay
-        });
-        
-        // Wait for the table to update
-        await page.waitForTimeout(1000);
-
-        // Verify update - wait for cell text to change
-        const updatedBooleanCell = firstRow.locator('td').nth(booleanColumnIndex);
-        await expect(updatedBooleanCell).toHaveText(newValue, { timeout: 10000 });
-
-        // Revert to original value
-        await updatedBooleanCell.click();
-        await page.waitForTimeout(300);
-        const revertListbox = page.getByRole('listbox').first();
-        await expect(revertListbox).toBeVisible({ timeout: 5000 });
-        const originalOption = revertListbox.getByRole('option', { name: currentText?.trim() || '' }).first();
-        await originalOption.click();
-        await expect(revertListbox).not.toBeVisible({ timeout: 5000 });
-        await expect(updatedBooleanCell).toHaveText(currentText?.trim() || '', { timeout: 10000 });
+        await expect(oneCell).toContainText(originalValue, { timeout: 10000 });
     });
 });

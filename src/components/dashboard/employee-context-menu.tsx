@@ -87,6 +87,8 @@ export function EmployeeContextMenu({
   return (
     <div
       ref={menuRef}
+      role="menu"
+      aria-label="Employee quick actions"
       className={cn(
         'fixed z-50 w-56 rounded-md border bg-popover p-2 shadow-lg',
         'animate-in fade-in-0 zoom-in-95'

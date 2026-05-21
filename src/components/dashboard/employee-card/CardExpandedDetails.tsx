@@ -144,6 +144,7 @@ export function CardExpandedDetails({
                       dateCategory={dateCategory}
                       allDates={allImportantDates}
                       canEdit={canEdit}
+                      cellRole={isMobile ? "button" : "gridcell"}
                       isChanged={checkColumnChanged(
                         employee.id,
                         col.db_column_name?.toLowerCase().trim() || ""
@@ -174,10 +175,12 @@ export function CardExpandedDetails({
                     }
                     options={getSelectOptions(col.column_name)}
                     canEdit={canEdit}
+                    cellRole={isMobile ? "button" : "gridcell"}
                     isChanged={checkColumnChanged(
                       employee.id,
                       col.db_column_name?.toLowerCase().trim() || ""
                     )}
+                    isChecklistItem={col.is_checklist_item}
                     onSave={
                       col.is_masterdata ? onMasterdataSave : onCustomDataSave
                     }

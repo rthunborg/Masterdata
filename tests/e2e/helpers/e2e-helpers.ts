@@ -9,7 +9,9 @@
  * - CSV download and parsing
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page, expect, type Cookie } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface EmployeeData {
   first_name?: string;
@@ -21,6 +23,85 @@ export interface EmployeeData {
   omc_date?: string;
   pe3_date?: string;
   stena_date?: string;
+}
+
+interface StoredAuthState {
+  cookies?: Cookie[];
+  origins?: Array<{
+    origin: string;
+    localStorage?: Array<{ name: string; value: string }>;
+  }>;
+}
+
+const SEEDED_E2E_PASSWORD = 'Test123!';
+const SEEDED_E2E_EMAILS = new Set([
+  'admin@test.com',
+  'hr@test.com',
+  'sodexo@test.com',
+  'omc@test.com',
+  'payroll@test.com',
+  'toplux@test.com',
+]);
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+function authStatePathForEmail(email: string) {
+  const normalized = normalizeEmail(email);
+  const fileBase =
+    normalized === 'admin@test.com'
+      ? 'admin'
+      : normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  return path.resolve(process.cwd(), 'test-results/.auth', `${fileBase}.json`);
+}
+
+function effectiveE2EPassword(email: string, password: string) {
+  return SEEDED_E2E_EMAILS.has(normalizeEmail(email)) ? SEEDED_E2E_PASSWORD : password;
+}
+
+async function applyStoredAuthState(page: Page, email: string) {
+  const statePath = authStatePathForEmail(email);
+
+  if (!fs.existsSync(statePath)) {
+    return false;
+  }
+
+  try {
+    const state = JSON.parse(fs.readFileSync(statePath, 'utf8')) as StoredAuthState;
+
+    await page.context().clearCookies();
+    if (state.cookies?.length) {
+      await page.context().addCookies(state.cookies);
+    }
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' }).catch(() => {});
+    const localStorageEntries =
+      state.origins?.flatMap((origin) => origin.localStorage ?? []) ?? [];
+
+    await page.evaluate((entries) => {
+      localStorage.clear();
+      sessionStorage.clear();
+      for (const entry of entries) {
+        localStorage.setItem(entry.name, entry.value);
+      }
+    }, localStorageEntries);
+
+    await page.goto('/dashboard', { waitUntil: 'load' });
+    await page.waitForSelector(
+      'table, [aria-label="Employee list"], article[aria-label], [data-testid*="dashboard"], [data-testid*="employee"], h1, h2, [class*="dashboard"]',
+      { timeout: 10000 }
+    );
+
+    if (page.url().includes('/login')) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -80,7 +161,160 @@ async function dismissUnsavedDialog(page: Page) {
  * @param page - Playwright page object
  * @param data - Partial employee data (defaults provided for required fields)
  */
+async function selectEmployeeFormOption(
+  page: Page,
+  labelPattern: RegExp,
+  preferredText?: string | RegExp,
+  options: { required?: boolean; fallbackToFirst?: boolean } = {}
+) {
+  const { required = false, fallbackToFirst = true } = options;
+  const label = page.locator("label").filter({ hasText: labelPattern }).first();
+
+  if ((await label.count()) === 0) {
+    if (required) {
+      throw new Error(`Could not find form label matching ${labelPattern}`);
+    }
+    return false;
+  }
+
+  const formItem = label.locator("..").first();
+  const combobox = formItem.locator('[role="combobox"]').first();
+
+  if ((await combobox.count()) === 0) {
+    if (required) {
+      throw new Error(`Could not find combobox for form label matching ${labelPattern}`);
+    }
+    return false;
+  }
+
+  await combobox.scrollIntoViewIfNeeded();
+  await combobox.click({ timeout: 5000 });
+  await page.waitForSelector('[role="listbox"], [role="option"]', { timeout: 5000 });
+
+  const enabledOptions = page.locator('[role="option"]:not([aria-disabled="true"])');
+  const optionCount = await enabledOptions.count();
+
+  if (optionCount === 0) {
+    if (required) {
+      throw new Error(`No enabled options found for form label matching ${labelPattern}`);
+    }
+    await page.keyboard.press("Escape").catch(() => {});
+    return false;
+  }
+
+  let optionIndex = -1;
+
+  if (preferredText) {
+    const optionTexts = await enabledOptions.allTextContents();
+    optionIndex = optionTexts.findIndex((text) => {
+      const normalized = text.toLowerCase();
+      if (preferredText instanceof RegExp) {
+        return preferredText.test(text);
+      }
+
+      const preferred = preferredText.toLowerCase();
+      return (
+        normalized.includes(preferred) ||
+        preferred
+          .split(/[\s/-]+/)
+          .filter(Boolean)
+          .some((token) => normalized.includes(token))
+      );
+    });
+  }
+
+  if (optionIndex < 0 && !fallbackToFirst) {
+    await page.keyboard.press("Escape").catch(() => {});
+    if (required) {
+      throw new Error(`Could not find matching option for form label ${labelPattern}`);
+    }
+    return false;
+  }
+
+  await enabledOptions.nth(optionIndex >= 0 ? optionIndex : 0).click();
+  return true;
+}
+
 export async function createEmployeeViaUI(page: Page, data: Partial<EmployeeData> = {}) {
+  if (!page.url().includes('/dashboard')) {
+    await page.goto('/dashboard');
+  }
+  await page.waitForLoadState('load');
+
+  const dialog = page.getByRole('dialog').first();
+  const modalAlreadyOpen = await dialog.isVisible({ timeout: 1000 }).catch(() => false);
+
+  if (!modalAlreadyOpen) {
+    const addButton = page.getByRole('button', { name: /Lägg till anställd|Add Employee/i }).first();
+    await addButton.waitFor({ state: 'visible', timeout: 10000 });
+    await addButton.click();
+  }
+
+  await expect(dialog).toBeVisible({ timeout: 10000 });
+
+  const firstName = data.first_name ?? 'Test';
+  const surname = data.surname ?? 'Employee';
+  const ssn = data.ssn ?? `19900101${Date.now().toString().slice(-4)}`;
+
+  await page.locator('input[name="first_name"]').fill(firstName);
+  await page.locator('input[name="surname"]').fill(surname);
+  await page.locator('input[name="ssn"]').fill(ssn);
+
+  if (data.hire_date) {
+    await page.locator('input[name="hire_date"]').fill(data.hire_date);
+  }
+
+  await selectEmployeeFormOption(page, /Rank|Rang|Befattning/i, data.rank ?? 'SEV', {
+    required: true,
+    fallbackToFirst: false,
+  });
+
+  const gender = data.gender ?? 'Man';
+  await selectEmployeeFormOption(
+    page,
+    /Gender|Kön/i,
+    gender === 'Kvinna' || gender === 'Woman' ? /Kvinna|Woman/i : /^Man$/i,
+    { required: true, fallbackToFirst: false }
+  );
+
+  await selectEmployeeFormOption(page, /Stena/i, data.stena_date, {
+    required: true,
+    fallbackToFirst: true,
+  });
+  await selectEmployeeFormOption(page, /ÖMC|OMC/i, data.omc_date, {
+    required: true,
+    fallbackToFirst: true,
+  });
+
+  if (data.pe3_date) {
+    await selectEmployeeFormOption(page, /PE3/i, data.pe3_date, {
+      fallbackToFirst: true,
+    });
+  }
+
+  const submitButton = dialog.locator('button[type="submit"]').first();
+  await submitButton.scrollIntoViewIfNeeded();
+  await expect(submitButton).toBeEnabled({ timeout: 10000 });
+  await submitButton.click();
+
+  try {
+    await expect(dialog).toBeHidden({ timeout: 15000 });
+  } catch {
+    const visibleErrors = (
+      await page
+        .locator('[data-slot="form-message"], [role="alert"], .text-destructive')
+        .allTextContents()
+    ).filter((text) => text.trim().length > 0);
+
+    throw new Error(
+      `Employee form did not close after submit${
+        visibleErrors.length > 0 ? `: ${visibleErrors.join('; ')}` : ''
+      }`
+    );
+  }
+}
+
+export async function createEmployeeViaUILegacy(page: Page, data: Partial<EmployeeData> = {}) {
   // Navigate to employees page if not already there
   if (!page.url().includes('/dashboard')) {
     await page.goto('/dashboard');
@@ -255,9 +489,9 @@ export async function createEmployeeViaUI(page: Page, data: Partial<EmployeeData
       const hasGenderLabel = await genderLabel.count() > 0;
       
       if (hasGenderLabel) {
-        // Find the combobox associated with the gender label
-        // It should be in the same FormItem or nearby
-        const genderFormItem = genderLabel.locator('..').locator('..').first(); // Go up to FormItem
+        // Find the combobox in the same FormItem as the gender label.
+        // Going higher can accidentally pick the Rank combobox.
+        const genderFormItem = genderLabel.locator('..').first();
         const genderCombobox = genderFormItem.locator('[role="combobox"]').first();
         
         if (await genderCombobox.count() > 0) {
@@ -285,47 +519,12 @@ export async function createEmployeeViaUI(page: Page, data: Partial<EmployeeData
             await page.waitForSelector('[role="listbox"]', { timeout: 5000 });
             await page.waitForTimeout(300);
             
-            // Get all option texts to find the right one
-            const allOptions = page.locator('[role="option"]');
-            const optionCount = await allOptions.count();
-            
-            if (optionCount > 0) {
-              const optionTexts = await allOptions.allTextContents();
-              
-              // Filter out non-gender options (like "All Employees", "Crew Ready", etc.)
-              const genderOptions = optionTexts.filter(text => {
-                const lower = text.trim().toLowerCase();
-                return lower.includes('man') || lower.includes('woman') || lower.includes('kvinna');
-              });
-              
-              if (genderOptions.length > 0) {
-                // Find the matching gender option
-                const genderText = data.gender;
-                let targetIndex = -1;
-                
-                for (let i = 0; i < optionTexts.length; i++) {
-                  const text = optionTexts[i].trim().toLowerCase();
-                  if (text.includes(genderText.toLowerCase()) || 
-                      (genderText === 'Kvinna' && (text.includes('woman') || text.includes('kvinna'))) ||
-                      (genderText === 'Woman' && (text.includes('woman') || text.includes('kvinna'))) ||
-                      (genderText === 'Man' && text.includes('man') && !text.includes('woman'))) {
-                    targetIndex = i;
-                    break;
-                  }
-                }
-                
-                if (targetIndex >= 0) {
-                  await allOptions.nth(targetIndex).click();
-                  await page.waitForTimeout(300);
-                } else {
-                  console.warn(`Could not find gender option for "${genderText}", available options: ${optionTexts.join(', ')}`);
-                }
-              } else {
-                console.warn('No gender options found in dropdown');
-              }
-            } else {
-              console.warn('No gender options found in dropdown');
-            }
+            const optionName =
+              data.gender === 'Kvinna' || data.gender === 'Woman'
+                ? /^(Kvinna|Woman)$/i
+                : /^Man$/i;
+            await page.getByRole('option', { name: optionName }).click();
+            await page.waitForTimeout(300);
           } catch {
             // Listbox might not open if there are no options or field is disabled
             console.warn('Gender dropdown listbox did not open, skipping gender selection');
@@ -985,6 +1184,21 @@ export async function downloadAndParseCSV(page: Page): Promise<string[][]> {
  * @param password - User password
  */
 export async function loginAsUser(page: Page, email: string, password: string) {
+  const normalizedEmail = normalizeEmail(email);
+  const effectivePassword = effectiveE2EPassword(normalizedEmail, password);
+
+  if (await applyStoredAuthState(page, normalizedEmail)) {
+    return;
+  }
+
+  await page.context().clearCookies();
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' }).catch(() => {});
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  }).catch(() => {});
+
   // Navigate to login page (locale routing was removed, so it's just /login)
   await page.goto('/login');
   // Use 'load' instead of 'networkidle' to avoid timeout issues with parallel test execution
@@ -1006,7 +1220,7 @@ export async function loginAsUser(page: Page, email: string, password: string) {
   
   // Fill email - react-hook-form will handle the onChange
   await emailField.clear();
-  await emailField.fill(email);
+  await emailField.fill(normalizedEmail);
   await emailField.blur(); // Trigger blur to validate
   await page.waitForTimeout(200);
   
@@ -1032,13 +1246,13 @@ export async function loginAsUser(page: Page, email: string, password: string) {
     
     // Return the actual value
     return input.value;
-  }, password);
+  }, effectivePassword);
   
   await page.waitForTimeout(400);
   
   // Verify password was actually filled
   const passwordValue = await passwordField.inputValue();
-  if (passwordValue !== password && passwordFilled !== password) {
+  if (passwordValue !== effectivePassword && passwordFilled !== effectivePassword) {
     // Fallback: clear and type character by character to ensure react-hook-form detects it
     await passwordField.click();
     await passwordField.press('Control+a');
@@ -1046,7 +1260,7 @@ export async function loginAsUser(page: Page, email: string, password: string) {
     await page.waitForTimeout(100);
     
     // Type each character with small delay to trigger validation
-    for (const char of password) {
+    for (const char of effectivePassword) {
       await passwordField.type(char, { delay: 20 });
       await page.waitForTimeout(10);
     }
@@ -1054,10 +1268,10 @@ export async function loginAsUser(page: Page, email: string, password: string) {
     await page.waitForTimeout(300);
     
     const passwordValue2 = await passwordField.inputValue();
-    if (passwordValue2 !== password) {
+    if (passwordValue2 !== effectivePassword) {
       // Last resort: log what we got for debugging
-      console.error(`Password fill failed. Expected: "${password}" (${password.length} chars), Got: "${passwordValue2}" (${passwordValue2.length} chars)`);
-      throw new Error(`Failed to fill password field. Expected: "${password}" (${password.length} chars), Got: "${passwordValue2}" (${passwordValue2.length} chars)`);
+      console.error(`Password fill failed. Expected length: ${effectivePassword.length}, Got: "${passwordValue2}" (${passwordValue2.length} chars)`);
+      throw new Error(`Failed to fill password field. Expected length: ${effectivePassword.length}, Got: "${passwordValue2}" (${passwordValue2.length} chars)`);
     }
   }
   
@@ -1107,10 +1321,18 @@ export async function loginAsUser(page: Page, email: string, password: string) {
   // Dashboard should have either a table, cards, or main content area
   try {
     await page.waitForSelector(
-      'table, [data-testid*="dashboard"], [data-testid*="employee"], h1, h2, [class*="dashboard"]',
+      'table, [aria-label="Employee list"], article[aria-label], [data-testid*="dashboard"], [data-testid*="employee"], h1, h2, [class*="dashboard"]',
       { timeout: 10000 }
     );
   } catch {
+    // Some mobile routes render the dashboard but do not expose the desktop table/test ids.
+    const currentUrl = page.url();
+    if (currentUrl.includes('/dashboard')) {
+      await page.waitForSelector('body', { timeout: 5000 });
+      await page.waitForLoadState('load');
+      return;
+    }
+
     // Dashboard content not found - check for errors
     await page.waitForTimeout(1000); // Give time for error to appear
     
@@ -1123,24 +1345,19 @@ export async function loginAsUser(page: Page, email: string, password: string) {
       throw new Error(`Login failed. Error message: "${errorText}". Page URL: ${page.url()}. Page content preview: ${pageContent?.substring(0, 200)}`);
     }
     
-    // Check current URL - might have navigated to dashboard
-    const currentUrl = page.url();
-    if (currentUrl.includes('/dashboard')) {
-      // Actually succeeded, just wait for content
-      await page.waitForSelector('body', { timeout: 5000 });
-      // Use 'load' instead of 'networkidle' to avoid timeout issues with parallel test execution
-      await page.waitForLoadState('load');
-      return;
-    }
-    
     // No error message found, but didn't navigate - check current URL
-    throw new Error(`Login failed - no redirect to dashboard. Current URL: ${currentUrl}. Make sure test user exists: ${email}`);
+    throw new Error(`Login failed - no redirect to dashboard. Current URL: ${currentUrl}. Make sure test user exists: ${normalizedEmail}`);
   }
   
     // If we got here, we're on dashboard
   // Use 'load' instead of 'networkidle' to avoid timeout issues with parallel test execution
   await page.waitForLoadState('load');
   await page.waitForTimeout(500); // Give dashboard time to load
+
+  if (SEEDED_E2E_EMAILS.has(normalizedEmail)) {
+    fs.mkdirSync(path.dirname(authStatePathForEmail(normalizedEmail)), { recursive: true });
+    await page.context().storageState({ path: authStatePathForEmail(normalizedEmail) }).catch(() => {});
+  }
 }
 
 /**
@@ -1150,7 +1367,7 @@ export async function loginAsUser(page: Page, email: string, password: string) {
  * @param expectedText - Text to wait for in table
  * @param timeout - Timeout in milliseconds (default: 2000)
  */
-export async function waitForRealtimeUpdate(page: Page, expectedText: string, timeout: number = 2000) {
+export async function waitForRealtimeUpdate(page: Page, expectedText: string | RegExp, timeout: number = 10000) {
   await expect(
     page.locator('table, [data-testid="employee-table"]')
   ).toContainText(expectedText, { timeout });
@@ -1183,21 +1400,7 @@ export async function loginAsHRAdmin(page: Page) {
  * @param page - Playwright page object
  */
 export async function logout(page: Page) {
-  // First, try to call logout API to properly clear session
-  try {
-    const response = await page.request.post('/api/auth/logout');
-    if (!response.ok()) {
-      console.warn('Logout API returned non-OK status:', response.status());
-    }
-  } catch (error) {
-    // API call might fail if already logged out, continue anyway
-    console.warn('Logout API call failed (might already be logged out):', error);
-  }
-  
-  // Wait a moment for API to process
-  await page.waitForTimeout(500);
-  
-  // Clear all cookies to ensure clean state
+  // Clear browser auth state without invalidating reusable E2E storage-state sessions.
   await page.context().clearCookies();
   
   // Clear local storage and session storage

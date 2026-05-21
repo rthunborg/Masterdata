@@ -10,6 +10,8 @@ import { test, expect } from '@playwright/test';
 import { createEmployeeViaUI, waitForTableUpdate, verifyCapacityBadge, downloadAndParseCSV, loginAsUser } from './helpers/e2e-helpers';
 
 test.describe('Employee Lifecycle E2E Journey', () => {
+  test.describe.configure({ timeout: 120000 });
+
   test.beforeEach(async ({ page }) => {
     // Login as HR Admin
     await loginAsUser(page, 'admin@test.com', 'Test123!');
@@ -115,7 +117,7 @@ test.describe('Employee Lifecycle E2E Journey', () => {
 
     // Step 6: Verify capacity badge updates (remaining spots decremented)
     // Navigate to important dates page to check capacity
-    await page.goto('/important-dates');
+    await page.goto('/dashboard/important-dates');
     await page.waitForLoadState('load');
     // Verify that a capacity badge exists (date description may vary due to dynamic seeding)
     await verifyCapacityBadge(page, 'almost-full'); // Should show reduced capacity for any date

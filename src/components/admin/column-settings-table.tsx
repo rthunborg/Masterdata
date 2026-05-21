@@ -77,6 +77,7 @@ export function ColumnSettingsTable({
 
   const {
     updatingColumnId,
+    updatingColumnField,
     deleteModalOpen,
     setDeleteModalOpen,
     columnToDelete,
@@ -179,6 +180,7 @@ export function ColumnSettingsTable({
                       allRoles={allRoles}
                       allColumns={allColumns}
                       updatingColumnId={updatingColumnId}
+                      updatingColumnField={updatingColumnField}
                       isPermissionDisabled={isPermissionDisabled}
                       handlePermissionChange={handlePermissionChange}
                       handleCategoryUpdate={handleCategoryUpdate}

@@ -34,7 +34,7 @@ export function DateEditor({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn("w-full justify-start text-left font-normal", isCompact && "h-8 text-xs")}
+          className={cn("w-full justify-start text-left font-normal", isLoading && "pr-8", isCompact && "h-8 text-xs")}
           disabled={isLoading}
         >
           <CalendarIcon className={cn("mr-2", isCompact ? "h-3 w-3" : "h-4 w-4")} />
@@ -57,14 +57,15 @@ export function DateEditor({
                 saveCtx.setIsEditing(false);
                 return;
               }
-              setEditValue(dateStr);
               setShowDatePicker(false);
-              lastSavedValueRef.current = dateStr;
               const success = await executeSave(saveCtx, dateStr);
-              if (!success) {
+              if (success) {
+                setEditValue(dateStr);
+              } else {
                 setEditValue(value ? String(value) : "");
-                lastSavedValueRef.current = null;
+                saveCtx.setIsEditing(false);
               }
+              lastSavedValueRef.current = null;
             }
           }}
           autoFocus
@@ -76,14 +77,15 @@ export function DateEditor({
               size="sm"
               className="w-full justify-center text-muted-foreground"
               onClick={async () => {
-                setEditValue("");
                 setShowDatePicker(false);
-                lastSavedValueRef.current = "";
                 const success = await executeSave(saveCtx, null);
-                if (!success) {
+                if (success) {
+                  setEditValue("");
+                } else {
                   setEditValue(value ? String(value) : "");
-                  lastSavedValueRef.current = null;
+                  saveCtx.setIsEditing(false);
                 }
+                lastSavedValueRef.current = null;
               }}
             >
               <XIcon className="mr-1.5 h-3.5 w-3.5" />

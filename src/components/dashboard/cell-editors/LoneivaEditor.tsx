@@ -34,12 +34,20 @@ export function LoneivaEditor({
           saveCtx.setIsEditing(false);
           return;
         }
-        setEditValue(parsedValue ?? "");
-        executeSave(saveCtx, parsedValue);
+        executeSave(saveCtx, parsedValue).then((success) => {
+          setEditValue(
+            success
+              ? (parsedValue ?? "")
+              : (value !== null && value !== undefined ? value : "")
+          );
+          if (!success) {
+            saveCtx.setIsEditing(false);
+          }
+        });
       }}
       disabled={isLoading}
     >
-      <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
+      <SelectTrigger className={cn(error ? "border-destructive" : "", isLoading && "pr-8", isCompact && "h-8 text-xs")}>
         <SelectValue placeholder={tDashboard('selectSalaryLevel') || 'Select salary level'} />
       </SelectTrigger>
       <SelectContent>

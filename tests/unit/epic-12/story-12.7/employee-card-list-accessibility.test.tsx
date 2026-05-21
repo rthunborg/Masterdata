@@ -84,7 +84,7 @@ const mockEmployees: Employee[] = [
 ];
 
 describe('EmployeeCardList Accessibility', () => {
-  it('should use semantic main element with aria-label', () => {
+  it('should use semantic region with aria-label', () => {
     render(
       <EmployeeCardList
         employees={mockEmployees}
@@ -95,8 +95,8 @@ describe('EmployeeCardList Accessibility', () => {
       />
     );
 
-    const main = screen.getByRole('main');
-    expect(main).toHaveAttribute('aria-label', 'Employee list');
+    const region = screen.getByRole('region', { name: 'Employee list' });
+    expect(region).toBeInTheDocument();
   });
 
   it('should have properly labeled search input', () => {

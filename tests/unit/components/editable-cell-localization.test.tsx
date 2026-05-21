@@ -24,6 +24,7 @@ describe("EditableCell - Localization", () => {
   };
 
     const mockOnSave = vi.fn();
+    const mockOnError = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -40,6 +41,7 @@ describe("EditableCell - Localization", () => {
                 type="text"
                 canEdit={true}
                 onSave={mockOnSave}
+                onError={mockOnError}
             />
         );
 
@@ -52,10 +54,12 @@ describe("EditableCell - Localization", () => {
         fireEvent.change(input, { target: { value: "New Value" } });
         fireEvent.keyDown(input, { key: "Enter" });
 
-        // Verify localized error message
+        // Verify localized error is propagated to the snackbar path and
+        // the cell reverts to the confirmed original value.
         await waitFor(() => {
-            expect(screen.getByText("Ogiltigt värde")).toBeInTheDocument();
+            expect(mockOnError).toHaveBeenCalledWith("Ogiltigt värde");
         });
+        expect(screen.getByRole("gridcell")).toHaveTextContent("Original Value");
     });
 
     it("displays localized error message for 'VALIDATION_ERROR' error", async () => {
@@ -69,6 +73,7 @@ describe("EditableCell - Localization", () => {
                 type="text"
                 canEdit={true}
                 onSave={mockOnSave}
+                onError={mockOnError}
             />
         );
 
@@ -81,10 +86,12 @@ describe("EditableCell - Localization", () => {
         fireEvent.change(input, { target: { value: "New Value" } });
         fireEvent.keyDown(input, { key: "Enter" });
 
-        // Verify localized error message
+        // Verify localized error is propagated to the snackbar path and
+        // the cell reverts to the confirmed original value.
         await waitFor(() => {
-            expect(screen.getByText("Ogiltigt värde")).toBeInTheDocument();
+            expect(mockOnError).toHaveBeenCalledWith("Ogiltigt värde");
         });
+        expect(screen.getByRole("gridcell")).toHaveTextContent("Original Value");
     });
 
     it("displays original error message for unknown errors", async () => {
@@ -98,6 +105,7 @@ describe("EditableCell - Localization", () => {
                 type="text"
                 canEdit={true}
                 onSave={mockOnSave}
+                onError={mockOnError}
             />
         );
 
@@ -110,9 +118,11 @@ describe("EditableCell - Localization", () => {
         fireEvent.change(input, { target: { value: "New Value" } });
         fireEvent.keyDown(input, { key: "Enter" });
 
-        // Verify original error message
+        // Verify original error is propagated to the snackbar path and
+        // the cell reverts to the confirmed original value.
         await waitFor(() => {
-            expect(screen.getByText("Network error")).toBeInTheDocument();
+            expect(mockOnError).toHaveBeenCalledWith("Network error");
         });
+        expect(screen.getByRole("gridcell")).toHaveTextContent("Original Value");
     });
 });

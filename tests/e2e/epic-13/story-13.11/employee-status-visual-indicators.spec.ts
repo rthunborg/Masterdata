@@ -99,8 +99,7 @@ test.describe('Story 13.11: Employee Status Visual Indicators', () => {
       // Initially should have red tint
       await expect(terminatedRow).toHaveClass(/bg-red-50/);
       
-      // Click to select
-      await terminatedRow.click();
+      await terminatedRow.locator('[data-testid^="employee-select-checkbox-"]').first().click();
       
       // Should have both red tint and selection grey tint
       await expect(terminatedRow).toHaveClass(/bg-red-50/);
@@ -122,8 +121,7 @@ test.describe('Story 13.11: Employee Status Visual Indicators', () => {
     const rowCount = await firstRow.count();
     
     if (rowCount > 0) {
-      // Click to select
-      await firstRow.click();
+      await page.locator('[data-testid^="employee-select-checkbox-"]').first().click();
       
       // Check if it has green tint (if crew ready)
       const classes = await firstRow.getAttribute('class');
@@ -219,11 +217,11 @@ test.describe('Story 13.11: Employee Status Visual Indicators', () => {
   test('mobile cards show correct tints', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.reload();
-    await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 10000 });
+    await page.goto('/dashboard');
+    await page.waitForSelector('[data-testid^="employee-row-"], article[aria-label^="Employee "]', { timeout: 10000 });
     
     // On mobile, we should see cards
-    const card = page.locator('[data-testid^="employee-card-"], [class*="Card"]').first();
+    const card = page.locator('article[aria-label^="Employee "]').first();
     
     const cardCount = await card.count();
     

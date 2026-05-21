@@ -1,15 +1,29 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function waitForEmployeeRows(page: Page) {
+  const firstRow = page
+    .locator('[data-testid^="employee-row-"]')
+    .filter({ visible: true })
+    .first();
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      await expect(firstRow).toBeVisible({ timeout: 15000 });
+      return;
+    } catch (error) {
+      if (attempt === 1) {
+        throw error;
+      }
+
+      await page.reload({ waitUntil: 'domcontentloaded' });
+    }
+  }
+}
 
 test.describe('Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11)', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to dashboard (assuming login is handled)
-    await page.goto('/dashboard');
-    
-    // Wait for page to load
-    await page.waitForLoadState('networkidle');
-    
-    // Wait for employee table to be visible
-    await page.waitForSelector('[data-testid^="employee-row-"]', { timeout: 10000 });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await waitForEmployeeRows(page);
   });
 
   test('user can NOT click row to select employee (Story 9.11)', async ({ page }) => {

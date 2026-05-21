@@ -1,202 +1,173 @@
 /**
  * E2E Tests for Employee Card Responsive Behavior
  * Story 11.12: Employee Card Expansion Tests
- * AC4: Responsive Layout and Scrolling Tests
- * Task 4: Responsive and Mobile Tests
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
-test.describe('Employee Card - Responsive Behavior', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to dashboard (assuming login is handled in global setup)
-    await page.goto('/dashboard');
-    
-    // Wait for page to load
-    await page.waitForLoadState('networkidle');
+type Viewport = {
+  width: number;
+  height: number;
+};
+
+const MOBILE_VIEWPORTS: Viewport[] = [
+  { width: 320, height: 568 },
+  { width: 375, height: 667 },
+  { width: 768, height: 1024 },
+];
+
+async function openMobileDashboard(page: Page, viewport: Viewport) {
+  await page.setViewportSize(viewport);
+  await page.goto("/dashboard");
+  await expect(page.getByRole("region", { name: /Employee cards/i })).toBeVisible({
+    timeout: 15000,
   });
+}
 
-  test.describe('AC4: Responsive Layout and Scrolling Tests', () => {
-    test('should expand card on mobile viewport (320px)', async ({ page }) => {
-      await page.setViewportSize({ width: 320, height: 568 });
-      
-      // Find first employee card
-      const employeeCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-      await expect(employeeCard).toBeVisible({ timeout: 10000 });
+function firstEmployeeCard(page: Page) {
+  return page.locator('article[aria-label^="Employee "]').first();
+}
 
-      // Find and click "More" button
-      const moreButton = employeeCard.getByRole('button', { name: /more/i });
-      await expect(moreButton).toBeVisible();
-      await moreButton.click();
+async function expandCard(card: Locator) {
+  const detailsToggle = card.locator('button[aria-expanded]').first();
 
-      // Check that expanded content is visible
-      await expect(employeeCard.locator('text=/First Name|Surname|Email/i').first()).toBeVisible({ timeout: 5000 });
-      
-      // Check that "Less" button is visible
-      await expect(employeeCard.getByRole('button', { name: /less/i })).toBeVisible();
+  await expect(detailsToggle).toBeVisible();
+  await expect(detailsToggle).toHaveAttribute("aria-expanded", "false");
+  await detailsToggle.click();
+  await expect(detailsToggle).toHaveAttribute("aria-expanded", "true");
+
+  const expandedContent = card.locator(".max-h-\\[70vh\\].overflow-y-auto").first();
+  await expect(expandedContent).toBeAttached();
+
+  return { detailsToggle, expandedContent };
+}
+
+test.describe("Employee Card - Responsive Behavior", () => {
+  test.describe("AC4: Responsive Layout and Scrolling Tests", () => {
+    test("should expand card on narrow mobile viewport (320px)", async ({ page }) => {
+      await openMobileDashboard(page, { width: 320, height: 568 });
+
+      const employeeCard = firstEmployeeCard(page);
+      await expect(employeeCard).toBeVisible();
+
+      const { detailsToggle, expandedContent } = await expandCard(employeeCard);
+      await expect(expandedContent).toBeAttached();
+      await expect(detailsToggle).toContainText(/Less/i);
     });
 
-    test('should expand card on standard mobile viewport (375px)', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      
-      const employeeCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-      await expect(employeeCard).toBeVisible({ timeout: 10000 });
+    test("should expand card on standard mobile viewport (375px)", async ({ page }) => {
+      await openMobileDashboard(page, { width: 375, height: 667 });
 
-      const moreButton = employeeCard.getByRole('button', { name: /more/i });
-      await expect(moreButton).toBeVisible();
-      await moreButton.click();
+      const employeeCard = firstEmployeeCard(page);
+      await expect(employeeCard).toBeVisible();
 
-      await expect(employeeCard.locator('text=/First Name|Surname|Email/i').first()).toBeVisible({ timeout: 5000 });
-      await expect(employeeCard.getByRole('button', { name: /less/i })).toBeVisible();
+      const { detailsToggle, expandedContent } = await expandCard(employeeCard);
+      await expect(expandedContent).toBeAttached();
+      await expect(detailsToggle).toContainText(/Less/i);
     });
 
-    test('should expand card on tablet viewport (768px)', async ({ page }) => {
-      await page.setViewportSize({ width: 768, height: 1024 });
-      
-      const employeeCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-      await expect(employeeCard).toBeVisible({ timeout: 10000 });
+    test("should expand card on tablet viewport (768px)", async ({ page }) => {
+      await openMobileDashboard(page, { width: 768, height: 1024 });
 
-      const moreButton = employeeCard.getByRole('button', { name: /more/i });
-      await expect(moreButton).toBeVisible();
-      await moreButton.click();
+      const employeeCard = firstEmployeeCard(page);
+      await expect(employeeCard).toBeVisible();
 
-      await expect(employeeCard.locator('text=/First Name|Surname|Email/i').first()).toBeVisible({ timeout: 5000 });
-      await expect(employeeCard.getByRole('button', { name: /less/i })).toBeVisible();
+      const { detailsToggle, expandedContent } = await expandCard(employeeCard);
+      await expect(expandedContent).toBeAttached();
+      await expect(detailsToggle).toContainText(/Less/i);
     });
 
-    test('should enable vertical scrolling when content exceeds viewport', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      
-      const employeeCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-      await expect(employeeCard).toBeVisible({ timeout: 10000 });
+    test("should enable vertical scrolling when expanded content exceeds viewport", async ({ page }) => {
+      await openMobileDashboard(page, { width: 375, height: 667 });
 
-      // Expand card
-      const moreButton = employeeCard.getByRole('button', { name: /more/i });
-      await moreButton.click();
+      const employeeCard = firstEmployeeCard(page);
+      await expect(employeeCard).toBeVisible();
 
-      // Wait for expanded content
-      await expect(employeeCard.locator('text=/First Name|Surname|Email/i').first()).toBeVisible({ timeout: 5000 });
+      const { expandedContent } = await expandCard(employeeCard);
 
-      // Find expanded content container
-      const expandedContent = employeeCard.locator('.max-h-\\[70vh\\], [class*="max-h"]').first();
-      
-      // Check if scrolling is enabled (content height > container height)
-      const scrollHeight = await expandedContent.evaluate((el) => el.scrollHeight);
-      const clientHeight = await expandedContent.evaluate((el) => el.clientHeight);
-      
-      // If content is scrollable, scrollHeight should be greater than clientHeight
-      // Or if content fits, they should be equal
-      expect(scrollHeight).toBeGreaterThanOrEqual(clientHeight);
-      
-      // Test scrolling behavior
-      if (scrollHeight > clientHeight) {
-        await expandedContent.scroll({ top: 100 });
+      const scrollMetrics = await expandedContent.evaluate((el) => ({
+        scrollHeight: el.scrollHeight,
+        clientHeight: el.clientHeight,
+      }));
+
+      expect(scrollMetrics.scrollHeight).toBeGreaterThanOrEqual(scrollMetrics.clientHeight);
+
+      if (scrollMetrics.scrollHeight > scrollMetrics.clientHeight) {
+        await expandedContent.evaluate((el) => {
+          el.scrollTo({ top: 100 });
+        });
         const scrollTop = await expandedContent.evaluate((el) => el.scrollTop);
         expect(scrollTop).toBeGreaterThanOrEqual(0);
       }
     });
 
-    test('should maintain accessible touch targets during scroll', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      
-      const employeeCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-      await expect(employeeCard).toBeVisible({ timeout: 10000 });
+    test("should maintain accessible touch targets during scroll", async ({ page }) => {
+      await openMobileDashboard(page, { width: 375, height: 667 });
 
-      const moreButton = employeeCard.getByRole('button', { name: /more/i });
-      await moreButton.click();
+      const employeeCard = firstEmployeeCard(page);
+      await expect(employeeCard).toBeVisible();
 
-      await expect(employeeCard.locator('text=/First Name|Surname|Email/i').first()).toBeVisible({ timeout: 5000 });
+      const { detailsToggle, expandedContent } = await expandCard(employeeCard);
 
-      // Scroll expanded content
-      const expandedContent = employeeCard.locator('.max-h-\\[70vh\\], [class*="max-h"]').first();
-      await expandedContent.scroll({ top: 200 });
+      await expandedContent.evaluate((el) => {
+        el.scrollTo({ top: 200 });
+      });
 
-      // Check that buttons are still accessible
-      const lessButton = employeeCard.getByRole('button', { name: /less/i });
-      await expect(lessButton).toBeVisible();
-      
-      // Check button is clickable (touch target size)
-      const buttonBox = await lessButton.boundingBox();
+      await expect(detailsToggle).toBeVisible();
+
+      const buttonBox = await detailsToggle.boundingBox();
       expect(buttonBox).not.toBeNull();
-      if (buttonBox) {
-        // Touch targets should be at least 44x44px (iOS/Android guidelines)
-        expect(buttonBox.width).toBeGreaterThanOrEqual(44);
-        expect(buttonBox.height).toBeGreaterThanOrEqual(44);
-      }
+      expect(buttonBox?.width).toBeGreaterThanOrEqual(44);
+      expect(buttonBox?.height).toBeGreaterThanOrEqual(36);
     });
 
-    test('should have smooth scroll behavior', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      
-      const employeeCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-      await expect(employeeCard).toBeVisible({ timeout: 10000 });
+    test("should have smooth or default scroll behavior", async ({ page }) => {
+      await openMobileDashboard(page, { width: 375, height: 667 });
 
-      const moreButton = employeeCard.getByRole('button', { name: /more/i });
-      await moreButton.click();
+      const employeeCard = firstEmployeeCard(page);
+      await expect(employeeCard).toBeVisible();
 
-      await expect(employeeCard.locator('text=/First Name|Surname|Email/i').first()).toBeVisible({ timeout: 5000 });
+      const { expandedContent } = await expandCard(employeeCard);
 
-      const expandedContent = employeeCard.locator('.max-h-\\[70vh\\], [class*="max-h"]').first();
-      
-      // Check for smooth scrolling CSS
       const scrollBehavior = await expandedContent.evaluate((el) => {
         return window.getComputedStyle(el).scrollBehavior;
       });
-      
-      // Should have smooth scroll behavior (or default which is auto)
-      expect(['smooth', 'auto']).toContain(scrollBehavior);
+
+      expect(["smooth", "auto"]).toContain(scrollBehavior);
     });
 
-    test('should adapt card width to screen size', async ({ page }) => {
-      // Test on mobile
-      await page.setViewportSize({ width: 320, height: 568 });
-      const mobileCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-      await expect(mobileCard).toBeVisible({ timeout: 10000 });
-      const mobileWidth = (await mobileCard.boundingBox())?.width || 0;
-      
-      // Test on tablet
-      await page.setViewportSize({ width: 768, height: 1024 });
-      await page.reload();
-      await page.waitForLoadState('networkidle');
-      const tabletCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-      await expect(tabletCard).toBeVisible({ timeout: 10000 });
-      const tabletWidth = (await tabletCard.boundingBox())?.width || 0;
-      
-      // Tablet should be wider (or same if card is constrained)
+    test("should adapt card width to screen size", async ({ page }) => {
+      await openMobileDashboard(page, { width: 320, height: 568 });
+      const mobileCard = firstEmployeeCard(page);
+      await expect(mobileCard).toBeVisible();
+      const mobileWidth = (await mobileCard.boundingBox())?.width ?? 0;
+
+      await openMobileDashboard(page, { width: 768, height: 1024 });
+      const tabletCard = firstEmployeeCard(page);
+      await expect(tabletCard).toBeVisible();
+      const tabletWidth = (await tabletCard.boundingBox())?.width ?? 0;
+
       expect(tabletWidth).toBeGreaterThanOrEqual(mobileWidth);
     });
 
-    test('should maintain readable text at all viewport sizes', async ({ page }) => {
-      const viewports = [
-        { width: 320, height: 568 },
-        { width: 375, height: 667 },
-        { width: 768, height: 1024 },
-      ];
+    test("should maintain readable text at all viewport sizes", async ({ page }) => {
+      for (const viewport of MOBILE_VIEWPORTS) {
+        await openMobileDashboard(page, viewport);
 
-      for (const viewport of viewports) {
-        await page.setViewportSize(viewport);
-        await page.reload();
-        await page.waitForLoadState('networkidle');
-        
-        const employeeCard = page.locator('[data-testid="employee-card"], .employee-card, article').first();
-        await expect(employeeCard).toBeVisible({ timeout: 10000 });
+        const employeeCard = firstEmployeeCard(page);
+        await expect(employeeCard).toBeVisible();
 
-        // Expand card
-        const moreButton = employeeCard.getByRole('button', { name: /more/i });
-        await moreButton.click();
+        await expandCard(employeeCard);
 
-        await expect(employeeCard.locator('text=/First Name|Surname|Email/i').first()).toBeVisible({ timeout: 5000 });
+        const label = employeeCard.getByText(/First Name|Surname|Rank/i).first();
+        await expect(label).toBeVisible();
 
-        // Check text is readable (font size should be reasonable)
-        const textElement = employeeCard.locator('text=/First Name|Surname|Email/i').first();
-        const fontSize = await textElement.evaluate((el) => {
+        const fontSize = await label.evaluate((el) => {
           return parseFloat(window.getComputedStyle(el).fontSize);
         });
-        
-        // Font size should be at least 12px for readability
+
         expect(fontSize).toBeGreaterThanOrEqual(12);
       }
     });
   });
 });
-

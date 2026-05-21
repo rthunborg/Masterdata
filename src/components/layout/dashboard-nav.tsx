@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { canManageSettings, canManageEmployees, UserRole } from '@/lib/types/user';
+import { canManageSettings, canManageEmployees, isExternalParty, UserRole } from '@/lib/types/user';
 import { t } from '@/lib/i18n';
 
 export function DashboardNav() {
   const { user } = useAuth();
 
   if (!user) return null;
+  if (isExternalParty(user.role as UserRole)) return null;
 
   const showAdminTabs = canManageSettings(user.role as UserRole);
   const showImportantDates = canManageEmployees(user.role as UserRole);

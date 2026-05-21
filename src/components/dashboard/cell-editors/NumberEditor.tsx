@@ -31,7 +31,7 @@ export function NumberEditor({
         onKeyDown={handleKeyDown}
         disabled={isLoading}
         inputMode="numeric"
-        className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}
+        className={cn(error ? "border-destructive" : "", isLoading && "pr-8", isCompact && "h-8 text-xs")}
       />
       {error && (
         <p className="text-xs text-destructive mt-1">

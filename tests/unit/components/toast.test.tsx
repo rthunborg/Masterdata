@@ -18,6 +18,11 @@ describe("Toaster", () => {
 
     expect(props.richColors).toBe(true);
     expect(props.duration).toBeGreaterThanOrEqual(7000);
+    expect(props.toastOptions?.classNames?.toast).toContain("!pr-9");
+    expect(props.toastOptions?.classNames?.toast).toContain(
+      "--toast-close-button-end:0"
+    );
+    expect(props.toastOptions?.classNames?.closeButton).toContain("!right-0");
     expect(props.toastOptions?.classNames?.error).toContain("bg-red");
     expect(props.toastOptions?.classNames?.error).toContain("text-red");
     expect(props.toastOptions?.classNames?.error).toContain("border-red");

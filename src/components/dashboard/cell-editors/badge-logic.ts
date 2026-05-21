@@ -24,9 +24,22 @@ export function calculateBadge(
     }
   } else if (type === "boolean" && value === true) {
     status = 'green';
-  } else if (isLoneivaField && value !== null && value !== undefined) {
+  } else if (isLoneivaField && hasNonDefaultLoneivaValue(value)) {
     status = 'green';
   }
 
   return { status, tooltip };
+}
+
+function hasNonDefaultLoneivaValue(value: string | number | boolean | null): boolean {
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const numericValue = Number(value.trim());
+  return Number.isFinite(numericValue) && numericValue !== 0;
 }

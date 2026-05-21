@@ -171,7 +171,7 @@ function EmployeeCardComponent({
 
     const position = cardIndex && totalCards ? `, ${cardIndex} of ${totalCards}` : '';
 
-    return `${name}, ${role}, ${status}${position}`;
+    return `Employee ${name}, ${role}, ${status}${position}`;
 
   };
 
@@ -334,7 +334,7 @@ function EmployeeCardComponent({
 
         onTouchEnd={(e) => {
 
-          handleTouchEnd();
+          handleTouchEnd(e);
 
           longPressHandlers.onTouchEnd(e);
 
@@ -354,7 +354,10 @@ function EmployeeCardComponent({
 
         <div 
 
-          className="absolute right-0 top-0 bottom-0 flex items-start gap-0 z-10"
+          className={cn(
+            "absolute right-0 top-0 bottom-0 flex items-start gap-0 z-10",
+            swipeOffset < -10 ? "pointer-events-auto" : "pointer-events-none"
+          )}
 
           style={{ width: `${actionButtonsWidth}px` }}
 

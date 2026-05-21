@@ -20,7 +20,7 @@ test.describe('Story 16.5: Field Highlighting in Employee Table', () => {
     // Login as HR Admin to set up test data
     await loginAsHRAdmin(page);
     await page.goto('/dashboard');
-    await page.waitForSelector('[data-testid^="employee-row-"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid^="employee-row-"], article[aria-label]', { timeout: 10000 });
   });
 
   test('highlights appear on changed fields in table view', async ({ page }) => {
@@ -257,7 +257,7 @@ test.describe('Story 16.5: Field Highlighting in Employee Table', () => {
       expect(classes).toBeTruthy();
       
       // Verify card has editable fields (which would show highlights)
-      const editableField = card.locator('[role="gridcell"], input, [role="combobox"]').first();
+      const editableField = card.locator('[role="button"], [role="gridcell"], input, [role="combobox"]').first();
       const fieldCount = await editableField.count();
       
       if (fieldCount > 0) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { UserRole } from "@/lib/types/user";
-import { Eye, EyeOff, Edit, Minus } from "lucide-react";
+import { Eye, EyeOff, Edit, Minus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -15,6 +15,7 @@ interface PermissionToggleProps {
   permissionType: "view" | "edit";
   value: boolean;
   disabled?: boolean;
+  isLoading?: boolean;
   onChange: (value: boolean) => void;
   tooltip?: string;
 }
@@ -23,11 +24,12 @@ export function PermissionToggle({
   permissionType,
   value,
   disabled = false,
+  isLoading = false,
   onChange,
   tooltip,
 }: PermissionToggleProps) {
   const handleClick = () => {
-    if (!disabled) {
+    if (!disabled && !isLoading) {
       onChange(!value);
     }
   };
@@ -77,6 +79,7 @@ export function PermissionToggle({
       onClick={handleClick}
       disabled={disabled}
       aria-label={`${permissionType} permission`}
+      aria-busy={isLoading}
       className={cn(
         "h-4.5 w-4.5 rounded border flex items-center justify-center transition-colors",
         bgColor,
@@ -84,7 +87,15 @@ export function PermissionToggle({
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:opacity-80"
       )}
     >
-      {icon}
+      {isLoading ? (
+        <Loader2
+          className="h-3.5 w-3.5 animate-spin text-blue-600"
+          role="status"
+          aria-label="Sparar"
+        />
+      ) : (
+        icon
+      )}
     </button>
   );
 

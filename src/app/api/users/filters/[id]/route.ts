@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAPIClient } from "@/lib/supabase/server-api";
 import { requireAuthAPI, createErrorResponse } from "@/lib/server/auth";
 import type { DeleteSavedFilterResponse } from "@/lib/types/saved-filter";
 
@@ -24,18 +24,27 @@ export async function DELETE(
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createAPIClient(request);
 
-    // Delete filter - RLS ensures user can only delete their own filters
-    const { error } = await supabase
+    // Delete filter - RLS ensures user can only delete their own filters.
+    // Use the affected-row count instead of select().single(); some RLS
+    // setups allow the delete but do not return deleted rows.
+    const { count, error } = await supabase
       .from("user_filters")
-      .delete()
+      .delete({ count: "exact" })
       .eq("id", id)
       .eq("user_id", user.auth_id); // Explicit check for extra safety
 
     if (error) {
       console.error("[DELETE /api/users/filters/:id] Databasfel:", error);
       throw error;
+    }
+
+    if (count === 0) {
+      return NextResponse.json(
+        { error: "Saved filter not found" },
+        { status: 404 }
+      );
     }
 
     const response: DeleteSavedFilterResponse = { success: true };

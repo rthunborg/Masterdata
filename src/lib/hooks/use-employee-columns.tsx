@@ -592,6 +592,7 @@ export function useEmployeeColumns({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleReactivateClick(employee)}
+                      aria-label={`${t("reactivateEmployee")} ${employee.first_name} ${employee.surname}`}
                     >
                       <UserCheck className="h-4 w-4" />
                     </Button>
@@ -607,6 +608,7 @@ export function useEmployeeColumns({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleTerminateClick(employee)}
+                      aria-label={`${t("terminateEmployee")} ${employee.first_name} ${employee.surname}`}
                     >
                       <UserX className="h-4 w-4" />
                     </Button>
@@ -625,6 +627,7 @@ export function useEmployeeColumns({
                       size="sm"
                       onClick={() => handleUnarchiveClick(employee)}
                       className={isCompact ? "h-6 w-6 p-0" : ""}
+                      aria-label={`${t("restoreEmployee")} ${employee.first_name} ${employee.surname}`}
                     >
                       <ArchiveRestore className={iconSizeClass} />
                     </Button>
@@ -641,6 +644,7 @@ export function useEmployeeColumns({
                       size="sm"
                       onClick={() => handleArchiveClick(employee)}
                       className={isCompact ? "h-6 w-6 p-0" : ""}
+                      aria-label={`${t("archiveEmployee")} ${employee.first_name} ${employee.surname}`}
                     >
                       <Archive className={iconSizeClass} />
                     </Button>

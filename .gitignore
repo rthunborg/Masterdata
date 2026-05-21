@@ -55,6 +55,8 @@ _bmad-output/
 .ai/
 .claude/
 .gemini/
+.agents/
+.playwright-mcp/
 web-bundles/
 CLAUDE.md
 scripts/

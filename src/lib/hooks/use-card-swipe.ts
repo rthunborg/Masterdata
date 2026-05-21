@@ -17,14 +17,20 @@ export function useCardSwipe({
 }: UseCardSwipeOptions) {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number; offset: number } | null>(null);
+  const swipeOffsetRef = useRef(0);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  const updateSwipeOffset = useCallback((offset: number) => {
+    swipeOffsetRef.current = offset;
+    setSwipeOffset(offset);
+  }, []);
+
   const resetSwipe = useCallback(() => {
-    setSwipeOffset(0);
+    updateSwipeOffset(0);
     setIsSwiping(false);
     touchStartRef.current = null;
-  }, []);
+  }, [updateSwipeOffset]);
 
   const triggerHapticFeedback = useCallback(() => {
     if (typeof window !== "undefined" && "vibrate" in navigator) {
@@ -36,7 +42,11 @@ export function useCardSwipe({
     (e: React.TouchEvent) => {
       if (!isMobile || !isHRAdmin) return;
       const touch = e.touches[0];
-      touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        offset: swipeOffsetRef.current,
+      };
       setIsSwiping(true);
     },
     [isMobile, isHRAdmin]
@@ -59,20 +69,27 @@ export function useCardSwipe({
         e.preventDefault();
       }
 
-      // Only allow left swipe (negative deltaX)
-      if (deltaX < 0) {
-        setSwipeOffset(Math.max(-actionButtonsWidth, deltaX));
-      }
+      const nextOffset = touchStartRef.current.offset + deltaX;
+      updateSwipeOffset(Math.min(0, Math.max(-actionButtonsWidth, nextOffset)));
     },
-    [isMobile, isHRAdmin, actionButtonsWidth]
+    [isMobile, isHRAdmin, actionButtonsWidth, updateSwipeOffset]
   );
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e?: React.TouchEvent) => {
     if (!isMobile || !isHRAdmin || !touchStartRef.current) return;
 
     const threshold = 50;
-    if (Math.abs(swipeOffset) >= threshold && swipeOffset < -threshold) {
-      setSwipeOffset(-actionButtonsWidth);
+    const endTouch = e?.changedTouches[0];
+    const endDeltaX = endTouch ? endTouch.clientX - touchStartRef.current.x : 0;
+
+    if (touchStartRef.current.offset < 0 && endDeltaX > threshold) {
+      resetSwipe();
+      return;
+    }
+
+    const currentOffset = swipeOffsetRef.current;
+    if (Math.abs(currentOffset) >= threshold && currentOffset < -threshold) {
+      updateSwipeOffset(-actionButtonsWidth);
       triggerHapticFeedback();
     } else {
       resetSwipe();
@@ -83,8 +100,8 @@ export function useCardSwipe({
   }, [
     isMobile,
     isHRAdmin,
-    swipeOffset,
     actionButtonsWidth,
+    updateSwipeOffset,
     triggerHapticFeedback,
     resetSwipe,
   ]);

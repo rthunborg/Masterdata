@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import { executeSave } from "./save-handler";
 import { hasValueChanged } from "@/lib/utils/change-detection";
@@ -24,13 +25,15 @@ export function SelectEditor({
   saveCtx,
   lastSavedValueRef,
 }: SelectEditorProps) {
+  const pendingSaveRef = useRef(false);
+
   return (
     <Select
       value={editValue !== null && editValue !== undefined ? String(editValue) : ""}
       open={selectOpen}
       onOpenChange={(open) => {
         setSelectOpen(open);
-        if (!open && !isLoading && isEditing) {
+        if (!open && !isLoading && isEditing && !pendingSaveRef.current) {
           const normalizedCurrent = editValue !== null && editValue !== undefined ? String(editValue) : null;
           const normalizedOriginal = (value !== null && value !== undefined) ? String(value) : null;
           if (!hasValueChanged(normalizedOriginal, normalizedCurrent)) {
@@ -45,21 +48,21 @@ export function SelectEditor({
           saveCtx.setIsEditing(false);
           return;
         }
-        setEditValue(selectedValue);
         setSelectOpen(false);
-        lastSavedValueRef.current = selectedValue;
+        pendingSaveRef.current = true;
         const success = await executeSave(saveCtx, selectedValue);
         if (success) {
-          lastSavedValueRef.current = selectedValue;
           setEditValue(selectedValue);
         } else {
           setEditValue(value !== null && value !== undefined ? String(value) : "");
-          lastSavedValueRef.current = null;
+          saveCtx.setIsEditing(false);
         }
+        pendingSaveRef.current = false;
+        lastSavedValueRef.current = null;
       }}
       disabled={isLoading}
     >
-      <SelectTrigger className={cn(error ? "border-destructive" : "", isCompact && "h-8 text-xs")}>
+      <SelectTrigger className={cn(error ? "border-destructive" : "", isLoading && "pr-8", isCompact && "h-8 text-xs")}>
         <SelectValue placeholder="Select..." />
       </SelectTrigger>
       <SelectContent>

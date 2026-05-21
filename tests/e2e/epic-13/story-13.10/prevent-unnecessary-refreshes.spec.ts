@@ -3,35 +3,62 @@
  * Story 13.10: Prevent Unnecessary View Refreshes
  */
 
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
+import { loginAsHRAdmin } from "../../helpers/e2e-helpers";
+
+async function columnIndex(page: Page, label: RegExp) {
+  const headers = page.getByRole("columnheader");
+  const count = await headers.count();
+
+  for (let index = 0; index < count; index += 1) {
+    const headerText = (await headers.nth(index).textContent()) || "";
+    if (label.test(headerText)) {
+      return index;
+    }
+  }
+
+  throw new Error(`Column header not found: ${label}`);
+}
+
+async function tableCellByColumn(page: Page, row: Locator, label: RegExp) {
+  const index = await columnIndex(page, label);
+  const cell = row.locator("td").nth(index);
+  await expect(cell).toBeVisible({ timeout: 10000 });
+  await cell.scrollIntoViewIfNeeded();
+  return cell;
+}
 
 test.describe("Prevent Unnecessary View Refreshes", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to login (redirects to dashboard if already logged in, but we assume clean state here)
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "hr@example.com");
-    await page.fill('input[type="password"]', "password");
-    await page.click('button[type="submit"]');
-    await page.waitForURL("/dashboard");
+    await loginAsHRAdmin(page);
+    await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
   });
+
+  async function firstNameCell(page: Page) {
+    await expect(
+      page.getByRole("button", { name: /Totalt antal anställda.*\d+/i })
+    ).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("table")).toBeVisible({ timeout: 15000 });
+    const row = page.locator('[data-testid^="employee-row-"]').first();
+    await expect(row).toBeVisible({ timeout: 15000 });
+    const cell = await tableCellByColumn(page, row, /First Name/i);
+    await expect(cell.getByRole("gridcell", { name: /Edit first_name/i })).toBeVisible({ timeout: 15000 });
+    return cell;
+  }
 
   test("should not refresh when clicking field and clicking away without change", async ({
     page,
   }) => {
-    // Wait for table to load
-    await page.waitForSelector("table");
-
-    // Find an editable field (e.g., first name)
-    const firstNameCell = page.locator("td").filter({ hasText: /^[A-Z]/ }).first();
+    const cell = await firstNameCell(page);
     
     // Get the original value
-    const originalValue = await firstNameCell.textContent();
+    const originalValue = await cell.textContent();
     
     // Click on the field to enter edit mode
-    await firstNameCell.click();
+    await cell.getByRole("gridcell", { name: /Edit first_name/i }).click();
     
     // Wait for input to appear
-    await page.waitForSelector('input[type="text"]', { state: "visible" });
+    await expect(cell.locator("input").first()).toBeVisible();
     
     // Click somewhere else without changing the value
     await page.click("body");
@@ -40,8 +67,7 @@ test.describe("Prevent Unnecessary View Refreshes", () => {
     await page.waitForTimeout(500);
     
     // Verify the value is still the same (no refresh occurred)
-    const cellAfterClick = page.locator("td").filter({ hasText: /^[A-Z]/ }).first();
-    const valueAfterClick = await cellAfterClick.textContent();
+    const valueAfterClick = await cell.textContent();
     
     expect(valueAfterClick?.trim()).toBe(originalValue?.trim());
   });
@@ -49,22 +75,20 @@ test.describe("Prevent Unnecessary View Refreshes", () => {
   test("should refresh when changing field value and clicking away", async ({
     page,
   }) => {
-    // Wait for table to load
-    await page.waitForSelector("table");
-
-    // Find an editable field
-    const firstNameCell = page.locator("td").filter({ hasText: /^[A-Z]/ }).first();
+    const cell = await firstNameCell(page);
+    const originalValue = (await cell.textContent())?.trim() || "";
     
     // Click on the field to enter edit mode
-    await firstNameCell.click();
+    await cell.getByRole("gridcell", { name: /Edit first_name/i }).click();
     
     // Wait for input to appear
-    const input = page.locator('input[type="text"]').first();
+    const input = cell.locator("input").first();
     await input.waitFor({ state: "visible" });
     
     // Change the value
     await input.clear();
-    await input.fill("Updated Name");
+    const updatedValue = `${originalValue}X`;
+    await input.fill(updatedValue);
     
     // Click somewhere else to save
     await page.click("body");
@@ -73,25 +97,34 @@ test.describe("Prevent Unnecessary View Refreshes", () => {
     await page.waitForTimeout(1000);
     
     // Verify the value was updated (refresh occurred)
-    const updatedCell = page.locator("td").filter({ hasText: "Updated Name" }).first();
-    await expect(updatedCell).toBeVisible();
+    await expect(page.locator('[data-testid^="employee-row-"]').first()).toContainText(
+      updatedValue,
+      { timeout: 15000 }
+    );
+
+    const updatedCell = await firstNameCell(page);
+    await updatedCell.getByRole("gridcell", { name: /Edit first_name/i }).click();
+    const revertInput = updatedCell.locator("input").first();
+    await revertInput.waitFor({ state: "visible" });
+    await revertInput.fill(originalValue);
+    await revertInput.press("Enter");
+    await expect(page.locator('[data-testid^="employee-row-"]').first()).toContainText(
+      originalValue,
+      { timeout: 15000 }
+    );
   });
 
   test("should cancel edit on Escape key without refresh", async ({ page }) => {
-    // Wait for table to load
-    await page.waitForSelector("table");
-
-    // Find an editable field
-    const firstNameCell = page.locator("td").filter({ hasText: /^[A-Z]/ }).first();
+    const cell = await firstNameCell(page);
     
     // Get the original value
-    const originalValue = await firstNameCell.textContent();
+    const originalValue = await cell.textContent();
     
     // Click on the field to enter edit mode
-    await firstNameCell.click();
+    await cell.getByRole("gridcell", { name: /Edit first_name/i }).click();
     
     // Wait for input to appear
-    const input = page.locator('input[type="text"]').first();
+    const input = cell.locator("input").first();
     await input.waitFor({ state: "visible" });
     
     // Change the value
@@ -105,8 +138,7 @@ test.describe("Prevent Unnecessary View Refreshes", () => {
     await page.waitForTimeout(500);
     
     // Verify the value reverted to original (no save occurred)
-    const cellAfterEscape = page.locator("td").filter({ hasText: /^[A-Z]/ }).first();
-    const valueAfterEscape = await cellAfterEscape.textContent();
+    const valueAfterEscape = await cell.textContent();
     
     expect(valueAfterEscape?.trim()).toBe(originalValue?.trim());
   });
@@ -160,20 +192,16 @@ test.describe("Prevent Unnecessary View Refreshes", () => {
   });
 
   test("should handle whitespace-only changes as no change", async ({ page }) => {
-    // Wait for table to load
-    await page.waitForSelector("table");
-
-    // Find an editable field
-    const firstNameCell = page.locator("td").filter({ hasText: /^[A-Z]/ }).first();
+    const cell = await firstNameCell(page);
     
     // Get the original value
-    const originalValue = await firstNameCell.textContent();
+    const originalValue = await cell.textContent();
     
     // Click on the field to enter edit mode
-    await firstNameCell.click();
+    await cell.getByRole("gridcell", { name: /Edit first_name/i }).click();
     
     // Wait for input to appear
-    const input = page.locator('input[type="text"]').first();
+    const input = cell.locator("input").first();
     await input.waitFor({ state: "visible" });
     
     // Add whitespace to the value
@@ -187,8 +215,7 @@ test.describe("Prevent Unnecessary View Refreshes", () => {
     await page.waitForTimeout(1000);
     
     // Verify the value is still the same (whitespace trimmed, no change detected)
-    const cellAfterClick = page.locator("td").filter({ hasText: /^[A-Z]/ }).first();
-    const valueAfterClick = await cellAfterClick.textContent();
+    const valueAfterClick = await cell.textContent();
     
     expect(valueAfterClick?.trim()).toBe(originalValue?.trim());
   });

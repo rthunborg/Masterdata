@@ -166,11 +166,18 @@ describe("EmployeeTable default sort and fallbacks", () => {
       setDensity: vi.fn(),
     });
 
-    return renderWithI18n(
+    const renderTableElement = (tableEmployees: Employee[]) => (
       <QueryClientProvider client={queryClient}>
-        <EmployeeTable employees={employees} isLoading={false} />
+        <EmployeeTable employees={tableEmployees} isLoading={false} />
       </QueryClientProvider>
     );
+
+    const renderResult = renderWithI18n(renderTableElement(employees));
+
+    return Object.assign(renderResult, {
+      rerenderTable: (nextEmployees: Employee[]) =>
+        renderResult.rerender(renderTableElement(nextEmployees)),
+    });
   };
 
   describe("Internal users with checklist items (progress column visible)", () => {
@@ -196,6 +203,34 @@ describe("EmployeeTable default sort and fallbacks", () => {
       expect(within(dataRows[0]).getByText("Few")).toBeInTheDocument();
       expect(within(dataRows[1]).getByText("Some")).toBeInTheDocument();
       expect(within(dataRows[2]).getByText("All")).toBeInTheDocument();
+    });
+
+    it("keeps default row order stable after a saved checklist update changes progress", () => {
+      const employees: Employee[] = [
+        { ...baseEmployee, id: "e1", first_name: "Few", one: false, talmundo: false },
+        { ...baseEmployee, id: "e2", first_name: "Some", one: true, talmundo: false },
+        { ...baseEmployee, id: "e3", first_name: "All", one: true, talmundo: true },
+      ];
+
+      const { rerenderTable } = renderTable(
+        employees,
+        columnsWithChecklistAndHireDate,
+        UserRole.HR_ADMIN
+      );
+
+      let rows = screen.getAllByRole("row").slice(1);
+      expect(within(rows[0]).getByText("Few")).toBeInTheDocument();
+
+      rerenderTable([
+        { ...employees[0], one: true, talmundo: true },
+        employees[1],
+        employees[2],
+      ]);
+
+      rows = screen.getAllByRole("row").slice(1);
+      expect(within(rows[0]).getByText("Few")).toBeInTheDocument();
+      expect(within(rows[1]).getByText("Some")).toBeInTheDocument();
+      expect(within(rows[2]).getByText("All")).toBeInTheDocument();
     });
 
     it("recruiter gets same default sort by progress", () => {

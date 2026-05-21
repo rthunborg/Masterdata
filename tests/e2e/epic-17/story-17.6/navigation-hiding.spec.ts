@@ -196,9 +196,14 @@ test.describe("Story 17.6: Navigation Hiding for External Users", () => {
     await page.goto("/dashboard/admin/users");
     await page.waitForLoadState("load");
 
-    // Should be redirected away from admin route
-    const currentUrl = page.url();
-    expect(currentUrl).not.toContain("/admin");
+    // App Router may keep the requested URL while rendering the safe dashboard
+    // route. The security-relevant assertion is that admin UI is not rendered.
+    await expect(
+      page.getByRole("heading", { name: /Användarhantering|User Management/i })
+    ).not.toBeVisible({ timeout: 2000 });
+    await expect(
+      page.getByRole("heading", { name: /Personalhantering|Dashboard|Employees/i })
+    ).toBeVisible({ timeout: 5000 });
   });
 });
 

@@ -41,6 +41,10 @@ export function useColumnSettingsActions({
   onPermissionsUpdated,
 }: UseColumnSettingsActionsParams) {
   const [updatingColumnId, setUpdatingColumnId] = useState<string | null>(null);
+  const [updatingColumnField, setUpdatingColumnField] = useState<{
+    columnId: string;
+    field: string;
+  } | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [columnToDelete, setColumnToDelete] = useState<ColumnConfig | null>(null);
   const tToasts = useTranslations('toasts');
@@ -106,6 +110,10 @@ export function useColumnSettingsActions({
   ) => {
     try {
       setUpdatingColumnId(column.id);
+      setUpdatingColumnField({
+        columnId: column.id,
+        field: `permission:${role}:${permissionType}`,
+      });
 
       const updatedPermissions: RolePermissions = JSON.parse(
         JSON.stringify(column.role_permissions)
@@ -137,12 +145,14 @@ export function useColumnSettingsActions({
       toastError(error, tToasts('columns.permissionsUpdateFailed'));
     } finally {
       setUpdatingColumnId(null);
+      setUpdatingColumnField(null);
     }
   };
 
   const handleCategoryUpdate = async (columnId: string, newCategory: string) => {
     try {
       setUpdatingColumnId(columnId);
+      setUpdatingColumnField({ columnId, field: 'category' });
       await columnService.updateColumnPermissions(columnId, {
         category: newCategory || null,
       });
@@ -152,6 +162,7 @@ export function useColumnSettingsActions({
       toastError(error, tToasts('columns.categoryUpdateFailed'));
     } finally {
       setUpdatingColumnId(null);
+      setUpdatingColumnField(null);
     }
   };
 
@@ -168,6 +179,7 @@ export function useColumnSettingsActions({
   const handleColumnNameUpdate = async (columnId: string, newName: string) => {
     try {
       setUpdatingColumnId(columnId);
+      setUpdatingColumnField({ columnId, field: 'column_name' });
       await columnService.updateColumnPermissions(columnId, {
         column_name: newName,
       });
@@ -177,12 +189,14 @@ export function useColumnSettingsActions({
       toastError(error, tToasts('columns.nameUpdateFailed'));
     } finally {
       setUpdatingColumnId(null);
+      setUpdatingColumnField(null);
     }
   };
 
   const handleChecklistItemToggle = async (columnId: string, isChecklistItem: boolean) => {
     try {
       setUpdatingColumnId(columnId);
+      setUpdatingColumnField({ columnId, field: 'is_checklist_item' });
       await columnService.updateColumnPermissions(columnId, {
         is_checklist_item: isChecklistItem,
       });
@@ -196,6 +210,7 @@ export function useColumnSettingsActions({
       toastError(error, 'Kunde inte uppdatera checklista-inställning');
     } finally {
       setUpdatingColumnId(null);
+      setUpdatingColumnField(null);
     }
   };
 
@@ -207,6 +222,7 @@ export function useColumnSettingsActions({
   const handleToggleVisibility = async (column: ColumnConfig) => {
     try {
       setUpdatingColumnId(column.id);
+      setUpdatingColumnField({ columnId: column.id, field: 'is_visible' });
       await columnService.toggleVisibility(column.id, !column.is_visible);
       toast.success(
         column.is_visible
@@ -218,6 +234,7 @@ export function useColumnSettingsActions({
       toastError(error, 'Kunde inte ändra kolumnens synlighet');
     } finally {
       setUpdatingColumnId(null);
+      setUpdatingColumnField(null);
     }
   };
 
@@ -231,6 +248,7 @@ export function useColumnSettingsActions({
 
   return {
     updatingColumnId,
+    updatingColumnField,
     deleteModalOpen,
     setDeleteModalOpen,
     columnToDelete,

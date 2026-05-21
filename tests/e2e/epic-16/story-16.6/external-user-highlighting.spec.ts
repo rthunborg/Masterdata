@@ -13,6 +13,9 @@
 import { test, expect } from '@playwright/test';
 import { setupTestUser, loginAsHRAdmin, loginAsUser, logout } from '../../helpers/e2e-helpers';
 
+const DASHBOARD_READY_SELECTOR = '[data-testid^="employee-row-"], article[aria-label], table';
+const EMPLOYEE_VIEW_SELECTOR = 'table, [data-testid^="employee-row-"], article[aria-label]';
+
 test.describe('Story 16.6: External User Should See Banner and Highlights', () => {
   test.beforeEach(async ({ page, context }) => {
     await setupTestUser();
@@ -35,7 +38,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
     
     // Wait for employee rows/cards with a longer timeout
     try {
-      await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 20000 });
+      await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 20000 });
     } catch {
       // If no employees found, skip test
       test.skip();
@@ -81,13 +84,13 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
     await page.waitForSelector('#email', { timeout: 10000 }); // Wait for login form
 
     // Log in as external user (Sodexo) - Production test user
-    const externalPartyEmail = process.env.E2E_EXTERNAL_PARTY_EMAIL || 'r.alestigthunborg@gmail.com';
+    const externalPartyEmail = process.env.E2E_EXTERNAL_PARTY_EMAIL || 'sodexo@test.com';
     const externalPartyPassword = process.env.E2E_EXTERNAL_PARTY_PASSWORD || 'Test123!';
 
     try {
       // loginAsUser already navigates to dashboard
       await loginAsUser(page, externalPartyEmail, externalPartyPassword);
-      await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 15000 });
+      await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 15000 });
       await page.waitForLoadState('load');
       await page.waitForTimeout(2000); // Wait for change detection to complete
 
@@ -111,7 +114,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
         // 2. last_active_at wasn't set correctly
         // 3. User doesn't have view permission for changed columns
         // For now, we verify the dashboard loads correctly
-        const table = page.locator('table, [data-testid^="employee-row-"], [data-testid^="employee-card-"]').first();
+        const table = page.locator(EMPLOYEE_VIEW_SELECTOR).first();
         await expect(table).toBeVisible();
       }
     } catch (error) {
@@ -131,7 +134,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
     
     // Wait for employee rows/cards with a longer timeout
     try {
-      await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 20000 });
+      await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 20000 });
     } catch {
       // If no employees found, skip test
       test.skip();
@@ -179,7 +182,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
     try {
       // loginAsUser already navigates to dashboard
       await loginAsUser(page, externalPartyEmail, externalPartyPassword);
-      await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 15000 });
+      await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 15000 });
       await page.waitForLoadState('load');
       await page.waitForTimeout(2000); // Wait for change detection
 
@@ -212,7 +215,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
         // 
         // FAIL the test to catch this issue (previously we just verified table loads)
         // This helps identify real-world problems
-        const table = page.locator('table, [data-testid^="employee-row-"], [data-testid^="employee-card-"]').first();
+        const table = page.locator(EMPLOYEE_VIEW_SELECTOR).first();
         await expect(table).toBeVisible();
         
         // Log diagnostic info
@@ -241,7 +244,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
     
     // Wait for employee rows/cards with a longer timeout
     try {
-      await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 20000 });
+      await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 20000 });
     } catch {
       // If no employees found, skip test
       test.skip();
@@ -260,7 +263,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
     try {
       // loginAsUser already navigates to dashboard
       await loginAsUser(page, externalPartyEmail, externalPartyPassword);
-      await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 15000 });
+      await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 15000 });
       await page.waitForLoadState('load');
       await page.waitForTimeout(2000);
 
@@ -278,7 +281,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
         expect(bannerText).toMatch(/anställd|employee/i); // Should mention employees
       } else {
         // Banner might not appear - verify dashboard loads
-        const table = page.locator('table, [data-testid^="employee-row-"], [data-testid^="employee-card-"]').first();
+        const table = page.locator(EMPLOYEE_VIEW_SELECTOR).first();
         await expect(table).toBeVisible();
       }
     } catch (error) {
@@ -297,7 +300,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
     
     // Wait for employee rows/cards with a longer timeout
     try {
-      await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 20000 });
+      await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 20000 });
     } catch {
       // If no employees found, skip test
       test.skip();
@@ -345,7 +348,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
     try {
       // loginAsUser already navigates to dashboard
       await loginAsUser(page, externalPartyEmail, externalPartyPassword);
-      await page.waitForSelector('[data-testid^="employee-row-"], [data-testid^="employee-card-"]', { timeout: 15000 });
+      await page.waitForSelector(DASHBOARD_READY_SELECTOR, { timeout: 15000 });
       await page.waitForLoadState('load');
       await page.waitForTimeout(2000);
 
@@ -366,7 +369,7 @@ test.describe('Story 16.6: External User Should See Banner and Highlights', () =
         expect(afterInteractionCount).toBeGreaterThanOrEqual(initialHighlightCount);
       } else {
         // Highlights might not appear - verify table loads
-        const table = page.locator('table, [data-testid^="employee-row-"], [data-testid^="employee-card-"]').first();
+        const table = page.locator(EMPLOYEE_VIEW_SELECTOR).first();
         await expect(table).toBeVisible();
       }
     } catch (error) {

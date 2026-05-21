@@ -15,7 +15,7 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { ColorIndicator, ColorPicker } from "@/components/ui/color-picker";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ColumnConfig } from "@/lib/types/column-config";
 
@@ -26,6 +26,7 @@ interface EditableCategoryCellProps {
   onUpdate: (columnId: string, newCategory: string) => Promise<void>;
   onColorUpdate: (categoryName: string, color: string | null) => Promise<void>;
   isUpdating: boolean;
+  isSaving?: boolean;
 }
 
 export function EditableCategoryCell({
@@ -35,6 +36,7 @@ export function EditableCategoryCell({
   onUpdate,
   onColorUpdate,
   isUpdating,
+  isSaving = false,
 }: EditableCategoryCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -87,6 +89,13 @@ export function EditableCategoryCell({
             disabled={isUpdating}
           >
             <span className="truncate flex-1 min-w-0">{value || "Ingen kategori"}</span>
+            {isSaving && (
+              <Loader2
+                className="ml-2 h-3.5 w-3.5 animate-spin text-blue-600"
+                role="status"
+                aria-label="Sparar"
+              />
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="start">

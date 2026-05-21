@@ -4,8 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 import { ResponsiveEmployeeView } from '@/components/dashboard/responsive-employee-view';
 import type { Employee } from '@/lib/types/employee';
 
@@ -66,7 +65,6 @@ const mockEmployees: Employee[] = [
 
 describe('Mobile Accessibility Workflow', () => {
   it('should navigate through employee list with screen reader', async () => {
-    const user = userEvent.setup();
     render(
       <ResponsiveEmployeeView
         employees={mockEmployees}
@@ -75,9 +73,9 @@ describe('Mobile Accessibility Workflow', () => {
       />
     );
 
-    // Check main landmark
-    const main = screen.getByRole('main', { name: /Employee list/i });
-    expect(main).toBeInTheDocument();
+    // Check employee list landmark
+    const listRegion = screen.getByRole('region', { name: /Employee list/i });
+    expect(listRegion).toBeInTheDocument();
 
     // Check search input
     const searchInput = screen.getByLabelText(/Search employees by name, email, or rank/i);

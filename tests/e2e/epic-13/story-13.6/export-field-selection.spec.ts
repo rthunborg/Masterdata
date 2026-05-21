@@ -1,49 +1,40 @@
 import { test, expect } from "@playwright/test";
+import { loginAsHRAdmin } from "../../helpers/e2e-helpers";
 
 test.describe("Export Field Selection", () => {
   test.beforeEach(async ({ page }) => {
-    // Login as HR Admin
-    await page.goto("/login");
-    await page.fill('input[name="email"]', "hr-admin@example.com");
-    await page.fill('input[name="password"]', "password123");
-    await page.click('button[type="submit"]');
-    await page.waitForURL("/dashboard");
+    await loginAsHRAdmin(page);
   });
 
-  test("should open export dialog when employees are selected and export button is clicked", async ({ page }) => {
-    // Select first employee
-    const firstRowCheckbox = page.locator('input[type="checkbox"]').nth(1); // nth(0) is header checkbox
+  async function selectFirstEmployee(page: import("@playwright/test").Page) {
+    const firstRowCheckbox = page.locator('[data-testid^="employee-select-checkbox-"]').first();
+    await firstRowCheckbox.waitFor({ state: 'attached', timeout: 10000 });
     await firstRowCheckbox.click();
+  }
+
+  test("should open export dialog when employees are selected and export button is clicked", async ({ page }) => {
+    await selectFirstEmployee(page);
 
     // Click Export button
-    await page.click('button:has-text("Export")');
+    await page.getByRole('button', { name: /Export Selected|Exportera markerade/i }).click();
 
     // Verify dialog opens
     await expect(page.locator('div[role="dialog"]')).toBeVisible();
-    await expect(page.locator('h2:has-text("Select Fields to Export")')).toBeVisible();
+    await expect(page.locator('h2:has-text("Välj fält att exportera"), h2:has-text("Select Fields to Export")')).toBeVisible();
   });
 
-  test("should show error when export button is clicked without selection", async ({ page }) => {
+  test("should keep export disabled without selection", async ({ page }) => {
     // Ensure no employees are selected (reload page to clear selection)
     await page.reload();
 
-    // Click Export button
-    await page.click('button:has-text("Export")');
-
-    // Verify error message (toast or alert)
-    await expect(page.locator('text=No employees selected')).toBeVisible();
-    
-    // Verify dialog does NOT open
-    await expect(page.locator('div[role="dialog"]')).not.toBeVisible();
+    await expect(page.getByRole('button', { name: /Exportera markerade|Export All Employees/i })).toBeDisabled();
   });
 
   test("should allow selecting fields and exporting", async ({ page }) => {
-    // Select first employee
-    const firstRowCheckbox = page.locator('input[type="checkbox"]').nth(1);
-    await firstRowCheckbox.click();
+    await selectFirstEmployee(page);
 
     // Click Export button
-    await page.click('button:has-text("Export")');
+    await page.getByRole('button', { name: /Export Selected|Exportera markerade/i }).click();
 
     // Wait for dialog
     const dialog = page.locator('div[role="dialog"]');
@@ -57,7 +48,7 @@ test.describe("Export Field Selection", () => {
     const downloadPromise = page.waitForEvent('download');
 
     // Click Export in dialog
-    await dialog.locator('button:has-text("Export")').click();
+    await dialog.getByRole('button', { name: /Exportera|Export/i }).click();
 
     // Verify download
     const download = await downloadPromise;
@@ -68,19 +59,17 @@ test.describe("Export Field Selection", () => {
   });
 
   test("should close dialog when cancel is clicked", async ({ page }) => {
-    // Select first employee
-    const firstRowCheckbox = page.locator('input[type="checkbox"]').nth(1);
-    await firstRowCheckbox.click();
+    await selectFirstEmployee(page);
 
     // Click Export button
-    await page.click('button:has-text("Export")');
+    await page.getByRole('button', { name: /Export Selected|Exportera markerade/i }).click();
 
     // Wait for dialog
     const dialog = page.locator('div[role="dialog"]');
     await expect(dialog).toBeVisible();
 
     // Click Cancel
-    await dialog.locator('button:has-text("Cancel")').click();
+    await dialog.getByRole('button', { name: /Avbryt|Cancel/i }).click();
 
     // Verify dialog closes
     await expect(dialog).not.toBeVisible();

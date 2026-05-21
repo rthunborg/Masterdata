@@ -8,11 +8,22 @@
  * - Verify test environment
  */
 
-import { chromium, FullConfig } from '@playwright/test';
+import { chromium, FullConfig, type Browser } from '@playwright/test';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
-import { assertSafeE2EDatabase, seedTestData } from './helpers/seed-data';
+import { assertSafeE2EDatabase, cleanupTestData, ensureTestUsers, seedTestData } from './helpers/seed-data';
+
+const TEST_USER_PASSWORD = 'Test123!';
+
+const AUTH_STATE_USERS = [
+  { email: 'admin@test.com', password: TEST_USER_PASSWORD },
+  { email: 'hr@test.com', password: TEST_USER_PASSWORD },
+  { email: 'sodexo@test.com', password: TEST_USER_PASSWORD },
+  { email: 'omc@test.com', password: TEST_USER_PASSWORD },
+  { email: 'payroll@test.com', password: TEST_USER_PASSWORD },
+  { email: 'toplux@test.com', password: TEST_USER_PASSWORD },
+];
 
 function isLocalAppUrl(url: string): boolean {
   try {
@@ -21,6 +32,42 @@ function isLocalAppUrl(url: string): boolean {
     return ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(hostname);
   } catch {
     return false;
+  }
+}
+
+function authStatePathForEmail(authDir: string, email: string) {
+  const normalized = email.trim().toLowerCase();
+  const fileBase =
+    normalized === 'admin@test.com'
+      ? 'admin'
+      : normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  return path.join(authDir, `${fileBase}.json`);
+}
+
+async function createAuthState(
+  browser: Browser,
+  baseURL: string,
+  authDir: string,
+  email: string,
+  password: string
+) {
+  const page = await browser.newPage({ baseURL });
+
+  try {
+    await page.goto('/login', { timeout: 30000, waitUntil: 'networkidle' });
+    await page.waitForSelector('#email', { timeout: 10000 });
+    await page.locator('#email').fill(email);
+    await page.locator('#password').fill(password);
+    await page.locator('button[type="submit"]').click();
+    await page.waitForURL('**/dashboard', { timeout: 15000 });
+    await page.waitForSelector(
+      'table, [aria-label="Employee list"], article[aria-label], [data-testid*="dashboard"], [data-testid*="employee"], h1, h2, [class*="dashboard"]',
+      { timeout: 15000 }
+    );
+    await page.context().storageState({ path: authStatePathForEmail(authDir, email) });
+  } finally {
+    await page.close();
   }
 }
 
@@ -52,10 +99,19 @@ async function globalSetup(config: FullConfig) {
     console.warn('   Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
   } else {
     console.log('✅ Supabase environment variables loaded');
-    console.log('⚠️  NOTE: Ensure test users exist. Run: npx tsx scripts/apply-hr-admin-migration.ts');
   }
 
-  const baseURL = String(config.projects[0]?.use?.baseURL || process.env.BASE_URL || 'http://localhost:3000');
+  // Ensure auth users used by the E2E suite exist and have known passwords.
+  try {
+    console.log('👤 Ensuring E2E test users...');
+    await ensureTestUsers();
+    console.log('✅ E2E test users ready');
+  } catch (error) {
+    console.error('❌ Error ensuring E2E test users:', error);
+    throw error;
+  }
+
+  const baseURL = String(config.projects[0]?.use?.baseURL || process.env.BASE_URL || 'http://localhost:3100');
   if (!isLocalAppUrl(baseURL) && process.env.E2E_ALLOW_REMOTE_APP !== 'true') {
     throw new Error(
       'Refusing to run E2E tests against a remote app URL. ' +
@@ -69,6 +125,10 @@ async function globalSetup(config: FullConfig) {
 
   // Seed test data
   try {
+    console.log('🧹 Cleaning up stale E2E test data...');
+    await cleanupTestData();
+    console.log('✅ Stale E2E test data cleaned up');
+
     console.log('📦 Seeding test data...');
     await seedTestData();
     console.log('✅ Test data seeded successfully');
@@ -80,16 +140,29 @@ async function globalSetup(config: FullConfig) {
   // Verify application is accessible
   console.log(`🌐 Verifying application at ${baseURL}...`);
 
+  const authDir = path.resolve(process.cwd(), 'test-results/.auth');
+  fs.mkdirSync(authDir, { recursive: true });
+
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const page = await browser.newPage({ baseURL });
 
   try {
-    await page.goto(baseURL, { timeout: 30000, waitUntil: 'networkidle' });
+    await page.goto('/', { timeout: 30000, waitUntil: 'networkidle' });
+    await page.goto('/login', { timeout: 30000, waitUntil: 'networkidle' });
+    await page.waitForSelector('#email', { timeout: 10000 });
     console.log('✅ Application is accessible');
-  } catch (error) {
-    console.warn('⚠️  Application may not be running');
-    console.warn('   Make sure to start the dev server: npm run dev');
+
+    for (const user of AUTH_STATE_USERS) {
+      await createAuthState(browser, baseURL, authDir, user.email, user.password);
+    }
+    console.log('✅ E2E authentication states created');
+  } catch {
+    throw new Error(
+      `E2E app verification failed for ${baseURL}. ` +
+      'The test server must serve this app, render the /login form, and allow seeded E2E users to sign in.'
+    );
   } finally {
+    await page.close().catch(() => {});
     await browser.close();
   }
 
@@ -97,4 +170,3 @@ async function globalSetup(config: FullConfig) {
 }
 
 export default globalSetup;
-
