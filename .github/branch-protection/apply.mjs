@@ -20,6 +20,22 @@ function hasFlag(name) {
   return args.includes(name);
 }
 
+function shouldApplyRepositorySettings() {
+  return !hasFlag('--protection-only');
+}
+
+function shouldApplyBranchProtections() {
+  return !hasFlag('--repository-only');
+}
+
+function toGitHubRepositoryConfig(repositorySettings) {
+  if (!repositorySettings) return null;
+
+  return {
+    default_branch: repositorySettings.defaultBranch,
+  };
+}
+
 function toGitHubReviewConfig(reviewConfig) {
   if (!reviewConfig) return null;
 
@@ -61,6 +77,30 @@ function toGitHubProtectionConfig(defaults, branchConfig) {
   };
 }
 
+function runGhRepoUpdate(repository, body) {
+  return spawnSync(
+    'gh',
+    [
+      'api',
+      '--method',
+      'PATCH',
+      `repos/${repository}`,
+      '--header',
+      'Accept: application/vnd.github+json',
+      '--header',
+      'X-GitHub-Api-Version: 2022-11-28',
+      '--input',
+      '-',
+    ],
+    {
+      cwd: rootDir,
+      encoding: 'utf8',
+      input: JSON.stringify(body),
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }
+  );
+}
+
 function runGhApi(repository, branchName, body) {
   return spawnSync(
     'gh',
@@ -95,32 +135,53 @@ if (!repository) {
   );
 }
 
-for (const [branchName, branchConfig] of Object.entries(config.branches)) {
-  const protectionConfig = toGitHubProtectionConfig(
-    config.defaults ?? {},
-    branchConfig
-  );
-
+const repositoryConfig = toGitHubRepositoryConfig(config.repositorySettings);
+if (repositoryConfig && shouldApplyRepositorySettings()) {
   if (dryRun) {
-    console.log(
-      JSON.stringify(
-        { repository, branch: branchName, protectionConfig },
-        null,
-        2
-      )
+    console.log(JSON.stringify({ repository, repositoryConfig }, null, 2));
+  } else {
+    const result = runGhRepoUpdate(repository, repositoryConfig);
+    if (result.error) {
+      throw result.error;
+    }
+
+    if (result.status !== 0) {
+      console.error(result.stderr.trim());
+      process.exit(result.status ?? 1);
+    }
+
+    console.log(`Applied repository settings for ${repository}`);
+  }
+}
+
+if (shouldApplyBranchProtections()) {
+  for (const [branchName, branchConfig] of Object.entries(config.branches)) {
+    const protectionConfig = toGitHubProtectionConfig(
+      config.defaults ?? {},
+      branchConfig
     );
-    continue;
-  }
 
-  const result = runGhApi(repository, branchName, protectionConfig);
-  if (result.error) {
-    throw result.error;
-  }
+    if (dryRun) {
+      console.log(
+        JSON.stringify(
+          { repository, branch: branchName, protectionConfig },
+          null,
+          2
+        )
+      );
+      continue;
+    }
 
-  if (result.status !== 0) {
-    console.error(result.stderr.trim());
-    process.exit(result.status ?? 1);
-  }
+    const result = runGhApi(repository, branchName, protectionConfig);
+    if (result.error) {
+      throw result.error;
+    }
 
-  console.log(`Applied branch protection for ${repository}:${branchName}`);
+    if (result.status !== 0) {
+      console.error(result.stderr.trim());
+      process.exit(result.status ?? 1);
+    }
+
+    console.log(`Applied branch protection for ${repository}:${branchName}`);
+  }
 }

@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 
 type BranchProtectionConfig = {
   repository: string;
+  repositorySettings: {
+    defaultBranch: string;
+  };
   branches: Record<string, { requiredStatusChecks: string[] }>;
   promotionRules: Record<
     string,
@@ -14,6 +17,12 @@ type BranchProtectionConfig = {
       workflow: string;
     }
   >;
+  pullRequestFlow: {
+    featureBaseBranch: string;
+    productionBaseBranch: string;
+    productionHeadBranch: string;
+    notes: string[];
+  };
 };
 
 const config = JSON.parse(
@@ -26,6 +35,10 @@ const promotionWorkflow = readFileSync(
 );
 
 describe('GitHub branch protection config', () => {
+  it('keeps main as the repository default branch', () => {
+    expect(config.repositorySettings.defaultBranch).toBe('main');
+  });
+
   it('requires the test check on protected branches', () => {
     expect(config.branches.main.requiredStatusChecks).toContain('Run Tests');
     expect(config.branches.staging.requiredStatusChecks).toContain('Run Tests');
@@ -55,5 +68,16 @@ describe('GitHub branch protection config', () => {
     expect(promotionWorkflow).toContain('HEAD_REF');
     expect(promotionWorkflow).toContain('"$HEAD_REF" = "staging"');
     expect(promotionWorkflow).toContain('"$HEAD_REPO" = "$BASE_REPO"');
+  });
+
+  it('documents the intended pull request flow', () => {
+    expect(config.pullRequestFlow).toMatchObject({
+      featureBaseBranch: 'staging',
+      productionBaseBranch: 'main',
+      productionHeadBranch: 'staging',
+    });
+    expect(config.pullRequestFlow.notes.join(' ')).toContain(
+      'does not expose a separate repository setting'
+    );
   });
 });
