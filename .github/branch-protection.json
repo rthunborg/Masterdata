@@ -26,6 +26,7 @@
       "requiredStatusChecks": ["Run Tests", "Validate main promotion source"]
     },
     "staging": {
+      "enforceAdmins": false,
       "requiredStatusChecks": ["Run Tests"]
     }
   },
@@ -42,7 +43,8 @@
     "productionHeadBranch": "staging",
     "notes": [
       "GitHub does not expose a separate repository setting for a default pull request base branch independent of the default branch.",
-      "Feature pull requests must target staging. The main promotion workflow blocks pull requests to main unless the source branch is staging."
+      "Feature pull requests must target staging. The main promotion workflow blocks pull requests to main unless the source branch is staging.",
+      "Staging allows admin bypass so repository admins can directly sync main back into staging when staging is behind main. Main remains admin-enforced."
     ]
   }
 }
