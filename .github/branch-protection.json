@@ -1,0 +1,48 @@
+{
+  "repository": "rthunborg/Masterdata",
+  "repositorySettings": {
+    "defaultBranch": "main"
+  },
+  "defaults": {
+    "requireBranchesUpToDate": true,
+    "enforceAdmins": true,
+    "requiredPullRequestReviews": {
+      "dismissStaleReviews": true,
+      "requireCodeOwnerReviews": false,
+      "requireLastPushApproval": false,
+      "requiredApprovingReviewCount": 0
+    },
+    "requiredLinearHistory": false,
+    "allowForcePushes": false,
+    "allowDeletions": false,
+    "blockCreations": false,
+    "requiredConversationResolution": true,
+    "lockBranch": false,
+    "allowForkSyncing": false,
+    "restrictions": null
+  },
+  "branches": {
+    "main": {
+      "requiredStatusChecks": ["Run Tests", "Validate main promotion source"]
+    },
+    "staging": {
+      "requiredStatusChecks": ["Run Tests"]
+    }
+  },
+  "promotionRules": {
+    "main": {
+      "allowedHeadBranches": ["staging"],
+      "requiredStatusCheck": "Validate main promotion source",
+      "workflow": ".github/workflows/main-promotion-source.yml"
+    }
+  },
+  "pullRequestFlow": {
+    "featureBaseBranch": "staging",
+    "productionBaseBranch": "main",
+    "productionHeadBranch": "staging",
+    "notes": [
+      "GitHub does not expose a separate repository setting for a default pull request base branch independent of the default branch.",
+      "Feature pull requests must target staging. The main promotion workflow blocks pull requests to main unless the source branch is staging."
+    ]
+  }
+}

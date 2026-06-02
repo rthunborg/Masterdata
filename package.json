@@ -19,6 +19,8 @@
     "test:e2e:debug": "dotenv -e .env.test -e .env.local -- playwright test --debug",
     "test:watch": "vitest watch",
     "format": "prettier --write .",
+    "github:branch-protection:plan": "node .github/branch-protection/apply.mjs --dry-run",
+    "github:branch-protection:apply": "node .github/branch-protection/apply.mjs",
     "setup:test-users": "pnpm exec tsx scripts/apply-external-party-test-users.ts",
     "setup:test-users:prod": "pnpm exec tsx scripts/apply-external-party-test-users.ts --prod",
     "migration:changed-by": "pnpm exec tsx scripts/apply-changed-by-tracking.ts"
