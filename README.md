@@ -1,175 +1,267 @@
 # HR Masterdata Management System
 
-A modern, real-time HR masterdata management platform built with **Next.js 16**, **React 19**, and **Supabase**. This system enables HR administrators to manage employee information with granular role-based access control and custom column configurations for external parties.
+HR Masterdata is a private, Swedish-only web application for Stena Line seasonal recruitment operations. It replaces a spreadsheet-driven process with a centralized Next.js and Supabase system for employee masterdata, partner access, important dates, staffing targets, role-based permissions, exports, reminders, and operational follow-up.
 
-> **Note:** This application is **Swedish-only**. All user-facing text is in Swedish.
+> All user-facing product copy is intended to be Swedish. This repository is a private showcase/portfolio piece and is not licensed for public use or redistribution.
 
-## License & Status
+## Current Status
 
-**Project Status:** Completed MVP Showcase  
-**License:** This project is a **Showcase Portfolio Piece** and is NOT available for public use or distribution. All rights reserved.
+- **Product status:** feature-rich MVP / internal operations platform with active hardening and test coverage.
+- **Primary app label:** `Säsongsrekrytering 2026`.
+- **Architecture:** single-stack Next.js App Router application with Supabase PostgreSQL backend.
+- **Deployment target:** Vercel + Supabase, with GitHub Actions for test checks and Supabase backup/staging automation.
+- **Mobile support:** responsive card/table experience. Offline/PWA support is currently disabled; the app unregisters service workers.
 
----
+## Problem It Solves
 
-## Problem Statement
+The HR team previously managed seasonal recruitment masterdata through Excel files, manual email distribution, and custom scripts. Multiple external parties needed different parts of the same employee data, while HR needed strict control over who could view or update sensitive fields.
 
-The HR team was managing employee masterdata through a fragile Excel spreadsheet distributed weekly to six external parties (Sodexo, ÖMC, Payroll, Toplux, etc.). Each party needed to view specific employee data and maintain their own custom columns.
+This app provides one source of truth with:
 
-**Key Challenges:**
+- secure login and database-backed role isolation
+- configurable column visibility and edit permissions
+- real-time updates and change highlighting
+- structured employee lifecycle workflows
+- date, capacity, room, staffing, and notification automation
+- controlled exports for HR and external parties
 
-- **Manual Distribution Overhead**: Hours spent weekly emailing files and merging changes.
-- **Data Synchronization Issues**: External parties worked on outdated data.
-- **Security Risks**: Sensitive employee data sent via email.
-- **Fragile Tooling**: Reliance on complex, error-prone VB scripts.
-- **No Mobile Access**: Impossible to use on the go.
+## Core Capabilities
 
-## Solution
+### Employee Masterdata
 
-We replaced the Excel workflow with a secure, real-time web application:
+- Create, import, edit, archive, restore, terminate, and reactivate employees.
+- Inline editing in a spreadsheet-like table with typed editors for text, number, date, boolean, and select-style fields.
+- Validation with Zod for employee fields, SSN format, salary level, rank/gender values, date rules, dietary fields, and termination workflow inputs.
+- Checklist-style boolean fields with a visual progress indicator and default sorting for internal users.
+- Special workflow fields such as One, Talmundo, ISPS, photo, Origo, Lönenivå, bank details, passport, C17, hotel requirement, diet details, and Crewing done.
+- Termination workflow that clears date assignments, releases capacity, captures repayment requirements, and supports reactivation.
+- GDPR-oriented anonymization endpoint for old archived employees.
 
-- **Centralized Data Repository**: Single source of truth.
-- **Real-time Synchronization**: Changes propagate to all 10+ concurrent users in <2 seconds.
-- **Role-Based Access**: 5 distinct roles (HR Admin, Sodexo, ÖMC, Payroll, Toplux) with granular column-level permissions.
-- **Zero Operational Costs**: Architected to run entirely on free-tier infrastructure (Vercel + Supabase).
+### Important Dates, Capacity, and Rooms
 
----
+- Manage Stena dates, ÖMC dates, PE3 dates, and other operational dates.
+- Track capacity with `max_spots`, `remaining_spots`, and assigned employees.
+- Support ÖMC two-day date handling and PE3 appointment times.
+- Automatically calculate PE3 submission and cancellation deadlines during PE3 imports.
+- Export employees by date category with optional date range and field selection.
+- Preview and assign ÖMC hotel rooms based on rank, gender, hotel requirement, and assigned ÖMC date.
 
-## Key Features
+### Filtering, Search, and Saved Views
 
-### 1. Foundation & Security
+- Advanced filter panel across configured employee columns.
+- Text, boolean, select, date range, and specific important-date filters.
+- Quick filter to hide employees already marked as Crewing done.
+- Active-filter indicators, empty-state messaging, filtered counts, and URL-synced filter state.
+- Per-user saved filters with create, apply, current-match indication, and delete flows.
+- Global search plus mobile search history.
 
-- **Role-Based Access Control (RBAC)**: Five user roles with strict data isolation.
-- **Secure Authentication**: Session management with automatic timeouts and secure HTTP-only cookies.
-- **Health Monitoring**: Automated system health checks and smoke testing.
+### Import and Export
 
-### 2. HR Masterdata Management
+- CSV employee import with relaxed mapping support, validation, preview, success/error summaries, and error report download.
+- Important-date and PE3 CSV import.
+- Role-aware employee export with selectable fields.
+- Export selected employees or filtered result sets.
+- Crew-ready export that marks eligible employees as `crewing_done`.
+- Export behavior respects role permissions and HR Admin role-preview/impersonation mode.
 
-- **Employee Lifecycle**: Create, edit, terminate, and archive employees.
-- **Inline Editing**: Excel-like table experience with instant saving.
-- **Advanced Filtering**: Filter by status, crew readiness, or custom attributes.
-- **Bulk Operations**: CSV Import/Export with data validation.
+### External Party Workflows
 
-### 3. External Party Access
+- External parties see only permitted columns and a simplified dashboard.
+- Partners can create, edit, categorize, color-code, export, and delete their own custom columns where they have permission.
+- Custom columns are implemented as real typed columns on the `employees` table, tracked by `column_config`, rather than the older JSONB model.
+- HR Admin controls column-level view/edit permissions through a matrix-style column settings interface.
+- External users receive change summaries and field highlights for masterdata changes since their last login.
 
-- **Custom Column Management**: External parties can create/edit their own data columns (stored as JSONB) without affecting core masterdata.
-- **Dynamic Permissions**: HR Admins configure exactly which columns each role can view/edit via a matrix interface.
-- **Role Preview Mode**: "View As" feature allows HR to verify exactly what external parties see.
+### Staffing Needs Tracker
 
-### 4. Real-Time Collaboration
+- Tracks headcount needs for Göteborg and Trelleborg.
+- Shows crew-ready progress against each location's target in dashboard tracker cards.
+- HR Admin and Crewing can update staffing needs.
+- Every staffing target change is written to an audit changelog.
+- Users can open a per-location history modal for the current year's changes.
+- Staffing target changes trigger Swedish email notifications to active HR/recruiter recipients, excluding the editor.
 
-- **Instant Sync**: WebSocket-based updates ensure all users see the latest data immediately.
-- **Change Notifications**: Visual indicators highlighted in yellow when data changes while viewing.
-- **Optimistic UI**: Immediate feedback for better user experience.
+### Admin and Access Control
 
-### 5. Mobile Experience
+- Supabase Auth-backed login with active/inactive user enforcement.
+- Application users are stored in `users` with role, status, and last-active tracking.
+- Middleware protects dashboard and admin routes, while API handlers perform server-side role checks.
+- Database RLS policies provide the primary data isolation layer.
+- HR Admin can manage users, activate/deactivate accounts, delete users, and configure columns.
+- HR Admin role preview mode shows what another role can see without switching accounts.
 
-- **Responsive Design**: Fully optimized for mobile devices.
-- **Card View**: Touch-friendly card interface for mobile users.
-- **PWA Capabilities**: Offline support and installable home screen icon.
-- **Mobile-Specific Gestures**: Swipe actions and pull-to-refresh.
+## Roles
 
-### 6. Automated Workflows
+| Role | Purpose | High-level access |
+| --- | --- | --- |
+| `hr_admin` / HR Superuser | Full internal owner | Employee workflows, user management, column settings, role preview, exports, staffing needs |
+| `recruiter` | Internal recruitment user | Employee workflow access with shared HR column visibility and checklist editing |
+| `admin_limited` / Administratör | Restricted internal helper | Shared HR visibility, but edit access is limited to checklist fields |
+| `crewing` | Crewing partner | Partner dashboard plus staffing-needs editing |
+| `sodexo` | External partner | Restricted employee data and Sodexo-controlled custom columns |
+| `omc` / ÖMC | External partner | Restricted occupational-health/training-related access |
+| `payroll` | External partner | Restricted salary/payroll-relevant access |
+| `toplux` | External partner | Restricted housing/cleaning-related access |
 
-- **Email Notifications**: Automated reminders for missing data and upcoming deadlines (e.g., 3 days post-training).
-- **Audit Logging**: Comprehensive tracking of all changes to masterdata fields.
-- **Room Assignment**: Automated hotel room allocation algorithms based on gender and rank.
+Internal HR roles share HR Superuser column visibility. Edit permissions remain role-specific and are enforced in application logic and API routes in addition to database policies.
 
----
+## Table and Mobile UX
 
-## User Roles & Permissions
+- TanStack Table powers the desktop employee grid.
+- Sticky checkbox/name columns and sticky horizontal scrollbars keep wide tables usable.
+- Column headers support category labels and category color contrast handling.
+- Column resizing persists per user in local storage.
+- Compact and comfortable density modes are available.
+- Mobile uses employee cards with always-visible key fields, expandable details, inline editing, swipe actions, long-press context actions, pull-to-refresh, and virtual scrolling for large lists.
+- Accessibility work includes keyboard/focus handling, aria announcements, mobile touch target coverage, and color contrast utilities.
 
-The system implements a strict **Role-Based Access Control (RBAC)** model. Users are assigned one of five roles, determining both their feature access and data visibility:
+## Automation and Notifications
 
-| Role           | Access Level             | Description                                                                                                                                                     |
-| :------------- | :----------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **HR Admin**   | **Full System Access**   | Can manage all employees, dates, users, and system configurations. Has exclusive access to the Admin Panel to configure column permissions and view audit logs. |
-| **Recruiters** | **Limited Access**       | Can manage all employees and dates.                                                                                                                             |
-| **Sodexo**     | **Partner (Restricted)** | Access to employee's data relevant for uniform and meal services.                                                                                               |
-| **ÖMC**        | **Partner (Restricted)** | Access to employee's relevant occupational health data. Manages ÖMC-specific training dates and health checks.                                                  |
-| **Payroll**    | **Partner (Restricted)** | Access to employees' salary-relevant data. Manages payroll-specific notes and custom fields.                                                                    |
-| **Toplux**     | **Partner (Restricted)** | Access to employees requiring housing/cleaning services. Manages room cleaning schedules and housing requests.                                                  |
-| **Crewing**    | **Partner (Restricted)** | Access to employees about to join a crew. Manages room cleaning schedules and housing requests.                                                                 |
+- Supabase Realtime updates employee data without manual refresh.
+- Optimistic UI updates and mutation queue support smoother editing flows.
+- Vercel cron routes run weekday notification checks for:
+  - ÖMC masterdata follow-up after incomplete masterdata remains unresolved
+  - PE3 submission and cancellation deadlines
+- Notification logic uses Stockholm timezone calculations and duplicate-send guards.
+- SMTP email delivery is configurable and can be disabled in test/E2E runs.
+- GitHub Actions run nightly Supabase backups at 02:00 UTC, keep a 14-day window in Supabase Storage, and partially refresh staging from the oldest available backup.
+- Preview/staging deployments can show a test-environment banner via `NEXT_PUBLIC_IS_STAGING=true`.
 
-> **Security Note:** Data isolation is enforced at the database level via RLS policies. Partners cannot access or modify each other's custom data.
+## Architecture
 
----
+### Stack
 
-## Architecture & Tech Stack
+- **Framework:** Next.js 16 App Router
+- **Runtime/UI:** React 19, TypeScript 5.9, Tailwind CSS 4
+- **Database/Auth:** Supabase PostgreSQL + Supabase Auth + RLS
+- **Data fetching/state:** TanStack Query, Zustand
+- **Tables/virtualization:** TanStack Table, TanStack Virtual
+- **Forms/validation:** React Hook Form, Zod
+- **UI primitives:** Radix UI, shadcn-style components, Lucide icons
+- **Email:** Nodemailer SMTP
+- **Testing:** Vitest, Testing Library, Playwright, axe-core Playwright, performance benches
 
-### Tech Stack
+### Key Directories
 
-- **Frontend**: Next.js 16.0 (App Router), React 19.2, Tailwind CSS 4.1
-- **Language**: TypeScript 5.9 (Strict Mode)
-- **Database**: Supabase (PostgreSQL 15+)
-- **State Management**: Zustand + TanStack Query
-- **UI Components**: shadcn/ui (Radix Primitives) + Lucide Icons
-- **Testing**: Vitest (Unit), Playwright (E2E)
+| Path | Purpose |
+| --- | --- |
+| `src/app` | App Router pages, layouts, middleware-facing UI routes, and API route handlers |
+| `src/components` | Dashboard, admin, layout, UI primitive, mobile, and modal components |
+| `src/lib/server/repositories` | Server-side data access layer for employees, columns, important dates, users, staffing needs, audit, and lifecycle operations |
+| `src/lib/services` | Business workflows such as export, room assignment, capacity, notifications, termination, Talmundo, and staffing emails |
+| `src/lib/validation` | Zod schemas for auth, users, employees, columns, important dates, and staffing needs |
+| `src/lib/filters` | Advanced filtering engine and URL serializer |
+| `supabase/migrations` | PostgreSQL schema, RLS, functions, seed data, role migrations, and feature migrations |
+| `tests` | Unit, integration, E2E, accessibility, and performance coverage |
+| `.github/workflows` | CI test check and Supabase nightly backup/staging refresh |
 
-### Architecture Decision Records (ADR)
+### Database Model
 
-We have documented key architectural decisions that shaped this project:
+Important tables and structures include:
 
-| ADR         | Decision                        | Rationale                                                                                                                                                                                                       |
-| ----------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ADR-001** | **Platform: Vercel + Supabase** | Selected for "Zero Cost" MVP requirement. Provides serverless scalability and robust free tiers.                                                                                                                |
-| **ADR-002** | **Serverless Monolith**         | Next.js App Router provides unified frontend/backend developer experience and simple deployment without separate API servers.                                                                                   |
-| **ADR-003** | **Hybrid Data Schema (JSONB)**  | Core masterdata uses strict relational schema, while external party custom columns use JSONB. This allows parties to manage their own data structure without database migrations.                               |
-| **ADR-004** | **Defense-in-Depth Security**   | Security is enforced at three levels: 1) Database RLS Policies (Primary), 2) API Middleware (Secondary), 3) Frontend Route Guards (UX).                                                                         |
-| **ADR-005** | **Soft Delete Strategy**        | "Archival" system preserves historical data integrity. Records are flagged `is_archived` rather than deleted.                                                                                                   |
-| **ADR-006** | **Headless UI Strategy**        | Used **TanStack Table** for the complex grid. It offers 100% control over rendering logic (crucial for inline editing and virtualization) compared to pre-built grids.                                          |
-| **ADR-007** | **Repository Pattern**          | Data access is abstracted into a Repository layer. This decouples business logic from Supabase specifics, facilitating testing and future backend changes.                                                      |
-| **ADR-008** | **Real-time via WebSockets**    | **Supabase Realtime** chosen over polling. Delivers sub-2-second latency required for collaborative editing.                                                                                                    |
-| **ADR-009** | **Mobile-First PWA**            | Designed as a Progressive Web App to support HR staff on the move. Includes offline caching and touch-optimized interfaces.                                                                                     |
-| **ADR-010** | **Idempotent Notifications**    | Notification system uses daily cron jobs with state tracking to ensure users never receive duplicate alerts for the same event.                                                                                 |
-| **ADR-011** | **Granular RBAC Strategy**      | Implemented a static 5-role system (`hr_admin`, `sodexo`, etc.) for type safety, combined with dynamic database-driven column permissions. This balances code stability with runtime configuration flexibility. |
+- `users` - application users, roles, active status, last active timestamp
+- `employees` - core masterdata plus dynamic typed custom columns
+- `column_config` - column metadata, ordering, visibility, categories, category colors, checklist flags, and role permissions
+- `important_dates` - Stena/ÖMC/PE3/other date records, capacity, deadlines, and assigned employees
+- `employee_column_changes` - column-level audit/change detection for masterdata changes
+- `user_filters` - per-user saved advanced filters
+- `staffing_needs` and `staffing_needs_changelog` - location headcount targets and audit history
+- `pe3_notifications_log` - idempotency tracking for PE3 deadline emails
 
----
+## Quality and Test Coverage
 
-## Database Schema
+The repository contains broad coverage across unit, integration, E2E, and performance tests:
 
-The application uses PostgreSQL with a hybrid schema:
+- 190 unit test files
+- 91 integration test files
+- 46 E2E files
+- 10 performance benchmark files
+- CI runs type-checking, linting, unit tests, and integration tests on `main` and `staging`
 
-- **`users`**: RBAC and profile data.
-- **`employees`**: Core masterdata (Relational).
-- **`column_config`**: Meta-definition of all columns and their permissions.
-- **other tables**: Other tables containing tracking of updated fields, important dates, notifications, etc
+Useful commands:
 
-## Setup & Development
+```bash
+pnpm type-check
+pnpm lint
+pnpm test
+pnpm test:integration
+pnpm test:e2e
+```
+
+E2E tests start a local Next.js dev server on port `3100` by default and require suitable Supabase test credentials or an isolated staging database.
+
+## Recent Major Upgrades
+
+Since the original README, the project has added or substantially improved:
+
+- typed real-table custom columns replacing the older JSONB custom-data design
+- advanced filtering, saved filters, filtered exports, and filter URL synchronization
+- field-selection exports, selected-employee exports, role-preview-aware exports, and crew-ready export flow
+- Admin Limited role and shared internal HR column visibility
+- checklist progress indicators, checklist-aware default sorting, and tightened checklist edit restrictions
+- staffing needs tracker for Göteborg/Trelleborg with history and email notifications
+- sticky table columns, sticky horizontal scrollbar, persisted column widths, and table density controls
+- mobile card performance, pull-to-refresh, search history, swipe/long-press actions, and virtual scrolling
+- Supabase nightly backup and staging-refresh pipeline
+- hardened notification idempotency for cron-triggered emails
+- larger CI and test suite coverage across API routes, constraints, responsive UI, exports, notifications, and critical workflows
+
+## Development Setup
 
 ### Prerequisites
 
 - Node.js 20+
 - pnpm 10+
 - Git
+- Supabase project credentials
 
-### Installation
+### Install
 
-1. **Clone & Install**
+```bash
+git clone <repo-url>
+cd hr-masterdata
+pnpm install
+```
 
-   ```bash
-   git clone <repo-url>
-   cd hr-masterdata
-   pnpm install
-   ```
+### Configure Environment
 
-2. **Environment Setup**
-   Copy `.env.example` to `.env.local` and add your Supabase credentials.
+Copy `.env.example` to `.env.local` and provide at least:
 
-3. **Run Development Server**
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-   ```bash
-   pnpm dev
-   ```
+Optional production/staging features use:
 
-4. **Run Tests**
-   ```bash
-   pnpm test          # Unit tests
-   pnpm test:e2e      # E2E tests
-   ```
+```bash
+CRON_SECRET=
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASSWORD=
+SMTP_FROM=
+SMTP_SECURE=false
+NEXT_PUBLIC_IS_STAGING=true
+DISABLE_EMAIL_DELIVERY=true
+```
 
----
+Apply the SQL migrations in `supabase/migrations` with the Supabase CLI or your configured database migration process.
 
-## Contact
+### Run Locally
 
-**Technical Lead:** Enhancior AB
-**Project Owner:** HR Department
+```bash
+pnpm dev
+```
+
+Then open `http://localhost:3000`.
+
+## Documentation
+
+Additional docs live in `docs/`, including product requirements, architecture, backup/staging runbooks, custom column guidance, testing setup, and story-level implementation notes. The README is intentionally the high-level GitHub-facing overview; the detailed BMAD artifacts remain in `docs/` and `docs/sprint-artifacts/`.
+
+## License
+
+This project is a private showcase portfolio piece by Enhancior AB and is not available for public use, copying, or distribution. All rights reserved.
