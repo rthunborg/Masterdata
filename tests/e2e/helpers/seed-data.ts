@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { validateNonProductionSupabaseEnvironment } from '../../../src/lib/env/non-production-supabase-guard';
 
 const E2E_SEED_MARKER = 'E2E seed data';
 const TEST_USER_PASSWORD = 'Test123!';
@@ -160,6 +161,8 @@ function getSeedDateFixtures() {
 }
 
 export function assertSafeE2EDatabase() {
+  validateNonProductionSupabaseEnvironment();
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const allowRemoteDb = process.env.E2E_ALLOW_REMOTE_DB === 'true';
 
