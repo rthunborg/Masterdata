@@ -18,6 +18,16 @@ DO NOT read these files unconditionally. Use this index to know where to look ON
 
 This project uses the BMAD framework (Breakthrough Method of Agile AI-Driven Development).
 
+## Local Docker / WSL Rules
+
+- Run Docker-heavy commands from WSL/Linux filesystem paths such as `/home/rasmus/repos/hr-masterdata`; avoid `/mnt/c/...` and `/mnt/d/...` for database-heavy workflows.
+- Use the project files: `compose.yaml` for persistent local Compose services, `compose.test.yaml` for disposable test Compose services, and `supabase/config.toml` for the local Supabase CLI stack.
+- Do not start ad hoc containers with fixed `container_name` values or hard-coded host ports. Keep resources project-scoped with `COMPOSE_PROJECT_NAME=hr-masterdata` or the Supabase project id `hr-masterdata`.
+- Use service names inside Compose networks, for example `mailpit:1025`; use `127.0.0.1` only from host-run processes.
+- Stop Compose services with `docker compose down`; reset Compose volumes with `docker compose down -v`.
+- Stop only this repo's Supabase stack with `supabase stop --project-id hr-masterdata`; reset local Supabase data with `supabase db reset` or `supabase stop --project-id hr-masterdata --no-backup`.
+- Do not create global Docker networks, global volumes, Docker Desktop settings, WSL settings, or daemon-level changes unless explicitly asked.
+
 1. **Check sprint status** — Read `docs/sprint-artifacts/epic-21-sprint-status.yaml` to understand what's done, in-progress, and next.
 2. **Read the story file** — Before implementing, read the specific story `.md` in `docs/sprint-artifacts/`. It contains acceptance criteria, technical notes, and scope boundaries.
 3. **Implement exactly to spec** — Follow the story's acceptance criteria. Do not add features not specified in the story.

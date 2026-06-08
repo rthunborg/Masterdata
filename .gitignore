@@ -34,6 +34,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local Docker overrides
+compose.override.yaml
+compose.override.yml
+
 # vercel
 .vercel
 
@@ -73,8 +77,9 @@ success-results.txt
 stena/
 
 # Internal Documentation & Redundant Files
-/docs/
+/docs/*
 !/docs/screenshots/
+!/docs/local-docker.md
 .manual-tests/
 migrations/
 !migrations/*.sql

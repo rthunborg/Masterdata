@@ -141,6 +141,7 @@ The application uses PostgreSQL with a hybrid schema:
 - Node.js 20+
 - pnpm 10+
 - Git
+- Docker Desktop with WSL2 for local Supabase and SMTP capture
 
 ### Installation
 
@@ -155,6 +156,8 @@ The application uses PostgreSQL with a hybrid schema:
 2. **Environment Setup**
    Copy `.env.example` to `.env.local` and add your Supabase credentials.
 
+   For local Docker/Supabase defaults, see [`docs/local-docker.md`](docs/local-docker.md). The local Supabase CLI stack uses high ports (`15421` API, `15422` Postgres) to avoid collisions with other repos and agents.
+
 3. **Run Development Server**
 
    ```bash
@@ -166,6 +169,16 @@ The application uses PostgreSQL with a hybrid schema:
    pnpm test          # Unit tests
    pnpm test:e2e      # E2E tests
    ```
+
+### Local Docker Quick Reference
+
+```bash
+pnpm supabase:start   # Local Supabase Auth/REST/Realtime/Postgres
+pnpm docker:up        # Mailpit for app SMTP at 127.0.0.1:11025, UI at 127.0.0.1:18025
+pnpm supabase:reset   # Recreate local DB schema/data from migrations
+pnpm docker:down      # Stop Compose services
+pnpm supabase:stop    # Stop this repo's Supabase stack
+```
 
 ---
 
