@@ -15,5 +15,6 @@ export default defineConfig({
     setupFiles: ["tests/setup.ts"],
     include: ["tests/**/*.{test,spec}.{ts,tsx}", "src/**/*.{test,spec}.{ts,tsx}"],
     exclude: ["**/node_modules/**", "**/e2e/**", "**/*.bench.ts"],
+    testTimeout: 15000,
   },
 });

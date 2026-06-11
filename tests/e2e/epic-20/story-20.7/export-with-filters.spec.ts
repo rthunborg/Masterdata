@@ -5,20 +5,26 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { loginAsHRAdmin } from '../../helpers/e2e-helpers';
+import { createEmployeeViaUI, loginAsHRAdmin } from '../../helpers/e2e-helpers';
 
-const TEXT_FILTER_VALUE = 'J';
+let textFilterValue = 'FilterExport';
+let exportSeedCounter = 0;
 
-async function waitForDashboard(page: Page) {
+async function waitForDashboard(page: Page, options: { requireRows?: boolean } = {}) {
+  const { requireRows = true } = options;
+
   await expect(
     page.getByRole('button', { name: /Totalt antal anställda.*\d+/i })
   ).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('table')).toBeVisible({ timeout: 15000 });
-  await page.waitForFunction(
-    () => document.querySelectorAll('table tbody tr').length > 0,
-    undefined,
-    { timeout: 15000 }
-  );
+
+  if (requireRows) {
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 15000 });
+    await page.waitForFunction(
+      () => document.querySelectorAll('table tbody tr').length > 0,
+      undefined,
+      { timeout: 15000 }
+    );
+  }
 }
 
 async function openFilterPanel(page: Page) {
@@ -35,7 +41,7 @@ async function openFilterPanel(page: Page) {
 async function applyTextFilter(
   page: Page,
   columnName: string,
-  value = TEXT_FILTER_VALUE
+  value = textFilterValue
 ) {
   await openFilterPanel(page);
   await page.getByTestId(`filter-column-toggle-${columnName}`).click();
@@ -88,11 +94,35 @@ function exportButton(page: Page) {
   return page.getByRole('button', { name: /export/i }).first();
 }
 
-async function proceedThroughFilteredExportConfirmation(page: Page) {
-  const confirmationTitle = page.getByText('Export Filtered Employees');
+async function seedFilterExportEmployees(page: Page, seed: string) {
+  textFilterValue = `FilterExport${seed}`;
 
-  if (await confirmationTitle.isVisible({ timeout: 1500 }).catch(() => false)) {
-    await page.getByRole('button', { name: /export \d+ employees/i }).click();
+  const employees = [
+    { first_name: textFilterValue, surname: 'MatchA', ssn: `19900101${seed}1`, rank: 'SEV', gender: 'Man' },
+    { first_name: textFilterValue, surname: 'MatchB', ssn: `19900101${seed}2`, rank: 'SEV', gender: 'Woman' },
+    { first_name: `ControlExport${seed}`, surname: 'Outside', ssn: `19900101${seed}3`, rank: 'CHEF', gender: 'Man' },
+  ];
+
+  for (const employee of employees) {
+    await createEmployeeViaUI(page, {
+      ...employee,
+      hire_date: '2026-01-01',
+    });
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+  }
+
+  await page.goto('/dashboard');
+  await waitForDashboard(page);
+  await expect(page.getByRole('table')).toContainText(textFilterValue);
+}
+
+async function proceedThroughFilteredExportConfirmation(page: Page) {
+  const confirmation = page
+    .getByRole('alertdialog')
+    .filter({ hasText: /Export Filtered Employees/i });
+
+  if (await confirmation.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await confirmation.getByRole('button', { name: /export \d+ employees/i }).click();
   }
 }
 
@@ -105,10 +135,15 @@ async function visibleExportFieldDialog(page: Page) {
 }
 
 test.describe('Story 20.7: Export with Filters', () => {
-  test.beforeEach(async ({ page }) => {
+  test.describe.configure({ timeout: 120_000 });
+
+  test.beforeEach(async ({ page }, testInfo) => {
     await loginAsHRAdmin(page);
     await page.goto('/dashboard');
-    await waitForDashboard(page);
+    await waitForDashboard(page, { requireRows: false });
+
+    const seed = `${testInfo.workerIndex % 10}${String(exportSeedCounter++ % 100).padStart(2, '0')}`;
+    await seedFilterExportEmployees(page, seed);
   });
 
   test('AC 1.1: Export button label updates when filters are active', async ({ page }) => {
@@ -170,8 +205,11 @@ test.describe('Story 20.7: Export with Filters', () => {
       }
     }
 
-    const downloadPromise = page.waitForEvent('download');
-    await dialog.getByRole('button', { name: /Exportera|Export/i }).click();
+    const confirmExportButton = dialog.getByRole('button', { name: /Exportera|Export/i });
+    await expect(confirmExportButton).toBeEnabled({ timeout: 15000 });
+
+    const downloadPromise = page.waitForEvent('download', { timeout: 30000 });
+    await confirmExportButton.click();
 
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/employees_export_.*\.(csv|xlsx)$/);

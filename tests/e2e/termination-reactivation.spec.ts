@@ -9,6 +9,19 @@ import { createEmployeeViaUI, loginAsUser } from "./helpers/e2e-helpers";
 test.describe("Termination & Reactivation E2E Journey", () => {
   test.describe.configure({ timeout: 120000 });
 
+  function employeeMutationResponse(
+    page: import("@playwright/test").Page,
+    action: "terminate" | "reactivate"
+  ) {
+    return page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/employees/") &&
+        response.url().endsWith(`/${action}`) &&
+        response.request().method() === "POST",
+      { timeout: 30000 }
+    );
+  }
+
   test.beforeEach(async ({ page }) => {
     await loginAsUser(page, "admin@test.com", "Test123!");
     await page.goto("/dashboard");
@@ -38,9 +51,12 @@ test.describe("Termination & Reactivation E2E Journey", () => {
     await expect(terminateDialog).toBeVisible({ timeout: 5000 });
     await terminateDialog.locator('input[name="termination_date"]').fill("2025-11-13");
     await terminateDialog.locator('textarea[name="termination_reason"]').fill("E2E Test");
+    const terminateResponsePromise = employeeMutationResponse(page, "terminate");
     await terminateDialog
       .getByRole("button", { name: /Bekräfta uppsägning|Confirm|Terminate/i })
       .click();
+    const terminateResponse = await terminateResponsePromise;
+    expect(terminateResponse.ok()).toBeTruthy();
     await expect(terminateDialog).toBeHidden({ timeout: 15000 });
 
     await page.getByRole("checkbox", { name: /Visa uppsagda|Show terminated/i }).click();
@@ -53,12 +69,22 @@ test.describe("Termination & Reactivation E2E Journey", () => {
 
     const reactivateDialog = page.getByRole("alertdialog");
     await expect(reactivateDialog).toBeVisible({ timeout: 5000 });
+    const reactivateResponsePromise = employeeMutationResponse(page, "reactivate");
     await reactivateDialog
       .getByRole("button", { name: /Återaktivera|Reactivate|Confirm/i })
       .click();
+    const reactivateResponse = await reactivateResponsePromise;
+    expect(reactivateResponse.ok()).toBeTruthy();
     await expect(reactivateDialog).toBeHidden({ timeout: 15000 });
 
     await page.goto("/dashboard");
+    const showTerminatedCheckbox = page.getByRole("checkbox", {
+      name: /Visa uppsagda|Show terminated/i,
+    });
+    if (await showTerminatedCheckbox.isChecked().catch(() => false)) {
+      await showTerminatedCheckbox.click();
+    }
+
     await expect(page.getByRole("table")).toContainText(firstName, { timeout: 15000 });
 
     await expect(

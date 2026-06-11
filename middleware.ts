@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { validateNonProductionSupabaseEnvironment } from './src/lib/env/non-production-supabase-guard';
 import { shouldUpdateActivity } from './src/lib/server/utils/activity-tracker';
 
 // Routes that don't require authentication (excluding /login which needs special handling)
@@ -22,6 +23,8 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
+
+  validateNonProductionSupabaseEnvironment();
 
   try {
     // Create a response that will be returned

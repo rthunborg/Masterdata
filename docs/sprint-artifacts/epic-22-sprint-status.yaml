@@ -1,0 +1,195 @@
+schema: 1
+epic: 22
+epic_title: 'External Presentation & Handover Readiness'
+epic_status: 'In Progress'
+epic_goal: 'Prepare the system for a controlled external presentation or handover/sale discussion as a working pilot candidate, without unauthorized production-data exposure or overclaiming enterprise readiness.'
+
+sprint:
+  number: 1
+  start_date: 2026-06-04
+  end_date: 2026-06-18
+  duration_weeks: 2
+  team: []
+
+epic_metrics:
+  target_coverage_overall: 80
+  target_coverage_critical: 95
+  target_test_execution_time_seconds: 300
+  current_coverage_overall: 0
+  current_coverage_critical: 0
+  current_test_execution_time_seconds: 1706
+  total_tests_estimated: 17
+  total_tests_implemented: 52
+  total_tests_passing: 52
+
+stories:
+  - id: '22.1'
+    title: 'Protect or Remove Public Diagnostic Endpoints'
+    priority: 'P0'
+    status: 'done'
+    story_points: 2
+    estimated_tests: 2
+    implemented_tests: 5
+    passing_tests: 5
+    dependencies: []
+    assignee: 'Codex'
+    started_date: 2026-06-04
+    completed_date: 2026-06-10
+    blockers: []
+    notes: 'Done. Diagnostic route handlers removed and code-review test hardening patches applied. Local/non-production verification passes after Docker Desktop/local Supabase availability: focused Story 22.1 Vitest EXIT:0, npx vitest run EXIT:0, npx playwright test EXIT:0, npx eslint EXIT:0 warnings only, and npx tsc --noEmit EXIT:0. Production custom-domain verification remains a post-merge Epic 22 readiness gate, not a story-completion blocker.'
+  - id: '22.2'
+    title: 'Enforce Non-Production Environment Isolation'
+    priority: 'P0'
+    status: 'done'
+    story_points: 3
+    estimated_tests: 2
+    implemented_tests: 5
+    passing_tests: 5
+    dependencies: []
+    assignee: 'Codex'
+    started_date: 2026-06-04
+    completed_date: 2026-06-07
+    blockers: []
+    notes: 'Non-production Supabase guard, focused tests, docs, and .env.test cleanup implemented. Local Supabase is running. Lead verification passes: npx vitest run EXIT:0 and exact npx playwright test EXIT:0. The prior blocker was a 20-minute tool timeout; the full serial E2E suite completed in 2268.7 seconds with a longer timeout.'
+  - id: '22.3'
+    title: 'Remediate Dependency Advisories and Create Risk Register'
+    priority: 'P0'
+    status: 'done'
+    story_points: 3
+    estimated_tests: 1
+    implemented_tests: 1
+    passing_tests: 1
+    dependencies: []
+    assignee: 'Codex'
+    started_date: 2026-06-05
+    completed_date: 2026-06-05
+    blockers: []
+    notes: 'Critical/high production advisories remediated; pnpm audit --prod now reports 0 critical/high and 3 residual moderate/low advisories documented in the risk register. Code-review patches resolved migration visibility, readiness-doc consistency, dev-only advisory coverage, evidence assertions, existing important_dates.is_active normalization, and visible E2E row waits. Full gates pass: npx vitest run EXIT:0, npx eslint EXIT:0 with existing warnings, npx tsc --noEmit EXIT:0, and exact npx playwright test EXIT:0.'
+  - id: '22.4'
+    title: 'Confirm Presentation Data Scope and Access Preconditions'
+    priority: 'P0'
+    status: 'done'
+    story_points: 3
+    estimated_tests: 0
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['22.2']
+    assignee: 'Codex'
+    started_date: 2026-06-07
+    completed_date: 2026-06-07
+    blockers: []
+    notes: 'Docs-only implementation and code review are complete. Added standing production-data presentation controls, role/account preconditions, restricted data/view rules, operator checks, non-production path rules, and evidence handling. Automated test gate waived per estimated_tests 0; targeted secret/SSN/DB URL/token search passed.'
+  - id: '22.5'
+    title: 'Create Blocker Remediation Tracker and One-Page Presentation Brief'
+    priority: 'P0'
+    status: 'done'
+    story_points: 2
+    estimated_tests: 0
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['22.1', '22.2', '22.3', '22.4']
+    assignee: 'Codex'
+    started_date: 2026-06-07
+    completed_date: 2026-06-07
+    blockers: []
+    notes: 'Done. Created and linked docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md. Code-review patches resolved stale diagnostic endpoint evidence and tightened Story 22.1 gate wording so disclosure alone is not treated as closure. Docs-only automated Vitest/Playwright gate waived per estimated_tests 0; targeted private/secret-bearing content search passed.'
+  - id: '22.6'
+    title: 'Build API Auth and Field Access Evidence Matrices'
+    priority: 'P1'
+    status: 'done'
+    story_points: 5
+    estimated_tests: 1
+    implemented_tests: 1
+    passing_tests: 1
+    dependencies: ['22.1']
+    assignee: 'Codex'
+    started_date: 2026-06-07
+    completed_date: 2026-06-08
+    blockers: []
+    notes: 'Done. All eleven review patch findings are resolved, including durable tracking for evidence/status artifacts, middleware non-production guard placement, column_config matrix coverage, stale/typed/re-export route coverage checks, and employee_column_changes repair hardening. Verification green: focused Story 22.6 matrix Vitest PASS; focused Story 22.2 guard Vitest PASS; npx vitest run EXIT:0; npx playwright test EXIT:0 (216 total, 160 passed, 56 skipped); npx eslint EXIT:0 warnings only; npx tsc --noEmit EXIT:0; hygiene search PASS.'
+  - id: '22.7'
+    title: 'Add Role, Export, and RLS Evidence Tests'
+    priority: 'P1'
+    status: 'done'
+    story_points: 5
+    estimated_tests: 5
+    implemented_tests: 40
+    passing_tests: 40
+    dependencies: ['22.6']
+    assignee: 'Codex'
+    started_date: 2026-06-08
+    completed_date: 2026-06-10
+    blockers: []
+    notes: 'Done. All nine review patch findings are resolved and one pre-existing risk is deferred. Added 40 focused role/API/export/RLS tests covering all current roles, external field isolation, custom export fields, malformed export payload validation, service-role-backed hermetic RLS setup, and staffing denial cases. Full gates pass: focused Story 22.7 Vitest EXIT:0 (40 tests), Story 13.7 export error handling EXIT:0 (14 tests), targeted E2E hardening EXIT:0 (20 passed, 1 skipped), targeted FilterPanel Vitest EXIT:0 (17 tests), npx vitest run EXIT:0 (3046 passed, 30 skipped), npx playwright test EXIT:0 (160 passed, 56 skipped), npx eslint EXIT:0 with 321 warnings/0 errors, npx tsc --noEmit EXIT:0, and hygiene search PASS. DB column-level enforcement is not claimed; admin_limited DB RLS limitation is documented.'
+  - id: '22.8'
+    title: 'Package Supabase Security Evidence and Run Restore Drill'
+    priority: 'P1'
+    status: 'ready-for-dev'
+    story_points: 5
+    estimated_tests: 1
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['22.2']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'RLS/Auth/advisors/migrations and restore drill evidence.'
+  - id: '22.9'
+    title: 'Draft Privacy Annex, Subprocessors, and Incident Process'
+    priority: 'P1'
+    status: 'ready-for-dev'
+    story_points: 3
+    estimated_tests: 0
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['22.4', '22.8']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Draft privacy/legal diligence package, not final legal advice.'
+
+progress_summary:
+  total_stories: 9
+  stories_not_started: 0
+  stories_ready_for_dev: 2
+  stories_in_progress: 0
+  stories_completed: 7
+  stories_in_review: 0
+  stories_blocked: 0
+  total_story_points: 31
+  completed_story_points: 23
+  in_progress_story_points: 0
+  remaining_story_points: 8
+
+test_coverage_summary:
+  total_tests_estimated: 17
+  total_tests_implemented: 52
+  total_tests_passing: 52
+  implementation_percentage: 100
+  unit_tests: 44
+  integration_tests: 8
+  e2e_tests: 0
+  performance_tests: 0
+
+blockers: []
+known_issues:
+  - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'
+  - 'Post-merge Epic 22 release/readiness gate: after final deployment, unauthenticated deployed-app diagnostic checks for removed diagnostic endpoints must return a non-success auth/not-found status before P0 external-presentation readiness is claimed.'
+external_dependencies:
+  - 'Supabase project/environment access for evidence exports and restore drill.'
+  - 'Current dependency advisory output.'
+risks:
+  - description: 'Presenting before P0 stories are complete may undermine trust.'
+    severity: 'high'
+    mitigation: 'Position as working pilot candidate only and complete P0 stories first.'
+next_actions:
+  - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
+  - 'Story 22.3 is done; keep its dependency advisory evidence current if audit output changes.'
+  - 'Story 22.4 is done; standing production-data presentation controls are documented.'
+  - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
+  - 'Story 22.6 is done; API auth and field access matrices, coverage automation, migration repair, guard placement, and tracking artifacts are durable and verified.'
+  - 'Story 22.7 is done; review patch findings are resolved, role/export/RLS evidence tests total 40, durable evidence is redacted for public docs, and full gates are complete.'
+last_updated: 2026-06-10
+updated_by: Codex

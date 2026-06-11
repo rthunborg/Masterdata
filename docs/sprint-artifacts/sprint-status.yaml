@@ -1,0 +1,63 @@
+schema: 1
+planner_title: 'Handover and Contract Readiness Planner'
+planner_status: 'Updated'
+last_updated: 2026-06-10
+updated_by: Codex
+
+current_focus:
+  active_epic: 22
+  active_epic_status_file: 'docs/sprint-artifacts/epic-22-sprint-status.yaml'
+  active_epic_title: 'External Presentation & Handover Readiness'
+  positioning: 'Working pilot candidate, not enterprise-ready production software.'
+  required_before_serious_external_presentation:
+    - '22.1'
+    - '22.2'
+    - '22.3'
+    - '22.4'
+    - '22.5'
+
+future_focus:
+  future_epic: 23
+  future_epic_status_file: 'docs/sprint-artifacts/epic-23-sprint-status.yaml'
+  future_epic_title: 'Contract & Enterprise Readiness'
+  trigger: 'Start only after serious commercial path, signed contract, or approved contract-readiness scope.'
+
+epics:
+  - epic: 21
+    title: 'Crewing Staffing Needs Tracker'
+    status: 'complete'
+    status_file: 'docs/sprint-artifacts/epic-21-sprint-status.yaml'
+  - epic: 22
+    title: 'External Presentation & Handover Readiness'
+    status: 'in-progress'
+    priority: 'P0/P1'
+    total_stories: 9
+    total_story_points: 31
+    status_file: 'docs/sprint-artifacts/epic-22-sprint-status.yaml'
+  - epic: 23
+    title: 'Contract & Enterprise Readiness'
+    status: 'future-contract-dependent'
+    priority: 'P2'
+    total_stories: 9
+    total_story_points: 45
+    status_file: 'docs/sprint-artifacts/epic-23-sprint-status.yaml'
+
+next_actions:
+  - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
+  - 'Story 22.4 is done; standing production-data presentation controls are documented.'
+  - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
+  - 'Story 22.6 is done after resolving all review patch findings and passing focused/full gates.'
+  - 'Story 22.7 is done; all review patch findings are resolved, 40 focused role/export/RLS evidence tests are complete, and full gates are passing.'
+  - 'Do not start Epic 23 until the commercial trigger is met.'
+
+notes:
+  - 'The prior sprint-status.yaml content referenced older Epic 9/13/14/18 work and was stale for current readiness planning.'
+  - 'Epic 22 handles readiness before external presentation or handover/sale discussion.'
+  - 'Epic 23 handles future contract-readiness work if a commercial path is confirmed.'
+  - 'Story 22.1 is done as of 2026-06-10: diagnostic route handlers are removed, focused Story 22.1 Vitest, full Vitest, full Playwright, ESLint, and type-check all exit 0. Deployed-app diagnostic verification moved to a post-merge Epic 22 release/readiness gate: after final deployment, removed diagnostic endpoints must return a non-success auth/not-found status before P0 external-presentation readiness is claimed.'
+  - 'Story 22.2 is done. Non-production Supabase guard, docs, and .env.test cleanup are applied. Lead verification passes: npx vitest run EXIT:0 and exact npx playwright test EXIT:0; the prior blocker was a 20-minute tool timeout shorter than the full serial E2E suite runtime.'
+  - 'Story 22.3 dependency remediation is done after code review; current production audit has 0 critical/high advisories and residual moderate/low risks are registered. Review patches resolved readiness-doc consistency, dev-only advisory coverage, evidence assertions, migration normalization, and E2E row visibility. Full gates pass: npx vitest run, npx eslint, npx tsc --noEmit, and exact npx playwright test all exit 0.'
+  - 'Story 22.4 is done. Standing production-data presentation controls, role/account preconditions, restricted data/view rules, and Story 22.2 non-production path boundaries are documented; targeted docs-only quality search passed.'
+  - 'Story 22.5 is done. The blocker tracker and one-page readiness brief are linked from readiness and sprint surfaces; code-review patches resolved stale diagnostic endpoint evidence and tightened Story 22.1 gate wording so disclosure alone is not treated as closure. Docs-only automated Vitest/Playwright gate was waived per estimated_tests 0 after targeted private/secret-bearing content search passed.'
+  - 'Story 22.6 is done. All eleven review patch findings are resolved: evidence/status artifacts and linked readiness documents are durably tracked, PE3 cron service-role usage is corrected, matrix parsing checks exact columns plus stale/typed/re-export rows, middleware applies the non-production Supabase guard before client creation, column_config metadata is represented, the employee_column_changes repair migration is hardened, and the evidence index gate note is current. Focused Story 22.6 matrix Vitest, focused Story 22.2 guard Vitest, npx vitest run, npx playwright test, npx eslint, and npx tsc --noEmit all exit 0. Epic 23 remains future contract-dependent and must not be started from BMAD backlog auto-discovery until the commercial trigger is met.'
+  - 'Story 22.7 is done as of 2026-06-10. All nine review patch findings are resolved and one pre-existing risk is deferred. Automated evidence now covers role visibility/editability, external API/export field isolation, custom export fields, export Zod validation, local Supabase RLS checks, hermetic staffing seed data, and evidence-package links. Focused Story 22.7 Vitest, Story 13.7 export error handling, targeted E2E hardening, targeted FilterPanel Vitest, full Vitest, full Playwright, ESLint, and type-check all exit 0; targeted evidence hygiene search passes with no matches. Story 22.1 is done; do not overclaim P0 external-presentation readiness until the post-merge deployed-app diagnostic checks pass.'

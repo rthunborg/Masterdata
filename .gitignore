@@ -29,6 +29,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.codex-*.log
 
 # env files
 .env*
@@ -43,6 +44,8 @@ compose.override.yml
 
 # supabase
 .supabase/
+supabase/.branches/
+supabase/.temp/
 
 # typescript
 *.tsbuildinfo
@@ -53,7 +56,12 @@ bmad/
 .bmad/
 bmad/
 _bmad/
-_bmad-output/
+_bmad-output/*
+!_bmad-output/implementation-artifacts/
+_bmad-output/implementation-artifacts/*
+!_bmad-output/implementation-artifacts/sprint-status.yaml
+!_bmad-output/implementation-artifacts/22-*.md
+!_bmad-output/implementation-artifacts/deferred-work.md
 .cursor/
 .agent/
 .ai/
@@ -80,10 +88,19 @@ stena/
 /docs/*
 !/docs/screenshots/
 !/docs/local-docker.md
+!/docs/commercial-readiness/
+!/docs/commercial-readiness/**
+!/docs/sprint-artifacts/
+/docs/sprint-artifacts/*
+!/docs/sprint-artifacts/sprint-status.yaml
+!/docs/sprint-artifacts/epic-22-sprint-status.yaml
+!/docs/sprint-artifacts/story-22.*.md
 .manual-tests/
 migrations/
 !migrations/*.sql
 !migrations/README.md
+!supabase/migrations/
+!supabase/migrations/20260607193000_fix_employee_column_changes_conflict_target.sql
 MANUAL_TESTING_5.9.md
 QA-FAILURE-SUMMARY.md
 PRODUCTION_SETUP.md

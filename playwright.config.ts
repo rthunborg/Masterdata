@@ -25,7 +25,7 @@ export default defineConfig({
   // test data and auth/session state, so parallel workers make the suite flaky.
   workers: 1,
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['junit', { outputFile: 'test-results/e2e-results.xml' }],
     ['list'],
   ],

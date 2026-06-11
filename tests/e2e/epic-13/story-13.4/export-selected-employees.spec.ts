@@ -1,17 +1,24 @@
 import { test, expect } from '@playwright/test';
-import { setupTestUser, loginAsHRAdmin } from '../../helpers/e2e-helpers';
+import {
+  createEmployeeViaUI,
+  setupTestUser,
+  loginAsHRAdmin,
+} from '../../helpers/e2e-helpers';
 
 test.describe('Story 13.4: Export Selected Employees Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await setupTestUser();
     await loginAsHRAdmin(page);
     await page.goto('/dashboard');
-    // Wait for table to load
-    await page.waitForSelector('[data-testid^="employee-row-"]', { timeout: 10000 });
+    await ensureMinimumEmployees(page, 3);
   });
 
+  function visibleEmployeeCheckboxes(page: import('@playwright/test').Page) {
+    return page.locator('[data-testid^="employee-select-checkbox-"]').filter({ visible: true });
+  }
+
   function employeeCheckbox(page: import('@playwright/test').Page, index: number) {
-    return page.locator('[data-testid^="employee-select-checkbox-"]').nth(index);
+    return visibleEmployeeCheckboxes(page).nth(index);
   }
 
   function selectedExportButton(page: import('@playwright/test').Page) {
@@ -22,6 +29,57 @@ test.describe('Story 13.4: Export Selected Employees Workflow', () => {
     return page.getByRole('button', {
       name: /Exportera & markera besättningsklar|Export & Mark Crew Ready/i,
     });
+  }
+
+  async function ensureMinimumEmployees(page: import('@playwright/test').Page, minimum: number) {
+    await page.waitForLoadState('load');
+
+    let existingCount = await visibleEmployeeCheckboxes(page).count();
+    for (let index = existingCount; index < minimum; index += 1) {
+      const suffix = ((Date.now() + index) % 10000).toString().padStart(4, '0');
+      await createEmployeeViaUI(page, {
+        first_name: `Export${suffix}`,
+        surname: 'E2E',
+        ssn: `19900101${suffix}`,
+        rank: 'SEV',
+        gender: 'Man',
+        hire_date: '2025-01-01',
+      });
+      await page.goto('/dashboard');
+      await page.waitForLoadState('load');
+      existingCount = await visibleEmployeeCheckboxes(page).count();
+    }
+
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 30000 });
+    await expect(visibleEmployeeCheckboxes(page).nth(minimum - 1)).toBeVisible({
+      timeout: 30000,
+    });
+  }
+
+  async function exportFromDialog(
+    page: import('@playwright/test').Page,
+    endpoint: '/api/employees/export' | '/api/employees/export-crew-ready',
+    filenamePattern: RegExp
+  ) {
+    const dialog = page.locator('div[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    const downloadPromise = page.waitForEvent('download', { timeout: 30000 });
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes(endpoint) &&
+        response.request().method() === 'POST',
+      { timeout: 30000 }
+    );
+
+    await dialog.getByRole('button', { name: /Exportera|Export/i }).click();
+
+    const response = await responsePromise;
+    expect(response.ok()).toBeTruthy();
+
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(filenamePattern);
+    expect(await download.path()).toBeTruthy();
   }
 
   test('user selects 3 employees and exports selected employees', async ({ page }) => {
@@ -46,19 +104,12 @@ test.describe('Story 13.4: Export Selected Employees Workflow', () => {
     // Wait for button to be enabled (if it has disabled state)
     await expect(exportButton).toBeEnabled({ timeout: 5000 });
 
-    // Set up download listener
-    const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
-
     await exportButton.click();
-    const dialog = page.locator('div[role="dialog"]');
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole('button', { name: /Exportera|Export/i }).click();
-
-    // Wait for download
-    const download = await downloadPromise;
-
-    // Verify download occurred
-    expect(download.suggestedFilename()).toMatch(/employees_export_.*\.(csv|xlsx)$/);
+    await exportFromDialog(
+      page,
+      '/api/employees/export',
+      /employees_export_.*\.(csv|xlsx)$/
+    );
   });
 
   test('user selects no employees and export is disabled', async ({ page }) => {
@@ -90,15 +141,14 @@ test.describe('Story 13.4: Export Selected Employees Workflow', () => {
     const exportButton = crewReadyExportButton(page);
     await expect(exportButton).toBeEnabled({ timeout: 5000 });
 
-    // Set up download listener
-    const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
-
     // Click export
     await exportButton.click();
 
-    // Wait for download
-    const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/crew_ready_employees.*\.csv/);
+    await exportFromDialog(
+      page,
+      '/api/employees/export-crew-ready',
+      /crew_ready_employees.*\.csv/
+    );
 
     // Wait for table to refresh (employees should be marked as crew ready)
     await page.waitForTimeout(2000);
@@ -131,22 +181,15 @@ test.describe('Story 13.4: Export Selected Employees Workflow', () => {
     const exportButton = selectedExportButton(page);
     await expect(exportButton).toBeEnabled({ timeout: 5000 });
 
-    const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
     await exportButton.click();
-    const dialog = page.locator('div[role="dialog"]');
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole('button', { name: /Exportera|Export/i }).click();
-
-    const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/employees_export_.*\.(csv|xlsx)$/);
+    await exportFromDialog(
+      page,
+      '/api/employees/export',
+      /employees_export_.*\.(csv|xlsx)$/
+    );
   });
 
-  test('export includes selected employees from multiple pages', async ({ page }) => {
-    test.skip(
-      true,
-      'Dashboard selection no longer uses paginated table pages; selection persistence is covered in the non-paginated table.'
-    );
-
+  test.skip('export includes selected employees from multiple pages', async ({ page }) => {
     // This test assumes pagination exists
     // Select employees from first page
     const checkbox1 = employeeCheckbox(page, 0);
@@ -169,14 +212,12 @@ test.describe('Story 13.4: Export Selected Employees Workflow', () => {
       const exportButton = selectedExportButton(page);
       await expect(exportButton).toBeEnabled({ timeout: 5000 });
 
-      const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
       await exportButton.click();
-      const dialog = page.locator('div[role="dialog"]');
-      await expect(dialog).toBeVisible();
-      await dialog.getByRole('button', { name: /Exportera|Export/i }).click();
-
-      const download = await downloadPromise;
-      expect(download.suggestedFilename()).toMatch(/employees_export_.*\.(csv|xlsx)$/);
+      await exportFromDialog(
+        page,
+        '/api/employees/export',
+        /employees_export_.*\.(csv|xlsx)$/
+      );
     } else {
       // If pagination doesn't exist, skip this test
       test.skip();

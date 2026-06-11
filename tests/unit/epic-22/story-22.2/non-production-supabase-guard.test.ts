@@ -1,3 +1,7 @@
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -8,6 +12,7 @@ const productionRef = "njgmfvsqevhoxpqbnpnd";
 const productionUrl = `https://${productionRef}.supabase.co`;
 const productionDbUrl =
   `postgresql://postgres.${productionRef}:secret-password@aws-0-eu-north-1.pooler.supabase.com:6543/postgres`;
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 describe("non-production Supabase environment guard", () => {
   it("rejects known production Supabase resources during local development", () => {
@@ -109,5 +114,19 @@ describe("non-production Supabase environment guard", () => {
         SUPABASE_DB_URL: productionDbUrl,
       })
     ).not.toThrow();
+  });
+
+  it("runs from middleware before page-route Supabase client creation", () => {
+    const middlewareSource = readFileSync(join(repoRoot, "middleware.ts"), "utf8");
+    const guardCallIndex = middlewareSource.indexOf(
+      "validateNonProductionSupabaseEnvironment();"
+    );
+    const clientCreationIndex = middlewareSource.indexOf(
+      "const supabase = createServerClient"
+    );
+
+    expect(guardCallIndex).toBeGreaterThanOrEqual(0);
+    expect(clientCreationIndex).toBeGreaterThanOrEqual(0);
+    expect(guardCallIndex).toBeLessThan(clientCreationIndex);
   });
 });
