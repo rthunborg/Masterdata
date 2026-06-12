@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-06-10T18:49:33+02:00
+# last_updated: 2026-06-12T10:59:14+02:00
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-06-10T18:49:33+02:00
+last_updated: 2026-06-12T10:59:14+02:00
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -50,8 +50,11 @@ development_status:
   22-5-create-blocker-remediation-tracker-and-one-page-presentation-brief: done
   22-6-build-api-auth-and-field-access-evidence-matrices: done
   22-7-add-role-export-and-rls-evidence-tests: done
-  22-8-package-supabase-security-evidence-and-run-restore-drill: ready-for-dev
+  22-8-package-supabase-security-evidence-and-run-restore-drill: done
   22-9-draft-privacy-annex-subprocessors-and-incident-process: ready-for-dev
+  22-10-reconcile-supabase-environments-and-baseline-migration-history: backlog
+  22-11-enforce-non-production-email-suppression: backlog
+  22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: backlog
   epic-22-retrospective: optional
   epic-23: backlog
   23-1-select-commercial-offer-and-handover-model: backlog

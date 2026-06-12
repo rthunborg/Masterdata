@@ -18,9 +18,9 @@ epic_metrics:
   current_coverage_overall: 0
   current_coverage_critical: 0
   current_test_execution_time_seconds: 1706
-  total_tests_estimated: 17
-  total_tests_implemented: 52
-  total_tests_passing: 52
+  total_tests_estimated: 23
+  total_tests_implemented: 53
+  total_tests_passing: 53
 
 stories:
   - id: '22.1'
@@ -124,17 +124,17 @@ stories:
   - id: '22.8'
     title: 'Package Supabase Security Evidence and Run Restore Drill'
     priority: 'P1'
-    status: 'ready-for-dev'
+    status: 'done'
     story_points: 5
     estimated_tests: 1
-    implemented_tests: 0
-    passing_tests: 0
+    implemented_tests: 1
+    passing_tests: 1
     dependencies: ['22.2']
-    assignee: null
-    started_date: null
-    completed_date: null
+    assignee: 'Amelia'
+    started_date: 2026-06-11
+    completed_date: 2026-06-12
     blockers: []
-    notes: 'RLS/Auth/advisors/migrations and restore drill evidence.'
+    notes: 'Done. Code review Round 1 of 3 (2026-06-12, three adversarial layers) closed: 22 patch findings fixed (status arithmetic, snapshot date-qualification, stale restore-drill claims in 8 readiness docs, 7-of-8 check accuracy, risk-register consistency), 2 decisions resolved (22.10-22.12 stubs added to the File List; Rasmus Thunborg named as risk-acceptance owner), 1 pre-existing finding deferred to Story 22.10. Implementation summary: Supabase security evidence package created (22_supabase_security_evidence_package.md): RLS policies with local pg_policies cross-check and hosted policy inventory, Auth posture, advisor summary (access restored: 83 WARN — 20 security / 63 performance, 0 errors), migration history (remote history verified empty — all 56 migrations local-only). SSL (disabled), network restrictions (allow-all), and PITR (not enabled; paid feature not enabled per NFR1) formally risk-accepted with owner and review date 2026-09-30. Full restore drill: 2026-05-28 production backup restored into the local non-production stack; 7 of 8 validation checks passed (one not applicable: no serial/identity columns); personal data cleaned up afterwards; documented in evidence/restore-drill-2026-06-11.md. New risk R-023 (hosted RLS policy drift) and confirmed R-010 (empty remote migration history) registered; E-008 added to blocker tracker. The single estimated test is the documented restore validation checklist (7 recorded pass outcomes, 1 not applicable); it is counted as a manual checklist test, not an automated one. No app/script/workflow code changed, so the automated Vitest/Playwright gate is waived per the Stories 22.4/22.5 pattern; targeted hygiene searches passed (no secrets, refs, URLs, or personal data in committed files).'
   - id: '22.9'
     title: 'Draft Privacy Annex, Subprocessors, and Incident Process'
     priority: 'P1'
@@ -149,29 +149,72 @@ stories:
     completed_date: null
     blockers: []
     notes: 'Draft privacy/legal diligence package, not final legal advice.'
+  - id: '22.10'
+    title: 'Reconcile Supabase Environments and Baseline Migration History'
+    priority: 'P1'
+    status: 'backlog'
+    story_points: 5
+    estimated_tests: 2
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['22.8']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'From Story 22.8 findings R-010/R-020/R-023 and advisor warnings. Three-way drift inventory (production is primary source of truth; staging may carry intentional Epic 22 adjustments to forward-port), reconciliation migrations incl. policy dedup/search_path/SECURITY DEFINER grant review, baseline remote migration history (staging first, then production), enable leaked-password protection, document migrations-only change policy. Stub drafted; needs SM create-story before dev.'
+  - id: '22.11'
+    title: 'Enforce Non-Production Email Suppression'
+    priority: 'P1'
+    status: 'backlog'
+    story_points: 2
+    estimated_tests: 3
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: []
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'Email suppression is currently opt-in (DISABLE_EMAIL_DELIVERY) and fails open in staging/preview. Make suppression fail-safe when NEXT_PUBLIC_IS_STAGING is set, log suppressed sends without personal data, keep a documented override for local Mailpit, audit Vercel Preview env vars for real SMTP credentials. Stub drafted; needs SM create-story before dev.'
+  - id: '22.12'
+    title: 'Add Backup Failure Alerting and Decide Staging Refresh/User Backup Scope'
+    priority: 'P1'
+    status: 'backlog'
+    story_points: 2
+    estimated_tests: 1
+    implemented_tests: 0
+    passing_tests: 0
+    dependencies: ['22.8', '22.11']
+    assignee: null
+    started_date: null
+    completed_date: null
+    blockers: []
+    notes: 'From Story 22.8 findings: 2026-06-05 nightly backup failed (Setup Supabase CLI step) and went unnoticed for six days. Add failure notification + retry to the nightly workflow; decide users/auth scope for backups and the staging refresh now that 22.11 removes the email-spam rationale. Workflow changes require full gates. Stub drafted; needs SM create-story before dev.'
 
 progress_summary:
-  total_stories: 9
-  stories_not_started: 0
-  stories_ready_for_dev: 2
+  total_stories: 12
+  stories_not_started: 3
+  stories_ready_for_dev: 1
   stories_in_progress: 0
-  stories_completed: 7
+  stories_completed: 8
   stories_in_review: 0
   stories_blocked: 0
-  total_story_points: 31
-  completed_story_points: 23
+  total_story_points: 40
+  completed_story_points: 28
   in_progress_story_points: 0
-  remaining_story_points: 8
+  remaining_story_points: 12 # 22.9 (3) + 22.10 (5) + 22.11 (2) + 22.12 (2); 28 + 0 + 12 = 40
 
 test_coverage_summary:
-  total_tests_estimated: 17
-  total_tests_implemented: 52
-  total_tests_passing: 52
+  total_tests_estimated: 23
+  total_tests_implemented: 53
+  total_tests_passing: 53
   implementation_percentage: 100
   unit_tests: 44
   integration_tests: 8
   e2e_tests: 0
   performance_tests: 0
+  manual_checklist_tests: 1 # Story 22.8 restore validation checklist (documented outcomes, not an automated Vitest/Playwright test); 44 + 8 + 0 + 0 + 1 = 53
 
 blockers: []
 known_issues:
@@ -191,5 +234,7 @@ next_actions:
   - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
   - 'Story 22.6 is done; API auth and field access matrices, coverage automation, migration repair, guard placement, and tracking artifacts are durable and verified.'
   - 'Story 22.7 is done; review patch findings are resolved, role/export/RLS evidence tests total 40, durable evidence is redacted for public docs, and full gates are complete.'
-last_updated: 2026-06-10
-updated_by: Codex
+  - 'Story 22.8 is done (code review Round 1 closed 2026-06-12 with all findings resolved); Supabase security evidence package, SSL/network/PITR risk acceptances (owner: Rasmus Thunborg), and the verified full restore drill are documented. Story 22.9 is next (ready-for-dev).'
+  - 'Stories 22.10-22.12 added to Epic 22 backlog from Story 22.8 findings and owner direction (2026-06-11): 22.10 reconciles prod/staging/migrations drift and baselines remote migration history (production is primary source of truth, staging may carry intentional Epic 22 adjustments); 22.11 makes staging/preview email suppression fail-safe and audits Preview SMTP env values; 22.12 adds backup failure alerting and decides users/auth scope for backups and the staging refresh. Stubs exist in docs/sprint-artifacts/; SM create-story is required before dev.'
+last_updated: 2026-06-12
+updated_by: Code review (Round 1 closure, Story 22.8)

@@ -34,13 +34,13 @@ After the post-deployment diagnostic endpoint verification gate is closed or for
 - Public diagnostic endpoint implementation is complete, but production runtime closure is not accepted as verified until post-deployment runtime checks for the removed diagnostic paths return non-success responses.
 - Residual moderate/low production dependency advisories remain documented and accepted only for controlled external review, not enterprise use.
 - Production data can be shown only through the application UI with the approved account, role, population, field, export, screenshot, browser-history, recording, transcription, and AI-notes controls.
-- Supabase hosted RLS/Auth settings, full restore drill, privacy/legal package, incident process, and long-term support model are not yet fully proven.
+- Supabase Auth dashboard settings, hosted RLS policy/migration reconciliation (`R-023`/`R-010`), privacy/legal package, incident process, and long-term support model are not yet fully proven. The full restore drill was verified on 2026-06-11.
 
 ## Non-Ready Areas
 
 The following are future evidence, security, privacy, or contract-readiness work, not completed enterprise proof:
 
-- Supabase security evidence package and full restore drill.
+- Hosted Supabase policy/migration reconciliation and advisor remediation (Story 22.10) plus backup-failure alerting (Story 22.12); the security evidence package and full restore drill themselves were delivered in Story 22.8.
 - Privacy annex, subprocessors, DPA/DPIA inputs, retention decisions, and incident process.
 - Formal support/SLA, operating RACI, production access governance, SSO/MFA decisions, DB network/SSL/PITR hardening, and contract-ready operations.
 - Epic 23 commercial, legal, support, governance, and enterprise controls. Epic 23 should remain future contract-dependent scope until a serious commercial path or signed contract exists.

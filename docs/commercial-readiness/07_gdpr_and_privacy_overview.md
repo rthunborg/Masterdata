@@ -42,7 +42,7 @@ Needs organizational/process confirmation:
 - Retention/deletion schedule.
 - Incident response process and breach notification workflow.
 - Support staff access control and logging.
-- Full restore test evidence. Latest scheduled backup execution and partial staging restore were verified, but not a full restore drill.
+- Full restore test evidence: a full restore drill into a non-production target was verified on 2026-06-11 (`evidence/restore-drill-2026-06-11.md`). Open: auth users are outside logical backup scope (recovery-planning decision, Story 22.12) and backup-failure alerting is missing.
 - Production environment separation and secret rotation.
 
 ## 4. Support For Data Subject Rights

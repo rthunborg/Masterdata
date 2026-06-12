@@ -1,7 +1,7 @@
 # Commercial Readiness Documentation Index
 
 Prepared: 2026-06-03
-Updated: 2026-06-10
+Updated: 2026-06-11
 Scope: repository review plus GitHub, Vercel, and limited Supabase-related runtime verification of the HR Masterdata Management System. No employee rows, secrets, private environment variable values, concrete production domain names, project refs, deployment IDs, or secret-name inventories are disclosed in this public package. Detailed operational evidence is held privately. Pre-remediation production diagnostic endpoint checks returned configuration metadata; Story 22.1 is done with route-handler removal and passing local/non-production gates. A post-merge Epic 22 release/readiness gate remains: after final deployment, the production runtime must stop returning success responses for the removed diagnostic paths.
 
 ## System Summary
@@ -36,6 +36,7 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 | `19_api_auth_matrix.md` | Security, IT, developers | Current API route/method auth matrix with service-role and request-cookie evidence |
 | `20_field_access_matrix.md` | Security, IT, product | Role-level field visibility, editability, exportability, enforcement layer, and known limits |
 | `21_role_export_rls_test_evidence.md` | Security, IT, reviewers | Story 22.7 command results and automated evidence for role, API/export, Zod, and local RLS checks |
+| `22_supabase_security_evidence_package.md` | Security, IT, reviewers | Story 22.8 Supabase RLS/Auth/advisor/migration evidence, SSL/network/PITR risk acceptances, and restore drill summary |
 
 ## Verified
 
@@ -51,24 +52,25 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 - GitHub repository metadata was verified; detailed security-feature posture is recorded privately. Public summary: repository-platform hardening remains required before enterprise readiness is claimed.
 - Vercel project metadata was verified; the latest checked production deployment was `READY`. Project names, deployment IDs, concrete commit refs, and region details are recorded privately.
 - Pre-Story 22.1 unauthenticated checks showed different behavior between protected platform aliases and the production runtime. Story 22.1 later removed the diagnostic route handlers and local/non-production gates now pass. The 2026-06-10 unauthenticated production runtime checks still returned success responses for removed diagnostic paths because the final Epic 22 PR had not yet been deployed; rechecking those paths is a post-merge release/readiness gate.
-- Latest scheduled Supabase backup workflow run on 2026-06-03 completed successfully, including backup upload, pruning, and partial staging restore for `employees` and `column_config`.
+- The 2026-06-03 scheduled Supabase backup workflow run completed successfully, including backup upload, pruning, and partial staging restore for `employees` and `column_config`. The 2026-06-05 run failed at the "Setup Supabase CLI" step and went unnoticed for six days (no failure alerting); backup-failure alerting is tracked in Story 22.12.
 - Supabase CLI project access confirmed production and staging project visibility. Project names, refs, and regions are recorded privately.
 - Production and staging Supabase REST schema metadata confirmed the expected public tables and eight RPC paths exist, including `employees`, `users`, `column_config`, `important_dates`, `employee_column_changes`, `staffing_needs`, `user_filters`, and notification log objects. No application rows were read.
 - Supabase schema drift was identified: staging `employees` has custom-looking columns `asdas` and `testerere`, while production has newer `seably_*` columns not present in staging.
 - Supabase project controls were checked. Public summary: hosted database/security controls require hardening or formal risk acceptance; detailed posture is recorded privately. This is separate from the verified GitHub logical backup workflow.
 - Local env file investigation: `.env.local` still points to production Supabase for developer runtime, while `.env.test` has been reset to local/non-production Supabase placeholders by Story 22.2; `.env.production` is empty; no local env file contains a Postgres DB URL/password key.
 - Supabase project secret-name inventory was checked privately. Public summary: production has expected application secret configuration to review; staging secret posture requires review. Secret values and secret names are not disclosed in this public package.
-- The Supabase connector still listed only the unrelated `SunnySeat` project and returned a permission error for the HR project refs. Newer CLI `db query`/`db advisors` were blocked by a temporary login-role permission error and require `SUPABASE_DB_PASSWORD`.
+- The Supabase connector still listed only the unrelated `SunnySeat` project and returned a permission error for the HR project refs. (Historical/superseded for the CLI part: the earlier `db query`/`db advisors` block from a temporary login-role permission error no longer applies — Story 22.8 re-verified on 2026-06-11 that authenticated CLI access works without `SUPABASE_DB_PASSWORD`; see the Story 22.8 bullet below.)
 - Environment variable documentation from `.env.example` and local `.env*` file names/key names without reading secret values.
 - Non-disclosing secret scan: tracked env file is `.env.example`; local `.env*` files are ignored by `.gitignore`.
 - Security audit command `pnpm audit --prod` now returns 3 production dependency advisories after Story 22.3 remediation: 0 critical, 0 high, 2 moderate, and 1 low. Current output is captured in `evidence/dependency-audit-2026-06-05.md`.
 - Story 22.7 role/export/RLS evidence passed in local/non-production scope: focused Story 22.7 Vitest, full Vitest, full Playwright, ESLint, type-check, and targeted evidence hygiene search all exited `0`. External employee-list API responses are shaped for external roles; DB column-level enforcement is not claimed.
+- Story 22.8 (2026-06-11): Supabase advisors and migration list are now accessible through authenticated CLI (83 advisor warnings summarized: 20 security, 63 performance, 0 errors; remote migration history verified empty). SSL enforcement is disabled and network restrictions are allow-all — both formally risk-accepted with owner and review date 2026-09-30. A full restore drill of the 2026-05-28 production backup into the local non-production stack succeeded with 7 of 8 validation checks passed and one not applicable (`docs/commercial-readiness/evidence/restore-drill-2026-06-11.md`). Hosted RLS policy drift vs migrations was discovered in the 2026-05-28 backup snapshot and registered as `R-023`.
 
 ## Needs Manual Review
 
-- Supabase Auth settings, session lifetime, MFA, direct hosted RLS policy definitions, and migration history. These still require `SUPABASE_DB_PASSWORD` or equivalent direct database access.
+- Supabase Auth session lifetime and MFA settings (dashboard-only). Migration history was verified live in Story 22.8 (remote history empty); hosted RLS policy definitions were inventoried from the 2026-05-28 backup snapshot, not a live read (policy drift `R-023`); reconciliation work remains.
 - Vercel environment variable scopes, production rollback process, and production runtime settings beyond deployment metadata/build logs.
-- Full production restore drill and actual recovery point/recovery time objectives. The nightly partial staging refresh was verified, but not a full restore.
+- Recovery time objective for a full production recovery, including auth-user re-provisioning (auth schema is outside logical backup scope). The full restore drill itself was verified on 2026-06-11; nominal RPO follows the nightly backup schedule (~24h), but the 2026-06-05 backup failure that went unnoticed for six days shows the effective recovery point is not assured until backup-failure alerting exists (Story 22.12).
 - Code-owner review requirements, release approvals, and incident process.
 - SMTP provider contract, DPA/subprocessor status, and email retention.
 - Legal basis, data retention periods, DPIA need, controller/processor roles, and customer-specific privacy obligations.

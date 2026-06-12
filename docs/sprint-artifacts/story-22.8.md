@@ -2,7 +2,7 @@
 
 ## Status
 
-ready-for-dev
+done
 
 - **Priority:** P1
 - **Story Points:** 5
@@ -14,11 +14,11 @@ As a security reviewer, I want Supabase security settings, migration history, an
 
 ## Acceptance Criteria
 
-- [ ] AC1: Evidence package includes exported or documented RLS policies, Auth settings, Supabase advisors, migration history, and known security risks.
-- [ ] AC2: Supabase SSL, DB network restrictions, and PITR posture are hardened or formally risk-accepted with owner and review date.
-- [ ] AC3: A restore drill is run against a non-production target.
-- [ ] AC4: Restore drill documentation includes timestamp, operator, source, target, scope, result, validation checks, and follow-up issues.
-- [ ] AC5: No restore or evidence command exposes secrets in committed files.
+- [x] AC1: Evidence package includes exported or documented RLS policies, Auth settings, Supabase advisors, migration history, and known security risks.
+- [x] AC2: Supabase SSL, DB network restrictions, and PITR posture are hardened or formally risk-accepted with owner and review date.
+- [x] AC3: A restore drill is run against a non-production target.
+- [x] AC4: Restore drill documentation includes timestamp, operator, source, target, scope, result, validation checks, and follow-up issues.
+- [x] AC5: No restore or evidence command exposes secrets in committed files.
 
 ## Technical Notes
 

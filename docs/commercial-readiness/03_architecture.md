@@ -158,10 +158,10 @@ flowchart LR
 - `employee_column_changes` exists in production and staging REST schema metadata, but its creation migration is not visible in tracked `supabase/migrations`; later migrations assume it exists.
 - GDPR anonymization endpoint is not scheduled in `vercel.json`.
 - Vercel build logs include `DYNAMIC_SERVER_USAGE` warnings for admin pages that use cookies during static generation.
-- Managed database project controls require private hardening review.
-- Physical backup/PITR posture requires private operations review; the current public evidence relies on the GitHub logical backup/staging refresh workflow.
+- Managed database SSL/network controls were verified in Story 22.8 and are formally risk-accepted with documented hardening steps (review 2026-09-30).
+- Physical backup/PITR posture is risk-accepted (PITR not enabled, review 2026-09-30); the GitHub logical backup workflow is the verified mechanism.
 - Staging/prod schema drift means staging is useful for workflow testing but not a strict production schema mirror.
-- Production monitoring and full restore tests are not verified from code or platform metadata.
+- Production monitoring is not verified from code or platform metadata; a full restore drill was verified on 2026-06-11 (`evidence/restore-drill-2026-06-11.md`), with backup-failure alerting still missing (Story 22.12).
 
 ## Recommended Improvements Before Enterprise Use
 
@@ -169,5 +169,5 @@ flowchart LR
 2. Keep dependency advisory evidence current; critical/high production advisories were patched by Story 22.3, with residual moderate/low advisories risk-accepted in `15_dependency_advisory_risk_register.md`.
 3. Audit every API route for `requireAuthAPI(request)`/role helper usage.
 4. Confirm DB migration history and hosted RLS policies directly in Supabase with database-password access, and keep export custom-field access on the real-column model.
-5. Formalize full backup restore tests, incident response, logging redaction, and access reviews.
+5. Keep periodic restore drills (first full drill verified 2026-06-11) and formalize backup-failure alerting, incident response, logging redaction, and access reviews.
 6. Consider migrating Vercel config management to a reviewed configuration workflow; deployment metadata and logs were inspected, but environment scopes/values should remain controlled and separately reviewed.

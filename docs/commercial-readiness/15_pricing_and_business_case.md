@@ -111,9 +111,9 @@ Known or documented risk areas include:
 - Undefined controller/processor role depending on hosting model.
 - DPA/subprocessor review needed for Supabase, Vercel, GitHub, SMTP, and any support access.
 - Diagnostic endpoint exposure recorded as a P0 readiness issue until runtime/E2E proof closes it.
-- Supabase hosted RLS/Auth settings not fully verified with direct database-password access.
-- Supabase SSL/network/PITR posture needs hardening or documented acceptance.
-- Full production restore drill not yet verified.
+- Supabase hosted RLS policies were inventoried from a backup snapshot in Story 22.8 (drift found, `R-023`, reconciliation pending); Auth dashboard settings not yet verified.
+- Supabase SSL/network/PITR posture is formally risk-accepted (2026-06-11, review 2026-09-30); documented hardening steps remain before enterprise use.
+- Full production restore drill verified 2026-06-11; backup-failure alerting still missing.
 - Platform logging, support access, and incident process are not yet enterprise-formalized.
 - Some service-role paths bypass RLS after app-layer checks and need review.
 

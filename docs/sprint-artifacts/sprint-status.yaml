@@ -1,8 +1,8 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: 2026-06-10
-updated_by: Codex
+last_updated: 2026-06-12
+updated_by: Code review (Round 1 closure, Story 22.8)
 
 current_focus:
   active_epic: 22
@@ -31,8 +31,8 @@ epics:
     title: 'External Presentation & Handover Readiness'
     status: 'in-progress'
     priority: 'P0/P1'
-    total_stories: 9
-    total_story_points: 31
+    total_stories: 12
+    total_story_points: 40
     status_file: 'docs/sprint-artifacts/epic-22-sprint-status.yaml'
   - epic: 23
     title: 'Contract & Enterprise Readiness'
@@ -48,6 +48,8 @@ next_actions:
   - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
   - 'Story 22.6 is done after resolving all review patch findings and passing focused/full gates.'
   - 'Story 22.7 is done; all review patch findings are resolved, 40 focused role/export/RLS evidence tests are complete, and full gates are passing.'
+  - 'Story 22.8 is done (2026-06-12): Supabase security evidence package, advisor/migration-history capture (access restored; remote migration history verified empty), SSL/network/PITR risk acceptances (owner: Rasmus Thunborg, review 2026-09-30), and a verified full restore drill into the local non-production stack are documented. New risks R-023 (hosted RLS policy drift) and confirmed R-010 are registered. Code review Round 1 closed with all 22 patch findings fixed and 2 decisions resolved; 1 pre-existing finding deferred to Story 22.10. Story 22.9 is next.'
+  - 'Stories 22.10-22.12 were added to Epic 22 on 2026-06-11 to track Story 22.8 findings and owner decisions: 22.10 Supabase environment reconciliation and migration-history baseline (production primarily authoritative; staging carries some unpromoted Epic 22 adjustments), 22.11 fail-safe non-production email suppression plus Preview SMTP env audit, 22.12 backup failure alerting plus users/auth backup and staging-refresh scope decision. Epic 22 is now 12 stories / 40 points. Stubs drafted; SM create-story required before development.'
   - 'Do not start Epic 23 until the commercial trigger is met.'
 
 notes:

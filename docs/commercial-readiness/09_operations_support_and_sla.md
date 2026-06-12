@@ -8,15 +8,15 @@ Prepared: 2026-06-03
 | --- | --- | --- | --- |
 | Local environment | `pnpm install`, `pnpm dev`, Supabase env vars | `README.md`, `.env.example` | Verified by docs |
 | Production hosting | Checked Vercel production deployment was ready from the expected release branch; exact project/deployment identifiers are held privately | `README.md`, `vercel.json`, private Vercel metadata/logs | Partially verified |
-| Database/Auth | Supabase intended; prod/staging REST schema metadata confirms expected core public tables/RPCs | `src/lib/supabase/*`, migrations, Supabase CLI/REST metadata | Schema metadata partially verified; RLS/Auth settings not verified |
+| Database/Auth | Supabase intended; prod/staging REST schema metadata confirms expected core public tables/RPCs | `src/lib/supabase/*`, migrations, Supabase CLI/REST metadata | Schema metadata partially verified; hosted RLS policy inventory captured in Story 22.8 from the 2026-05-28 backup snapshot (drift `R-023`); Auth dashboard settings (session/MFA) not verified |
 | CI | Type-check, lint, unit, integration on `main`/`staging`; latest checked `main` and `staging` workflow runs succeeded | `.github/workflows/test-check.yml`, GitHub run metadata | Verified in config and platform |
 | E2E | Playwright config starts local Next server on port 3100 | `playwright.config.ts` | Verified in config |
 | Cron | ÖMC and PE3 reminders | `vercel.json` | Verified in config |
-| Backup | Nightly production dumps, 14-day retention, partial staging restore | `.github/workflows/supabase-nightly-backup.yml`, GitHub run metadata | Latest 2026-06-03 scheduled run verified successful |
-| Managed-platform physical backup/PITR | Private platform backup metadata checked | Private platform backup metadata | Needs private operations review |
+| Backup | Nightly production dumps, 14-day retention, partial staging restore | `.github/workflows/supabase-nightly-backup.yml`, GitHub run metadata | 2026-06-03 scheduled run verified successful; the 2026-06-05 run failed at CLI setup and went unnoticed for six days — failure alerting tracked in Story 22.12 |
+| Managed-platform physical backup/PITR | PITR not enabled (paid feature); risk-accepted 2026-06-11 with operations owner, review 2026-09-30; GitHub logical backups are the verified mechanism | `22_supabase_security_evidence_package.md` | Risk-accepted with owner/date |
 | Monitoring | Console/Vercel logs and performance helper | `src/lib/utils/performance-monitor.ts` | Partial |
-| Restore | Current workflow partially restores staging; full restore drill still separate | docs, workflow, GitHub run metadata, Supabase backup metadata | Partial staging restore verified; full restore and platform PITR not verified |
-| Supabase project controls | Private control review found hardening items and schema-alignment questions | Private Supabase CLI/REST metadata | Needs hardening/review |
+| Restore | Nightly workflow partially restores staging; full restore drill of a production backup into the local non-production stack succeeded 2026-06-11 with 7 of 8 validation checks passed (one not applicable) | `evidence/restore-drill-2026-06-11.md`, workflow, GitHub run metadata | Full restore verified on non-production target; platform PITR risk-accepted (not enabled) |
+| Supabase project controls | SSL/network/PITR posture verified in Story 22.8 and formally risk-accepted (review 2026-09-30); schema-alignment questions and remaining hardening steps tracked (`R-018`/`R-019`, Story 22.10) | `22_supabase_security_evidence_package.md`, private Supabase CLI/REST metadata | Risk-accepted with owner/date; hardening steps documented |
 | Environment separation | Local runtime env points at production resources, while test env points at local/non-production Supabase; production env file is empty | local env file key/host inspection | Keep tests isolated before every run |
 | Vercel CLI | Installed as `54.7.1`; project listing timed out, connector used for metadata/logs | session context, Vercel metadata | Available with caveat |
 
@@ -82,12 +82,13 @@ Not verified:
 
 - Bucket configuration.
 - Backup encryption at rest beyond vendor storage controls.
-- Full production restore drill.
-- RPO/RTO.
+- RTO for a full production recovery including auth-user re-provisioning (auth schema is outside logical backup scope).
 
 Verified on 2026-06-03: latest scheduled backup job completed successfully, including production role/schema/data dumps, employees/column_config dump, Supabase Storage upload, backup pruning, download of oldest backup, and partial staging restore of `employees` and `column_config`.
 
-Verified on 2026-06-03: managed-platform physical backup metadata requires private operations review. Treat the GitHub logical backup workflow as the currently verified public backup mechanism unless platform backups/PITR are approved separately.
+Verified on 2026-06-11 (Story 22.8): full restore drill — the oldest nightly backup (2026-05-28) was downloaded read-only from storage and fully restored (roles, schema, data) into the local non-production Supabase stack; row counts matched the dump exactly for the 7 key tables checked (the two log tables `pe3_notifications_log` and `staffing_needs_changelog` were restored but not count-validated), 26 RLS policies and 11 functions restored, and a REST smoke check passed. Nominal RPO follows the nightly schedule (~24h); the unnoticed 2026-06-05 backup failure means the effective recovery point is not assured until failure alerting exists (Story 22.12). Follow-ups: one nightly backup (2026-06-05) is missing from the bucket (add failure alerting), and recovery planning must include auth-user provisioning. Details: `evidence/restore-drill-2026-06-11.md`.
+
+Superseded 2026-06-11 (originally verified 2026-06-03): the managed-platform physical backup/PITR posture has since been reviewed in Story 22.8 and formally risk-accepted (PITR not enabled; operations owner, review 2026-09-30). The GitHub logical backup workflow remains the verified backup mechanism unless platform backups/PITR are approved separately.
 
 Verified after Story 22.2/22.3: local developer runtime env still points to production Supabase resources, while test env points to local/non-production Supabase. No database URL/password values are disclosed in this public package, and runtime secret-name inventories are held privately.
 
@@ -144,6 +145,6 @@ Suggested response-time language:
 - Technical owner: Needs confirmation.
 - Data owner/controller: Needs confirmation.
 - Production access owners: Needs confirmation.
-- Backup/restore owner: Needs confirmation.
+- Backup/restore owner: Rasmus Thunborg holds the operations-owner role for the Story 22.8 backup/PITR risk acceptance and restore-drill follow-ups (named 2026-06-12); formal customer-side confirmation of long-term ownership is pending.
 - Security/privacy contact: Needs confirmation.
 - Support contact and escalation path: Needs confirmation.
