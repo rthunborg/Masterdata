@@ -4,6 +4,17 @@ epic_title: 'External Presentation & Handover Readiness'
 epic_status: 'In Progress'
 epic_goal: 'Prepare the system for a controlled external presentation or handover/sale discussion as a working pilot candidate, without unauthorized production-data exposure or overclaiming enterprise readiness.'
 
+# ⚠️ EPIC COMPLETION GATE — read before setting epic_status to 'done'.
+# Deferred production actions that MUST be scheduled/executed at the Epic 22 production cutover.
+# (A local automated hook on the owner's machine also surfaces this when epic_status flips to done — see .claude/hooks/epic-22-phase-b-reminder.mjs; .claude/ is gitignored, so this hook is local-only. The gate below is the committed, team-visible source of truth.)
+epic_completion_gate:
+  - id: 'story-22.10-phase-b'
+    title: 'Story 22.10 Phase B — Supabase production cutover'
+    status: 'pending' # set to 'done' once executed to silence the reminder
+    trigger: 'After Epic 22 is merged to staging, owner-verified in staging, and merged to production.'
+    actions: 'Execute the Story 22.10 production cutover runbook (Section B): baseline production remote migration history (record the historical migrations as applied), push the reconciliation migration to production, re-verify production policy counts/advisors, and close R-010/R-023/R-020 in the risk register. Requires explicit owner approval and a maintenance window. (Staging was reconciled + verified 2026-06-14. Auth attack protection — leaked-password + CAPTCHA — moved to Epic 23 Story 23.4, separate from this gate.)'
+    source: '_bmad-output/implementation-artifacts/22-10-reconcile-supabase-environments-and-baseline-migration-history.md (Phase B / PB1-PB3); tracker E-010'
+
 sprint:
   number: 1
   start_date: 2026-06-04
@@ -19,8 +30,8 @@ epic_metrics:
   current_coverage_critical: 0
   current_test_execution_time_seconds: 1706
   total_tests_estimated: 23
-  total_tests_implemented: 53
-  total_tests_passing: 53
+  total_tests_implemented: 63
+  total_tests_passing: 63
 
 stories:
   - id: '22.1'
@@ -138,31 +149,31 @@ stories:
   - id: '22.9'
     title: 'Draft Privacy Annex, Subprocessors, and Incident Process'
     priority: 'P1'
-    status: 'ready-for-dev'
+    status: 'done'
     story_points: 3
     estimated_tests: 0
     implemented_tests: 0
     passing_tests: 0
     dependencies: ['22.4', '22.8']
-    assignee: null
-    started_date: null
-    completed_date: null
+    assignee: 'Claude'
+    started_date: 2026-06-12
+    completed_date: 2026-06-13
     blockers: []
-    notes: 'Draft privacy/legal diligence package, not final legal advice.'
+    notes: 'Done. Code review Round 1 of 3 (2026-06-13, three adversarial layers: Blind Hunter, Edge Case Hunter, Acceptance Auditor) closed with all findings resolved: AC1-AC5 all satisfied; repository fact-check confirmed every cited field/function/route/cross-link is accurate; 3 patch findings fixed (stale evidence-index SMTP wording updated to operator-confirmed Google Workspace; Cloudflare note re-marked to separate the repo-verifiable fact from the operator-asserted DNS-purpose clause; "Gmail-specific send-rate handling" softened to an indicative generic inter-send delay); 1 pre-existing finding deferred (operator personal name in tracker/status owner fields, inherited from Story 22.8). Draft privacy pack created: 23_privacy_annex_draft.md (controller/processor assumptions per commercial model, legal basis status, actual data categories, retention facts and gaps, DSAR handling, DPIA screening, 12 open legal questions), 24_subprocessor_register.md (Supabase/Vercel/GitHub/Google Workspace SMTP relay/npm with purpose, data exposure, DPA/transfer status; SMTP relay operator-confirmed as Google Workspace smtp-relay.gmail.com, DPA/transfer terms open; Cloudflare confirmed not part of this project), 25_incident_breach_process.md (role labels, severity levels, triage, private evidence capture, 72-hour breach-assessment checkpoint, communication templates, post-incident review). All three carry the not-legal-advice disclaimer and explicit draft-vs-fact markers. Links wired: 00_index, 14_evidence_index (3 rows), 17 tracker (E-009), forward links in 07/10, and AC5 links to 16_ and the Story 22.8 evidence package plus restore drill. Docs-only: automated Vitest/Playwright gate waived per estimated_tests 0; targeted hygiene search passed with no matches in new content. Not legal advice; DPA execution and final legal pack remain Epic 23.2.'
   - id: '22.10'
     title: 'Reconcile Supabase Environments and Baseline Migration History'
     priority: 'P1'
-    status: 'backlog'
+    status: 'done'
     story_points: 5
     estimated_tests: 2
-    implemented_tests: 0
-    passing_tests: 0
+    implemented_tests: 11
+    passing_tests: 11
     dependencies: ['22.8']
-    assignee: null
-    started_date: null
-    completed_date: null
+    assignee: 'Claude'
+    started_date: 2026-06-14
+    completed_date: 2026-06-15
     blockers: []
-    notes: 'From Story 22.8 findings R-010/R-020/R-023 and advisor warnings. Three-way drift inventory (production is primary source of truth; staging may carry intentional Epic 22 adjustments to forward-port), reconciliation migrations incl. policy dedup/search_path/SECURITY DEFINER grant review, baseline remote migration history (staging first, then production), enable leaked-password protection, document migrations-only change policy. Stub drafted; needs SM create-story before dev.'
+    notes: 'Done (code review Round 1 passed 2026-06-15). Phase A authoring + local verification COMPLETE: three-way drift inventory with per-difference classification (26_environment_reconciliation_inventory.md); migration-ordering anomaly fixed (20250113000000 -> 20251122150001_add_room_assignment_rpc.sql); reconciliation migration 20260614000000 (search_path pinning on all 11 functions; SECURITY DEFINER grant tightening verified per src/ caller - remove_jsonb_key->service_role only, add_custom_column/update_staffing_need drop anon keep authenticated, get_user_role kept by design; R-020 drop staging junk asdas/testerere; R-023 drop dashboard-era policies + re-assert canonical scoped TO authenticated with (select) wrapping; users/column_config policy merges); local API-role parity via supabase/seed.sql (local only, never hosted); also adopted hosted-only important_dates.deadline_submit/deadline_cancel columns into migrations (newly-found dashboard-era drift that broke date-capacity/Playwright e2e on migration-built envs; A/B-proven pre-existing, not caused by this story); also reconciled the column_config manage policy so HR Admin can manage custom columns (pre-existing R-023 gap: app column-admin feature was RLS-denied on migration-built stacks; A/B-proven pre-existing); reconciliation evidence test suite (11/11) and Story 22.7 RLS suite (8/8) green; docs (migrations-only policy, cutover runbook) + risk-register/evidence/security-overview/evidence-index/index updates; deferred-work ordering item resolved. seably_* reclassified as runtime custom columns (not migration schema). Local gates green: npx vitest run 3054 passed/30 skipped, pnpm test:integration 777 passed/16 skipped, npx tsc --noEmit EXIT:0, npx eslint EXIT:0 (321 pre-existing warnings/0 errors); npx vitest run 3056 passed/0 failed and npx playwright test 160 passed/55 skipped/0 failed (after closing two pre-existing dashboard-era drift gaps found via e2e: important_dates.deadline_* columns adopted + column_config HR-manage policy reconciled - both A/B-proven not caused by this story). STAGING EXECUTED + VERIFIED 2026-06-14 via the Supabase MCP (owner authorized the account-wide plugin in-session): reconciliation applied to masterdata-staging (<STAGING_REF>; production <PROD_REF> untouched), migration history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19). AC3/AC4 met on staging; R-010/R-020/R-023 reconciled+verified on staging, close in production at Phase B. AC5 (leaked-password protection) + CAPTCHA MOVED to Epic 23 (Story 23.4 AC6) by owner decision 2026-06-14 — Auth/dashboard setting, enterprise hardening, not this schema-reconciliation story. All remaining 22.10 ACs (AC1-AC4, AC6) met. Code review Round 1 passed 2026-06-15 (3 adversarial layers): 0 decision-needed, 6 patch (all fixed: .mcp.json gitignored, staging/prod refs+regions redacted to placeholders, test-count 8/8->11/11, leaked-password overclaim removed from risk register, figure nits, +canonical-policy-set test assertion), 5 deferred (logged), 4 dismissed; Story 22.9 clean. Lead-agent gate run green: vitest 3057/0, integration 780/0 (reconciliation 11/11, RLS 8/8), tsc 0, eslint 0 errors. Playwright e2e did NOT complete cleanly this session due to local-stack/dev-server degradation (webpack dev server crash + employee seed not repopulating) - but every spec passed at least once (full run 162/216 green, targeted batch incl. room-assignment/inline-edit/saved-filters/export green), all failures were no-data-rendered timeouts not assertion regressions, the review changed no app/spec/migration code, and the dev full e2e was green (160 passed) -> environmental, not a regression. Owner directed status -> DONE 2026-06-15. Phase B (production cutover) remains the Epic 22 production-cutover gate (story-22.10-phase-b).'
   - id: '22.11'
     title: 'Enforce Non-Production Email Suppression'
     priority: 'P1'
@@ -194,27 +205,27 @@ stories:
 
 progress_summary:
   total_stories: 12
-  stories_not_started: 3
-  stories_ready_for_dev: 1
+  stories_not_started: 2
+  stories_ready_for_dev: 0
   stories_in_progress: 0
-  stories_completed: 8
-  stories_in_review: 0
+  stories_completed: 9
+  stories_in_review: 1
   stories_blocked: 0
   total_story_points: 40
-  completed_story_points: 28
-  in_progress_story_points: 0
-  remaining_story_points: 12 # 22.9 (3) + 22.10 (5) + 22.11 (2) + 22.12 (2); 28 + 0 + 12 = 40
+  completed_story_points: 31
+  in_progress_story_points: 5 # 22.10 (5) in REVIEW — Phase A reconciliation applied + verified on staging; AC5 leaked-password moved to Epic 23.4; Phase B production at cutover
+  remaining_story_points: 4 # 22.11 (2) + 22.12 (2); 31 + 5 + 4 = 40
 
 test_coverage_summary:
   total_tests_estimated: 23
-  total_tests_implemented: 53
-  total_tests_passing: 53
+  total_tests_implemented: 63
+  total_tests_passing: 63
   implementation_percentage: 100
   unit_tests: 44
-  integration_tests: 8
+  integration_tests: 18
   e2e_tests: 0
   performance_tests: 0
-  manual_checklist_tests: 1 # Story 22.8 restore validation checklist (documented outcomes, not an automated Vitest/Playwright test); 44 + 8 + 0 + 0 + 1 = 53
+  manual_checklist_tests: 1 # Story 22.8 restore validation checklist (documented outcomes, not an automated Vitest/Playwright test); 44 + 18 + 0 + 0 + 1 = 63 (Story 22.10 added 10 integration tests)
 
 blockers: []
 known_issues:
@@ -234,7 +245,9 @@ next_actions:
   - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
   - 'Story 22.6 is done; API auth and field access matrices, coverage automation, migration repair, guard placement, and tracking artifacts are durable and verified.'
   - 'Story 22.7 is done; review patch findings are resolved, role/export/RLS evidence tests total 40, durable evidence is redacted for public docs, and full gates are complete.'
-  - 'Story 22.8 is done (code review Round 1 closed 2026-06-12 with all findings resolved); Supabase security evidence package, SSL/network/PITR risk acceptances (owner: Rasmus Thunborg), and the verified full restore drill are documented. Story 22.9 is next (ready-for-dev).'
+  - 'Story 22.8 is done (code review Round 1 closed 2026-06-12 with all findings resolved); Supabase security evidence package, SSL/network/PITR risk acceptances (owner: Rasmus Thunborg), and the verified full restore drill are documented.'
+  - 'Story 22.9 is done (code review Round 1 closed 2026-06-13 with all findings resolved): draft privacy pack (privacy annex 23, subprocessor register 24, incident/breach process 25) created with disclaimer and draft-vs-fact markers, linked from index/evidence/tracker surfaces (E-009), and synchronized across status artifacts. Review fixed 3 patches (stale evidence-index SMTP wording, Cloudflare marker, Gmail send-delay wording) and deferred 1 pre-existing item (operator name in owner fields, from Story 22.8). The SMTP relay is operator-confirmed as Google Workspace (smtp-relay.gmail.com); its DPA/transfer terms plus broader DPA execution remain Epic 23.2.'
   - 'Stories 22.10-22.12 added to Epic 22 backlog from Story 22.8 findings and owner direction (2026-06-11): 22.10 reconciles prod/staging/migrations drift and baselines remote migration history (production is primary source of truth, staging may carry intentional Epic 22 adjustments); 22.11 makes staging/preview email suppression fail-safe and audits Preview SMTP env values; 22.12 adds backup failure alerting and decides users/auth scope for backups and the staging refresh. Stubs exist in docs/sprint-artifacts/; SM create-story is required before dev.'
-last_updated: 2026-06-12
-updated_by: Code review (Round 1 closure, Story 22.8)
+  - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA moved to Epic 23 (Story 23.4 AC6) by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b; Auth attack protection is enabled in Epic 23.'
+last_updated: 2026-06-14
+updated_by: Dev (Story 22.10 → review: reconciliation applied + verified on staging via MCP; AC5 leaked-password/CAPTCHA moved to Epic 23 Story 23.4; Phase B production deferred to Epic 22 cutover)

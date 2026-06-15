@@ -66,6 +66,7 @@ _bmad-output/implementation-artifacts/*
 .agent/
 .ai/
 .claude/
+.mcp.json
 .gemini/
 .agents/
 .playwright-mcp/

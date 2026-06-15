@@ -2,6 +2,8 @@
 
 Prepared: 2026-06-03
 
+A draft subprocessor register built from the tables below now exists: `24_subprocessor_register.md` (Story 22.9).
+
 ## SaaS And Service Dependencies
 
 | Vendor/dependency | Type | Purpose | Processes personal data? | What data? | Environment | Evidence | License | Risk/comment | Include in DPA/subprocessor list? |
@@ -64,7 +66,7 @@ Patched areas include Next.js, `minimatch`/`brace-expansion`/`tmp` through `exce
 ## Recommended Procurement Actions
 
 1. Confirm legal entity and contract owner for Supabase, Vercel, GitHub, and SMTP.
-2. Create DPA/subprocessor list.
+2. Create DPA/subprocessor list. Draft register created in `24_subprocessor_register.md` (Story 22.9); DPA execution remains open (Epic 23.2).
 3. Document region/data transfer settings for production.
 4. Keep dependency advisory risk register current and validate residual Nodemailer/ExcelJS remediation before enterprise use.
 5. Generate final license report from exact production lockfile.

@@ -59,6 +59,8 @@ Needs organizational/process confirmation:
 
 ## 5. Subprocessors And External Services
 
+A draft subprocessor register now formalizes this list with purpose, data exposure, environment, and DPA/transfer status: `24_subprocessor_register.md` (Story 22.9).
+
 Likely subprocessors or processors needing review:
 
 - Supabase: database, auth, realtime, storage/backups.
@@ -85,7 +87,7 @@ Not verified:
 
 ## 7. Incident Handling
 
-No formal incident handling process was found in code/config. Technical logs exist through console/Vercel/GitHub. Recommended target state includes incident severity levels, contacts, breach assessment process, evidence preservation, notification templates, and post-incident review.
+No formal incident handling process was found in code/config. Technical logs exist through console/Vercel/GitHub. Recommended target state includes incident severity levels, contacts, breach assessment process, evidence preservation, notification templates, and post-incident review. A draft incident/breach process covering these elements now exists: `25_incident_breach_process.md` (Story 22.9, draft — needs legal review).
 
 ## 8. Open Questions For Legal/Privacy
 
@@ -119,6 +121,6 @@ No formal incident handling process was found in code/config. Technical logs exi
 | Retention | Archive/anonymize/backups | lifecycle repo, backup workflow | Retention policy not confirmed | Approve retention schedule | Yes |
 | Audit | Staffing changelog, employee changes | migrations/services | Broad audit reads and migration-history gap | Verify hosted migration history/RLS | Yes |
 | Security | Secrets ignored, Zod, RLS | `.gitignore`, validation, migrations | Residual moderate/low dependency advisories | Track advisory register and validate remaining major upgrades | No/Some |
-| Subprocessors | Supabase/Vercel/GitHub/SMTP identifiable | config/workflows | Contracts unknown | Create subprocessor register | Yes |
+| Subprocessors | Supabase/Vercel/GitHub/SMTP identifiable | config/workflows | Contracts unknown | Draft register created (`24_subprocessor_register.md`); execute DPAs (Epic 23.2) | Yes |
 | Data subject rights | Export/edit/delete/anonymize components | routes/repositories | No DSAR process | Define operational process | Yes |
-| Incident response | Logs only | console usage | No formal process | Write incident runbook | Yes |
+| Incident response | Logs only | console usage | No formal process | Draft runbook created (`25_incident_breach_process.md`); confirm with legal and exercise it | Yes |

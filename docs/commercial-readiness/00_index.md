@@ -1,7 +1,7 @@
 # Commercial Readiness Documentation Index
 
 Prepared: 2026-06-03
-Updated: 2026-06-11
+Updated: 2026-06-14
 Scope: repository review plus GitHub, Vercel, and limited Supabase-related runtime verification of the HR Masterdata Management System. No employee rows, secrets, private environment variable values, concrete production domain names, project refs, deployment IDs, or secret-name inventories are disclosed in this public package. Detailed operational evidence is held privately. Pre-remediation production diagnostic endpoint checks returned configuration metadata; Story 22.1 is done with route-handler removal and passing local/non-production gates. A post-merge Epic 22 release/readiness gate remains: after final deployment, the production runtime must stop returning success responses for the removed diagnostic paths.
 
 ## System Summary
@@ -37,6 +37,10 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 | `20_field_access_matrix.md` | Security, IT, product | Role-level field visibility, editability, exportability, enforcement layer, and known limits |
 | `21_role_export_rls_test_evidence.md` | Security, IT, reviewers | Story 22.7 command results and automated evidence for role, API/export, Zod, and local RLS checks |
 | `22_supabase_security_evidence_package.md` | Security, IT, reviewers | Story 22.8 Supabase RLS/Auth/advisor/migration evidence, SSL/network/PITR risk acceptances, and restore drill summary |
+| `23_privacy_annex_draft.md` | Legal/privacy, management | Draft privacy annex: controller/processor assumptions per commercial model, legal basis status, data categories, retention, DSAR handling, DPIA screening, open legal questions |
+| `24_subprocessor_register.md` | Legal/privacy, procurement, security | Draft subprocessor register with purpose, data exposure, environment, DPA/transfer status, and review owner per service |
+| `25_incident_breach_process.md` | IT, security, legal/privacy, operations | Draft incident/breach process: roles, severity, triage, evidence capture, notification timing, communication templates, post-incident review |
+| `26_environment_reconciliation_inventory.md` | Security, IT, reviewers | Story 22.10 three-way drift inventory (production vs staging vs migrations) with per-difference classification and the reconciled end state (search_path, SECURITY DEFINER grants, RLS policy dedup, schema drift, migration-history baseline). Cutover steps: `docs/commercial-readiness/27_supabase_cutover_runbook.md`; change policy: `docs/commercial-readiness/28_migrations_only_change_policy.md` |
 
 ## Verified
 
@@ -68,7 +72,7 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 
 ## Needs Manual Review
 
-- Supabase Auth session lifetime and MFA settings (dashboard-only). Migration history was verified live in Story 22.8 (remote history empty); hosted RLS policy definitions were inventoried from the 2026-05-28 backup snapshot, not a live read (policy drift `R-023`); reconciliation work remains.
+- Supabase Auth session lifetime and MFA settings (dashboard-only). Migration history was verified live in Story 22.8 (remote history empty); hosted RLS policy definitions were inventoried from the 2026-05-28 backup snapshot, not a live read (policy drift `R-023`). Story 22.10 reconciled the hosted schema/policies/grants (migration `20260614000000`, remote-history baseline, `search_path` pinning, SECURITY DEFINER grant tightening) — **executed and verified on staging** 2026-06-14 (advisors `function_search_path_mutable` 12→0, security-definer anon 5→1/auth 5→3, `auth_rls_initplan` 9→0, `multiple_permissive_policies` 54→3, history 57 in sync); production reconciliation is the Epic 22 cutover (runbook `docs/commercial-readiness/27_supabase_cutover_runbook.md` §B) that closes `R-010`/`R-020`/`R-023`. Leaked-password protection + CAPTCHA were moved to Epic 23 (Story 23.4). Remaining dashboard-only: Auth session/MFA settings.
 - Vercel environment variable scopes, production rollback process, and production runtime settings beyond deployment metadata/build logs.
 - Recovery time objective for a full production recovery, including auth-user re-provisioning (auth schema is outside logical backup scope). The full restore drill itself was verified on 2026-06-11; nominal RPO follows the nightly backup schedule (~24h), but the 2026-06-05 backup failure that went unnoticed for six days shows the effective recovery point is not assured until backup-failure alerting exists (Story 22.12).
 - Code-owner review requirements, release approvals, and incident process.
