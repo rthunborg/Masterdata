@@ -39,7 +39,14 @@ export const columnService = {
    */
   async getAll(role?: string): Promise<ColumnConfig[]> {
     const url = role ? `/api/columns?role=${encodeURIComponent(role)}` : "/api/columns";
-    const response = await fetch(url);
+    // Always fetch fresh. This list drives column visibility/permissions and is
+    // re-fetched (via useColumns.refetch) immediately after create/update/delete
+    // mutations. The GET response is served with
+    // `Cache-Control: ...stale-while-revalidate=300`, so without `no-store` the
+    // browser can return the stale pre-mutation list for minutes — leaving the UI
+    // showing a column that was just deleted (the root cause of the delete-column
+    // e2e flake).
+    const response = await fetch(url, { cache: "no-store" });
 
     if (!response.ok) {
       const error = await response.json();
