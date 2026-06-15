@@ -93,9 +93,15 @@ test.describe('Delete Custom Column E2E', () => {
     await confirmButton.waitFor({ state: 'visible', timeout: 5000 });
     await confirmButton.click();
 
-    // Wait for deletion to complete
-    // Check for success toast or dialog to close
-    await page.waitForTimeout(1000);
+    // After confirming, the column list refetches (columnService.getAll) and the
+    // dialog re-renders, so the number of delete buttons drops by exactly one.
+    // When the last custom column is removed the whole ManageColumnsDialog
+    // unmounts (it renders null with zero custom columns), leaving zero delete
+    // buttons — which also satisfies "deleteButtonCount - 1" when only one
+    // existed. Use a web-first assertion (auto-retries up to the timeout) instead
+    // of a fixed wait so refetch latency on a freshly-rebuilt local stack cannot
+    // cause a flake.
+    await expect(deleteButtons).toHaveCount(deleteButtonCount - 1, { timeout: 15000 });
 
     // Verify column is removed - check that manage columns dialog either:
     // 1. Closed (if no columns left), or
