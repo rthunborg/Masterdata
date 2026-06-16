@@ -1,12 +1,16 @@
 /**
  * Email Service
  * Story: 14.1 - ÖMC + Masterdata Completion Follow-up
- * 
+ *
  * Handles sending email notifications via SMTP.
- * 
+ *
  * CRITICAL: Contact rasmus.thunborg@enhancior.se for mail server credentials
  * before using this service in production.
  */
+
+import { isNonProductionExecution, isTruthyFlag } from '@/lib/env/is-non-production';
+
+type EmailEnv = Record<string, string | undefined>;
 
 /**
  * Email sending options
@@ -27,8 +31,52 @@ export interface EmailResult {
   error?: string;
 }
 
-function isEmailDeliveryDisabled() {
-  return process.env.DISABLE_EMAIL_DELIVERY === 'true';
+/**
+ * Decide whether outbound email delivery must be suppressed.
+ *
+ * Fail-safe by design (Story 22.11): non-production runtimes suppress delivery
+ * by default so restored/test data can never trigger real notification emails.
+ * Pure and env-injectable for hermetic unit testing.
+ *
+ * Precedence:
+ *   1. DISABLE_EMAIL_DELIVERY truthy -> suppress (kill-switch, ANY environment,
+ *      including production — preserves the existing manual kill-switch).
+ *   2. non-production runtime:
+ *        - EMAIL_DELIVERY_OVERRIDE truthy -> deliver (local Mailpit capture).
+ *        - otherwise               -> suppress (fail-safe default).
+ *   3. production -> deliver.
+ */
+export function shouldSuppressEmailDelivery(
+  env: EmailEnv = process.env
+): { suppress: boolean; reason: string } {
+  if (isTruthyFlag(env.DISABLE_EMAIL_DELIVERY)) {
+    return { suppress: true, reason: 'kill-switch' };
+  }
+
+  if (isNonProductionExecution(env)) {
+    if (isTruthyFlag(env.EMAIL_DELIVERY_OVERRIDE)) {
+      return { suppress: false, reason: 'non-production-override' };
+    }
+    return { suppress: true, reason: 'non-production-failsafe' };
+  }
+
+  return { suppress: false, reason: 'production' };
+}
+
+/**
+ * Count recipient addresses for PII-free logging.
+ *
+ * Accepts the same shapes nodemailer does — a single address, a
+ * comma-separated string, or an array (whose elements may themselves be
+ * comma-separated) — and returns the number of non-empty addresses without
+ * exposing any address.
+ */
+function countRecipients(to: string | string[]): number {
+  const parts = Array.isArray(to) ? to : [to];
+  return parts
+    .flatMap((part) => part.split(','))
+    .map((address) => address.trim())
+    .filter((address) => address.length > 0).length;
 }
 
 /**
@@ -46,10 +94,14 @@ function isEmailDeliveryDisabled() {
  * @returns Email sending result
  */
 export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
-  if (isEmailDeliveryDisabled()) {
-    console.log('[Email Service] Email delivery disabled; skipping SMTP send:', {
-      to: options.to,
-      subject: options.subject,
+  const { suppress, reason } = shouldSuppressEmailDelivery();
+  if (suppress) {
+    // PII-free: log recipient COUNT and suppression reason only — never the
+    // recipient addresses, subject, or body (AC2).
+    const recipientCount = countRecipients(options.to);
+    console.log('[Email Service] Email delivery suppressed; skipping SMTP send:', {
+      recipientCount,
+      reason,
     });
     return {
       success: true,
@@ -105,10 +157,10 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
 
     const info = await transporter.sendMail(mailOptions);
 
+    // PII-free: log messageId and recipient COUNT only (not addresses/subject).
     console.log('[Email Service] Email sent successfully:', {
       messageId: info.messageId,
-      to: recipients,
-      subject: options.subject,
+      recipientCount: countRecipients(options.to),
     });
 
     return {
@@ -142,6 +194,11 @@ export async function sendEmailToMultiple(
 ): Promise<EmailResult[]> {
   const results: EmailResult[] = [];
 
+  // When delivery is suppressed there is no real SMTP send, so skip the
+  // inter-send rate-limit delay (otherwise a suppressed batch would sleep 1s
+  // per recipient for no reason).
+  const deliveryActive = !shouldSuppressEmailDelivery().suppress;
+
   for (const recipient of recipients) {
     const result = await sendEmail({
       to: recipient,
@@ -150,9 +207,9 @@ export async function sendEmailToMultiple(
       html,
     });
     results.push(result);
-    
+
     // Add a small delay between emails to avoid rate limiting (especially with Gmail)
-    if (!isEmailDeliveryDisabled()) {
+    if (deliveryActive) {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }

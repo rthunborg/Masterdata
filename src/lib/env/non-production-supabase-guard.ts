@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-type GuardEnv = Record<string, string | undefined>;
+import {
+  type GuardEnv,
+  isNonProductionExecution,
+  normalize,
+} from "./is-non-production";
 
 const productionSupabaseResourceSchema = z.object({
   projectRef: z.string().min(1),
@@ -32,41 +36,6 @@ const MONITORED_RESOURCE_KEYS = [
   "POSTGRES_NON_POOLING_URL",
   "SUPABASE_BACKUP_STORAGE_URL",
 ] as const;
-
-const NON_PRODUCTION_ENV_VALUES = new Set([
-  "development",
-  "test",
-  "staging",
-  "preview",
-  "presentation",
-]);
-
-function normalize(value: string | undefined) {
-  return value?.trim().toLowerCase() ?? "";
-}
-
-function isTruthyFlag(value: string | undefined) {
-  return ["1", "true", "yes"].includes(normalize(value));
-}
-
-function isNonProductionExecution(env: GuardEnv) {
-  const environmentValues = [
-    env.NODE_ENV,
-    env.APP_ENV,
-    env.NEXT_PUBLIC_APP_ENV,
-    env.VERCEL_ENV,
-    env.DEPLOYMENT_ENV,
-    env.NEXT_PUBLIC_DEPLOYMENT_ENV,
-  ].map(normalize);
-
-  return (
-    environmentValues.some((value) => NON_PRODUCTION_ENV_VALUES.has(value)) ||
-    isTruthyFlag(env.NEXT_PUBLIC_IS_STAGING) ||
-    isTruthyFlag(env.IS_STAGING) ||
-    isTruthyFlag(env.PRESENTATION_ENV) ||
-    isTruthyFlag(env.NEXT_PUBLIC_PRESENTATION_ENV)
-  );
-}
 
 function containsKnownProductionResource(value: string) {
   const normalizedValue = value.trim().toLowerCase();

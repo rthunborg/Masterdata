@@ -1,7 +1,7 @@
 # Evidence Index
 
 Prepared: 2026-06-03
-Updated: 2026-06-14
+Updated: 2026-06-16
 
 | Area | File/module | What it proves | Relevant documents | Comment |
 | --- | --- | --- | --- | --- |
@@ -47,6 +47,7 @@ Updated: 2026-06-14
 | Room assignment | `src/lib/services/room-assignment.ts`, `supabase/migrations/20251122150001_add_room_assignment_rpc.sql` | Room algorithm and DB RPC | 02, 04 | Fallback on RPC failure; re-timestamped in Story 22.10 to apply after its column dependencies |
 | Staffing needs | `src/app/api/staffing-needs/*`, `src/lib/server/repositories/staffing-needs-repository.ts`, `src/lib/services/staffing-needs-notification.ts` | Staffing target progress, changelog, email | 02, 04, 06 | Implemented with RPC/changelog |
 | Notification helpers | `src/lib/services/notification-helpers.ts`, `omc-masterdata-reminder.ts`, `pe3-deadline-notifications.ts`, `email-service.ts` | Email recipients, SMTP, Stockholm timezone, idempotency | 04, 06, 07, 09 | SMTP provider unknown |
+| Email delivery fail-safe + Preview SMTP audit | `src/lib/services/email-service.ts` (`shouldSuppressEmailDelivery`), `src/lib/env/is-non-production.ts`, `tests/unit/epic-22/story-22.11/email-suppression.test.ts`, `evidence/preview-smtp-env-audit-2026-06-16.md` | Non-production email delivery is suppressed by default (fail-safe), production delivery unchanged, `DISABLE_EMAIL_DELIVERY` kill-switch preserved; suppressed sends log recipient count + reason only (PII-free); Preview/staging SMTP key-name audit recorded with the code fail-safe as the standing mitigation | 08, 09, 11, 17 | Story 22.11; key names only, no values; Vercel scope verification + any rotate/remove tracked as owner action item (`E-011`) |
 | Cron routes | `src/app/api/cron/*` | Cron auth and job entry points | 03, 08, 09 | GDPR route not scheduled |
 | Realtime | `src/lib/hooks/use-realtime.ts`, `src/lib/hooks/use-employees.ts` | Supabase realtime implementation | 02, 03, 04 | Needs role testing in staging |
 | UI dashboard | `src/app/dashboard/page.tsx`, `src/components/dashboard/*` | Main workflows and components | 02, 04 | Swedish translations via i18n |
