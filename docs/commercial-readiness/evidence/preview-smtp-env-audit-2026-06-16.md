@@ -41,13 +41,17 @@ Verification: `tests/unit/epic-22/story-22.11/email-suppression.test.ts` (13 tes
 | --- | --- |
 | Code fail-safe (AC1) implemented + test-verified | **Done** (2026-06-16) |
 | Non-production env docs (`EMAIL_DELIVERY_OVERRIDE`, kill-switch) | **Done** — `.env.example` |
-| Vercel Preview/staging key-name inventory (which SMTP keys are present per scope) | **Pending owner** — requires Vercel dashboard / env-scope access not available to the dev agent in this session (Vercel env values/scopes are private connector evidence per `14_evidence_index.md`) |
-| Rotate/remove any real SMTP credential found in a non-production scope | **Owner action item** — non-production env change is permitted under the prod-only freeze but requires owner (Rasmus) confirmation before acting; the code fail-safe is the standing mitigation in the meantime |
+| Vercel Preview/staging key-name inventory (which SMTP keys are present per scope) | **Done** (owner, 2026-06-16) — scopes verified directly in Vercel; per-scope key presence held in the private operator record (committed evidence keeps key names only, no values) |
+| Rotate/remove any real SMTP credential found in a non-production scope | **Done** (owner, 2026-06-16) — a real SMTP credential present in a non-production scope was rotated/removed by the owner; the code fail-safe (AC1) remains as defense-in-depth |
 
-This split mirrors how Story 22.10 handled hosted actions that need owner authorization: the dev-agent-executable work (code + docs + evidence) is completed and verified locally; the dashboard action that needs operator access and authorization is recorded as a tracked owner action item rather than performed unilaterally.
+This split mirrored how Story 22.10 handled hosted actions that need owner authorization: the dev-agent-executable work (code + docs + evidence) was completed and verified locally; the dashboard action that needs operator access and authorization was recorded as a tracked owner action item rather than performed unilaterally — and has now been completed by the owner (see below).
 
-## Owner action items
+## Owner action items — CONCLUDED 2026-06-16
 
-1. In Vercel, record the **presence** (key names only, no values) of the SMTP keys above in the **Preview** scope and any **staging** scope.
-2. If `SMTP_HOST`/`SMTP_USER`/`SMTP_PASSWORD` point at a **real** relay in a non-production scope, rotate or remove them (owner-confirmed). Note: the AC1 code fail-safe already blocks delivery, so this is hardening/defence-in-depth, not an active-incident fix.
-3. If a real credential is confirmed present in a non-production scope, add/raise the corresponding entry in `11_risk_register_and_open_questions.md` (the register was intentionally not modified here because no real non-production credential is confirmed).
+The owner verified the Vercel Preview/staging SMTP env scopes directly in Vercel on 2026-06-16. Outcome:
+
+1. ✅ **Scope key-name inventory recorded (privately).** The presence of the SMTP keys above in the Preview and staging scopes was verified directly in Vercel; specifics are held in the private operator record (this evidence file keeps key names only, no values).
+2. ✅ **Real non-production credential rotated/removed.** A real SMTP credential present in a non-production scope was rotated/removed by the owner. The AC1 code fail-safe was already blocking delivery, so this was defence-in-depth hardening rather than an active-incident fix.
+3. **Risk register:** no new open-risk entry is required — the finding was remediated (credential rotated/removed), not left in place. SMTP provider/DPA scope remains tracked under the existing `R-013`.
+
+**E-011 is concluded:** code fail-safe (test-verified) + owner scope verification + credential remediation are all complete.
