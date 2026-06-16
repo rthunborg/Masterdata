@@ -2,7 +2,7 @@
 
 ## Status
 
-ready-for-dev
+review
 
 - **Priority:** P1
 - **Story Points:** 2
@@ -16,11 +16,11 @@ Source findings (Story 22.8): the 2026-06-05 nightly run failed at the "Setup Su
 
 ## Acceptance Criteria
 
-- [ ] AC1: The nightly backup workflow notifies an agreed channel on failure (e.g. `if: failure()` step using existing SMTP or GitHub notifications), verified by a controlled test.
-- [ ] AC2: Transient "Setup Supabase CLI" failures are retried once before the run fails.
-- [ ] AC3: The staging refresh and backup scope for `users`/auth identities is explicitly decided and documented: either extend the staging refresh (safe once 22.11 lands) or keep the exclusion, with the auth-provisioning recovery step in `docs/operations/database-restore.md` acknowledged as the accepted manual step either way.
-- [ ] AC4: `09_operations_support_and_sla.md`, `14_evidence_index.md` (Backup row), and the `R-007` follow-ups are updated to reflect alerting and the scope decision.
-- [ ] AC5: No secrets in committed files; workflow/script changes pass the full mandatory gates.
+- [x] AC1: The nightly backup workflow notifies an agreed channel on failure (e.g. `if: failure()` step using existing SMTP or GitHub notifications), verified by a controlled test.
+- [x] AC2: Transient "Setup Supabase CLI" failures are retried once before the run fails.
+- [x] AC3: The staging refresh and backup scope for `users`/auth identities is explicitly decided and documented: either extend the staging refresh (safe once 22.11 lands) or keep the exclusion, with the auth-provisioning recovery step in `docs/operations/database-restore.md` acknowledged as the accepted manual step either way.
+- [x] AC4: `09_operations_support_and_sla.md`, `14_evidence_index.md` (Backup row), and the `R-007` follow-ups are updated to reflect alerting and the scope decision.
+- [x] AC5: No secrets in committed files; workflow/script changes pass the full mandatory gates.
 
 ## Technical Notes
 
