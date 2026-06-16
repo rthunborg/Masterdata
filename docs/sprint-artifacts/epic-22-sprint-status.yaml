@@ -191,7 +191,7 @@ stories:
   - id: '22.12'
     title: 'Add Backup Failure Alerting and Decide Staging Refresh/User Backup Scope'
     priority: 'P1'
-    status: 'backlog'
+    status: 'ready-for-dev'
     story_points: 2
     estimated_tests: 1
     implemented_tests: 0
@@ -201,12 +201,12 @@ stories:
     started_date: null
     completed_date: null
     blockers: []
-    notes: 'From Story 22.8 findings: 2026-06-05 nightly backup failed (Setup Supabase CLI step) and went unnoticed for six days. Add failure notification + retry to the nightly workflow; decide users/auth scope for backups and the staging refresh now that 22.11 removes the email-spam rationale. Workflow changes require full gates. Stub drafted; needs SM create-story before dev.'
+    notes: 'From Story 22.8 findings: 2026-06-05 nightly backup failed (Setup Supabase CLI step) and went unnoticed for six days. Add failure notification + retry to the nightly workflow; decide users/auth scope for backups and the staging refresh now that 22.11 removes the email-spam rationale. Workflow changes require full gates. Story context created 2026-06-16 (ready-for-dev): implementation artifact 22-12-...md with exact file:line targets (CLI-setup retry + if:failure() alert on supabase-nightly-backup.yml; AC1 must NOT reuse the 22.11-suppressed email-service; recommended AC3 = keep users exclusion for auth-link integrity; AC4 surface sync; testable .ts alert-builder per Vitest glob). 3 open questions for owner (AC3 scope, AC1 channel/secrets, AC5 dispatch-run vs owner action).'
 
 progress_summary:
   total_stories: 12
-  stories_not_started: 1
-  stories_ready_for_dev: 0
+  stories_not_started: 0
+  stories_ready_for_dev: 1
   stories_in_progress: 0
   stories_completed: 11
   stories_in_review: 0
@@ -250,4 +250,4 @@ next_actions:
   - 'Stories 22.10-22.12 added to Epic 22 backlog from Story 22.8 findings and owner direction (2026-06-11): 22.10 reconciles prod/staging/migrations drift and baselines remote migration history (production is primary source of truth, staging may carry intentional Epic 22 adjustments); 22.11 makes staging/preview email suppression fail-safe and audits Preview SMTP env values; 22.12 adds backup failure alerting and decides users/auth scope for backups and the staging refresh. Stubs exist in docs/sprint-artifacts/; SM create-story is required before dev.'
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA moved to Epic 23 (Story 23.4 AC6) by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b; Auth attack protection is enabled in Epic 23.'
 last_updated: 2026-06-16
-updated_by: Code review (Story 22.11 review PASSED → done: 3 adversarial layers, all AC1–AC5 + precedence + prod-freeze satisfied; 1 low patch fixed [recipientCount counts comma-separated to-strings] + re-verified vitest/tsc/eslint EXIT:0 [3075 passed]; 2 deferred [pre-existing SMTP catch-path PII; by-design fail-open on unrecognized env]; 14 unit tests)
+updated_by: SM create-story (Story 22.12 contexted → ready-for-dev: backup-failure alerting + CLI-setup retry on supabase-nightly-backup.yml, users/auth staging-refresh scope decision [recommended: keep exclusion], AC4 readiness-surface sync, testable .ts alert-builder; 3 open questions for owner). Prior: Story 22.11 review PASSED → done.

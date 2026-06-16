@@ -2,7 +2,7 @@
 
 ## Status
 
-backlog
+ready-for-dev
 
 - **Priority:** P1
 - **Story Points:** 2
