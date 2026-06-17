@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-06-16T12:00:00+02:00
+last_updated: 2026-06-17T12:00:00+02:00
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -54,7 +54,7 @@ development_status:
   22-9-draft-privacy-annex-subprocessors-and-incident-process: done
   22-10-reconcile-supabase-environments-and-baseline-migration-history: done
   22-11-enforce-non-production-email-suppression: done
-  22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: review
+  22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: done
   epic-22-retrospective: optional
   epic-23: backlog
   23-1-select-commercial-offer-and-handover-model: backlog

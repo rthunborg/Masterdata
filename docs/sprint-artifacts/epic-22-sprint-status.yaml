@@ -191,7 +191,7 @@ stories:
   - id: '22.12'
     title: 'Add Backup Failure Alerting and Decide Staging Refresh/User Backup Scope'
     priority: 'P1'
-    status: 'review'
+    status: 'done'
     story_points: 2
     estimated_tests: 1
     implemented_tests: 8
@@ -208,13 +208,13 @@ progress_summary:
   stories_not_started: 0
   stories_ready_for_dev: 0
   stories_in_progress: 0
-  stories_completed: 11
-  stories_in_review: 1
+  stories_completed: 12
+  stories_in_review: 0
   stories_blocked: 0
   total_story_points: 40
-  completed_story_points: 38 # 22.1–22.9 (31) + 22.10 (5) + 22.11 (2); 22.12 (2) in review, not yet done
+  completed_story_points: 40 # 22.1–22.9 (31) + 22.10 (5) + 22.11 (2) + 22.12 (2); 22.12 review passed 2026-06-17
   in_progress_story_points: 0
-  remaining_story_points: 2 # 22.12 (2) in review; 38 + 0 + 2 = 40
+  remaining_story_points: 0 # all 40 done; 40 + 0 + 0 = 40
 
 test_coverage_summary:
   total_tests_estimated: 24
@@ -249,5 +249,5 @@ next_actions:
   - 'Story 22.9 is done (code review Round 1 closed 2026-06-13 with all findings resolved): draft privacy pack (privacy annex 23, subprocessor register 24, incident/breach process 25) created with disclaimer and draft-vs-fact markers, linked from index/evidence/tracker surfaces (E-009), and synchronized across status artifacts. Review fixed 3 patches (stale evidence-index SMTP wording, Cloudflare marker, Gmail send-delay wording) and deferred 1 pre-existing item (operator name in owner fields, from Story 22.8). The SMTP relay is operator-confirmed as Google Workspace (smtp-relay.gmail.com); its DPA/transfer terms plus broader DPA execution remain Epic 23.2.'
   - 'Stories 22.10-22.12 added to Epic 22 backlog from Story 22.8 findings and owner direction (2026-06-11): 22.10 reconciles prod/staging/migrations drift and baselines remote migration history (production is primary source of truth, staging may carry intentional Epic 22 adjustments); 22.11 makes staging/preview email suppression fail-safe and audits Preview SMTP env values; 22.12 adds backup failure alerting and decides users/auth scope for backups and the staging refresh. Stubs exist in docs/sprint-artifacts/; SM create-story is required before dev.'
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA moved to Epic 23 (Story 23.4 AC6) by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b; Auth attack protection is enabled in Epic 23.'
-last_updated: 2026-06-16
-updated_by: Dev dev-story (Story 22.12 implemented → review: if:failure() backup-failure GitHub-issue alerting + CLI pin 2.104.0 + one-shot retry on supabase-nightly-backup.yml; users/auth staging-refresh scope decision = keep exclusion [database-restore.md]; AC4 readiness-surface sync; pure unit-tested alert builder scripts/notify-backup-failure.mjs + 8 tests; controlled workflow_dispatch verification runs 27642547441/27642638386 opened+deduped backup-failure issue #89 then cleaned up; gates green: vitest 3083, lint 0 errors, tsc 0; Playwright N/A). Prior: SM create-story (22.12 → ready-for-dev). Recommend code-review with a different LLM.
+last_updated: 2026-06-17
+updated_by: Code review (Story 22.12 Round 1 PASSED → done, 2026-06-17). AC1–AC5 all verified MET. 1 decision resolved (keep the two best-effort dump steps continue-on-error; corrected the alert-step comment) + 4 patches applied: (1) reworded the alert-step comment to stop overclaiming "dump" coverage; (2) synced 3 stale sibling readiness docs (01_/08_/12_) that still said "add backup-failure alerting"; (3) relabelled the alert's "Failed step/job" → "Failed job" (value is github.job, not the failed step); (4) findOpenIssueNumber now distinguishes gh-list-failure from "no open issue" so a transient list error no longer opens a duplicate issue. 5 low-severity items deferred (deferred-work.md), 4 dismissed. Re-run gates green: 8/8 unit tests, tsc --noEmit EXIT:0, eslint EXIT:0. Prior: Dev dev-story (22.12 implemented → review). NOTE: review-fix changes are uncommitted in the working tree.

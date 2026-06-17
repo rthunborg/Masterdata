@@ -106,6 +106,6 @@ We already have a functioning system that is being used in practice. The questio
 1. Run a hardening sprint for critical security/ops gaps.
 2. Conduct privacy/DPIA workshop.
 3. Verify production/staging environment controls.
-4. Restore drill done (2026-06-11); add backup-failure alerting and keep periodic drills.
+4. Restore drill done (2026-06-11); backup-failure alerting + one-shot CLI-setup retry added in Story 22.12 (2026-06-16). Keep periodic drills.
 5. Decide commercial/hosting/support model.
 6. Prepare formal statement of work and support agreement.

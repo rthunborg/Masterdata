@@ -22,3 +22,11 @@
 ## Deferred from: code review of story-22.7 (2026-06-10)
 
 - Pre-existing arbitrary user-activity update risk remains documented in the API matrix. The Story 22.7 diff documents that `/api/admin/users/[id]/update-activity` can be called by any authenticated user with an arbitrary route id, but that route behavior predates this story and is not part of the role/export/RLS evidence-test implementation scope.
+
+## Deferred from: code review of 22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope (2026-06-17)
+
+- Dedupe is check-then-act: two concurrent failing runs (e.g. a retried scheduled run plus a manual `workflow_dispatch`) can each observe "no open issue" and both open a `backup-failure` issue. `scripts/notify-backup-failure.mjs`. Low likelihood with a single nightly cron; a true fix needs locking/idempotency. Pre-existing to the chosen design, not a regression.
+- `if: failure()` (`.github/workflows/supabase-nightly-backup.yml`) does not fire on job cancellation/timeout/runner eviction, so a cancelled nightly run produces no alert. `|| cancelled()` would close it but can be noisy on intentional manual cancels — owner call.
+- The side-effecting half of `scripts/notify-backup-failure.mjs` (`findOpenIssueNumber`, open-vs-comment branch, `ensureLabel`, `resolveRunUrl`, exit codes) has no automated coverage; only the pure `buildBackupFailureAlert` builder is unit-tested. The dedupe/issue path was exercised once by the manual `workflow_dispatch` verification (runs 27642547441/27642638386). Adding `spawnSync('gh')` mocks is extra scope beyond this 2-point story.
+- Alert date is computed from `new Date()` at job end, which can disagree with the run's 02:00 UTC trigger date near a UTC midnight boundary; the documented `BACKUP_DATE_UTC` override env is read but never set by the workflow (dead config). Cosmetic — run ID disambiguates.
+- The alert channel itself can fail silently if `gh`/`GITHUB_TOKEN`/`permissions` are ever misconfigured (no secondary fallback). Inherent to the owner-chosen single-channel, zero-new-secrets GitHub-issue design; documented residual risk.

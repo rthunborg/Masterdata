@@ -120,12 +120,17 @@ jobs:
           psql "$STAGING_SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$RESTORE_DIR/employees-column_config.sql"
           echo "Staging: employees and column_config refreshed from oldest backup."
 
-      # Fires when ANY prior step in this job fails (CLI setup, dump, upload,
-      # prune, download, or the staging restore). Opens — or comments on an
-      # existing open — `backup-failure` GitHub issue via the `gh` CLI using the
-      # built-in GITHUB_TOKEN, so a failed nightly run can no longer go unnoticed
-      # (the 2026-06-05 incident). The alert text is PII-free / secret-free and is
-      # built by the unit-tested helper in scripts/notify-backup-failure.mjs.
+      # Fires when any prior step that is NOT `continue-on-error` fails — i.e. the
+      # schema/data dump, the Storage upload, prune, download, the staging restore,
+      # or a persistent CLI-setup failure (both attempts). The two best-effort dump
+      # steps `Dump roles` and `Dump employees and column_config` are intentionally
+      # `continue-on-error: true` (they can fail benignly on managed Postgres / for
+      # the staging-only partial refresh) and so do NOT trip this alert by design.
+      # Opens — or comments on an existing open — `backup-failure` GitHub issue via
+      # the `gh` CLI using the built-in GITHUB_TOKEN, so a failed nightly run can no
+      # longer go unnoticed (the 2026-06-05 incident: a CLI-setup failure that left
+      # the backup missing from the bucket). The alert text is PII-free / secret-free
+      # and is built by the unit-tested helper in scripts/notify-backup-failure.mjs.
       # GH_TOKEN is required for gh to authenticate (permissions: alone is not
       # enough); the job-level `issues: write` permission grants the scope.
       - name: Alert on backup failure (open/append a backup-failure issue)

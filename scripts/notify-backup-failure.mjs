@@ -49,7 +49,10 @@ export function buildBackupFailureAlert({ runUrl, runId, failedStep, dateUtc } =
     "The nightly Supabase backup workflow failed.",
     "",
     `- Date (UTC): ${dateUtc}`,
-    `- Failed step/job: ${where}`,
+    // GitHub Actions exposes no built-in "failed step" expression, so the workflow
+    // passes the job id (github.job). Label this "Failed job" rather than implying
+    // step-level precision the value does not carry; the run link shows the red step.
+    `- Failed job: ${where}`,
     `- Run: ${runUrl}`,
     `- Run ID: ${runId}`,
     "",
@@ -90,7 +93,17 @@ function ensureLabel() {
   }
 }
 
-/** Return the number of an existing open `backup-failure` issue, or null. */
+/**
+ * Look up an existing open `backup-failure` issue.
+ *
+ * Returns `{ listed, number }`:
+ * - `listed` is `true` only when the `gh issue list` call actually succeeded, so
+ *   the caller can tell "no open issue exists" (listed:true, number:null) apart
+ *   from "could not check" (listed:false, number:null). Without this distinction
+ *   a transient `gh`/API failure looks identical to "no open issue" and the caller
+ *   would open a duplicate issue every time the list call flakes.
+ * - `number` is the issue number (string) when one open issue was found, else null.
+ */
 function findOpenIssueNumber() {
   const res = gh([
     "issue",
@@ -108,9 +121,9 @@ function findOpenIssueNumber() {
   ]);
   if (res.status === 0 && typeof res.stdout === "string") {
     const trimmed = res.stdout.trim();
-    return trimmed.length > 0 ? trimmed : null;
+    return { listed: true, number: trimmed.length > 0 ? trimmed : null };
   }
-  return null;
+  return { listed: false, number: null };
 }
 
 function resolveRunUrl(runId) {
@@ -137,7 +150,15 @@ function main() {
 
   ensureLabel();
 
-  const existing = findOpenIssueNumber();
+  const { listed, number: existing } = findOpenIssueNumber();
+  if (!listed) {
+    // Could not confirm whether an open issue already exists. Prefer alerting over
+    // silence (the run already failed) and open one, but warn that the dedupe check
+    // was skipped so a possible duplicate is explainable rather than mysterious.
+    console.warn(
+      "Could not list existing backup-failure issues; opening a new issue (dedupe skipped — a duplicate is possible)."
+    );
+  }
   if (existing) {
     const res = gh(["issue", "comment", existing, "--body", body]);
     if (res.status !== 0) {

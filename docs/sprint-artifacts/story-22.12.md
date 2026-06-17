@@ -2,7 +2,7 @@
 
 ## Status
 
-review
+done
 
 - **Priority:** P1
 - **Story Points:** 2
