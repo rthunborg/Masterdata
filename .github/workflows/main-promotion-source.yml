@@ -1,0 +1,34 @@
+name: Main Promotion Source
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - edited
+
+jobs:
+  validate-source:
+    name: Validate main promotion source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require staging as PR source
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REF" = "staging" ] && [ "$HEAD_REPO" = "$BASE_REPO" ]; then
+            echo "Main promotion source is staging."
+            exit 0
+          fi
+
+          echo "::error::Pull requests targeting main must come from staging in the same repository."
+          echo "Head branch: $HEAD_REF"
+          echo "Head repository: $HEAD_REPO"
+          echo "Base repository: $BASE_REPO"
+          exit 1

@@ -1,9 +1,12 @@
-import { screen } from "@testing-library/react";
+import { screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderWithI18n } from "@/../tests/utils/i18n-test-wrapper";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { StickyScrollbar, useStickyScrollbar } from "@/components/ui/sticky-scrollbar";
-import * as React from "react";
+import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  StickyScrollbar,
+  useStickyScrollbar,
+} from '@/components/ui/sticky-scrollbar';
+import * as React from 'react';
 
 let mockResizeDisconnect: ReturnType<typeof vi.fn>;
 
@@ -21,14 +24,15 @@ beforeEach(() => {
     unobserve = vi.fn();
     disconnect = mockResizeDisconnect;
   }
-  global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+  global.ResizeObserver =
+    MockResizeObserver as unknown as typeof ResizeObserver;
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("StickyScrollbar", () => {
+describe('StickyScrollbar', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
@@ -47,8 +51,8 @@ describe("StickyScrollbar", () => {
     );
   };
 
-  describe("Visibility Logic", () => {
-    it("does not render when container has no horizontal overflow", () => {
+  describe('Visibility Logic', () => {
+    it('does not render when container has no horizontal overflow', () => {
       const TestComponent = () => {
         const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -57,9 +61,9 @@ describe("StickyScrollbar", () => {
             <div
               ref={containerRef}
               data-testid="container"
-              style={{ width: "500px", overflow: "auto" }}
+              style={{ width: '500px', overflow: 'auto' }}
             >
-              <div style={{ width: "400px" }}>Content</div>
+              <div style={{ width: '400px' }}>Content</div>
             </div>
             <StickyScrollbar containerRef={containerRef} />
           </>
@@ -68,20 +72,20 @@ describe("StickyScrollbar", () => {
 
       renderWithQueryClient(<TestComponent />);
 
-      expect(screen.queryByTestId("sticky-scrollbar")).not.toBeInTheDocument();
+      expect(screen.queryByTestId('sticky-scrollbar')).not.toBeInTheDocument();
     });
 
-    it("does not render when containerRef is null", () => {
+    it('does not render when containerRef is null', () => {
       const nullRef = { current: null };
 
       renderWithQueryClient(<StickyScrollbar containerRef={nullRef} />);
 
-      expect(screen.queryByTestId("sticky-scrollbar")).not.toBeInTheDocument();
+      expect(screen.queryByTestId('sticky-scrollbar')).not.toBeInTheDocument();
     });
   });
 
-  describe("Scroll Synchronization", () => {
-    it("syncs scroll position from container to sticky scrollbar", async () => {
+  describe('Scroll Synchronization', () => {
+    it('syncs scroll position from container to sticky scrollbar', async () => {
       const TestComponent = () => {
         const ref = React.useRef<HTMLDivElement>(null);
 
@@ -90,9 +94,9 @@ describe("StickyScrollbar", () => {
             <div
               ref={ref}
               data-testid="container"
-              style={{ width: "500px", overflow: "auto" }}
+              style={{ width: '500px', overflow: 'auto' }}
             >
-              <div style={{ width: "1000px", height: "2000px" }}>
+              <div style={{ width: '1000px', height: '2000px' }}>
                 Wide and tall content
               </div>
             </div>
@@ -103,13 +107,13 @@ describe("StickyScrollbar", () => {
 
       renderWithQueryClient(<TestComponent />);
 
-      expect(screen.getByTestId("container")).toBeInTheDocument();
+      expect(screen.getByTestId('container')).toBeInTheDocument();
     });
   });
 
-  describe("Cleanup", () => {
-    it("disconnects ResizeObserver and removes event listeners on unmount", () => {
-      const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+  describe('Cleanup', () => {
+    it('disconnects ResizeObserver and removes event listeners on unmount', () => {
+      const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
 
       const TestComponent = () => {
         const containerRef = React.useRef<HTMLDivElement>(null);
@@ -119,9 +123,9 @@ describe("StickyScrollbar", () => {
             <div
               ref={containerRef}
               data-testid="container"
-              style={{ width: "500px", overflow: "auto" }}
+              style={{ width: '500px', overflow: 'auto' }}
             >
-              <div style={{ width: "1000px" }}>Wide content</div>
+              <div style={{ width: '1000px' }}>Wide content</div>
             </div>
             <StickyScrollbar containerRef={containerRef} />
           </>
@@ -134,20 +138,28 @@ describe("StickyScrollbar", () => {
 
       expect(mockResizeDisconnect).toHaveBeenCalled();
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
-        "scroll",
+        'scroll',
         expect.any(Function)
       );
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
-        "resize",
+        'resize',
         expect.any(Function)
       );
 
       removeEventListenerSpy.mockRestore();
     });
-  });
 
-  describe("Styling", () => {
-    it("applies custom className when provided", async () => {
+    it('cancels deferred layout work on unmount', () => {
+      vi.useFakeTimers();
+      const requestAnimationFrameSpy = vi
+        .spyOn(window, 'requestAnimationFrame')
+        .mockImplementation((callback) =>
+          window.setTimeout(() => callback(0), 0)
+        );
+      const cancelAnimationFrameSpy = vi
+        .spyOn(window, 'cancelAnimationFrame')
+        .mockImplementation((id) => window.clearTimeout(id));
+
       const TestComponent = () => {
         const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -156,14 +168,46 @@ describe("StickyScrollbar", () => {
             <div
               ref={containerRef}
               data-testid="container"
-              style={{ width: "500px", overflow: "auto" }}
+              style={{ width: '500px', overflow: 'auto' }}
             >
-              <div style={{ width: "1000px", height: "2000px" }}>
+              <div style={{ width: '1000px' }}>Wide content</div>
+            </div>
+            <StickyScrollbar containerRef={containerRef} />
+          </>
+        );
+      };
+
+      const { unmount } = renderWithQueryClient(<TestComponent />);
+      vi.advanceTimersByTime(0);
+      expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+      unmount();
+
+      expect(vi.getTimerCount()).toBe(0);
+      expect(requestAnimationFrameSpy).toHaveBeenCalled();
+      cancelAnimationFrameSpy.mockRestore();
+      requestAnimationFrameSpy.mockRestore();
+    });
+  });
+
+  describe('Styling', () => {
+    it('applies custom className when provided', async () => {
+      const TestComponent = () => {
+        const containerRef = React.useRef<HTMLDivElement>(null);
+
+        return (
+          <>
+            <div
+              ref={containerRef}
+              data-testid="container"
+              style={{ width: '500px', overflow: 'auto' }}
+            >
+              <div style={{ width: '1000px', height: '2000px' }}>
                 Wide and tall content
               </div>
             </div>
-            <StickyScrollbar 
-              containerRef={containerRef} 
+            <StickyScrollbar
+              containerRef={containerRef}
               className="custom-class"
               zIndex={50}
             />
@@ -173,23 +217,24 @@ describe("StickyScrollbar", () => {
 
       renderWithQueryClient(<TestComponent />);
 
-      expect(screen.getByTestId("container")).toBeInTheDocument();
+      expect(screen.getByTestId('container')).toBeInTheDocument();
     });
   });
 
-  describe("useStickyScrollbar Hook", () => {
-    it("returns containerRef and stickyScrollbarProps", () => {
+  describe('useStickyScrollbar Hook', () => {
+    it('returns containerRef and stickyScrollbarProps', () => {
       const HookTestComponent = () => {
-        const { containerRef, stickyScrollbarProps } = useStickyScrollbar<HTMLDivElement>();
+        const { containerRef, stickyScrollbarProps } =
+          useStickyScrollbar<HTMLDivElement>();
 
         return (
           <>
             <div
               ref={containerRef}
               data-testid="container"
-              style={{ width: "500px", overflow: "auto" }}
+              style={{ width: '500px', overflow: 'auto' }}
             >
-              <div style={{ width: "1000px" }}>Wide content</div>
+              <div style={{ width: '1000px' }}>Wide content</div>
             </div>
             <StickyScrollbar {...stickyScrollbarProps} />
           </>
@@ -198,24 +243,23 @@ describe("StickyScrollbar", () => {
 
       renderWithQueryClient(<HookTestComponent />);
 
-      expect(screen.getByTestId("container")).toBeInTheDocument();
+      expect(screen.getByTestId('container')).toBeInTheDocument();
     });
 
-    it("provides containerRef that can be attached to an element", () => {
-      const captured: { ref: React.RefObject<HTMLDivElement | null> | null } = { ref: null };
+    it('provides containerRef that can be attached to an element', () => {
+      const captured: { ref: React.RefObject<HTMLDivElement | null> | null } = {
+        ref: null,
+      };
 
       const HookTestComponent = () => {
         const { containerRef } = useStickyScrollbar<HTMLDivElement>();
-        
+
         React.useEffect(() => {
           captured.ref = containerRef;
         }, [containerRef]);
 
         return (
-          <div
-            ref={containerRef}
-            data-testid="container"
-          >
+          <div ref={containerRef} data-testid="container">
             Content
           </div>
         );
@@ -223,14 +267,14 @@ describe("StickyScrollbar", () => {
 
       renderWithQueryClient(<HookTestComponent />);
 
-      const container = screen.getByTestId("container");
+      const container = screen.getByTestId('container');
       expect(container).toBeInTheDocument();
       expect(captured.ref?.current).toBe(container);
     });
   });
 
-  describe("Accessibility", () => {
-    it("has aria-hidden attribute on sticky scrollbar", async () => {
+  describe('Accessibility', () => {
+    it('has aria-hidden attribute on sticky scrollbar', async () => {
       const TestComponent = () => {
         const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -239,9 +283,9 @@ describe("StickyScrollbar", () => {
             <div
               ref={containerRef}
               data-testid="container"
-              style={{ width: "500px", overflow: "auto" }}
+              style={{ width: '500px', overflow: 'auto' }}
             >
-              <div style={{ width: "1000px" }}>Wide content</div>
+              <div style={{ width: '1000px' }}>Wide content</div>
             </div>
             <StickyScrollbar containerRef={containerRef} />
           </>
@@ -250,38 +294,38 @@ describe("StickyScrollbar", () => {
 
       renderWithQueryClient(<TestComponent />);
 
-      const stickyScrollbar = screen.queryByTestId("sticky-scrollbar");
+      const stickyScrollbar = screen.queryByTestId('sticky-scrollbar');
       if (stickyScrollbar) {
-        expect(stickyScrollbar).toHaveAttribute("aria-hidden", "true");
+        expect(stickyScrollbar).toHaveAttribute('aria-hidden', 'true');
       }
     });
   });
 });
 
-describe("Scroll Sync Logic (Unit Tests)", () => {
-  describe("isStickyScrollbarNeeded", () => {
-    it("returns true when horizontal overflow AND bottom not visible", () => {
+describe('Scroll Sync Logic (Unit Tests)', () => {
+  describe('isStickyScrollbarNeeded', () => {
+    it('returns true when horizontal overflow AND bottom not visible', () => {
       const hasHorizontalOverflow = true;
       const tableBottomVisible = false;
       const shouldShowSticky = hasHorizontalOverflow && !tableBottomVisible;
       expect(shouldShowSticky).toBe(true);
     });
 
-    it("returns false when no horizontal overflow", () => {
+    it('returns false when no horizontal overflow', () => {
       const hasHorizontalOverflow = false;
       const tableBottomVisible = false;
       const shouldShowSticky = hasHorizontalOverflow && !tableBottomVisible;
       expect(shouldShowSticky).toBe(false);
     });
 
-    it("returns false when table bottom is visible", () => {
+    it('returns false when table bottom is visible', () => {
       const hasHorizontalOverflow = true;
       const tableBottomVisible = true;
       const shouldShowSticky = hasHorizontalOverflow && !tableBottomVisible;
       expect(shouldShowSticky).toBe(false);
     });
 
-    it("returns false when neither overflow nor visibility", () => {
+    it('returns false when neither overflow nor visibility', () => {
       const hasHorizontalOverflow = false;
       const tableBottomVisible = true;
       const shouldShowSticky = hasHorizontalOverflow && !tableBottomVisible;
