@@ -1,6 +1,16 @@
 -- Story 8.20: ÖMC Room Assignment Algorithm Implementation
 -- Migration: Create RPC functions for atomic room assignment operations
 -- Addresses AC6: Concurrency Handling
+--
+-- Story 22.10 (2026-06-14): Re-timestamped from 20250113000000 to
+-- 20251122150001 so this migration applies AFTER
+-- 20251122150000_add_room_assignment_employee_columns.sql (which adds the
+-- employees.hotel_required / room_number_shared columns these RPC bodies
+-- reference) and after 20251030000000 (omc_date). The previous 20250113000000
+-- timestamp sorted nine months before 20251027000000_initial_schema.sql, so a
+-- clean `supabase db reset` applied this RPC before the employees table existed;
+-- it only succeeded because plpgsql defers name resolution to call time. The
+-- function bodies are unchanged by the re-timestamp.
 
 -- Function: Atomically recalculate all room assignments for a date
 -- Uses SELECT FOR UPDATE to lock employees and prevent race conditions

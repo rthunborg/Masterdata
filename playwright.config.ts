@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config as loadEnv } from 'dotenv';
 import path from 'path';
+
+loadEnv({ path: path.resolve(__dirname, '.env.test'), override: true });
 
 const e2ePort = process.env.E2E_PORT || '3100';
 const baseURL = process.env.BASE_URL || `http://localhost:${e2ePort}`;
@@ -22,7 +25,7 @@ export default defineConfig({
   // test data and auth/session state, so parallel workers make the suite flaky.
   workers: 1,
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['junit', { outputFile: 'test-results/e2e-results.xml' }],
     ['list'],
   ],
@@ -49,6 +52,8 @@ export default defineConfig({
     reuseExistingServer: false,
     env: {
       ...process.env,
+      APP_ENV: process.env.APP_ENV || 'test',
+      NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV || 'test',
       E2E: 'true',
       DISABLE_EMAIL_DELIVERY: 'true',
     },

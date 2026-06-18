@@ -11,6 +11,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/supabase";
+import { validateNonProductionSupabaseEnvironment } from "@/lib/env/non-production-supabase-guard";
+
+validateNonProductionSupabaseEnvironment();
 
 // Test configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

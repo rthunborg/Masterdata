@@ -11,9 +11,13 @@ import { canEditTalmundo } from "@/lib/services/talmundo-validation";
 import { canEditCrewingDone, getIncompleteFields } from "@/lib/services/crewing-validation";
 import { assignEmployeeToDate } from "@/lib/services/date-capacity";
 import { calculateRoomNumber } from "@/lib/services/room-assignment";
-import { createAPIClient } from "@/lib/supabase/server-api";
 import { createClient } from "@/lib/supabase/server";
 import { columnConfigRepository } from "@/lib/server/repositories/column-config-repository";
+import {
+  attachVisibleCustomDataForRoleList,
+  filterEmployeesForRole,
+} from "@/lib/server/employee-field-access";
+import { isExternalParty, UserRole } from "@/lib/types/user";
 import {
   parseOrError,
   createDuplicateResponse,
@@ -53,26 +57,17 @@ export async function GET(request: NextRequest) {
       needsRepayment, // Story 8.13 AC 9
     });
 
-    // For non-hr_admin users, extract custom column data from the already-fetched
-    // employee rows (select("*") already includes all columns). This replaces the
-    // previous N+1 client-side custom-data fetch pattern with a single server query.
-    let responseData = employees;
-    if (user.role !== "hr_admin") {
+    let responseData: unknown[] = employees;
+    if (isExternalParty(user.role as UserRole)) {
       const allColumns = await columnConfigRepository.findAll();
-      const customColumnNames = allColumns
-        .filter(col => !col.is_masterdata)
-        .map(col => col.db_column_name);
-
-      if (customColumnNames.length > 0) {
-        responseData = employees.map(emp => {
-          const customData: Record<string, string | number | boolean | null> = {};
-          for (const colName of customColumnNames) {
-            const val = (emp as unknown as Record<string, unknown>)[colName];
-            customData[colName] = val as string | number | boolean | null;
-          }
-          return { ...emp, customData };
-        });
-      }
+      responseData = filterEmployeesForRole(employees, allColumns, user.role as UserRole);
+    } else if (user.role !== "hr_admin") {
+      const allColumns = await columnConfigRepository.findAll();
+      responseData = attachVisibleCustomDataForRoleList(
+        employees,
+        allColumns,
+        user.role as UserRole
+      );
     }
 
     return NextResponse.json({

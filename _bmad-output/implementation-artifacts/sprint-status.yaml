@@ -1,0 +1,69 @@
+# generated: 2026-06-04T14:44:39+02:00
+# last_updated: 2026-06-13T12:00:00+02:00
+# project: hr-masterdata
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: D:\Masterdata\hr-masterdata/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog -> in-progress: Automatically when first story is created (via create-story)
+#   - in-progress -> done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-06-04T14:44:39+02:00
+last_updated: 2026-06-17T12:00:00+02:00
+project: hr-masterdata
+project_key: NOKEY
+tracking_system: file-system
+story_location: 'D:\Masterdata\hr-masterdata/_bmad-output/implementation-artifacts'
+
+development_status:
+  epic-22: in-progress
+  22-1-protect-or-remove-public-diagnostic-endpoints: done
+  22-2-enforce-non-production-environment-isolation: done
+  22-3-remediate-dependency-advisories-and-create-risk-register: done
+  22-4-confirm-presentation-data-scope-and-access-preconditions: done
+  22-5-create-blocker-remediation-tracker-and-one-page-presentation-brief: done
+  22-6-build-api-auth-and-field-access-evidence-matrices: done
+  22-7-add-role-export-and-rls-evidence-tests: done
+  22-8-package-supabase-security-evidence-and-run-restore-drill: done
+  22-9-draft-privacy-annex-subprocessors-and-incident-process: done
+  22-10-reconcile-supabase-environments-and-baseline-migration-history: done
+  22-11-enforce-non-production-email-suppression: done
+  22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: done
+  epic-22-retrospective: optional
+  epic-23: backlog
+  23-1-select-commercial-offer-and-handover-model: backlog
+  23-2-prepare-final-legal-and-privacy-contract-pack: backlog
+  23-3-define-support-sla-raci-and-escalation-operations: backlog
+  23-4-establish-vulnerability-management-and-production-access-governance: backlog
+  23-5-create-hr-operations-playbook: backlog
+  23-6-strengthen-external-party-field-permissions-at-database-layer: backlog
+  23-7-automate-evidence-binder-and-release-deployment-process: backlog
+  23-8-quantify-value-case-and-adoption-metrics: backlog
+  23-9-add-enterprise-controls-when-contract-requires: backlog
+  epic-23-retrospective: optional

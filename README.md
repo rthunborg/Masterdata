@@ -214,6 +214,7 @@ Since the original README, the project has added or substantially improved:
 - pnpm 10+
 - Git
 - Supabase project credentials
+- Docker Desktop with WSL2 (optional) — for the local Supabase stack and local SMTP capture
 
 ### Install
 
@@ -257,6 +258,18 @@ pnpm dev
 ```
 
 Then open `http://localhost:3000`.
+
+### Local Docker / Supabase Stack (optional)
+
+For a fully local backend (Supabase Auth/REST/Realtime/Postgres plus Mailpit for SMTP capture), see [`docs/local-docker.md`](docs/local-docker.md). The local Supabase CLI stack uses high ports (`15421` API, `15422` Postgres) to avoid collisions with other repos and agents.
+
+```bash
+pnpm supabase:start   # Local Supabase Auth/REST/Realtime/Postgres
+pnpm docker:up        # Mailpit for app SMTP at 127.0.0.1:11025, UI at 127.0.0.1:18025
+pnpm supabase:reset   # Recreate local DB schema/data from migrations
+pnpm docker:down      # Stop Compose services
+pnpm supabase:stop    # Stop this repo's Supabase stack
+```
 
 ## Documentation
 

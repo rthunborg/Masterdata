@@ -4,3 +4,12 @@ ignoredBuiltDependencies:
 
 onlyBuiltDependencies:
   - unrs-resolver
+
+overrides:
+  "brace-expansion@<1.1.13": 1.1.13
+  "brace-expansion@>=2.0.0 <2.0.3": 2.0.3
+  "minimatch@<3.1.4": 3.1.4
+  "minimatch@>=5.0.0 <5.1.8": 5.1.8
+  "postcss@<8.5.10": 8.5.15
+  "tmp@<0.2.6": 0.2.7
+  "ws@>=8.0.0 <8.20.1": 8.21.0
