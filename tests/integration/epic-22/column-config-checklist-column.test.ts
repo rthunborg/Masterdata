@@ -20,6 +20,24 @@ validateNonProductionSupabaseEnvironment({
 
 const client = new Client({ connectionString: dbUrl });
 
+// This suite needs a reachable non-production Postgres (the local Supabase stack
+// or a configured SUPABASE_DB_URL). Environments without one — e.g. CI's unit-test
+// step, which has no .env.test / local DB — must skip cleanly rather than fail in
+// beforeAll. Probe reachability once at load time and skip the suite if it fails.
+async function isDatabaseReachable() {
+  const probe = new Client({ connectionString: dbUrl });
+  try {
+    await probe.connect();
+    await probe.end();
+    return true;
+  } catch {
+    await probe.end().catch(() => {});
+    return false;
+  }
+}
+
+const databaseReachable = await isDatabaseReachable();
+
 /**
  * Regression guard for the dashboard-era drift fixed by
  * 20260615000000_add_is_checklist_item_to_column_config.sql.
@@ -29,7 +47,7 @@ const client = new Client({ connectionString: dbUrl });
  * column was absent and custom-column creation failed with
  * "Could not find the 'is_checklist_item' column of 'column_config'".
  */
-describe("column_config.is_checklist_item (adopted hosted column)", () => {
+describe.skipIf(!databaseReachable)("column_config.is_checklist_item (adopted hosted column)", () => {
   beforeAll(async () => {
     await client.connect();
   });

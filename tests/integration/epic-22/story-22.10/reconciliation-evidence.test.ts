@@ -20,6 +20,24 @@ validateNonProductionSupabaseEnvironment({
 
 const client = new Client({ connectionString: dbUrl });
 
+// This suite needs a reachable non-production Postgres (the local Supabase stack
+// or a configured SUPABASE_DB_URL). Environments without one — e.g. CI's unit-test
+// step, which has no .env.test / local DB — must skip cleanly rather than fail in
+// beforeAll. Probe reachability once at load time and skip the suite if it fails.
+async function isDatabaseReachable() {
+  const probe = new Client({ connectionString: dbUrl });
+  try {
+    await probe.connect();
+    await probe.end();
+    return true;
+  } catch {
+    await probe.end().catch(() => {});
+    return false;
+  }
+}
+
+const databaseReachable = await isDatabaseReachable();
+
 // Functions that Story 22.10 pins search_path on (function_search_path_mutable).
 const SEARCH_PATH_FUNCTIONS = [
   "public.get_user_role()",
@@ -43,7 +61,7 @@ async function execPrivilege(role: string, signature: string) {
   return res.rows[0]?.allowed ?? false;
 }
 
-describe("Story 22.10 Supabase reconciliation evidence", () => {
+describe.skipIf(!databaseReachable)("Story 22.10 Supabase reconciliation evidence", () => {
   beforeAll(async () => {
     await client.connect();
   });
