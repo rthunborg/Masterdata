@@ -10,7 +10,7 @@ export const runtime = "nodejs";
  *
  * Whole-system tallies (DB-sourced):
  * - Excludes archived employees
- * - Includes terminated employees
+ * - Excludes terminated employees
  * - "Crewed" means crewing_done === true
  */
 export async function GET(request: NextRequest) {
