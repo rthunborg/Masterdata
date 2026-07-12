@@ -2,6 +2,8 @@
 
 Prepared: 2026-06-03
 
+Updated: 2026-07-09 (Story 22.13 authorization and runtime-column restore reconciliation)
+
 ## Current Operational View
 
 | Area | Current state | Evidence | Status |
@@ -12,7 +14,7 @@ Prepared: 2026-06-03
 | CI | Type-check, lint, unit, integration on `main`/`staging`; latest checked `main` and `staging` workflow runs succeeded | `.github/workflows/test-check.yml`, GitHub run metadata | Verified in config and platform |
 | E2E | Playwright config starts local Next server on port 3100 | `playwright.config.ts` | Verified in config |
 | Cron | ÖMC and PE3 reminders | `vercel.json` | Verified in config |
-| Backup | Nightly production dumps, 14-day retention, partial staging restore | `.github/workflows/supabase-nightly-backup.yml`, GitHub run metadata | 2026-06-03 scheduled run verified successful; the 2026-06-05 CLI-setup failure went unnoticed for six days — now closed by Story 22.12: the workflow alerts on any step failure (`if: failure()` step opens/comments a `backup-failure` GitHub issue via the built-in `GITHUB_TOKEN`) and retries the CLI setup once with a pinned CLI version |
+| Backup | Nightly production dumps, 14-day retention, partial staging restore | `.github/workflows/supabase-nightly-backup.yml`, GitHub run metadata | 2026-06-03 scheduled run verified successful; Story 22.12 added a pinned one-shot CLI retry and GitHub-issue alerting for failures not explicitly marked best-effort. Story 22.13 makes the employees/column-config archive required and restore-atomic; only the roles dump remains best-effort. |
 | Managed-platform physical backup/PITR | PITR not enabled (paid feature); risk-accepted 2026-06-11 with operations owner, review 2026-09-30; GitHub logical backups are the verified mechanism | `22_supabase_security_evidence_package.md` | Risk-accepted with owner/date |
 | Monitoring | Console/Vercel logs and performance helper | `src/lib/utils/performance-monitor.ts` | Partial |
 | Restore | Nightly workflow partially restores staging; full restore drill of a production backup into the local non-production stack succeeded 2026-06-11 with 7 of 8 validation checks passed (one not applicable) | `evidence/restore-drill-2026-06-11.md`, workflow, GitHub run metadata | Full restore verified on non-production target; platform PITR risk-accepted (not enabled) |
@@ -72,12 +74,17 @@ Current workflow:
 
 - Runs daily at 02:00 UTC.
 - Dumps roles/schema/data from production.
+- Creates one required custom-format snapshot archive containing `public.column_config` and `public.employees` for the staging refresh.
 - Uploads to Supabase Storage bucket.
 - Prunes older than 14 days.
-- Downloads oldest backup and partially refreshes staging `employees` and `column_config`.
-- Alerts on any step failure (Story 22.12): an `if: failure()` step opens — or comments on an existing open — `backup-failure` GitHub issue via the built-in `GITHUB_TOKEN` (no new secrets), and the "Setup Supabase CLI" step is retried once with a pinned CLI version so a single transient setup failure self-heals.
+- Downloads the oldest compatible backup containing the required custom archive and partially refreshes staging `column_config` then `employees`.
+- Recreates any missing safe, config-backed employee columns between those two data replays. Truncate, config replay, runtime-column synchronization, and employee replay run in one database transaction, so a failure rolls back the staging refresh.
+- The existing `TRUNCATE ... CASCADE` scope clears employee-dependent party-data and audit tables on a successful partial refresh; they are not replayed. Identity/configuration tables such as `users`, Auth, `user_filters`, and `important_dates` remain untouched. This limitation must be considered when using staging for party-data or audit validation.
+- Alerts on every prior failure not explicitly marked `continue-on-error`: an `if: failure()` step opens — or comments on an existing open — `backup-failure` GitHub issue via the built-in `GITHUB_TOKEN` (no new secrets). The roles dump remains intentionally best-effort; the runtime restore archive is required. The "Setup Supabase CLI" step is retried once with a pinned CLI version.
 
-Staging-refresh scope (decided 2026-06-16, Story 22.12): the partial refresh deliberately keeps the `users`/auth exclusion — only `employees` and `column_config` are refreshed — to protect staging auth-link integrity (`public.users.auth_user_id` references staging `auth.users`, which is outside logical-backup scope). Auth-user re-provisioning is the accepted manual recovery step either way; the decision and rationale are documented in the operator runbook `docs/operations/database-restore.md`.
+Staging-refresh scope (owner decision 2026-06-16, Story 22.12; canonical tracked record): the partial refresh deliberately keeps `public.users` and Supabase Auth identities out of the staging replay. `public.users` is present in the full logical `public`-schema backup, but managed `auth.users` is not. Replaying production `public.users` into staging would therefore replace staging `auth_user_id` links with production Auth identifiers that do not exist in staging, breaking login-to-role resolution. The nightly partial refresh remains limited to `column_config` and `employees`; Story 22.13 makes config-backed runtime employee columns restore-compatible without changing that identity boundary.
+
+For a full disaster recovery, Auth users must be re-provisioned in the target Supabase Auth project and the restored `public.users.auth_user_id` values must be remapped through an approved, audited operator procedure. That manual re-provision/remap step is the accepted recovery approach until a separately approved Auth export/import capability exists. This section is the tracked, sanitized source of truth for Story 22.12 AC3; local operator notes are supplementary only.
 
 Evidence: `.github/workflows/supabase-nightly-backup.yml`, `scripts/notify-backup-failure.mjs`, GitHub workflow run/job metadata, `evidence/backup-failure-alerting-2026-06-16.md`.
 
@@ -85,11 +92,11 @@ Not verified:
 
 - Bucket configuration.
 - Backup encryption at rest beyond vendor storage controls.
-- RTO for a full production recovery is not yet measured; auth-user re-provisioning (auth schema is outside logical-backup scope) is now documented as the accepted manual recovery step in `docs/operations/database-restore.md` (scope decision recorded 2026-06-16, Story 22.12).
+- RTO for a full production recovery is not yet measured; Auth-user re-provisioning and `public.users.auth_user_id` remapping are the accepted manual recovery steps because the managed Auth schema is outside logical-backup scope (scope decision recorded above, 2026-06-16, Story 22.12).
 
-Verified on 2026-06-03: latest scheduled backup job completed successfully, including production role/schema/data dumps, employees/column_config dump, Supabase Storage upload, backup pruning, download of oldest backup, and partial staging restore of `employees` and `column_config`.
+Verified on 2026-06-03: the then-current scheduled backup job completed successfully, including production role/schema/data dumps, employees/column_config dump, Supabase Storage upload, backup pruning, download of oldest backup, and partial staging restore. Story 22.13 changes the partial artifact and restore transaction after that hosted verification; its checked-in workflow contract is unit-tested, but a new hosted workflow run remains required before claiming the revised path operationally verified. A legacy physical employee column without matching config now causes a rollback + alert and requires source repair rather than a silent/stale success.
 
-Verified on 2026-06-11 (Story 22.8): full restore drill — the oldest nightly backup (2026-05-28) was downloaded read-only from storage and fully restored (roles, schema, data) into the local non-production Supabase stack; row counts matched the dump exactly for the 7 key tables checked (the two log tables `pe3_notifications_log` and `staffing_needs_changelog` were restored but not count-validated), 26 RLS policies and 11 functions restored, and a REST smoke check passed. Nominal RPO follows the nightly schedule (~24h); the unnoticed 2026-06-05 backup failure had meant the effective recovery point was not assured. Story 22.12 closed both restore-drill follow-ups (2026-06-16): the workflow now alerts on any step failure and retries the CLI setup once with a pinned version, so a silent backup gap cannot recur; and recovery planning documents auth-user re-provisioning as the accepted manual step, with the staging-refresh `users` exclusion deliberately kept for auth-link integrity. Details: `evidence/restore-drill-2026-06-11.md`, `evidence/backup-failure-alerting-2026-06-16.md`.
+Verified on 2026-06-11 (Story 22.8): full restore drill — the oldest nightly backup (2026-05-28) was downloaded read-only from storage and fully restored (roles, schema, data) into the local non-production Supabase stack; row counts matched the dump exactly for the 7 key tables checked (the two log tables `pe3_notifications_log` and `staffing_needs_changelog` were restored but not count-validated), 26 RLS policies and 11 functions restored, and a REST smoke check passed. Nominal RPO follows the nightly schedule (~24h); the unnoticed 2026-06-05 backup failure had meant the effective recovery point was not assured. Story 22.12 closed both restore-drill follow-ups (2026-06-16): the workflow alerts on failures not explicitly tolerated as best-effort and retries CLI setup once; the tracked decision above keeps the staging-refresh `users` exclusion for auth-link integrity and accepts manual Auth re-provision/remap for disaster recovery. Details: `evidence/restore-drill-2026-06-11.md`, `evidence/backup-failure-alerting-2026-06-16.md`.
 
 Superseded 2026-06-11 (originally verified 2026-06-03): the managed-platform physical backup/PITR posture has since been reviewed in Story 22.8 and formally risk-accepted (PITR not enabled; operations owner, review 2026-09-30). The GitHub logical backup workflow remains the verified backup mechanism unless platform backups/PITR are approved separately.
 

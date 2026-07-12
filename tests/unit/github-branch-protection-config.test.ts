@@ -38,7 +38,7 @@ const config = JSON.parse(
 const promotionWorkflow = readFileSync(
   resolve(process.cwd(), '.github/workflows/main-promotion-source.yml'),
   'utf8'
-);
+).replaceAll('\r\n', '\n');
 
 describe('GitHub branch protection config', () => {
   it('keeps main as the repository default branch', () => {

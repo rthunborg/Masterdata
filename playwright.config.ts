@@ -47,7 +47,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm exec next dev --webpack --port ${e2ePort}`,
+    // Invoke the checked-in Next.js binary directly. This keeps the E2E gate
+    // independent of whichever global pnpm version happens to be installed.
+    command: `node node_modules/next/dist/bin/next dev --webpack --port ${e2ePort}`,
     url: baseURL,
     reuseExistingServer: false,
     env: {

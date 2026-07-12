@@ -1,22 +1,15 @@
-import { config as loadEnv } from "dotenv";
 import { Client } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { validateNonProductionSupabaseEnvironment } from "@/lib/env/non-production-supabase-guard";
+import {
+  assertEpic22DatabaseFingerprint,
+  formatEpic22SupabaseSkipDiagnostic,
+  isEpic22DatabaseReachable,
+  loadEpic22SupabaseTestEnvironment,
+} from "../../helpers/epic-22-supabase-test-environment";
 
-loadEnv({ path: ".env.test", override: true });
-
-const dbUrl =
-  process.env.SUPABASE_DB_URL ??
-  "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
-
-validateNonProductionSupabaseEnvironment({
-  ...process.env,
-  NODE_ENV: "test",
-  NEXT_PUBLIC_SUPABASE_URL:
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321",
-  SUPABASE_DB_URL: dbUrl,
-});
+const testEnvironment = loadEpic22SupabaseTestEnvironment();
+const dbUrl = testEnvironment.dbUrl;
 
 const client = new Client({ connectionString: dbUrl });
 
@@ -24,19 +17,11 @@ const client = new Client({ connectionString: dbUrl });
 // or a configured SUPABASE_DB_URL). Environments without one — e.g. CI's unit-test
 // step, which has no .env.test / local DB — must skip cleanly rather than fail in
 // beforeAll. Probe reachability once at load time and skip the suite if it fails.
-async function isDatabaseReachable() {
-  const probe = new Client({ connectionString: dbUrl });
-  try {
-    await probe.connect();
-    await probe.end();
-    return true;
-  } catch {
-    await probe.end().catch(() => {});
-    return false;
-  }
-}
+const databaseReachable = await isEpic22DatabaseReachable(dbUrl);
 
-const databaseReachable = await isDatabaseReachable();
+if (!databaseReachable) {
+  console.warn(formatEpic22SupabaseSkipDiagnostic(testEnvironment));
+}
 
 /**
  * Regression guard for the dashboard-era drift fixed by
@@ -50,6 +35,7 @@ const databaseReachable = await isDatabaseReachable();
 describe.skipIf(!databaseReachable)("column_config.is_checklist_item (adopted hosted column)", () => {
   beforeAll(async () => {
     await client.connect();
+    await assertEpic22DatabaseFingerprint(client);
   });
 
   afterAll(async () => {

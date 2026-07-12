@@ -60,7 +60,25 @@ async function createAuthState(
     await page.waitForSelector('#email', { timeout: 10000 });
     await page.locator('#email').fill(email);
     await page.locator('#password').fill(password);
+    const loginResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/auth/login') &&
+        response.request().method() === 'POST',
+      { timeout: 30000 }
+    );
     await page.locator('button[type="submit"]').click();
+    const loginResponse = await loginResponsePromise;
+    if (!loginResponse.ok()) {
+      throw new Error(
+        `Login API rejected ${email} with HTTP ${loginResponse.status()}`
+      );
+    }
+
+    // A cold Next.js dev server can compile /dashboard after the client router
+    // starts navigation without committing the URL transition. The successful
+    // login response has already stored the session cookie, so navigate
+    // explicitly before persisting the reusable browser state.
+    await page.goto('/dashboard', { timeout: 30000, waitUntil: 'load' });
     await page.waitForURL('**/dashboard', { timeout: 30000 });
     await page.waitForSelector(
       'table, [aria-label="Employee list"], article[aria-label], [data-testid*="dashboard"], [data-testid*="employee"], h1, h2, [class*="dashboard"]',

@@ -71,10 +71,9 @@ export async function middleware(request: NextRequest) {
       if (appUser && shouldUpdateActivity(appUser.last_active_at)) {
         void (async () => {
           try {
-            const { error: updateError } = await supabase
-              .from('users')
-              .update({ last_active_at: new Date().toISOString() })
-              .eq('id', appUser.id);
+            const { error: updateError } = await supabase.rpc(
+              'update_own_last_active_at'
+            );
             
             if (updateError) {
               console.error('[Middleware] Update error:', updateError);

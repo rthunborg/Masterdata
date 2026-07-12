@@ -1,7 +1,7 @@
 # Commercial Readiness Documentation Index
 
 Prepared: 2026-06-03
-Updated: 2026-06-16
+Updated: 2026-07-10 — Story 22.13 review-remediation evidence addendum
 Scope: repository review plus GitHub, Vercel, and limited Supabase-related runtime verification of the HR Masterdata Management System. No employee rows, secrets, private environment variable values, concrete production domain names, project refs, deployment IDs, or secret-name inventories are disclosed in this public package. Detailed operational evidence is held privately. Pre-remediation production diagnostic endpoint checks returned configuration metadata; Story 22.1 is done with route-handler removal and passing local/non-production gates. A post-merge Epic 22 release/readiness gate remains: after final deployment, the production runtime must stop returning success responses for the removed diagnostic paths.
 
 ## System Summary
@@ -41,6 +41,8 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 | `24_subprocessor_register.md` | Legal/privacy, procurement, security | Draft subprocessor register with purpose, data exposure, environment, DPA/transfer status, and review owner per service |
 | `25_incident_breach_process.md` | IT, security, legal/privacy, operations | Draft incident/breach process: roles, severity, triage, evidence capture, notification timing, communication templates, post-incident review |
 | `26_environment_reconciliation_inventory.md` | Security, IT, reviewers | Story 22.10 three-way drift inventory (production vs staging vs migrations) with per-difference classification and the reconciled end state (search_path, SECURITY DEFINER grants, RLS policy dedup, schema drift, migration-history baseline). Cutover steps: `docs/commercial-readiness/27_supabase_cutover_runbook.md`; change policy: `docs/commercial-readiness/28_migrations_only_change_policy.md` |
+| `27_supabase_cutover_runbook.md` | Security, IT, operations | Dated Story 22.10 staging execution plus the pending Story 22.13 hosted-staging delta and ordered production migration/policy/grant verification |
+| `28_migrations_only_change_policy.md` | Security, IT, developers | Binding migrations-only policy for hosted schema, RLS, function, and grant changes |
 
 ## Verified
 
@@ -69,16 +71,18 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 - Security audit command `pnpm audit --prod` now returns 3 production dependency advisories after Story 22.3 remediation: 0 critical, 0 high, 2 moderate, and 1 low. Current output is captured in `evidence/dependency-audit-2026-06-05.md`.
 - Story 22.7 role/export/RLS evidence passed in local/non-production scope: focused Story 22.7 Vitest, full Vitest, full Playwright, ESLint, type-check, and targeted evidence hygiene search all exited `0`. External employee-list API responses are shaped for external roles; DB column-level enforcement is not claimed.
 - Story 22.8 (2026-06-11): Supabase advisors and migration list are now accessible through authenticated CLI (83 advisor warnings summarized: 20 security, 63 performance, 0 errors; remote migration history verified empty). SSL enforcement is disabled and network restrictions are allow-all — both formally risk-accepted with owner and review date 2026-09-30. A full restore drill of the 2026-05-28 production backup into the local non-production stack succeeded with 7 of 8 validation checks passed and one not applicable (`docs/commercial-readiness/evidence/restore-drill-2026-06-11.md`). Hosted RLS policy drift vs migrations was discovered in the 2026-05-28 backup snapshot and registered as `R-023`.
+- Story 22.13 local evidence (2026-07-10): the project-scoped Supabase stack was rebuilt on `15421`/`15422` through migration `20260710150000`; the migration-built catalog has 17 policies and the focused authorization/restore/backup-integrity batch passed 94/94. Verified behaviors include active-HR-only column lifecycle, atomic assigned-presentation and user-status authorization, service-only atomic custom-column creation with raw DDL revoked, explicit activity failure signaling, scoped trigger-owned audit history, staffing role/actor binding, immutable manifest-last backups, wrong-project test rejection, and config-before-schema-before-employees restore. Final gates passed: Vitest 3,125/30 skipped, Playwright 162/53 skipped/0 flaky, type-check exit 0, and lint exit 0. This remains local non-production evidence; hosted staging apply/re-verification is a separate owner-controlled release gate under `E-012`.
 
 ## Needs Manual Review
 
-- Supabase Auth session lifetime and MFA settings (dashboard-only). Migration history was verified live in Story 22.8 (remote history empty); hosted RLS policy definitions were inventoried from the 2026-05-28 backup snapshot, not a live read (policy drift `R-023`). Story 22.10 reconciled the hosted schema/policies/grants (migration `20260614000000`, remote-history baseline, `search_path` pinning, SECURITY DEFINER grant tightening) — **executed and verified on staging** 2026-06-14 (advisors `function_search_path_mutable` 12→0, security-definer anon 5→1/auth 5→3, `auth_rls_initplan` 9→0, `multiple_permissive_policies` 54→3, history 57 in sync); production reconciliation is the Epic 22 cutover (runbook `docs/commercial-readiness/27_supabase_cutover_runbook.md` §B) that closes `R-010`/`R-020`/`R-023`. Leaked-password protection + CAPTCHA were moved to Epic 23 (Story 23.4). Remaining dashboard-only: Auth session/MFA settings.
+- Supabase Auth session lifetime and MFA settings (dashboard-only). Preserve the dated database states: Story 22.10 hosted staging was verified at 57 migrations/19 policies on 2026-06-14; Story 22.13 local migrations are now 61/17. Apply and re-inventory the four later migrations on hosted staging before the production cutover; then apply all pending migrations through `20260710150000` in production to close `R-010`/`R-020`/`R-023`. Leaked-password protection + CAPTCHA remain Epic 23 Story 23.4.
 - Vercel environment variable scopes, production rollback process, and production runtime settings beyond deployment metadata/build logs.
 - Recovery time objective for a full production recovery, including auth-user re-provisioning (auth schema is outside logical backup scope). The full restore drill itself was verified on 2026-06-11; nominal RPO follows the nightly backup schedule (~24h). The 2026-06-05 backup failure that went unnoticed for six days had shown the effective recovery point was not assured; Story 22.12 (2026-06-16) added backup-failure alerting plus a CLI-setup retry so silent gaps are now detected, and auth-user re-provisioning is documented as the accepted manual recovery step (with the staging-refresh `users` exclusion deliberately kept). The RTO itself remains unmeasured.
 - Code-owner review requirements, release approvals, and incident process.
 - SMTP provider contract, DPA/subprocessor status, and email retention.
 - Legal basis, data retention periods, DPIA need, controller/processor roles, and customer-specific privacy obligations.
 - Diagnostic endpoint production runtime verification remains open as a post-merge release/readiness gate: pre-Story 22.1 checks showed removed diagnostic paths exposed on the checked production runtime, route handlers have since been removed in the repository, Story 22.1 is done, and the paths must be rechecked after the final Epic 22 deployment.
+- Story 22.13 is review-ready with 94/94 focused evidence and all mandatory local gates passing. The revised runtime-column workflow and four-migration hosted delta still need an owner-controlled hosted staging run before production. See `17_blocker_remediation_tracker.md#tracker` (`E-012`).
 
 ## Recommended Reading Order
 
@@ -95,3 +99,7 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 11. `16_presentation_data_scope_and_access_preconditions.md`
 12. `17_blocker_remediation_tracker.md`
 13. `18_one_page_presentation_brief.md`
+14. `22_supabase_security_evidence_package.md`
+15. `26_environment_reconciliation_inventory.md`
+16. `27_supabase_cutover_runbook.md`
+17. `28_migrations_only_change_policy.md`

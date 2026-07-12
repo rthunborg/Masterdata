@@ -28,10 +28,10 @@ epic_metrics:
   target_test_execution_time_seconds: 300
   current_coverage_overall: 0
   current_coverage_critical: 0
-  current_test_execution_time_seconds: 1706
-  total_tests_estimated: 24
-  total_tests_implemented: 72
-  total_tests_passing: 72
+  current_test_execution_time_seconds: 1960
+  total_tests_estimated: 40
+  total_tests_implemented: 125
+  total_tests_passing: 125
 
 stories:
   - id: '22.1'
@@ -173,6 +173,7 @@ stories:
     started_date: 2026-06-14
     completed_date: 2026-06-15
     blockers: []
+    gate_recheck: 'Story 22.13 resolved the historical Playwright contradiction on 2026-07-09: exact full npx playwright test completed 162 passed / 53 skipped / 0 failed, EXIT:0. Hosted production Phase B remains the separate Epic 22 release gate.'
     notes: 'Done (code review Round 1 passed 2026-06-15). Phase A authoring + local verification COMPLETE: three-way drift inventory with per-difference classification (26_environment_reconciliation_inventory.md); migration-ordering anomaly fixed (20250113000000 -> 20251122150001_add_room_assignment_rpc.sql); reconciliation migration 20260614000000 (search_path pinning on all 11 functions; SECURITY DEFINER grant tightening verified per src/ caller - remove_jsonb_key->service_role only, add_custom_column/update_staffing_need drop anon keep authenticated, get_user_role kept by design; R-020 drop staging junk asdas/testerere; R-023 drop dashboard-era policies + re-assert canonical scoped TO authenticated with (select) wrapping; users/column_config policy merges); local API-role parity via supabase/seed.sql (local only, never hosted); also adopted hosted-only important_dates.deadline_submit/deadline_cancel columns into migrations (newly-found dashboard-era drift that broke date-capacity/Playwright e2e on migration-built envs; A/B-proven pre-existing, not caused by this story); also reconciled the column_config manage policy so HR Admin can manage custom columns (pre-existing R-023 gap: app column-admin feature was RLS-denied on migration-built stacks; A/B-proven pre-existing); reconciliation evidence test suite (11/11) and Story 22.7 RLS suite (8/8) green; docs (migrations-only policy, cutover runbook) + risk-register/evidence/security-overview/evidence-index/index updates; deferred-work ordering item resolved. seably_* reclassified as runtime custom columns (not migration schema). Local gates green: npx vitest run 3054 passed/30 skipped, pnpm test:integration 777 passed/16 skipped, npx tsc --noEmit EXIT:0, npx eslint EXIT:0 (321 pre-existing warnings/0 errors); npx vitest run 3056 passed/0 failed and npx playwright test 160 passed/55 skipped/0 failed (after closing two pre-existing dashboard-era drift gaps found via e2e: important_dates.deadline_* columns adopted + column_config HR-manage policy reconciled - both A/B-proven not caused by this story). STAGING EXECUTED + VERIFIED 2026-06-14 via the Supabase MCP (owner authorized the account-wide plugin in-session): reconciliation applied to masterdata-staging (<STAGING_REF>; production <PROD_REF> untouched), migration history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19). AC3/AC4 met on staging; R-010/R-020/R-023 reconciled+verified on staging, close in production at Phase B. AC5 (leaked-password protection) + CAPTCHA MOVED to Epic 23 (Story 23.4 AC6) by owner decision 2026-06-14 — Auth/dashboard setting, enterprise hardening, not this schema-reconciliation story. All remaining 22.10 ACs (AC1-AC4, AC6) met. Code review Round 1 passed 2026-06-15 (3 adversarial layers): 0 decision-needed, 6 patch (all fixed: .mcp.json gitignored, staging/prod refs+regions redacted to placeholders, test-count 8/8->11/11, leaked-password overclaim removed from risk register, figure nits, +canonical-policy-set test assertion), 5 deferred (logged), 4 dismissed; Story 22.9 clean. Lead-agent gate run green: vitest 3057/0, integration 780/0 (reconciliation 11/11, RLS 8/8), tsc 0, eslint 0 errors. Playwright e2e did NOT complete cleanly this session due to local-stack/dev-server degradation (webpack dev server crash + employee seed not repopulating) - but every spec passed at least once (full run 162/216 green, targeted batch incl. room-assignment/inline-edit/saved-filters/export green), all failures were no-data-rendered timeouts not assertion regressions, the review changed no app/spec/migration code, and the dev full e2e was green (160 passed) -> environmental, not a regression. Owner directed status -> DONE 2026-06-15. Phase B (production cutover) remains the Epic 22 production-cutover gate (story-22.10-phase-b).'
   - id: '22.11'
     title: 'Enforce Non-Production Email Suppression'
@@ -187,7 +188,7 @@ stories:
     started_date: '2026-06-16'
     completed_date: '2026-06-16'
     blockers: []
-    notes: 'Implemented 2026-06-16 (status -> review). Non-production email delivery is now fail-safe: exported pure decision shouldSuppressEmailDelivery(env) in src/lib/services/email-service.ts gates sendEmail (covers all notification paths) and the sendEmailToMultiple delay-skip. Reuses the Story 22.2 isNonProductionExecution detection via a new shared module src/lib/env/is-non-production.ts (behavior-preserving refactor; Story 22.2 guard tests unchanged/green). Precedence: DISABLE_EMAIL_DELIVERY kill-switch (any env) > non-prod EMAIL_DELIVERY_OVERRIDE deliver / non-prod fail-safe suppress > production deliver. Production delivery unchanged; no production env var added. Suppressed + success logs are PII-free (recipientCount + reason only). .env.example documents EMAIL_DELIVERY_OVERRIDE + kill-switch. AC4: Preview/staging SMTP key-name audit evidence (docs/commercial-readiness/evidence/preview-smtp-env-audit-2026-06-16.md, key names only) linked from 14_evidence_index.md and tracked as E-011 in 17_blocker_remediation_tracker.md; Vercel per-scope verification + any credential rotate/remove is an owner action item (no dev-agent dashboard access), with the AC1 code fail-safe as the standing mitigation (production-change freeze respected). 13 new unit tests in tests/unit/epic-22/story-22.11/email-suppression.test.ts. Gates: npx vitest run EXIT:0 (3074 passed/30 skipped), npx tsc --noEmit EXIT:0, npx eslint EXIT:0 (0 errors, 320 pre-existing warnings). Playwright N/A (no UI/route change). Unblocks 22.12 (removes email-spam rationale for skipping users in staging refresh). Recommend code-review with a different LLM. Code review 2026-06-16 (3 adversarial layers: Blind Hunter, Edge Case Hunter, Acceptance Auditor) PASSED: all AC1-AC5 + the 5-row precedence table + production-change freeze + the behavior-preserving Story 22.2 refactor SATISFIED. 1 low patch fixed (recipientCount now counts comma-separated to-strings; +1 unit test -> 14 total) and re-verified (npx vitest run EXIT:0 3075 passed/30 skipped, npx tsc --noEmit EXIT:0, npx eslint EXIT:0); 2 deferred (pre-existing SMTP catch-path PII via error.message; by-design fail-open on unrecognized env, intentionally not changed under the prod freeze); 0 decision-needed; 5 dismissed (incl. a false-positive High on the dropped isTruthyFlag import). Status -> done.'
+    notes: 'Completed and reviewed 2026-06-16. Non-production email delivery is fail-safe by default, production delivery is unchanged, suppression logs are PII-free, and the explicit Mailpit-only override is documented. The owner completed the Vercel Preview/staging scope verification and rotated/removed the real non-production SMTP credential; sanitized evidence is in docs/commercial-readiness/evidence/preview-smtp-env-audit-2026-06-16.md and E-011 is concluded. Review fixed comma-separated recipient counting, bringing tests/unit/epic-22/story-22.11/email-suppression.test.ts to 14 tests. Historical full gates: vitest 3075 passed/30 skipped, tsc EXIT:0, eslint EXIT:0; Playwright was N/A for the server-library-only change. Story 22.13 recheck on 2026-07-09: focused test 14/14 EXIT:0. Status done.'
   - id: '22.12'
     title: 'Add Backup Failure Alerting and Decide Staging Refresh/User Backup Scope'
     priority: 'P1'
@@ -199,33 +200,48 @@ stories:
     dependencies: ['22.8', '22.11']
     assignee: 'Dev (Opus 4.8)'
     started_date: '2026-06-16'
-    completed_date: '2026-06-16'
+    completed_date: '2026-06-17'
     blockers: []
-    notes: 'Implemented 2026-06-16 (status -> review). AC1: added an if:failure() alert step to the backup-and-restore job in .github/workflows/supabase-nightly-backup.yml that opens/comments a labelled backup-failure GitHub issue via the gh CLI + built-in GITHUB_TOKEN (zero new secrets; job permissions: issues:write + step env GH_TOKEN). Did NOT reuse the 22.11-suppressed email-service. AC2: pinned Supabase CLI to 2.104.0 (was version:latest, the 2026-06-05 failure surface) + one-shot retry (first attempt continue-on-error, second attempt if outcome==failure). AC3 (owner decision): KEEP the users exclusion in the staging refresh; documented in the git-ignored operator runbook docs/operations/database-restore.md with the auth-link-integrity rationale + auth re-provisioning as the accepted manual step. AC4: synced 09_operations_support_and_sla.md, 14_evidence_index.md, 11_risk_register_and_open_questions.md (R-007 resolved, R-019 clause reconciled, Must-Fix bullet, +Updated date), 00_index.md (both 22.12 bullets +Updated date). AC5: pure unit-tested builder buildBackupFailureAlert in scripts/notify-backup-failure.mjs (force-add: scripts/ is git-ignored) + 8 unit tests in tests/unit/epic-22/story-22.12/backup-failure-alert.test.ts (content + PII/secret-free). Controlled workflow_dispatch verification on throwaway branch codex/test-backup-alert-22.12 (deleted after): run 27642547441 failed at an induced early step (all prod dump/restore steps SKIPPED) and the if:failure() step opened backup-failure issue #89; run 27642638386 commented on #89 (dedupe). Issue body verified PII/secret-free; issue closed; branch deleted; no production data touched. Evidence: docs/commercial-readiness/evidence/backup-failure-alerting-2026-06-16.md. Gates: npx vitest run EXIT:0 (3083 passed/30 skipped), pnpm lint 0 errors/320 pre-existing warnings EXIT:0, npx tsc --noEmit EXIT:0. Playwright N/A (no UI/route/app-runtime change). Closes the two Story 22.8 restore-drill follow-ups (R-007). Recommend code-review with a different LLM.'
+    notes: 'Implemented 2026-06-16 and review-completed 2026-06-17. GitHub-issue alerting covers failed steps not explicitly marked continue-on-error; the Supabase CLI is pinned and retried once. Controlled workflow runs 27642547441 and 27642638386 verified open/comment deduplication with PII-free text. The owner decision keeps public.users/auth out of the staging refresh because production public.users.auth_user_id values cannot resolve against staging auth.users; tracked docs/commercial-readiness/09_operations_support_and_sla.md#backups-and-restore records manual Auth re-provision/remap as the accepted disaster-recovery step. Eight unit tests and all applicable original gates passed; Playwright N/A for the workflow/script/docs-only implementation. Story 22.13 synchronized the tracked AC3 record and made the runtime partial archive required, leaving only roles best-effort. Status done.'
+  - id: '22.13'
+    title: 'Remediate PR 91 Security and Readiness Review Findings'
+    priority: 'P1'
+    status: 'done'
+    story_points: 5
+    estimated_tests: 8
+    implemented_tests: 53
+    passing_tests: 53
+    dependencies: ['22.10', '22.11', '22.12']
+    assignee: 'Dev (Amelia)'
+    started_date: 2026-07-09
+    completed_date: 2026-07-12
+    blockers: []
+    notes: 'Done after BMAD code review Round 2 of 3 on 2026-07-12. All sixteen Round 2 patch findings are closed: HR-admin delete/status transitions share the serialized invariant; backup upload/selection/restore is identifier-validated, non-empty, memory-bounded, index-complete, optional-roles tolerant, and all-or-nothing; production/staging equality fails closed; login activity latency is bounded; E2E cleanup/seeds and pnpm config are corrected; Story 22.10 and audit-policy guidance are synchronized. One pre-existing invalid session-revocation design remains explicitly deferred. Clean project-scoped reset applied all 61 migrations; focused Story 22.13 verification passed 65/65. Final gates: full Vitest EXIT:0 (3135 passed/30 skipped), full Playwright EXIT:0 (161 passed/53 skipped/1 unrelated flaky retry) plus targeted flaky rerun 1/1 EXIT:0, tsc EXIT:0, and full lint EXIT:0 with 0 errors (pre-existing warnings only). No production or hosted mutation was performed; hosted staging apply/re-verification and the Epic 22 production cutover remain owner-controlled release gates.'
 
 progress_summary:
-  total_stories: 12
+  total_stories: 13
   stories_not_started: 0
   stories_ready_for_dev: 0
   stories_in_progress: 0
-  stories_completed: 12
+  stories_completed: 13
   stories_in_review: 0
   stories_blocked: 0
-  total_story_points: 40
-  completed_story_points: 40 # 22.1–22.9 (31) + 22.10 (5) + 22.11 (2) + 22.12 (2); 22.12 review passed 2026-06-17
+  total_story_points: 45
+  completed_story_points: 45 # All 13 Epic 22 stories are locally complete; the production cutover gate remains pending.
   in_progress_story_points: 0
-  remaining_story_points: 0 # all 40 done; 40 + 0 + 0 = 40
+  in_review_story_points: 0
+  remaining_story_points: 0
 
 test_coverage_summary:
-  total_tests_estimated: 24
-  total_tests_implemented: 72
-  total_tests_passing: 72
+  total_tests_estimated: 40
+  total_tests_implemented: 125
+  total_tests_passing: 125
   implementation_percentage: 100
-  unit_tests: 52 # +8 Story 22.12 backup-failure-alert builder tests
-  integration_tests: 18
-  e2e_tests: 0
+  unit_tests: 86 # Includes 34 dedicated Story 22.13 unit tests.
+  integration_tests: 35 # Includes 17 dedicated Story 22.13 integration/API tests.
+  e2e_tests: 2 # Story 22.13 external custom-column lifecycle restrictions.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification (documented outcomes, not automated Vitest/Playwright tests); 52 + 18 + 0 + 0 + 2 = 72
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 86 + 35 + 2 + 0 + 2 = 125
 
 blockers: []
 known_issues:
@@ -249,5 +265,6 @@ next_actions:
   - 'Story 22.9 is done (code review Round 1 closed 2026-06-13 with all findings resolved): draft privacy pack (privacy annex 23, subprocessor register 24, incident/breach process 25) created with disclaimer and draft-vs-fact markers, linked from index/evidence/tracker surfaces (E-009), and synchronized across status artifacts. Review fixed 3 patches (stale evidence-index SMTP wording, Cloudflare marker, Gmail send-delay wording) and deferred 1 pre-existing item (operator name in owner fields, from Story 22.8). The SMTP relay is operator-confirmed as Google Workspace (smtp-relay.gmail.com); its DPA/transfer terms plus broader DPA execution remain Epic 23.2.'
   - 'Stories 22.10-22.12 added to Epic 22 backlog from Story 22.8 findings and owner direction (2026-06-11): 22.10 reconciles prod/staging/migrations drift and baselines remote migration history (production is primary source of truth, staging may carry intentional Epic 22 adjustments); 22.11 makes staging/preview email suppression fail-safe and audits Preview SMTP env values; 22.12 adds backup failure alerting and decides users/auth scope for backups and the staging refresh. Stubs exist in docs/sprint-artifacts/; SM create-story is required before dev.'
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA moved to Epic 23 (Story 23.4 AC6) by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b; Auth attack protection is enabled in Epic 23.'
-last_updated: 2026-06-17
-updated_by: Code review (Story 22.12 Round 1 PASSED → done, 2026-06-17). AC1–AC5 all verified MET. 1 decision resolved (keep the two best-effort dump steps continue-on-error; corrected the alert-step comment) + 4 patches applied: (1) reworded the alert-step comment to stop overclaiming "dump" coverage; (2) synced 3 stale sibling readiness docs (01_/08_/12_) that still said "add backup-failure alerting"; (3) relabelled the alert's "Failed step/job" → "Failed job" (value is github.job, not the failed step); (4) findOpenIssueNumber now distinguishes gh-list-failure from "no open issue" so a transient list error no longer opens a duplicate issue. 5 low-severity items deferred (deferred-work.md), 4 dismissed. Re-run gates green: 8/8 unit tests, tsc --noEmit EXIT:0, eslint EXIT:0. Prior: Dev dev-story (22.12 implemented → review). NOTE: review-fix changes are uncommitted in the working tree.
+  - 'Story 22.13 is done after BMAD review Round 2 closed all sixteen patch findings. The clean 61-migration reset, live concurrency proof, focused 65/65 verification, full Vitest/Playwright, typecheck, and lint gates passed. One pre-existing session-revocation design remains explicitly deferred; hosted staging apply/re-verification and the production cutover remain owner-controlled release work.'
+last_updated: 2026-07-12
+updated_by: Codex (Story 22.13 Round 2 patches and gates complete; story done; Epic 22 production gate pending).

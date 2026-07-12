@@ -2,6 +2,8 @@
 
 Prepared: 2026-06-10
 
+Updated: 2026-07-09 — Story 22.13 direct-database authorization addendum
+
 Story: 22.7
 
 Scope: local/non-production test evidence for controlled-access claims. This file records test coverage and command results only. It does not include real employee rows, private screenshots, cookies, auth tokens, database connection strings, Supabase key values, service-key values, or production SQL/API output.
@@ -47,3 +49,17 @@ PowerShell was used on Windows, so exit-code capture used `$LASTEXITCODE` as the
 - `admin_limited` has application-layer checklist edit permission, but direct employee-table DB RLS does not grant the same update path. The test records that limitation instead of overstating DB enforcement.
 - User/filter ownership RLS was not expanded in Story 22.7 because the live local transaction focused on employee and staffing policies tied to the access-control claims being hardened. Keep user/filter ownership as follow-up evidence if those claims become externally material.
 - During full-gate verification, older E2E/unit specs were hardened so the required suite is deterministic: mobile quick actions now seeds a card when the dashboard is empty, mobile accessibility uses the prepared admin storage state, external highlighting has enough time for UI seeding, filtered export waits for confirmation/download completion, and the FilterPanel debounce test waits for the initial focus timer before typing.
+
+## Story 22.13 Direct-Database Addendum
+
+Story 22.13 adds `tests/integration/epic-22/story-22.13/direct-database-authorization.test.ts` and `runtime-column-restore.test.ts`. The authorization suite exercises the real database roles/functions, not only route mocks:
+
+- HR Admin/Crewing staffing success; Sodexo, inactive actor, and spoofed `p_user_id` denial with SQLSTATE `42501`.
+- Authenticated denial for both the legacy raw DDL helper and the service-only atomic column-creation RPC; service-role creation, physical/config collision rejection, and savepoint rollback.
+- HR-admin-only `column_config` lifecycle RLS, including external INSERT rejection and UPDATE/DELETE row hiding.
+- Individual denial of `users.role`, `is_active`, `email`, and `auth_user_id` updates; caller-bound activity success.
+- Forged audit INSERT denial, archived employee filtering, hidden `ssn` versus visible `comments`, and trigger-owned audit writes.
+
+The shared `tests/helpers/epic-22-supabase-test-environment.ts` reads project id and ports from `supabase/config.toml`, requires the `hr-masterdata` high-port stack (`15421`/`15422`), rejects wrong/remote targets, and fingerprints migration `20260710150000`. It skips only when that expected stack is unreachable and emits an explicit diagnostic.
+
+Current evidence status (2026-07-10): the project-scoped WSL/Docker Supabase stack was rebuilt on `15421`/`15422` through migration `20260710150000`. The focused twelve-file Story 22.13 batch passed **94/94**, including live direct-role RLS/RPC, atomic presentation/status transitions, runtime restore, and backup integrity evidence. Final gates passed: Vitest **3,125 passed / 30 skipped**, Playwright **162 passed / 53 skipped / 0 flaky**, `npx tsc --noEmit` exit `0`, and lint exit `0` with no errors. This is local non-production evidence; hosted staging apply/re-verification remains an owner-controlled release gate and is not claimed here.
