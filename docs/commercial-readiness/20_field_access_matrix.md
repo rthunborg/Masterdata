@@ -1,8 +1,8 @@
 # Field Access Matrix
 
 Prepared: 2026-06-07
-Updated: 2026-06-08 for Story 22.7
-Story: 22.6; Story 22.7 evidence update
+Updated: 2026-07-10 for Story 22.13 review remediation
+Story: 22.6; Story 22.7 and Story 22.13 evidence updates
 Scope: Static evidence from role types, auth helpers, employee schemas, employee/update/export routes, column-config repository, export UI, and Supabase migrations. No private employee rows, SSNs, screenshots, cookies, tokens, Supabase keys, database URLs, or production SQL/API output are included.
 
 ## Reading This Matrix
@@ -28,7 +28,7 @@ Important limitation: `src/lib/server/repositories/employee-repository.ts` still
 - Employee list/update/export behavior: `src/app/api/employees/route.ts`, `src/app/api/employees/[id]/route.ts`, `src/app/api/employees/export/route.ts`, `src/app/api/employees/export-crew-ready/route.ts`, `src/lib/server/employee-field-access.ts`, `src/lib/validation/export-schema.ts`.
 - Export UI filtering: `src/components/dashboard/export-field-selection-dialog.tsx`.
 - Column permission model: `src/lib/types/column-config.ts`, `src/lib/server/repositories/column-config-repository.ts`.
-- RLS and seed/update evidence: `supabase/migrations/20251027000000_initial_schema.sql`, `20251028104344_seed_column_config.sql`, `20251209000000_add_recruiter_crewing_roles.sql`, `20251210000002_update_rls_for_recruiter_crewing.sql`, `20251213000000_add_dietary_requirements.sql`, `20260313000001_add_staffing_needs.sql`, `20260130212612_create_user_filters.sql`.
+- RLS and seed/update evidence: `supabase/migrations/20251027000000_initial_schema.sql`, `20251028104344_seed_column_config.sql`, `20251209000000_add_recruiter_crewing_roles.sql`, `20251210000002_update_rls_for_recruiter_crewing.sql`, `20251213000000_add_dietary_requirements.sql`, `20260313000001_add_staffing_needs.sql`, `20260130212612_create_user_filters.sql`, and Story 22.13 migrations `20260709194903` through `20260710150000`.
 
 ## Employee And Masterdata Fields
 
@@ -52,13 +52,13 @@ Important limitation: `src/lib/server/repositories/employee-repository.ts` still
 | `crewing_done` | Checklist/status field; crewing edit revoked in staffing migration; export-crew-ready updates it after employee-manager export | Y / guarded / Y | Y / guarded API-Y / Y | Y / Checklist+prereq / Y, RLS? | N / N / N | N / N / N | N / N / N | N / N / N | Y / N / Y | App-layer column permissions, prerequisite check, employee RLS | Edit is conditional on `canEditCrewingDone`; raw employee API can expose value to row readers |
 | `hotel_required`, `room_number_shared` | Accommodation/room fields; room preview is HR-admin-only; employee update can calculate rooms | Y / API-Y / Cfg | Y / API-Y / Cfg | Cfg, RLS? / Checklist or N / Cfg | Cfg / N / Cfg | Cfg / N / Cfg | Cfg / N / Cfg | Cfg / N / Cfg | Cfg / N / Cfg | App-layer column permissions plus HR-only room preview | Room/accommodation is sensitive; static `column_config` evidence is incomplete |
 | `one_marked_at`, `omc_masterdata_reminder_sent_at` | System-managed timestamps | Y / system / N | Y / system / N | RLS? / N / N | N / N / N | N / N / N | N / N / N | N / N / N | N / N / N | API/service logic plus employee RLS and external response shaping | Repository rows include operational timestamps; external list responses omit them unless explicitly role-visible in `column_config` |
-| Dynamic custom columns where `is_masterdata = false` | Created and governed by `column_config.role_permissions`; PATCH custom-data uses service role after app-layer edit check | Y / Y / Y | Cfg / Cfg / Cfg | Cfg, RLS? / Cfg / Cfg | Cfg / Cfg / Cfg | Cfg / Cfg / Cfg | Cfg / Cfg / Cfg | Cfg / Cfg / Cfg | Cfg / Cfg / Cfg | App-layer column permissions plus `column_config` RLS; service-role preauthorization on custom-data PATCH | GET custom-data route is auth-only and marked risk in API matrix; live config and role tests required |
+| Dynamic custom columns where `is_masterdata = false` | HR Admin creates schema/config atomically; assigned roles edit values through custom-data permission checks | Y / Y / Y | Cfg / Cfg / Cfg | Cfg, RLS? / Cfg / Cfg | Cfg / Cfg / Cfg | Cfg / Cfg / Cfg | Cfg / Cfg / Cfg | Cfg / Cfg / Cfg | Cfg / Cfg / Cfg | HR-only column lifecycle RLS + collision-safe service RPC; app-layer value permissions + service-role PATCH preauthorization | External roles cannot write `column_config` directly or create/delete columns; the assigned-column presentation PATCH is limited to three safe fields after permission checks. GET custom-data remains auth-only and is separately risk-flagged |
 
 ## Custom-Column Configuration Fields
 
 | Field(s) | HR Admin | Recruiter | admin_limited | Sodexo | OMC | Payroll | Toplux | Crewing | Enforcement layer | Risk / follow-up |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `column_config.id`, `column_name`, `db_column_name`, `column_type`, `is_masterdata`, `role_permissions`, `display_order`, `is_visible`, `category`, `category_color`, `is_checklist_item`, `created_at`, `updated_at` | Y / Y for admin endpoints and owned custom permissions / N/A | Y / Cfg custom-only / N/A | Y / Cfg custom-only / N/A | Y / Cfg custom-only / N/A | Y / Cfg custom-only / N/A | Y / Cfg custom-only / N/A | Y / Cfg custom-only / N/A | Y / Cfg custom-only / N/A | `column_config` RLS, `/api/columns` auth, `/api/admin/columns` HR-admin API, and repository ownership/edit checks | `role_permissions` is sensitive configuration metadata. `/api/columns` returns only role-visible column configs, while admin routes expose/manage broader configuration; keep Story 22.7 tests aligned with this matrix. |
+| `column_config.id`, `column_name`, `db_column_name`, `column_type`, `is_masterdata`, `role_permissions`, `display_order`, `is_visible`, `category`, `category_color`, `is_checklist_item`, `created_at`, `updated_at` | Y / Y / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Public authenticated SELECT plus Story 22.13 HR-admin-only lifecycle RLS; `/api/columns` POST and `/api/admin/columns` are HR-only; atomic creation RPC is service-role-only | `role_permissions` remains readable configuration metadata, but direct external INSERT/UPDATE/DELETE is denied. External PATCH is limited to assigned-column presentation fields through a caller-bound, row-locked RPC that rechecks the current role assignment; DELETE is rejected and lifecycle controls are hidden. |
 
 ## Export-Specific Fields And Controls
 
@@ -81,14 +81,14 @@ Important limitation: `src/lib/server/repositories/employee-repository.ts` still
 
 | Field(s) | HR Admin | Recruiter | admin_limited | Sodexo | OMC | Payroll | Toplux | Crewing | Enforcement layer | Risk / follow-up |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `staffing_needs.id`, `location`, `headcount_need`, `updated_at`, `updated_by`, derived `crewReadyCount`, `crewReadyPercentage` | Y / Y / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / Y / N/A | RLS SELECT for authenticated users; UPDATE for HR Admin/Crewing; API `requireRoleAPI(["hr_admin", "crewing"], request)` | Derived counts depend on employee RLS and `crewing_done`; role tests should verify expected visibility |
+| `staffing_needs.id`, `location`, `headcount_need`, `updated_at`, `updated_by`, derived `crewReadyCount`, `crewReadyPercentage` | Y / Y / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / Y / N/A | RLS SELECT; API HR/Crewing check; Story 22.13 definer RPC independently resolves an active caller, checks role, and binds `updated_by` to the caller | Direct RPC spoof/role tests passed on the configured high-port stack in the 94/94 focused batch |
 | `staffing_needs_changelog.id`, `location`, `old_value`, `new_value`, `changed_by`, `changed_by_email`, `changed_at` | Y / system / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / N / N/A | Y / system / N/A | RLS SELECT for authenticated users; INSERT for HR Admin/Crewing via RPC/service path | Changelog exposes updater email; confirm acceptable for external roles |
 
 ## User And Filter Fields
 
 | Field(s) | HR Admin | Recruiter | admin_limited | Sodexo | OMC | Payroll | Toplux | Crewing | Enforcement layer | Risk / follow-up |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `users.id`, `auth_user_id`, `email`, `role`, `is_active`, `created_at`, `last_active_at` | Y / Y / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Users RLS; admin user APIs require HR Admin; `/api/auth/user` and `/api/profile` return current user | `/api/admin/users/[id]/update-activity` accepts arbitrary `id` after any auth; see API matrix |
+| `users.id`, `auth_user_id`, `email`, `role`, `is_active`, `created_at`, `last_active_at` | Y / Y through caller-bound HR-admin RPC / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Own / N / N/A | Authenticated/anon table UPDATE revoked; `set_user_active_status()` serializes HR-admin transitions and enforces the last-active-admin invariant; `update_own_last_active_at()` derives the active caller from `auth.uid()` | Story 22.13 removes all users UPDATE policies, binds activity to the current app user, and verifies atomic deactivation permission/invariants on the configured high-port stack |
 | `user_filters.id`, `user_id`, `name`, `filters`, `created_at`, `updated_at` | Own / Own create-delete / N/A | Own / Own create-delete / N/A | Own / Own create-delete / N/A | Own / Own create-delete / N/A | Own / Own create-delete / N/A | Own / Own create-delete / N/A | Own / Own create-delete / N/A | Own / Own create-delete / N/A | API-level `requireAuthAPI(request)`, explicit `user_id`, and user_filters RLS | `filters` JSON may reference sensitive columns; later employee-field filtering must still apply |
 | Filter payload fields: `columnId`, `type`, `operator`, `value`, `textValue`, `boolValue`, `dateRange`, `selectedDateIds`, `selectedValues` | Own / Own / N/A | Own / Own / N/A | Own / Own / N/A | Own / Own / N/A | Own / Own / N/A | Own / Own / N/A | Own / Own / N/A | Own / Own / N/A | Saved-filter ownership RLS and route checks | No static validation that a saved filter only references columns visible to that role |
 
@@ -96,7 +96,7 @@ Important limitation: `src/lib/server/repositories/employee-repository.ts` still
 
 | Field(s) | HR Admin | Recruiter | admin_limited | Sodexo | OMC | Payroll | Toplux | Crewing | Enforcement layer | Risk / follow-up |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `employee_column_changes.employee_id`, `column_name`, `changed_at`, `changed_by` and related change-history response fields | Y / system / N/A | Y / system / N/A | Y / system / N/A, RLS? | Y / system / N/A | Y / system / N/A | Y / system / N/A | Y / system / N/A | Y / system / N/A | Migration `20251210000000_fix_employee_column_changes_rls.sql` allows authenticated SELECT/INSERT; app route requires auth | Broad authenticated audit visibility is app-layer/route-scoped and needs role-specific tests |
+| `employee_column_changes.employee_id`, `column_name`, `changed_at`, `changed_by` and related change-history response fields | Visible employee + all tracked columns / trigger-only / N/A | Visible employee + all tracked columns / trigger-only / N/A | N under current direct employee RLS limitation / trigger-only / N/A | Visible active employee + role-visible masterdata columns / trigger-only / N/A | Same scoped rule / trigger-only / N/A | Same scoped rule / trigger-only / N/A | Same scoped rule / trigger-only / N/A | Same scoped rule / trigger-only / N/A | Client INSERT privilege revoked; trigger-owned writes; one SELECT policy requires active caller, employee RLS visibility, and masterdata role view permission | Story 22.13 high-port live tests passed for forged INSERT, archived/unrelated rows, and hidden `ssn` versus visible `comments` |
 
 ## Evidence Gaps And Follow-Ups
 

@@ -36,3 +36,12 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT USAGE, SELECT ON SEQUENCES TO anon, authenticated, service_role;
+
+-- Story 22.13 least-privilege exceptions. Keep these after the blanket local
+-- parity grants above: a clean `supabase db reset` must not reopen direct
+-- privileged user updates or caller-forged employee audit inserts.
+REVOKE UPDATE ON TABLE public.users FROM authenticated;
+REVOKE UPDATE ON TABLE public.users FROM anon;
+
+REVOKE INSERT ON TABLE public.employee_column_changes FROM authenticated;
+REVOKE INSERT ON TABLE public.employee_column_changes FROM anon;

@@ -2,7 +2,7 @@
 
 ## Status
 
-backlog
+done
 
 - **Priority:** P1
 - **Story Points:** 2
@@ -16,11 +16,11 @@ Current behavior fails open: `src/lib/services/email-service.ts` suppresses deli
 
 ## Acceptance Criteria
 
-- [ ] AC1: When `NEXT_PUBLIC_IS_STAGING` is truthy (or another recognized non-production context applies), email delivery is suppressed by default — fail-safe, not opt-in.
-- [ ] AC2: Suppressed sends are logged (recipient count/notification type only — no personal data in logs) so staging behavior remains observable.
-- [ ] AC3: A documented explicit override exists for safe local capture targets (e.g. Mailpit per `compose.yaml`), and production delivery behavior is unchanged.
-- [ ] AC4: Vercel Preview/staging environment variables are audited: no real SMTP credentials remain in non-production scopes (values verified privately; only key names documented).
-- [ ] AC5: Unit tests cover suppression in staging, normal delivery in production, and the override path.
+- [x] AC1: When `NEXT_PUBLIC_IS_STAGING` is truthy (or another recognized non-production context applies), email delivery is suppressed by default — fail-safe, not opt-in.
+- [x] AC2: Suppressed sends are logged (recipient count/notification type only — no personal data in logs) so staging behavior remains observable.
+- [x] AC3: A documented explicit override exists for safe local capture targets (e.g. Mailpit per `compose.yaml`), and production delivery behavior is unchanged.
+- [x] AC4: Vercel Preview/staging environment variables are audited: no real SMTP credentials remain in non-production scopes (values verified privately; only key names documented).
+- [x] AC5: Unit tests cover suppression in staging, normal delivery in production, and the override path.
 
 ## Technical Notes
 
@@ -38,3 +38,9 @@ Current behavior fails open: `src/lib/services/email-service.ts` suppresses deli
 ## Definition of Done
 
 - Fail-safe suppression implemented with tests; Preview SMTP env audit recorded; full gates pass.
+
+## Completion Evidence
+
+- Completed and reviewed on 2026-06-16; the matching BMAD story artifact and both sprint trackers record `done`.
+- Owner verified the Preview/staging scopes and rotated/removed the real non-production SMTP credential; sanitized evidence is recorded in `docs/commercial-readiness/evidence/preview-smtp-env-audit-2026-06-16.md`, and tracker item `E-011` is concluded.
+- `tests/unit/epic-22/story-22.11/email-suppression.test.ts` contains 14 tests; Story 22.13 re-ran it on 2026-07-09 with 14/14 passing.

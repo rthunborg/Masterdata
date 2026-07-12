@@ -20,10 +20,10 @@ System-level actors:
 | `recruiter` | Internal HR column visibility | Employees, dates/imports | Employee manager/editor fields, important dates | Employee archive/delete flows by helper | No user/column admin | No user management/column settings admin | `requireEmployeeManagerAPI`, `role-utils.ts`, RLS migration 20251210000002 | Internal operational role |
 | `admin_limited` | Internal HR column visibility | No employee creation | Checklist fields only via `canEditField`; service-role write path for limited edits | No | No | Cannot edit non-checklist fields | `role-utils.ts`, `src/app/api/employees/[id]/route.ts` | Requires careful API field checks |
 | `crewing` | Non-archived employees, staffing tracker | No employee creation | Staffing needs only | No | No | `crewing_done` edit removed; view only | `canEditStaffingNeeds`, staffing routes, migration 20260313000001 | External/partner-like plus staffing edit |
-| `sodexo` | Non-archived employees and permitted columns | Custom columns for own role | Own permitted custom columns | Own custom columns if edit permission | No | No other party columns | `src/app/api/columns/*`, `column_config.role_permissions` | Column-level app filtering is critical |
-| `omc` | Non-archived employees and permitted columns | Custom columns for own role | Own permitted custom columns | Own custom columns if edit permission | No | No other party columns | Same as above | ÖMC workflows include dates/health/training context |
-| `payroll` | Non-archived employees and permitted columns | Custom columns for own role | Own permitted custom columns | Own custom columns if edit permission | No | No other party columns | Same as above | Payroll fields may be sensitive |
-| `toplux` | Non-archived employees and permitted columns | Custom columns for own role | Own permitted custom columns | Own custom columns if edit permission | No | No other party columns | Same as above | Housing/partner workflow |
+| `sodexo` | Non-archived employees and permitted columns | No column lifecycle creation | Assigned custom-column values and limited presentation metadata | No column lifecycle deletion | No | No other party columns; direct config writes denied | `src/app/api/columns/*`, `column_config.role_permissions` | Column-level app filtering is critical |
+| `omc` | Non-archived employees and permitted columns | No column lifecycle creation | Assigned custom-column values and limited presentation metadata | No column lifecycle deletion | No | No other party columns; direct config writes denied | Same as above | ÖMC workflows include dates/health/training context |
+| `payroll` | Non-archived employees and permitted columns | No column lifecycle creation | Assigned custom-column values and limited presentation metadata | No column lifecycle deletion | No | No other party columns; direct config writes denied | Same as above | Payroll fields may be sensitive |
+| `toplux` | Non-archived employees and permitted columns | No column lifecycle creation | Assigned custom-column values and limited presentation metadata | No column lifecycle deletion | No | No other party columns; direct config writes denied | Same as above | Housing/partner workflow |
 | Service role | All DB rows/tables reached by code | Yes | Yes | Yes | Supabase admin operations | Must be server-only and pre-authorized | `createServiceRoleClient` usages | Bypasses RLS by design |
 
 ## Frontend vs Backend vs Database Permissions
@@ -43,7 +43,7 @@ Database/RLS:
 
 - `users`, `employees`, `column_config`, important dates, user filters, staffing needs, and staffing changelog have RLS policies in migrations.
 - `employees` RLS is row-level. Column-level permissions are mostly enforced in application code with `column_config.role_permissions`.
-- `employee_column_changes` later RLS policy allows select for authenticated users (`supabase/migrations/20251210000000_fix_employee_column_changes_rls.sql`), which may be too broad for partner-specific audit visibility.
+- `employee_column_changes` reads are scoped by the Story 22.13 RLS policy to an active caller, an employee row the caller may read, and column visibility derived from the caller's role. HR Admin and recruiter retain their intended broader audit access; external roles see only permitted columns.
 
 ## Specific Access-Control Flags
 
@@ -62,6 +62,6 @@ Database/RLS:
 2. Keep diagnostic endpoints removed or protected and close the post-deployment release verification gate.
 3. Ensure all API route helpers receive `request` where the cookie workaround is required.
 4. Review service-role paths and add explicit comments/tests for authorization preconditions.
-5. Restrict audit/change-history reads to roles that can view affected employees/columns.
+5. Re-verify the scoped `employee_column_changes` audit policy whenever employee-row or column-visibility rules change.
 6. Add admin action logging for user/permission changes.
 7. Formalize account invitation, password reset, and offboarding.

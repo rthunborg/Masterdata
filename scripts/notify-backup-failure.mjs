@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Backup-failure alerting (Story 22.12).
  *

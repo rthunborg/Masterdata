@@ -23,8 +23,24 @@ export async function PATCH(
 
     const { id: userId } = await params;
 
+    if (userId !== currentUser.id) {
+      return NextResponse.json(
+        { error: "Du kan bara uppdatera din egen aktivitet" },
+        { status: 403 }
+      );
+    }
+
     // Update last active timestamp
-    await userRepository.updateLastActive(userId);
+    const updated = await userRepository.updateLastActive();
+    if (!updated) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Aktivitetsuppdateringen kunde inte sparas",
+        },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

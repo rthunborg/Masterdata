@@ -13,18 +13,23 @@ let exportSeedCounter = 0;
 async function waitForDashboard(page: Page, options: { requireRows?: boolean } = {}) {
   const { requireRows = true } = options;
 
+  if (!requireRows) {
+    await expect(
+      page.getByRole('heading', { name: /Personalhantering|Employee management/i })
+    ).toBeVisible({ timeout: 15000 });
+    return;
+  }
+
   await expect(
     page.getByRole('button', { name: /Totalt antal anställda.*\d+/i })
   ).toBeVisible({ timeout: 15000 });
 
-  if (requireRows) {
-    await expect(page.getByRole('table')).toBeVisible({ timeout: 15000 });
-    await page.waitForFunction(
-      () => document.querySelectorAll('table tbody tr').length > 0,
-      undefined,
-      { timeout: 15000 }
-    );
-  }
+  await expect(page.getByRole('table')).toBeVisible({ timeout: 15000 });
+  await page.waitForFunction(
+    () => document.querySelectorAll('table tbody tr').length > 0,
+    undefined,
+    { timeout: 15000 }
+  );
 }
 
 async function openFilterPanel(page: Page) {
@@ -98,9 +103,9 @@ async function seedFilterExportEmployees(page: Page, seed: string) {
   textFilterValue = `FilterExport${seed}`;
 
   const employees = [
-    { first_name: textFilterValue, surname: 'MatchA', ssn: `19900101${seed}1`, rank: 'SEV', gender: 'Man' },
-    { first_name: textFilterValue, surname: 'MatchB', ssn: `19900101${seed}2`, rank: 'SEV', gender: 'Woman' },
-    { first_name: `ControlExport${seed}`, surname: 'Outside', ssn: `19900101${seed}3`, rank: 'CHEF', gender: 'Man' },
+    { first_name: textFilterValue, surname: 'MatchA', ssn: `19871130${seed}1`, rank: 'SEV', gender: 'Man' },
+    { first_name: textFilterValue, surname: 'MatchB', ssn: `19871130${seed}2`, rank: 'SEV', gender: 'Woman' },
+    { first_name: `ControlExport${seed}`, surname: 'Outside', ssn: `19871130${seed}3`, rank: 'CHEF', gender: 'Man' },
   ];
 
   for (const employee of employees) {

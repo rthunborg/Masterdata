@@ -7,6 +7,17 @@ import type { APIResponse, LoginResponse } from "@/lib/types/api";
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
+const ACTIVITY_UPDATE_TIMEOUT_MS = 500;
+
+async function updateLoginActivityWithinDeadline() {
+  await Promise.race([
+    userRepository.updateLastActive(),
+    new Promise<boolean>((resolve) => {
+      setTimeout(() => resolve(false), ACTIVITY_UPDATE_TIMEOUT_MS);
+    }),
+  ]);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -91,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     // Update last_active_at immediately on login (regardless of 5-minute rule)
     // This ensures the timestamp is always current when user logs in
-    await userRepository.updateLastActive(userData.id);
+    await updateLoginActivityWithinDeadline();
 
     // Fetch updated user data to include the new last_active_at timestamp
     const updatedUserData = await userRepository.findByAuthId(authData.user.id);

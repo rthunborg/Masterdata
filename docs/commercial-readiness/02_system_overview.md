@@ -25,7 +25,7 @@ Evidence: `src/lib/types/user.ts`, `src/lib/utils/role-utils.ts`, `README.md`.
 1. Login through Supabase Auth-backed same-origin API.
 2. View employee dashboard with role-filtered columns and real-time updates.
 3. HR/recruiter creates, imports, edits, terminates, archives, or reactivates employees.
-4. External parties view permitted employee fields and manage permitted custom columns.
+4. External parties view and edit permitted employee/custom-column values and may update limited presentation metadata for assigned columns; HR Admin owns column lifecycle.
 5. HR Admin manages users and column permissions.
 6. HR/recruiter manages important dates, capacity, imports, and category/date exports.
 7. Crewing/HR Admin updates staffing needs for Göteborg and Trelleborg.
@@ -69,7 +69,7 @@ flowchart LR
 | Authentication | Login, logout, current-user lookup, active-user checks | All users | `auth.users`, `public.users` | `src/app/api/auth/*`, `src/lib/server/auth.ts`, `middleware.ts` | Verified |
 | Employee Dashboard | Primary table/card view, filters, realtime, role preview | All authenticated users | `employees`, `column_config`, `user_filters` | `src/app/dashboard/page.tsx`, `src/components/dashboard/*`, `src/lib/hooks/use-employees.ts` | Verified |
 | Employee Lifecycle | Create, import, edit, terminate, archive, reactivate, anonymize | HR Admin, Recruiter, Admin Limited partly | `employees` | `src/app/api/employees/*`, `src/lib/server/repositories/employee-*` | Verified |
-| Column Configuration | View/edit permissions, custom columns, display order, categories | HR Admin, external parties for own custom columns | `column_config`, real columns on `employees` | `src/app/api/admin/columns/*`, `src/app/api/columns/*`, `src/lib/server/repositories/column-config-repository.ts` | Verified |
+| Column Configuration | View/edit permissions, custom columns, display order, categories | HR Admin for lifecycle/permissions; external parties for assigned values and limited presentation metadata | `column_config`, real columns on `employees` | `src/app/api/admin/columns/*`, `src/app/api/columns/*`, `src/lib/server/repositories/column-config-repository.ts` | Verified |
 | Important Dates | Date references, capacity, assignments, PE3 deadlines | HR Admin, Recruiter, all readers | `important_dates`, `employees` date references | `src/app/dashboard/important-dates/page.tsx`, `src/app/api/important-dates/*`, `src/lib/services/date-capacity.ts` | Verified |
 | Room Assignment | ÖMC hotel room calculations | HR Admin, Recruiter workflows | `employees`, `important_dates`, RPC functions | `src/lib/services/room-assignment.ts`, `supabase/migrations/20251122150001_add_room_assignment_rpc.sql` | Verified |
 | Staffing Needs | Göteborg/Trelleborg targets, progress, changelog, email | All view; HR Admin/Crewing edit | `staffing_needs`, `staffing_needs_changelog`, `employees` | `src/app/api/staffing-needs/*`, `src/lib/server/repositories/staffing-needs-repository.ts` | Verified |

@@ -1,22 +1,15 @@
-import { config as loadEnv } from "dotenv";
 import { Client } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { validateNonProductionSupabaseEnvironment } from "@/lib/env/non-production-supabase-guard";
+import {
+  assertEpic22DatabaseFingerprint,
+  formatEpic22SupabaseSkipDiagnostic,
+  isEpic22DatabaseReachable,
+  loadEpic22SupabaseTestEnvironment,
+} from "../../../helpers/epic-22-supabase-test-environment";
 
-loadEnv({ path: ".env.test", override: true });
-
-const dbUrl =
-  process.env.SUPABASE_DB_URL ??
-  "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
-
-validateNonProductionSupabaseEnvironment({
-  ...process.env,
-  NODE_ENV: "test",
-  NEXT_PUBLIC_SUPABASE_URL:
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321",
-  SUPABASE_DB_URL: dbUrl,
-});
+const testEnvironment = loadEpic22SupabaseTestEnvironment();
+const dbUrl = testEnvironment.dbUrl;
 
 const client = new Client({ connectionString: dbUrl });
 
@@ -24,19 +17,11 @@ const client = new Client({ connectionString: dbUrl });
 // or a configured SUPABASE_DB_URL). Environments without one — e.g. CI's unit-test
 // step, which has no .env.test / local DB — must skip cleanly rather than fail in
 // beforeAll. Probe reachability once at load time and skip the suite if it fails.
-async function isDatabaseReachable() {
-  const probe = new Client({ connectionString: dbUrl });
-  try {
-    await probe.connect();
-    await probe.end();
-    return true;
-  } catch {
-    await probe.end().catch(() => {});
-    return false;
-  }
-}
+const databaseReachable = await isEpic22DatabaseReachable(dbUrl);
 
-const databaseReachable = await isDatabaseReachable();
+if (!databaseReachable) {
+  console.warn(formatEpic22SupabaseSkipDiagnostic(testEnvironment));
+}
 
 // Functions that Story 22.10 pins search_path on (function_search_path_mutable).
 const SEARCH_PATH_FUNCTIONS = [
@@ -51,6 +36,8 @@ const SEARCH_PATH_FUNCTIONS = [
   "public.recalculate_rooms_for_date(uuid)",
   "public.calculate_room_number(uuid, text, text)",
   "public.track_employee_column_changes()",
+  "public.update_own_last_active_at()",
+  "public.create_employee_column_config(text, text, text, boolean, text, text, jsonb, boolean)",
 ];
 
 async function execPrivilege(role: string, signature: string) {
@@ -64,6 +51,7 @@ async function execPrivilege(role: string, signature: string) {
 describe.skipIf(!databaseReachable)("Story 22.10 Supabase reconciliation evidence", () => {
   beforeAll(async () => {
     await client.connect();
+    await assertEpic22DatabaseFingerprint(client);
   });
 
   afterAll(async () => {
@@ -91,17 +79,26 @@ describe.skipIf(!databaseReachable)("Story 22.10 Supabase reconciliation evidenc
     expect(await execPrivilege("service_role", sig)).toBe(true);
   });
 
-  it("keeps authenticated execute but drops anon on privileged SECURITY DEFINER RPCs", async () => {
-    for (const sig of [
-      "public.add_custom_column_to_employees(text, text)",
-      "public.update_staffing_need(text, integer, uuid)",
-    ]) {
-      expect(await execPrivilege("anon", sig), `${sig} anon`).toBe(false);
-      expect(
-        await execPrivilege("authenticated", sig),
-        `${sig} authenticated`
-      ).toBe(true);
-    }
+  it("keeps staffing caller-authorized and custom-column creation service-role-only", async () => {
+    const staffing = "public.update_staffing_need(text, integer, uuid)";
+    expect(await execPrivilege("anon", staffing)).toBe(false);
+    expect(await execPrivilege("authenticated", staffing)).toBe(true);
+    expect(await execPrivilege("service_role", staffing)).toBe(false);
+
+    const customColumn = "public.add_custom_column_to_employees(text, text)";
+    expect(await execPrivilege("anon", customColumn)).toBe(false);
+    expect(await execPrivilege("authenticated", customColumn)).toBe(false);
+    expect(await execPrivilege("service_role", customColumn)).toBe(false);
+
+    const atomicColumn =
+      "public.create_employee_column_config(text, text, text, boolean, text, text, jsonb, boolean)";
+    expect(await execPrivilege("anon", atomicColumn)).toBe(false);
+    expect(await execPrivilege("authenticated", atomicColumn)).toBe(false);
+    expect(await execPrivilege("service_role", atomicColumn)).toBe(true);
+
+    const activity = "public.update_own_last_active_at()";
+    expect(await execPrivilege("anon", activity)).toBe(false);
+    expect(await execPrivilege("authenticated", activity)).toBe(true);
   });
 
   it("keeps get_user_role executable for RLS evaluation (documented residual)", async () => {
@@ -155,7 +152,7 @@ describe.skipIf(!databaseReachable)("Story 22.10 Supabase reconciliation evidenc
     expect(res.rows).toEqual([]);
   });
 
-  it("collapses users policies to one per action (merged select/update)", async () => {
+  it("keeps users read/insert policies and removes direct UPDATE policies", async () => {
     const res = await client.query<{ cmd: string; n: string }>(
       `
       SELECT cmd, count(*)::text AS n FROM pg_policies
@@ -165,7 +162,7 @@ describe.skipIf(!databaseReachable)("Story 22.10 Supabase reconciliation evidenc
     );
     const byCmd = Object.fromEntries(res.rows.map((r) => [r.cmd, Number(r.n)]));
     expect(byCmd.SELECT).toBe(1);
-    expect(byCmd.UPDATE).toBe(1);
+    expect(byCmd.UPDATE).toBeUndefined();
     expect(byCmd.INSERT).toBe(1);
   });
 
@@ -256,13 +253,11 @@ describe.skipIf(!databaseReachable)("Story 22.10 Supabase reconciliation evidenc
         "Users can view their own filters",
       ],
       employee_column_changes: [
-        "Enable insert for authenticated users",
-        "Enable select for authenticated users",
+        "Authorized roles can read visible employee changes",
       ],
       users: [
         "HR Admin can insert users",
         "Users can read users",
-        "Users can update users",
       ],
     };
 
@@ -278,6 +273,22 @@ describe.skipIf(!databaseReachable)("Story 22.10 Supabase reconciliation evidenc
       expect(got, `${table} canonical policy set`).toEqual([...names].sort());
       total += names.length;
     }
-    expect(total, "total canonical policies across managed tables").toBe(19);
+    expect(total, "total canonical policies across managed tables").toBe(17);
+  });
+
+  it("revokes direct privileged user updates and caller-forged audit inserts", async () => {
+    const privileges = await client.query<{
+      users_update: boolean;
+      audit_insert: boolean;
+    }>(
+      `SELECT
+         has_table_privilege('authenticated', 'public.users', 'UPDATE') AS users_update,
+         has_table_privilege('authenticated', 'public.employee_column_changes', 'INSERT') AS audit_insert`
+    );
+
+    expect(privileges.rows[0]).toEqual({
+      users_update: false,
+      audit_insert: false,
+    });
   });
 });

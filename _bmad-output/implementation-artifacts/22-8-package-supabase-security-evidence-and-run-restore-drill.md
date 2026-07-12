@@ -61,7 +61,7 @@ so that security and backup claims are reviewable.
   - [x] `14_evidence_index.md`: update the "Backup" row (currently says "Full production restore drill still not verified") and add rows for the new evidence package and restore drill doc.
   - [x] `17_blocker_remediation_tracker.md`: add an `E-008` row for Story 22.8 following the exact column format of `E-006`/`E-007` (Blocker ID, source story, priority, owner, target date, status, acceptance criteria, latest note, evidence link).
   - [x] `09_operations_support_and_sla.md`: update the Restore row and the "Full production restore drill" open item; confirm or update the "Backup/restore owner: Needs confirmation" line if ownership is decided in AC2.
-  - [x] `docs/operations/database-restore.md` and `docs/SUPABASE-BACKUP-AND-STAGING.md`: update if drill steps differ from what they document; keep them consistent rather than adding a third procedure.
+  - [x] The then-local restore runbook and `docs/SUPABASE-BACKUP-AND-STAGING.md` were updated after the drill; Story 22.12's durable identity-scope decision now lives in tracked `docs/commercial-readiness/09_operations_support_and_sla.md#backups-and-restore`.
   - [x] Keep `00_index.md` links current if new documents are added.
 
 - [x] Evidence hygiene gate. (AC: 5)
@@ -92,7 +92,7 @@ so that security and backup claims are reviewable.
 
 - Story source: `_bmad-output/planning-artifacts/epics.md` section "Story 22.8: Package Supabase Security Evidence and Run Restore Drill"; planning stub `docs/sprint-artifacts/story-22.8.md`.
 - Backup pipeline: `.github/workflows/supabase-nightly-backup.yml`, `scripts/supabase-backup-storage.mjs` (bucket `db-backups`, paths `backup/YYYY-MM-DD/{roles,schema,data,employees-column_config}.sql`, retention 14 days).
-- Existing backup/restore docs: `docs/SUPABASE-BACKUP-AND-STAGING.md`, `docs/BACKUP_SETUP_GUIDE.md`, `docs/DATABASE_BACKUP.md`, `docs/operations/database-restore.md`, `docs/operations/database-backup.md`, `docs/operations/backup-setup-guide.md`.
+- Existing backup/restore docs: `docs/SUPABASE-BACKUP-AND-STAGING.md`, `docs/BACKUP_SETUP_GUIDE.md`, `docs/DATABASE_BACKUP.md`, local operator notes, and the tracked identity-scope decision in `docs/commercial-readiness/09_operations_support_and_sla.md#backups-and-restore`.
 - Evidence surfaces: `docs/commercial-readiness/14_evidence_index.md`, `17_blocker_remediation_tracker.md`, `08_security_overview.md`, `09_operations_support_and_sla.md`, `11_risk_register_and_open_questions.md`, `00_index.md`, `evidence/` folder.
 - RLS sources: `supabase/migrations/` (56 files; key policy migrations listed in Tasks).
 - Non-production guard: Story 22.2 implementation; usage example in `tests/integration/epic-22/story-22.7/supabase-rls-evidence.test.ts`.
@@ -161,7 +161,7 @@ so that security and backup claims are reviewable.
 2. Download the oldest nightly backup read-only (existing pipeline artifacts; no new pipeline built).
 3. Re-test the recorded advisor/migration access blocker; capture advisors, migration list, SSL, and network posture via authenticated CLI if available, otherwise record the gap.
 4. Run the full restore drill into the local non-production stack (chosen over staging: full restore would overwrite all staging data and staging/prod schema drift `R-020` risks conflicts), validate with counts/structure/REST checks only, then clean up all personal data.
-5. Write `22_supabase_security_evidence_package.md` + `evidence/restore-drill-2026-06-11.md`, update `08`/`09`/`11`/`14`/`17`/`00` consistently, refresh local-only ops docs (`database-restore.md`, `SUPABASE-BACKUP-AND-STAGING.md`).
+5. Write `22_supabase_security_evidence_package.md` + `evidence/restore-drill-2026-06-11.md`, update `08`/`09`/`11`/`14`/`17`/`00` consistently, and refresh supplementary local operator notes. Story 22.12 later made `09_operations_support_and_sla.md#backups-and-restore` the tracked identity-scope record.
 6. Hygiene gate, then status synchronization across all five status artifacts.
 
 ### Completion Notes
@@ -197,7 +197,7 @@ Tracked (committable):
 
 Local-only (covered by `/docs/*` gitignore; updated for consistency, not committable):
 
-- `docs/operations/database-restore.md` (rewritten — replaced the stale Cloudflare R2/GPG procedure with the actual verified Supabase Storage restore procedure)
+- Local operator restore notes (rewritten at the time — supplementary and not durable AC evidence); the tracked identity-scope decision is now `docs/commercial-readiness/09_operations_support_and_sla.md#backups-and-restore`.
 - `docs/SUPABASE-BACKUP-AND-STAGING.md` (restore-drill verification note added)
 
 ### Review Findings

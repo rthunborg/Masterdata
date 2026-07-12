@@ -27,6 +27,7 @@ import type { User } from '@/lib/types/user';
 
 // Mock Supabase client with chainable query builder
 const mockSupabaseClient = {
+  rpc: vi.fn(),
   auth: {
     getSession: vi.fn(),
     admin: {
@@ -469,6 +470,17 @@ describe('PATCH /api/admin/users/[id]', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSupabaseClient.rpc.mockResolvedValue({
+      data: {
+        id: testUserId,
+        email: 'test@example.com',
+        role: UserRole.TOPLUX,
+        is_active: false,
+        created_at: new Date().toISOString(),
+        last_active_at: null,
+      },
+      error: null,
+    });
     
     // Setup Supabase mocks for PATCH operations
     vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
@@ -511,6 +523,30 @@ describe('PATCH /api/admin/users/[id]', () => {
         select: vi.fn(),
         update: vi.fn(),
       };
+    });
+
+    vi.mocked(mockServiceRoleClient.from).mockImplementation((table: string) => {
+      if (table === 'users') {
+        return {
+          update: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              select: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({
+                  data: {
+                    id: testUserId,
+                    email: 'test@example.com',
+                    role: UserRole.TOPLUX,
+                    is_active: false,
+                    created_at: new Date().toISOString(),
+                  },
+                  error: null,
+                })),
+              })),
+            })),
+          })),
+        };
+      }
+      return { update: vi.fn() };
     });
     
     // Mock auth.admin.signOut
@@ -574,10 +610,25 @@ describe('PATCH /api/admin/users/[id]', () => {
     expect(response.status).toBe(200);
     expect(data.data).toHaveProperty('id', testUserId);
     expect(data.data).toHaveProperty('is_active', false);
+    expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+      'set_user_active_status',
+      { p_user_id: testUserId, p_is_active: false }
+    );
   });
 
   it('activates user successfully (200)', async () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
+    mockSupabaseClient.rpc.mockResolvedValue({
+      data: {
+        id: testUserId,
+        email: 'test@example.com',
+        role: UserRole.TOPLUX,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        last_active_at: null,
+      },
+      error: null,
+    });
     
     // Override mock to return activated user
     vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
@@ -617,6 +668,30 @@ describe('PATCH /api/admin/users/[id]', () => {
         };
       }
       return { select: vi.fn(), update: vi.fn() };
+    });
+
+    vi.mocked(mockServiceRoleClient.from).mockImplementation((table: string) => {
+      if (table === 'users') {
+        return {
+          update: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              select: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({
+                  data: {
+                    id: testUserId,
+                    email: 'test@example.com',
+                    role: UserRole.TOPLUX,
+                    is_active: true,
+                    created_at: new Date().toISOString(),
+                  },
+                  error: null,
+                })),
+              })),
+            })),
+          })),
+        };
+      }
+      return { update: vi.fn() };
     });
 
     const request = new NextRequest('http://localhost/api/admin/users/test-user-id', {
@@ -708,6 +783,30 @@ describe('PATCH /api/admin/users/[id]', () => {
     expect(response.status).toBe(400);
     expect(data.error).toHaveProperty('code', 'VALIDATION_ERROR');
   });
+
+  it('does not mislabel a generic permission failure as the last-admin invariant', async () => {
+    mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
+    mockSupabaseClient.rpc.mockResolvedValue({
+      data: null,
+      error: {
+        code: '42501',
+        message: 'Insufficient permission to change user status',
+      },
+    });
+
+    const request = new NextRequest('http://localhost/api/admin/users/test-user-id', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_active: false }),
+    });
+
+    const response = await PATCH(request, { params: Promise.resolve({ id: testUserId }) });
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.error.message).toContain('Saknar behörighet');
+    expect(data.error.message).not.toContain('sista aktiva HR Admin');
+  });
 });
 
 describe('DELETE /api/admin/users/[id]', () => {
@@ -716,6 +815,17 @@ describe('DELETE /api/admin/users/[id]', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSupabaseClient.rpc.mockResolvedValue({
+      data: {
+        id: testUserId,
+        email: 'test@example.com',
+        role: UserRole.TOPLUX,
+        is_active: false,
+        created_at: new Date().toISOString(),
+        last_active_at: null,
+      },
+      error: null,
+    });
     
     // Setup regular Supabase client mocks for SELECT operations (checking user)
     vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
@@ -776,6 +886,10 @@ describe('DELETE /api/admin/users/[id]', () => {
 
     expect(response.status).toBe(200);
     expect(data.data).toHaveProperty('message');
+    expect(mockSupabaseClient.rpc).toHaveBeenCalledWith(
+      'set_user_active_status',
+      { p_user_id: testUserId, p_is_active: false }
+    );
   });
 
   it('prevents self-deletion (403)', async () => {
@@ -795,44 +909,12 @@ describe('DELETE /api/admin/users/[id]', () => {
 
   it('prevents deleting last HR admin (403)', async () => {
     mockRequireHRAdminAPI.mockResolvedValue(mockUsers.hrAdmin);
-    
-    // Mock to return HR admin user with proper chaining for count query
-    vi.mocked(mockSupabaseClient.from).mockImplementation((table: string) => {
-      if (table === 'users') {
-        return {
-          select: vi.fn((columns: string, options?: { count?: string; head?: boolean }) => {
-            // For count queries (.select("*", { count: "exact", head: true }))
-            if (options?.count === 'exact' && options?.head === true) {
-              return {
-                eq: vi.fn(() => ({
-                  eq: vi.fn(() => Promise.resolve({
-                    count: 1, // Only 1 active HR Admin
-                    error: null,
-                  })),
-                })),
-              };
-            }
-            // For regular queries (.select("role, is_active"))
-            return {
-              eq: vi.fn(() => ({
-                single: vi.fn(() => Promise.resolve({
-                  data: {
-                    id: testUserId,
-                    auth_user_id: 'auth-user-id',
-                    email: 'admin@example.com',
-                    role: UserRole.HR_ADMIN,
-                    is_active: true,
-                  },
-                  error: null,
-                })),
-              })),
-            };
-          }),
-        };
-      }
-      return {
-        select: vi.fn(),
-      };
+    mockSupabaseClient.rpc.mockResolvedValue({
+      data: null,
+      error: {
+        code: '42501',
+        message: 'Cannot deactivate the final active HR Admin',
+      },
     });
 
     const request = new NextRequest('http://localhost/api/admin/users/test-user-id', {

@@ -7,44 +7,8 @@ import { parseOrError, createNotFoundResponse } from "@/lib/server/api-helpers";
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
 
-/**
- * Helper function to check if there's only one active HR Admin remaining
- * Returns true if the operation would remove the last active HR Admin
- */
-async function wouldRemoveLastHRAdmin(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  targetUserId: string
-): Promise<boolean> {
-  // Get the target user to check if they're an active HR Admin
-  const { data: targetUser, error: fetchError } = await supabase
-    .from("users")
-    .select("role, is_active")
-    .eq("id", targetUserId)
-    .single();
-
-  if (fetchError || !targetUser) {
-    return false;
-  }
-
-  // Only check if target is an active HR Admin
-  if (targetUser.role !== "hr_admin" || !targetUser.is_active) {
-    return false;
-  }
-
-  // Count total active HR Admins
-  const { count, error: countError } = await supabase
-    .from("users")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "hr_admin")
-    .eq("is_active", true);
-
-  if (countError) {
-    console.error("Fel vid räkning av HR Admin:er:", countError);
-    return false;
-  }
-
-  // If there's only 1 active HR Admin and we're trying to deactivate/delete them
-  return count === 1;
+function isFinalActiveAdminError(error: { code?: string; message?: string } | null): boolean {
+  return error?.code === "42501" && /final active HR Admin/i.test(error.message ?? "");
 }
 
 export async function PATCH(
@@ -77,19 +41,6 @@ export async function PATCH(
       );
     }
 
-    // Prevent removing the last active HR Admin
-    if (validated.is_active === false && await wouldRemoveLastHRAdmin(supabase, id)) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "FORBIDDEN",
-            message: "Kan inte inaktivera den sista aktiva HR Admin:en",
-          },
-        },
-        { status: 403 }
-      );
-    }
-
     // Get user to find auth_user_id
     const { data: userToUpdate, error: fetchError } = await supabase
       .from("users")
@@ -101,15 +52,42 @@ export async function PATCH(
       return createNotFoundResponse("User", id);
     }
 
-    // Update user status
-    const { data: updatedUser, error: updateError } = await supabase
-      .from("users")
-      .update({ is_active: validated.is_active })
-      .eq("id", id)
-      .select("id, email, role, is_active, created_at, last_active_at")
-      .single();
+    // The caller-bound database function serializes the last-admin check and
+    // status transition so concurrent requests cannot deactivate every HR Admin.
+    const { data: updatedUser, error: updateError } = await supabase.rpc(
+      "set_user_active_status",
+      {
+        p_user_id: id,
+        p_is_active: validated.is_active,
+      }
+    );
 
     if (updateError || !updatedUser) {
+      if (isFinalActiveAdminError(updateError)) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "FORBIDDEN",
+              message: "Kan inte inaktivera den sista aktiva HR Admin:en",
+            },
+          },
+          { status: 403 }
+        );
+      }
+      if (updateError?.code === "42501") {
+        return NextResponse.json(
+          {
+            error: {
+              code: "FORBIDDEN",
+              message: "Saknar behörighet att ändra användarstatus",
+            },
+          },
+          { status: 403 }
+        );
+      }
+      if (updateError?.code === "P0002") {
+        return createNotFoundResponse("User", id);
+      }
       console.error("User update failed:", updateError);
       return NextResponse.json(
         {
@@ -165,19 +143,6 @@ export async function DELETE(
       );
     }
 
-    // Prevent deleting the last active HR Admin
-    if (await wouldRemoveLastHRAdmin(supabase, id)) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "FORBIDDEN",
-            message: "Kan inte ta bort den sista aktiva HR Admin:en",
-          },
-        },
-        { status: 403 }
-      );
-    }
-
     // Get user to find auth_user_id
     const { data: userToDelete, error: fetchError } = await supabase
       .from("users")
@@ -187,6 +152,55 @@ export async function DELETE(
 
     if (fetchError || !userToDelete) {
       return createNotFoundResponse("User", id);
+    }
+
+    // Serialize deletion with the same database invariant used by deactivation.
+    // Once the transition succeeds, deleting the inactive row cannot remove the
+    // final active HR Admin even when requests race.
+    const { error: deactivateError } = await supabase.rpc(
+      "set_user_active_status",
+      {
+        p_user_id: id,
+        p_is_active: false,
+      }
+    );
+
+    if (deactivateError) {
+      if (isFinalActiveAdminError(deactivateError)) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "FORBIDDEN",
+              message: "Kan inte ta bort den sista aktiva HR Admin:en",
+            },
+          },
+          { status: 403 }
+        );
+      }
+      if (deactivateError.code === "42501") {
+        return NextResponse.json(
+          {
+            error: {
+              code: "FORBIDDEN",
+              message: "Saknar behörighet att ta bort användaren",
+            },
+          },
+          { status: 403 }
+        );
+      }
+      if (deactivateError.code === "P0002") {
+        return createNotFoundResponse("User", id);
+      }
+      console.error("User deactivation before delete failed:", deactivateError);
+      return NextResponse.json(
+        {
+          error: {
+            code: "INTERNAL_ERROR",
+            message: "Misslyckades att förbereda borttagning av användaren",
+          },
+        },
+        { status: 500 }
+      );
     }
 
     // Use service role client for all admin operations

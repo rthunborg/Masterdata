@@ -58,4 +58,4 @@ Cleanup: test issue **#89 was closed** (reason: not planned) with an explanatory
 | AC5 — alert text PII-free / secret-free | **Verified** (2026-06-16) — unit test + live issue scan |
 | AC5 — automated gate | **Verified** — `npx vitest run` EXIT:0 (incl. 8 Story-22.12 tests), `pnpm lint` 0 errors, `npx tsc --noEmit` EXIT:0; Playwright N/A (no UI/route/app-runtime change) |
 
-This closes the two Story 22.8 restore-drill follow-ups against risk `R-007`: backup-failure alerting now exists, and the auth-user provisioning / staging-refresh `users`-scope decision is documented in the operator runbook `docs/operations/database-restore.md` (decision: keep the `users` exclusion).
+This closes the two Story 22.8 restore-drill follow-ups against risk `R-007`: backup-failure alerting now exists, and the Auth-user provisioning / staging-refresh `users`-scope decision is recorded in the tracked `docs/commercial-readiness/09_operations_support_and_sla.md#backups-and-restore` (decision: keep the `users` exclusion; manually re-provision/remap Auth identities for disaster recovery).

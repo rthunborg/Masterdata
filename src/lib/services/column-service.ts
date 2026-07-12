@@ -220,23 +220,6 @@ export const columnService = {
   },
 
   /**
-   * Delete a custom column (user endpoint)
-   * External party users can only delete columns they own (have edit permission for)
-   * @param id - Column ID to delete
-   * @throws Error if deletion fails, column is masterdata, or user doesn't have permission
-   */
-  async deleteCustomColumn(id: string): Promise<void> {
-    const response = await fetch(`/api/columns/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to delete column");
-    }
-  },
-
-  /**
    * Hide a column by setting all role permissions to view=false
    * @param id - Column ID to hide
    * @returns Updated column configuration

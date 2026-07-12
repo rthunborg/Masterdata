@@ -85,15 +85,15 @@ async function selectInlineOption(page: Page, cell: Locator, label: RegExp, opti
 }
 
 test.describe('Inline Editing E2E', () => {
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page }, testInfo) => {
         await loginAsUser(page, 'admin@test.com', 'Test123!');
         await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
-        const seed = `${Date.now().toString().slice(-3)}${inlineSeedCounter++ % 10}`;
+        const seed = `${testInfo.workerIndex % 10}${testInfo.retry % 10}${String(inlineSeedCounter++ % 100).padStart(2, '0')}`;
         await createEmployeeViaUI(page, {
             first_name: `Inline${seed}`,
             surname: 'Employee',
-            ssn: `19900101${seed}`,
+            ssn: `19881231${seed}`,
             rank: 'SEV',
             gender: 'Man',
             hire_date: '2026-01-01',
@@ -146,13 +146,16 @@ test.describe('Inline Editing E2E', () => {
         const specialDietCell = await tableCellByColumn(page, firstRow, /Specialkost|Special Diet/i);
         const currentText = (await specialDietCell.textContent())?.trim() || '';
         const isCurrentlyTrue = /Klart|Ja/i.test(currentText);
-        const newValue = isCurrentlyTrue ? 'Nej' : 'Klart';
+        // special_diet is a non-checklist boolean, so its true label is "Ja".
+        // Checklist booleans use "Klart", but the column metadata intentionally
+        // distinguishes those two presentation semantics.
+        const newValue = isCurrentlyTrue ? 'Nej' : 'Ja';
 
         await selectInlineOption(page, specialDietCell, /Edit special_diet/i, newValue);
 
         await expect(specialDietCell).toContainText(newValue, { timeout: 10000 });
 
-        const originalValue = isCurrentlyTrue ? 'Klart' : 'Nej';
+        const originalValue = isCurrentlyTrue ? 'Ja' : 'Nej';
         await selectInlineOption(page, specialDietCell, /Edit special_diet/i, originalValue);
 
         await expect(specialDietCell).toContainText(originalValue, { timeout: 10000 });
