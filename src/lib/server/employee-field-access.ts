@@ -14,7 +14,7 @@ const COLUMN_TO_EMPLOYEE_FIELD: Record<string, keyof Employee | string> = {
   social_security_no: "ssn",
 };
 
-function toEmployeeFieldName(dbColumnName: string) {
+function toMasterdataEmployeeFieldName(dbColumnName: string) {
   return COLUMN_TO_EMPLOYEE_FIELD[dbColumnName] ?? dbColumnName;
 }
 
@@ -31,7 +31,11 @@ export function visibleEmployeeFieldNamesForRole(
 
   for (const column of columns) {
     if (canViewColumn(column, role)) {
-      visibleFields.add(toEmployeeFieldName(column.db_column_name));
+      visibleFields.add(
+        column.is_masterdata
+          ? toMasterdataEmployeeFieldName(column.db_column_name)
+          : column.db_column_name
+      );
     }
   }
 
@@ -54,7 +58,7 @@ export function filterEmployeeForRole(
   for (const column of columns) {
     if (!column.is_masterdata || !canViewColumn(column, role)) continue;
 
-    const fieldName = toEmployeeFieldName(column.db_column_name);
+    const fieldName = toMasterdataEmployeeFieldName(column.db_column_name);
     if (Object.prototype.hasOwnProperty.call(employeeRecord, fieldName)) {
       filtered[fieldName] = employeeRecord[fieldName] as
         | string
@@ -68,15 +72,17 @@ export function filterEmployeeForRole(
     if (column.is_masterdata) continue;
     if (!canViewColumn(column, role)) continue;
 
-    const fieldName = toEmployeeFieldName(column.db_column_name);
+    const fieldName = column.db_column_name;
     if (
       Object.prototype.hasOwnProperty.call(employeeRecord, fieldName)
     ) {
-      customData[fieldName] = employeeRecord[fieldName] as
+      const value = employeeRecord[fieldName] as
         | string
         | number
         | boolean
         | null;
+      filtered[fieldName] = value;
+      customData[fieldName] = value;
     }
   }
 
@@ -108,7 +114,7 @@ export function attachVisibleCustomDataForRole(
   for (const column of columns) {
     if (column.is_masterdata || !canViewColumn(column, role)) continue;
 
-    const fieldName = toEmployeeFieldName(column.db_column_name);
+    const fieldName = column.db_column_name;
     if (Object.prototype.hasOwnProperty.call(employeeRecord, fieldName)) {
       customData[fieldName] = employeeRecord[fieldName] as
         | string

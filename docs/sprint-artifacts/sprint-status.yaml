@@ -1,8 +1,8 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: 2026-07-12
-updated_by: Codex (Story 22.13 Round 2 patches and gates complete; story done; Epic 22 production gate pending).
+last_updated: 2026-07-13
+updated_by: Codex (Story 22.13 final automatic review Round 3 complete; all gates passed).
 
 current_focus:
   active_epic: 22
@@ -52,7 +52,7 @@ next_actions:
   - 'Story 22.9 is done (code review Round 1 closed 2026-06-13): the draft privacy pack exists as docs/commercial-readiness/23_privacy_annex_draft.md, 24_subprocessor_register.md, and 25_incident_breach_process.md — all marked as draft diligence material needing legal review, linked from 00_index, 14_evidence_index, and 17_blocker_remediation_tracker (E-009), and linked back to the Story 22.4 data-scope decision and Story 22.8 Supabase evidence package. Code review fixed 3 wording/marker patches (evidence-index SMTP row, Cloudflare marker, Gmail send-delay) and deferred 1 pre-existing item (operator name in owner fields). Docs-only gate waiver recorded (estimated_tests 0; hygiene search passed).'
   - 'Stories 22.10-22.12 were added to Epic 22 on 2026-06-11 to track Story 22.8 findings and owner decisions: 22.10 Supabase environment reconciliation and migration-history baseline (production primarily authoritative; staging carries some unpromoted Epic 22 adjustments), 22.11 fail-safe non-production email suppression plus Preview SMTP env audit, 22.12 backup failure alerting plus users/auth backup and staging-refresh scope decision. Story 22.13 was added on 2026-07-09 for PR #91 remediation. Epic 22 is now 13 stories / 45 points.'
   - 'Story 22.10 is done. Phase A staging reconciliation remains dated 2026-06-14 (57 migrations / 19 policies); Story 22.13 resolved the historical local Playwright contradiction on 2026-07-09 with exact full npx playwright test: 162 passed / 53 skipped / 0 failed, EXIT:0. Phase B production cutover (runbook 27; R-010/R-023/R-020) remains the Epic 22 release gate.'
-  - 'Story 22.13 is done after BMAD code review Round 2 closed all sixteen patch findings. The clean high-port reset applied all 61 migrations; focused Story 22.13 verification passed 65/65; full Vitest exited 0 (3,135 passed/30 skipped); full Playwright exited 0 (161 passed/53 skipped/1 unrelated flaky retry) and the recorded flaky test passed 1/1 in isolation; typecheck and full lint exited 0. One pre-existing session-revocation design remains explicitly deferred. Hosted staging apply/re-verification remains an owner-controlled release gate.'
+  - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings on PR #91 commit 32621fd are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'EPIC 22 COMPLETION GATE (E-010): when Epic 22 is set to done and merged to production, execute Story 22.10 Phase B (Supabase production cutover) — baseline production migration history, push reconciliation migrations to production, verify the production database posture, and close R-010/R-023/R-020. Auth attack protection (leaked-password + CAPTCHA) remains Epic 23 Story 23.4. See epic_completion_gate in epic-22-sprint-status.yaml; a local automated hook (.claude/hooks/epic-22-phase-b-reminder.mjs, gitignored/owner machine only) also surfaces this when epic_status flips to done.'
   - 'Do not start Epic 23 until the commercial trigger is met.'
 
