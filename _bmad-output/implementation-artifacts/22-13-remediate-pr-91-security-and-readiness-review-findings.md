@@ -20,7 +20,7 @@ so that the merge does not ship direct-database authorization bypasses, broken r
 
 ## Review Findings Source
 
-This story is created from the BMAD code review of PR #91 plus the Codex Review feedback on commit `148403a35a17e9da66dce3be04dc2b89ec6bed61`.
+This story is created from the BMAD code review of PR #91 plus Codex Review feedback on commits `148403a35a17e9da66dce3be04dc2b89ec6bed61` and `32621fdbc6ca19b2644cfbb725abd2f454ad4902`.
 
 Primary findings to remediate:
 
@@ -126,6 +126,12 @@ Primary findings to remediate:
 - [x] [Review][Patch] Update role/readiness guidance to reflect the scoped employee-column audit policy [docs/commercial-readiness/05_user_roles_and_permissions.md:46]
 - [x] [Review][Defer] Replace the invalid pre-existing auth.admin.signOut(auth_user_id) session-revocation call with a platform-compatible offboarding design [src/app/api/admin/users/[id]/route.ts:129] — deferred, pre-existing
 
+**Round 3 of 3 — final automatic review round**
+
+- [x] [Review][Patch] Preserve permitted custom-column values at their physical top-level keys so external-role filtering and TanStack sorting remain functional [src/lib/server/employee-field-access.ts:75]
+- [x] [Review][Patch] Prevent raw employee Realtime rows from entering external-party browser state; external roles must refresh through the filtered employee API instead [src/lib/hooks/use-employees.ts:180]
+- [x] [Review][Patch] Apply legacy field aliases only to masterdata columns and always read custom columns by their physical `db_column_name` [src/lib/server/employee-field-access.ts:71]
+
 ## Dev Notes
 
 - Relevant migrations and policies:
@@ -197,6 +203,7 @@ GPT-5 Codex (Amelia dev-agent persona)
 - Final full `npx playwright test`: 162 passed, 53 skipped, 0 failed, 0 flaky; exit `0` (21.9 minutes).
 - Final `npx tsc --noEmit`: exit `0`; final `npm run lint`: exit `0`, 0 errors (315 pre-existing warnings).
 - Round 2 final verification (2026-07-12): clean reset through all 61 migrations; focused Story 22.13 batch 65/65; full `npx vitest run` EXIT:0 (3,135 passed/30 skipped); full `npx playwright test` EXIT:0 (161 passed/53 skipped/1 unrelated flaky retry), followed by the recorded flaky test passing 1/1 in isolation; `npx tsc --noEmit` and full `npx eslint .` EXIT:0.
+- Round 3 final verification (2026-07-13): clean reset through all 61 migrations; review-specific regression batch 14/14 and compatibility batch 64/64 passed; full `npx vitest run`, `npx tsc --noEmit`, and full `npx eslint .` exited 0; full `npx playwright test` passed 162/162 with 53 skipped, 0 failed, and 0 flaky on the clean stack.
 - Two intermediate full Playwright runs exposed shared SSN namespace collisions in the pre-existing inline-edit and Story 20.7 fixtures. Dedicated namespaces, explicit cleanup, and an empty-dashboard-safe Story 20.7 setup removed the cross-spec dependency; both focused files and the final full suite are green.
 
 ### Completion Notes List
@@ -213,6 +220,7 @@ GPT-5 Codex (Amelia dev-agent persona)
 - Hardened the mandatory E2E gate by isolating inline-edit and Story 20.7 SSN namespaces and making Story 20.7 independently runnable from an empty employee table.
 - The first review patch cycle completed all eight owner-promoted findings and returned Story 22.13 to `review`; Round 2 then produced and closed the sixteen additional patch findings recorded above. Hosted staging apply/re-verification remains a release gate, not local completion evidence.
 - Round 2 closed all sixteen patch findings on 2026-07-12. The clean 61-migration reset and live concurrency proof passed; focused Story 22.13 verification passed 65/65; full Vitest exited 0 (3,135 passed, 30 skipped); full Playwright exited 0 (161 passed, 53 skipped, 1 unrelated flaky retry), and the recorded flaky export-selection test then passed 1/1 in isolation; typecheck and full lint exited 0. The single pre-existing session-revocation design item remains explicitly deferred outside this story.
+- Round 3 closed all three final automatic-review findings on 2026-07-13. External clients retain permitted custom values at their physical top-level keys for filtering/sorting, custom fields never traverse masterdata aliases, and raw employee Realtime rows are disabled for external or unresolved roles. External dashboards instead refresh through the filtered employee API on focus and every 30 seconds. Six regression tests cover these paths, and all focused/full gates passed. Any further PR findings require human triage under the three-round review guard.
 
 ### File List
 
@@ -236,9 +244,13 @@ GPT-5 Codex (Amelia dev-agent persona)
 - `src/lib/server/repositories/column-config-repository.ts`
 - `src/lib/server/repositories/user-repository.ts`
 - `src/lib/services/column-service.ts`
+- `src/lib/hooks/use-employees.ts`
+- `src/lib/server/employee-field-access.ts`
 - `playwright.config.ts`
 - `tests/helpers/epic-22-supabase-test-environment.ts`
 - `tests/unit/epic-22/story-22.13/*`
+- `tests/unit/hooks/use-employees.test.ts`
+- `tests/unit/epic-22/story-22.7/role-field-permissions.test.ts`
 - `tests/integration/epic-22/story-22.13/*`
 - `tests/integration/api/columns-create.test.ts`
 - `tests/integration/api/columns.test.ts`
@@ -273,3 +285,5 @@ GPT-5 Codex (Amelia dev-agent persona)
 | 2026-07-10 | 1.2 | Owner promoted all four deferred findings into Story 22.13; eight patch tasks are now required before re-review | Codex |
 | 2026-07-10 | 1.3 | Resolved all eight review findings, hardened E2E test isolation, rebuilt the 61-migration local stack, passed focused and full gates, and moved back to review | Amelia (Codex) |
 | 2026-07-12 | 1.4 | Closed all sixteen Round 2 patch findings, passed clean reset/live concurrency/focused/full gates, retained one pre-existing deferred design item, and moved Story 22.13 to done | Codex |
+| 2026-07-13 | 1.5 | Reopened Story 22.13 for the final automatic review round after three current Codex Review findings on PR #91 commit 32621fd | Codex |
+| 2026-07-13 | 1.6 | Closed all three Round 3 findings, added six regression tests, passed clean-stack focused/full gates, and returned Story 22.13 to done | Codex |

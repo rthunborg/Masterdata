@@ -28,10 +28,10 @@ epic_metrics:
   target_test_execution_time_seconds: 300
   current_coverage_overall: 0
   current_coverage_critical: 0
-  current_test_execution_time_seconds: 1960
+  current_test_execution_time_seconds: 2081
   total_tests_estimated: 40
-  total_tests_implemented: 125
-  total_tests_passing: 125
+  total_tests_implemented: 131
+  total_tests_passing: 131
 
 stories:
   - id: '22.1'
@@ -209,14 +209,14 @@ stories:
     status: 'done'
     story_points: 5
     estimated_tests: 8
-    implemented_tests: 53
-    passing_tests: 53
+    implemented_tests: 59
+    passing_tests: 59
     dependencies: ['22.10', '22.11', '22.12']
     assignee: 'Dev (Amelia)'
     started_date: 2026-07-09
-    completed_date: 2026-07-12
+    completed_date: 2026-07-13
     blockers: []
-    notes: 'Done after BMAD code review Round 2 of 3 on 2026-07-12. All sixteen Round 2 patch findings are closed: HR-admin delete/status transitions share the serialized invariant; backup upload/selection/restore is identifier-validated, non-empty, memory-bounded, index-complete, optional-roles tolerant, and all-or-nothing; production/staging equality fails closed; login activity latency is bounded; E2E cleanup/seeds and pnpm config are corrected; Story 22.10 and audit-policy guidance are synchronized. One pre-existing invalid session-revocation design remains explicitly deferred. Clean project-scoped reset applied all 61 migrations; focused Story 22.13 verification passed 65/65. Final gates: full Vitest EXIT:0 (3135 passed/30 skipped), full Playwright EXIT:0 (161 passed/53 skipped/1 unrelated flaky retry) plus targeted flaky rerun 1/1 EXIT:0, tsc EXIT:0, and full lint EXIT:0 with 0 errors (pre-existing warnings only). No production or hosted mutation was performed; hosted staging apply/re-verification and the Epic 22 production cutover remain owner-controlled release gates.'
+    notes: 'Done after final automatic review Round 3 of 3 on 2026-07-13. All three Codex Review findings on PR #91 commit 32621fd are closed: permitted custom values remain available at physical top-level keys for filtering/sorting, custom columns bypass masterdata aliases, and raw employee Realtime rows cannot enter external or unresolved-role state. External dashboards refresh through the filtered API on focus and every 30 seconds. Six regression tests were added. Clean reset applied all 61 migrations through 20260710150000; focused regression 14/14 and compatibility 64/64 passed; full Vitest, TypeScript, and ESLint exited 0; full Playwright passed 162 with 53 skipped, 0 failed, and 0 flaky. Any further PR findings require human triage under the three-round review guard.'
 
 progress_summary:
   total_stories: 13
@@ -227,21 +227,21 @@ progress_summary:
   stories_in_review: 0
   stories_blocked: 0
   total_story_points: 45
-  completed_story_points: 45 # All 13 Epic 22 stories are locally complete; the production cutover gate remains pending.
+  completed_story_points: 45
   in_progress_story_points: 0
   in_review_story_points: 0
   remaining_story_points: 0
 
 test_coverage_summary:
   total_tests_estimated: 40
-  total_tests_implemented: 125
-  total_tests_passing: 125
+  total_tests_implemented: 131
+  total_tests_passing: 131
   implementation_percentage: 100
-  unit_tests: 86 # Includes 34 dedicated Story 22.13 unit tests.
+  unit_tests: 92 # Includes 36 dedicated Story 22.13 unit tests plus 4 hook regressions added in Round 3.
   integration_tests: 35 # Includes 17 dedicated Story 22.13 integration/API tests.
   e2e_tests: 2 # Story 22.13 external custom-column lifecycle restrictions.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 86 + 35 + 2 + 0 + 2 = 125
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 92 + 35 + 2 + 0 + 2 = 131
 
 blockers: []
 known_issues:
@@ -265,6 +265,6 @@ next_actions:
   - 'Story 22.9 is done (code review Round 1 closed 2026-06-13 with all findings resolved): draft privacy pack (privacy annex 23, subprocessor register 24, incident/breach process 25) created with disclaimer and draft-vs-fact markers, linked from index/evidence/tracker surfaces (E-009), and synchronized across status artifacts. Review fixed 3 patches (stale evidence-index SMTP wording, Cloudflare marker, Gmail send-delay wording) and deferred 1 pre-existing item (operator name in owner fields, from Story 22.8). The SMTP relay is operator-confirmed as Google Workspace (smtp-relay.gmail.com); its DPA/transfer terms plus broader DPA execution remain Epic 23.2.'
   - 'Stories 22.10-22.12 added to Epic 22 backlog from Story 22.8 findings and owner direction (2026-06-11): 22.10 reconciles prod/staging/migrations drift and baselines remote migration history (production is primary source of truth, staging may carry intentional Epic 22 adjustments); 22.11 makes staging/preview email suppression fail-safe and audits Preview SMTP env values; 22.12 adds backup failure alerting and decides users/auth scope for backups and the staging refresh. Stubs exist in docs/sprint-artifacts/; SM create-story is required before dev.'
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA moved to Epic 23 (Story 23.4 AC6) by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b; Auth attack protection is enabled in Epic 23.'
-  - 'Story 22.13 is done after BMAD review Round 2 closed all sixteen patch findings. The clean 61-migration reset, live concurrency proof, focused 65/65 verification, full Vitest/Playwright, typecheck, and lint gates passed. One pre-existing session-revocation design remains explicitly deferred; hosted staging apply/re-verification and the production cutover remain owner-controlled release work.'
-last_updated: 2026-07-12
-updated_by: Codex (Story 22.13 Round 2 patches and gates complete; story done; Epic 22 production gate pending).
+  - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
+last_updated: 2026-07-13
+updated_by: Codex (Story 22.13 final automatic review Round 3 complete; all gates passed).

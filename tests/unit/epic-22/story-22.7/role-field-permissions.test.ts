@@ -450,7 +450,7 @@ describe("Story 22.7 role-visible and editable field evidence", () => {
     expect(sodexoRecord).not.toHaveProperty("ssn");
     expect(sodexoRecord).not.toHaveProperty("gender");
     expect(sodexoRecord).not.toHaveProperty("comments");
-    expect(sodexoRecord).not.toHaveProperty("sodexo_uniform_size");
+    expect(sodexoRecord).toHaveProperty("sodexo_uniform_size", "M");
 
     expect(payrollRecord).toMatchObject({ id: "emp-1", first_name: "A", ssn: "990101-1234" });
     expect(payrollRecord).not.toHaveProperty("mobile");
