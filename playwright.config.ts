@@ -58,6 +58,9 @@ export default defineConfig({
       NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV || 'test',
       E2E: 'true',
       DISABLE_EMAIL_DELIVERY: 'true',
+      // A deterministic non-production secret lets cron E2E tests verify the
+      // fail-closed auth boundary without ever executing a recipient-facing job.
+      CRON_SECRET: process.env.CRON_SECRET || 'playwright-cron-contract-secret',
     },
     timeout: 120000,
   },

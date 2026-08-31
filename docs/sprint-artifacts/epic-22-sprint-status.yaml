@@ -29,9 +29,9 @@ epic_metrics:
   current_coverage_overall: 0
   current_coverage_critical: 0
   current_test_execution_time_seconds: 2081
-  total_tests_estimated: 40
-  total_tests_implemented: 131
-  total_tests_passing: 131
+  total_tests_estimated: 80
+  total_tests_implemented: 248
+  total_tests_passing: 248
 
 stories:
   - id: '22.1'
@@ -217,31 +217,45 @@ stories:
     completed_date: 2026-07-13
     blockers: []
     notes: 'Done after final automatic review Round 3 of 3 on 2026-07-13. All three Codex Review findings on PR #91 commit 32621fd are closed: permitted custom values remain available at physical top-level keys for filtering/sorting, custom columns bypass masterdata aliases, and raw employee Realtime rows cannot enter external or unresolved-role state. External dashboards refresh through the filtered API on focus and every 30 seconds. Six regression tests were added. Clean reset applied all 61 migrations through 20260710150000; focused regression 14/14 and compatibility 64/64 passed; full Vitest, TypeScript, and ESLint exited 0; full Playwright passed 162 with 53 skipped, 0 failed, and 0 flaky. Any further PR findings require human triage under the three-round review guard.'
+  - id: '22.14'
+    title: 'Fix ÖMC Masterdata Reminder Timing, Digest, and Failure Semantics'
+    priority: 'P0'
+    status: 'done'
+    story_points: 8
+    estimated_tests: 40
+    implemented_tests: 117
+    passing_tests: 117
+    dependencies: ['22.11']
+    assignee: 'Dev (Amelia)'
+    started_date: 2026-08-29
+    completed_date: 2026-08-31
+    blockers: []
+    notes: 'Done from exact fetched origin/staging baseline e706c936. This incident fix supersedes Story 14.1 unlimited D+3 catch-up with a Stockholm-calendar weekend-adjusted D+3 through inclusive D+21 retry window, consolidated truthful digests, PostgREST-compatible two-step atomic claims, observable non-2xx failures, and optional kvitto_c17_18 behavior. All three guarded review rounds are complete: Round 1 fixed 14 actionable findings, Round 2 fixed 13, and final Round 3 fixed 12; three pre-existing out-of-scope items were deferred. Focused reminder tests passed 129/129; the required real PostgREST evidence passed 1/1; full Vitest passed 3181 with 64 skipped; exact full Playwright passed 163 with 47 skipped; TypeScript, scoped ESLint with zero errors, and diff checks passed. All 117 unique Story 22.14 tests are evidenced passing. No schema, production, real-recipient cron, deployment, or main changes occurred; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
 
 progress_summary:
-  total_stories: 13
+  total_stories: 14
   stories_not_started: 0
   stories_ready_for_dev: 0
   stories_in_progress: 0
-  stories_completed: 13
+  stories_completed: 14
   stories_in_review: 0
   stories_blocked: 0
-  total_story_points: 45
-  completed_story_points: 45
+  total_story_points: 53
+  completed_story_points: 53
   in_progress_story_points: 0
   in_review_story_points: 0
   remaining_story_points: 0
 
 test_coverage_summary:
-  total_tests_estimated: 40
-  total_tests_implemented: 131
-  total_tests_passing: 131
+  total_tests_estimated: 80
+  total_tests_implemented: 248
+  total_tests_passing: 248
   implementation_percentage: 100
-  unit_tests: 92 # Includes 36 dedicated Story 22.13 unit tests plus 4 hook regressions added in Round 3.
-  integration_tests: 35 # Includes 17 dedicated Story 22.13 integration/API tests.
-  e2e_tests: 2 # Story 22.13 external custom-column lifecycle restrictions.
+  unit_tests: 156 # Includes 64 unique Story 22.14 reminder cases; all 64 are evidenced passing without recounting 14 pre-existing Story 22.11 cases.
+  integration_tests: 87 # Includes 52 Story 22.14 cases; all passed, including required real PostgREST contention/release evidence.
+  e2e_tests: 3 # Includes one safe unauthorized-only Story 22.14 cron case, passed in the exact full Playwright gate.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 92 + 35 + 2 + 0 + 2 = 131
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 156 + 87 + 3 + 0 + 2 = 248
 
 blockers: []
 known_issues:
@@ -266,5 +280,6 @@ next_actions:
   - 'Stories 22.10-22.12 added to Epic 22 backlog from Story 22.8 findings and owner direction (2026-06-11): 22.10 reconciles prod/staging/migrations drift and baselines remote migration history (production is primary source of truth, staging may carry intentional Epic 22 adjustments); 22.11 makes staging/preview email suppression fail-safe and audits Preview SMTP env values; 22.12 adds backup failure alerting and decides users/auth scope for backups and the staging refresh. Stubs exist in docs/sprint-artifacts/; SM create-story is required before dev.'
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA moved to Epic 23 (Story 23.4 AC6) by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b; Auth attack protection is enabled in Epic 23.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
-last_updated: 2026-07-13
-updated_by: Codex (Story 22.13 final automatic review Round 3 complete; all gates passed).
+  - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
+last_updated: 2026-08-31
+updated_by: Amelia (Story 22.14 synchronized to done after all review and verification gates passed; Epic 22 remains in-progress for its separate production release gate).

@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-03
 
-Updated: 2026-07-09 (Story 22.13 authorization and runtime-column restore reconciliation)
+Updated: 2026-08-29 (Story 22.14 production-safe ÖMC masterdata reminders)
 
 ## Current Operational View
 
@@ -59,6 +59,20 @@ Note: Vercel CLI was available locally, but project listing timed out in this se
 | Email not sent | SMTP env or disabled delivery | `SMTP_*`, `DISABLE_EMAIL_DELIVERY`, Vercel logs |
 | Cron unauthorized | Missing/wrong `CRON_SECRET` | Vercel env and Authorization header |
 | Capacity errors | Important date capacity/RPC | `update_date_spots`, `important_dates.remaining_spots` |
+
+### ÖMC Masterdata Reminder
+
+Story 22.14 supersedes Story 14.1's unlimited `date >= D + 3` catch-up policy for this reminder. Let `D` be the employee's resolved ÖMC date in the `Europe/Stockholm` calendar. The base notification date is `D + 3` calendar days; if that date is Saturday or Sunday, first eligibility moves to the following Monday. An active, non-archived employee with incomplete mandatory masterdata is eligible from that notification date through `D + 21` inclusive. From `D + 22`, the assignment is expired and is not released by a null marker. No public-holiday or exact clock-alignment rule is added.
+
+`kvitto_c17_18` is optional for this reminder: both `false` and `null` count as complete. The remaining established reminder fields are unchanged and independently mandatory, including `loneiva`. Crewing and general employee validation are outside this policy.
+
+Each execution claims all currently eligible assignments and creates one Swedish digest containing every successfully claimed candidate exactly once. The subject uses candidate-count wording. Each row shows the employee, resolved ÖMC date, missing mandatory fields, and that candidate's truthful Stockholm-calendar elapsed-day count; the message does not make a fixed three-day claim. The same digest is fanned out once per configured HR Admin/recruiter recipient, so `N` candidates and `R` recipients cause `R` sends, not `N × R`. A clean run with no claimed candidates sends nothing. Story 22.11's fail-safe non-production email suppression remains in force.
+
+`omc_masterdata_reminder_sent_at` remains both the assignment-scoped claim and audit marker. A marker on or after `D` suppresses the current assignment; a genuinely later assigned ÖMC date re-arms it. Claims use two separately guarded atomic updates for the current employee ID and current `omc_date`: first `marker IS NULL`, then — only after an error-free zero-row result — `marker < D`. Mutation `.or()` is not used. Zero rows mean another execution won or the assignment was already sent; a database error is an operational failure.
+
+If every configured recipient delivery fails, the job attempts to clear only the exact current-invocation timestamp on each exact claimed assignment so a later run can retry. A valid recipient lookup that returns no configured addresses and a recipient-lookup failure follow the same exact-claim release path: the run fails operationally, releases only that invocation's exact claims, and can retry after recipient configuration or lookup recovers while the assignment remains inside the bounded window. If at least one recipient delivery succeeds, every claim is retained to prevent a duplicate digest blast. Without a durable outbox/schema state there remains an accepted crash window after claims are committed but before delivery completes; a hard process termination in that window can retain claims without a delivered digest. Removing that limitation requires separately approved schema work.
+
+Employee-query, evaluation, claim, total-delivery, partial-delivery, and cleanup failures are not successful cron runs: the endpoint returns `success: false` with a non-2xx status while continuing safely where possible. Operational output exposes aggregate counts only (employees, evaluations, eligibility, claims, digest candidates, recipient successes/failures, and processing failures). Logs and API error details must not contain candidate or recipient names, addresses, subjects, employee IDs, or other personal data. Cron-secret authentication is unchanged, and authorized execution against real recipients remains an approved production operation only.
 
 ### Rollback
 

@@ -11,6 +11,7 @@
 import { isNonProductionExecution, isTruthyFlag } from '@/lib/env/is-non-production';
 
 type EmailEnv = Record<string, string | undefined>;
+const EMAIL_DELIVERY_ERROR = 'Email delivery failed';
 
 /**
  * Email sending options
@@ -167,12 +168,15 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
       success: true,
       messageId: info.messageId,
     };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[Email Service] Failed to send email:', errorMessage);
+  } catch {
+    // SMTP/provider exceptions can echo recipients, subjects, message content,
+    // or candidate details. Keep both logs and returned failures generic.
+    console.error('[Email Service] Email delivery failed', {
+      recipientCount: countRecipients(options.to),
+    });
     return {
       success: false,
-      error: errorMessage,
+      error: EMAIL_DELIVERY_ERROR,
     };
   }
 }
@@ -190,9 +194,11 @@ export async function sendEmailToMultiple(
   recipients: string[],
   subject: string,
   text: string,
-  html?: string
+  html?: string,
+  send: (options: EmailOptions) => Promise<EmailResult> = sendEmail
 ): Promise<EmailResult[]> {
   const results: EmailResult[] = [];
+  let unexpectedDeliveryFailures = 0;
 
   // When delivery is suppressed there is no real SMTP send, so skip the
   // inter-send rate-limit delay (otherwise a suppressed batch would sleep 1s
@@ -200,18 +206,32 @@ export async function sendEmailToMultiple(
   const deliveryActive = !shouldSuppressEmailDelivery().suppress;
 
   for (const recipient of recipients) {
-    const result = await sendEmail({
-      to: recipient,
-      subject,
-      text,
-      html,
-    });
-    results.push(result);
+    try {
+      const result = await send({
+        to: recipient,
+        subject,
+        text,
+        html,
+      });
+      results.push(result);
+    } catch {
+      // Preserve earlier results and continue fan-out. Never log the current
+      // recipient or exception because provider errors may contain message PII.
+      unexpectedDeliveryFailures += 1;
+      results.push({ success: false, error: EMAIL_DELIVERY_ERROR });
+    }
 
     // Add a small delay between emails to avoid rate limiting (especially with Gmail)
     if (deliveryActive) {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
+  }
+
+  if (unexpectedDeliveryFailures > 0) {
+    console.error('[Email Service] Unexpected recipient delivery failures', {
+      recipientCount: recipients.length,
+      failedRecipientDeliveries: unexpectedDeliveryFailures,
+    });
   }
 
   return results;

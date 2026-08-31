@@ -4,7 +4,20 @@ import {
   sendEmail,
   sendEmailToMultiple,
   shouldSuppressEmailDelivery,
+  type EmailResult,
 } from "@/lib/services/email-service";
+
+const nodemailerMock = vi.hoisted(() => {
+  const sendMail = vi.fn();
+  return {
+    sendMail,
+    createTransport: vi.fn(() => ({ sendMail })),
+  };
+});
+
+vi.mock("nodemailer", () => ({
+  createTransport: nodemailerMock.createTransport,
+}));
 
 /**
  * Story 22.11 — Enforce Non-Production Email Suppression
@@ -248,5 +261,103 @@ describe("sendEmailToMultiple — skips inter-send delay when suppressed (Task 2
       });
     }
     expect(setTimeoutSpy).not.toHaveBeenCalled();
+  });
+
+  it("preserves earlier successes and continues after an unexpected per-recipient exception", async () => {
+    const unexpectedSender = vi
+      .fn<(options: Parameters<typeof sendEmail>[0]) => Promise<EmailResult>>()
+      .mockResolvedValueOnce({ success: true, messageId: "first" })
+      .mockRejectedValueOnce(
+        new Error("SMTP rejected private.second@example.test for Confidential Subject")
+      )
+      .mockResolvedValueOnce({ success: true, messageId: "third" });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const results = await sendEmailToMultiple(
+      [
+        "private.first@example.test",
+        "private.second@example.test",
+        "private.third@example.test",
+      ],
+      "Confidential Subject",
+      "Candidate: Private Person",
+      undefined,
+      unexpectedSender
+    );
+
+    expect(unexpectedSender).toHaveBeenCalledTimes(3);
+    expect(results).toEqual([
+      { success: true, messageId: "first" },
+      { success: false, error: "Email delivery failed" },
+      { success: true, messageId: "third" },
+    ]);
+    expect(JSON.stringify(errorSpy.mock.calls)).not.toContain("private.second@example.test");
+    expect(JSON.stringify(errorSpy.mock.calls)).not.toContain("Confidential Subject");
+    expect(JSON.stringify(errorSpy.mock.calls)).not.toContain("Private Person");
+  });
+});
+
+describe("sendEmail SMTP failure logging — PII-free", () => {
+  const ENV_KEYS = [
+    "EMAIL_DELIVERY_OVERRIDE",
+    "DISABLE_EMAIL_DELIVERY",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASSWORD",
+    "SMTP_FROM",
+  ] as const;
+  const saved: Record<string, string | undefined> = {};
+
+  beforeEach(() => {
+    for (const key of ENV_KEYS) {
+      saved[key] = process.env[key];
+      delete process.env[key];
+    }
+    process.env.EMAIL_DELIVERY_OVERRIDE = "true";
+    process.env.SMTP_HOST = "smtp.local.test";
+    process.env.SMTP_USER = "test-user";
+    process.env.SMTP_PASSWORD = "test-password";
+    nodemailerMock.createTransport.mockClear();
+    nodemailerMock.sendMail.mockReset();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    for (const key of ENV_KEYS) {
+      if (saved[key] === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = saved[key];
+      }
+    }
+  });
+
+  it("sanitizes a transport rejection containing recipient, subject, and candidate PII", async () => {
+    const recipient = "hr.private@example.test";
+    const subject = "Confidential ÖMC reminder for Private Person";
+    const candidate = "Private Person";
+    nodemailerMock.sendMail.mockRejectedValueOnce(
+      new Error(`SMTP 550 rejected ${recipient}: ${subject}; candidate=${candidate}`)
+    );
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await sendEmail({
+      to: recipient,
+      subject,
+      text: `Candidate: ${candidate}`,
+    });
+
+    expect(nodemailerMock.createTransport).toHaveBeenCalledTimes(1);
+    expect(nodemailerMock.sendMail).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ success: false, error: "Email delivery failed" });
+    expect(errorSpy).toHaveBeenCalledWith("[Email Service] Email delivery failed", {
+      recipientCount: 1,
+    });
+
+    const serialized = JSON.stringify({ logs: errorSpy.mock.calls, result });
+    for (const privateValue of [recipient, subject, candidate, "SMTP 550"]) {
+      expect(serialized).not.toContain(privateValue);
+    }
   });
 });
