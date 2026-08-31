@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-07-13T00:00:00+02:00
+# last_updated: 2026-08-31T00:00:00+02:00
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-07-13T00:00:00+02:00
+last_updated: 2026-08-31T00:00:00+02:00
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -56,6 +56,7 @@ development_status:
   22-11-enforce-non-production-email-suppression: done
   22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: done
   22-13-remediate-pr-91-security-and-readiness-review-findings: done
+  22-14-fix-omc-masterdata-reminder-timing-digest-and-failure-semantics: done
   epic-22-retrospective: optional
   epic-23: backlog
   23-1-select-commercial-offer-and-handover-model: backlog
@@ -68,3 +69,5 @@ development_status:
   23-8-quantify-value-case-and-adoption-metrics: backlog
   23-9-add-enterprise-controls-when-contract-requires: backlog
   epic-23-retrospective: optional
+
+verification_blockers: {}

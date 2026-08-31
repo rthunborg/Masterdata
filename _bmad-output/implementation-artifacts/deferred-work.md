@@ -1,6 +1,6 @@
 ## Deferred from: code review of 22-11-enforce-non-production-email-suppression (2026-06-16)
 
-- SMTP-failure (catch) path may log recipient PII via `error.message` (`src/lib/services/email-service.ts:154-156`). The real-send catch logs `error.message`, which nodemailer can populate with rejected recipient addresses. Pre-existing (the catch block predates Story 22.11) and out of AC2 scope (AC2 governs suppressed sends only); reachable only on an actual SMTP send failure (production, or non-production with `EMAIL_DELIVERY_OVERRIDE` pointing at a capture target). Consider stripping addresses/subjects from the error log in a future hardening pass.
+- ~~SMTP-failure (catch) path may log recipient PII via `error.message` (`src/lib/services/email-service.ts:154-156`).~~ **RESOLVED in Story 22.14 (2026-08-31):** SMTP/provider exception text is no longer logged or returned; failures now expose only generic aggregate details, with a real Nodemailer-transport rejection regression.
 - Unrecognized/blank environment fails open and delivers (`src/lib/env/is-non-production.ts:28-45`). `isNonProductionExecution` only recognizes explicit non-production markers; an environment advertising none is treated as production and delivers. By design per AC3 (production delivery unchanged) and not reachable on Vercel (always sets `VERCEL_ENV`/`NODE_ENV`). Optional future hardening: require a positive production marker (`VERCEL_ENV`/`NODE_ENV === 'production'`) to deliver, so an unknown env fails closed (suppresses). Deferred — flipping it could change production behavior and conflicts with the Epic 22 production-change freeze; revisit if the app is ever run outside Vercel.
 
 ## Deferred from: code review of story-22.10 (2026-06-14)
@@ -33,3 +33,9 @@
 ## Deferred from: code review of story-22.13 (2026-07-12)
 
 - `src/app/api/admin/users/[id]/route.ts` passes `auth_user_id` to `supabase.auth.admin.signOut(...)`, but Supabase Auth expects a user JWT, so the call does not revoke that user's sessions. This behavior predates Story 22.13. A correct replacement needs a platform-compatible offboarding design (or database-layer active-user enforcement across every direct RLS path), rather than substituting another identifier blindly.
+
+## Deferred from: code review of spec-22-14-fix-omc-masterdata-reminder (2026-08-31)
+
+- The cron still resolves each distinct `important_dates` record through an individual service query. Caching or batching these lookups could reduce latency for unusually large employee populations, but the N+1 shape predates Story 22.14 and changing the shared date-resolution path is outside this incident fix.
+- Recipient addresses are not trimmed or case-insensitively deduplicated before notification fan-out (`src/lib/services/notification-helpers.ts:34`). This is pre-existing recipient-management behavior; Story 22.14 explicitly preserves recipient lookup/fan-out otherwise unchanged, so normalization belongs in a separately scoped recipient-data story.
+- The shared SMTP fan-out has no per-delivery deadline and still waits after the final recipient (`src/lib/services/email-service.ts:662`). A stalled transport can widen Story 22.14's accepted post-claim crash window, but changing shared delivery timing predates and exceeds this incident fix; address it in a separately scoped email-transport hardening story.
