@@ -31,7 +31,7 @@ function request(pathname: string) {
   });
 }
 
-function expectRedirectCookiesPreserved(response: Response) {
+function expectRefreshedCookiesPreserved(response: Response) {
   expect(response.headers.get("set-cookie")).toContain(
     "sb-127-auth-token.0=refreshed-session"
   );
@@ -125,7 +125,7 @@ describe("Story 22.15 middleware active-user gate", () => {
 
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toBe("http://localhost/dashboard");
-    expectRedirectCookiesPreserved(response);
+    expectRefreshedCookiesPreserved(response);
   });
 
   it.each([
@@ -157,7 +157,7 @@ describe("Story 22.15 middleware active-user gate", () => {
     }
   );
 
-  it("rejects data plus a fetch error without revoking the session", async () => {
+  it("returns a recoverable error for an uncertain app-user lookup", async () => {
     mocks.maybeSingle.mockResolvedValue({
       data: {
         id: "app-user",
@@ -170,17 +170,22 @@ describe("Story 22.15 middleware active-user gate", () => {
 
     const response = await middleware(request("/dashboard"));
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("http://localhost/login");
+    expect(response.status).toBe(503);
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("retry-after")).toBe("5");
     expect(mocks.signOut).not.toHaveBeenCalled();
     expect(mocks.rpc).not.toHaveBeenCalled();
-    expectRedirectCookiesPreserved(response);
+    expectRefreshedCookiesPreserved(response);
+    expect(await response.text()).toBe(
+      "Vi kunde inte verifiera ditt konto just nu. Försök igen om en stund."
+    );
     expect(JSON.stringify(consoleError.mock.calls)).not.toContain(
       "private policy detail"
     );
   });
 
-  it("fails closed on Auth errors without revoking or dropping refreshed cookies", async () => {
+  it("returns a recoverable error for uncertain authenticated Auth state", async () => {
     mocks.getUser.mockResolvedValue({
       data: { user: { id: "auth-user" } },
       error: { code: "bad_jwt", message: "private token detail" },
@@ -188,11 +193,11 @@ describe("Story 22.15 middleware active-user gate", () => {
 
     const response = await middleware(request("/dashboard"));
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("http://localhost/login");
+    expect(response.status).toBe(503);
+    expect(response.headers.get("location")).toBeNull();
     expect(mocks.maybeSingle).not.toHaveBeenCalled();
     expect(mocks.signOut).not.toHaveBeenCalled();
-    expectRedirectCookiesPreserved(response);
+    expectRefreshedCookiesPreserved(response);
     expect(JSON.stringify(consoleError.mock.calls)).not.toContain(
       "private token detail"
     );
@@ -252,15 +257,32 @@ describe("Story 22.15 middleware active-user gate", () => {
     expectRejectedCookieCleared(response);
   });
 
-  it("fails closed on an unexpected protected-route error and keeps prior cookies", async () => {
+  it("prevents an uncertain app-user lookup from reaching the login redirect loop", async () => {
+    mocks.maybeSingle.mockResolvedValue({
+      data: null,
+      error: { code: "PGRST000", message: "private connection detail" },
+    });
+
+    const response = await middleware(request("/login"));
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("location")).toBeNull();
+    expect(mocks.signOut).not.toHaveBeenCalled();
+    expectRefreshedCookiesPreserved(response);
+    expect(JSON.stringify(consoleError.mock.calls)).not.toContain(
+      "private connection detail"
+    );
+  });
+
+  it("returns a recoverable error on an unexpected protected-route failure", async () => {
     mocks.getUser.mockRejectedValue(new Error("private session detail"));
 
     const response = await middleware(request("/dashboard"));
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("http://localhost/login");
+    expect(response.status).toBe(503);
+    expect(response.headers.get("location")).toBeNull();
     expect(mocks.signOut).not.toHaveBeenCalled();
-    expectRedirectCookiesPreserved(response);
+    expectRefreshedCookiesPreserved(response);
     expect(JSON.stringify(consoleError.mock.calls)).not.toContain(
       "private session detail"
     );
@@ -274,6 +296,6 @@ describe("Story 22.15 middleware active-user gate", () => {
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toBe("http://localhost/login");
     expect(mocks.signOut).not.toHaveBeenCalled();
-    expectRedirectCookiesPreserved(response);
+    expectRefreshedCookiesPreserved(response);
   });
 });

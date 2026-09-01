@@ -65,6 +65,23 @@ function redirectWithCookies(
   );
 }
 
+function sessionResolutionUnavailableWithCookies(mutations: CookieMutation[]) {
+  return applyCookieMutations(
+    new NextResponse(
+      "Vi kunde inte verifiera ditt konto just nu. Försök igen om en stund.",
+      {
+        status: 503,
+        headers: {
+          "Cache-Control": "no-store",
+          "Content-Type": "text/plain; charset=utf-8",
+          "Retry-After": "5",
+        },
+      }
+    ),
+    mutations
+  );
+}
+
 function clearRejectedSessionCookies(
   request: NextRequest,
   response: NextResponse,
@@ -237,6 +254,10 @@ export async function middleware(request: NextRequest) {
       })();
     }
 
+    if (user && (authError || lookupError)) {
+      return sessionResolutionUnavailableWithCookies(cookieMutations);
+    }
+
     if (user && !hasActiveAppUser && !pathname.startsWith("/login")) {
       const redirect = redirectWithCookies(request, "/login", cookieMutations);
       return definitiveRejectedSession
@@ -269,7 +290,7 @@ export async function middleware(request: NextRequest) {
       reason: sanitizedErrorCode(error),
     });
     if (pathname !== "/" && !pathname.startsWith("/login")) {
-      return redirectWithCookies(request, "/login", cookieMutations);
+      return sessionResolutionUnavailableWithCookies(cookieMutations);
     }
     return response;
   }
