@@ -1,8 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { validateNonProductionSupabaseEnvironment } from "@/lib/env/non-production-supabase-guard";
 
 export async function createClient() {
+  validateNonProductionSupabaseEnvironment();
+
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -43,6 +46,8 @@ export async function createClient() {
  * This client bypasses RLS policies
  */
 export function createServiceRoleClient() {
+  validateNonProductionSupabaseEnvironment();
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

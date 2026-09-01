@@ -315,6 +315,12 @@ describe('Story 20.2: FilterPanel', () => {
       />
     );
 
+    // Let the panel's initial focus timer complete before typing into the
+    // expanded text filter, otherwise the focus handoff can race userEvent.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    });
+
     await user.click(screen.getByTestId('filter-column-toggle-first_name'));
     const input = screen.getByTestId('text-filter-input-first_name');
     await user.type(input, 'John');

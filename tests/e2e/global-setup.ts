@@ -55,17 +55,40 @@ async function createAuthState(
   const page = await browser.newPage({ baseURL });
 
   try {
+    console.log(`🔐 Creating E2E auth state for ${email}...`);
     await page.goto('/login', { timeout: 30000, waitUntil: 'networkidle' });
     await page.waitForSelector('#email', { timeout: 10000 });
     await page.locator('#email').fill(email);
     await page.locator('#password').fill(password);
+    const loginResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/auth/login') &&
+        response.request().method() === 'POST',
+      { timeout: 30000 }
+    );
     await page.locator('button[type="submit"]').click();
-    await page.waitForURL('**/dashboard', { timeout: 15000 });
+    const loginResponse = await loginResponsePromise;
+    if (!loginResponse.ok()) {
+      throw new Error(
+        `Login API rejected ${email} with HTTP ${loginResponse.status()}`
+      );
+    }
+
+    // A cold Next.js dev server can compile /dashboard after the client router
+    // starts navigation without committing the URL transition. The successful
+    // login response has already stored the session cookie, so navigate
+    // explicitly before persisting the reusable browser state.
+    await page.goto('/dashboard', { timeout: 30000, waitUntil: 'load' });
+    await page.waitForURL('**/dashboard', { timeout: 30000 });
     await page.waitForSelector(
       'table, [aria-label="Employee list"], article[aria-label], [data-testid*="dashboard"], [data-testid*="employee"], h1, h2, [class*="dashboard"]',
-      { timeout: 15000 }
+      { timeout: 30000 }
     );
     await page.context().storageState({ path: authStatePathForEmail(authDir, email) });
+    console.log(`✅ E2E auth state created for ${email}`);
+  } catch (error) {
+    console.error(`❌ Failed to create E2E auth state for ${email} at ${page.url()}:`, error);
+    throw error;
   } finally {
     await page.close();
   }
@@ -156,7 +179,8 @@ async function globalSetup(config: FullConfig) {
       await createAuthState(browser, baseURL, authDir, user.email, user.password);
     }
     console.log('✅ E2E authentication states created');
-  } catch {
+  } catch (error) {
+    console.error('❌ E2E application/auth verification failed:', error);
     throw new Error(
       `E2E app verification failed for ${baseURL}. ` +
       'The test server must serve this app, render the /login form, and allow seeded E2E users to sign in.'

@@ -1,5 +1,7 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { loginAsUser } from './helpers/e2e-helpers';
+import { createEmployeeViaUI, loginAsUser } from './helpers/e2e-helpers';
+
+let inlineSeedCounter = 0;
 
 async function firstEmployeeRow(page: Page) {
     await expect(
@@ -83,8 +85,20 @@ async function selectInlineOption(page: Page, cell: Locator, label: RegExp, opti
 }
 
 test.describe('Inline Editing E2E', () => {
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page }, testInfo) => {
         await loginAsUser(page, 'admin@test.com', 'Test123!');
+        await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+        const seed = `${testInfo.workerIndex % 10}${testInfo.retry % 10}${String(inlineSeedCounter++ % 100).padStart(2, '0')}`;
+        await createEmployeeViaUI(page, {
+            first_name: `Inline${seed}`,
+            surname: 'Employee',
+            ssn: `19881231${seed}`,
+            rank: 'SEV',
+            gender: 'Man',
+            hire_date: '2026-01-01',
+        });
+        await page.goto('/dashboard');
         await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
     });
 
@@ -129,18 +143,21 @@ test.describe('Inline Editing E2E', () => {
 
     test('Inline edit boolean field', async ({ page }) => {
         const firstRow = await firstEmployeeRow(page);
-        const oneCell = await tableCellByColumn(page, firstRow, /\bOne\b/i);
-        const currentText = (await oneCell.textContent())?.trim() || '';
+        const specialDietCell = await tableCellByColumn(page, firstRow, /Specialkost|Special Diet/i);
+        const currentText = (await specialDietCell.textContent())?.trim() || '';
         const isCurrentlyTrue = /Klart|Ja/i.test(currentText);
-        const newValue = isCurrentlyTrue ? 'Nej' : 'Klart';
+        // special_diet is a non-checklist boolean, so its true label is "Ja".
+        // Checklist booleans use "Klart", but the column metadata intentionally
+        // distinguishes those two presentation semantics.
+        const newValue = isCurrentlyTrue ? 'Nej' : 'Ja';
 
-        await selectInlineOption(page, oneCell, /Edit one/i, newValue);
+        await selectInlineOption(page, specialDietCell, /Edit special_diet/i, newValue);
 
-        await expect(oneCell).toContainText(newValue, { timeout: 10000 });
+        await expect(specialDietCell).toContainText(newValue, { timeout: 10000 });
 
-        const originalValue = isCurrentlyTrue ? 'Klart' : 'Nej';
-        await selectInlineOption(page, oneCell, /Edit one/i, originalValue);
+        const originalValue = isCurrentlyTrue ? 'Ja' : 'Nej';
+        await selectInlineOption(page, specialDietCell, /Edit special_diet/i, originalValue);
 
-        await expect(oneCell).toContainText(originalValue, { timeout: 10000 });
+        await expect(specialDietCell).toContainText(originalValue, { timeout: 10000 });
     });
 });

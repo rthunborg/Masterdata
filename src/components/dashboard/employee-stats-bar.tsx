@@ -64,7 +64,7 @@ export function EmployeeStatsBar({ refreshToken = 0, className, staffingOnly = f
     stats?.crewedPercent === null || stats?.crewedPercent === undefined
       ? null
       : stats.crewedPercent;
-  const hintText = tDashboard("statsHint") || "Arkiverade exkluderas. Uppsagda inkluderas.";
+  const hintText = tDashboard("statsHint") || "Arkiverade och uppsagda exkluderas.";
   const totalLabel = tDashboard("statsActiveEmployeesLabel") || "Anställda (aktiva)";
   const crewedLabel = tDashboard("statsCrewedEmployeesLabel") || "Besättningsklara";
 

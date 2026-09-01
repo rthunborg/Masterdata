@@ -8,7 +8,13 @@ type BranchProtectionConfig = {
   repositorySettings: {
     defaultBranch: string;
   };
-  branches: Record<string, { requiredStatusChecks: string[] }>;
+  branches: Record<
+    string,
+    {
+      enforceAdmins?: boolean;
+      requiredStatusChecks: string[];
+    }
+  >;
   promotionRules: Record<
     string,
     {
@@ -32,7 +38,7 @@ const config = JSON.parse(
 const promotionWorkflow = readFileSync(
   resolve(process.cwd(), '.github/workflows/main-promotion-source.yml'),
   'utf8'
-);
+).replaceAll('\r\n', '\n');
 
 describe('GitHub branch protection config', () => {
   it('keeps main as the repository default branch', () => {
@@ -42,6 +48,14 @@ describe('GitHub branch protection config', () => {
   it('requires the test check on protected branches', () => {
     expect(config.branches.main.requiredStatusChecks).toContain('Run Tests');
     expect(config.branches.staging.requiredStatusChecks).toContain('Run Tests');
+  });
+
+  it('allows admin bypass on staging only for main-to-staging syncs', () => {
+    expect(config.branches.main.enforceAdmins).toBeUndefined();
+    expect(config.branches.staging.enforceAdmins).toBe(false);
+    expect(config.pullRequestFlow.notes.join(' ')).toContain(
+      'directly sync main back into staging'
+    );
   });
 
   it('requires the main promotion-source check on main only', () => {

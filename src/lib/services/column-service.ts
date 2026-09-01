@@ -39,7 +39,14 @@ export const columnService = {
    */
   async getAll(role?: string): Promise<ColumnConfig[]> {
     const url = role ? `/api/columns?role=${encodeURIComponent(role)}` : "/api/columns";
-    const response = await fetch(url);
+    // Always fetch fresh. This list drives column visibility/permissions and is
+    // re-fetched (via useColumns.refetch) immediately after create/update/delete
+    // mutations. The GET response is served with
+    // `Cache-Control: ...stale-while-revalidate=300`, so without `no-store` the
+    // browser can return the stale pre-mutation list for minutes — leaving the UI
+    // showing a column that was just deleted (the root cause of the delete-column
+    // e2e flake).
+    const response = await fetch(url, { cache: "no-store" });
 
     if (!response.ok) {
       const error = await response.json();
@@ -203,23 +210,6 @@ export const columnService = {
    */
   async deleteColumn(id: string): Promise<void> {
     const response = await fetch(`/api/admin/columns/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to delete column");
-    }
-  },
-
-  /**
-   * Delete a custom column (user endpoint)
-   * External party users can only delete columns they own (have edit permission for)
-   * @param id - Column ID to delete
-   * @throws Error if deletion fails, column is masterdata, or user doesn't have permission
-   */
-  async deleteCustomColumn(id: string): Promise<void> {
-    const response = await fetch(`/api/columns/${id}`, {
       method: "DELETE",
     });
 

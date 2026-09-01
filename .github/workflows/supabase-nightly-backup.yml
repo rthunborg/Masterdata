@@ -19,6 +19,13 @@ jobs:
     name: Backup production & restore oldest to staging
     runs-on: ubuntu-latest
     environment: Production
+    # `issues: write` lets the `if: failure()` alert step (below) open/comment a
+    # `backup-failure` issue via the built-in GITHUB_TOKEN (zero new secrets).
+    # Scheduled runs default the token to read-only, so this must be explicit;
+    # `contents: read` is still needed for actions/checkout.
+    permissions:
+      contents: read
+      issues: write
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       STAGING_SUPABASE_DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
@@ -43,10 +50,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Pinned to a known-good version (was `version: latest`, which resolves over
+      # the network at setup time and was the surface that failed on 2026-06-05).
+      # Pinning makes runs reproducible and reduces transient resolution failures.
+      # The first attempt is allowed to fail (continue-on-error) so a single
+      # transient setup failure self-heals on the retry below (Story 22.12 AC2).
       - name: Setup Supabase CLI
+        id: setup_cli
+        uses: supabase/setup-cli@v1
+        continue-on-error: true
+        with:
+          version: 2.104.0
+
+      - name: Setup Supabase CLI (retry once on transient failure)
+        if: steps.setup_cli.outcome == 'failure'
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.104.0
 
       - name: Create backup output dir
         run: mkdir -p backup-output
@@ -65,8 +85,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
       - name: Dump employees and column_config only (for staging partial refresh)
-        run: pg_dump "$SUPABASE_DB_URL" --data-only --schema=public -t public.employees -t public.column_config -f backup-output/employees-column_config.sql
-        continue-on-error: true
+        run: |
+          pg_dump "$SUPABASE_DB_URL" --format=custom --data-only --schema=public --table=public.employees --table=public.column_config --file=backup-output/employees-column_config.dump
+          pg_restore --list backup-output/employees-column_config.dump > /dev/null
 
       - name: Upload backup to Supabase Storage
         run: node scripts/supabase-backup-storage.mjs upload "$(date -u +%Y-%m-%d)"
@@ -90,12 +111,49 @@ jobs:
 
       - name: Restore employees and column_config to staging (partial refresh)
         run: |
-          RESTORE_DIR="${{ github.workspace }}/backup-output/restore"
-          if [ ! -f "$RESTORE_DIR/employees-column_config.sql" ]; then
-            echo "No backup to restore (first run or no backups yet)."
-            exit 0
+          if [ "$SUPABASE_DB_URL" = "$STAGING_SUPABASE_DB_URL" ]; then
+            echo "Production and staging database targets must differ." >&2
+            exit 1
           fi
-          # Only replace employees and column_config; leave auth, users, user_filters, important_dates, etc. as-is
-          psql "$STAGING_SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "TRUNCATE public.employees, public.column_config RESTART IDENTITY CASCADE;"
-          psql "$STAGING_SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$RESTORE_DIR/employees-column_config.sql"
+          RESTORE_DIR="${{ github.workspace }}/backup-output/restore"
+          ARCHIVE="$RESTORE_DIR/employees-column_config.dump"
+          if [ ! -f "$ARCHIVE" ]; then
+            echo "Required compatible v2 backup archive is missing." >&2
+            exit 1
+          fi
+          COLUMN_CONFIG_SQL="$RESTORE_DIR/column_config-data.sql"
+          EMPLOYEES_SQL="$RESTORE_DIR/employees-data.sql"
+
+          pg_restore --data-only --no-owner --no-privileges --strict-names --schema=public --table=column_config --file="$COLUMN_CONFIG_SQL" "$ARCHIVE"
+          pg_restore --data-only --no-owner --no-privileges --strict-names --schema=public --table=employees --file="$EMPLOYEES_SQL" "$ARCHIVE"
+
+          # One transaction prevents a failed schema sync or employee COPY from
+          # leaving staging empty. public.users/auth remain intentionally untouched.
+          psql "$STAGING_SUPABASE_DB_URL" --no-psqlrc --set=ON_ERROR_STOP=1 --single-transaction \
+            -c "SET LOCAL lock_timeout = '30s';" \
+            -c "TRUNCATE public.employees, public.column_config RESTART IDENTITY CASCADE;" \
+            -f "$COLUMN_CONFIG_SQL" \
+            -f "${{ github.workspace }}/.github/backup/sync-runtime-employee-columns.sql" \
+            -f "$EMPLOYEES_SQL"
           echo "Staging: employees and column_config refreshed from oldest backup."
+
+      # Fires when any prior step that is NOT `continue-on-error` fails — i.e. the
+      # schema/data dump, the Storage upload, prune, download, the staging restore,
+      # or a persistent CLI-setup failure (both attempts). The best-effort `Dump
+      # roles` step remains intentionally `continue-on-error: true`; the partial
+      # restore archive is required and now trips this alert if it cannot be built.
+      # Opens — or comments on an existing open — `backup-failure` GitHub issue via
+      # the `gh` CLI using the built-in GITHUB_TOKEN, so a failed nightly run can no
+      # longer go unnoticed (the 2026-06-05 incident: a CLI-setup failure that left
+      # the backup missing from the bucket). The alert text is PII-free / secret-free
+      # and is built by the unit-tested helper in scripts/notify-backup-failure.mjs.
+      # GH_TOKEN is required for gh to authenticate (permissions: alone is not
+      # enough); the job-level `issues: write` permission grants the scope.
+      - name: Alert on backup failure (open/append a backup-failure issue)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_ID: ${{ github.run_id }}
+          FAILED_STEP: ${{ github.job }}
+        run: node scripts/notify-backup-failure.mjs

@@ -17,13 +17,33 @@
  * - Timing issues with API calls
  */
 
-import { test, expect } from '@playwright/test';
-import { loginAsHRAdmin, loginAsUser, logout } from '../../helpers/e2e-helpers';
+import { test, expect, type Page } from '@playwright/test';
+import { createEmployeeViaUI, loginAsHRAdmin, loginAsUser, logout } from '../../helpers/e2e-helpers';
 
 const DASHBOARD_READY_SELECTOR = '[data-testid^="employee-row-"], article[aria-label], table';
 const EMPLOYEE_VIEW_SELECTOR = 'table, [data-testid^="employee-row-"], article[aria-label]';
+let realDbSeedCounter = 0;
+
+async function seedVisibleEmployee(page: Page) {
+  const seed = `${Date.now().toString().slice(-3)}${realDbSeedCounter++ % 10}`;
+  await loginAsHRAdmin(page);
+  await page.goto('/dashboard');
+  await createEmployeeViaUI(page, {
+    first_name: `ExternalReal${seed}`,
+    surname: 'Employee',
+    ssn: `19900101${seed}`,
+    rank: 'SEV',
+    gender: 'Man',
+    hire_date: '2026-01-01',
+  });
+  await logout(page);
+}
 
 test.describe('Story 16.6: Real Database - External User Highlighting', () => {
+  test.beforeEach(async ({ page }) => {
+    await seedVisibleEmployee(page);
+  });
+
   test('External user should see highlights for changed visible columns (real database)', async ({ page }) => {
     // Step 1: Login as HR Admin
     await loginAsHRAdmin(page);
@@ -294,11 +314,10 @@ test.describe('Story 16.6: Real Database - External User Highlighting', () => {
           const dataCells = firstRow.locator('td, [role="gridcell"]');
           const cellCount = await dataCells.count();
 
-          // Verify column count matches (accounting for selection checkbox and action columns)
-          // Headers should match data cells (or be off by a few for checkbox/actions)
-          // Allow up to 3 difference for: checkbox, action buttons, status indicators
+          // Verify column count is close enough to catch broken alignment while allowing
+          // role-hidden data cells plus selection/action/status utility cells.
           const countDiff = Math.abs(headerCount - cellCount);
-          expect(countDiff).toBeLessThanOrEqual(5); // Allow extra utility/status/action cells
+          expect(countDiff).toBeLessThanOrEqual(10);
 
           // Verify each visible header has a corresponding data cell
           // (Skip checkbox column which might not have a header)

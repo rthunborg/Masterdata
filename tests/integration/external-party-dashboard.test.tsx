@@ -119,5 +119,29 @@ describe("External Party Dashboard Access", () => {
       expect(screen.getByText("Lägg till anställd")).toBeInTheDocument();
       expect(screen.getByText("Importera")).toBeInTheDocument();
     });
+
+    it("hides custom-column lifecycle controls from external parties", async () => {
+      mockUseAuth.mockReturnValue({
+        user: { role: UserRole.SODEXO },
+        isLoading: false,
+      });
+      mockUseEmployees.mockReturnValue({
+        employees: [],
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+      mockUseEmployeeChanges.mockReturnValue({
+        isColumnChanged: vi.fn(),
+        totalCount: 0,
+        isLoading: false,
+      });
+
+      await act(async () => {
+        renderWithQueryClient(<DashboardPage />);
+      });
+
+      expect(screen.queryByText("Lägg till kolumn")).not.toBeInTheDocument();
+      expect(screen.getByText("Manage Columns")).toBeInTheDocument();
+    });
   });
 });

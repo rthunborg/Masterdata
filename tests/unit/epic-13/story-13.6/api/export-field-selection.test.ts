@@ -75,17 +75,6 @@ vi.mock("@/lib/server/repositories/column-config-repository", () => ({
   },
 }));
 
-vi.mock("@/lib/supabase/server-api", () => ({
-  createAPIClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({ data: [], error: null })),
-        in: vi.fn(() => ({ data: [], error: null })),
-      })),
-    })),
-  })),
-}));
-
 vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: vi.fn(() => ({
     from: vi.fn(() => ({
@@ -104,7 +93,6 @@ vi.mock("papaparse", () => ({
 
 import { employeeRepository } from "@/lib/server/repositories/employee-repository";
 import Papa from "papaparse";
-import { createAPIClient } from "@/lib/supabase/server-api";
 // Mock Employee type locally to avoid import issues
 interface Employee {
   id: string;
@@ -195,25 +183,22 @@ describe("POST /api/employees/export", () => {
 
   it("generates CSV with selected fields for selected employees", async () => {
     const mockEmployees = [
-      { id: "emp1", first_name: "John", surname: "Doe", email: "john@example.com" },
-      { id: "emp2", first_name: "Jane", surname: "Smith", email: "jane@example.com" },
+      {
+        id: "emp1",
+        first_name: "John",
+        surname: "Doe",
+        email: "john@example.com",
+        custom_field_1: "Value 1",
+      },
+      {
+        id: "emp2",
+        first_name: "Jane",
+        surname: "Smith",
+        email: "jane@example.com",
+        custom_field_1: "Value 2",
+      },
     ] as Employee[];
     vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
-
-    const mockCustomData = [
-      { employee_id: "emp1", data: { custom_field_1: "Value 1" } },
-      { employee_id: "emp2", data: { custom_field_1: "Value 2" } },
-    ];
-
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({ data: [], error: null }), // important_dates
-          in: vi.fn().mockReturnValue({ data: mockCustomData, error: null }), // custom_data
-        }),
-      }),
-    };
-    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",
@@ -244,17 +229,6 @@ describe("POST /api/employees/export", () => {
       { id: "emp1", first_name: "John" },
     ] as Employee[];
     vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees);
-
-    // Mock empty custom data
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({ data: [], error: null }),
-          in: vi.fn().mockReturnValue({ data: [], error: null }),
-        }),
-      }),
-    };
-    vi.mocked(createAPIClient).mockReturnValue(mockSupabase as unknown as ReturnType<typeof createAPIClient>);
 
     const request = new Request("http://localhost/api/employees/export", {
       method: "POST",
