@@ -2,6 +2,8 @@
 
 Prepared: 2026-06-03
 
+Updated: 2026-08-31 — Story 22.15 final dependency checkpoints
+
 A draft subprocessor register built from the tables below now exists: `24_subprocessor_register.md` (Story 22.9).
 
 ## SaaS And Service Dependencies
@@ -18,14 +20,14 @@ A draft subprocessor register built from the tables below now exists: `24_subpro
 
 | Dependency | Purpose | License evidence | Risk/comment |
 | --- | --- | --- | --- |
-| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.2.7`; current production audit reports no Next.js advisories |
+| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; current production audit reports no Next.js advisories |
 | `react`, `react-dom` | UI | MIT | Standard |
-| `@supabase/ssr`, `@supabase/supabase-js` | Auth/database/realtime client | MIT transitive in license list | `ws` transitive advisory reported |
+| `@supabase/ssr`, `@supabase/supabase-js` | Auth/database/realtime client | MIT transitive in license list | Compatible transitive `ws` remediation is pinned in the production lockfile |
 | `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/react-virtual` | Data fetching/table/virtualization | MIT | Standard |
 | `zod` | Validation | MIT | Strong validation dependency |
 | `zustand` | Client state | MIT | Persists auth metadata to localStorage |
-| `nodemailer` | SMTP email | MIT-0 | Residual moderate/low advisories risk-accepted pending Nodemailer 8 validation |
-| `exceljs` | XLSX export | MIT but transitive licenses/advisories | High transitive advisories patched with pnpm overrides; residual `uuid` moderate advisory remains risk-accepted |
+| `nodemailer` | SMTP email | MIT-0 | Updated to `9.1.0` with types `8.0.1`; non-network JSON-transport compatibility test covers the SMTP integration surface |
+| `exceljs` | XLSX export | MIT but transitive licenses/advisories | High transitive advisories patched with pnpm overrides; sole residual `uuid` moderate advisory is time-bounded and risk-accepted through 2026-09-30 |
 | `papaparse` | CSV import/export | MIT | CSV injection controls not specifically verified |
 | Radix packages | UI primitives | MIT | Standard |
 | `lucide-react` | Icons | ISC | Standard |
@@ -45,14 +47,14 @@ Recommended action: generate a complete third-party notice file from the final p
 
 ## Security Audit Findings
 
-Story 22.3 current `pnpm audit --prod` returns 3 residual production advisories after remediation:
+The fresh Story 22.15 `pnpm audit --prod --json` checkpoint returns one residual production advisory after the three approved batches:
 
 - 0 critical
 - 0 high
-- 2 moderate
-- 1 low
+- 1 moderate
+- 0 low
 
-Patched areas include Next.js, `minimatch`/`brace-expansion`/`tmp` through `exceljs`, `ws` through Supabase realtime, and `postcss` through Next.js. Residual areas are Nodemailer and `uuid` through `exceljs`; both are tracked in `15_dependency_advisory_risk_register.md`.
+Patched areas include Next.js/ESLint/analyzer, Sharp, Nodemailer, Babel, `brace-expansion`, `postcss`, and `nanoid`, in addition to the existing compatible production overrides. The sole residual is `exceljs` → `uuid@8.3.2` (`GHSA-w5hq-g745-h8pq` / `CVE-2026-41907`); it is tracked with server-side controls and a 2026-09-30 review in `15_dependency_advisory_risk_register.md`.
 
 ## Potential Subprocessor Data Map
 
@@ -68,6 +70,6 @@ Patched areas include Next.js, `minimatch`/`brace-expansion`/`tmp` through `exce
 1. Confirm legal entity and contract owner for Supabase, Vercel, GitHub, and SMTP.
 2. Create DPA/subprocessor list. Draft register created in `24_subprocessor_register.md` (Story 22.9); DPA execution remains open (Epic 23.2).
 3. Document region/data transfer settings for production.
-4. Keep dependency advisory risk register current and validate residual Nodemailer/ExcelJS remediation before enterprise use.
+4. Keep the dependency advisory register current and reassess the ExcelJS/UUID residual no later than 2026-09-30.
 5. Generate final license report from exact production lockfile.
 6. Review whether backup workflow through GitHub Actions is acceptable for customer data.

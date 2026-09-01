@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "repositoryMigrationCount": 63,
+  "reviewedSupabaseCliVersion": "2.115.0",
+  "catalogVerifier": "supabase/verify/production-baseline-catalog.sql",
+  "restoredMigrationProvenance": {
+    "version": "20250113000000",
+    "sourceCommit": "3784d6f2a33072cab021256431da65d7ac5057cd",
+    "sourceBlob": "02c23b974ba681663dec487d69bd9733986f1cee",
+    "sha256": "1e3ec6aa1ec00b768806743ae4cf07500fe1717efc4c399088cca11a459e003a"
+  },
+  "classifications": {
+    "repair-after-catalog-proof": [
+      "20250113000000",
+      "20251027000000",
+      "20251028000001",
+      "20251028104344",
+      "20251028144051",
+      "20251029000000",
+      "20251029000001",
+      "20251029000002",
+      "20251030000000",
+      "20251031000000",
+      "20251102000000",
+      "20251102000001",
+      "20251102000002",
+      "20251102000003",
+      "20251106000000",
+      "20251106000001",
+      "20251106000002",
+      "20251106000003",
+      "20251106000004",
+      "20251106000005",
+      "20251106000006",
+      "20251107000000",
+      "20251107000001",
+      "20251107000002",
+      "20251107000003",
+      "20251107000004",
+      "20251109102741",
+      "20251109120000",
+      "20251109130000",
+      "20251109140000",
+      "20251109150000",
+      "20251109160000",
+      "20251109200237",
+      "20251109200300",
+      "20251110000000",
+      "20251122130617",
+      "20251122150000",
+      "20251122150001",
+      "20251123000000",
+      "20251209000000",
+      "20251209110000",
+      "20251209120000",
+      "20251209130000",
+      "20251210000000",
+      "20251210000001",
+      "20251210000002",
+      "20251213000000",
+      "20251216000000",
+      "20260130212612",
+      "20260223000000",
+      "20260224000000",
+      "20260313000001",
+      "20260314000001",
+      "20260314000002",
+      "20260520000000",
+      "20260605151000",
+      "20260607193000"
+    ],
+    "execute": [
+      "20260614000000",
+      "20260615000000",
+      "20260709194903",
+      "20260710144000",
+      "20260710150000",
+      "20260831200026"
+    ]
+  },
+  "unsafeReplayVersions": {
+    "20250113000000": "The original room RPC version can already be represented alongside its ordered 20251122150001 redefinition.",
+    "20251209110000": "The hosted repayment columns may already be booleans rather than legacy date markers.",
+    "20251209120000": "Replaying the conversion can turn existing false values into true before dropping the represented columns.",
+    "20251213000000": "The historical migration replaces the complete role_permissions JSON and can erase later permissions.",
+    "20260130212612": "The represented user_filters objects are created unconditionally.",
+    "20260313000001": "The represented staffing tables, policies, index, and seed rows are created unconditionally."
+  },
+  "catalogProofExceptions": {
+    "productionUserFiltersUpdatePolicy": {
+      "acceptedPreApplyState": "The dated production aliases Users can read own filters, Users can insert own filters, and Users can delete own filters exist; no update policy exists.",
+      "reconciledByExecuteVersion": "20260614000000"
+    }
+  },
+  "environmentPlans": {
+    "staging": {
+      "repair-after-catalog-proof": ["20250113000000"],
+      "execute": [
+        "20260615000000",
+        "20260709194903",
+        "20260710144000",
+        "20260710150000",
+        "20260831200026"
+      ]
+    },
+    "production": {
+      "repair-after-catalog-proof": "classifications.repair-after-catalog-proof",
+      "execute": "classifications.execute"
+    }
+  }
+}

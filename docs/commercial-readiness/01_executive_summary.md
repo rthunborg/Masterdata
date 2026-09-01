@@ -43,7 +43,7 @@ The main readiness gaps are operational governance, hosted RLS policy/migration 
 ## Key Risks And Dependencies
 
 - Pre-remediation production runtime checks found unauthenticated diagnostic behavior that exposed configuration/auth metadata. Story 22.1 removed the route handlers and local/non-production gates pass; post-deployment production runtime verification remains a release gate. Detailed endpoint evidence is held privately.
-- Story 22.3 reduced `pnpm audit --prod` from 33 production advisories to 3 residual moderate/low advisories. Current production audit has 0 critical and 0 high advisories; residual `nodemailer` and `exceljs>uuid` risks are tracked in `docs/commercial-readiness/15_dependency_advisory_risk_register.md`.
+- Story 22.15 refreshed and remediated the candidate production audit from 28 advisories (15 high) to 0 critical, 0 high, 1 moderate, and 0 low across 281 production dependencies. Nodemailer is remediated at `9.1.0`; the sole residual ExcelJS→UUID risk is tracked and time-bounded in `docs/commercial-readiness/15_dependency_advisory_risk_register.md`.
 - Story 22.3 corrected the selected-employee export path to read custom columns from real employee-table columns instead of the removed `custom_data` table. Evidence: `src/app/api/employees/export/route.ts`, `src/lib/server/repositories/custom-data-repository.ts`.
 - Several privileged flows use a Supabase service-role client that bypasses RLS after application-level checks. This can be acceptable but should be reviewed carefully. Evidence: `src/lib/supabase/server.ts`, `rg createServiceRoleClient src`.
 - Backup automation exists and the 2026-06-03 scheduled workflow completed successfully, including partial staging restore. A full restore drill of a production backup into a non-production target was verified on 2026-06-11 (`evidence/restore-drill-2026-06-11.md`). Backup-failure alerting was added in Story 22.12 (2026-06-16): the workflow now alerts on any non-best-effort step failure (an `if: failure()` step opens/comments a `backup-failure` GitHub issue) and retries the CLI setup once with a pinned version, so the 2026-06-05 silent-gap class cannot recur. Still open: operational ownership confirmation.
@@ -56,7 +56,7 @@ The main readiness gaps are operational governance, hosted RLS policy/migration 
 ## Recommended Next Steps Before Formal Use
 
 1. Close the post-deployment diagnostic endpoint verification gate.
-2. Keep the dependency advisory risk register current and validate follow-up fixes for residual `nodemailer` and `exceljs>uuid` advisories.
+2. Keep the dependency advisory risk register current and recheck the sole ExcelJS→UUID moderate advisory by 2026-09-30.
 3. Directly verify Supabase staging/production RLS policies, Auth settings, and migration history with `SUPABASE_DB_PASSWORD` or equivalent database access.
 4. Full restore drill done (2026-06-11); backup-failure alerting + a one-shot CLI-setup retry added in Story 22.12 (2026-06-16). Remaining: document/measure RTO including auth-user re-provisioning (auth schema is outside logical backup scope).
 5. Complete a DPIA/privacy assessment, retention schedule, DPA/subprocessor list, and incident process.

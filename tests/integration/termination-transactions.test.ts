@@ -1,34 +1,23 @@
 /**
- * Integration Tests: Termination & Reactivation Transaction Atomicity
+ * Integration Tests: Termination Transaction Atomicity
  * Story 11.3: Comprehensive Test Coverage for Termination & Reactivation Workflows
- * 
- * Tests transaction rollback scenarios to ensure data integrity:
- * - Termination fails: repayment not saved, dates not cleared, spots not released
- * - Reactivation fails: dates not restored, spots not decremented
- * - Spot release fails: transaction rolled back, dates remain
- * - Array update fails: transaction rolled back, spots restored
- * - Database constraints prevent inconsistent state
+ *
+ * Tests the current termination rollback paths. Reactivation no longer restores
+ * date assignments; its replacement behavior is covered by the active
+ * reactivation workflow and API suites.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { employeeRepository } from '@/lib/server/repositories/employee-repository';
 import {
   captureRepaymentDates,
   applyRepaymentCapture,
   clearEmployeeDatesAndReleaseSpots,
-  restoreRepaymentDates,
 } from '@/lib/services/termination-workflow';
 import { createClient } from '@/lib/supabase/server';
-import { assignEmployeeToDate } from '@/lib/services/date-capacity';
 
 // Mock Supabase server client
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(),
-}));
-
-// Mock date-capacity service
-vi.mock('@/lib/services/date-capacity', () => ({
-  assignEmployeeToDate: vi.fn(),
 }));
 
 describe('Termination Transaction Atomicity', () => {
@@ -42,7 +31,7 @@ describe('Termination Transaction Atomicity', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockSupabaseFrom = vi.fn((table: string) => {
+    mockSupabaseFrom = vi.fn(() => {
       const chainMock = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
@@ -231,54 +220,5 @@ describe('Termination Transaction Atomicity', () => {
     // In a real transaction, spot release would be rolled back
     // Verify RPC was called but transaction would rollback
     expect(mockSupabaseRpc).toHaveBeenCalled();
-  });
-});
-
-// SKIPPED: Reactivation logic was updated to only clear boolean flags and NOT call assignEmployeeToDate
-// These tests verify a workflow that no longer exists in restoreRepaymentDates (Story 13.9 change)
-describe.skip('Reactivation Transaction Atomicity', () => {
-  let mockSupabaseFrom: ReturnType<typeof vi.fn>;
-  let mockSupabaseRpc: ReturnType<typeof vi.fn>;
-  let mockSupabaseClient: {
-    from: ReturnType<typeof vi.fn>;
-    rpc: ReturnType<typeof vi.fn>;
-  };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-
-    mockSupabaseFrom = vi.fn((table: string) => {
-      const chainMock = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn(),
-        update: vi.fn().mockReturnThis(),
-      };
-      return chainMock;
-    });
-
-    mockSupabaseRpc = vi.fn().mockResolvedValue({ data: null, error: null });
-
-    mockSupabaseClient = {
-      from: mockSupabaseFrom,
-      rpc: mockSupabaseRpc,
-    };
-
-    (createClient as ReturnType<typeof vi.fn>).mockResolvedValue(mockSupabaseClient);
-  });
-
-  it('should rollback reactivation if date restoration fails', async () => {
-    // Test skipped
-  });
-
-  it('should rollback reactivation if spot decrement fails', async () => {
-    // Test skipped
-  });
-});
-
-// SKIPPED: Database constraint validation for date restoration is no longer handled by restoreRepaymentDates
-describe.skip('Database Constraint Validation', () => {
-  it('should prevent inconsistent state when spot count goes negative', async () => {
-    // Test skipped
   });
 });

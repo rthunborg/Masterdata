@@ -19,6 +19,7 @@ import {
   formatEpic22SupabaseSkipDiagnostic,
   isEpic22DatabaseReachable,
   loadEpic22SupabaseTestEnvironment,
+  resolveEpic22LocalServiceRoleKey,
 } from "../../../helpers/epic-22-supabase-test-environment";
 
 const CLAIM_SELECT_COLUMNS = "id,omc_date,omc_masterdata_reminder_sent_at";
@@ -26,14 +27,21 @@ const CLAIM_SELECT_COLUMNS = "id,omc_date,omc_masterdata_reminder_sent_at";
 function loadLocalServiceRoleKey(
   environment: ReturnType<typeof loadEpic22SupabaseTestEnvironment>
 ) {
-  if (environment.envFilePresent) {
-    return process.env.SUPABASE_SERVICE_ROLE_KEY ?? null;
-  }
+  const dedicatedKey = process.env.EPIC_22_LOCAL_SERVICE_ROLE_KEY?.trim();
+  const legacyKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const hasUsableInProcessKey =
+    Boolean(dedicatedKey) ||
+    Boolean(legacyKey && legacyKey !== "test-service-role-key");
+  const exampleEnvironment =
+    !environment.envFilePresent && !hasUsableInProcessKey
+      ? parseEnv(readFileSync(resolve(process.cwd(), ".env.example"), "utf8"))
+      : {};
 
-  const exampleEnvironment = parseEnv(
-    readFileSync(resolve(process.cwd(), ".env.example"), "utf8")
-  );
-  return exampleEnvironment.SUPABASE_SERVICE_ROLE_KEY ?? null;
+  return resolveEpic22LocalServiceRoleKey({
+    env: process.env,
+    envFilePresent: environment.envFilePresent,
+    exampleEnvironment,
+  });
 }
 
 function restoreProcessEnvironment(snapshot: NodeJS.ProcessEnv) {

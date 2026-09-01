@@ -17,7 +17,7 @@
 
 ## Deferred from: code review of 22-8-package-supabase-security-evidence-and-run-restore-drill (2026-06-11)
 
-- ~~Migration version-ordering anomaly: `supabase/migrations/20250113000000_add_room_assignment_rpc.sql` sorts nine months before `20251027000000_initial_schema.sql`, so a clean `supabase db reset` applies the RPC migration pre-schema; this weakens the evidence package's claim that the migration directory is the canonical rebuild source. Pre-existing repo state, not introduced by Story 22.8 — fold into Story 22.10 (environment reconciliation and migration-history baseline).~~ **RESOLVED in Story 22.10 (2026-06-14):** re-timestamped to `20251122150001_add_room_assignment_rpc.sql` (immediately after `20251122150000_add_room_assignment_employee_columns.sql`, its column dependency); a clean `supabase db reset` now applies in correct dependency order (verified exit 0). Function bodies unchanged.
+- ~~Migration version-ordering anomaly: `supabase/migrations/20250113000000_add_room_assignment_rpc.sql` sorts nine months before `20251027000000_initial_schema.sql`, so a clean `supabase db reset` applies the RPC migration pre-schema; this weakens the evidence package's claim that the migration directory is the canonical rebuild source. Pre-existing repo state, not introduced by Story 22.8 — fold into Story 22.10 (environment reconciliation and migration-history baseline).~~ **Historical Story 22.10 resolution (2026-06-14):** re-timestamped to `20251122150001_add_room_assignment_rpc.sql` and verified by clean reset. **Superseded by Story 22.15 (2026-09-01):** the original `20250113000000` file is restored byte-for-byte because an already-hosted migration history may legitimately contain that immutable version. The ordered `20251122150001` redefinition remains. Neither historical file may be replayed over represented hosted state; catalog proof and explicit history repair are required.
 
 ## Deferred from: code review of story-22.7 (2026-06-10)
 
@@ -32,7 +32,7 @@
 - The alert channel itself can fail silently if `gh`/`GITHUB_TOKEN`/`permissions` are ever misconfigured (no secondary fallback). Inherent to the owner-chosen single-channel, zero-new-secrets GitHub-issue design; documented residual risk.
 ## Deferred from: code review of story-22.13 (2026-07-12)
 
-- `src/app/api/admin/users/[id]/route.ts` passes `auth_user_id` to `supabase.auth.admin.signOut(...)`, but Supabase Auth expects a user JWT, so the call does not revoke that user's sessions. This behavior predates Story 22.13. A correct replacement needs a platform-compatible offboarding design (or database-layer active-user enforcement across every direct RLS path), rather than substituting another identifier blindly.
+- ~~`src/app/api/admin/users/[id]/route.ts` passed `auth_user_id` to `supabase.auth.admin.signOut(...)`, although Supabase Auth expects a user JWT, so the call did not revoke that user's sessions.~~ **RESOLVED in Story 22.15 (2026-09-01):** the unsupported call is removed. Active-only `get_user_role()` and saved-filter policies remove role-derived database access from inactive sessions, middleware/login reject inactive or missing app users, and deletion uses a caller-bound atomic app-row transaction followed by durable, retryable Auth-admin cleanup. Hosted staging/production apply and verification remain owner-gated.
 
 ## Deferred from: code review of spec-22-14-fix-omc-masterdata-reminder (2026-08-31)
 

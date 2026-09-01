@@ -6,7 +6,7 @@
 
 import * as React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -284,6 +284,8 @@ const mockEmployees: Employee[] = [
 describe('Story 20.7: Export with Filters - Integration Tests', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
   let queryClient: QueryClient;
+  const originalCreateObjectURL = window.URL.createObjectURL;
+  const originalRevokeObjectURL = window.URL.revokeObjectURL;
   
   beforeEach(() => {
     // Create a fresh QueryClient for each test
@@ -296,6 +298,23 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
 
     // Mock fetch for export API and saved filters
     fetchMock = vi.fn((url) => {
+      // Keep responses route-aware so background queries cannot consume an
+      // export response before the user reaches the export dialog.
+      if (typeof url === 'string' && url.includes('/api/employees/export')) {
+        return Promise.resolve({
+          ok: true,
+          blob: vi.fn().mockResolvedValue(
+            new Blob(['mock export data'], {
+              type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            })
+          ),
+          headers: new Headers({
+            'Content-Type':
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'X-Employees-Exported': '1',
+          }),
+        });
+      }
       // Mock saved filters endpoint
       if (typeof url === 'string' && url.includes('/api/users/filters')) {
         return Promise.resolve({
@@ -304,7 +323,11 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
         });
       }
       // Mock important dates endpoint
-      if (typeof url === 'string' && url.includes('/rest/v1/important_dates') || url.includes('/api/important-dates')) {
+      if (
+        typeof url === 'string' &&
+        (url.includes('/rest/v1/important_dates') ||
+          url.includes('/api/important-dates'))
+      ) {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({ data: [] }),
@@ -331,6 +354,16 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
     });
     global.fetch = fetchMock as typeof fetch;
 
+    Object.defineProperty(window.URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn(() => 'blob:export-test'),
+    });
+    Object.defineProperty(window.URL, 'revokeObjectURL', {
+      configurable: true,
+      value: vi.fn(),
+    });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
     // Mock localStorage
     Storage.prototype.getItem = vi.fn();
     Storage.prototype.setItem = vi.fn();
@@ -339,6 +372,23 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
+    if (originalCreateObjectURL) {
+      Object.defineProperty(window.URL, 'createObjectURL', {
+        configurable: true,
+        value: originalCreateObjectURL,
+      });
+    } else {
+      Reflect.deleteProperty(window.URL, 'createObjectURL');
+    }
+    if (originalRevokeObjectURL) {
+      Object.defineProperty(window.URL, 'revokeObjectURL', {
+        configurable: true,
+        value: originalRevokeObjectURL,
+      });
+    } else {
+      Reflect.deleteProperty(window.URL, 'revokeObjectURL');
+    }
     queryClient.clear();
   });
 
@@ -349,6 +399,15 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
         {component}
       </QueryClientProvider>
     );
+  };
+
+  const waitForInteractiveEmployeeTable = async () => {
+    await waitFor(() => {
+      expect(screen.getByTestId('employee-row-emp-1')).toHaveTextContent('John');
+      expect(
+        screen.getByRole('button', { name: 'Active Employees: 3' })
+      ).toBeInTheDocument();
+    });
   };
 
   it('AC 1.1: Export button shows filtered count when filters are active', async () => {
@@ -405,39 +464,38 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
       />
     );
 
-    // Debug: Check if table renders
     await waitFor(() => {
-      const table = container.querySelector('table');
-      expect(table).toBeInTheDocument();
+      expect(container.querySelector('tbody')).toBeInTheDocument();
+      expect(screen.getByTestId('employee-row-emp-1')).toHaveTextContent('John');
+      expect(screen.getByTestId('employee-row-emp-2')).toHaveTextContent('Jane');
+      expect(screen.getByTestId('employee-row-emp-3')).toHaveTextContent('Bob');
     });
 
-    // Debug: Check tbody rows
-    const tbody = container.querySelector('tbody');
-    expect(tbody).toBeInTheDocument();
-    
-    // Wait a bit for employees to render
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Check if we can find employee names
-    const johnElement = container.querySelector('[data-testid*="John"], [aria-label*="John"]') || 
-                        screen.queryByText('John') || 
-                        screen.queryByText(/john/i);
-    
-    // If employees still don't render, skip the selection test
-    if (!johnElement) {
-      console.log('Employees not rendering in test environment - skipping selection test');
-      expect(true).toBe(true); // Pass the test
-      return;
-    }
-
-    // If we got here, employees are visible - proceed with selection test
-    const selectAllCheckbox = await screen.findByRole('checkbox', { name: /select all/i });
+    const selectAllCheckbox = screen.getByRole('checkbox', {
+      name: 'Select all',
+    });
     await user.click(selectAllCheckbox);
 
     await waitFor(() => {
+      expect(
+        screen.getByRole('checkbox', { name: 'Select all' })
+      ).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByTestId('employee-select-checkbox-emp-1')).toHaveAttribute(
+        'aria-checked',
+        'true'
+      );
+      expect(screen.getByTestId('employee-select-checkbox-emp-2')).toHaveAttribute(
+        'aria-checked',
+        'true'
+      );
+      expect(screen.getByTestId('employee-select-checkbox-emp-3')).toHaveAttribute(
+        'aria-checked',
+        'true'
+      );
       const exportButton = screen.getByRole('button', { name: /Export Selected/i });
       expect(exportButton).toHaveTextContent('(3)');
-    }, { timeout: 3000 });
+      expect(exportButton).toBeEnabled();
+    });
   });
 
   it('AC 3.1: Export button label updates based on filter state', async () => {
@@ -473,22 +531,8 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
     });
   });
 
-  /**
-   * NOTE: Skipped - Checkbox state updates don't complete in test environment
-   * Root cause: Individual employee checkbox clicks don't trigger state updates reliably
-   * Select All checkbox works (AC 2.1 passes) but individual checkboxes timeout
-   * Requires investigation into Checkbox component test behavior or component refactor
-   * Functionality verified manually and in other integration contexts
-   */
-  it.skip('AC 4.1: Export API receives selected employee IDs', async () => {
+  it('AC 4.1: Export API receives selected employee IDs', async () => {
     const user = userEvent.setup();
-    
-    // Mock successful export response
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      blob: vi.fn().mockResolvedValue(new Blob(['mock csv data'], { type: 'text/csv' })),
-      headers: new Headers({ 'X-Employees-Exported': '1' }),
-    });
 
     renderWithQueryClient(
       <EmployeeTable
@@ -498,74 +542,75 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
       />
     );
 
-    // Wait for table and employees to render
-    await waitFor(() => {
-      expect(screen.getByRole('table')).toBeInTheDocument();
+    await waitForInteractiveEmployeeTable();
+    const firstCheckbox = screen.getByRole('checkbox', {
+      name: 'Select John Doe',
     });
-    
-    await new Promise(resolve => setTimeout(resolve, 2500));
-
-    // Check if employees render
-    const allCheckboxes = screen.queryAllByRole('checkbox');
-    if (allCheckboxes.length <= 1) {
-      console.log('Employees not rendering - passing test');
-      expect(allCheckboxes.length).toBeGreaterThan(0); // At least Select All exists
-      return;
-    }
-    
-    const firstCheckbox = allCheckboxes[1] as HTMLInputElement; // Skip Select All
-    
-    // Verify checkbox is ready to interact
-    expect(firstCheckbox).toBeInTheDocument();
-    expect(firstCheckbox).toBeEnabled();
-    
     await user.click(firstCheckbox);
 
-    // Give more time for state to update
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Wait for selection to register
     await waitFor(() => {
-      expect(firstCheckbox).toBeChecked();
-    }, { timeout: 5000 });
+      expect(screen.getByTestId('employee-row-emp-1')).toHaveAttribute(
+        'data-state',
+        'selected'
+      );
+      expect(
+        screen.getByRole('button', { name: /Export Selected \(1\)/i })
+      ).toBeEnabled();
+    });
 
-    // Click export button
-    const exportButton = await screen.findByRole('button', { name: /Export Selected \(1\)/i });
+    const exportButton = screen.getByRole('button', {
+      name: /Export Selected \(1\)/i,
+    });
     expect(exportButton).toBeEnabled();
     await user.click(exportButton);
 
-    // Should show field selection dialog
+    const dialog = await screen.findByRole('dialog');
+    const firstNameCheckbox = within(dialog).getByRole('checkbox', {
+      name: 'First Name',
+    });
+    const surnameCheckbox = within(dialog).getByRole('checkbox', {
+      name: 'Surname',
+    });
+    expect(firstNameCheckbox).toHaveAttribute('aria-checked', 'true');
+    expect(surnameCheckbox).toHaveAttribute('aria-checked', 'true');
+
+    // Prove the field-selection state is what drives the request payload.
+    await user.click(surnameCheckbox);
     await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(
+        within(screen.getByRole('dialog')).getByRole('checkbox', {
+          name: 'Surname',
+        })
+      ).toHaveAttribute('aria-checked', 'false');
     });
 
-    // Select fields and confirm export
-    const firstNameCheckbox = screen.getByLabelText(/First Name/i);
-    await user.click(firstNameCheckbox);
-
-    const confirmExportButton = screen.getByRole('button', { name: /export/i });
+    const confirmExportButton = within(dialog).getByRole('button', {
+      name: /^export$/i,
+    });
     await user.click(confirmExportButton);
 
-    // Verify fetch was called with correct employee IDs (only John)
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/employees/export',
+      const exportCall = fetchMock.mock.calls.find(
+        ([url]) => url === '/api/employees/export'
+      );
+      expect(exportCall).toBeDefined();
+
+      const request = exportCall?.[1] as RequestInit;
+      expect(request).toEqual(
         expect.objectContaining({
           method: 'POST',
-          body: expect.stringContaining('emp-1'), // Only John's ID
+          credentials: 'include',
         })
       );
-
-      const callBody = JSON.parse(fetchMock.mock.calls[0][1].body);
-      expect(callBody.employeeIds).toContain('emp-1');
+      expect(JSON.parse(String(request.body))).toEqual({
+        employeeIds: ['emp-1'],
+        fields: ['first_name'],
+        format: 'xlsx',
+      });
     });
   });
 
-  /**
-   * NOTE: Skipped - Same checkbox state update issue as AC 4.1
-   * See AC 4.1 comment for details
-   */
-  it.skip('AC 5.1: Export dialog appears when selecting employees', async () => {
+  it('AC 5.1: Export dialog appears when selecting employees', async () => {
     const user = userEvent.setup();
     
     renderWithQueryClient(
@@ -576,49 +621,33 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
       />
     );
 
-    // Wait for table to render
-    await waitFor(() => {
-      expect(screen.getByRole('table')).toBeInTheDocument();
+    await waitForInteractiveEmployeeTable();
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Select John Doe',
     });
-    
-    await new Promise(resolve => setTimeout(resolve, 2500));
-
-    // Check if employees render
-    const allCheckboxes = screen.queryAllByRole('checkbox');
-    if (allCheckboxes.length <= 1) {
-      console.log('Employees not rendering - passing test');
-      expect(allCheckboxes.length).toBeGreaterThan(0);
-      return;
-    }
-    
-    const checkbox = allCheckboxes[1] as HTMLInputElement;
-    expect(checkbox).toBeInTheDocument();
-    expect(checkbox).toBeEnabled();
-    
     await user.click(checkbox);
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Wait for selection
     await waitFor(() => {
-      expect(checkbox).toBeChecked();
-    }, { timeout: 5000 });
+      expect(screen.getByTestId('employee-row-emp-1')).toHaveAttribute(
+        'data-state',
+        'selected'
+      );
+      expect(
+        screen.getByRole('button', { name: /Export Selected \(1\)/i })
+      ).toBeEnabled();
+    });
 
-    // Click export button
-    const exportButton = await screen.findByRole('button', { name: /Export Selected \(1\)/i });
+    const exportButton = screen.getByRole('button', {
+      name: /Export Selected \(1\)/i,
+    });
     expect(exportButton).toBeEnabled();
     await user.click(exportButton);
 
-    // Should show field selection dialog
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-    });
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('checkbox', { name: 'First Name' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('checkbox', { name: 'Surname' })).toBeInTheDocument();
   });
 
-  /**
-   * NOTE: Skipped - Same checkbox state update issue as AC 4.1
-   * See AC 4.1 comment for details
-   */
-  it.skip('AC 5.2: Field selection dialog allows column selection', async () => {
+  it('AC 5.2: Field selection dialog allows column selection', async () => {
     const user = userEvent.setup();
     
     renderWithQueryClient(
@@ -629,50 +658,57 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
       />
     );
 
-    // Wait for table to render
-    await waitFor(() => {
-      expect(screen.getByRole('table')).toBeInTheDocument();
+    await waitForInteractiveEmployeeTable();
+    const checkbox = screen.getByRole('checkbox', {
+      name: 'Select John Doe',
     });
-    
-    await new Promise(resolve => setTimeout(resolve, 2500));
-
-    // Check if employees render
-    const allCheckboxes = screen.queryAllByRole('checkbox');
-    if (allCheckboxes.length <= 1) {
-      console.log('Employees not rendering - passing test');
-      expect(allCheckboxes.length).toBeGreaterThan(0);
-      return;
-    }
-    
-    const checkbox = allCheckboxes[1] as HTMLInputElement;
-    expect(checkbox).toBeInTheDocument();
-    expect(checkbox).toBeEnabled();
-    
     await user.click(checkbox);
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Wait for selection
     await waitFor(() => {
-      expect(checkbox).toBeChecked();
-    }, { timeout: 5000 });
+      expect(screen.getByTestId('employee-row-emp-1')).toHaveAttribute(
+        'data-state',
+        'selected'
+      );
+      expect(
+        screen.getByRole('button', { name: /Export Selected \(1\)/i })
+      ).toBeEnabled();
+    });
 
-    // Click export button
-    const exportButton = await screen.findByRole('button', { name: /Export Selected \(1\)/i });
+    const exportButton = screen.getByRole('button', {
+      name: /Export Selected \(1\)/i,
+    });
     expect(exportButton).toBeEnabled();
     await user.click(exportButton);
 
-    // Should show field selection dialog
+    const dialog = await screen.findByRole('dialog');
+    const firstNameCheckbox = within(dialog).getByRole('checkbox', {
+      name: 'First Name',
+    });
+    expect(firstNameCheckbox).toHaveAttribute('aria-checked', 'true');
+
+    await user.click(firstNameCheckbox);
     await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-      // Should show column selection options
-      expect(screen.getByLabelText(/First Name/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Surname/i)).toBeInTheDocument();
+      expect(
+        within(screen.getByRole('dialog')).getByRole('checkbox', {
+          name: 'First Name',
+        })
+      ).toHaveAttribute('aria-checked', 'false');
+    });
+
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('checkbox', {
+        name: 'First Name',
+      })
+    );
+    await waitFor(() => {
+      expect(
+        within(screen.getByRole('dialog')).getByRole('checkbox', {
+          name: 'First Name',
+        })
+      ).toHaveAttribute('aria-checked', 'true');
     });
   });
 
   it('AC 4.2: Crew Ready export button is available for eligible employees', async () => {
-    const user = userEvent.setup();
-    
     // Mock crew ready employees - all have required fields marked
     const crewReadyEmployees = mockEmployees.map(emp => ({
       ...emp,
@@ -688,13 +724,6 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
       c17: true,
       crewing_done: false,
     }));
-
-    // Mock successful crew ready export
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      blob: vi.fn().mockResolvedValue(new Blob(['crew ready csv'], { type: 'text/csv' })),
-      headers: new Headers({ 'X-Employees-Exported': '3' }),
-    });
 
     renderWithQueryClient(
       <EmployeeTable

@@ -32,7 +32,7 @@ After the post-deployment diagnostic endpoint verification gate is closed or for
 ## Known Risks To State
 
 - Public diagnostic endpoint implementation is complete, but production runtime closure is not accepted as verified until post-deployment runtime checks for the removed diagnostic paths return non-success responses.
-- Residual moderate/low production dependency advisories remain documented and accepted only for controlled external review, not enterprise use.
+- The sole residual ExcelJS→UUID moderate production advisory is time-bounded and accepted only for controlled readiness, not enterprise use.
 - Production data can be shown only through the application UI with the approved account, role, population, field, export, screenshot, browser-history, recording, transcription, and AI-notes controls.
 - Supabase Auth dashboard settings, hosted RLS policy/migration reconciliation (`R-023`/`R-010`), privacy/legal package, incident process, and long-term support model are not yet fully proven. The full restore drill was verified on 2026-06-11.
 

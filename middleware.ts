@@ -1,36 +1,140 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { validateNonProductionSupabaseEnvironment } from './src/lib/env/non-production-supabase-guard';
-import { shouldUpdateActivity } from './src/lib/server/utils/activity-tracker';
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-// Routes that don't require authentication (excluding /login which needs special handling)
-const PUBLIC_ROUTES = ['/api/auth/login', '/api/health'];
+import { validateNonProductionSupabaseEnvironment } from "./src/lib/env/non-production-supabase-guard";
+import { shouldUpdateActivity } from "./src/lib/server/utils/activity-tracker";
+
+const PUBLIC_ROUTES = ["/api/auth/login", "/api/health"];
+const ADMIN_ROUTES = [
+  "/dashboard/important-dates",
+  "/dashboard/admin/users",
+  "/dashboard/admin/columns",
+];
+const REJECTED_SESSION_SIGNOUT_TIMEOUT_MS = 500;
+
+type CookieMutation = {
+  name: string;
+  value: string;
+  options: CookieOptions;
+};
+
+function sanitizedErrorCode(error: unknown): string {
+  if (error && typeof error === "object") {
+    const candidate = error as { code?: unknown; status?: unknown };
+    if (typeof candidate.code === "string") return candidate.code;
+    if (typeof candidate.status === "number") return `http_${candidate.status}`;
+  }
+  return "unexpected_error";
+}
+
+function authCookieBaseName(): string | null {
+  try {
+    const hostname = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").hostname;
+    return hostname ? `sb-${hostname.split(".")[0]}-auth-token` : null;
+  } catch {
+    return null;
+  }
+}
+
+function isSupabaseAuthCookie(name: string, baseName: string | null): boolean {
+  if (baseName && (name === baseName || name.startsWith(`${baseName}.`))) {
+    return true;
+  }
+  return /^sb-[a-z0-9-]+-auth-token(?:\.\d+)?$/i.test(name);
+}
+
+function applyCookieMutations(
+  response: NextResponse,
+  mutations: CookieMutation[]
+) {
+  for (const { name, value, options } of mutations) {
+    response.cookies.set(name, value, options);
+  }
+  return response;
+}
+
+function redirectWithCookies(
+  request: NextRequest,
+  pathname: string,
+  mutations: CookieMutation[]
+) {
+  return applyCookieMutations(
+    NextResponse.redirect(new URL(pathname, request.url)),
+    mutations
+  );
+}
+
+function clearRejectedSessionCookies(
+  request: NextRequest,
+  response: NextResponse,
+  mutations: CookieMutation[]
+) {
+  const baseName = authCookieBaseName();
+  const names = new Set<string>();
+  for (const { name } of request.cookies.getAll()) {
+    if (isSupabaseAuthCookie(name, baseName)) names.add(name);
+  }
+  for (const { name } of mutations) {
+    if (isSupabaseAuthCookie(name, baseName)) names.add(name);
+  }
+  if (baseName) names.add(baseName);
+
+  for (const name of names) {
+    request.cookies.set(name, "");
+    response.cookies.set(name, "", { path: "/", maxAge: 0 });
+  }
+  return response;
+}
+
+async function revokeDefinitivelyRejectedSession(
+  signOut: () => PromiseLike<{ error: unknown | null }>
+) {
+  await new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = (error: unknown | null) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      if (error) {
+        console.error("[Middleware] Rejected-session revocation failed", {
+          reason: sanitizedErrorCode(error),
+        });
+      }
+      resolve();
+    };
+    const timeout = setTimeout(
+      () => finish({ code: "SIGNOUT_TIMEOUT" }),
+      REJECTED_SESSION_SIGNOUT_TIMEOUT_MS
+    );
+
+    Promise.resolve()
+      .then(signOut)
+      .then(({ error }) => finish(error), finish);
+  });
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  // Allow public API routes that don't need auth checks
-  if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
+  if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
-  // Skip middleware for static files, API routes, PWA files
   if (
-    pathname.startsWith('/api/') ||
-    pathname.startsWith('/_next/') ||
-    pathname === '/manifest.json' ||
-    pathname.includes('.')
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname === "/manifest.json" ||
+    pathname.includes(".")
   ) {
     return NextResponse.next();
   }
 
   validateNonProductionSupabaseEnvironment();
 
+  const cookieMutations: CookieMutation[] = [];
+  const response = NextResponse.next({ request });
+
   try {
-    // Create a response that will be returned
-    const response = NextResponse.next();
-    
-    // Create Supabase client for Edge Runtime
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -40,89 +144,139 @@ export async function middleware(request: NextRequest) {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              request.cookies.set(name, value);
-              response.cookies.set(name, value, options);
-            });
+            for (const mutation of cookiesToSet) {
+              cookieMutations.push(mutation);
+              request.cookies.set(mutation.name, mutation.value);
+              response.cookies.set(
+                mutation.name,
+                mutation.value,
+                mutation.options
+              );
+            }
           },
         },
       }
     );
 
-    // Refresh session if expired
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError) {
+      console.error("[Middleware] Auth resolution failed", {
+        reason: sanitizedErrorCode(authError),
+      });
+    }
 
-    // Single query for role + activity tracking (avoids duplicate DB round-trips)
-    let userRole: string | null = null;
-    if (user) {
-      const { data: appUser, error: fetchError } = await supabase
-        .from('users')
-        .select('id, role, last_active_at')
-        .eq('auth_user_id', user.id)
-        .single();
+    let appUser:
+      | {
+          id: string;
+          role: string;
+          last_active_at: string | null;
+          is_active: boolean;
+        }
+      | null = null;
+    let lookupError: unknown = null;
 
-      if (fetchError) {
-        console.error('Error fetching user data:', fetchError);
+    if (user && !authError) {
+      const lookup = await supabase
+        .from("users")
+        .select("id, role, last_active_at, is_active")
+        .eq("auth_user_id", user.id)
+        .maybeSingle();
+      appUser = lookup.data;
+      lookupError = lookup.error;
+
+      if (lookupError) {
+        console.error("[Middleware] Application-user lookup failed", {
+          reason: sanitizedErrorCode(lookupError),
+        });
+        appUser = null;
       }
+    }
 
-      userRole = appUser?.role || null;
+    const definitiveRejectedSession =
+      Boolean(user) &&
+      !authError &&
+      !lookupError &&
+      (!appUser || appUser.is_active !== true);
+    const hasActiveAppUser =
+      Boolean(user) &&
+      !authError &&
+      !lookupError &&
+      appUser?.is_active === true;
+    const userRole = hasActiveAppUser ? appUser?.role ?? null : null;
 
-      // Update activity asynchronously (fire-and-forget pattern)
-      if (appUser && shouldUpdateActivity(appUser.last_active_at)) {
-        void (async () => {
-          try {
-            const { error: updateError } = await supabase.rpc(
-              'update_own_last_active_at'
-            );
-            
-            if (updateError) {
-              console.error('[Middleware] Update error:', updateError);
-            }
-          } catch (error) {
-            console.error('[Middleware] Failed to update user activity:', error);
+    if (definitiveRejectedSession) {
+      await revokeDefinitivelyRejectedSession(() =>
+        supabase.auth.signOut({ scope: "local" })
+      );
+      clearRejectedSessionCookies(request, response, cookieMutations);
+    }
+
+    if (
+      hasActiveAppUser &&
+      appUser &&
+      shouldUpdateActivity(appUser.last_active_at)
+    ) {
+      void (async () => {
+        try {
+          const { error: updateError } = await supabase.rpc(
+            "update_own_last_active_at"
+          );
+          if (updateError) {
+            console.error("[Middleware] Activity update failed", {
+              reason: sanitizedErrorCode(updateError),
+            });
           }
-        })();
-      }
+        } catch (error) {
+          console.error("[Middleware] Activity update failed", {
+            reason: sanitizedErrorCode(error),
+          });
+        }
+      })();
     }
 
-    // Protect admin-only routes
-    const adminRoutes = ['/dashboard/important-dates', '/dashboard/admin/users', '/dashboard/admin/columns'];
-    const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
-    
-    if (isAdminRoute && userRole !== 'hr_admin') {
-      const redirectUrl = new URL('/dashboard', request.url);
-      return NextResponse.redirect(redirectUrl);
+    if (user && !hasActiveAppUser && !pathname.startsWith("/login")) {
+      const redirect = redirectWithCookies(request, "/login", cookieMutations);
+      return definitiveRejectedSession
+        ? clearRejectedSessionCookies(request, redirect, cookieMutations)
+        : redirect;
     }
 
-    // Redirect to login if not authenticated (except on login page itself)
-    if (!user && !pathname.startsWith('/login') && pathname !== '/') {
-      const redirectUrl = new URL('/login', request.url);
-      return NextResponse.redirect(redirectUrl);
+    const isAdminRoute = ADMIN_ROUTES.some((route) =>
+      pathname.startsWith(route)
+    );
+    if (isAdminRoute && hasActiveAppUser && userRole !== "hr_admin") {
+      return redirectWithCookies(request, "/dashboard", cookieMutations);
     }
 
-    // Redirect authenticated users from root to dashboard
-    if (user && pathname === '/') {
-      const redirectUrl = new URL('/dashboard', request.url);
-      return NextResponse.redirect(redirectUrl);
+    if (!user && !pathname.startsWith("/login") && pathname !== "/") {
+      return redirectWithCookies(request, "/login", cookieMutations);
     }
 
-    // Redirect to dashboard if authenticated user tries to access login
-    if (user && pathname.startsWith('/login')) {
-      const redirectUrl = new URL('/dashboard', request.url);
-      return NextResponse.redirect(redirectUrl);
+    if (hasActiveAppUser && pathname === "/") {
+      return redirectWithCookies(request, "/dashboard", cookieMutations);
     }
 
-    // Return response with any cookies set by Supabase
+    if (hasActiveAppUser && pathname.startsWith("/login")) {
+      return redirectWithCookies(request, "/dashboard", cookieMutations);
+    }
+
     return response;
   } catch (error) {
-    console.error('Middleware error:', error);
-    // On error, allow the request to continue to avoid blocking the app
-    return NextResponse.next();
+    console.error("[Middleware] Resolution failed closed", {
+      reason: sanitizedErrorCode(error),
+    });
+    if (pathname !== "/" && !pathname.startsWith("/login")) {
+      return redirectWithCookies(request, "/login", cookieMutations);
+    }
+    return response;
   }
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -120,7 +120,7 @@ No formal incident handling process was found in code/config. Technical logs exi
 | Access control | Supabase Auth, API role checks, RLS | auth helpers, migrations, private endpoint checks | Pre-remediation private checks found unauthenticated diagnostic behavior; Story 22.1 removed the risky handlers | Close post-deployment diagnostic verification gate | Yes |
 | Retention | Archive/anonymize/backups | lifecycle repo, backup workflow | Retention policy not confirmed | Approve retention schedule | Yes |
 | Audit | Staffing changelog, employee changes | migrations/services | Broad audit reads and migration-history gap | Verify hosted migration history/RLS | Yes |
-| Security | Secrets ignored, Zod, RLS | `.gitignore`, validation, migrations | Residual moderate/low dependency advisories | Track advisory register and validate remaining major upgrades | No/Some |
+| Security | Secrets ignored, Zod, RLS | `.gitignore`, validation, migrations | One time-bounded ExcelJS→UUID moderate dependency advisory | Track the advisory register and recheck the residual by 2026-09-30 | No/Some |
 | Subprocessors | Supabase/Vercel/GitHub/SMTP identifiable | config/workflows | Contracts unknown | Draft register created (`24_subprocessor_register.md`); execute DPAs (Epic 23.2) | Yes |
 | Data subject rights | Export/edit/delete/anonymize components | routes/repositories | No DSAR process | Define operational process | Yes |
 | Incident response | Logs only | console usage | No formal process | Draft runbook created (`25_incident_breach_process.md`); confirm with legal and exercise it | Yes |

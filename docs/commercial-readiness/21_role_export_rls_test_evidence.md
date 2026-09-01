@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-10
 
-Updated: 2026-07-09 — Story 22.13 direct-database authorization addendum
+Updated: 2026-09-01 — Story 22.15 local live/full evidence synchronized
 
 Story: 22.7
 
@@ -60,6 +60,19 @@ Story 22.13 adds `tests/integration/epic-22/story-22.13/direct-database-authoriz
 - Individual denial of `users.role`, `is_active`, `email`, and `auth_user_id` updates; caller-bound activity success.
 - Forged audit INSERT denial, archived employee filtering, hidden `ssn` versus visible `comments`, and trigger-owned audit writes.
 
-The shared `tests/helpers/epic-22-supabase-test-environment.ts` reads project id and ports from `supabase/config.toml`, requires the `hr-masterdata` high-port stack (`15421`/`15422`), rejects wrong/remote targets, and fingerprints migration `20260710150000`. It skips only when that expected stack is unreachable and emits an explicit diagnostic.
+For the dated Story 22.13 run, the shared `tests/helpers/epic-22-supabase-test-environment.ts` read project id and ports from `supabase/config.toml`, required the `hr-masterdata` high-port stack (`15421`/`15422`), rejected wrong/remote targets, and fingerprinted migration `20260710150000`. Story 22.15 advances that fingerprint as recorded below.
 
 Current evidence status (2026-07-10): the project-scoped WSL/Docker Supabase stack was rebuilt on `15421`/`15422` through migration `20260710150000`. The focused twelve-file Story 22.13 batch passed **94/94**, including live direct-role RLS/RPC, atomic presentation/status transitions, runtime restore, and backup integrity evidence. Final gates passed: Vitest **3,125 passed / 30 skipped**, Playwright **162 passed / 53 skipped / 0 flaky**, `npx tsc --noEmit` exit `0`, and lint exit `0` with no errors. This is local non-production evidence; hosted staging apply/re-verification remains an owner-controlled release gate and is not claimed here.
+
+## Story 22.15 Active-Authorization Addendum
+
+Story 22.15 adds `tests/integration/epic-22/story-22.15/inactive-authorization-and-atomic-delete.test.ts` plus migration/API/middleware/login compatibility tests. The checked-in coverage verifies or is designed to verify:
+
+- active callers retain their database role while inactive callers receive `NULL` from `get_user_role()`;
+- inactive HR/external callers cannot read role-gated employees, call role-gated RPCs, or CRUD saved filters;
+- the documented own-account metadata and intentional public-reference exceptions remain available without restoring a role;
+- HR-admin app-user deletion is caller-bound and transactional, with self/final-admin/FK failures leaving the target row unchanged;
+- a successful app-row deletion atomically persists a durable handoff before service-admin Auth cleanup, and an Auth deletion or completion failure produces an explicit retryable cleanup result;
+- the environment helper now fingerprints `20260831200026` and rejects remote, wrong-project, or wrong-port targets.
+
+Verification recorded 2026-09-01: a clean local reset applied all 63 migrations and the seed; Story 22.15 live database evidence passed **11/11**, Story 22.14 PostgREST contention passed **1/1**, and live Next-plus-Supabase export passed **5/5**. The final fresh full `npx vitest run` with all local live gates enabled exited `0` with **317/317 files** and **3,342/3,342 tests** passing with zero skips. Exact full Playwright exited `0` with **163 passed / 47 classified skips / 0 failed**. Nine skips require an explicitly authorized non-production cron/delivery-capture run; the other 38 are obsolete/superseded or deterministic-fixture coverage debt. No skip is counted as passing, no hosted result is inferred, and the Next `16.3.3` production build also passed.

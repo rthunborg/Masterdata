@@ -2,6 +2,8 @@
 
 Prepared: 2026-06-03
 
+Updated: 2026-08-31 — Story 22.15 active-session and deletion remediation
+
 ## Identified Roles
 
 Application roles are defined in `src/lib/types/user.ts`: `hr_admin`, `recruiter`, `admin_limited`, `crewing`, `sodexo`, `omc`, `payroll`, `toplux`.
@@ -44,6 +46,7 @@ Database/RLS:
 - `users`, `employees`, `column_config`, important dates, user filters, staffing needs, and staffing changelog have RLS policies in migrations.
 - `employees` RLS is row-level. Column-level permissions are mostly enforced in application code with `column_config.role_permissions`.
 - `employee_column_changes` reads are scoped by the Story 22.13 RLS policy to an active caller, an employee row the caller may read, and column visibility derived from the caller's role. HR Admin and recruiter retain their intended broader audit access; external roles see only permitted columns.
+- Story 22.15 makes `get_user_role()` return `NULL` for inactive or missing app users and active-gates all four `user_filters` policies. Existing own-account `users` metadata and intentional public reference reads are documented exceptions; they do not restore a database role.
 
 ## Specific Access-Control Flags
 
@@ -54,7 +57,8 @@ Database/RLS:
 - Presentations may show production data through a named application account with the demonstrated app role context documented in `16_presentation_data_scope_and_access_preconditions.md`; service-role paths, Supabase Studio/direct SQL, admin shortcut accounts, and diagnostic routes are prohibited presentation paths.
 - HR Admin rights are broad; that may be appropriate but should be supported by admin access logging and regular review.
 - User invitation/password reset is not formalized; user creation auto-confirms accounts and returns a temporary password in API response (`src/app/api/admin/users/route.ts`).
-- Account termination exists through `is_active=false` and session revoke attempt, but formal offboarding workflow is not documented.
+- In the Story 22.15 repository target, deactivation immediately removes role-derived database access even while an Auth JWT remains unexpired, and a rejected login globally signs out the current session. Hosted staging/production behavior is not claimed until the owner-gated migration apply and verification pass.
+- In the Story 22.15 repository target, app-user deletion is caller-bound and atomic in `delete_app_user(uuid)`: self/final-active-admin checks, row deletion, and a durable cleanup handoff share one transaction. Supabase Auth deletion and the narrow completion RPC follow as an explicit service-admin second phase; either of those known-handoff failures returns `AUTH_CLEANUP_PENDING` with a retryable cleanup id while the deleted app row keeps database authorization removed. An ambiguous initial deletion-RPC outcome instead returns `AUTH_CLEANUP_STATE_UNKNOWN` with `cleanup_id: null` and requires a same-user-id retry. Formal operational offboarding and orphaned-Auth cleanup ownership still need documentation; hosted staging/production remain owner-gated.
 
 ## Recommended Permission Improvements
 
@@ -64,4 +68,4 @@ Database/RLS:
 4. Review service-role paths and add explicit comments/tests for authorization preconditions.
 5. Re-verify the scoped `employee_column_changes` audit policy whenever employee-row or column-visibility rules change.
 6. Add admin action logging for user/permission changes.
-7. Formalize account invitation, password reset, and offboarding.
+7. Formalize account invitation, password reset, offboarding, and owner follow-up for an Auth record left after a successful app-row deletion.

@@ -106,7 +106,7 @@ The brief should also list non-ready enterprise areas where relevant: API/field 
 
 - Story 22.1 is `done` in synchronized status artifacts. Production custom-domain verification is a post-merge Epic 22 release/readiness gate, not a story-completion blocker.
 - Story 22.2 is done. It introduced non-production Supabase guardrails and reset `.env.test` to local/non-production placeholders. The exact Playwright gate passed after local Supabase was available.
-- Story 22.3 is done. Current production audit evidence reports 0 critical/high production advisories and 3 residual moderate/low advisories documented with owner, target dates, compensating controls, and controlled-presentation acceptance.
+- Story 22.3 is done. Its historical completion evidence reported 0 critical/high production advisories and 3 residual moderate/low advisories; Story 22.15 supersedes that dependency snapshot with 0 critical, 0 high, 1 moderate ExcelJS→UUID, and 0 low across 281 production dependencies, with the residual time-bounded in the current register.
 - Story 22.4 is done. Production data may be shown under standing presentation controls; Story 22.2 applies only when a non-production presentation path is deliberately chosen.
 - Story 22.4's docs-only implementation used a targeted secret/SSN/DB URL/token search instead of full Vitest/Playwright gates because estimated tests were `0`; follow the same waiver pattern only if Story 22.5 remains docs-only.
 

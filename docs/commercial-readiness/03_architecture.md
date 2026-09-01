@@ -166,7 +166,7 @@ flowchart LR
 ## Recommended Improvements Before Enterprise Use
 
 1. Remove/protect debug and test endpoints.
-2. Keep dependency advisory evidence current; critical/high production advisories were patched by Story 22.3, with residual moderate/low advisories risk-accepted in `15_dependency_advisory_risk_register.md`.
+2. Keep dependency advisory evidence current; Story 22.15 leaves only the time-bounded ExcelJS→UUID moderate advisory registered in `15_dependency_advisory_risk_register.md`.
 3. Audit every API route for `requireAuthAPI(request)`/role helper usage.
 4. Confirm DB migration history and hosted RLS policies directly in Supabase with database-password access, and keep export custom-field access on the real-column model.
 5. Keep periodic restore drills (first full drill verified 2026-06-11) and formalize backup-failure alerting, incident response, logging redaction, and access reviews.
