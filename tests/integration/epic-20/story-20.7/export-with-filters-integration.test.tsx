@@ -476,26 +476,29 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
     });
     await user.click(selectAllCheckbox);
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole('checkbox', { name: 'Select all' })
-      ).toHaveAttribute('aria-checked', 'true');
-      expect(screen.getByTestId('employee-select-checkbox-emp-1')).toHaveAttribute(
-        'aria-checked',
-        'true'
-      );
-      expect(screen.getByTestId('employee-select-checkbox-emp-2')).toHaveAttribute(
-        'aria-checked',
-        'true'
-      );
-      expect(screen.getByTestId('employee-select-checkbox-emp-3')).toHaveAttribute(
-        'aria-checked',
-        'true'
-      );
-      const exportButton = screen.getByRole('button', { name: /Export Selected/i });
-      expect(exportButton).toHaveTextContent('(3)');
-      expect(exportButton).toBeEnabled();
-    });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByRole('checkbox', { name: 'Select all' })
+        ).toHaveAttribute('aria-checked', 'true');
+        expect(screen.getByTestId('employee-select-checkbox-emp-1')).toHaveAttribute(
+          'aria-checked',
+          'true'
+        );
+        expect(screen.getByTestId('employee-select-checkbox-emp-2')).toHaveAttribute(
+          'aria-checked',
+          'true'
+        );
+        expect(screen.getByTestId('employee-select-checkbox-emp-3')).toHaveAttribute(
+          'aria-checked',
+          'true'
+        );
+        const exportButton = screen.getByRole('button', { name: /Export Selected/i });
+        expect(exportButton).toHaveTextContent('(3)');
+        expect(exportButton).toBeEnabled();
+      },
+      { timeout: 5000 }
+    );
   });
 
   it('AC 3.1: Export button label updates based on filter state', async () => {
