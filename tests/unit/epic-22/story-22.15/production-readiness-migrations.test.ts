@@ -67,6 +67,20 @@ const cutoverRunbook = readFileSync(
   resolve(root, "docs/commercial-readiness/27_supabase_cutover_runbook.md"),
   "utf8"
 );
+const storyCarrier = readFileSync(
+  resolve(
+    root,
+    "docs/sprint-artifacts/story-22.15-production-readiness-remediation.md"
+  ),
+  "utf8"
+);
+const frozenSpecification = readFileSync(
+  resolve(
+    root,
+    "_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md"
+  ),
+  "utf8"
+);
 
 function exactFunctionBodySha256(functionName: string) {
   const definition = migrationSql.match(
@@ -630,6 +644,17 @@ describe("Story 22.15 migration baseline safety", () => {
       "supabase/migrations/*.sql text eol=lf"
     );
     expect(gitAttributes).toContain("supabase/verify/*.sql text eol=lf");
+    expect(gitAttributes).toContain(
+      "supabase/migrations/20250113000000_add_room_assignment_rpc.sql whitespace=-trailing-space,-blank-at-eof"
+    );
+  });
+
+  it("commits the linked frozen specification as the Story 22.15 source of truth", () => {
+    expect(storyCarrier).toContain(
+      "../../_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md"
+    );
+    expect(frozenSpecification).toContain("<frozen-after-approval");
+    expect(frozenSpecification).toContain("## Tasks & Acceptance");
   });
 
   it("isolates default test probes to this repository's local Supabase ports", () => {

@@ -17,7 +17,8 @@ Scope: local-only verification of the Story 22.15 remediation candidate derived 
 | Production build | Exit `0` with ephemeral local-only Supabase configuration; 33 pages generated. The preceding no-env invocation failed because required Supabase configuration was absent and is not a code failure. |
 | Full Playwright | Exit `0` in 22.2 minutes; 163 passed / 47 skipped / 0 failed; test teardown removed local test data |
 | Production dependency audit | 0 critical / 0 high / 1 moderate / 0 low across 281 production dependencies; command exit `1` only because the registered ExcelJS-to-UUID moderate remains |
-| Whitespace/diff validation | Exit `0` before evidence synchronization; repeated after synchronization before handoff |
+| Whitespace/diff validation | Candidate-wide `git diff origin/staging...HEAD --check` exits `0` under one explicit path-scoped `.gitattributes` exception for the byte-preserved `20250113000000_add_room_assignment_rpc.sql`. Only that file's historical trailing whitespace on lines 28, 38, 63, 139, 147, 160, and 197 and blank EOF are exempt; the candidate excluding that path is clean, and the migration-manifest test pins SHA-256 `1e3ec6aa1ec00b768806743ae4cf07500fe1717efc4c399088cca11a459e003a`. |
+| PR #94 review-patch verification | Focused migration-readiness suite 20/20; TypeScript exit `0`; full ESLint exit `0` with 0 errors / 297 pre-existing warnings; candidate, index, and worktree diff checks exit `0`. An initial unconstrained full Vitest run had one load-sensitive 15-second timeout in the pre-existing lazy-loading suite; that file passed 5/5 on immediate retry, and the bounded full rerun passed 308 files / 3,292 tests with 9 environment-gated files / 51 tests skipped. |
 
 No environment file was written, no credential was rotated, no hosted database was mutated, no deployment was performed, and no production data was accessed.
 
