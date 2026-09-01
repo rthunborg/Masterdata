@@ -1,59 +1,48 @@
 # Dependency Advisory Risk Register
 
-Prepared: 2026-06-05
+Prepared: 2026-08-31 (Story 22.15 refresh)
 
-Source evidence: `docs/commercial-readiness/evidence/dependency-audit-2026-06-05.md`
+Revalidated: 2026-09-01
+
+Source evidence: `docs/commercial-readiness/evidence/dependency-audit-2026-08-31.md`
 
 ## Summary
 
-Story 22.3 remediated all current critical and high production dependency advisories reported by `pnpm audit --prod`.
+Story 22.15 refreshed the production audit after the candidate had regressed to 28 advisories, including 15 high-severity findings. Three reviewed upgrade batches remove every critical/high production advisory. The only retained production advisory is the ExcelJS transitive UUID moderate risk below.
 
 | Audit point | Critical | High | Moderate | Low | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Before remediation | 0 | 15 | 14 | 4 | 33 |
-| After remediation | 0 | 0 | 2 | 1 | 3 |
+| Candidate `bcb1a0e5bed3d06b9b7582320f491964ffc5a0b9` before Story 22.15 | 0 | 15 | 11 | 2 | 28 |
+| Story 22.15 remediated lockfile | 0 | 0 | 1 | 0 | 1 |
 
-## Remediated Production Advisories
+`pnpm audit --prod --json` exits `1` because pnpm treats the accepted moderate finding as a non-clean audit. The acceptance gate is zero critical/high plus the single specifically registered residual, not a blanket exit-code waiver.
 
-| Package/path | Severity removed | Action |
+## Implemented Upgrade Batches
+
+| Batch | Changes | Verification scope |
 | --- | --- | --- |
-| `next` | High/moderate/low | Updated direct dependency to `16.2.7`. |
-| `exceljs > minimatch` | High | Added pnpm overrides for patched 3.x and 5.x minimatch lines. |
-| `exceljs > tmp` | High | Added pnpm override to `tmp 0.2.7`. |
-| `exceljs > brace-expansion` | Moderate | Added pnpm overrides for patched 1.x and 2.x lines. |
-| `@supabase/realtime-js > ws` | Moderate | Added pnpm override to `ws 8.21.0`. |
-| `next > postcss` | Moderate | Added pnpm override to `postcss 8.5.15`. |
+| 1 — framework patches and transitive floors | Next `16.2.12` checkpoint; `brace-expansion` `1.1.18`/`2.1.4`; PostCSS `8.5.23`; Nanoid `3.3.18`; Babel Core `7.29.6` | Audit delta plus application unit/integration suite |
+| 2 — SMTP compatibility | Nodemailer `9.1.0`; `@types/nodemailer` `8.0.1` | Non-network transport compatibility and Story 22.14 reminder/delivery regressions |
+| 3 — framework/native alignment | Next, ESLint config, and bundle analyzer `16.3.3`; Sharp `0.35.3` | Type-check, lint, production build, Vitest, and Playwright |
+
+The repository records the final Batch 3 state; the intermediate Next `16.2.12` checkpoint was used only to isolate the audit delta before the coordinated framework/native upgrade.
+
+Completed verification as of 2026-09-01: type-check exited `0`; lint exited `0` with zero errors; a clean 63-migration local reset passed; Story 22.15 live database passed 11/11, Story 22.14 PostgREST passed 1/1, and live export passed 5/5; final fresh full Vitest exited `0` with 317/317 files and 3,342/3,342 tests passing with zero skips; exact full Playwright exited `0` with 163 passed / 47 classified skips / 0 failed; the Next `16.3.3` production build passed; and the fresh production audit remained at 0 critical / 0 high / 1 moderate / 0 low across 281 dependencies.
+
+Batch 3's local verification scope is complete. The 47 Playwright skips are not counted as passing: 9 require an explicitly authorized non-production notification-capture run and 38 are obsolete/superseded or deterministic-fixture coverage debt. Remote review and hosted staging/production verification remain separate release gates.
 
 ## Production Advisory Risk Register
 
-| Package | Severity | Affected path | Reason not fixed | Owner | Target date | Compensating control | Status |
+| Package | Severity | Affected path | Reason not fixed | Owner | Review date | Compensating control | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `nodemailer` (`GHSA-vvjj-xcjg-gr5g`) | Moderate | `.>nodemailer` | Patch requires moving from Nodemailer 7.x to 8.x. Story 22.3 scope prioritized critical/high production remediation and avoided broad major-version churn. | Technical owner | 2026-06-12 | SMTP transport options are server-side environment configuration only; current code does not pass a user-controlled transport `name` option to `createTransport`. Validate Nodemailer 8 in a focused follow-up before enterprise use. | Residual risk accepted for controlled presentation. |
-| `nodemailer` (`GHSA-c7w3-x93f-qmm8`) | Low | `.>nodemailer` | Same direct major-version upgrade as the moderate Nodemailer advisory. | Technical owner | 2026-06-12 | Current mail options do not pass a custom `envelope.size`; email sending remains server-side and authenticated workflow-triggered. Validate Nodemailer 8 in a focused follow-up. | Residual risk accepted for controlled presentation. |
-| `uuid` (`GHSA-w5hq-g745-h8pq`) | Moderate | `.>exceljs>uuid` | `exceljs 4.4.0` brings `uuid 8.3.2`; forcing `uuid >=11.1.1` is a major transitive override with unknown ExcelJS compatibility. | Technical owner | 2026-06-14 | `exceljs` is used for authenticated server-side XLSX export. Do not expose UUID buffer APIs to user input; evaluate ExcelJS replacement or safe major transitive override before enterprise use. | Residual risk accepted for controlled presentation. |
+| `uuid 8.3.2` (`GHSA-w5hq-g745-h8pq`) | Moderate | `.>exceljs>uuid` | `exceljs 4.4.0` requires `uuid ^8.3.0`; forcing `uuid >=11.1.1` is an unsupported major transitive override. | Technical owner | 2026-09-30 | ExcelJS is used only for authenticated server-side XLSX export. The application does not expose UUID v3/v5/v6 buffer/offset APIs to user input. Recheck for an ExcelJS release with a patched UUID range or select a replacement before the review date. | Time-bounded acceptance for controlled production readiness; not an enterprise waiver. |
 
-## Dev-Only Advisory Register
+No Nodemailer risk remains registered: the direct package is now `9.1.0`, its types are aligned, and a non-network compatibility test exercises the application mail shape.
 
-`pnpm audit --dev --json` after production remediation still reports dev-tool advisories: 1 critical, 10 high, and 4 moderate. These are not production runtime advisories, but they should be addressed before enterprise-grade development governance.
+## Development Tooling
 
-| Package | Severity | Affected path | Reason not fixed | Owner | Target date | Compensating control | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `vitest` (`GHSA-5xrq-8626-4rwp`) | Critical | `.>vitest` | Requires test-runner upgrade to `>=4.1.0`, outside production dependency remediation scope. | Technical owner | 2026-06-10 | Do not expose Vitest UI/API server to the network; use CLI `vitest run` only in local/CI contexts. | Open dev-only risk. |
-| `vite` (`GHSA-v2wj-q39q-566r`) | High | `.>@vitejs/plugin-react>vite` | Requires coordinated Vite/plugin upgrade to `>=7.3.2` and browser-test regression validation. | Technical owner | 2026-06-10 | Do not expose Vite dev server to the network; Next.js app uses Next runtime in production. | Open dev-only risk. |
-| `vite` (`GHSA-p9ff-h696-f583`) | High | `.>@vitejs/plugin-react>vite` | Requires coordinated Vite/plugin upgrade to `>=7.3.2` and browser-test regression validation. | Technical owner | 2026-06-10 | Do not expose Vite dev server to the network; Next.js app uses Next runtime in production. | Open dev-only risk. |
-| `vite` (`GHSA-4w7w-66w2-5vf9`) | Moderate | `.>@vitejs/plugin-react>vite` | Requires coordinated Vite/plugin upgrade to `>=7.3.2` and browser-test regression validation. | Technical owner | 2026-06-10 | Do not expose Vite dev server to the network; Next.js app uses Next runtime in production. | Open dev-only risk. |
-| `rollup` (`GHSA-mw96-cpmx-2vgc`) | High | `.>@vitejs/plugin-react>vite>rollup` | Requires coordinated Vite/Rollup tooling upgrade to `>=4.59.0`, outside production dependency remediation scope. | Technical owner | 2026-06-10 | Build/test tooling should run only on trusted source in local/CI contexts. | Open dev-only risk. |
-| `minimatch` (`GHSA-3ppc-4f35-3m26`) | High | `.>eslint-config-next>typescript-eslint>@typescript-eslint/typescript-estree>minimatch` | Requires dev-tool transitive upgrade to `>=9.0.6` or an additional dev override. | Technical owner | 2026-06-10 | Do not process untrusted glob patterns in exposed services. | Open dev-only risk. |
-| `minimatch` (`GHSA-7r86-cg39-jmmj`) | High | `.>eslint-config-next>typescript-eslint>@typescript-eslint/typescript-estree>minimatch` | Requires dev-tool transitive upgrade to `>=9.0.7` or an additional dev override. | Technical owner | 2026-06-10 | Do not process untrusted glob patterns in exposed services. | Open dev-only risk. |
-| `minimatch` (`GHSA-23c5-xmqv-rm74`) | High | `.>eslint-config-next>typescript-eslint>@typescript-eslint/typescript-estree>minimatch` | Requires dev-tool transitive upgrade to `>=9.0.7` or an additional dev override. | Technical owner | 2026-06-10 | Do not process untrusted glob patterns in exposed services. | Open dev-only risk. |
-| `picomatch` (`GHSA-c2c7-rcm5-vvqj`) | High | `.>eslint-config-next>@next/eslint-plugin-next>fast-glob>micromatch>picomatch` | Requires dev-tool transitive upgrade to `>=2.3.2` or an additional dev override. | Technical owner | 2026-06-10 | Do not process untrusted glob patterns in exposed services. | Open dev-only risk. |
-| `picomatch` (`GHSA-c2c7-rcm5-vvqj`) | High | `.>@vitejs/plugin-react>vite>picomatch` | Requires coordinated Vite/plugin upgrade to `picomatch >=4.0.4`. | Technical owner | 2026-06-10 | Do not expose Vite dev server to the network; do not process untrusted glob patterns. | Open dev-only risk. |
-| `picomatch` (`GHSA-3v7f-55p6-f55p`) | Moderate | `.>eslint-config-next>@next/eslint-plugin-next>fast-glob>micromatch>picomatch` | Requires dev-tool transitive upgrade to `>=2.3.2` or an additional dev override. | Technical owner | 2026-06-10 | Do not process untrusted glob patterns in exposed services. | Open dev-only risk. |
-| `picomatch` (`GHSA-3v7f-55p6-f55p`) | Moderate | `.>@vitejs/plugin-react>vite>picomatch` | Requires coordinated Vite/plugin upgrade to `picomatch >=4.0.4`. | Technical owner | 2026-06-10 | Do not expose Vite dev server to the network; do not process untrusted glob patterns. | Open dev-only risk. |
-| `flatted` (`GHSA-25h7-pfq9-p65f`) | High | `.>eslint>file-entry-cache>flat-cache>flatted` | Requires ESLint cache dependency upgrade to `flatted >=3.4.0`, outside production dependency remediation scope. | Technical owner | 2026-06-10 | Run lint only on trusted source in local/CI contexts. | Open dev-only risk. |
-| `flatted` (`GHSA-rf6f-7fwh-wjgh`) | High | `.>eslint>file-entry-cache>flat-cache>flatted` | Requires ESLint cache dependency upgrade to `flatted >=3.4.2`, outside production dependency remediation scope. | Technical owner | 2026-06-10 | Run lint only on trusted source in local/CI contexts. | Open dev-only risk. |
-| `ajv` (`GHSA-2g4f-4pwh-qvx6`) | Moderate | `.>eslint>ajv` | Requires ESLint transitive upgrade to `ajv >=6.14.0`, outside production dependency remediation scope. | Technical owner | 2026-06-10 | Run lint only on trusted source in local/CI contexts. | Open dev-only risk. |
+The 2026-08-31 Story 22.15 acceptance criterion is scoped to `pnpm audit --prod`. No fresh claim about dev-only advisory counts is made here. Development tooling must continue to run only on trusted source in local/CI contexts and should be audited separately before enterprise governance is claimed.
 
 ## Blocker Tracker Link
 
-This register updates blocker `R-002` in `docs/commercial-readiness/11_risk_register_and_open_questions.md`.
+This register supplies the current dependency evidence for `R-002` and blocker `B-003`.

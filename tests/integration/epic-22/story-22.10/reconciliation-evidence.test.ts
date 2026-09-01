@@ -38,6 +38,8 @@ const SEARCH_PATH_FUNCTIONS = [
   "public.track_employee_column_changes()",
   "public.update_own_last_active_at()",
   "public.create_employee_column_config(text, text, text, boolean, text, text, jsonb, boolean)",
+  "public.delete_app_user(uuid)",
+  "public.complete_app_user_auth_cleanup(uuid)",
 ];
 
 async function execPrivilege(role: string, signature: string) {
@@ -99,12 +101,44 @@ describe.skipIf(!databaseReachable)("Story 22.10 Supabase reconciliation evidenc
     const activity = "public.update_own_last_active_at()";
     expect(await execPrivilege("anon", activity)).toBe(false);
     expect(await execPrivilege("authenticated", activity)).toBe(true);
+
+    const atomicDelete = "public.delete_app_user(uuid)";
+    expect(await execPrivilege("anon", atomicDelete)).toBe(false);
+    expect(await execPrivilege("authenticated", atomicDelete)).toBe(true);
+    expect(await execPrivilege("service_role", atomicDelete)).toBe(false);
+
+    const completeAuthCleanup =
+      "public.complete_app_user_auth_cleanup(uuid)";
+    expect(await execPrivilege("anon", completeAuthCleanup)).toBe(false);
+    expect(await execPrivilege("authenticated", completeAuthCleanup)).toBe(
+      false
+    );
+    expect(await execPrivilege("service_role", completeAuthCleanup)).toBe(true);
   });
 
   it("keeps get_user_role executable for RLS evaluation (documented residual)", async () => {
     const sig = "public.get_user_role()";
     expect(await execPrivilege("authenticated", sig)).toBe(true);
     expect(await execPrivilege("anon", sig)).toBe(true);
+  });
+
+  it("active-gates every saved-filter policy", async () => {
+    const policies = await client.query<{
+      policyname: string;
+      qual: string | null;
+      with_check: string | null;
+    }>(
+      `SELECT policyname, qual, with_check
+       FROM pg_policies
+       WHERE schemaname = 'public' AND tablename = 'user_filters'
+       ORDER BY policyname`
+    );
+
+    expect(policies.rows).toHaveLength(4);
+    for (const policy of policies.rows) {
+      const expression = `${policy.qual ?? ""} ${policy.with_check ?? ""}`;
+      expect(expression, policy.policyname).toMatch(/get_user_role/i);
+    }
   });
 
   it("removes staging-only junk columns from employees", async () => {

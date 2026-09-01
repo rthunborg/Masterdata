@@ -1,19 +1,12 @@
 /**
  * Unit Tests for Story 17.5: Search Filter Improvements for External Users
- * 
- * **PARTIALLY SKIPPED - Story 20.1: Crew Ready Dropdown Removed**
- * The crew ready dropdown filter was removed in Story 20.1 to consolidate
- * all filtering into the new advanced filter panel (Epic 20).
- * 
- * Tests that verify the dropdown is hidden for external users are now obsolete
- * since the dropdown no longer exists for any role. Search functionality tests
- * remain valid and active.
- * 
- * Tests that the premade filters dropdown (Crew Ready filter) is conditionally
- * rendered based on user role, while search input remains visible for all users.
+ *
+ * The role-specific crew-ready dropdown contract was superseded by Story 20.1.
+ * This file retains Story 17.5's current search-visibility contract; the Epic 20
+ * filter-panel and export suites cover the replacement filtering workflow.
  */
 
-import { render, screen, act } from "@testing-library/react";
+import { screen, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
@@ -209,132 +202,6 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
     vi.clearAllMocks();
   });
 
-  describe.skip("AC1: Remove Premade Filters Dropdown for External Users - SKIPPED (Story 20.1)", () => {
-    it("should hide crew ready filter dropdown for sodexo user", async () => {
-      mockUseAuth.mockReturnValue({
-        user: {
-          id: "user-1",
-          email: "sodexo@example.com",
-          role: "sodexo" as UserRole,
-          is_active: true,
-          created_at: "2025-01-01T00:00:00Z",
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      await act(async () => {
-        renderWithQueryClient(
-          <EmployeeTable
-            employees={mockEmployees}
-            isLoading={false}
-          />
-        );
-      });
-
-      // Search input should be visible (placeholder is in Swedish: "Sök anställda...")
-      const searchInput = screen.getByPlaceholderText(/Sök anställda/i);
-      expect(searchInput).toBeInTheDocument();
-
-      // Crew ready filter dropdown should NOT be visible
-      const crewStatusFilter = screen.queryByTestId("crew-status-filter");
-      expect(crewStatusFilter).not.toBeInTheDocument();
-    });
-
-    it("should hide crew ready filter dropdown for omc user", async () => {
-      mockUseAuth.mockReturnValue({
-        user: {
-          id: "user-2",
-          email: "omc@example.com",
-          role: "omc" as UserRole,
-          is_active: true,
-          created_at: "2025-01-01T00:00:00Z",
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      await act(async () => {
-        renderWithQueryClient(
-          <EmployeeTable
-            employees={mockEmployees}
-            isLoading={false}
-          />
-        );
-      });
-
-      // Search input should be visible (placeholder is in Swedish: "Sök anställda...")
-      const searchInput = screen.getByPlaceholderText(/Sök anställda/i);
-      expect(searchInput).toBeInTheDocument();
-
-      // Crew ready filter dropdown should NOT be visible
-      const crewStatusFilter = screen.queryByTestId("crew-status-filter");
-      expect(crewStatusFilter).not.toBeInTheDocument();
-    });
-
-    it("should hide crew ready filter dropdown for payroll user", async () => {
-      mockUseAuth.mockReturnValue({
-        user: {
-          id: "user-3",
-          email: "payroll@example.com",
-          role: "payroll" as UserRole,
-          is_active: true,
-          created_at: "2025-01-01T00:00:00Z",
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      await act(async () => {
-        renderWithQueryClient(
-          <EmployeeTable
-            employees={mockEmployees}
-            isLoading={false}
-          />
-        );
-      });
-
-      // Search input should be visible (placeholder is in Swedish: "Sök anställda...")
-      const searchInput = screen.getByPlaceholderText(/Sök anställda/i);
-      expect(searchInput).toBeInTheDocument();
-
-      // Crew ready filter dropdown should NOT be visible
-      const crewStatusFilter = screen.queryByTestId("crew-status-filter");
-      expect(crewStatusFilter).not.toBeInTheDocument();
-    });
-
-    it("should hide crew ready filter dropdown for toplux user", async () => {
-      mockUseAuth.mockReturnValue({
-        user: {
-          id: "user-4",
-          email: "toplux@example.com",
-          role: "toplux" as UserRole,
-          is_active: true,
-          created_at: "2025-01-01T00:00:00Z",
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      await act(async () => {
-        renderWithQueryClient(
-          <EmployeeTable
-            employees={mockEmployees}
-            isLoading={false}
-          />
-        );
-      });
-
-      // Search input should be visible (placeholder is in Swedish: "Sök anställda...")
-      const searchInput = screen.getByPlaceholderText(/Sök anställda/i);
-      expect(searchInput).toBeInTheDocument();
-
-      // Crew ready filter dropdown should NOT be visible
-      const crewStatusFilter = screen.queryByTestId("crew-status-filter");
-      expect(crewStatusFilter).not.toBeInTheDocument();
-    });
-  });
-
   describe("AC2: Search Functionality Preserved", () => {
     it("should show search input for external users", async () => {
       mockUseAuth.mockReturnValue({
@@ -365,89 +232,5 @@ describe("Story 17.5: Filter Dropdown Conditional Rendering", () => {
     });
   });
 
-  describe.skip("AC3: HR Admin Unaffected - SKIPPED (Story 20.1: Dropdown removed for all roles)", () => {
-    it("should show crew ready filter dropdown for HR Admin", async () => {
-      mockUseAuth.mockReturnValue({
-        user: {
-          id: "user-admin",
-          email: "admin@example.com",
-          role: "hr_admin" as UserRole,
-          is_active: true,
-          created_at: "2025-01-01T00:00:00Z",
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      await act(async () => {
-        renderWithQueryClient(
-          <EmployeeTable
-            employees={mockEmployees}
-            isLoading={false}
-          />
-        );
-      });
-
-      // Search input should be visible (placeholder is in Swedish: "Sök anställda...")
-      const searchInput = screen.getByPlaceholderText(/Sök anställda/i);
-      expect(searchInput).toBeInTheDocument();
-
-      // Crew ready filter dropdown SHOULD be visible for HR Admin
-      const crewStatusFilter = screen.getByTestId("crew-status-filter");
-      expect(crewStatusFilter).toBeInTheDocument();
-    });
-  });
-
-  describe.skip("AC4: Role-Based Conditional Rendering - SKIPPED (Story 20.1)", () => {
-    it("should conditionally render dropdown based on isHRAdmin check", async () => {
-      // Test external user
-      mockUseAuth.mockReturnValue({
-        user: {
-          id: "user-ext",
-          email: "external@example.com",
-          role: "sodexo" as UserRole,
-          is_active: true,
-          created_at: "2025-01-01T00:00:00Z",
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      const { rerender } = await act(async () => {
-        return renderWithQueryClient(
-          <EmployeeTable
-            employees={mockEmployees}
-            isLoading={false}
-          />
-        );
-      });
-
-      expect(screen.queryByTestId("crew-status-filter")).not.toBeInTheDocument();
-
-      // Switch to HR Admin
-      mockUseAuth.mockReturnValue({
-        user: {
-          id: "user-admin",
-          email: "admin@example.com",
-          role: "hr_admin" as UserRole,
-          is_active: true,
-          created_at: "2025-01-01T00:00:00Z",
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
-      await act(async () => {
-        rerender(
-          <EmployeeTable
-            employees={mockEmployees}
-            isLoading={false}
-          />
-        );
-      });
-
-      expect(screen.getByTestId("crew-status-filter")).toBeInTheDocument();
-    });
-  });
 });
 

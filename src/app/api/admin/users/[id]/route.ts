@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { requireHRAdminAPI, createErrorResponse } from "@/lib/server/auth";
 import { updateUserSchema } from "@/lib/validation/user-validation";
@@ -6,6 +7,145 @@ import { parseOrError, createNotFoundResponse } from "@/lib/server/api-helpers";
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
+
+const CLEANUP_OPERATION_TIMEOUT_MS = 5_000;
+const userIdSchema = z.string().uuid();
+const deleteAppUserResultSchema = z.discriminatedUnion("cleanup_state", [
+  z
+    .object({
+      cleanup_id: z.string().uuid(),
+      auth_user_id: z.string().uuid(),
+      cleanup_state: z.literal("pending"),
+    })
+    .strict(),
+  z
+    .object({
+      cleanup_id: z.string().uuid(),
+      auth_user_id: z.string().uuid().nullable(),
+      cleanup_state: z.literal("completed"),
+    })
+    .strict(),
+]);
+const completeAuthCleanupResultSchema = z
+  .object({
+    cleanup_id: z.string().uuid(),
+    cleanup_state: z.literal("completed"),
+    completed_at: z.string().min(1),
+  })
+  .strict();
+
+class CleanupOperationTimeoutError extends Error {
+  constructor() {
+    super("User cleanup operation timed out");
+    this.name = "CleanupOperationTimeoutError";
+  }
+}
+
+function withinDeadline<T>(operation: PromiseLike<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = setTimeout(
+      () => reject(new CleanupOperationTimeoutError()),
+      timeoutMs
+    );
+    operation.then(
+      (value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      }
+    );
+  });
+}
+
+function isAuthUserNotFound(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: unknown };
+  return candidate.code === "user_not_found";
+}
+
+function sanitizedFailureReason(error: unknown): string {
+  if (error instanceof CleanupOperationTimeoutError) return "timeout";
+  if (error && typeof error === "object") {
+    const candidate = error as { code?: unknown; status?: unknown };
+    if (typeof candidate.code === "string") return candidate.code;
+    if (typeof candidate.status === "number") return `http_${candidate.status}`;
+  }
+  return "unexpected_error";
+}
+
+function partialAuthCleanupResponse(
+  cleanupId: string,
+  authUserDeleted: boolean,
+  reason: string
+) {
+  console.error("[Admin user deletion] Auth cleanup remains pending", {
+    cleanup_id: cleanupId,
+    reason,
+  });
+  return NextResponse.json(
+    {
+      error: {
+        code: "AUTH_CLEANUP_PENDING",
+        message:
+          "Användarposten togs bort, men auth-rensningen måste försökas igen",
+        recoverable: true,
+      },
+      data: {
+        status: "partial",
+        cleanup_id: cleanupId,
+        cleanup_state: "pending",
+        app_user_deleted: true,
+        auth_user_deleted: authUserDeleted,
+      },
+    },
+    { status: 502 }
+  );
+}
+
+function unknownAuthCleanupResponse(reason = "invalid_delete_rpc_result") {
+  console.error("[Admin user deletion] Cleanup handoff state is unknown", {
+    reason,
+  });
+  return NextResponse.json(
+    {
+      error: {
+        code: "AUTH_CLEANUP_STATE_UNKNOWN",
+        message:
+          "Rensningsstatus kunde inte verifieras; försök igen med samma användar-id",
+        recoverable: true,
+      },
+      data: {
+        status: "unknown",
+        cleanup_id: null,
+        app_user_deleted: "unknown",
+        retry_same_user_id: true,
+      },
+    },
+    { status: 502 }
+  );
+}
+
+function successfulDeletionResponse(
+  cleanupId: string,
+  authCleanupRequired: boolean
+) {
+  return NextResponse.json(
+    {
+      data: {
+        message: "Användaren borttagen",
+        cleanup_id: cleanupId,
+        cleanup_state: "completed",
+        app_user_deleted: true,
+        auth_cleanup_required: authCleanupRequired,
+        auth_user_deleted: authCleanupRequired,
+      },
+    },
+    { status: 200 }
+  );
+}
 
 function isFinalActiveAdminError(error: { code?: string; message?: string } | null): boolean {
   return error?.code === "42501" && /final active HR Admin/i.test(error.message ?? "");
@@ -100,17 +240,6 @@ export async function PATCH(
       );
     }
 
-    // If deactivating, revoke auth sessions using service role client
-    if (validated.is_active === false && userToUpdate.auth_user_id) {
-      try {
-        const supabaseServiceRole = createServiceRoleClient();
-        await supabaseServiceRole.auth.admin.signOut(userToUpdate.auth_user_id);
-      } catch (signOutError) {
-        console.error("Misslyckades att logga ut användaren:", signOutError);
-        // Continue - user is deactivated even if sign out fails
-      }
-    }
-
     return NextResponse.json({ data: updatedUser });
   } catch (error) {
     // Log unexpected errors
@@ -128,7 +257,21 @@ export async function DELETE(
     const currentUser = await requireHRAdminAPI(request);
 
     const supabase = await createClient();
-    const { id } = await params;
+    const { id: rawId } = await params;
+    const parsedId = userIdSchema.safeParse(rawId);
+
+    if (!parsedId.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Ogiltigt användar-id",
+          },
+        },
+        { status: 400 }
+      );
+    }
+    const id = parsedId.data;
 
     // Prevent self-deletion
     if (id === currentUser.id) {
@@ -143,30 +286,25 @@ export async function DELETE(
       );
     }
 
-    // Get user to find auth_user_id
-    const { data: userToDelete, error: fetchError } = await supabase
-      .from("users")
-      .select("id, auth_user_id, email, role, is_active")
-      .eq("id", id)
-      .single();
-
-    if (fetchError || !userToDelete) {
-      return createNotFoundResponse("User", id);
+    // The caller-bound RPC performs invariant checks and deletes the app row in
+    // one transaction. Foreign-key or invariant failures leave the row exactly
+    // as it was before the request.
+    let deleteCall;
+    try {
+      deleteCall = await withinDeadline(
+        supabase.rpc("delete_app_user", { p_user_id: id }),
+        CLEANUP_OPERATION_TIMEOUT_MS
+      );
+    } catch (deleteCallError) {
+      // The database transaction may have committed even if its transport
+      // response was lost or timed out. Do not guess and do not start the
+      // privileged phase; a same-ID retry resolves the durable handoff.
+      return unknownAuthCleanupResponse(sanitizedFailureReason(deleteCallError));
     }
+    const { data: deleteResult, error: deleteError } = deleteCall;
 
-    // Serialize deletion with the same database invariant used by deactivation.
-    // Once the transition succeeds, deleting the inactive row cannot remove the
-    // final active HR Admin even when requests race.
-    const { error: deactivateError } = await supabase.rpc(
-      "set_user_active_status",
-      {
-        p_user_id: id,
-        p_is_active: false,
-      }
-    );
-
-    if (deactivateError) {
-      if (isFinalActiveAdminError(deactivateError)) {
+    if (deleteError) {
+      if (isFinalActiveAdminError(deleteError)) {
         return NextResponse.json(
           {
             error: {
@@ -177,7 +315,7 @@ export async function DELETE(
           { status: 403 }
         );
       }
-      if (deactivateError.code === "42501") {
+      if (deleteError?.code === "42501") {
         return NextResponse.json(
           {
             error: {
@@ -188,70 +326,120 @@ export async function DELETE(
           { status: 403 }
         );
       }
-      if (deactivateError.code === "P0002") {
+      if (deleteError?.code === "P0002") {
         return createNotFoundResponse("User", id);
       }
-      console.error("User deactivation before delete failed:", deactivateError);
-      return NextResponse.json(
-        {
-          error: {
-            code: "INTERNAL_ERROR",
-            message: "Misslyckades att förbereda borttagning av användaren",
+      if (deleteError?.code === "23503") {
+        return NextResponse.json(
+          {
+            error: {
+              code: "USER_DELETE_CONFLICT",
+              message: "Användaren kan inte tas bort eftersom relaterade poster finns",
+            },
           },
-        },
-        { status: 500 }
-      );
-    }
-
-    // Use service role client for all admin operations
-    const supabaseServiceRole = createServiceRoleClient();
-
-    // Delete app user record first using service role to bypass RLS
-    const { error: deleteError } = await supabaseServiceRole
-      .from("users")
-      .delete()
-      .eq("id", id);
-
-    if (deleteError) {
-      console.error("Användarens borttagning misslyckades:", deleteError);
-      return NextResponse.json(
-        {
-          error: {
-            code: "INTERNAL_ERROR",
-            message: "Misslyckades att ta bort användarens post",
-          },
-        },
-        { status: 500 }
-      );
-    }
-
-    // Delete auth user using service role client
-    if (userToDelete.auth_user_id) {
-      try {
-        const { error: authDeleteError } = await supabaseServiceRole.auth.admin.deleteUser(
-          userToDelete.auth_user_id
+          { status: 409 }
         );
-        
-        if (authDeleteError) {
-          console.error("Misslyckades att ta bort auth-användaren:", authDeleteError);
-          // Continue - app user is deleted, auth cleanup failure is acceptable
-        }
-      } catch (authError) {
-        console.error("Misslyckades att ta bort auth-användaren:", authError);
-        // Continue - app user is deleted
       }
+      // Any unclassified gateway/PostgREST/database response is ambiguous: the
+      // transaction may have committed before the response failed. A same-ID
+      // retry is safe whether the first attempt committed or rolled back.
+      return unknownAuthCleanupResponse(sanitizedFailureReason(deleteError));
     }
 
-    return NextResponse.json(
-      {
-        data: {
-          message: "Användaren borttagen",
-        },
-      },
-      { status: 200 }
+    const parsedDeleteResult = deleteAppUserResultSchema.safeParse(deleteResult);
+    if (!parsedDeleteResult.success) {
+      return unknownAuthCleanupResponse();
+    }
+
+    const cleanup = parsedDeleteResult.data;
+    if (cleanup.cleanup_state === "completed") {
+      return successfulDeletionResponse(
+        cleanup.cleanup_id,
+        cleanup.auth_user_id !== null
+      );
+    }
+
+    let authUserDeleted = false;
+    let supabaseServiceRole: ReturnType<typeof createServiceRoleClient>;
+    try {
+      supabaseServiceRole = createServiceRoleClient();
+    } catch (serviceClientError) {
+      return partialAuthCleanupResponse(
+        cleanup.cleanup_id,
+        false,
+        sanitizedFailureReason(serviceClientError)
+      );
+    }
+    try {
+      // Instantiate the privileged client only while a pending handoff actually
+      // requires the external Auth operation.
+      const { error: authDeleteError } = await withinDeadline(
+        supabaseServiceRole.auth.admin.deleteUser(cleanup.auth_user_id),
+        CLEANUP_OPERATION_TIMEOUT_MS
+      );
+
+      if (authDeleteError && !isAuthUserNotFound(authDeleteError)) {
+        return partialAuthCleanupResponse(
+          cleanup.cleanup_id,
+          false,
+          sanitizedFailureReason(authDeleteError)
+        );
+      }
+      authUserDeleted = true;
+    } catch (authError) {
+      if (!isAuthUserNotFound(authError)) {
+        return partialAuthCleanupResponse(
+          cleanup.cleanup_id,
+          false,
+          sanitizedFailureReason(authError)
+        );
+      }
+      authUserDeleted = true;
+    }
+
+    let completeResult: unknown = null;
+    let completeError: unknown = null;
+    try {
+      const completion = await withinDeadline(
+        supabaseServiceRole.rpc("complete_app_user_auth_cleanup", {
+          p_cleanup_id: cleanup.cleanup_id,
+        }),
+        CLEANUP_OPERATION_TIMEOUT_MS
+      );
+      completeResult = completion.data;
+      completeError = completion.error;
+    } catch (completionCallError) {
+      return partialAuthCleanupResponse(
+        cleanup.cleanup_id,
+        authUserDeleted,
+        sanitizedFailureReason(completionCallError)
+      );
+    }
+    const parsedCompleteResult = completeAuthCleanupResultSchema.safeParse(
+      completeResult
     );
+
+    const completionMatchesPendingCleanup =
+      parsedCompleteResult.success &&
+      parsedCompleteResult.data.cleanup_id === cleanup.cleanup_id;
+
+    if (completeError || !completionMatchesPendingCleanup) {
+      return partialAuthCleanupResponse(
+        cleanup.cleanup_id,
+        authUserDeleted,
+        completeError
+          ? sanitizedFailureReason(completeError)
+          : parsedCompleteResult.success
+            ? "mismatched_complete_rpc_cleanup_id"
+            : "invalid_complete_rpc_result"
+      );
+    }
+
+    return successfulDeletionResponse(cleanup.cleanup_id, true);
   } catch (error) {
-    console.error("DELETE /api/admin/users/[id] error:", error);
+    console.error("[Admin user deletion] Unexpected route failure", {
+      reason: sanitizedFailureReason(error),
+    });
     return createErrorResponse(error);
   }
 }

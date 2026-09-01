@@ -45,3 +45,8 @@ REVOKE UPDATE ON TABLE public.users FROM anon;
 
 REVOKE INSERT ON TABLE public.employee_column_changes FROM authenticated;
 REVOKE INSERT ON TABLE public.employee_column_changes FROM anon;
+
+-- Story 22.15 restricted outbox. The blanket local parity grant above must not
+-- reopen this operator-only handoff table after the migration has revoked it.
+REVOKE ALL ON TABLE public.app_user_auth_cleanup_outbox
+  FROM PUBLIC, anon, authenticated, service_role;

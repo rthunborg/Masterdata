@@ -54,3 +54,9 @@ Coverage note: row counts were validated for the 7 key tables listed in check 2.
 5. **Partial-refresh artifact missing for some dates**: `employees-column_config.sql` did not exist for 2026-05-28 (it is optional in the storage script); no action needed, recorded for accuracy.
 
 No screenshots were taken: command results above carry the review value, and screenshots of a restored production dataset would require redaction without adding evidence.
+
+## 2026-09-01 Readiness-Audit Addendum
+
+Validation check 6 above is preserved verbatim as the dated Story 22.8 record, but its `staffing_needs.target_headcount` label conflicts with the version-controlled schema and current application contract, which use `staffing_needs.headcount_need`. The original backup and drill copies were deleted under the documented cleanup, so this record alone cannot establish which name is currently hosted or whether the required `headcount_need >= 0 AND headcount_need <= 9999` constraint is present.
+
+This is an open production-baseline evidence contradiction. Before any staffing migration history is repaired, the operator must obtain fresh read-only production catalog proof. If the hosted column is `headcount_need` with the exact bound, append a dated correction with redacted catalog evidence. If the hosted column is `target_headcount`, stop and prepare an approved forward reconciliation migration; do not mark the staffing migrations represented and do not replay them.

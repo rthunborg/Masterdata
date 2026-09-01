@@ -1,35 +1,35 @@
-# Environment Reconciliation Inventory (Story 22.10)
+# Environment Reconciliation Inventory (Stories 22.10, 22.13, and 22.15)
 
 Prepared: 2026-06-14
 
-Updated: 2026-07-10 — Story 22.13 review-remediation addendum
+Updated: 2026-09-01 — Story 22.15 clean reset/live evidence, manifest plan, and dated hosted observations synchronized
 
-Story: 22.10 — Reconcile Supabase Environments and Baseline Migration History
+Story: 22.10 historical inventory, superseded for release execution by Story 22.15
 
 Scope: a three-way inventory (production vs staging vs version-controlled migrations) of the Supabase schema/policy/function posture, with each difference classified, plus the reconciled end state encoded in migrations. This file records **counts, names, and classifications only** — no database URLs, project refs, keys, JWTs, or employee/personal rows. It is the AC1 evidence artifact for Story 22.10.
 
-> **Production-change freeze (owner directive, 2026-06-13):** No production database was modified by this story. The production side of this inventory uses the Story 22.8 **2026-05-28** nightly backup schema snapshot, which the owner confirmed on 2026-06-14 is still current (production unchanged since 2026-05-28). The staging side and the production execution are delivered as an owner-run cutover runbook (`docs/commercial-readiness/27_supabase_cutover_runbook.md`); staging baseline/apply and production cutover are executed outside this session.
+> **Production-change freeze (owner directive, 2026-06-13):** No production database was modified by these stories. The production schema side of this inventory uses the Story 22.8 **2026-05-28** nightly backup snapshot, which the owner confirmed on 2026-06-14 was still current; the production migration-history observation was captured read-only on **2026-06-11** and was empty. Story 22.10 historically wrote and verified hosted staging on 2026-06-14. No Story 22.15 hosted delta has been applied. All remaining hosted work is governed by the owner-run cutover runbook (`docs/commercial-readiness/27_supabase_cutover_runbook.md`).
 
 ## 1. Sources and method
 
 | Side | Source | Basis |
 | --- | --- | --- |
-| Migration-defined (intended) | Local non-production stack rebuilt with `supabase db reset` (project id `hr-masterdata`), introspected via `pg_proc` / `pg_policies` / `information_schema` | Authoritative "intended" baseline from `supabase/migrations/` (56 files at inventory time; 57 after this story's reconciliation migration) |
-| Production | Story 22.8 2026-05-28 backup schema snapshot (`22_supabase_security_evidence_package.md`, `evidence/restore-drill-2026-06-11.md`) | Read-only; owner-confirmed current 2026-06-14 |
+| Migration-defined (intended) | Version-controlled migrations, Story 22.13 high-port evidence, and Story 22.15 manifest/static/live evidence | Current repository target is 63 versions / 17 policies; a clean Story 22.15 reset on the managed `hr-masterdata` high-port stack passed on 2026-09-01 |
+| Production | Story 22.8 2026-05-28 backup schema snapshot plus the 2026-06-11 read-only migration-list observation (`22_supabase_security_evidence_package.md`, `evidence/restore-drill-2026-06-11.md`) | Schema snapshot owner-confirmed current 2026-06-14; migration history observed empty 2026-06-11 |
 | Staging | Story 22.8 REST/schema observations (staging-only `employees` columns) | Read-only; fresh staging dump captured at cutover by the operator |
 
-No production or staging writes were made from this session. The reconciliation is authored in migrations, verified on the local rebuild, and executed on staging/production via the cutover runbook.
+No Story 22.15 hosted write has been made. Story 22.10's historical staging reconciliation and history baseline were executed and verified on 2026-06-14; production remained untouched. The current Story 22.15 delta is authored in migrations and must be proven/applied only through the cutover runbook.
 
-## 2. Migration version-ordering anomaly (fixed)
+## 2. Migration version-ordering and immutable-history anomaly (Story 22.15 resolution)
 
 - `20250113000000_add_room_assignment_rpc.sql` previously sorted **nine months before** `20251027000000_initial_schema.sql`, so a clean `supabase db reset` applied the room-assignment RPCs before the `employees` table (and the `omc_date` / `hotel_required` / `room_number_shared` columns they reference) existed. It only succeeded because plpgsql defers name resolution to call time.
-- **Resolution (classify: fix ordering):** re-timestamped to `20251122150001_add_room_assignment_rpc.sql` — immediately after `20251122150000_add_room_assignment_employee_columns.sql` (function bodies unchanged). A clean `supabase db reset` now applies in correct dependency order (verified, exit 0).
+- **Story 22.15 superseding resolution:** Story 22.10's retimestamp-only disposition is no longer the release plan. Restore the original `20250113000000_add_room_assignment_rpc.sql` byte-for-byte and retain `20251122150001_add_room_assignment_rpc.sql` as the ordered redefinition after its column dependency. Hosted history is governed by fresh catalog proof plus the environment's explicit manifest-approved repair list; the original version is never replayed against represented state. Applied historical SQL is immutable, and renaming alone is not a complete history repair.
 
 ## 3. Function security posture
 
 ### 3.1 `search_path` pinning (advisor `function_search_path_mutable`)
 
-Eleven public functions lacked a pinned `search_path` (`get_user_role`, `update_updated_at_column`, `trigger_set_updated_at`, `remove_jsonb_key`, `add_custom_column_to_employees`, `update_staffing_need`, `update_date_spots`, `release_date_capacity`, `recalculate_rooms_for_date`, `calculate_room_number`; `track_employee_column_changes` was already pinned in `20260607193000`).
+Ten public functions lacked a pinned `search_path` (`get_user_role`, `update_updated_at_column`, `trigger_set_updated_at`, `remove_jsonb_key`, `add_custom_column_to_employees`, `update_staffing_need`, `update_date_spots`, `release_date_capacity`, `recalculate_rooms_for_date`, `calculate_room_number`; `track_employee_column_changes` was already pinned in `20260607193000`).
 
 - **Classification: adopt into migrations.** The reconciliation migration pins `SET search_path = public, pg_temp` on all of them (re-asserting the already-pinned trigger for hosted environments whose history predates that migration). The convention matches the existing `20260607193000` pin; function bodies already schema-qualify cross-schema references (`auth.uid()`, `public.users`) or use bare `public` objects that resolve under this search_path, so no body changes were needed.
 
@@ -46,10 +46,11 @@ Callers verified in `src/` before any revoke.
 | `update_own_last_active_at()` | Middleware/login/activity repository through the user-scoped client | Grant `authenticated` only | Replaces whole-table `users` UPDATE with a caller-bound activity update for the active authenticated user. |
 | `update_assigned_column_presentation(text,jsonb)` | `column-config-repository.ts` through the authenticated caller client | Grant `authenticated` only | Row-locks the assigned custom column, resolves the active caller from `auth.uid()`, rechecks the current role's edit permission, and limits updates to presentation fields. |
 | `set_user_active_status(uuid,boolean)` | HR-admin user-status route through the authenticated caller client | Grant `authenticated` only | Serializes status transitions, resolves and authorizes the active HR caller, prevents self-deactivation, and preserves at least one active HR Admin atomically. |
-| `get_user_role()` | Invoked during RLS policy evaluation | **Keep** `anon` + `authenticated` (documented residual) | Returns only the caller's own role (NULL for anon), leaks nothing; revoking anon would turn graceful row-level denials into "permission denied for function" errors |
+| `delete_app_user(uuid)` | HR-admin DELETE route through the authenticated caller client | Grant `authenticated` only | Shares the status-transition advisory lock, re-authorizes the active HR caller, checks self/final-admin invariants, and deletes the app row in one transaction; Auth cleanup is a truthful second phase. |
+| `get_user_role()` | Invoked during RLS policy evaluation | **Keep** `anon` + `authenticated` (documented residual) | Returns a role only for the active caller; inactive, missing, and anonymous callers receive NULL. Keeping anon execution preserves graceful RLS denial. |
 | `track_employee_column_changes()` | Trigger function (not API-callable) | No grant change | Advisor excludes trigger functions |
 
-Story 22.10's verified staging residual was `anon` 1 and `authenticated` 3. Story 22.13 changes the intended authenticated set to five caller-bound or internally authorized functions: `get_user_role`, `update_staffing_need`, `update_own_last_active_at`, `update_assigned_column_presentation`, and `set_user_active_status`; raw custom-column DDL is no longer executable and the atomic creation RPC is service-role-only. These are migration-defined targets pending hosted apply/re-verification, not new hosted advisor evidence.
+Story 22.10's verified staging residual was `anon` 1 and `authenticated` 3. Story 22.15's intended authenticated set is six caller-bound or internally authorized functions: `get_user_role`, `update_staffing_need`, `update_own_last_active_at`, `update_assigned_column_presentation`, `set_user_active_status`, and `delete_app_user`; raw custom-column DDL is unavailable and the atomic creation RPC is service-role-only. These are migration-defined targets pending hosted apply/re-verification, not hosted advisor evidence.
 
 ## 4. RLS policy three-way comparison (R-023)
 
@@ -70,6 +71,8 @@ Performance advisors addressed at the same time (semantics-preserving):
 
 Story 22.10 reconciled the migration-defined count to **19 across 9 tables**. Story 22.13's post-migration count is **17**: all `users` UPDATE policies are removed (INSERT + SELECT remain), and the two broad `employee_column_changes` policies become one scoped SELECT policy. `pe3_notifications_log` remains RLS-enabled with no policies (deny-by-default service-role log table). The 17-policy figure was observed on the rebuilt high-port stack; hosted staging must still confirm it after apply before it is treated as hosted evidence.
 
+Story 22.15 retains the 17-policy count while changing every `user_filters` predicate to require both caller ownership and `get_user_role() IS NOT NULL`. An unexpired JWT for an inactive/missing app user therefore cannot view, insert, update, or delete filters. Existing own-`users` metadata and intentional public reads of `column_config` / `important_dates` remain the only documented exceptions.
+
 **Newly-discovered drift (`column_config` HR-manage scope):** the migration-defined `column_config` manage policy restricted HR Admin to `is_masterdata = true`, but the app makes HR Admin the column administrator — `DELETE /api/admin/columns/[id]` deletes only custom (`is_masterdata = false`) columns and the create flow creates them, both through the user-scoped (authenticated) client. So a migration-built database could not create/delete custom columns via the app (RLS denied: `new row violates row-level security policy`), even though the hosted/production app works (dashboard-era broader policy). Surfaced as the `delete-column` Playwright e2e failure; DB-simulated as an authenticated `hr_admin`; confirmed pre-existing (the original two policies were equally restrictive — the merge was a faithful OR, not the cause). Story 22.10 broadened the merged policy and retained external ownership behavior at that revision. **Story 22.13 supersedes that lifecycle model:** active HR Admin alone manages `column_config`; external users retain only a field-limited assigned-column presentation PATCH through a checked service path, while lifecycle DELETE is rejected. The current direct-role and lifecycle regression suites passed on the rebuilt high-port stack.
 
 ## 5. Schema (column) drift (R-020)
@@ -89,10 +92,14 @@ Nightly-restore compatibility (Story 22.13): the job creates one required custom
 
 Scope caveats are explicit. `TRUNCATE public.employees ... CASCADE` also clears employee-dependent party-data and audit tables; those tables are not replayed by this partial refresh, while `users`, Auth, `user_filters`, and `important_dates` remain untouched. This is pre-existing successful-run behavior, not something the single transaction changes. Story 22.13 makes new column creation atomic, preventing new metadata/physical-column orphans. A legacy orphan physical column with no `column_config` row can still make employee replay fail; the job now alerts and rolls back instead of leaving partial data, and the source invariant must be repaired by an approved migration/operator procedure.
 
-## 6. Remote migration history (R-010)
+## 6. Remote migration history and catalog-proof-gated baseline (R-010)
 
-- Production remote history is empty (all 56 migrations local-only; Story 22.8). Staging history is captured fresh at cutover.
-- **Reconciliation:** baseline the remote history (`supabase migration repair --status applied <version>` for the historical migrations) **before** applying the reconciliation migration — staging first, production at the Epic 22 cutover. Never `db push` net-new schema before the repair baseline (an empty remote history can attempt to replay all migrations). Steps are in `docs/commercial-readiness/27_supabase_cutover_runbook.md`.
+- The latest committed production migration-history observation is the read-only 2026-06-11 result: remote history empty. Hosted staging was observed at 57 rows through `20260614000000` on 2026-06-14. Both require fresh inventory before action.
+- The dated restore record says `staffing_needs.target_headcount`, while migrations and application code require `headcount_need`. Preserve that historical claim but do not treat it as representation proof. Fresh read-only production catalog evidence must confirm `headcount_need` and its exact `0..9999` constraint before any staffing-history repair; `target_headcount` requires an approved forward reconciliation and a stop.
+- `supabase/migration-baseline-manifest.json` partitions all 63 repository versions exactly once: 57 `repair-after-catalog-proof` and six `execute`.
+- Staging requires one repair (`20250113000000`) only after environment-specific catalog proof, plus five applies. Production requires fresh proof and a signed ledger for the explicit 57-version repair list, plus six applies. No hosted proof is currently claimed and no wildcard repair is permitted.
+- The read-only verifier covers room function signatures/body, repayment Boolean columns/indexes/config, staffing tables/typed columns/exact `0..9999` constraint/index/RLS/seeds/RPC, dietary column types/permissions, and the exact six-column `user_filters` structure, constraints, two indexes, update trigger/function, plus a phase-specific policy profile. Production pre-apply uses the dated dashboard aliases and three owner-filter policies; staging pre-apply uses the canonical four-policy profile. It is the automated minimum for known unsafe-replay surfaces; fresh production evidence must prove the exact dated policy semantics, and a signed per-version ledger remains mandatory for all 57 repairs.
+- The target gate requires the direct database URL, CLI link, and separately supplied intended-project reference to all match without printing them. The catalog wrapper repeats that gate and exits nonzero with failed check names only. Any mismatch halts before repair/apply; binding is repeated immediately before each repair. After repair, `supabase db push --linked --dry-run --skip-vault` must show only the environment's exact forward list. Full commands and owner gates are in `27_supabase_cutover_runbook.md`.
 
 ## 7. Local-stack grant parity
 
@@ -124,3 +131,12 @@ Accepted residual advisors on staging (out of scope / by design): `pg_graphql_an
 - Story 22.13 centralizes Epic 22 tests on the configured `hr-masterdata` high-port stack (`15421` API / `15422` Postgres), rejects a reachable wrong-port/wrong-fingerprint database, and prints an explicit diagnostic only when the expected stack is unreachable.
 - On 2026-07-10 the WSL/Linux project mirror rebuilt the Docker-backed high-port stack through migration `20260710150000`. The focused twelve-file batch passed **94/94**, including direct-RPC/table authorization, atomic presentation and user-status transitions, runtime-column restore and backup-manifest integrity, Story 22.7 RLS, and Story 22.10 reconciliation suites; the migration-built catalog remained at 17 policies.
 - The final mandatory local gates are complete: Vitest **3,125 passed / 30 skipped**, Playwright **162 passed / 53 skipped / 0 flaky**, `npx tsc --noEmit` exit `0`, and lint exit `0` with no errors. Story 22.13 is review-ready locally. Hosted staging still requires the ordered migration apply, catalog/advisor re-inventory, and revised workflow run before production; local results are not hosted proof.
+
+### Story 22.15 local/static evidence
+
+- The manifest/static suite asserts 63 unique repository versions, 57 repair classifications, six execute classifications, exact staging/production plans, unsafe-replay exclusions, the restored migration digest, and a mutation-free catalog verifier.
+- Middleware/login/API tests cover inactive/missing fail-closed behavior, current-session global sign-out, atomic deletion, foreign-key failure behavior, and explicit Auth partial-cleanup reporting.
+- A clean high-port reset applied all 63 migrations and the seed on 2026-09-01. The Story 22.15 live suite passed 11/11 for active/inactive role, employee/RPC/filter denial, documented exceptions, catalog proof, foreign-key rollback, final-admin protection, and the synchronized two-client race. Story 22.14 PostgREST passed 1/1 and live export passed 5/5.
+- Production's six forward files are not an all-or-nothing transaction. The first temporarily grants legacy execution before a later file revokes/hardens it, so the runbook requires a fresh private inventory of affected-table `supabase_realtime` membership and current/known client connections, then separately authorized temporary Realtime-service disablement plus application/Data API/direct-DB isolation. An existing non-operator Realtime connection must be observed disconnecting, a fresh reconnect must be rejected, and all controls must remain proven through post-apply verification, exact-candidate deployment, and smoke (`R-025`). Vercel ingress and Data API controls do not stop existing/reconnecting Realtime clients; a seasonal user pause is not evidence of isolation. After smoke, restore and catalog/connection-verify the exact prior Realtime and remaining settings. This is a temporary cutover control, not Epic 23 work.
+- Hosted catalog proof is bound to an owner-approved absolute `psql` executable by exact version and SHA-256, and to a reviewed explicit CA PEM by SHA-256 with `sslmode=verify-full`; ambient libpq target/TLS overrides and a bare `PATH` executable are rejected before credentials reach the verifier process.
+- The final fresh full `npx vitest run` with all local live gates enabled exited `0` on 2026-09-01 with 317/317 files and 3,342/3,342 tests passing with zero skips. Exact full Playwright exited `0` with 163 passed / 47 classified skips / 0 failed; 9 skips require an explicitly authorized notification-capture run and 38 are obsolete/superseded or deterministic-fixture coverage debt. The Next `16.3.3` production build passed. Hosted evidence remains open.

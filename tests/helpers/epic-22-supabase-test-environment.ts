@@ -6,7 +6,7 @@ import { Client } from "pg";
 
 import { validateNonProductionSupabaseEnvironment } from "@/lib/env/non-production-supabase-guard";
 
-const STORY_22_13_MIGRATION_VERSION = "20260710150000";
+const LATEST_EPIC_22_MIGRATION_VERSION = "20260831200026";
 const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 
 export interface ParsedSupabaseConfig {
@@ -25,6 +25,12 @@ interface ResolveEnvironmentOptions {
   configToml: string;
   env: Record<string, string | undefined>;
   envFilePresent: boolean;
+}
+
+interface ResolveServiceRoleKeyOptions {
+  env: Record<string, string | undefined>;
+  envFilePresent: boolean;
+  exampleEnvironment?: Record<string, string | undefined>;
 }
 
 function readSection(configToml: string, sectionName: string) {
@@ -117,6 +123,22 @@ export function resolveEpic22SupabaseTestEnvironment({
   };
 }
 
+export function resolveEpic22LocalServiceRoleKey({
+  env,
+  envFilePresent,
+  exampleEnvironment = {},
+}: ResolveServiceRoleKeyOptions) {
+  const dedicatedKey = env.EPIC_22_LOCAL_SERVICE_ROLE_KEY?.trim();
+  if (dedicatedKey) return dedicatedKey;
+
+  const legacyKey = env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (legacyKey && legacyKey !== "test-service-role-key") return legacyKey;
+  if (envFilePresent) return null;
+
+  const exampleKey = exampleEnvironment.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  return exampleKey || null;
+}
+
 export function loadEpic22SupabaseTestEnvironment() {
   const envPath = resolve(process.cwd(), ".env.test");
   const configPath = resolve(process.cwd(), "supabase/config.toml");
@@ -156,6 +178,19 @@ export function formatEpic22SupabaseSkipDiagnostic(
   );
 }
 
+export function assertEpic22EvidenceRequirement(
+  available: boolean,
+  required: boolean,
+  flagName: string,
+  diagnostic: string
+) {
+  if (required && !available) {
+    throw new Error(
+      `${diagnostic} ${flagName}=true requires this evidence test to run.`
+    );
+  }
+}
+
 export async function isEpic22DatabaseReachable(dbUrl: string) {
   const probe = new Client({ connectionString: dbUrl });
   try {
@@ -175,13 +210,13 @@ export async function assertEpic22DatabaseFingerprint(
     `SELECT version
      FROM supabase_migrations.schema_migrations
      WHERE version = $1`,
-    [STORY_22_13_MIGRATION_VERSION]
+    [LATEST_EPIC_22_MIGRATION_VERSION]
   );
 
-  if (result.rows[0]?.version !== STORY_22_13_MIGRATION_VERSION) {
+  if (result.rows[0]?.version !== LATEST_EPIC_22_MIGRATION_VERSION) {
     throw new Error(
-      `Expected migration ${STORY_22_13_MIGRATION_VERSION} for the ` +
-        `hr-masterdata stack. Run the local Story 22.13 reset first.`
+      `Expected migration ${LATEST_EPIC_22_MIGRATION_VERSION} for the ` +
+        `hr-masterdata stack. Run the local Story 22.15 reset first.`
     );
   }
 }

@@ -1,9 +1,9 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-08-31T00:00:00+02:00
+# last_updated: 2026-09-01T00:00:00+02:00
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
-# story_location: D:\Masterdata\hr-masterdata/_bmad-output/implementation-artifacts
+# story_location: _bmad-output/implementation-artifacts
 
 # STATUS DEFINITIONS:
 # ==================
@@ -35,11 +35,11 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-08-31T00:00:00+02:00
+last_updated: 2026-09-01T00:00:00+02:00
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
-story_location: 'D:\Masterdata\hr-masterdata/_bmad-output/implementation-artifacts'
+story_location: '_bmad-output/implementation-artifacts'
 
 development_status:
   epic-22: in-progress
@@ -57,8 +57,10 @@ development_status:
   22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: done
   22-13-remediate-pr-91-security-and-readiness-review-findings: done
   22-14-fix-omc-masterdata-reminder-timing-digest-and-failure-semantics: done
+  22-15-production-readiness-remediation: in-progress
   epic-22-retrospective: optional
-  epic-23: backlog
+  epic-23: on-hold # Explicit owner hold; do not activate or create an Epic 23 status artifact.
+  # Existing Epic 23 story placeholders remain backlog-only under the epic hold; no active planning is authorized.
   23-1-select-commercial-offer-and-handover-model: backlog
   23-2-prepare-final-legal-and-privacy-contract-pack: backlog
   23-3-define-support-sla-raci-and-escalation-operations: backlog
@@ -70,4 +72,7 @@ development_status:
   23-9-add-enterprise-controls-when-contract-requires: backlog
   epic-23-retrospective: optional
 
-verification_blockers: {}
+verification_blockers:
+  local_quality_gates: 'Complete 2026-09-01: clean 63-migration reset; Story 22.15 live database 11/11; Story 22.14 PostgREST 1/1; live export 5/5; full live-gate Vitest 317/317 files and 3,342/3,342 tests with zero skips; latest PR #94 patch-gate Vitest 308 files / 3,293 tests passed with 9 files / 51 managed local-service tests skipped; focused active-user middleware 12/12; latest exact full Playwright 163 passed / 47 classified skips / 0 failed in 24.0 minutes; type-check, zero-error lint, production build, audit threshold, and candidate-wide diff validation passed. The authenticated lookup-failure redirect-loop fix returns a retryable no-store 503 without revoking or dropping refreshed cookies. E2E skips are 9 authorized capture-only cron cases plus 38 obsolete/superseded or deterministic-fixture coverage-debt cases; none is counted as passing.'
+  remote_pr_review: 'Open: PR #94 prior head f7b8945b98d4c7fc975d9ad30860bbab3181f443 was mergeable into staging with reported checks green, but one redirect-loop ReviewBot thread remains open. The tested local 503 remediation is not remote closure until committed, pushed, reviewed, and green on the PR head. origin/staging was bcb1a0e5bed3d06b9b7582320f491964ffc5a0b9 and origin/main was 822350986f4c023948a7bbf490ddffc371185c4a.'
+  hosted_owner_gates: 'Open: record the final immutable remediation SHA, obtain fresh catalog proof and the required signed ledger, then obtain environment-specific owner authorization before any hosted repair, apply, workflow, deployment, or production action.'
