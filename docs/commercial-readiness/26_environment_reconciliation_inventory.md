@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-14
 
-Updated: 2026-09-01 — Story 22.15 clean reset/live evidence, manifest plan, and dated hosted observations synchronized
+Updated: 2026-09-03 — Story 22.15 IPv4 session-pooler binding amendment synchronized
 
 Story: 22.10 historical inventory, superseded for release execution by Story 22.15
 
@@ -99,7 +99,7 @@ Scope caveats are explicit. `TRUNCATE public.employees ... CASCADE` also clears 
 - `supabase/migration-baseline-manifest.json` partitions all 63 repository versions exactly once: 57 `repair-after-catalog-proof` and six `execute`.
 - Staging requires one repair (`20250113000000`) only after environment-specific catalog proof, plus five applies. Production requires fresh proof and a signed ledger for the explicit 57-version repair list, plus six applies. No hosted proof is currently claimed and no wildcard repair is permitted.
 - The read-only verifier covers room function signatures/body, repayment Boolean columns/indexes/config, staffing tables/typed columns/exact `0..9999` constraint/index/RLS/seeds/RPC, dietary column types/permissions, and the exact six-column `user_filters` structure, constraints, two indexes, update trigger/function, plus a phase-specific policy profile. Production pre-apply uses the dated dashboard aliases and three owner-filter policies; staging pre-apply uses the canonical four-policy profile. It is the automated minimum for known unsafe-replay surfaces; fresh production evidence must prove the exact dated policy semantics, and a signed per-version ledger remains mandatory for all 57 repairs.
-- The target gate requires the direct database URL, CLI link, and separately supplied intended-project reference to all match without printing them. The catalog wrapper repeats that gate and exits nonzero with failed check names only. Any mismatch halts before repair/apply; binding is repeated immediately before each repair. After repair, `supabase db push --linked --dry-run --skip-vault` must show only the environment's exact forward list. Full commands and owner gates are in `27_supabase_cutover_runbook.md`.
+- The target gate requires one explicit reviewed connection mode. Direct mode binds the project-specific database hostname, CLI link, and separately supplied intended-project reference. The IPv4-only Shared Supavisor session-pooler mode binds the CLI link, intended reference, project reference encoded in the pooler username, and a separately approved exact pooler hostname; it permits only port `5432` and rejects transaction pooling on `6543`. Neither path prints private binding inputs. The catalog wrapper repeats that gate and exits nonzero with failed check names only. Any mismatch halts before repair/apply; binding is repeated immediately before each repair. After repair, `supabase db push --linked --dry-run --skip-vault` must show only the environment's exact forward list. Full commands and owner gates are in `27_supabase_cutover_runbook.md`.
 
 ## 7. Local-stack grant parity
 

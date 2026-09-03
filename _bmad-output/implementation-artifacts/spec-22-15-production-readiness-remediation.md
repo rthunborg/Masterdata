@@ -64,9 +64,13 @@ context:
 
 ## Spec Change Log
 
+- 2026-09-03 — Human-authorized operational amendment after PR #94: allow either the existing direct database mode or Shared Supavisor **session** mode on port `5432` for IPv4-only operator networks. Session mode must fail closed on an explicit mode, linked/intended project match, project reference encoded in `postgres.<project-ref>`, separately approved exact pooler hostname, reviewed CA, and `sslmode=verify-full`; transaction pooling on `6543` remains prohibited. This changes connection transport only and grants no hosted repair/apply/setting authorization.
+
 ## Design Notes
 
 Hosted historical SQL is not made idempotent after the fact. The safe model is: prove the material catalog state, repair only the explicit historical allowlist, dry-run the exact forward set, then apply only after the environment-specific owner gate.
+
+An IPv4-only operator network may use the Shared Supavisor session pooler as transport without weakening project identity. The pooler hostname is shared infrastructure and does not itself encode the project, so the verifier binds both the exact separately approved hostname and the project reference encoded in the pooler username, in addition to the CLI link and intended-project reference.
 
 ## Verification
 

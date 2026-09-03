@@ -17,6 +17,7 @@ const password = "do-not-print-this-password";
 const environment = {
   EXPECTED_SUPABASE_PROJECT_REF: projectRef,
   SUPABASE_DB_URL: `postgresql://postgres:${password}@db.${projectRef}.supabase.co:5432/postgres?sslmode=verify-full`,
+  SUPABASE_DB_CONNECTION_MODE: "direct",
 };
 const reviewedPsqlPath = resolve("reviewed-tooling", "psql.exe");
 const reviewedCertificatePath = resolve("reviewed-tooling", "supabase-root.pem");
@@ -284,6 +285,60 @@ describe("Story 22.15 catalog verifier runner", () => {
       "EXPECTED_SUPABASE_PROJECT_REF"
     );
     expect(observedEnvironment).not.toHaveProperty("UNRELATED_PARENT_SECRET");
+  });
+
+  it("passes an approved session-pooler target to psql without leaking binding inputs", async () => {
+    const poolerHost = "aws-0-eu-north-1.pooler.supabase.com";
+    const poolerEnvironment = {
+      EXPECTED_SUPABASE_PROJECT_REF: projectRef,
+      EXPECTED_SUPABASE_POOLER_HOST: poolerHost,
+      SUPABASE_DB_CONNECTION_MODE: "session-pooler",
+      SUPABASE_DB_URL: `postgresql://postgres.${projectRef}:${password}@${poolerHost}:5432/postgres?sslmode=verify-full`,
+    };
+    let observedArguments: string[] = [];
+    let observedEnvironment: Record<string, string> = {};
+
+    await runProductionBaselineCatalogVerifier({
+      ...reviewedTooling,
+      environment: poolerEnvironment,
+      phase: "staging_pre_apply",
+      spawn: (
+        _command: string,
+        args: string[],
+        options: { env: Record<string, string> }
+      ) => {
+        observedArguments = args;
+        observedEnvironment = options.env;
+        return {
+          error: undefined,
+          status: 0,
+          stdout: `${catalogCsv()}\n`,
+        };
+      },
+      targetVerifier: async () => true,
+    });
+
+    expect(observedEnvironment).toMatchObject({
+      PGHOST: poolerHost,
+      PGPORT: "5432",
+      PGDATABASE: "postgres",
+      PGUSER: `postgres.${projectRef}`,
+      PGSSLMODE: "verify-full",
+      PGSSLROOTCERT: reviewedCertificatePath,
+    });
+    const commandLine = observedArguments.join(" ");
+    for (const privateValue of [
+      poolerEnvironment.SUPABASE_DB_URL,
+      projectRef,
+      poolerHost,
+      password,
+    ]) {
+      expect(commandLine).not.toContain(privateValue);
+    }
+    expect(observedEnvironment).not.toHaveProperty("SUPABASE_DB_URL");
+    expect(observedEnvironment).not.toHaveProperty("EXPECTED_SUPABASE_PROJECT_REF");
+    expect(observedEnvironment).not.toHaveProperty("EXPECTED_SUPABASE_POOLER_HOST");
+    expect(observedEnvironment).not.toHaveProperty("SUPABASE_DB_CONNECTION_MODE");
   });
 
   it("rejects unknown phases before invoking psql", async () => {
