@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-11
 
-Updated: 2026-09-03 — Story 22.15 IPv4 session-pooler binding amendment synchronized
+Updated: 2026-09-04 — Story 22.15 PR #95 verification state synchronized
 
 Story: 22.8, with Story 22.10, Story 22.13, and Story 22.15 addenda
 
@@ -159,6 +159,6 @@ Standing risks are tracked in `11_risk_register_and_open_questions.md` and `08_s
 | Story 22.15 production dependency audit | Revalidated 2026-09-01 | `0` critical / `0` high / `1` moderate / `0` low across 281 production dependencies. Sole residual: ExcelJS→UUID, controlled and review-dated 2026-09-30. |
 | Story 22.15 local database/live evidence | 2026-09-01 | Clean reset exit `0` through all 63 migrations plus seed; Story 22.15 live database **11/11**, Story 22.14 PostgREST **1/1**, and live Next-plus-Supabase export **5/5**. Verified post-reset 17-policy target, active/inactive authorization, saved-filter denial, documented exceptions, atomic rollback/final-admin behavior, two-client race, restricted cleanup outbox, and real workbook generation/parsing. |
 | Story 22.15 full local quality gates | 2026-09-01 | Final fresh Vitest exit `0` in 525.97s: **317/317 files and 3,342/3,342 tests passed with zero skips**. Exact full Playwright exit `0`: **163 passed / 47 classified skips / 0 failed**. Type-check, zero-error lint, Next `16.3.3` production build, dependency threshold, and the candidate-wide diff check passed under the single path-scoped exception for the SHA-256-pinned byte-preserved `20250113000000` migration; all other paths retain normal whitespace enforcement. No skip is passing evidence; remote review and hosted evidence remain open. |
-| Story 22.15 IPv4 session-pooler binding amendment | 2026-09-03 | Focused target-binding/catalog/migration-readiness suites **65/65**; fresh full Vitest **3,309 passed / 51 managed local-service skips**; full lint 0 errors / 297 pre-existing warnings; type-check exit `0`. Direct mode remains supported; IPv4 Shared Supavisor session mode is constrained to exact mode/host/project/port/TLS inputs and secret-isolated catalog execution. Exact amendment-branch Playwright and remote review/merge remain open; no hosted read/write or setting change occurred. |
+| Story 22.15 IPv4 session-pooler binding amendment | 2026-09-04 | Focused target-binding/catalog/migration-readiness suites **65/65**; fresh full Vitest **3,309 passed / 51 managed local-service skips**; full lint 0 errors / 297 pre-existing warnings; type-check exit `0`. PR #95 is open from implementation commit `de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1`; its repository workflow and both Vercel checks passed. Direct mode remains supported; IPv4 Shared Supavisor session mode is constrained to exact mode/host/project/port/TLS inputs and secret-isolated catalog execution. Exact amendment-branch Playwright, review/merge, and the new immutable staging SHA remain open; no hosted read/write or setting change occurred. |
 
 Project refs were passed via shell variables resolved at runtime and are not recorded in this package. The CLI link state created during evidence capture was removed afterwards (`supabase unlink`); `supabase/.temp/` contents are git-ignored except the already-tracked `supabase/.temp/cli-latest`, which was restored to its committed state.

@@ -246,9 +246,9 @@ stories:
     started_date: 2026-08-31
     completed_date: null
     blockers:
-      - 'PR #94 is merged into staging at a39f0e83bc892c970d8471137134f6fbe33c40f6. The owner-authorized IPv4 Shared Supavisor session-pooler runbook/verifier amendment remains local until reviewed and merged as a new immutable staging SHA.'
+      - 'PR #94 is merged into staging at a39f0e83bc892c970d8471137134f6fbe33c40f6. Follow-up PR #95 is open against staging from implementation commit de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1; its repository workflow and both Vercel checks passed on 2026-09-04. Review, exact amendment-branch Playwright, merge, and a new immutable staging SHA remain open.'
       - 'Hosted staging/production actions require fresh proof and explicit owner gates; no Story 22.15 hosted delta has been applied.'
-    notes: 'Remediation remains in progress because the owner-authorized IPv4 session-pooler amendment and hosted owner gates remain open. PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6; origin/main remains separately fetched at 822350986f4c023948a7bbf490ddffc371185c4a and was not merged. The amendment retains direct mode and adds only Shared Supavisor session mode on port 5432, bound fail-closed by explicit mode, CLI link, intended project, project reference in the pooler username, separately approved exact hostname, and reviewed CA/verify-full. Transaction pooling on 6543 is prohibited. Focused amendment tests pass 65/65; fresh full Vitest passes 3,309 with 51 managed local-service skips; full lint has 0 errors/297 pre-existing warnings; type-check passes. Exact amendment-branch Playwright remains open, so review completion is not claimed. No hosted read/write or setting change occurred during amendment authoring. Epic 23 remains on hold.'
+    notes: 'Remediation remains in progress because the owner-authorized IPv4 session-pooler amendment and hosted owner gates remain open. PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6; origin/main remains separately fetched at 822350986f4c023948a7bbf490ddffc371185c4a and was not merged. Follow-up PR #95 is open against staging from implementation commit de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1; its repository workflow and both Vercel checks passed on 2026-09-04. The amendment retains direct mode and adds only Shared Supavisor session mode on port 5432, bound fail-closed by explicit mode, CLI link, intended project, project reference in the pooler username, separately approved exact hostname, and reviewed CA/verify-full. Transaction pooling on 6543 is prohibited. Focused amendment tests pass 65/65; fresh full Vitest passes 3,309 with 51 managed local-service skips; full lint has 0 errors/297 pre-existing warnings; type-check passes. Exact amendment-branch Playwright, review, merge, and the new immutable staging SHA remain open. No hosted read/write or setting change occurred during amendment authoring. Epic 23 remains on hold.'
 
 progress_summary:
   total_stories: 15
@@ -276,7 +276,7 @@ test_coverage_summary:
   manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 156 + 87 + 3 + 0 + 2 = 248
 
 blockers:
-  - 'PR #94 is merged; the follow-up IPv4 session-pooler runbook/verifier amendment remains local until committed, pushed, reviewed, merged, and recorded at a new immutable staging SHA.'
+  - 'PR #95 is open against staging from implementation commit de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1 with its initial repository workflow and both Vercel checks green. Exact amendment-branch Playwright, review, merge, and recording the new immutable staging SHA remain open.'
   - 'Hosted staging/production proof, repair/apply, and verification remain separately owner-gated; no hosted mutation is authorized by this amendment.'
 known_issues:
   - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'

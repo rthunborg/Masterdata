@@ -10,7 +10,7 @@ The approved frozen implementation specification is [`spec-22-15-production-read
 
 ## Verification Status
 
-- PR #94 is merged into `origin/staging` at `a39f0e83bc892c970d8471137134f6fbe33c40f6`. Status remains `in-progress` because the owner-authorized IPv4 session-pooler runbook/verifier amendment still requires review and merge, after which fresh hosted proof and separately owner-controlled hosted actions remain incomplete.
+- PR #94 is merged into `origin/staging` at `a39f0e83bc892c970d8471137134f6fbe33c40f6`. Follow-up PR #95 is open against `staging` with implementation commit `de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1`; its repository workflow and both Vercel checks passed on 2026-09-04. Status remains `in-progress` because review/merge, the exact amendment-branch Playwright gate, fresh hosted proof, and separately owner-controlled hosted actions remain incomplete.
 - `pnpm install --frozen-lockfile`: exit `0` with bundled Node `v24.19.0`; lockfile unchanged.
 - `pnpm type-check`: exit `0` after the remediation-local middleware null narrowing fix.
 - Clean local `supabase db reset --local`: exit `0`; all 63 migrations and the parity seed applied. The post-reset catalog has 17 policies, the required missing-only column configuration rows, and cleanup-outbox access restricted to `postgres`.
@@ -31,7 +31,7 @@ The approved frozen implementation specification is [`spec-22-15-production-read
 
 ## Dev Agent Record
 
-- Authoritative branch observations after a fresh fetch on 2026-09-03: `origin/staging` `a39f0e83bc892c970d8471137134f6fbe33c40f6`; `origin/main` `822350986f4c023948a7bbf490ddffc371185c4a`.
+- Authoritative branch observations after a fresh fetch on 2026-09-04: `origin/staging` `a39f0e83bc892c970d8471137134f6fbe33c40f6`; `origin/main` `822350986f4c023948a7bbf490ddffc371185c4a`.
 - The observed `origin/staging` SHA is the merged PR #94 baseline. The final reviewed SHA containing the connection-mode amendment must be recorded before staging proof resumes.
 - Branch: `codex/story-22-15-session-pooler-runbook`
 - Epic 23 remains explicitly on hold.
@@ -51,3 +51,4 @@ The approved frozen implementation specification is [`spec-22-15-production-read
 - 2026-09-01: PR #94 review remediation committed the linked frozen specification and replaced the misleading unscoped diff claim with a path-scoped Git whitespace exception plus synchronized evidence and regression assertions. The restored migration bytes and SHA-256 remain unchanged; Story 22.15 remains `in-progress`.
 - 2026-09-01: Remediated the subsequent PR #94 authenticated lookup-failure redirect loop. Uncertain Auth/app-user resolution now returns a retryable, `no-store` 503 without revoking or dropping refreshed session cookies; focused tests cover protected routes and `/login`, and the full local quality gate was rerun. Story 22.15 remains `in-progress` pending remote review/final SHA and owner-controlled hosted staging gates.
 - 2026-09-03: Confirmed PR #94 merged as `a39f0e83bc892c970d8471137134f6fbe33c40f6`. By explicit owner authorization, added a reviewed-mode design for IPv4-only networks using Shared Supavisor session pooling on `5432`; exact host, project-bound username, CA/`verify-full`, and CLI-link checks fail closed, and transaction port `6543` remains rejected. No hosted read/write or setting change was performed. Story 22.15 remains `in-progress` pending amendment review/merge and fresh staging proof.
+- 2026-09-04: Pushed implementation commit `de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1` and opened PR #95 against `staging`. The Test Check workflow passed type-check, lint, unit, and integration steps; both Vercel checks passed. Exact amendment-branch Playwright, review/merge, the new immutable staging SHA, and all hosted gates remain open.

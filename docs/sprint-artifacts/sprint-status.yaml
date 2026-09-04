@@ -1,8 +1,8 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: 2026-09-03
-updated_by: Codex (PR #94 merge recorded; owner-authorized IPv4 session-pooler amendment in progress; hosted gates remain open).
+last_updated: 2026-09-04
+updated_by: Codex (PR #95 opened with initial required checks green; review, exact Playwright, merge, and hosted gates remain open).
 
 current_focus:
   active_epic: 22
@@ -55,7 +55,7 @@ next_actions:
   - 'Story 22.10 is done. Phase A staging reconciliation remains dated 2026-06-14 (57 migrations / 19 policies); Story 22.13 resolved the historical local Playwright contradiction on 2026-07-09 with exact full npx playwright test: 162 passed / 53 skipped / 0 failed, EXIT:0. Phase B production cutover (runbook 27; R-010/R-023/R-020) remains the Epic 22 release gate.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings on PR #91 commit 32621fd are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, required real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, exact full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique Story 22.14 tests are evidenced passing without recounting pre-existing Story 22.11 cases. Any further review finding requires human triage. No production, schema, real-recipient cron, deployment, main, or unrelated-file changes occurred. Epic 22 remains in progress for its separate production release gate.'
-  - 'Story 22.15 remains in progress. PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6; origin/main remains 822350986f4c023948a7bbf490ddffc371185c4a and was not merged. The owner-authorized follow-up adds a fail-closed IPv4 Shared Supavisor session-pooler mode on port 5432 while retaining direct mode; transaction pooling on 6543 remains prohibited. The amendment requires review/merge and a new immutable staging SHA before fresh hosted proof resumes.'
+  - 'Story 22.15 remains in progress. PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6; origin/main remains 822350986f4c023948a7bbf490ddffc371185c4a and was not merged. Follow-up PR #95 is open against staging from implementation commit de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1, with its repository workflow and both Vercel checks green on 2026-09-04. The owner-authorized follow-up adds a fail-closed IPv4 Shared Supavisor session-pooler mode on port 5432 while retaining direct mode; transaction pooling on 6543 remains prohibited. Exact amendment-branch Playwright, review/merge, and a new immutable staging SHA remain open before fresh hosted proof resumes.'
   - 'EPIC 22 COMPLETION GATE (E-010/E-013): from the final reviewed immutable SHA, follow supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md in order: fresh catalog proof; signed 57-row production ledger; exact explicit repairs only; db push --linked --dry-run --skip-vault; five exact staging applies or six exact production applies; fresh production backup, approved maintenance window, and explicit go-live authorization; then migration/policy/grant/direct-role/advisor/data-preservation verification before closing R-010/R-023/R-020. No hosted action is authorized by this status file.'
   - 'Epic 23 is explicitly on hold. Its status file has not been created, and no Epic 23 work may be started or planned into active development without a later explicit owner decision.'
 
