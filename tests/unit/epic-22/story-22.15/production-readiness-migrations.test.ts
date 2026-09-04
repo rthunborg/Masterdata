@@ -674,6 +674,13 @@ describe("Story 22.15 migration baseline safety", () => {
     expect(cutoverRunbook).toContain("57-row proof ledger");
     expect(cutoverRunbook).toContain("--dry-run --skip-vault");
     expect(cutoverRunbook).toContain("EXPECTED_SUPABASE_PROJECT_REF");
+    expect(cutoverRunbook).toContain("SUPABASE_DB_CONNECTION_MODE");
+    expect(cutoverRunbook).toContain("EXPECTED_SUPABASE_POOLER_HOST");
+    expect(cutoverRunbook).toContain("`session-pooler` mode");
+    expect(cutoverRunbook).toContain("port `5432`");
+    expect(cutoverRunbook).toContain(
+      "Port `6543` is transaction pooling and is never permitted"
+    );
     expect(cutoverRunbook).toContain("SUPABASE_CLI_EXECUTABLE");
     expect(cutoverRunbook).toContain("EXPECTED_SUPABASE_CLI_SHA256");
     expect(cutoverRunbook).toContain(
@@ -696,7 +703,10 @@ describe("Story 22.15 migration baseline safety", () => {
       "rejects every backslash byte in the verifier source"
     );
     expect(cutoverRunbook).toContain(
-      "requires the URL reference, `supabase/.temp/project-ref`, and the separately supplied intended reference to all match"
+      "Session-pooler mode additionally binds the project reference embedded in the username"
+    );
+    expect(cutoverRunbook).toContain(
+      "URL hostname to equal the separately approved exact pooler hostname"
     );
     expect(cutoverRunbook).toContain(
       "verify-production-baseline-catalog.mjs staging_pre_apply"

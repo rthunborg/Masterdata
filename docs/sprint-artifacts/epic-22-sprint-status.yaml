@@ -30,8 +30,8 @@ epic_metrics:
   current_coverage_critical: 0
   current_test_execution_time_seconds: 2081
   total_tests_estimated: 106
-  total_tests_implemented: 308
-  total_tests_passing: 308
+  total_tests_implemented: 324
+  total_tests_passing: 324
 
 stories:
   - id: '22.1'
@@ -239,16 +239,16 @@ stories:
     status: 'in-progress'
     story_points: 0
     estimated_tests: 26
-    implemented_tests: 61 # Direct Story 22.15 unit/integration inventory; full-suite counts are recorded separately.
-    passing_tests: 61
+    implemented_tests: 77 # Story 22.15 direct test delta; includes 16 owner-authorized IPv4 session-pooler amendment cases.
+    passing_tests: 77
     dependencies: ['22.10', '22.13', '22.14']
     assignee: 'Codex'
     started_date: 2026-08-31
     completed_date: null
     blockers:
-      - 'PR #94 prior head f7b8945b98d4c7fc975d9ad30860bbab3181f443 was mergeable into staging with reported checks green, but one redirect-loop ReviewBot thread remains open; the tested local fix is not remote closure until committed, pushed, reviewed, and green on the PR head.'
+      - 'PR #94 is merged into staging at a39f0e83bc892c970d8471137134f6fbe33c40f6. Follow-up PR #95 is open against staging from implementation commit de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1; its repository workflow and both Vercel checks passed on 2026-09-04. Review, exact amendment-branch Playwright, merge, and a new immutable staging SHA remain open.'
       - 'Hosted staging/production actions require fresh proof and explicit owner gates; no Story 22.15 hosted delta has been applied.'
-    notes: 'Remediation remains in progress from the approved frozen spec because remote review/final SHA and hosted owner gates remain open. Fresh local gates are complete: clean 63-migration reset EXIT:0; Story 22.15 live DB 11/11; Story 22.14 PostgREST 1/1; live export 5/5; full live-gate Vitest EXIT:0 (317/317 files, 3,342/3,342 tests, zero skips); latest patch-gate Vitest EXIT:0 (308 files / 3,293 tests passed; 9 files / 51 managed local-service tests skipped); latest exact full Playwright EXIT:0 (163 passed / 47 explicitly classified skips / 0 failed in 24.0 minutes); focused active-user middleware 12/12; type-check EXIT:0; lint EXIT:0 with 0 errors/297 warnings; Next 16.3.3 production build EXIT:0 with ephemeral local-only configuration; audit threshold 0 critical/high with the sole accepted moderate; and the candidate-wide diff check EXIT:0 under the single path-scoped immutable-migration whitespace exception. The authenticated lookup-failure redirect-loop remediation returns a retryable no-store 503 without revoking or dropping refreshed cookies, while definitive rejection and normal unauthenticated redirects remain intact. The restored 20250113000000 migration is SHA-256 pinned and all other paths retain normal whitespace enforcement. The 47 E2E skips are 9 owner-gated capture-only cron cases plus 38 obsolete/superseded or deterministic-fixture test-debt cases; none is counted as passing. PR #94 prior head was mergeable into staging with reported checks green, but the latest patch still requires commit, push, remote review, and green head checks. origin/staging bcb1a0e5bed3d06b9b7582320f491964ffc5a0b9 is the staging baseline only; origin/main was 822350986f4c023948a7bbf490ddffc371185c4a. No hosted action occurred. Epic 23 remains on hold.'
+    notes: 'Remediation remains in progress because the owner-authorized IPv4 session-pooler amendment and hosted owner gates remain open. PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6; origin/main remains separately fetched at 822350986f4c023948a7bbf490ddffc371185c4a and was not merged. Follow-up PR #95 is open against staging from implementation commit de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1; its repository workflow and both Vercel checks passed on 2026-09-04. The amendment retains direct mode and adds only Shared Supavisor session mode on port 5432, bound fail-closed by explicit mode, CLI link, intended project, project reference in the pooler username, separately approved exact hostname, and reviewed CA/verify-full. Transaction pooling on 6543 is prohibited. Focused amendment tests pass 65/65; fresh full Vitest passes 3,309 with 51 managed local-service skips; full lint has 0 errors/297 pre-existing warnings; type-check passes. Exact amendment-branch Playwright, review, merge, and the new immutable staging SHA remain open. No hosted read/write or setting change occurred during amendment authoring. Epic 23 remains on hold.'
 
 progress_summary:
   total_stories: 15
@@ -266,18 +266,18 @@ progress_summary:
 
 test_coverage_summary:
   total_tests_estimated: 106
-  total_tests_implemented: 308
-  total_tests_passing: 308
-  implementation_percentage: 290.6
-  unit_tests: 207
+  total_tests_implemented: 324
+  total_tests_passing: 324
+  implementation_percentage: 305.7
+  unit_tests: 223
   integration_tests: 96
   e2e_tests: 3 # Includes one safe unauthorized-only Story 22.14 cron case, passed in the exact full Playwright gate.
   performance_tests: 0
   manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 156 + 87 + 3 + 0 + 2 = 248
 
 blockers:
-  - 'PR #91 was MERGEABLE but BLOCKED on 2026-09-01 with two unresolved review threads; remediation is local until committed, pushed, and reviewed.'
-  - 'Hosted staging/production proof, repair/apply, and verification are owner-gated; the final immutable remediation SHA is not yet recorded.'
+  - 'PR #95 is open against staging from implementation commit de4f7f1d4f7fb289cbb2c8c6becdb7fd813640a1 with its initial repository workflow and both Vercel checks green. Exact amendment-branch Playwright, review, merge, and recording the new immutable staging SHA remain open.'
+  - 'Hosted staging/production proof, repair/apply, and verification remain separately owner-gated; no hosted mutation is authorized by this amendment.'
 known_issues:
   - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'
   - 'Post-merge Epic 22 release/readiness gate: after final deployment, unauthenticated deployed-app diagnostic checks for removed diagnostic endpoints must return a non-success auth/not-found status before P0 external-presentation readiness is claimed.'
@@ -301,6 +301,6 @@ next_actions:
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA was deferred to Epic 23 Story 23.4 by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b. Epic 23 is on hold, so no Auth attack-protection change is claimed or active work planned here.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
-  - 'Story 22.15 remains in progress with local remediation gates complete, including the PR #94 authenticated lookup-failure redirect-loop fix: focused middleware 12/12, latest patch-gate Vitest 3,293 passed / 51 managed local-service skips, exact full Playwright 163 passed / 47 classified skips / 0 failed in 24.0 minutes, type-check, zero-error lint, build, audit threshold, and candidate-wide diff validation. Next commit and push the immutable PR #94 candidate, close its remaining ReviewBot thread, require green head checks/review, and only then merge PR #94 into staging. Hosted release sequence remains separate and binding: fresh staging catalog proof; separately authorized single staging history repair; verification; separately authorized five exact staging applies; verification; then the production-only signed 57-row ledger, exact repairs, dry-run/six applies, fresh backup, isolation, explicit go-live signal, and full restoration verification. Sources: supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md. Epic 23 remains on hold.'
-last_updated: 2026-09-01
-updated_by: Codex (Story 22.15 local reset/live/full gates complete; remote PR review, final SHA, and hosted owner gates remain open).
+  - 'Story 22.15 remains in progress after PR #94 merged at a39f0e83bc892c970d8471137134f6fbe33c40f6. Review and merge the owner-authorized IPv4 Shared Supavisor session-pooler amendment, record its new immutable staging SHA, then restart the read-only staging proof using the explicit mode-aware binding. Hosted release sequence remains separate and binding: fresh staging catalog proof; separately authorized single staging history repair; verification; separately authorized five exact staging applies; verification; then the production-only signed 57-row ledger, exact repairs, dry-run/six applies, fresh backup, isolation, explicit go-live signal, and full restoration verification. Sources: supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md. Epic 23 remains on hold.'
+last_updated: 2026-09-03
+updated_by: Codex (PR #94 merge recorded; owner-authorized IPv4 session-pooler amendment in progress; hosted gates remain open).
