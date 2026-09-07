@@ -1,7 +1,7 @@
 # Risk Register And Open Questions
 
 Prepared: 2026-06-03
-Updated: 2026-09-07 — Story 22.15 PR #95 actual-connection binding remediation
+Updated: 2026-09-07 — Story 22.15 PR #95 exact-command-grammar remediation
 
 ## Risk Register
 
@@ -39,6 +39,7 @@ Updated: 2026-09-07 — Story 22.15 PR #95 actual-connection binding remediation
 - Recheck the sole ExcelJS→UUID moderate advisory by 2026-09-30 and close or renew it explicitly before enterprise use.
 - Keep selected-export real-column regression coverage current.
 - Story 22.15 supersedes the unsafe historical baseline plan: prove the catalog, use the reviewed wrapper's actual-connection binding, repair only the explicit manifest allowlist, require exact `--reviewed-target --dry-run --skip-vault` output, then execute staging one-repair/five-apply and production 57-repair/six-apply plans only at their owner gates. Remaining beyond that: confirm Auth session/MFA settings under Epic 23 and complete route auth coverage.
+- Treat Supabase CLI persistent options and password shorthands as hostile input. The reviewed wrapper rejects leading root options, accepts only the exact database command shapes in the runbook, and rejects both long and short (`-p` and attached) target/password selectors without including their values in errors.
 - Resolve the dated `target_headcount` versus repository `headcount_need` contradiction with fresh read-only production catalog evidence before signing or executing any staffing-history repair. A nonmatching production shape requires a forward reconciliation migration, not a history repair.
 - Do not treat repository/static/live-local Story 22.15 evidence as hosted proof. Hosted staging must re-verify the active-only role/filter behavior, atomic delete/grants, 17-policy catalog, advisors, repayment values, and permission JSON before production (`E-013`).
 - Treat the six-file production apply as a privilege-window risk (`R-025`): owner-approved technical isolation must include a Realtime publication/client inventory, temporary Realtime-service disablement, and existing/reconnecting non-operator probes, then remain proven through post-apply verification, exact-candidate deployment, and smoke; a seasonal user pause, Vercel ingress block, or Data API disablement alone is insufficient.
