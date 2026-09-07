@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  REVIEWED_ENVIRONMENT_FLAG,
   REVIEWED_SUPABASE_CLI_VERSION,
   REVIEWED_TARGET_FLAG,
   runReviewedSupabaseCli,
@@ -231,6 +232,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         PGUSER: expectedUser,
       });
       for (const inheritedKey of [
+        'EXPECTED_SUPABASE_ENVIRONMENT',
         'EXPECTED_SUPABASE_PROJECT_REF',
         'PGSERVICE',
         'SUPABASE_ACCESS_TOKEN',
@@ -257,7 +259,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       expected: ['db', 'advisors', '--type', 'performance'],
     },
     {
-      label: 'single history repair',
+      label: 'staging history repair from the reviewed manifest plan',
       args: [
         'migration',
         'repair',
@@ -265,6 +267,8 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         'applied',
         '20250113000000',
         REVIEWED_TARGET_FLAG,
+        REVIEWED_ENVIRONMENT_FLAG,
+        'staging',
       ],
       expected: [
         'migration',
@@ -272,6 +276,26 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         '--status',
         'applied',
         '20250113000000',
+      ],
+    },
+    {
+      label: 'production history repair from the reviewed manifest plan',
+      args: [
+        'migration',
+        'repair',
+        '--status',
+        'applied',
+        '20251027000000',
+        REVIEWED_TARGET_FLAG,
+        REVIEWED_ENVIRONMENT_FLAG,
+        'production',
+      ],
+      expected: [
+        'migration',
+        'repair',
+        '--status',
+        'applied',
+        '20251027000000',
       ],
     },
     {
@@ -288,6 +312,9 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     const spawn = vi.fn(() => ({ error: undefined, status: 0 }));
     const environment = {
       SUPABASE_DB_URL: `postgresql://postgres:${password}@db.${projectRef}.supabase.co:5432/postgres?sslmode=verify-full`,
+      ...(args[1] === 'repair'
+        ? { EXPECTED_SUPABASE_ENVIRONMENT: args[7] }
+        : {}),
     };
 
     expect(
@@ -305,6 +332,114 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       '--db-url',
       'postgresql:///postgres?sslmode=verify-full',
     ]);
+  });
+
+  it.each([
+    {
+      label: 'a production-only repair on staging',
+      version: '20251027000000',
+      reviewedEnvironment: 'staging',
+    },
+    {
+      label: 'a staging forward migration',
+      version: '20260831200026',
+      reviewedEnvironment: 'staging',
+    },
+    {
+      label: 'a production forward migration',
+      version: '20260614000000',
+      reviewedEnvironment: 'production',
+    },
+    {
+      label: 'an arbitrary migration version',
+      version: '20991231235959',
+      reviewedEnvironment: 'production',
+    },
+  ])(
+    'rejects $label because it is outside the environment-specific repair plan',
+    async ({ version, reviewedEnvironment }) => {
+      const spawn = vi.fn();
+      const targetVerifier = vi.fn();
+
+      await expect(
+        runReviewedSupabaseCli({
+          args: [
+            'migration',
+            'repair',
+            '--status',
+            'applied',
+            version,
+            REVIEWED_TARGET_FLAG,
+            REVIEWED_ENVIRONMENT_FLAG,
+            reviewedEnvironment,
+          ],
+          environment: {
+            EXPECTED_SUPABASE_ENVIRONMENT: reviewedEnvironment,
+          },
+          spawn,
+          executableVerifier: () => reviewedCliPath,
+          targetVerifier,
+        })
+      ).rejects.toThrow(
+        'Supabase CLI database arguments do not match an approved command shape'
+      );
+      expect(targetVerifier).not.toHaveBeenCalled();
+      expect(spawn).not.toHaveBeenCalled();
+    }
+  );
+
+  it('requires an explicit reviewed environment for every history repair', async () => {
+    const spawn = vi.fn();
+    const targetVerifier = vi.fn();
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: [
+          'migration',
+          'repair',
+          '--status',
+          'applied',
+          '20250113000000',
+          REVIEWED_TARGET_FLAG,
+        ],
+        environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'staging' },
+        spawn,
+        executableVerifier: () => reviewedCliPath,
+        targetVerifier,
+      })
+    ).rejects.toThrow(
+      'Supabase CLI database arguments do not match an approved command shape'
+    );
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
+  });
+
+  it('rejects a repair when the command environment differs from the reviewed private target record', async () => {
+    const spawn = vi.fn();
+    const targetVerifier = vi.fn();
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: [
+          'migration',
+          'repair',
+          '--status',
+          'applied',
+          '20250113000000',
+          REVIEWED_TARGET_FLAG,
+          REVIEWED_ENVIRONMENT_FLAG,
+          'staging',
+        ],
+        environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
+        spawn,
+        executableVerifier: () => reviewedCliPath,
+        targetVerifier,
+      })
+    ).rejects.toThrow(
+      'Supabase CLI database arguments do not match an approved command shape'
+    );
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
   });
 
   it.each([

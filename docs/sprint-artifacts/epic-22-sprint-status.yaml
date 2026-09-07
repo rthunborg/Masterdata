@@ -30,8 +30,8 @@ epic_metrics:
   current_coverage_critical: 0
   current_test_execution_time_seconds: 2081
   total_tests_estimated: 106
-  total_tests_implemented: 350
-  total_tests_passing: 350
+  total_tests_implemented: 357
+  total_tests_passing: 357
 
 stories:
   - id: '22.1'
@@ -239,16 +239,16 @@ stories:
     status: 'in-progress'
     story_points: 0
     estimated_tests: 26
-    implemented_tests: 103 # Story 22.15 direct test delta; includes IPv4/actual-connection coverage plus 16 root-option/short-password grammar regressions.
-    passing_tests: 103
+    implemented_tests: 110 # Story 22.15 direct test delta; includes IPv4/actual-connection coverage, 16 root-option/short-password grammar regressions, and 7 environment-specific repair-allowlist regressions.
+    passing_tests: 110
     dependencies: ['22.10', '22.13', '22.14']
     assignee: 'Codex'
     started_date: 2026-08-31
     completed_date: null
     blockers:
-      - 'PR #94 is merged into staging at a39f0e83bc892c970d8471137134f6fbe33c40f6. After the actual-connection fix, Codex Reviewbot found two additional PR #95 bypasses involving leading persistent/root options and the CLI -p password shorthand. The exact-command-grammar remediation is implemented and locally verified, but refreshed PR checks/review, exact amendment-branch Playwright, merge, and a new immutable staging SHA remain open.'
+      - 'PR #94 is merged into staging at a39f0e83bc892c970d8471137134f6fbe33c40f6. After the actual-connection and command-grammar fixes, Codex Reviewbot found that any 14-digit repair version was still accepted. History repair is now bound to the reviewed private target environment and its manifest allowlist, with forward-only/arbitrary/cross-environment versions rejected. Refreshed PR checks/review, exact amendment-branch Playwright, merge, and a new immutable staging SHA remain open.'
       - 'Hosted staging/production actions require fresh proof and explicit owner gates; no Story 22.15 hosted delta has been applied.'
-    notes: 'Remediation remains in progress because PR #95 and hosted owner gates remain open. PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6; origin/main remains separately fetched at 822350986f4c023948a7bbf490ddffc371185c4a and was not merged. The earlier actual-connection remediation binds every remote DB operation through wrapper-only --reviewed-target, target/CA re-proof, a generic passwordless --db-url, and a minimal validated environment. Codex Reviewbot then identified two further bypasses: leading Cobra persistent options could evade database classification, and -p could override the validated password while exposing it in process arguments. The wrapper now rejects every leading root option, rejects embedded root flags through an exact runbook command grammar, and rejects long/short target/password selectors without echoing values. Focused tests pass 95/95; fresh full Vitest passes 3,335 with 51 managed local-service skips; full lint has 0 errors/297 pre-existing warnings; type-check passes. Exact amendment-branch Playwright, refreshed PR checks/review, merge, and the new immutable staging SHA remain open. No hosted read/write or setting change occurred. Epic 23 remains on hold.'
+    notes: 'Remediation remains in progress because PR #95 and hosted owner gates remain open. PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6; origin/main remains separately fetched at 822350986f4c023948a7bbf490ddffc371185c4a and was not merged. The wrapper binds every remote DB operation through wrapper-only --reviewed-target, target/CA re-proof, a generic passwordless --db-url, and a minimal validated environment; it rejects leading/embedded root options and long/short target/password selectors through exact runbook grammar. The latest Reviewbot P1 is also closed locally: history repair requires --reviewed-environment to match the reviewed private target record and permits only that environment''s manifest repair set, rejecting forward-only, arbitrary, and cross-environment versions. Focused tests pass 102/102; fresh full Vitest passes 3,342 with 51 managed local-service skips; full lint has 0 errors/297 pre-existing warnings; type-check passes. Exact amendment-branch Playwright, refreshed PR checks/review, merge, and the new immutable staging SHA remain open. No hosted read/write or setting change occurred. Epic 23 remains on hold.'
 
 progress_summary:
   total_stories: 15
@@ -266,17 +266,17 @@ progress_summary:
 
 test_coverage_summary:
   total_tests_estimated: 106
-  total_tests_implemented: 350
-  total_tests_passing: 350
-  implementation_percentage: 330.2
-  unit_tests: 249
+  total_tests_implemented: 357
+  total_tests_passing: 357
+  implementation_percentage: 336.8
+  unit_tests: 256
   integration_tests: 96
   e2e_tests: 3 # Includes one safe unauthorized-only Story 22.14 cron case, passed in the exact full Playwright gate.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 249 + 96 + 3 + 0 + 2 = 350
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 256 + 96 + 3 + 0 + 2 = 357
 
 blockers:
-  - 'PR #95 actual-connection plus Reviewbot root-option/-p remediation is implemented and locally verified. Refreshed PR checks/review, exact amendment-branch Playwright, merge, and recording the new immutable staging SHA remain open.'
+  - 'PR #95 actual-connection, root-option/-p, and environment-specific repair-allowlist remediation is implemented and locally verified. Refreshed PR checks/review, exact amendment-branch Playwright, merge, and recording the new immutable staging SHA remain open.'
   - 'Hosted staging/production proof, repair/apply, and verification remain separately owner-gated; no hosted mutation is authorized by this amendment.'
 known_issues:
   - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'
@@ -301,6 +301,6 @@ next_actions:
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA was deferred to Epic 23 Story 23.4 by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b. Epic 23 is on hold, so no Auth attack-protection change is claimed or active work planned here.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
-  - 'Story 22.15 remains in progress after PR #94 merged at a39f0e83bc892c970d8471137134f6fbe33c40f6. Complete refreshed review and merge of PR #95 with the actual-connection and exact-command-grammar remediation, record its new immutable staging SHA, then restart the read-only staging proof using the explicit mode-aware binding and wrapper-only --reviewed-target commands. Hosted release sequence remains separate and binding: fresh staging catalog proof; separately authorized single staging history repair; verification; separately authorized five exact staging applies; verification; then the production-only signed 57-row ledger, exact repairs, dry-run/six applies, fresh backup, isolation, explicit go-live signal, and full restoration verification. Sources: supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md. Epic 23 remains on hold.'
+  - 'Story 22.15 remains in progress after PR #94 merged at a39f0e83bc892c970d8471137134f6fbe33c40f6. Complete refreshed review and merge of PR #95 with the actual-connection, exact-command-grammar, and environment-specific repair-allowlist remediation, record its new immutable staging SHA, then restart the read-only staging proof using the explicit mode-aware binding and wrapper-only --reviewed-target commands. Hosted release sequence remains separate and binding: fresh staging catalog proof; separately authorized single staging history repair; verification; separately authorized five exact staging applies; verification; then the production-only signed 57-row ledger, exact repairs, dry-run/six applies, fresh backup, isolation, explicit go-live signal, and full restoration verification. Sources: supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md. Epic 23 remains on hold.'
 last_updated: 2026-09-07
-updated_by: Codex (PR #95 root-option and short-password bypass remediation locally verified; hosted gates remain open).
+updated_by: Codex (PR #95 environment-specific repair-allowlist remediation locally verified; hosted gates remain open).

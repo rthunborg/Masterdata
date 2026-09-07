@@ -9,6 +9,7 @@ import { verifyConfiguredSupabaseTarget } from './verify-target-binding.mjs';
 
 export const REVIEWED_SUPABASE_CLI_VERSION = '2.115.0';
 export const REVIEWED_TARGET_FLAG = '--reviewed-target';
+export const REVIEWED_ENVIRONMENT_FLAG = '--reviewed-environment';
 
 const REVIEWED_DATABASE_URL = 'postgresql:///postgres?sslmode=verify-full';
 const DATABASE_COMMAND_GROUPS = new Set(['db', 'migration']);
@@ -19,6 +20,7 @@ const REVIEWED_DATABASE_COMMANDS = new Set([
   'migration:repair',
 ]);
 const MIGRATION_VERSION_PATTERN = /^\d{14}$/u;
+const REVIEWED_ENVIRONMENTS = new Set(['staging', 'production']);
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
 const SAFE_VERSION_ENVIRONMENT_KEYS = [
@@ -77,7 +79,7 @@ function isApprovedDatabaseHelpCommand(args) {
   );
 }
 
-function isApprovedReviewedDatabaseArguments(args) {
+function isApprovedReviewedDatabaseArguments(args, approvedRepairVersions) {
   if (
     argumentsEqual(args, ['migration', 'list', REVIEWED_TARGET_FLAG]) ||
     argumentsEqual(args, [
@@ -98,13 +100,16 @@ function isApprovedReviewedDatabaseArguments(args) {
   }
 
   if (
-    args.length === 6 &&
+    args.length === 8 &&
     args[0] === 'migration' &&
     args[1] === 'repair' &&
     args[2] === '--status' &&
     args[3] === 'applied' &&
     MIGRATION_VERSION_PATTERN.test(args[4]) &&
-    args[5] === REVIEWED_TARGET_FLAG
+    args[5] === REVIEWED_TARGET_FLAG &&
+    args[6] === REVIEWED_ENVIRONMENT_FLAG &&
+    REVIEWED_ENVIRONMENTS.has(args[7]) &&
+    approvedRepairVersions?.has(args[4])
   ) {
     return true;
   }
@@ -117,6 +122,77 @@ function isApprovedReviewedDatabaseArguments(args) {
     args[3] === '--type' &&
     (args[4] === 'security' || args[4] === 'performance')
   );
+}
+
+function resolveManifestRepairVersions(manifest, reviewedEnvironment) {
+  const environmentPlan = manifest?.environmentPlans?.[reviewedEnvironment];
+  let repairVersions = environmentPlan?.['repair-after-catalog-proof'];
+  let executeVersions = environmentPlan?.execute;
+
+  if (typeof repairVersions === 'string') {
+    repairVersions = repairVersions
+      .split('.')
+      .reduce((value, key) => value?.[key], manifest);
+  }
+  if (typeof executeVersions === 'string') {
+    executeVersions = executeVersions
+      .split('.')
+      .reduce((value, key) => value?.[key], manifest);
+  }
+
+  if (
+    !Array.isArray(repairVersions) ||
+    repairVersions.length === 0 ||
+    repairVersions.some(
+      (version) =>
+        typeof version !== 'string' || !MIGRATION_VERSION_PATTERN.test(version)
+    ) ||
+    new Set(repairVersions).size !== repairVersions.length ||
+    !Array.isArray(executeVersions) ||
+    executeVersions.some((version) => repairVersions.includes(version))
+  ) {
+    throw new Error(
+      'Reviewed migration baseline manifest is unavailable or invalid'
+    );
+  }
+
+  return new Set(repairVersions);
+}
+
+function loadApprovedRepairVersions({
+  args,
+  workspace,
+  environment,
+  readManifest = readFileSync,
+}) {
+  const reviewedEnvironment = args[7];
+  if (
+    !REVIEWED_ENVIRONMENTS.has(reviewedEnvironment) ||
+    environment.EXPECTED_SUPABASE_ENVIRONMENT !== reviewedEnvironment
+  ) {
+    return undefined;
+  }
+
+  try {
+    const manifestPath = path.join(
+      workspace,
+      'supabase',
+      'migration-baseline-manifest.json'
+    );
+    const manifest = JSON.parse(readManifest(manifestPath, 'utf8'));
+    return resolveManifestRepairVersions(manifest, reviewedEnvironment);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message ===
+        'Reviewed migration baseline manifest is unavailable or invalid'
+    ) {
+      throw error;
+    }
+    throw new Error(
+      'Reviewed migration baseline manifest is unavailable or invalid'
+    );
+  }
 }
 
 function getDatabaseCommandKey(args) {
@@ -157,11 +233,16 @@ function prepareReviewedDatabaseArguments(args) {
     );
   }
 
-  return [
-    ...args.filter((argument) => argument !== REVIEWED_TARGET_FLAG),
-    '--db-url',
-    REVIEWED_DATABASE_URL,
-  ];
+  const reviewedEnvironmentIndex = args.indexOf(REVIEWED_ENVIRONMENT_FLAG);
+  const childArguments = args.filter(
+    (argument, index) =>
+      argument !== REVIEWED_TARGET_FLAG &&
+      (reviewedEnvironmentIndex < 0 ||
+        (index !== reviewedEnvironmentIndex &&
+          index !== reviewedEnvironmentIndex + 1))
+  );
+
+  return [...childArguments, '--db-url', REVIEWED_DATABASE_URL];
 }
 
 export function verifyApprovedSupabaseCliExecutable({
@@ -219,6 +300,7 @@ export async function runReviewedSupabaseCli({
   executableVerifier = verifyApprovedSupabaseCliExecutable,
   targetVerifier = verifyConfiguredSupabaseTarget,
   rootCertificateVerifier = verifyApprovedSslRootCertificate,
+  readManifest = readFileSync,
 } = {}) {
   if (
     !Array.isArray(args) ||
@@ -243,10 +325,16 @@ export async function runReviewedSupabaseCli({
   const isReviewedDatabaseCommand =
     REVIEWED_DATABASE_COMMANDS.has(databaseCommandKey);
   const hasReviewedTargetFlag = args.includes(REVIEWED_TARGET_FLAG);
+  const hasReviewedEnvironmentFlag = args.includes(REVIEWED_ENVIRONMENT_FLAG);
   const hasHelpFlag = args.includes('--help') || args.includes('-h');
   const helpCommand = isApprovedDatabaseHelpCommand(args);
   if (hasReviewedTargetFlag && (!isReviewedDatabaseCommand || hasHelpFlag)) {
     throw new Error('Reviewed target marker is not valid for this command');
+  }
+  if (hasReviewedEnvironmentFlag && databaseCommandKey !== 'migration:repair') {
+    throw new Error(
+      'Reviewed environment marker is not valid for this command'
+    );
   }
   if (isDatabaseCommand && args.some(isNativeTargetSelector)) {
     throw new Error(
@@ -264,7 +352,16 @@ export async function runReviewedSupabaseCli({
   let childEnvironment = environment;
   if (isReviewedDatabaseCommand && !helpCommand) {
     childArguments = prepareReviewedDatabaseArguments(args);
-    if (!isApprovedReviewedDatabaseArguments(args)) {
+    const approvedRepairVersions =
+      databaseCommandKey === 'migration:repair'
+        ? loadApprovedRepairVersions({
+            args,
+            workspace,
+            environment,
+            readManifest,
+          })
+        : undefined;
+    if (!isApprovedReviewedDatabaseArguments(args, approvedRepairVersions)) {
       throw new Error(
         'Supabase CLI database arguments do not match an approved command shape'
       );

@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-14
 
-Updated: 2026-09-07 — Story 22.15 PR #95 Reviewbot command-grammar remediation synchronized
+Updated: 2026-09-07 — Story 22.15 PR #95 environment-specific repair-allowlist remediation synchronized
 
 Story: 22.10 historical inventory, superseded for release execution by Story 22.15
 
@@ -101,6 +101,7 @@ Scope caveats are explicit. `TRUNCATE public.employees ... CASCADE` also clears 
 - The read-only verifier covers room function signatures/body, repayment Boolean columns/indexes/config, staffing tables/typed columns/exact `0..9999` constraint/index/RLS/seeds/RPC, dietary column types/permissions, and the exact six-column `user_filters` structure, constraints, two indexes, update trigger/function, plus a phase-specific policy profile. Production pre-apply uses the dated dashboard aliases and three owner-filter policies; staging pre-apply uses the canonical four-policy profile. It is the automated minimum for known unsafe-replay surfaces; fresh production evidence must prove the exact dated policy semantics, and a signed per-version ledger remains mandatory for all 57 repairs.
 - The target gate requires one explicit reviewed connection mode. Direct mode binds the project-specific database hostname, CLI link, and separately supplied intended-project reference. The IPv4-only Shared Supavisor session-pooler mode binds the CLI link, intended reference, project reference encoded in the pooler username, and a separately approved exact pooler hostname; it permits only port `5432` and rejects transaction pooling on `6543`. Neither path prints private binding inputs. The catalog wrapper repeats that gate and exits nonzero with failed check names only. Any mismatch halts before repair/apply; binding is repeated immediately before each repair. Every remote database CLI command uses the reviewed wrapper's `--reviewed-target` marker. The wrapper re-proves the target and CA, rejects native CLI selectors, and replaces the marker with a generic passwordless `--db-url` plus a minimal validated PostgreSQL environment, preventing linked-target or pooler fallback from bypassing the proof. After repair, `node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault` must show only the environment's exact forward list. Full commands and owner gates are in `27_supabase_cutover_runbook.md`.
 - The reviewed CLI wrapper also rejects persistent/root options before command classification and inside reviewed database invocations. It accepts only the exact advisor, migration-list, single-repair, push-dry-run, and push-apply shapes in the runbook, and rejects both long and short password selectors (`-p` and attached forms) without including supplied values in errors.
+- A repair command additionally declares `staging` or `production`; that assertion must match `EXPECTED_SUPABASE_ENVIRONMENT` from the reviewed private target record. The wrapper resolves only that environment's `repair-after-catalog-proof` set from the committed manifest and rejects forward-only, arbitrary, cross-environment, missing-environment, or mismatched-record repairs before target proof or spawn.
 
 ## 7. Local-stack grant parity
 

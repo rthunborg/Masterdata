@@ -174,7 +174,7 @@ describe('Story 22.15 migration baseline safety', () => {
     );
     expect(cutoverRunbook).toContain('set -euo pipefail');
     expect(cutoverRunbook).toContain(
-      'if ! node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied "$version" --reviewed-target; then'
+      'if ! node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied "$version" --reviewed-target --reviewed-environment production; then'
     );
     expect(cutoverRunbook).toContain(
       'node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target'
@@ -671,6 +671,7 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(cutoverRunbook).toContain('57-row proof ledger');
     expect(cutoverRunbook).toContain('--dry-run --skip-vault');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_PROJECT_REF');
+    expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_ENVIRONMENT');
     expect(cutoverRunbook).toContain('SUPABASE_DB_CONNECTION_MODE');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_POOLER_HOST');
     expect(cutoverRunbook).toContain('`session-pooler` mode');
@@ -684,6 +685,12 @@ describe('Story 22.15 migration baseline safety', () => {
       'node supabase/verify/run-reviewed-supabase-cli.mjs'
     );
     expect(cutoverRunbook).toContain('wrapper-only `--reviewed-target` marker');
+    expect(cutoverRunbook).toContain(
+      'wrapper-only `--reviewed-environment staging|production` assertion'
+    );
+    expect(cutoverRunbook).toContain(
+      "that environment's `repair-after-catalog-proof` set"
+    );
     expect(cutoverRunbook).toContain('generic passwordless `--db-url`');
     expect(cutoverRunbook).toContain(
       'rejects native `--linked`/`--db-url`/`--local`/`--proxy`/`--password`/`-p` selectors'
