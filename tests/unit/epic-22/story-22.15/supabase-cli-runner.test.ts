@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   REVIEWED_SUPABASE_CLI_VERSION,
+  REVIEWED_TARGET_FLAG,
   runReviewedSupabaseCli,
   verifyApprovedSupabaseCliExecutable,
 } from "../../../../supabase/verify/run-reviewed-supabase-cli.mjs";
@@ -12,6 +13,9 @@ import {
 const reviewedCliPath = resolve("reviewed-tooling", "supabase.exe");
 const executable = Buffer.from("reviewed Supabase CLI executable");
 const expectedSha256 = createHash("sha256").update(executable).digest("hex");
+const projectRef = "abcdefghijklmnopqrst";
+const password = "do-not-print-this-password";
+const reviewedCertificatePath = resolve("reviewed-tooling", "supabase-root.pem");
 
 describe("Story 22.15 reviewed Supabase CLI runner", () => {
   it("resolves and hashes an approved absolute executable before an exact version probe", () => {
@@ -82,18 +86,18 @@ describe("Story 22.15 reviewed Supabase CLI runner", () => {
     ).toThrow("Supabase CLI does not match the reviewed version");
   });
 
-  it("spawns only the verified resolved executable with the exact requested arguments", () => {
+  it("spawns non-database commands with the exact requested arguments", async () => {
     const spawn = vi.fn(() => ({ error: undefined, status: 0 }));
     const environment = {
       SUPABASE_CLI_EXECUTABLE: reviewedCliPath,
       EXPECTED_SUPABASE_CLI_SHA256: expectedSha256,
       SUPABASE_ACCESS_TOKEN: "approved-runtime-token",
     };
-    const args = ["migration", "list", "--linked"];
+    const args = ["projects", "list"];
     const executableVerifier = vi.fn(() => reviewedCliPath);
 
     expect(
-      runReviewedSupabaseCli({
+      await runReviewedSupabaseCli({
         args,
         workspace: resolve("workspace"),
         environment,
@@ -110,20 +114,239 @@ describe("Story 22.15 reviewed Supabase CLI runner", () => {
     });
   });
 
-  it("preserves a nonzero CLI exit status and rejects an empty command", () => {
-    expect(
+  it.each([
+    {
+      label: "direct",
+      databaseUrl: `postgresql://postgres:${password}@db.${projectRef}.supabase.co:5432/postgres?sslmode=verify-full`,
+      expectedHost: `db.${projectRef}.supabase.co`,
+      expectedUser: "postgres",
+    },
+    {
+      label: "session-pooler",
+      databaseUrl: `postgresql://postgres.${projectRef}:${password}@aws-0-eu-north-1.pooler.supabase.com:5432/postgres?sslmode=verify-full`,
+      expectedHost: "aws-0-eu-north-1.pooler.supabase.com",
+      expectedUser: `postgres.${projectRef}`,
+    },
+  ])(
+    "binds the actual CLI connection to the reviewed $label target without argument leakage",
+    async ({ databaseUrl, expectedHost, expectedUser }) => {
+      const spawn = vi.fn(() => ({ error: undefined, status: 0 }));
+      const targetVerifier = vi.fn(async () => true);
+      const rootCertificateVerifier = vi.fn(() => reviewedCertificatePath);
+      const environment = {
+        SUPABASE_CLI_EXECUTABLE: reviewedCliPath,
+        EXPECTED_SUPABASE_CLI_SHA256: expectedSha256,
+        EXPECTED_SUPABASE_PROJECT_REF: projectRef,
+        SUPABASE_DB_CONNECTION_MODE: "direct",
+        SUPABASE_DB_URL: databaseUrl,
+        SUPABASE_ACCESS_TOKEN: "must-not-reach-database-command",
+        SUPABASE_DB_PASSWORD: "must-not-reach-database-command",
+        PGHOST: "ambient-host-must-not-survive",
+        PGSSLMODE: "disable",
+        PGSERVICE: "ambient-service-must-not-survive",
+        UNRELATED_PARENT_SECRET: "must-not-reach-database-command",
+      };
+      const workspace = resolve("workspace");
+      const args = ["migration", "list", REVIEWED_TARGET_FLAG];
+
+      expect(
+        await runReviewedSupabaseCli({
+          args,
+          workspace,
+          environment,
+          spawn,
+          executableVerifier: () => reviewedCliPath,
+          targetVerifier,
+          rootCertificateVerifier,
+        })
+      ).toBe(0);
+      expect(targetVerifier).toHaveBeenCalledWith({ workspace, environment });
+      expect(rootCertificateVerifier).toHaveBeenCalledWith({ environment });
+
+      const childArguments = spawn.mock.calls[0]?.[1] as string[];
+      const childEnvironment = spawn.mock.calls[0]?.[2]?.env as Record<
+        string,
+        string
+      >;
+      expect(childArguments).toEqual([
+        "migration",
+        "list",
+        "--db-url",
+        "postgresql:///postgres?sslmode=verify-full",
+      ]);
+      expect(childArguments).not.toContain("--linked");
+      for (const privateValue of [databaseUrl, projectRef, expectedHost, password]) {
+        expect(childArguments.join(" ")).not.toContain(privateValue);
+      }
+      expect(childEnvironment).toMatchObject({
+        PGAPPNAME: "hr-masterdata-reviewed-supabase-cli",
+        PGCONNECT_TIMEOUT: "10",
+        PGDATABASE: "postgres",
+        PGHOST: expectedHost,
+        PGPASSWORD: password,
+        PGPORT: "5432",
+        PGSSLMODE: "verify-full",
+        PGSSLROOTCERT: reviewedCertificatePath,
+        PGUSER: expectedUser,
+      });
+      for (const inheritedKey of [
+        "EXPECTED_SUPABASE_PROJECT_REF",
+        "PGSERVICE",
+        "SUPABASE_ACCESS_TOKEN",
+        "SUPABASE_CLI_EXECUTABLE",
+        "SUPABASE_DB_CONNECTION_MODE",
+        "SUPABASE_DB_PASSWORD",
+        "SUPABASE_DB_URL",
+        "UNRELATED_PARENT_SECRET",
+      ]) {
+        expect(childEnvironment).not.toHaveProperty(inheritedKey);
+      }
+    }
+  );
+
+  it.each([
+    { selector: ["--linked"] },
+    { selector: ["--db-url", "postgresql://unapproved.invalid/postgres"] },
+    { selector: ["--local"] },
+    { selector: ["--proxy"] },
+    { selector: ["--password", "must-not-appear"] },
+  ])("rejects native CLI target selectors before spawning", async ({ selector }) => {
+    const spawn = vi.fn();
+    await expect(
       runReviewedSupabaseCli({
-        args: ["db", "push", "--linked", "--dry-run", "--skip-vault"],
+        args: ["migration", "list", REVIEWED_TARGET_FLAG, ...selector],
+        spawn,
+        executableVerifier: () => reviewedCliPath,
+      })
+    ).rejects.toThrow("Native Supabase CLI database target selectors are not permitted");
+    expect(spawn).not.toHaveBeenCalled();
+  });
+
+  it("requires the reviewed marker for database commands and rejects it elsewhere", async () => {
+    await expect(
+      runReviewedSupabaseCli({
+        args: ["migration", "list"],
+        executableVerifier: () => reviewedCliPath,
+      })
+    ).rejects.toThrow("Remote database commands require exactly one reviewed target marker");
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: ["projects", "list", REVIEWED_TARGET_FLAG],
+        executableVerifier: () => reviewedCliPath,
+      })
+    ).rejects.toThrow("Reviewed target marker is not valid for this command");
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: ["db", "reset"],
+        executableVerifier: () => reviewedCliPath,
+      })
+    ).rejects.toThrow("This Supabase CLI database command is not approved");
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: [
+          "migration",
+          "list",
+          REVIEWED_TARGET_FLAG,
+          REVIEWED_TARGET_FLAG,
+        ],
+        executableVerifier: () => reviewedCliPath,
+      })
+    ).rejects.toThrow(
+      "Remote database commands require exactly one reviewed target marker"
+    );
+  });
+
+  it("keeps database help read-only and rejects target arguments on help commands", async () => {
+    const spawn = vi.fn(() => ({ error: undefined, status: 0 }));
+    const targetVerifier = vi.fn();
+    const rootCertificateVerifier = vi.fn();
+    const environment = { PATH: "reviewed-path" };
+
+    expect(
+      await runReviewedSupabaseCli({
+        args: ["db", "push", "--help"],
+        environment,
+        spawn,
+        executableVerifier: () => reviewedCliPath,
+        targetVerifier,
+        rootCertificateVerifier,
+      })
+    ).toBe(0);
+    expect(spawn).toHaveBeenCalledWith(
+      reviewedCliPath,
+      ["db", "push", "--help"],
+      expect.objectContaining({ env: environment })
+    );
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(rootCertificateVerifier).not.toHaveBeenCalled();
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: ["db", "push", "--help", REVIEWED_TARGET_FLAG],
+        executableVerifier: () => reviewedCliPath,
+      })
+    ).rejects.toThrow("Reviewed target marker is not valid for this command");
+    await expect(
+      runReviewedSupabaseCli({
+        args: ["db", "push", "--help", "--linked"],
+        executableVerifier: () => reviewedCliPath,
+      })
+    ).rejects.toThrow(
+      "Native Supabase CLI database target selectors are not permitted"
+    );
+  });
+
+  it("does not spawn when repeated target or certificate proof fails", async () => {
+    const spawn = vi.fn();
+    const environment = {
+      SUPABASE_DB_URL: `postgresql://postgres:${password}@db.${projectRef}.supabase.co:5432/postgres?sslmode=verify-full`,
+    };
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: ["migration", "list", REVIEWED_TARGET_FLAG],
+        environment,
+        spawn,
+        executableVerifier: () => reviewedCliPath,
+        targetVerifier: async () => {
+          throw new Error("Supabase target binding verification failed");
+        },
+      })
+    ).rejects.toThrow("Supabase target binding verification failed");
+    expect(spawn).not.toHaveBeenCalled();
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: ["migration", "list", REVIEWED_TARGET_FLAG],
+        environment,
+        spawn,
+        executableVerifier: () => reviewedCliPath,
+        targetVerifier: async () => true,
+        rootCertificateVerifier: () => {
+          throw new Error("Supabase SSL root certificate verification failed");
+        },
+      })
+    ).rejects.toThrow("Supabase SSL root certificate verification failed");
+    expect(spawn).not.toHaveBeenCalled();
+  });
+
+  it("preserves a nonzero CLI exit status and rejects an empty command", async () => {
+    expect(
+      await runReviewedSupabaseCli({
+        args: ["projects", "list"],
         spawn: () => ({ error: undefined, status: 17 }),
         executableVerifier: () => reviewedCliPath,
       })
     ).toBe(17);
 
-    expect(() =>
+    await expect(
       runReviewedSupabaseCli({
         args: [],
         executableVerifier: () => reviewedCliPath,
       })
-    ).toThrow("A valid Supabase CLI command is required");
+    ).rejects.toThrow("A valid Supabase CLI command is required");
   });
 });

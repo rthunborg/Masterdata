@@ -173,10 +173,10 @@ describe("Story 22.15 migration baseline safety", () => {
     );
     expect(cutoverRunbook).toContain("set -euo pipefail");
     expect(cutoverRunbook).toContain(
-      'if ! node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied "$version" --linked; then'
+      'if ! node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied "$version" --reviewed-target; then'
     );
     expect(cutoverRunbook).toContain(
-      "node supabase/verify/run-reviewed-supabase-cli.mjs migration list --linked"
+      "node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target"
     );
 
     const productionRepairLoop = cutoverRunbook.match(
@@ -685,6 +685,16 @@ describe("Story 22.15 migration baseline safety", () => {
     expect(cutoverRunbook).toContain("EXPECTED_SUPABASE_CLI_SHA256");
     expect(cutoverRunbook).toContain(
       "node supabase/verify/run-reviewed-supabase-cli.mjs"
+    );
+    expect(cutoverRunbook).toContain(
+      "wrapper-only `--reviewed-target` marker"
+    );
+    expect(cutoverRunbook).toContain("generic passwordless `--db-url`");
+    expect(cutoverRunbook).toContain(
+      "rejects native `--linked`/`--db-url`/`--local`/`--proxy`/`--password` selectors"
+    );
+    expect(cutoverRunbook).not.toMatch(
+      /^\s*(?:if\s+!\s+)?node\s+supabase\/verify\/run-reviewed-supabase-cli\.mjs[^\r\n]*--linked/mu
     );
     expect(cutoverRunbook).not.toMatch(
       /^\s*(?:if\s+!\s+)?supabase\s+(?:migration|db)\s+/mu
