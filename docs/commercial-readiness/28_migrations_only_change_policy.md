@@ -1,6 +1,8 @@
 # Supabase Migrations-Only Change Policy
 
-Status: active from Story 22.10 (2026-06-14), hardened by Story 22.15 (2026-09-01), with IPv4 session-pooler binding, actual CLI connection enforcement, exact command grammar, and environment-specific repair allowlists (through 2026-09-07)
+Status: active from Story 22.10 (2026-06-14), hardened by Story 22.15 through the 2026-09-09 64-version reconciliation/pause preparation
+
+Current amendment: staging is one separately authorized repair then six exact applies; production is provisional at 57 catalog-proven repairs then seven applies after fresh inventory. The forward `20260909115242` is execute-only, never repairable. Read-only staging evidence found zero saved-filter cleanup candidates. Fresh production audit is an open material gate at 0 critical/3 high/3 moderate; targeted remediation awaits owner direction. PR #95 is merged at staging `8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c`, main is unchanged, and no hosted mutation is authorized by this policy.
 
 ## Policy
 

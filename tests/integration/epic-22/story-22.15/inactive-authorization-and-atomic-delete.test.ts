@@ -12,14 +12,101 @@ import {
   loadEpic22SupabaseTestEnvironment,
 } from "../../../helpers/epic-22-supabase-test-environment";
 
-const environment = loadEpic22SupabaseTestEnvironment();
-const client = new Client({ connectionString: environment.dbUrl });
-const databaseReachable = await isEpic22DatabaseReachable(environment.dbUrl);
+const guardedFixtureUrlValue =
+  process.env.STORY_22_15_RECONCILIATION_FIXTURE_DATABASE_URL;
+const guardedFixtureUrl = guardedFixtureUrlValue
+  ? new URL(guardedFixtureUrlValue)
+  : null;
+
+if (
+  guardedFixtureUrl &&
+  (guardedFixtureUrl.hostname !== "127.0.0.1" ||
+    guardedFixtureUrl.port !== "45432")
+) {
+  throw new Error(
+    "Story 22.15 reconciliation database evidence only permits the guarded loopback fixture"
+  );
+}
+
+const environment = guardedFixtureUrl
+  ? null
+  : loadEpic22SupabaseTestEnvironment();
+const reconciliationMigrationSource = readFileSync(
+  "supabase/migrations/20260909115242_reconcile_saved_filters_and_room_acl.sql",
+  "utf8"
+);
+const localParitySeedSource = readFileSync("supabase/seed.sql", "utf8");
+const reconciliationFixtureDatabaseName = `story_2215_post_apply_${randomUUID()
+  .replaceAll("-", "")
+  .slice(0, 20)}`;
+
+async function createGuardedPostApplyFixture() {
+  if (!guardedFixtureUrl) {
+    throw new Error("Guarded reconciliation fixture URL is unavailable");
+  }
+
+  const administrationUrl = new URL(guardedFixtureUrl);
+  administrationUrl.pathname = "/template1";
+  const administrationClient = new Client({
+    connectionString: administrationUrl.toString(),
+  });
+  await administrationClient.connect();
+  await administrationClient.query(
+    `CREATE DATABASE ${reconciliationFixtureDatabaseName} TEMPLATE postgres`
+  );
+
+  const databaseUrl = new URL(guardedFixtureUrl);
+  databaseUrl.pathname = `/${reconciliationFixtureDatabaseName}`;
+  const fixtureClient = new Client({ connectionString: databaseUrl.toString() });
+  try {
+    await fixtureClient.connect();
+    // The root-owned template is a schema fixture, not a Supabase CLI target.
+    // Record only the pre-existing Story 22.15 fingerprint on this disposable
+    // clone when it is absent, then apply the new migration without touching
+    // either shared local Supabase or hosted migration history.
+    await fixtureClient.query(`
+      CREATE SCHEMA IF NOT EXISTS supabase_migrations;
+      CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
+        version text PRIMARY KEY
+      );
+      INSERT INTO supabase_migrations.schema_migrations (version)
+      VALUES ('20260831200026')
+      ON CONFLICT (version) DO NOTHING;
+    `);
+    await fixtureClient.query(reconciliationMigrationSource);
+    // This mirrors the local-only Supabase reset parity grants. It is applied
+    // only to the disposable clone so authenticated RLS evidence can execute;
+    // migrations remain the sole staged/hosted schema change mechanism.
+    await fixtureClient.query(localParitySeedSource);
+    await fixtureClient.query(
+      "GRANT USAGE ON SCHEMA auth TO anon, authenticated, service_role"
+    );
+  } catch (error) {
+    await fixtureClient.end().catch(() => {});
+    await administrationClient
+      .query(`DROP DATABASE ${reconciliationFixtureDatabaseName}`)
+      .catch(() => {});
+    await administrationClient.end().catch(() => {});
+    throw error;
+  }
+  await fixtureClient.end();
+
+  return { administrationClient, databaseUrl: databaseUrl.toString() };
+}
+
+const guardedFixture = guardedFixtureUrl
+  ? await createGuardedPostApplyFixture()
+  : null;
+const databaseUrl = guardedFixture?.databaseUrl ?? environment!.dbUrl;
+const client = new Client({ connectionString: databaseUrl });
+const databaseReachable = guardedFixture
+  ? true
+  : await isEpic22DatabaseReachable(databaseUrl);
 const REQUIRE_DATABASE_EVIDENCE =
   process.env.REQUIRE_STORY_22_15_DB_EVIDENCE === "true";
 
 if (!databaseReachable) {
-  const diagnostic = formatEpic22SupabaseSkipDiagnostic(environment);
+  const diagnostic = formatEpic22SupabaseSkipDiagnostic(environment!);
   assertEpic22EvidenceRequirement(
     databaseReachable,
     REQUIRE_DATABASE_EVIDENCE,
@@ -27,6 +114,38 @@ if (!databaseReachable) {
     diagnostic
   );
   console.warn(diagnostic);
+}
+
+if (guardedFixture) {
+  afterAll(async () => {
+    let cleanupFailure: unknown = null;
+    try {
+      await guardedFixture.administrationClient.query(
+        `DROP DATABASE ${reconciliationFixtureDatabaseName}`
+      );
+      const result = await guardedFixture.administrationClient.query<{
+        exists: boolean;
+      }>(
+        `SELECT EXISTS (
+           SELECT 1 FROM pg_database WHERE datname = $1
+         ) AS exists`,
+        [reconciliationFixtureDatabaseName]
+      );
+      if (result.rows[0]?.exists) {
+        throw new Error("Story 22.15 post-apply fixture database still exists");
+      }
+    } catch (error) {
+      cleanupFailure = error;
+    }
+
+    try {
+      await guardedFixture.administrationClient.end();
+    } catch (error) {
+      cleanupFailure ??= error;
+    }
+
+    if (cleanupFailure) throw cleanupFailure;
+  });
 }
 
 type Attempt =
@@ -130,7 +249,9 @@ async function asAuthenticated<T>(
   try {
     return await assertion();
   } finally {
-    await client.query("RESET ROLE");
+    // Preserve the assertion failure when it has already aborted its outer
+    // fixture transaction; a RESET cannot recover an aborted transaction.
+    await client.query("RESET ROLE").catch(() => {});
   }
 }
 
@@ -316,7 +437,7 @@ describe.skipIf(!databaseReachable)(
   "Story 22.15 exact represented catalog contracts",
   () => {
     it("rejects weakened structures and exact-policy drift", async () => {
-      const mutationClient = new Client({ connectionString: environment.dbUrl });
+      const mutationClient = new Client({ connectionString: databaseUrl });
       const mutations = [
         {
           label: "missing headcount upper bound",
@@ -570,7 +691,7 @@ describe.skipIf(!databaseReachable)(
         "utf8"
       ).replaceAll(":'catalog_phase'", "'post_apply'");
       expect(verifier).not.toContain(":'catalog_phase'");
-      const verifierClient = new Client({ connectionString: environment.dbUrl });
+      const verifierClient = new Client({ connectionString: databaseUrl });
       await verifierClient.connect();
       try {
         await assertEpic22DatabaseFingerprint(verifierClient);
@@ -795,9 +916,9 @@ describe.skipIf(!databaseReachable)(
         rightAuth: randomUUID(),
         rightApp: randomUUID(),
       };
-      const setup = new Client({ connectionString: environment.dbUrl });
-      const left = new Client({ connectionString: environment.dbUrl });
-      const right = new Client({ connectionString: environment.dbUrl });
+      const setup = new Client({ connectionString: databaseUrl });
+      const left = new Client({ connectionString: databaseUrl });
+      const right = new Client({ connectionString: databaseUrl });
       let setupConnected = false;
       let seedCommitted = false;
       let previousActiveAdminIds: string[] = [];

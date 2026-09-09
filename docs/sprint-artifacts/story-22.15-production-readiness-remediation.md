@@ -10,7 +10,11 @@ The approved frozen implementation specification is [`spec-22-15-production-read
 
 ## Verification Status
 
-### Current exact-commit gate — 2026-09-09
+### Current staging-reconciliation and pause amendment — 2026-09-09
+
+PR #95 is merged in `staging` at `8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c`; `main` remains `822350986f4c023948a7bbf490ddffc371185c4a`, with no intervening commits. The reviewed forward reconciliation and durable production-pause safeguards are prepared, but their integrated local gates, exact-head review, and PR checks remain pending. Fresh `pnpm audit --prod --json` is also an open material gate: 0 critical, 3 high, and 3 moderate findings; targeted dependency fixes await owner direction. The manifest now has 64 versions: staging requires one separately authorized history repair followed by six exact applies (including `20260909115242`); production remains provisional at 57 catalog-proven repairs followed by seven applies only after fresh inventory. Read-only staging proof found zero saved-filter rows, orphan references, empty names, and overlength names; repayment aggregates and permission hashes were captured without row data. No hosted write, repair, apply, deployment, setting change, staging/main merge, or reopening occurred. The production pause target hash matched the private record, automatic production-domain assignment was off, and cron count was zero. Story 22.15 remains `in-progress`; Epic 23 remains on hold. See [dated preparation evidence](../commercial-readiness/evidence/staging-reconciliation-and-pause-2026-09-09.md).
+
+### Historical exact-commit gate — 2026-09-09
 
 Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. See [the dated result and all 47 skips](../commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md). Check the evidence commit's exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized.
 
@@ -42,9 +46,8 @@ The dated entries below preserve earlier verification snapshots; this current en
 
 ## Dev Agent Record
 
-- Authoritative branch observations after a fresh fetch on 2026-09-07: `origin/staging` `a39f0e83bc892c970d8471137134f6fbe33c40f6`; `origin/main` `822350986f4c023948a7bbf490ddffc371185c4a`.
-- The observed `origin/staging` SHA is the merged PR #94 baseline. The final reviewed SHA containing the connection-mode amendment must be recorded before staging proof resumes.
-- Branch: `codex/story-22-15-session-pooler-runbook`
+- Authoritative branch observations after a fresh fetch on 2026-09-09: `origin/staging` `8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c`; `origin/main` `822350986f4c023948a7bbf490ddffc371185c4a`; no intervening commits.
+- The 64-version reconciliation/pause amendment is prepared on `codex/story-22-15-reconcile-pause`; all integrated local/PR gates remain pending.
 - Epic 23 remains explicitly on hold.
 
 ## File List
@@ -55,6 +58,7 @@ The dated entries below preserve earlier verification snapshots; this current en
 - Readiness/status: committed frozen Story 22.15 specification, commercial-readiness index, security/auth/role/dependency/evidence/risk/reconciliation/runbook/policy surfaces plus all Story 22.15 sprint/BMAD status carriers.
 - IPv4 operator amendment: mode-aware target-binding verifier, direct/session-pooler unit coverage, catalog-runner secret-isolation coverage, and synchronized runbook/evidence/status surfaces.
 - PR #95 remediation: actual reviewed CLI connection binding, exact allowlisted database command shapes, leading/embedded root-option rejection, long/short password-selector rejection, hostile ambient-environment isolation, and regression coverage.
+- Current reconciliation/pause preparation: forward saved-filter/room-ACL reconciliation, revised 64-version manifest/catalog expectations, portable functionless pause artifact and production-build safeguards, with tests pending integrated verification.
 
 ## Change Log
 
@@ -69,3 +73,4 @@ The dated entries below preserve earlier verification snapshots; this current en
 - 2026-09-07: Remediated the next Codex Reviewbot P1 by constraining history repair to the environment-specific manifest allowlist and requiring the command environment to match the reviewed private target record. Seven regressions bring the runner to 37/37 and the focused gate to 102/102; fresh full Vitest passes 3,342 / 51 managed skips, and full lint/TypeScript pass. Story 22.15 remains `in-progress`, no hosted action occurred, and Epic 23 remains on hold.
 
 - 2026-09-09: Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. Dated per-test skip evidence added; the new documentation commit requires fresh CI and a final Codex Reviewbot pass before explicit owner authorization to merge PR #95 into staging.
+- 2026-09-09: PR #95 merge recorded at `8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c`; no staging/main delta followed. Prepared the 64-version forward reconciliation and versioned production-pause safeguards. Fresh read-only staging predicates found no saved-filter cleanup need, and redacted repayment/permission aggregates were captured. Read-only Vercel inspection confirmed the recorded pause target hash, automatic domain assignment off, and zero cron jobs. No hosted mutation/deployment/settings change occurred. Integrated test, exact-head review, and all owner gates remain open; status remains in-progress and Epic 23 remains on hold.
