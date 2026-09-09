@@ -1,9 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import config from './output-config.json';
 import { assertNextBuildAllowed, readPausedLock } from './production-pause-next-build-policy.mjs';
-import { buildPauseArtifact } from './build.mjs';
+import { buildPauseArtifact, relativePathSegments } from './build.mjs';
 
 const root = process.cwd();
 const source = resolve(root, 'src/maintenance');
@@ -82,6 +83,26 @@ describe('standalone production pause', () => {
   it('builds successfully to the Windows default output directory', () => {
     expect(buildPauseArtifact()).toBe(defaultOutput);
     expect(existsSync(resolve(defaultOutput, '.vercel/output/static/index.html'))).toBe(true);
+  });
+
+  it('preserves path-segment casing for filesystem ancestor checks', () => {
+    expect(relativePathSegments('Output/production-pause')).toEqual(['Output', 'production-pause']);
+
+    if (process.platform !== 'win32') {
+      expect(() => buildPauseArtifact('Output/production-pause')).toThrow(/must stay in this checkout/i);
+    }
+  });
+
+  it('ignores every allowed generated production-pause artifact variant', () => {
+    for (const path of [
+      'output/production-pause/vercel.json',
+      'output/production-pause/.vercel/output/config.json',
+      'output/production-pause-reviewbot/vercel.json',
+      'output/production-pause-reviewbot/.vercel/output/static/index.html',
+    ]) {
+      const result = spawnSync('git', ['check-ignore', '-q', '--', path], { cwd: root });
+      expect(result.status, `${path} must be ignored`).toBe(0);
+    }
   });
 
   it('refuses generated output outside this checkout production-pause directory', () => {

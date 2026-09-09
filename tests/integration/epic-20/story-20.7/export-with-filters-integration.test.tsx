@@ -471,6 +471,10 @@ describe('Story 20.7: Export with Filters - Integration Tests', () => {
       expect(screen.getByTestId('employee-row-emp-3')).toHaveTextContent('Bob');
     });
 
+    // The stats query causes another table render. Wait for that response before
+    // starting the pointer sequence so CI cannot click a replaced header node.
+    await waitForInteractiveEmployeeTable();
+
     const selectAllCheckbox = screen.getByRole('checkbox', {
       name: 'Select all',
     });

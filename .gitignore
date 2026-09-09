@@ -19,6 +19,8 @@
 
 # production
 /build
+/output/production-pause/
+/output/production-pause-*/
 
 # misc
 .DS_Store

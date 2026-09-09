@@ -7,7 +7,15 @@ const root = resolve(source, '../..');
 const approvedOutputPrefix = 'output/production-pause';
 
 function comparable(path) {
-  return path.replace(/\\/g, '/').toLowerCase();
+  const normalized = path.replace(/\\/g, '/');
+  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
+}
+
+export function relativePathSegments(value) {
+  return relative(root, resolve(root, value))
+    .replace(/\\/g, '/')
+    .split('/')
+    .filter(Boolean);
 }
 
 export function resolveOutputDirectory(value = process.env.PRODUCTION_PAUSE_OUTPUT_DIR ?? 'output/production-pause') {
@@ -21,7 +29,10 @@ export function resolveOutputDirectory(value = process.env.PRODUCTION_PAUSE_OUTP
 
 function assertNoLinkedAncestor(output) {
   const realRoot = realpathSync(root);
-  const segments = comparable(relative(root, output)).split('/');
+  // Use the caller's exact segment casing to inspect the filesystem. On a
+  // case-sensitive filesystem, lowercasing here could inspect `output` while
+  // rmSync later receives `Output`, allowing a linked ancestor to be missed.
+  const segments = relativePathSegments(relative(root, output));
   let current = root;
   let expected = realRoot;
 
