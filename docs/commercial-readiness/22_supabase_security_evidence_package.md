@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-11
 
-Updated: 2026-09-09 — PR #95 staging merge and reconciliation/pause preparation recorded; integrated and hosted gates remain open
+Updated: 2026-09-09 — PR #95 staging merge and reconciliation/pause preparation recorded; local candidate gates recorded; audit, exact-head review and hosted gates remain open
 
 Story: 22.8, with Story 22.10, Story 22.13, and Story 22.15 addenda
 
@@ -172,3 +172,5 @@ Historical PR #95 exact-commit result (2026-09-09): Exact full npx playwright te
 | Story 22.15 PR #95 Reviewbot repair-allowlist remediation | 2026-09-07 | Seven new runner regressions cover positive staging/production manifest plans and rejection of forward-only, arbitrary, cross-environment, missing-environment, and mismatched private-record repairs before target proof or spawn. Runner **37/37**; combined focused **102/102**; fresh full Vitest **3,342 passed / 51 managed local-service skips**; full lint 0 errors / 297 pre-existing warnings; type-check exit `0`. Exact amendment-branch Playwright, refreshed PR checks/review/merge, the new immutable staging SHA, and every hosted gate remain open; no hosted read/write or setting change occurred. |
 
 Project refs were passed via shell variables resolved at runtime and are not recorded in this package. The CLI link state created during evidence capture was removed afterwards (`supabase unlink`); `supabase/.temp/` contents are git-ignored except the already-tracked `supabase/.temp/cli-latest`, which was restored to its committed state.
+
+Current local verification record: Local verification passes: full Vitest 3,436/3,436 with zero skips on 5f60e58c9aa9a7e117bc589ec82d0b99a5846839; exact full Playwright 163 passed / 47 classified skips / zero failures or errors on 2ea1077aec62729303116bb85c49b4c44e98639f, exit 0, 1127.916442 seconds. TypeScript, zero-error lint, preview build, pause safeguards and complete local migration fixtures pass. Exact-head CI/Vercel/Reviewbot results must be checked on PR #96 after publishing the evidence commit. The dependency audit remains failed at 0 critical/3 high/3 moderate, with targeted patches awaiting owner direction. Story 22.15 stays in-progress; Epic 23 stays on hold. Hosted repair/apply, staging/main merges, production deployment/settings and reopening remain separately owner-gated. See [dated evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md).

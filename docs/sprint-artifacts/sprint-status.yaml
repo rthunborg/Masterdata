@@ -2,7 +2,7 @@ schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
 last_updated: 2026-09-09
-updated_by: Codex (PR #96 draft; catalog review fix and 186 focused tests passed; full rerun, dependency audit and owner gates remain open).
+updated_by: Codex (PR #96 local candidate gates recorded; audit and explicit owner gates remain open).
 
 current_focus:
   active_epic: 22
@@ -85,4 +85,10 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'Complete integrated reconciliation/pause tests and exact-head PR review. After an explicit owner merge authorization, record the resulting staging SHA, repeat fresh read-only proof, then request separate approvals for the single repair and six exact staging applies. No hosted write, deployment, setting change, staging-to-main merge, or reopening is authorized.'
+  next_action: 'Resolve the dependency audit and complete exact-head PR review; local candidate tests pass. After an explicit owner merge authorization, record the resulting staging SHA, repeat fresh read-only proof, then request separate approvals for the single repair and six exact staging applies. No hosted write, deployment, setting change, staging-to-main merge, or reopening is authorized.'
+
+reconciliation_pause_candidate:
+  implementation_sha: '5f60e58c9aa9a7e117bc589ec82d0b99a5846839'
+  playwright_sha: '2ea1077aec62729303116bb85c49b4c44e98639f'
+  local_verification: 'Local verification passes: full Vitest 3,436/3,436 with zero skips on 5f60e58c9aa9a7e117bc589ec82d0b99a5846839; exact full Playwright 163 passed / 47 classified skips / zero failures or errors on 2ea1077aec62729303116bb85c49b4c44e98639f, exit 0, 1127.916442 seconds. TypeScript, zero-error lint, preview build, pause safeguards and complete local migration fixtures pass. Exact-head CI/Vercel/Reviewbot results must be checked on PR #96 after publishing the evidence commit. The dependency audit remains failed at 0 critical/3 high/3 moderate, with targeted patches awaiting owner direction. Story 22.15 stays in-progress; Epic 23 stays on hold. Hosted repair/apply, staging/main merges, production deployment/settings and reopening remain separately owner-gated.'
+  evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-and-pause-2026-09-09.md'

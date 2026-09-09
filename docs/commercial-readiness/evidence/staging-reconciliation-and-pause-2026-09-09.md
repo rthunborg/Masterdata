@@ -76,3 +76,25 @@ Browser attempts on `76e69e0` and `9b60f5d` were interrupted through exact guard
 Fresh `pnpm audit --prod --json` on 2026-09-09 exited 1: **0 critical / 3 high / 3 moderate**. The prior 0-high/1-moderate result is historical. Two high findings affect Browserslist 4.28.1, and one high affects Sharp 0.35.3. New moderate findings affect baseline-browser-mapping 2.9.19 and Nodemailer 9.1.0, alongside the prior UUID advisory. No dependency version was changed. Targeted fixes are awaiting owner direction because this is a material finding beyond the focused reconciliation/pause change. The release audit gate is failed, not waived.
 
 Primary advisory records: [Browserslist cache growth](https://github.com/advisories/GHSA-c83g-rgw3-j3cx), [Browserslist custom stats](https://github.com/advisories/GHSA-73wf-gq98-2v4g), [Sharp/libheif](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c). Proposed bounded fix versions are Browserslist >=4.28.7, Sharp 0.35.4, baseline-browser-mapping >=2.11.0 and Nodemailer 9.1.1, followed by fresh audit and all affected gates. Supabase CLI remains 2.115.0.
+
+## Final local candidate evidence
+
+Application, test, migration and build-control implementation: `5f60e58c9aa9a7e117bc589ec82d0b99a5846839`. Exact full browser candidate: `2ea1077aec62729303116bb85c49b4c44e98639f`; only readiness Markdown changed between those revisions. The final evidence commit also changes documentation only.
+
+| Gate | Result |
+| --- | --- |
+| Full `npx vitest run` | 3,436 passed / zero skipped; 320 files passed; exit 0; 68.04 seconds report / 69.1462035 seconds wall |
+| Full `npx playwright test` | 163 passed / 47 skipped / 0 failed / 0 errors; 210 total; exit 0 |
+| Playwright timing | 1127.916442 seconds report / 1129.5184701 seconds wall; 2026-09-09T13:56:03.9223551Z to 2026-09-09T14:14:53.4388139Z |
+| TypeScript / lint | Both exit 0; lint zero errors / 297 existing warnings |
+| Preview build | Local `pnpm build` exit 0 in 14.1891017 seconds on the implementation SHA; actual Vercel preview READY was independently verified for that SHA |
+| Production build guard | Actual local production-target build refused by the committed paused lock, expected exit 1; no deployment |
+| Database proof | All 15 pre-apply checks, six exact ordered applies, all 15 post-apply checks on the observed-state fixture; all 64 immutable/forward files plus parity seed on the fresh local chain |
+| Pause tests | 23 passed; Swedish document/notice/API message, page/API/mutation routing, no functions/crons, path containment/casing, Git ignores and production/preview target guards |
+| Dependency audit | Failed, exit 1: 0 critical / 3 high / 3 moderate; unchanged locked versions and no new waiver |
+
+The final 47 skipped test names/classes match the first run exactly, and E2E source/config remain unchanged from staging. The [individual classifications](production-readiness-pr95-playwright-2026-09-09.md) still apply: nine require separately authorized notification capture, and 38 are obsolete/superseded or deterministic-fixture coverage debt. No skipped case counts as passing. Report XML SHA-256: `84ef766042187c02e0fb63cee1946f2ab3dbf8f9de554091336f5d03a649e7b5`.
+
+The earlier failed and interrupted attempts above remain part of the record. Final exact-head GitHub/Vercel/Reviewbot results are checked on PR #96 after this result-only commit; these local results do not pre-approve them or a merge. The failed audit prevents merge-readiness.
+
+Resource cleanup was verified at 2026-09-09T14:15:42.6073493Z: actor-scoped CloseActor succeeded with verified=true, followed by List with verified=true and zero unresolved owned resources. The owned PostgreSQL and Playwright/Next.js trees are stopped; no lease remains. The borrowed user-owned Supabase stack was not stopped or adopted. Child exit hooks had previously failed closed; no child-owned managed resources were launched, and root cleanup does not represent those hook failures as successes.

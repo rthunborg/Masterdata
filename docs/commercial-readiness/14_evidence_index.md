@@ -1,7 +1,7 @@
 # Evidence Index
 
 Prepared: 2026-06-03
-Updated: 2026-09-09 — PR #95 staging merge and reconciliation/pause preparation recorded; integrated and hosted gates remain open
+Updated: 2026-09-09 — PR #95 staging merge and reconciliation/pause preparation recorded; local candidate gates recorded; audit, exact-head review and hosted gates remain open
 
 Current amendment: [staging reconciliation and pause preparation](evidence/staging-reconciliation-and-pause-2026-09-09.md) records the merged staging SHA, 64-version provisional plan, read-only zero-cleanup/aggregate proof, and redacted pause inspection. It records dated local results; it is not hosted mutation proof or production-readiness approval. Fresh production audit is an open material gate at 0 critical/3 high/3 moderate; targeted remediation awaits owner direction.
 
@@ -80,4 +80,4 @@ Current amendment: [staging reconciliation and pause preparation](evidence/stagi
 | License | `LICENSE` | Private/all-rights-reserved licensing | 10, 12, 13 | Commercial model must handle rights |
 | PR #95 exact-commit Playwright | [production-readiness-pr95-playwright-2026-09-09.md](evidence/production-readiness-pr95-playwright-2026-09-09.md) | Historical exact full npx playwright test on implementation commit `3b75d5e78829426edfddce3207d4c16fb767aff1`: 163 passed / 47 skipped / 0 failed / 0 errors. | 11, 17, 22, 26, 27 | PR #95 subsequently merged to staging; this result is not proof for the new reconciliation/pause candidate. Its integrated tests, exact-head review, and hosted owner gates remain open. |
 | Durable production pause | [`29_production_pause_release_safeguards.md`](29_production_pause_release_safeguards.md), `src/maintenance`, `vercel.json` | Versioned Swedish static notice, API/mutation 503 routing, no functions/crons, production-build refusal and independent owner reopening gate | 00, 08, 09, 17, 27 | Current deployed pause remains unchanged; portable source is preparation only |
-| PR #96 reconciliation/pause evidence | [Dated evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md) | Fresh redacted preflight, 64-migration local proof, exact revisions, tests and review findings | 00, 08, 11, 17, 22, 26, 27, 29 | Full final browser gate, final exact-head review, dependency audit and owner gates remain open |
+| PR #96 reconciliation/pause evidence | [Dated evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md) | Fresh redacted preflight, 64-migration local proof, exact revisions, tests and review findings | 00, 08, 11, 17, 22, 26, 27, 29 | Full local candidate results are recorded; verify exact-head remote evidence on PR #96; dependency audit and owner gates remain open |
