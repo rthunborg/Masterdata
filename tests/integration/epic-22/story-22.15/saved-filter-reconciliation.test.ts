@@ -25,6 +25,17 @@ if (
   );
 }
 
+const fixtureTemplateDatabaseName = fixtureUrl?.pathname.slice(1) ?? null;
+if (
+  fixtureUrl &&
+  (!fixtureTemplateDatabaseName ||
+    !/^[a-z_][a-z0-9_]{0,62}$/.test(fixtureTemplateDatabaseName))
+) {
+  throw new Error(
+    'Story 22.15 reconciliation fixture URL must name one guarded template database'
+  );
+}
+
 if (!fixtureUrl) {
   console.warn(
     'Skipping Story 22.15 reconciliation fixture evidence: set STORY_22_15_RECONCILIATION_FIXTURE_DATABASE_URL for the guarded local PostgreSQL fixture.'
@@ -35,14 +46,14 @@ const migrationSql = readFileSync(
   'supabase/migrations/20260909115242_reconcile_saved_filters_and_room_acl.sql',
   'utf8'
 );
-const staffingMigrationSql = readFileSync(
-  'supabase/migrations/20260314000001_add_update_staffing_need_rpc.sql',
-  'utf8'
-);
-const staffingHardeningMigrationSql = readFileSync(
+const stagingForwardMigrationSources = [
+  'supabase/migrations/20260615000000_add_is_checklist_item_to_column_config.sql',
   'supabase/migrations/20260709194903_remediate_pr_91_security_findings.sql',
-  'utf8'
-);
+  'supabase/migrations/20260710144000_atomic_external_column_presentation.sql',
+  'supabase/migrations/20260710150000_atomic_user_status_transition.sql',
+  'supabase/migrations/20260831200026_enforce_active_authorization_and_atomic_user_deletion.sql',
+  'supabase/migrations/20260909115242_reconcile_saved_filters_and_room_acl.sql',
+].map((path) => readFileSync(path, 'utf8'));
 const catalogSql = readFileSync(
   'supabase/verify/production-baseline-catalog.sql',
   'utf8'
@@ -107,7 +118,7 @@ describe.skipIf(!fixtureUrl)(
       await adminClient.connect();
       adminConnected = true;
       await adminClient.query(
-        `CREATE DATABASE ${fixtureDatabaseName} TEMPLATE postgres`
+        `CREATE DATABASE ${fixtureDatabaseName} TEMPLATE ${fixtureTemplateDatabaseName}`
       );
       fixtureDatabaseCreated = true;
       const databaseUrl = new URL(fixtureUrlValue!);
@@ -171,19 +182,46 @@ describe.skipIf(!fixtureUrl)(
           TO anon, service_role;
       `);
 
-      // Staging has applied the search-path and ACL hardening for the original
-      // staffing RPC, but not the later active-actor implementation. Rebuild
-      // that exact pre-July function contract so the complete amended group is
-      // exercised without claiming that this post-63 clone is full staging.
-      await fixtureClient.query(staffingMigrationSql);
+      // These three represented metadata rows are already present in staging
+      // although their forward migration remains pending. Reproduce their
+      // observed values so the complete pre-apply profile is tested; the
+      // later forward migration keeps them because they already exist.
       await fixtureClient.query(`
-        ALTER FUNCTION public.update_staffing_need(text, integer, uuid)
-          SET search_path = public, pg_temp;
-        REVOKE EXECUTE ON FUNCTION public.update_staffing_need(text, integer, uuid)
-          FROM PUBLIC, anon, authenticated, service_role;
-        GRANT EXECUTE ON FUNCTION public.update_staffing_need(text, integer, uuid)
-          TO authenticated, service_role;
+        INSERT INTO public.column_config (
+          column_name,
+          db_column_name,
+          column_type,
+          is_masterdata,
+          role_permissions,
+          display_order
+        )
+        VALUES
+          (
+            'Crewing/Done',
+            'crewing_done',
+            'boolean',
+            true,
+            '{"hr_admin":{"view":true,"edit":true},"recruiter":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":false,"edit":false},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false},"crewing":{"view":true,"edit":false}}'::jsonb,
+            140
+          ),
+          (
+            'Återbetalningsskyldig ÖMC',
+            'repayment_needed_omc',
+            'boolean',
+            true,
+            '{"hr_admin":{"view":true,"edit":true},"recruiter":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":false,"edit":false},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false},"crewing":{"view":false,"edit":false}}'::jsonb,
+            141
+          ),
+          (
+            'Återbetalningsskyldig PE3',
+            'repayment_needed_pe3',
+            'boolean',
+            true,
+            '{"hr_admin":{"view":true,"edit":true},"recruiter":{"view":true,"edit":true},"sodexo":{"view":false,"edit":false},"omc":{"view":false,"edit":false},"payroll":{"view":false,"edit":false},"toplux":{"view":false,"edit":false},"crewing":{"view":false,"edit":false}}'::jsonb,
+            142
+          );
       `);
+
     });
 
     afterAll(async () => {
@@ -226,18 +264,10 @@ describe.skipIf(!fixtureUrl)(
       if (cleanupFailure) throw cleanupFailure;
     });
 
-    it('recognizes the reviewed staging representation before reconciliation', async () => {
+    it('recognizes the complete reviewed staging representation before reconciliation', async () => {
       const checks = await readCatalog(fixtureClient, 'staging_pre_apply');
-      for (const checkName of [
-        'dietary_columns_and_permissions',
-        'user_filters_objects',
-        'user_filters_trigger_function_contract',
-        'represented_function_contracts',
-      ]) {
-        expect(checks.find((check) => check.check_name === checkName)?.passed).toBe(
-          true
-        );
-      }
+      expect(checks).toHaveLength(15);
+      expect(checks.filter((check) => !check.passed)).toEqual([]);
 
       const grants = await fixtureClient.query<{ grants: string }>(`
         SELECT array_agg(
@@ -269,9 +299,21 @@ describe.skipIf(!fixtureUrl)(
                   FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;`,
       },
       {
-        label: 'missing reviewed array default',
-        checkName: 'user_filters_objects',
+        label: 'NULL saved-filter array default',
+        checkName: 'represented_column_contracts',
         sql: `ALTER TABLE public.user_filters ALTER COLUMN filters DROP DEFAULT;`,
+      },
+      {
+        label: 'wrong non-null saved-filter array default',
+        checkName: 'represented_column_contracts',
+        sql: `ALTER TABLE public.user_filters
+                ALTER COLUMN filters SET DEFAULT '{}'::jsonb;`,
+      },
+      {
+        label: 'default on an expected-null represented column',
+        checkName: 'represented_column_contracts',
+        sql: `ALTER TABLE public.staffing_needs
+                ALTER COLUMN location SET DEFAULT '';`,
       },
       {
         label: 'canonical trigger function alongside the represented alias',
@@ -352,6 +394,12 @@ describe.skipIf(!fixtureUrl)(
         sql: `GRANT EXECUTE ON FUNCTION public.recalculate_rooms_for_date(uuid)
               TO pg_monitor;`,
       },
+      {
+        label: 'missing room RPC pinned search path',
+        checkName: 'represented_function_contracts',
+        sql: `ALTER FUNCTION public.recalculate_rooms_for_date(uuid)
+              RESET search_path;`,
+      },
     ])('rejects $label', async ({ checkName, sql, expectedDataPrerequisites }) => {
       await fixtureClient.query('BEGIN');
       try {
@@ -389,13 +437,11 @@ describe.skipIf(!fixtureUrl)(
     });
 
     it('converges the represented fixture on the strict post-apply catalog', async () => {
-      // This forward migration is ordered before the reconciliation migration
-      // in the staging plan. Apply the real staffing hardening here because
-      // the exact staging representation intentionally still has the earlier
-      // staffing implementation that the post-apply contract rejects.
-      await fixtureClient.query(staffingHardeningMigrationSql);
-      await fixtureClient.query(migrationSql);
+      for (const source of stagingForwardMigrationSources) {
+        await fixtureClient.query(source);
+      }
       const checks = await readCatalog(fixtureClient, 'post_apply');
+      expect(checks).toHaveLength(15);
       expect(checks.filter((check) => !check.passed)).toEqual([]);
 
       await fixtureClient.query('BEGIN');

@@ -1136,14 +1136,31 @@ catalog_checks(check_name, passed, observed) AS (
       (
         SELECT count(*) = 22
           AND bool_and(
-            actual.column_name IS NOT NULL
-            AND actual.data_type = expected.data_type
-            AND actual.is_nullable = expected.is_nullable
-            AND (
-              (expected.column_default IS NULL AND actual.column_default IS NULL)
-              OR regexp_replace(lower(actual.column_default), '[[:space:]]+', '', 'g') =
-                expected.column_default
-            )
+            (
+              actual.column_name IS NOT NULL
+              AND actual.data_type = expected.data_type
+              AND actual.is_nullable = expected.is_nullable
+              AND CASE
+                WHEN expected.table_name = 'user_filters'
+                  AND expected.column_name = 'filters'
+                  AND (SELECT catalog_phase FROM verifier_context) =
+                    'staging_pre_apply' THEN
+                  regexp_replace(
+                    lower(actual.column_default),
+                    '[[:space:]]+',
+                    '',
+                    'g'
+                  ) = '''[]''::jsonb'
+                WHEN expected.column_default IS NULL THEN
+                  actual.column_default IS NULL
+                ELSE regexp_replace(
+                  lower(actual.column_default),
+                  '[[:space:]]+',
+                  '',
+                  'g'
+                ) = expected.column_default
+              END
+            ) IS TRUE
           )
         FROM (
           VALUES
@@ -1225,9 +1242,10 @@ catalog_checks(check_name, passed, observed) AS (
       (
         SELECT count(*) = 3
           AND bool_and(
-            functions.oid IS NOT NULL
-            AND language.lanname = 'plpgsql'
-            AND CASE expected.contract
+            (
+              functions.oid IS NOT NULL
+              AND language.lanname = 'plpgsql'
+              AND CASE expected.contract
               WHEN 'room' THEN
                 functions.prosecdef = false
                 AND CASE (SELECT catalog_phase FROM verifier_context)
@@ -1300,8 +1318,9 @@ catalog_checks(check_name, passed, observed) AS (
                     ) LIKE '%p_user_idisdistinctfromv_actor_id%forupdate%updated_by=v_actor_id%'
                   ELSE false
                 END
-              ELSE false
-            END
+                ELSE false
+              END
+            ) IS TRUE
           )
         FROM (
           VALUES

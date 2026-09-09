@@ -627,6 +627,14 @@ describe('Story 22.15 migration baseline safety', () => {
       'actual.is_nullable = expected.is_nullable'
     );
     expect(userFiltersContract).toContain('actual.column_default');
+    expect(verifierSql).toContain(
+      "expected.table_name = 'user_filters'"
+    );
+    expect(verifierSql).toContain(
+      "expected.column_name = 'filters'"
+    );
+    expect(verifierSql).toContain("= '''[]''::jsonb'");
+    expect(verifierSql).toContain(') IS TRUE');
 
     for (const exactConstraint of [
       "('user_filters_pkey', 'p', 'primarykeyid')",
