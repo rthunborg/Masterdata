@@ -34,3 +34,5 @@ The owner's reported local production backup and requested usage pause are plann
 ## Platform references checked 2026-09-09
 
 Vercel's [ignoreCommand contract](https://vercel.com/docs/project-configuration/vercel-json#ignorecommand) defines build skipping; [Build Output routing](https://vercel.com/docs/build-output-api/configuration#routes) defines ordered method/status routing. [Cron management](https://vercel.com/docs/cron-jobs/manage-cron-jobs) explains schedule lifecycle. Repository safeguards complement the fresh private deployment-state inspection; they do not replace it.
+
+Named custom preview environments are supported: VERCEL_ENV=preview determines the deployment class while VERCEL_TARGET_ENV can name staging or another custom environment. A production value in either marker remains blocked; custom target names without a recognized base environment, malformed markers, and conflicting built-in classes remain rejected. Both entrypoints share the same target and lock policy. See [Vercel system environment variables](https://vercel.com/docs/environment-variables/system-environment-variables#vercel_target_env).

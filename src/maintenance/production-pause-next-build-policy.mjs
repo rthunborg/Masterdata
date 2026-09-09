@@ -24,18 +24,20 @@ export function resolveVercelTarget(environment) {
   const explicitTarget = environment.VERCEL_TARGET_ENV;
   const recognized = new Set(['preview', 'development', 'production']);
 
-  if (environmentTarget !== undefined && !recognized.has(environmentTarget)) {
+  // VERCEL_ENV is the deployment class; VERCEL_TARGET_ENV may be a custom
+  // preview environment name (for example staging), rather than that class.
+  if (!recognized.has(environmentTarget)) {
     throw new Error('Missing or ambiguous Vercel deployment target; refusing application build.');
   }
-  if (explicitTarget !== undefined && !recognized.has(explicitTarget)) {
+  if (explicitTarget !== undefined && (typeof explicitTarget !== 'string' || !explicitTarget || /\s/.test(explicitTarget) || (recognized.has(explicitTarget.toLowerCase()) && !recognized.has(explicitTarget)))) {
     throw new Error('Missing or ambiguous Vercel deployment target; refusing application build.');
   }
   if (environmentTarget === 'production' || explicitTarget === 'production') return 'production';
-  if (environmentTarget && explicitTarget && environmentTarget !== explicitTarget) {
+  if (explicitTarget && recognized.has(explicitTarget) && environmentTarget !== explicitTarget) {
     throw new Error('Conflicting non-production Vercel deployment targets; refusing application build.');
   }
-  if (environmentTarget === 'preview' || explicitTarget === 'preview') return 'preview';
-  if (environmentTarget === 'development' || explicitTarget === 'development') return 'development';
+  if (environmentTarget === 'preview') return 'preview';
+  if (environmentTarget === 'development' && (!explicitTarget || explicitTarget === 'development')) return 'development';
   throw new Error('Missing or ambiguous Vercel deployment target; refusing application build.');
 }
 

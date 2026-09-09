@@ -1,7 +1,7 @@
 # Evidence Index
 
 Prepared: 2026-06-03
-Updated: 2026-09-09 — PR #95 staging merge and reconciliation/pause preparation recorded; local candidate gates recorded; audit, exact-head review and hosted gates remain open
+Updated: 2026-09-09 — PR #95 staging merge and reconciliation/pause preparation recorded; earlier local candidate gates recorded; custom-preview correction requires renewed full gates; audit and hosted gates remain open
 
 Current amendment: [staging reconciliation and pause preparation](evidence/staging-reconciliation-and-pause-2026-09-09.md) records the merged staging SHA, 64-version provisional plan, read-only zero-cleanup/aggregate proof, and redacted pause inspection. It records dated local results; it is not hosted mutation proof or production-readiness approval. Fresh production audit is an open material gate at 0 critical/3 high/3 moderate; targeted remediation awaits owner direction.
 

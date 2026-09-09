@@ -31,3 +31,5 @@ When reopening has been explicitly approved, change the lock through a reviewed 
 with a bounded `reopeningDecision` record of that authorization, and restore the reviewed application cron entries recorded in
 `application-crons-when-reopened.json`. Recheck deployment behavior before assigning
 production domains.
+
+Custom Vercel environments use VERCEL_ENV=preview with a named VERCEL_TARGET_ENV (for example staging). Both build guards share the deployment-class and lock policy; naming a custom target never overrides a production marker.

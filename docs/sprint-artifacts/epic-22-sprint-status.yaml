@@ -30,8 +30,8 @@ epic_metrics:
   current_coverage_critical: 0
   current_test_execution_time_seconds: 1196
   total_tests_estimated: 106
-  total_tests_implemented: 400
-  total_tests_passing: 400
+  total_tests_implemented: 402
+  total_tests_passing: 402
 
 stories:
   - id: '22.1'
@@ -239,16 +239,16 @@ stories:
     status: 'in-progress'
     story_points: 0
     estimated_tests: 26
-    implemented_tests: 153 # Prior 110 plus 27 pause/static and 16 reconciliation fixture regressions; new cases passed in the 186-test focused gate.
-    passing_tests: 153
+    implemented_tests: 155 # Prior 153 plus two custom-preview guard regressions; new cases pass in the 49-test focused gate.
+    passing_tests: 155
     dependencies: ['22.10', '22.13', '22.14']
     assignee: 'Codex'
     started_date: 2026-08-31
     completed_date: null
     blockers:
-      - 'PR #95 is merged into staging at 8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c; main remains 822350986f4c023948a7bbf490ddffc371185c4a with no intervening commits. The new 64-version reconciliation/pause PR has passing local candidate gates and requires dependency-audit resolution and exact-head review before an owner merge decision.'
+      - 'PR #95 is merged into staging at 8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c; main remains 822350986f4c023948a7bbf490ddffc371185c4a with no intervening commits. The new 64-version reconciliation/pause PR requires renewed full local gates after the custom-preview correction, dependency-audit resolution and exact-head review before an owner merge decision.'
       - 'Hosted staging/production actions require fresh proof and separate explicit owner gates: one staging repair then six applies; production inventory then 57 repairs plus seven applies. No hosted delta is applied and the production pause remains active.'
-    notes: 'Local verification passes: full Vitest 3,436/3,436 with zero skips on 5f60e58c9aa9a7e117bc589ec82d0b99a5846839; exact full Playwright 163 passed / 47 classified skips / zero failures or errors on 2ea1077aec62729303116bb85c49b4c44e98639f, exit 0, 1127.916442 seconds. TypeScript, zero-error lint, preview build, pause safeguards and complete local migration fixtures pass. Exact-head CI/Vercel/Reviewbot results must be checked on PR #96 after publishing the evidence commit. The dependency audit remains failed at 0 critical/3 high/3 moderate, with targeted patches awaiting owner direction. Story 22.15 stays in-progress; Epic 23 stays on hold. Hosted repair/apply, staging/main merges, production deployment/settings and reopening remain separately owner-gated.'
+    notes: 'Earlier candidate verification (superseded by the custom-preview guard correction; renewed full local gates are blocked by ACTOR_CLOSING): full Vitest 3,436/3,436 with zero skips on 5f60e58c9aa9a7e117bc589ec82d0b99a5846839; exact full Playwright 163 passed / 47 classified skips / zero failures or errors on 2ea1077aec62729303116bb85c49b4c44e98639f, exit 0, 1127.916442 seconds. TypeScript, zero-error lint, preview build, pause safeguards and complete local migration fixtures pass. Exact-head CI/Vercel/Reviewbot results must be checked on PR #96 after publishing the evidence commit. The dependency audit remains failed at 0 critical/3 high/3 moderate, with targeted patches awaiting owner direction. Story 22.15 stays in-progress; Epic 23 stays on hold. Hosted repair/apply, staging/main merges, production deployment/settings and reopening remain separately owner-gated.'
 
 progress_summary:
   total_stories: 15
@@ -266,14 +266,14 @@ progress_summary:
 
 test_coverage_summary:
   total_tests_estimated: 106
-  total_tests_implemented: 400
-  total_tests_passing: 400
-  implementation_percentage: 377.4
-  unit_tests: 283
+  total_tests_implemented: 402
+  total_tests_passing: 402
+  implementation_percentage: 379.2
+  unit_tests: 285
   integration_tests: 112
   e2e_tests: 3 # Includes one safe unauthorized-only Story 22.14 cron case, passed in the exact full Playwright gate.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 283 + 112 + 3 + 0 + 2 = 400
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 285 + 112 + 3 + 0 + 2 = 402
 
 blockers:
   - 'PR #95 is merged. PR #96 reconciliation/pause preparation requires final test evidence, exact-head checks/review, resolution of the failed dependency audit, and explicit owner merge authorization. No hosted mutation or reopening is authorized.'
@@ -303,7 +303,7 @@ next_actions:
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
   - 'Story 22.15 remains in progress after PR #95 merged at 8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c, with main unchanged. Complete reconciliation/pause integrated gates and exact-head review, then seek explicit owner authorization to merge. After merge: fresh staging proof, a separately authorized single repair and verification, then separately authorized six applies. Production requires fresh inventory, signed 57-row ledger, and separate 57-repair/seven-apply gates. The pause remains active until separately authorized reopening. Sources: supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md. Epic 23 remains on hold.'
 last_updated: 2026-09-09
-updated_by: Codex (PR #95 merge and 64-version reconciliation/pause preparation recorded; local candidate gates recorded; audit, exact-head review and hosted gates remain open).
+updated_by: Codex (PR #95 merge and 64-version reconciliation/pause preparation recorded; earlier local candidate gates recorded; custom-preview correction requires renewed full gates; audit and hosted gates remain open).
 
 pr_95_playwright_gate:
   date: 2026-09-09

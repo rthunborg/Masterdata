@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
+import { assertNextBuildAllowed } from './production-pause-next-build-policy.mjs';
 
 const script = 'src/maintenance/vercel-production-pause-guard.mjs';
 
@@ -12,6 +13,32 @@ function run(environment: Record<string, string | undefined>) {
 }
 
 describe('Vercel production-pause ignore command', () => {
+  it('allows named custom previews through both the ignore command and active Next config', () => {
+    for (const target of ['staging', 'qa-preview']) {
+      const env = { VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_TARGET_ENV: target };
+      expect(run(env).status, target).toBe(1);
+      expect(() => assertNextBuildAllowed(env), target).not.toThrow();
+      const config = spawnSync(process.execPath, ['--input-type=module', '--eval', "import './next.config.mjs'"], {
+        cwd: process.cwd(), env: { PATH: process.env.PATH, ...env }, encoding: 'utf8',
+      });
+      expect(config.status, `${target}: ${config.stderr}`).toBe(0);
+    }
+  });
+
+  it('keeps production, incomplete markers and conflicting built-in targets closed', () => {
+    for (const [deployment, target] of [
+      ['production', 'staging'], ['preview', 'production'],
+      ['preview', 'development'], ['development', 'staging'],
+      [undefined, 'staging'], [undefined, 'preview'], ['staging', 'staging'],
+      ['preview', ''], ['preview', 'production '], ['preview', 'Production'],
+    ]) {
+      const env = { VERCEL: '1', VERCEL_ENV: deployment, VERCEL_TARGET_ENV: target };
+      const label = `${deployment}/${target}`;
+      expect(run(env).status, label).toBe(0);
+      expect(() => assertNextBuildAllowed(env), label).toThrow();
+    }
+  });
+
   it('ignores paused production builds but continues preview builds', () => {
     expect(run({ VERCEL: '1', VERCEL_ENV: 'production' }).status).toBe(0);
     expect(run({ VERCEL: '1', VERCEL_ENV: 'preview' }).status).toBe(1);

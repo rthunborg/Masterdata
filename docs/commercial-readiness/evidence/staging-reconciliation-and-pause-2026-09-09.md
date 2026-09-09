@@ -77,7 +77,7 @@ Fresh `pnpm audit --prod --json` on 2026-09-09 exited 1: **0 critical / 3 high /
 
 Primary advisory records: [Browserslist cache growth](https://github.com/advisories/GHSA-c83g-rgw3-j3cx), [Browserslist custom stats](https://github.com/advisories/GHSA-73wf-gq98-2v4g), [Sharp/libheif](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c). Proposed bounded fix versions are Browserslist >=4.28.7, Sharp 0.35.4, baseline-browser-mapping >=2.11.0 and Nodemailer 9.1.1, followed by fresh audit and all affected gates. Supabase CLI remains 2.115.0.
 
-## Final local candidate evidence
+## Full local candidate evidence before the custom-preview correction
 
 Application, test, migration and build-control implementation: `5f60e58c9aa9a7e117bc589ec82d0b99a5846839`. Exact full browser candidate: `2ea1077aec62729303116bb85c49b4c44e98639f`; only readiness Markdown changed between those revisions. The final evidence commit also changes documentation only.
 
@@ -98,3 +98,11 @@ The final 47 skipped test names/classes match the first run exactly, and E2E sou
 The earlier failed and interrupted attempts above remain part of the record. Final exact-head GitHub/Vercel/Reviewbot results are checked on PR #96 after this result-only commit; these local results do not pre-approve them or a merge. The failed audit prevents merge-readiness.
 
 Resource cleanup was verified at 2026-09-09T14:15:42.6073493Z: actor-scoped CloseActor succeeded with verified=true, followed by List with verified=true and zero unresolved owned resources. The owned PostgreSQL and Playwright/Next.js trees are stopped; no lease remains. The borrowed user-owned Supabase stack was not stopped or adopted. Child exit hooks had previously failed closed; no child-owned managed resources were launched, and root cleanup does not represent those hook failures as successes.
+
+## Custom-preview review correction and renewed verification gate
+
+Custom-preview review correction (2026-09-09): VERCEL_ENV is authoritative for the deployment class; a named VERCEL_TARGET_ENV is accepted only for a preview class. Production in either marker remains paused; missing/invalid base markers and conflicting built-in targets fail closed. Both guards now share the same target and lock policy. The new focused gate passes 49/49 (25 pause tests plus 24 release checks), including active Next config import for named staging/QA previews and negative marker cases. Full local Vitest/Playwright renewal is blocked: after verified CloseActor/List cleanup, a managed PostgreSQL restart was rejected with ACTOR_CLOSING. No unmanaged fallback was launched and no skip classification was changed. Earlier full results are historical evidence for 5f60e58/2ea1077, not a pass for this correction. A fresh hook-established lifecycle context is required before managed full verification; dependency-audit resolution and final exact-head remote review also remain open. Story 22.15 remains in-progress and Epic 23 remains on hold.
+
+The Vercel contract is documented at [System environment variables](https://vercel.com/docs/environment-variables/system-environment-variables#vercel_target_env).
+
+Additional correction checks: TypeScript exits 0; lint exits 0 with zero errors and 297 existing warnings. An initial bounded preview build compiled but failed during prerender because local Supabase fixture inputs had not been loaded (exit 1, 26.0489055 seconds). Reusing the reviewed loopback-only input loader produced a successful named staging preview build (exit 0, 8.3803021 seconds). These runs used the correction working tree; exact committed-head checks are recorded on PR #96. No hosted connection or deployment was involved in those local builds. The earlier bf00933 GitHub run 34362653764 completed successfully, but Reviewbot found the custom-preview issue, so it is not a clean final-head review.
