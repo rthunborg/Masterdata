@@ -20,13 +20,13 @@ A draft subprocessor register built from the tables below now exists: `24_subpro
 
 | Dependency | Purpose | License evidence | Risk/comment |
 | --- | --- | --- | --- |
-| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; current production audit reports no Next.js advisories |
+| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; new transitive Browserslist/Sharp findings remain an open production audit gate |
 | `react`, `react-dom` | UI | MIT | Standard |
 | `@supabase/ssr`, `@supabase/supabase-js` | Auth/database/realtime client | MIT transitive in license list | Compatible transitive `ws` remediation is pinned in the production lockfile |
 | `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/react-virtual` | Data fetching/table/virtualization | MIT | Standard |
 | `zod` | Validation | MIT | Strong validation dependency |
 | `zustand` | Client state | MIT | Persists auth metadata to localStorage |
-| `nodemailer` | SMTP email | MIT-0 | Updated to `9.1.0` with types `8.0.1`; non-network JSON-transport compatibility test covers the SMTP integration surface |
+| `nodemailer` | SMTP email | MIT-0 | Version `9.1.0` with types `8.0.1`; a new moderate advisory requires review of the proposed `9.1.1` patch; the JSON-transport compatibility test remains in place |
 | `exceljs` | XLSX export | MIT but transitive licenses/advisories | High transitive advisories patched with pnpm overrides; sole residual `uuid` moderate advisory is time-bounded and risk-accepted through 2026-09-30 |
 | `papaparse` | CSV import/export | MIT | CSV injection controls not specifically verified |
 | Radix packages | UI primitives | MIT | Standard |
@@ -47,14 +47,16 @@ Recommended action: generate a complete third-party notice file from the final p
 
 ## Security Audit Findings
 
-The fresh Story 22.15 `pnpm audit --prod --json` checkpoint returns one residual production advisory after the three approved batches:
+The earlier Story 22.15 checkpoint below is historical and superseded by the 2026-09-09 production audit: **0 critical / 3 high / 3 moderate**, an open release blocker. Targeted remediation awaits owner direction; the earlier UUID acceptance does not waive new findings. See the current advisory register and preparation evidence.
+
+Historical checkpoint after the three approved batches:
 
 - 0 critical
 - 0 high
 - 1 moderate
 - 0 low
 
-Patched areas include Next.js/ESLint/analyzer, Sharp, Nodemailer, Babel, `brace-expansion`, `postcss`, and `nanoid`, in addition to the existing compatible production overrides. The sole residual is `exceljs` → `uuid@8.3.2` (`GHSA-w5hq-g745-h8pq` / `CVE-2026-41907`); it is tracked with server-side controls and a 2026-09-30 review in `15_dependency_advisory_risk_register.md`.
+Patched areas include Next.js/ESLint/analyzer, Sharp, Nodemailer, Babel, `brace-expansion`, `postcss`, and `nanoid`, in addition to the existing compatible production overrides. The sole residual at that historical checkpoint was `exceljs` → `uuid@8.3.2` (`GHSA-w5hq-g745-h8pq` / `CVE-2026-41907`); it is tracked with server-side controls and a 2026-09-30 review in `15_dependency_advisory_risk_register.md`.
 
 ## Potential Subprocessor Data Map
 

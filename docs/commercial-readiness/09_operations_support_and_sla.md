@@ -4,6 +4,10 @@ Prepared: 2026-06-03
 
 Updated: 2026-08-29 (Story 22.14 production-safe ÖMC masterdata reminders)
 
+Current preparation is draft PR #96: 64 repository versions, one separately approved staging repair followed by six exact applies, and provisional production 57 catalog-proven repairs followed by seven applies after fresh inventory. Production remains paused; deployment, settings changes and reopening require separate owner decisions. The production dependency audit is an open release blocker at 0 critical / 3 high / 3 moderate. See [current evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md) and [pause safeguards](29_production_pause_release_safeguards.md).
+
+While paused, the normal application-operation procedures below do not authorize production deployment, promotion, job restoration or reopening. Follow the linked pause safeguards and current cutover runbook first.
+
 ## Current Operational View
 
 | Area | Current state | Evidence | Status |
