@@ -8,7 +8,11 @@ Repository target: **63 migration versions / 17 policies**. The immutable classi
 
 > **No authorization by documentation.** Running catalog reads is safe only with the correct linked project. History repair, migration apply, workflow dispatch, backup, deployment, or any hosted write requires the environment-specific owner approval described below.
 
-## Local pre-flight status — 2026-09-01
+## Exact amendment Playwright gate — 2026-09-09
+
+Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. [Dated result and all 47 skipped cases](evidence/production-readiness-pr95-playwright-2026-09-09.md); report duration 1,049.606579 seconds (17.5 minutes). The user-owned local stack was left running; guard cleanup covers the agent-owned Playwright process tree. Check the evidence commit's exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized.
+
+## Local pre-flight status — 2026-09-01 (historical)
 
 The local remediation gate is complete but is not hosted proof: clean reset through all 63 migrations plus seed; Story 22.15 live database 11/11; Story 22.14 PostgREST 1/1; live export 5/5; full Vitest 317/317 files and 3,342/3,342 tests with zero skips; full Playwright 163 passed / 47 classified skips / 0 failed; type-check, zero-error lint, Next `16.3.3` production build, dependency threshold, and the candidate-wide diff check passed under one path-scoped immutable-migration whitespace exception. The restored `20250113000000` migration retains seven historical trailing-space lines and one blank EOF and is SHA-256 pinned; all other paths retain normal whitespace enforcement. The 47 E2E skips are recorded in `evidence/production-readiness-local-gates-2026-09-01.md`; 9 require explicit notification-capture authorization and 38 are obsolete/superseded or deterministic-fixture coverage debt. No skip is treated as passing.
 

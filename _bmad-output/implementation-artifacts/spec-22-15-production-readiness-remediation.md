@@ -74,6 +74,8 @@ An IPv4-only operator network may use the Shared Supavisor session pooler as tra
 
 ## Verification
 
+**Current exact-commit result, recorded 2026-09-09:** Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. See [dated evidence](../../docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md). Check the evidence commit's exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized. Earlier recorded paragraphs below are historical snapshots and their open-Playwright statements are superseded by this result. The frozen intent is unchanged.
+
 **Commands:**
 - `pnpm type-check && pnpm lint && npx vitest run && pnpm build` -- all exit `0` with lint errors `0`.
 - `npx playwright test` -- exit `0`; skipped cases are itemized.

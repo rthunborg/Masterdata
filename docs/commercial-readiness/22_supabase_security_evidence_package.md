@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-11
 
-Updated: 2026-09-07 — Story 22.15 PR #95 environment-specific repair-allowlist remediation synchronized
+Updated: 2026-09-09 — exact PR #95 Playwright gate recorded; merge and hosted gates remain open
 
 Story: 22.8, with Story 22.10, Story 22.13, and Story 22.15 addenda
 
@@ -147,6 +147,8 @@ Standing risks are tracked in `11_risk_register_and_open_questions.md` and `08_s
 9. **Partial staging-refresh scope** — the required runtime-column archive and single transaction prevent partial config/schema/employee refreshes, but a successful `TRUNCATE ... CASCADE` still clears employee-dependent party/audit tables that the partial job does not replay. A legacy physical column without matching `column_config` can still fail the replay; the job now rolls back and alerts. See `09_operations_support_and_sla.md`, `26_environment_reconciliation_inventory.md`, and `R-024`.
 
 ## Command Evidence
+
+Latest exact-commit result (2026-09-09): Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. [Dated result and skip inventory](evidence/production-readiness-pr95-playwright-2026-09-09.md); report duration 1,049.606579 seconds (17.5 minutes). Earlier dated rows below retain their historical open-gate statements. Check the evidence commit's exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized.
 
 | Command (sanitized) | Date | Result |
 | --- | --- | --- |

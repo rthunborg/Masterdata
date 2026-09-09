@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-14
 
-Updated: 2026-09-07 — Story 22.15 PR #95 environment-specific repair-allowlist remediation synchronized
+Updated: 2026-09-09 — exact PR #95 Playwright gate recorded; merge and hosted gates remain open
 
 Story: 22.10 historical inventory, superseded for release execution by Story 22.15
 
@@ -142,3 +142,7 @@ Accepted residual advisors on staging (out of scope / by design): `pg_graphql_an
 - Production's six forward files are not an all-or-nothing transaction. The first temporarily grants legacy execution before a later file revokes/hardens it, so the runbook requires a fresh private inventory of affected-table `supabase_realtime` membership and current/known client connections, then separately authorized temporary Realtime-service disablement plus application/Data API/direct-DB isolation. An existing non-operator Realtime connection must be observed disconnecting, a fresh reconnect must be rejected, and all controls must remain proven through post-apply verification, exact-candidate deployment, and smoke (`R-025`). Vercel ingress and Data API controls do not stop existing/reconnecting Realtime clients; a seasonal user pause is not evidence of isolation. After smoke, restore and catalog/connection-verify the exact prior Realtime and remaining settings. This is a temporary cutover control, not Epic 23 work.
 - Hosted catalog proof is bound to an owner-approved absolute `psql` executable by exact version and SHA-256, and to a reviewed explicit CA PEM by SHA-256 with `sslmode=verify-full`; ambient libpq target/TLS overrides and a bare `PATH` executable are rejected before credentials reach the verifier process.
 - The final fresh full `npx vitest run` with all local live gates enabled exited `0` on 2026-09-01 with 317/317 files and 3,342/3,342 tests passing with zero skips. Exact full Playwright exited `0` with 163 passed / 47 classified skips / 0 failed; 9 skips require an explicitly authorized notification-capture run and 38 are obsolete/superseded or deterministic-fixture coverage debt. The Next `16.3.3` production build passed. Hosted evidence remains open.
+
+### Exact PR #95 Playwright gate — 2026-09-09
+
+Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. [Dated result and all 47 skipped cases](evidence/production-readiness-pr95-playwright-2026-09-09.md); report duration 1,049.606579 seconds (17.5 minutes). The dated hosted inventory and manifest repair/apply plan are unchanged. Check the evidence commit's exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized.

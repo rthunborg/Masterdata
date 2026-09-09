@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-09-01T00:00:00+02:00
+# last_updated: 2026-09-09T00:00:00+02:00
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-01T00:00:00+02:00
+last_updated: 2026-09-09T00:00:00+02:00
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -73,6 +73,6 @@ development_status:
   epic-23-retrospective: optional
 
 verification_blockers:
-  local_quality_gates: 'PR #94 local/live/full evidence remains recorded from 2026-09-01. PR #95 actual-connection, command-grammar, and environment-specific repair-allowlist remediation passes the focused target-binding/catalog/CLI-runner/migration-readiness gate 102/102. Fresh full Vitest passes 308 files / 3,342 tests with 9 files / 51 managed local-service tests skipped because no local stack was started; full ESLint exits 0 with 0 errors / 297 pre-existing warnings; TypeScript exits 0 with incremental cache disabled for the protected worktree. Exact amendment-branch Playwright remains open because this task has no trusted lifecycle context for its managed server and is not claimed complete.'
-  remote_pr_review: 'PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6. After the actual-connection and command-grammar fixes, Codex Reviewbot found that arbitrary 14-digit repair versions remained possible in PR #95. The wrapper/runbook/test remediation now binds repair to the reviewed private target environment and its manifest allowlist and is locally green. Refreshed PR checks/review, exact amendment-branch Playwright, merge, and a new immutable staging SHA remain open. origin/main remains separately fetched at 822350986f4c023948a7bbf490ddffc371185c4a and was not merged.'
+  local_quality_gates: 'Prior focused 102/102, full Vitest 3,342 passed / 51 managed skips, TypeScript, and zero-error ESLint remain recorded. Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. Evidence: docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md.'
+  remote_pr_review: 'CI/Vercel and Codex Reviewbot passed for tested PR head 3b75d5e78829426edfddce3207d4c16fb767aff1. Check the evidence commit''s exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized.'
   hosted_owner_gates: 'Open: after the amendment is reviewed and merged, record the new immutable staging SHA and obtain fresh catalog proof. Environment-specific owner authorization remains required before any hosted repair, apply, workflow, deployment, or production action.'

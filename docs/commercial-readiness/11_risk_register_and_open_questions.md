@@ -1,9 +1,11 @@
 # Risk Register And Open Questions
 
 Prepared: 2026-06-03
-Updated: 2026-09-07 — Story 22.15 PR #95 environment-specific repair-allowlist remediation
+Updated: 2026-09-09 — exact PR #95 Playwright gate recorded; merge and hosted gates remain open
 
 ## Risk Register
+
+Latest local gate (2026-09-09): Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. [Exact-commit evidence](evidence/production-readiness-pr95-playwright-2026-09-09.md). This closes the amendment Playwright prerequisite only; hosted risks R-010/R-020/R-023 and release gates E-010/E-013 remain open.
 
 | ID | Risk | Area | Description | Likelihood | Impact | Priority | Current control | Recommended action | Owner | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
