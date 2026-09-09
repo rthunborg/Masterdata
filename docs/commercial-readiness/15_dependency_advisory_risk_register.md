@@ -2,11 +2,15 @@
 
 Prepared: 2026-08-31 (Story 22.15 refresh)
 
-Revalidated: 2026-09-01
+Revalidated: 2026-09-09 — release threshold failed
 
 Source evidence: `docs/commercial-readiness/evidence/dependency-audit-2026-08-31.md`
 
-## Summary
+## Current release gate — 2026-09-09
+
+The production audit now reports **0 critical / 3 high / 3 moderate / 0 low**, exit 1. The zero-high result below is historical and is not the current release gate. Browserslist 4.28.1 has two high findings; Sharp 0.35.3 has one high finding. New moderate findings affect baseline-browser-mapping 2.9.19 and Nodemailer 9.1.0, in addition to the existing UUID residual. Targeted patched-version updates await owner direction; no additional risk acceptance or dependency change has occurred. See [the current evidence and advisory links](evidence/staging-reconciliation-and-pause-2026-09-09.md#newly-detected-dependency-gate).
+
+## Historical remediation summary — 2026-09-01
 
 Story 22.15 refreshed the production audit after the candidate had regressed to 28 advisories, including 15 high-severity findings. Three reviewed upgrade batches remove every critical/high production advisory. The only retained production advisory is the ExcelJS transitive UUID moderate risk below.
 
@@ -37,7 +41,7 @@ Batch 3's local verification scope is complete. The 47 Playwright skips are not 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `uuid 8.3.2` (`GHSA-w5hq-g745-h8pq`) | Moderate | `.>exceljs>uuid` | `exceljs 4.4.0` requires `uuid ^8.3.0`; forcing `uuid >=11.1.1` is an unsupported major transitive override. | Technical owner | 2026-09-30 | ExcelJS is used only for authenticated server-side XLSX export. The application does not expose UUID v3/v5/v6 buffer/offset APIs to user input. Recheck for an ExcelJS release with a patched UUID range or select a replacement before the review date. | Time-bounded acceptance for controlled production readiness; not an enterprise waiver. |
 
-No Nodemailer risk remains registered: the direct package is now `9.1.0`, its types are aligned, and a non-network compatibility test exercises the application mail shape.
+Historical 2026-09-01 conclusion, superseded by the new moderate finding above: no Nodemailer risk remained registered because the direct package is now `9.1.0`, its types are aligned, and a non-network compatibility test exercises the application mail shape.
 
 ## Development Tooling
 

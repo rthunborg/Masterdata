@@ -45,8 +45,11 @@ afterEach(() => {
 describe('standalone production pause', () => {
   it('shows the notice and contact details without executable application content', () => {
     const document = new DOMParser().parseFromString(readFileSync(resolve(source, 'index.html'), 'utf8'), 'text/html');
-    expect(document.title).toBe('Stena Season');
-    expect(document.querySelector('h1')?.textContent).toMatch(/Taking a break\s*until further notice\./);
+    expect(document.documentElement.lang).toBe('sv');
+    expect(document.title).toBe('Stena Season – Pausad');
+    expect(document.querySelector('h1')?.textContent).toMatch(/Vi tar en paus\s*tills vidare\./);
+    expect(document.querySelector('.brand')?.getAttribute('aria-label')).toBe('Stena Season – startsida');
+    expect(document.querySelector('.intro')?.textContent).toContain('Du är välkommen att kontakta oss om du har frågor.');
     expect(document.querySelector('footer')?.textContent).toContain('Enhancior AB');
     expect(document.querySelector('.email')?.getAttribute('href')).toBe('mailto:rasmus.thunborg@enhancior.se');
     expect(document.querySelectorAll('script, form, iframe')).toHaveLength(0);
@@ -77,6 +80,9 @@ describe('standalone production pause', () => {
     expect(existsSync(resolve(output, '.vercel/project.json'))).toBe(false);
     expect(JSON.parse(readFileSync(resolve(output, '.vercel/output/config.json'), 'utf8')).crons).toEqual([]);
     expect(JSON.parse(readFileSync(resolve(output, 'vercel.json'), 'utf8')).crons).toEqual([]);
+    expect(JSON.parse(readFileSync(resolve(output, '.vercel/output/static/unavailable.json'), 'utf8'))).toEqual({
+      error: 'SITE_PAUSED', message: 'Tjänsten är pausad tills vidare.',
+    });
     expect(existsSync(resolve(output, 'deployment-state.json'))).toBe(false);
   });
 

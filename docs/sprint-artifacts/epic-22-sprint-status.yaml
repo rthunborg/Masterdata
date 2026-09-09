@@ -12,7 +12,7 @@ epic_completion_gate:
     title: 'Story 22.10 Phase B — Supabase production cutover'
     status: 'pending' # set to 'done' once executed to silence the reminder
     trigger: 'Only after Story 22.15 is locally complete, PR-reviewed, recorded at a final immutable remediation SHA, and owner-verified on staging; before any production mutation.'
-    actions: 'Follow docs/commercial-readiness/27_supabase_cutover_runbook.md from supabase/migration-baseline-manifest.json: capture fresh catalog proof; complete and sign the 57-row production proof ledger; run only the exact explicit repairs; require the reviewed wrapper''s db push --reviewed-target --dry-run --skip-vault with actual connection binding to show the six exact applies; then require a fresh backup, approved maintenance window, and explicit production go-live signal before apply. Verify migration history, 17 policies, grants, direct-role behavior, advisors, and data-preservation evidence; close R-010/R-023/R-020 only after verification. Epic 23 Auth/dashboard work remains on hold and excluded.'
+    actions: 'Follow docs/commercial-readiness/27_supabase_cutover_runbook.md from supabase/migration-baseline-manifest.json: capture fresh catalog proof; complete and sign the 57-row production proof ledger; run only the exact explicit repairs; require the reviewed wrapper''s db push --reviewed-target --dry-run --skip-vault with actual connection binding to show the seven exact applies after fresh production inventory; then require a fresh backup, approved maintenance window, and explicit production database-apply authorization. Preserve the pause; reopening requires a separate owner decision. Verify migration history, 17 policies, grants, direct-role behavior, advisors, and data-preservation evidence; close R-010/R-023/R-020 only after verification. Epic 23 Auth/dashboard work remains on hold and excluded.'
     source: 'supabase/migration-baseline-manifest.json; docs/commercial-readiness/27_supabase_cutover_runbook.md; tracker E-010/E-013'
 
 sprint:
@@ -30,8 +30,8 @@ epic_metrics:
   current_coverage_critical: 0
   current_test_execution_time_seconds: 2081
   total_tests_estimated: 106
-  total_tests_implemented: 357
-  total_tests_passing: 357
+  total_tests_implemented: 400
+  total_tests_passing: 400
 
 stories:
   - id: '22.1'
@@ -75,7 +75,7 @@ stories:
     started_date: 2026-06-05
     completed_date: 2026-06-05
     blockers: []
-    notes: 'Historical Story 22.3 completion result: critical/high production advisories were remediated and pnpm audit --prod then reported 0 critical/high with 3 residual moderate/low advisories. Story 22.15 supersedes that dependency snapshot with 0 critical, 0 high, 1 moderate ExcelJS→UUID, and 0 low across 281 production dependencies. Story 22.3 code-review patches resolved migration visibility, readiness-doc consistency, dev-only advisory coverage, evidence assertions, existing important_dates.is_active normalization, and visible E2E row waits. Its full gates passed: npx vitest run EXIT:0, npx eslint EXIT:0 with existing warnings, npx tsc --noEmit EXIT:0, and exact npx playwright test EXIT:0.'
+    notes: 'Historical Story 22.3 completion result: critical/high production advisories were remediated and pnpm audit --prod then reported 0 critical/high with 3 residual moderate/low advisories. The earlier Story 22.15 audit snapshot had 0 critical/high and 1 moderate; the fresh 2026-09-09 audit supersedes it with 0 critical, 3 high, and 3 moderate and is an open release blocker. Story 22.3 code-review patches resolved migration visibility, readiness-doc consistency, dev-only advisory coverage, evidence assertions, existing important_dates.is_active normalization, and visible E2E row waits. Its full gates passed: npx vitest run EXIT:0, npx eslint EXIT:0 with existing warnings, npx tsc --noEmit EXIT:0, and exact npx playwright test EXIT:0.'
   - id: '22.4'
     title: 'Confirm Presentation Data Scope and Access Preconditions'
     priority: 'P0'
@@ -239,8 +239,8 @@ stories:
     status: 'in-progress'
     story_points: 0
     estimated_tests: 26
-    implemented_tests: 110 # Story 22.15 direct test delta; includes IPv4/actual-connection coverage, 16 root-option/short-password grammar regressions, and 7 environment-specific repair-allowlist regressions.
-    passing_tests: 110
+    implemented_tests: 153 # Prior 110 plus 27 pause/static and 16 reconciliation fixture regressions; new cases passed in the 186-test focused gate.
+    passing_tests: 153
     dependencies: ['22.10', '22.13', '22.14']
     assignee: 'Codex'
     started_date: 2026-08-31
@@ -248,7 +248,7 @@ stories:
     blockers:
       - 'PR #95 is merged into staging at 8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c; main remains 822350986f4c023948a7bbf490ddffc371185c4a with no intervening commits. The new 64-version reconciliation/pause PR requires integrated gates and exact-head review before an owner merge decision.'
       - 'Hosted staging/production actions require fresh proof and separate explicit owner gates: one staging repair then six applies; production inventory then 57 repairs plus seven applies. No hosted delta is applied and the production pause remains active.'
-    notes: 'Story 22.15 remains in progress. The reviewed wrapper stays fail-closed for actual connection, command grammar, and environment-specific repair allowlists. Fresh read-only staging proof found zero saved-filter cleanup candidates and captured redacted repayment/permission aggregates. The forward migration canonicalizes saved filters/room ACLs without historical replay. Portable pause safeguards preserve the static pause through ordinary production builds, empty root crons, and a committed paused lock; platform-admin operations remain separate owner decisions. Fresh production audit is an open material gate at 0 critical/3 high/3 moderate; targeted fixes await owner direction. Integrated tests are pending and no new result is claimed. Epic 23 remains on hold.'
+    notes: 'Story 22.15 remains in progress. The reviewed wrapper stays fail-closed for actual connection, command grammar, and environment-specific repair allowlists. Fresh read-only staging proof found zero saved-filter cleanup candidates and captured redacted repayment/permission aggregates. The forward migration canonicalizes saved filters/room ACLs without historical replay. Portable pause safeguards preserve the static pause through ordinary production builds, empty root crons, and a committed paused lock; platform-admin operations remain separate owner decisions. Fresh production audit is an open material gate at 0 critical/3 high/3 moderate; targeted fixes await owner direction. Lead focused verification passes 186/186, including all 15 pre-apply and all 15 post-apply catalog checks around the six ordered migrations. The first full Playwright attempt failed (162 passed/47 skipped/1 failed); its two targeted cases passed after retaining and moving the generated Next cache. Exact full rerun and refreshed full-suite evidence remain pending. Epic 23 remains on hold.'
 
 progress_summary:
   total_stories: 15
@@ -266,17 +266,17 @@ progress_summary:
 
 test_coverage_summary:
   total_tests_estimated: 106
-  total_tests_implemented: 357
-  total_tests_passing: 357
-  implementation_percentage: 336.8
-  unit_tests: 256
-  integration_tests: 96
+  total_tests_implemented: 400
+  total_tests_passing: 400
+  implementation_percentage: 377.4
+  unit_tests: 283
+  integration_tests: 112
   e2e_tests: 3 # Includes one safe unauthorized-only Story 22.14 cron case, passed in the exact full Playwright gate.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 256 + 96 + 3 + 0 + 2 = 357
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 283 + 112 + 3 + 0 + 2 = 400
 
 blockers:
-  - 'PR #95 actual-connection, root-option/-p, and environment-specific repair-allowlist remediation is implemented and locally verified. Exact amendment-branch Playwright passed on 2026-09-09; evidence-head checks/review, owner-authorized merge, and recording the new immutable staging SHA remain required.'
+  - 'PR #95 is merged. PR #96 reconciliation/pause preparation requires final test evidence, exact-head checks/review, resolution of the failed dependency audit, and explicit owner merge authorization. No hosted mutation or reopening is authorized.'
   - 'Hosted staging/production proof, repair/apply, and verification remain separately owner-gated; no hosted mutation is authorized by this amendment.'
 known_issues:
   - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'

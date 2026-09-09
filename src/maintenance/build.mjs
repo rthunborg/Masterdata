@@ -80,7 +80,7 @@ export function buildPauseArtifact(value) {
   writeFileSync(resolve(assets, 'pause.css'), `${theme}\n${readFileSync(resolve(source, 'pause.css'), 'utf8')}`);
   cpSync(resolve(source, 'index.html'), resolve(output, 'static/index.html'));
   cpSync(resolve(root, 'src/app/favicon.ico'), resolve(output, 'static/favicon.ico'));
-  writeFileSync(resolve(output, 'static/unavailable.json'), JSON.stringify({ error: 'SITE_PAUSED', message: 'Stena Season is taking a break until further notice.' }));
+  writeFileSync(resolve(output, 'static/unavailable.json'), JSON.stringify({ error: 'SITE_PAUSED', message: 'Tjänsten är pausad tills vidare.' }));
   writeFileSync(resolve(output, 'static/robots.txt'), 'User-agent: *\nDisallow: /\n');
   cpSync(resolve(source, 'output-config.json'), resolve(output, 'config.json'));
   writeFileSync(resolve(deployment, 'vercel.json'), JSON.stringify({ crons: [] }, null, 2));

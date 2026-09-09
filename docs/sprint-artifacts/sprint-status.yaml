@@ -2,7 +2,7 @@ schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
 last_updated: 2026-09-09
-updated_by: Codex (PR #95 merged to staging; 64-version reconciliation/pause preparation recorded; integrated gates and hosted owner actions remain open).
+updated_by: Codex (PR #96 draft; catalog review fix and 186 focused tests passed; full rerun, dependency audit and owner gates remain open).
 
 current_focus:
   active_epic: 22
@@ -65,7 +65,7 @@ notes:
   - 'Epic 23 is explicitly on hold; the previously referenced status file does not exist and must not be created by this remediation.'
   - 'Story 22.1 is done as of 2026-06-10: diagnostic route handlers are removed, focused Story 22.1 Vitest, full Vitest, full Playwright, ESLint, and type-check all exit 0. Deployed-app diagnostic verification moved to a post-merge Epic 22 release/readiness gate: after final deployment, removed diagnostic endpoints must return a non-success auth/not-found status before P0 external-presentation readiness is claimed.'
   - 'Story 22.2 is done. Non-production Supabase guard, docs, and .env.test cleanup are applied. Lead verification passes: npx vitest run EXIT:0 and exact npx playwright test EXIT:0; the prior blocker was a 20-minute tool timeout shorter than the full serial E2E suite runtime.'
-  - 'Story 22.3 dependency remediation is done after code review; current production audit has 0 critical/high advisories and residual moderate/low risks are registered. Review patches resolved readiness-doc consistency, dev-only advisory coverage, evidence assertions, migration normalization, and E2E row visibility. Full gates pass: npx vitest run, npx eslint, npx tsc --noEmit, and exact npx playwright test all exit 0.'
+  - 'Story 22.3 dependency remediation is historically done after code review; the fresh Story 22.15 production audit has 0 critical/3 high/3 moderate and is an open release blocker. Review patches resolved readiness-doc consistency, dev-only advisory coverage, evidence assertions, migration normalization, and E2E row visibility. Full gates pass: npx vitest run, npx eslint, npx tsc --noEmit, and exact npx playwright test all exit 0.'
   - 'Story 22.4 is done. Standing production-data presentation controls, role/account preconditions, restricted data/view rules, and Story 22.2 non-production path boundaries are documented; targeted docs-only quality search passed.'
   - 'Story 22.5 is done. The blocker tracker and one-page readiness brief are linked from readiness and sprint surfaces; code-review patches resolved stale diagnostic endpoint evidence and tightened Story 22.1 gate wording so disclosure alone is not treated as closure. Docs-only automated Vitest/Playwright gate was waived per estimated_tests 0 after targeted private/secret-bearing content search passed.'
   - 'Story 22.6 is done. All eleven review patch findings are resolved: evidence/status artifacts and linked readiness documents are durably tracked, PE3 cron service-role usage is corrected, matrix parsing checks exact columns plus stale/typed/re-export rows, middleware applies the non-production Supabase guard before client creation, column_config metadata is represented, the employee_column_changes repair migration is hardened, and the evidence index gate note is current. Focused Story 22.6 matrix Vitest, focused Story 22.2 guard Vitest, npx vitest run, npx playwright test, npx eslint, and npx tsc --noEmit all exit 0. Epic 23 is explicitly on hold and must not be started from BMAD backlog auto-discovery.'
