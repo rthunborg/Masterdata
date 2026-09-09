@@ -1,8 +1,8 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: 2026-09-01
-updated_by: Codex (Story 22.15 local reset/live/full gates complete; remote PR review, final SHA, and hosted owner gates remain open).
+last_updated: 2026-09-09
+updated_by: Codex (exact PR #95 Playwright passed; evidence-head remote checks/review and owner merge gate required).
 
 current_focus:
   active_epic: 22
@@ -55,8 +55,8 @@ next_actions:
   - 'Story 22.10 is done. Phase A staging reconciliation remains dated 2026-06-14 (57 migrations / 19 policies); Story 22.13 resolved the historical local Playwright contradiction on 2026-07-09 with exact full npx playwright test: 162 passed / 53 skipped / 0 failed, EXIT:0. Phase B production cutover (runbook 27; R-010/R-023/R-020) remains the Epic 22 release gate.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings on PR #91 commit 32621fd are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, required real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, exact full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique Story 22.14 tests are evidenced passing without recounting pre-existing Story 22.11 cases. Any further review finding requires human triage. No production, schema, real-recipient cron, deployment, main, or unrelated-file changes occurred. Epic 22 remains in progress for its separate production release gate.'
-  - 'Story 22.15 remains in progress with local remediation gates complete, including the PR #94 authenticated lookup-failure redirect-loop fix: focused middleware 12/12; latest patch-gate Vitest 3,293 passed / 51 managed local-service skips; exact full Playwright 163 passed / 47 classified skips / 0 failed in 24.0 minutes; type-check; zero-error lint; Next 16.3.3 production build; dependency threshold; and candidate-wide diff validation. The fix returns a retryable no-store 503 for uncertain authenticated Auth/app-user resolution without revoking or dropping refreshed cookies; definitive rejection and ordinary unauthenticated redirects remain intact. PR #94 prior head f7b8945b98d4c7fc975d9ad30860bbab3181f443 was mergeable into staging with reported checks green; the latest patch requires commit, push, remote review, and green head checks before merge. origin/staging bcb1a0e5bed3d06b9b7582320f491964ffc5a0b9 is only the staging baseline; origin/main was 822350986f4c023948a7bbf490ddffc371185c4a.'
-  - 'EPIC 22 COMPLETION GATE (E-010/E-013): from the final reviewed immutable SHA, follow supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md in order: fresh catalog proof; signed 57-row production ledger; exact explicit repairs only; db push --linked --dry-run --skip-vault; five exact staging applies or six exact production applies; fresh production backup, approved maintenance window, and explicit go-live authorization; then migration/policy/grant/direct-role/advisor/data-preservation verification before closing R-010/R-023/R-020. No hosted action is authorized by this status file.'
+  - 'Story 22.15 remains in progress. PR #94 is merged into authoritative origin/staging at a39f0e83bc892c970d8471137134f6fbe33c40f6; origin/main remains 822350986f4c023948a7bbf490ddffc371185c4a and was not merged. PR #95 now closes the actual-connection, leading-root-option, short-password-selector, and unrestricted-14-digit-repair findings locally. The wrapper accepts only exact runbook database shapes; history repair additionally requires the command environment to match the reviewed private target record and the version to belong to that environment''s manifest repair allowlist. Focused tests pass 102/102; full Vitest passes 3,342 with 51 managed skips; lint has 0 errors/297 pre-existing warnings; type-check passes. Exact amendment-branch Playwright passed on 2026-09-09; evidence-head checks/review, owner-authorized merge, and a new immutable staging SHA remain required before fresh hosted proof resumes.'
+  - 'EPIC 22 COMPLETION GATE (E-010/E-013): from the final reviewed immutable SHA, follow supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md in order: fresh catalog proof; signed 57-row production ledger; exact explicit repairs only; reviewed-wrapper db push --reviewed-target --dry-run --skip-vault with actual connection binding; five exact staging applies or six exact production applies; fresh production backup, approved maintenance window, and explicit go-live authorization; then migration/policy/grant/direct-role/advisor/data-preservation verification before closing R-010/R-023/R-020. No hosted action is authorized by this status file.'
   - 'Epic 23 is explicitly on hold. Its status file has not been created, and no Epic 23 work may be started or planned into active development without a later explicit owner decision.'
 
 notes:
@@ -72,3 +72,17 @@ notes:
   - 'Story 22.7 is done as of 2026-06-10. All nine review patch findings are resolved and one pre-existing risk is deferred. Automated evidence now covers role visibility/editability, external API/export field isolation, custom export fields, export Zod validation, local Supabase RLS checks, hermetic staffing seed data, and evidence-package links. Focused Story 22.7 Vitest, Story 13.7 export error handling, targeted E2E hardening, targeted FilterPanel Vitest, full Vitest, full Playwright, ESLint, and type-check all exit 0; targeted evidence hygiene search passes with no matches. Story 22.1 is done; do not overclaim P0 external-presentation readiness until the post-merge deployed-app diagnostic checks pass.'
   - 'Story 22.14 supersedes completed Story 14.1 only for ÖMC reminder policy: the prior unbounded date >= D+3 catch-up is replaced by the bounded, weekend-adjusted retry window. Story 14.1 itself remains historical and unchanged.'
   - 'Story 22.14 verification is complete: the required local PostgREST evidence and safe unauthorized cron E2E passed, all 117 unique story tests are evidenced passing, and the exact full Playwright suite passed with delivery and authorized cron execution disabled.'
+
+pr_95_playwright_gate:
+  date: 2026-09-09
+  tested_commit: '3b75d5e78829426edfddce3207d4c16fb767aff1'
+  command: 'npx playwright test'
+  result: '163 passed / 47 skipped / 0 failed / 0 errors'
+  exit_code: 0
+  report_duration_seconds: 1049.606579
+  cleanup_verified: true
+  hosted_supabase_action_occurred: false
+  story_status: 'in-progress'
+  epic_23_status: 'on-hold'
+  evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
+  next_action: 'Check the evidence commit''s exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized.'

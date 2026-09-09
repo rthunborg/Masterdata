@@ -1,7 +1,7 @@
 # Commercial Readiness Documentation Index
 
 Prepared: 2026-06-03
-Updated: 2026-09-01 — Story 22.15 clean reset/live/full, dependency, PR, and manifest-governed cutover evidence synchronized
+Updated: 2026-09-09 — exact PR #95 Playwright gate recorded; merge and hosted gates remain open
 Scope: repository review plus GitHub, Vercel, and limited Supabase-related runtime verification of the HR Masterdata Management System. No employee rows, secrets, private environment variable values, concrete production domain names, project refs, deployment IDs, or secret-name inventories are disclosed in this public package. Detailed operational evidence is held privately. Pre-remediation production diagnostic endpoint checks returned configuration metadata; Story 22.1 is done with route-handler removal and passing local/non-production gates. A post-merge Epic 22 release/readiness gate remains: after final deployment, the production runtime must stop returning success responses for the removed diagnostic paths.
 
 ## System Summary
@@ -45,6 +45,8 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 | `28_migrations_only_change_policy.md` | Security, IT, developers | Binding migrations-only policy for hosted schema, RLS, function, and grant changes |
 
 ## Verified
+
+- Current PR #95 exact-commit Playwright evidence (2026-09-09): Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. [Result and all 47 skipped cases](evidence/production-readiness-pr95-playwright-2026-09-09.md). Check the evidence commit's exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized.
 
 - Current package/dependency stack from `package.json`, `pnpm-lock.yaml`, and `pnpm licenses list --prod`.
 - Next.js, React, Supabase, Vercel cron, GitHub Actions, TypeScript, Vitest, Playwright configuration.

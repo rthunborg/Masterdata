@@ -8,7 +8,11 @@ Repository target: **63 migration versions / 17 policies**. The immutable classi
 
 > **No authorization by documentation.** Running catalog reads is safe only with the correct linked project. History repair, migration apply, workflow dispatch, backup, deployment, or any hosted write requires the environment-specific owner approval described below.
 
-## Local pre-flight status — 2026-09-01
+## Exact amendment Playwright gate — 2026-09-09
+
+Exact full npx playwright test passed on 3b75d5e78829426edfddce3207d4c16fb767aff1 on 2026-09-09: 163 passed / 47 skipped / 0 failed / 0 errors, exit 0, report duration 1,049.606579 seconds (17.5 minutes). Guard CloseActor and List verified cleanup with zero unresolved owned resources. No hosted Supabase action occurred. Story 22.15 remains in-progress; Epic 23 remains on hold. [Dated result and all 47 skipped cases](evidence/production-readiness-pr95-playwright-2026-09-09.md); report duration 1,049.606579 seconds (17.5 minutes). The user-owned local stack was left running; guard cleanup covers the agent-owned Playwright process tree. Check the evidence commit's exact-head GitHub/Vercel checks and final Codex Reviewbot result, then obtain explicit owner authorization before merging PR #95 into staging. Record the resulting immutable staging SHA before fresh hosted read-only proof. No staging-to-main merge or hosted write is authorized.
+
+## Local pre-flight status — 2026-09-01 (historical)
 
 The local remediation gate is complete but is not hosted proof: clean reset through all 63 migrations plus seed; Story 22.15 live database 11/11; Story 22.14 PostgREST 1/1; live export 5/5; full Vitest 317/317 files and 3,342/3,342 tests with zero skips; full Playwright 163 passed / 47 classified skips / 0 failed; type-check, zero-error lint, Next `16.3.3` production build, dependency threshold, and the candidate-wide diff check passed under one path-scoped immutable-migration whitespace exception. The restored `20250113000000` migration retains seven historical trailing-space lines and one blank EOF and is SHA-256 pinned; all other paths retain normal whitespace enforcement. The 47 E2E skips are recorded in `evidence/production-readiness-local-gates-2026-09-01.md`; 9 require explicit notification-capture authorization and 38 are obsolete/superseded or deterministic-fixture coverage debt. No skip is treated as passing.
 
@@ -19,12 +23,12 @@ This result does not satisfy the immutable-SHA, remote-review, staging, producti
 For each environment, do not reorder:
 
 1. Check out one reviewed immutable commit and record its full SHA.
-2. Fail closed unless the direct `SUPABASE_DB_URL` and the Supabase CLI link resolve to the same private project reference; capture a fresh read-only migration/advisor/catalog inventory.
+2. Select one reviewed database connection mode, fail closed unless `SUPABASE_DB_URL`, the Supabase CLI link, and the separately approved private binding inputs all resolve to the same project, then capture a fresh read-only migration/advisor/catalog inventory.
 3. Run the read-only catalog-verifier wrapper with the exact environment phase below. It exits nonzero unless every catalog result passes; compare the successful result with the manifest classification.
 4. Stop on any mismatch. Add an approved forward reconciliation migration; never edit/replay represented historical SQL.
 5. Obtain explicit owner authorization for the exact environment-specific **history-repair** list. This is a hosted write and is a separate decision from forward migration apply.
 6. Re-run the target-binding check, repair only the explicit environment list below, and immediately reconcile `migration list`. Stop on the first repair failure; never continue to push from a partial baseline.
-7. Re-run the target-binding check, run `db push --linked --dry-run --skip-vault` through the reviewed CLI wrapper, and compare the exact ordered output with the explicit apply list.
+7. Re-run the target-binding check, run `db push --reviewed-target --dry-run --skip-vault` through the reviewed CLI wrapper, and compare the exact ordered output with the explicit apply list. `--reviewed-target` is consumed by the wrapper and is never passed to the Supabase CLI.
 8. Obtain the separate environment-specific owner go-live signal for the forward migration apply.
 9. For production only, obtain the separate traffic-isolation and deployment authorizations, prove the isolation gate below, and keep it active across every forward migration, post-apply verification, deployment, and smoke test.
 10. Re-run the target-binding check, apply the exact list, verify migration history/policies/grants/direct-role behavior/advisors, and capture redacted evidence.
@@ -34,10 +38,14 @@ Never run `supabase db push` before the approved history baseline. Never use a w
 
 ## Shared pre-flight and catalog proof
 
-- Use the reviewed Supabase CLI version **`2.115.0`** for rehearsal and cutover. Record its private absolute path and SHA-256 in the approved tooling record; supply them privately as `SUPABASE_CLI_EXECUTABLE` and `EXPECTED_SUPABASE_CLI_SHA256`. Every CLI read, repair, dry run, apply, advisor query, and immediate history reconciliation must go through `node supabase/verify/run-reviewed-supabase-cli.mjs`. The wrapper resolves and hashes that executable, checks the exact reviewed version immediately before spawning the same resolved path, and never falls back to a bare command from `PATH`. Abort on any path, hash, or version mismatch; a CLI upgrade is a separate reviewed change.
+- Use the reviewed Supabase CLI version **`2.115.0`** for rehearsal and cutover. Record its private absolute path and SHA-256 in the approved tooling record; supply them privately as `SUPABASE_CLI_EXECUTABLE` and `EXPECTED_SUPABASE_CLI_SHA256`. Every CLI read, repair, dry run, apply, advisor query, and immediate history reconciliation must go through `node supabase/verify/run-reviewed-supabase-cli.mjs`. Remote database commands require the wrapper-only `--reviewed-target` marker. History repair additionally requires the exact wrapper-only `--reviewed-environment staging|production` assertion printed below. The wrapper resolves and hashes the executable, checks the exact reviewed version, rejects every leading root option before command classification, accepts only the exact database argument shapes printed in this runbook, and permits a repair version only when it belongs to that environment's `repair-after-catalog-proof` set in `supabase/migration-baseline-manifest.json`. It then repeats target and CA verification, rejects native `--linked`/`--db-url`/`--local`/`--proxy`/`--password`/`-p` selectors (including attached short-password values), removes ambient PostgreSQL connection/TLS variables, and spawns the same resolved executable with a generic passwordless `--db-url` plus only the validated host, port, database, user, password, `verify-full`, and reviewed CA in its minimal child environment. Only the standalone `--version` probe and exact `db push --help` discovery command are approved option-bearing exceptions outside a reviewed database call. Both wrapper-only markers are removed before spawn. This disables CLI 2.115.0's independent linked-target selection and pooler fallback without putting the private URL, reference, hostname, or password in process arguments. Abort on any path, hash, version, target, CA, command-shape, manifest, or environment mismatch; a CLI upgrade is a separate reviewed change.
 - Use one reviewed `psql` executable for catalog proof. Record its exact `psql --version` output and SHA-256 in the private tooling record; supply the absolute resolved path, exact version, and approved digest privately as `PSQL_EXECUTABLE`, `EXPECTED_PSQL_VERSION`, and `EXPECTED_PSQL_SHA256`. A bare command resolved from `PATH`, a relative path, hash mismatch, or version mismatch fails before the database password is passed to a process.
 - Download the intended project's server root certificate from its Supabase Dashboard SSL Configuration/Connect panel as documented in [Postgres SSL Enforcement](https://supabase.com/docs/guides/platform/ssl-enforcement), then have it reviewed into the cutover tooling record. Record its provenance and SHA-256 privately; supply its absolute path and approved digest as `SUPABASE_SSL_ROOT_CERT` and `EXPECTED_SUPABASE_SSL_ROOT_CERT_SHA256`. Do not commit the certificate, environment-specific path, or project details. The wrapper removes ambient libpq connection/TLS overrides and supplies only this validated root with `sslmode=verify-full`.
-- Obtain the intended staging or production project reference from the approved environment record and supply it privately as `EXPECTED_SUPABASE_PROJECT_REF`; do not commit it or place its value in a recorded command. Run `node supabase/verify/verify-target-binding.mjs` before the first read and again immediately before every repair, dry run, or apply. It accepts only a direct `db.<project-ref>.supabase.co:5432/postgres?sslmode=verify-full` URL and requires the URL reference, `supabase/.temp/project-ref`, and the separately supplied intended reference to all match; it reports only verified/failure and never prints the URL, reference, or password. A missing expected reference, `sslmode=require`, and pooler/custom/ambiguous URLs fail closed.
+- Obtain the intended staging or production project reference from the approved environment record and supply it privately as `EXPECTED_SUPABASE_PROJECT_REF`; do not commit it or place its value in a recorded command. The same approved private target record must supply its non-secret classification as `EXPECTED_SUPABASE_ENVIRONMENT=staging|production`; the wrapper requires the history-repair command's `--reviewed-environment` value to match it before consulting the manifest. Select exactly one explicit `SUPABASE_DB_CONNECTION_MODE`: `direct` or `session-pooler`. Omission, any other value, or a URL from the other mode fails closed.
+- `direct` mode remains preferred when the operator network can reach IPv6 or the project has the separately approved IPv4 add-on. Use only `db.<project-ref>.supabase.co:5432/postgres?sslmode=verify-full`, username `postgres`, and no `EXPECTED_SUPABASE_POOLER_HOST`. Link through the reviewed CLI wrapper with `--skip-pooler`.
+- `session-pooler` mode is the approved IPv4-only fallback. Copy the project's **Session pooler** hostname from its private Dashboard **Connect -> Session pooler** record, review and record it privately, and supply it as `EXPECTED_SUPABASE_POOLER_HOST`. Use only the Shared Supavisor hostname form `aws-<region>.pooler.supabase.com`, port `5432`, database `postgres`, username `postgres.<project-ref>`, and exactly `sslmode=verify-full`. Link through the reviewed CLI wrapper without `--skip-pooler`, which is the pinned CLI `2.115.0` pooler path. Port `6543` is transaction pooling and is never permitted for catalog proof, migration reads, repair, dry run, or apply. Do not infer or hand-type the hostname from a remembered region.
+- Run `node supabase/verify/verify-target-binding.mjs` before the first read and again immediately before every repair, dry run, or apply. In either mode it requires `supabase/.temp/project-ref` and the separately supplied intended reference to match. Direct mode additionally binds the project reference embedded in the hostname. Session-pooler mode additionally binds the project reference embedded in the username and requires the URL hostname to equal the separately approved exact pooler hostname. It reports only verified/failure and never prints the URL, reference, hostname, or password. A missing expected input, `sslmode=require`, port `6543`, and custom/mixed/ambiguous URLs fail closed.
+- Supabase's current connection guidance identifies direct connections as IPv6 by default and Shared Supavisor session mode on port `5432` as the persistent-client alternative for IPv4-only networks. The pinned CLI's reviewed `link --help` exposes `--skip-pooler` as the direct-connection override. Any future CLI version, hostname family, username convention, or pooler-mode change requires a separate reviewed runbook/tooling amendment; do not relax the patterns at runtime.
 - Do not overlap the 02:00 UTC nightly backup/refresh workflow.
 - Require Story 22.14 focused reminder/PostgREST evidence, full Vitest/Playwright, type-check, zero-error lint, build, dependency audit, and Story 22.15 manifest/static tests from the immutable commit. No real recipient delivery is permitted in local/staging verification.
 - Every skipped test must identify the missing environment or authorization; a generic skip is not accepted.
@@ -50,18 +58,33 @@ test -n "${EXPECTED_SUPABASE_CLI_SHA256:-}"
 test "$(node supabase/verify/run-reviewed-supabase-cli.mjs --version | head -n 1)" = "2.115.0"
 node supabase/verify/run-reviewed-supabase-cli.mjs db push --help | grep -- '--skip-vault'
 test -n "${EXPECTED_SUPABASE_PROJECT_REF:-}"
+case "${EXPECTED_SUPABASE_ENVIRONMENT:-}" in
+  staging|production) ;;
+  *) exit 1 ;;
+esac
+case "${SUPABASE_DB_CONNECTION_MODE:-}" in
+  direct)
+    test -z "${EXPECTED_SUPABASE_POOLER_HOST:-}"
+    ;;
+  session-pooler)
+    test -n "${EXPECTED_SUPABASE_POOLER_HOST:-}"
+    ;;
+  *)
+    exit 1
+    ;;
+esac
 test -n "${PSQL_EXECUTABLE:-}"
 test -n "${EXPECTED_PSQL_VERSION:-}"
 test -n "${EXPECTED_PSQL_SHA256:-}"
 test -n "${SUPABASE_SSL_ROOT_CERT:-}"
 test -n "${EXPECTED_SUPABASE_SSL_ROOT_CERT_SHA256:-}"
 node supabase/verify/verify-target-binding.mjs
-node supabase/verify/run-reviewed-supabase-cli.mjs migration list --linked
-node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --linked --type security
-node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --linked --type performance
+node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
+node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type security
+node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type performance
 ```
 
-Run the catalog wrapper with the exact phase command in section A or B. Omission or an unknown phase fails closed. The catalog wrapper first repeats the three-way target-binding check; resolves and hashes the approved absolute `psql`; compares its exact version; hashes and validates the explicit CA PEM; and rejects every backslash byte in the verifier source before opening a database connection. The verifier uses POSIX bracket expressions and dot character classes, so it requires no legitimate backslashes and cannot hide a `psql` meta-command inside SQL lexical edge cases. The wrapper then invokes that exact executable with `verify-full` hostname/CA validation without putting the database URL or password in its command line. It exits nonzero with failed check names only unless every expected result passes. The SQL verifier itself starts `BEGIN TRANSACTION READ ONLY`, so PostgreSQL rejects a persistent SQL write even if one is accidentally introduced into the file. Do not invoke the SQL file directly as a release gate. The separate reviewed Supabase CLI wrapper performs its own absolute-path, hash, and exact-version verification immediately before every CLI subprocess; never replace it with a bare `supabase` command.
+Run the catalog wrapper with the exact phase command in section A or B. Omission or an unknown phase fails closed. The catalog wrapper first repeats the mode-aware target-binding check; resolves and hashes the approved absolute `psql`; compares its exact version; hashes and validates the explicit CA PEM; and rejects every backslash byte in the verifier source before opening a database connection. The verifier uses POSIX bracket expressions and dot character classes, so it requires no legitimate backslashes and cannot hide a `psql` meta-command inside SQL lexical edge cases. The wrapper then invokes that exact executable with `verify-full` hostname/CA validation without putting the database URL, project reference, approved pooler hostname, or password in its command line. It exits nonzero with failed check names only unless every expected result passes. The SQL verifier itself starts `BEGIN TRANSACTION READ ONLY`, so PostgreSQL rejects a persistent SQL write even if one is accidentally introduced into the file. Do not invoke the SQL file directly as a release gate. The separate reviewed Supabase CLI wrapper repeats the same target and CA checks and binds the CLI's actual database connection through `--reviewed-target`; never replace it with a bare `supabase` command or native target selector. Do not prepend persistent/root flags such as `--debug`, `--profile`, or `--workdir`, and do not append them to a reviewed database command: the wrapper deliberately rejects both forms rather than emulating Cobra's global-option parser.
 
 Every catalog-verifier row must return `passed = true`. The automated verifier is a necessary fail-fast check for the known unsafe-replay surfaces; it is **not sufficient by itself** to approve all 57 production history repairs. Before the first production repair, prepare a 57-row proof ledger copied from the manifest. For every version, record the migration-defined objects/data effects, the fresh read-only catalog query or inventory evidence proving them materially present, result, reviewer, and timestamp. The technical owner must sign the complete ledger before any repair command runs. An unproved row halts the whole repair batch.
 
@@ -109,8 +132,8 @@ Stop unless every row is `passed = true`. After the owner explicitly authorizes 
 ```bash
 set -euo pipefail
 node supabase/verify/verify-target-binding.mjs
-node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied 20250113000000 --linked
-node supabase/verify/run-reviewed-supabase-cli.mjs migration list --linked
+node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied 20250113000000 --reviewed-target --reviewed-environment staging
+node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
 ```
 
 If the repair command fails or the immediate list does not show the expected 58 recorded versions, stop. Do not run `db push`, guess a compensating history change, or silently retry against a different link.
@@ -126,7 +149,7 @@ The dry run must list exactly these five applies, in this order:
 ```bash
 set -euo pipefail
 node supabase/verify/verify-target-binding.mjs
-node supabase/verify/run-reviewed-supabase-cli.mjs db push --linked --dry-run --skip-vault
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
 ```
 
 Stop unless the dry run is exactly the list above. Obtain and record a separate owner go-live signal for the five-version staging forward apply. Then re-bind the target immediately before the write:
@@ -134,8 +157,8 @@ Stop unless the dry run is exactly the list above. Obtain and record a separate 
 ```bash
 set -euo pipefail
 node supabase/verify/verify-target-binding.mjs
-node supabase/verify/run-reviewed-supabase-cli.mjs db push --linked --skip-vault
-node supabase/verify/run-reviewed-supabase-cli.mjs migration list --linked
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --skip-vault
+node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
 ```
 
 Expected end state: 63 local↔remote versions in sync and 17 policies.
@@ -203,7 +226,7 @@ Under the approved window, perform and prove all of the following before the fir
 2. Using the separately owner-approved rollback plan, disable **Enable Realtime service** in the project's [Realtime Settings](https://supabase.com/docs/guides/realtime/settings). This temporary setting change disconnects existing clients, rejects new or reconnecting clients with HTTP `403` / `RealtimeDisabledForTenant`, and releases Realtime's database connections and replication slot. If the recorded prior state was already disabled, preserve it and prove the rejection without toggling it. Do not change public-channel or capacity settings as a substitute. Vercel/application ingress blocking and Data API disablement do not close existing Realtime WebSockets or stop direct reconnects to the Realtime endpoint.
 3. Disable the Supabase Data API using the project setting documented in [Securing your API](https://supabase.com/docs/guides/api/securing-your-api). This blocks the database REST/GraphQL endpoints; it must not be represented as blocking Auth, Storage, or Realtime.
 4. Restrict direct PostgreSQL and pooler ingress to the operator's approved egress addresses using [Network Restrictions](https://supabase.com/docs/guides/platform/network-restrictions). Supabase network restrictions do not cover HTTPS APIs, which is why the Data API, Realtime, and application/client controls are separate mandatory gates.
-5. From a non-operator probe, demonstrate that the production application is unavailable, database REST/GraphQL calls fail, and direct PostgreSQL/pooler access is blocked. When Realtime was previously enabled, prove that the representative Realtime connection established before isolation is disconnected; in either prior state, prove that a fresh WebSocket/subscription reconnect is rejected with the disabled-tenant outcome and confirm the Connected Clients report reaches zero within the approved bounded drain interval. From the operator path, repeat three-way target binding and demonstrate that the intended direct database connection still works. Record only redacted outcomes, counts, timestamps, and hashes.
+5. From a non-operator probe, demonstrate that the production application is unavailable, database REST/GraphQL calls fail, and direct PostgreSQL/pooler access is blocked. When Realtime was previously enabled, prove that the representative Realtime connection established before isolation is disconnected; in either prior state, prove that a fresh WebSocket/subscription reconnect is rejected with the disabled-tenant outcome and confirm the Connected Clients report reaches zero within the approved bounded drain interval. From the operator path, repeat the mode-aware target binding and demonstrate that the selected approved database connection still works. Record only redacted outcomes, counts, timestamps, and hashes.
 
 If isolation cannot be proven, the production cutover is NO-GO. Use this exact production-day order: **fresh production backup -> publication/connection inventory -> technical traffic and Realtime isolation -> history repair and immediate reconciliation -> exact dry run -> six-file database apply -> post-apply catalog/grant/direct-role/advisor/data verification -> deploy the exact reviewed immutable candidate SHA with public ingress and Realtime still blocked -> restore only the previously recorded Data API state -> operator-only smoke with Realtime intentionally disabled -> restore the exact prior Realtime and remaining settings/traffic/jobs -> verify restored publication, connection, access, and monitoring state**. Keep both the Data API and Realtime service disabled through every migration and all database post-apply verification. Do not merge/deploy early merely because the database step has begun. If the push or any database verification fails, remain fully isolated and follow the failure procedure; restoration or continuation is an explicit owner decision based on the observed state.
 
@@ -289,12 +312,12 @@ readonly -a PRODUCTION_REPAIR_VERSIONS=(
 repair_failed=0
 for version in "${PRODUCTION_REPAIR_VERSIONS[@]}"; do
   node supabase/verify/verify-target-binding.mjs
-  if ! node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied "$version" --linked; then
+  if ! node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied "$version" --reviewed-target --reviewed-environment production; then
     repair_failed=1
     break
   fi
 done
-node supabase/verify/run-reviewed-supabase-cli.mjs migration list --linked
+node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
 
 if (( repair_failed != 0 )); then
   echo "History repair stopped; reconcile the partial remote history before any further action." >&2
@@ -318,7 +341,7 @@ After the 57 repairs, the dry run must list exactly these six versions:
 ```bash
 set -euo pipefail
 node supabase/verify/verify-target-binding.mjs
-node supabase/verify/run-reviewed-supabase-cli.mjs db push --linked --dry-run --skip-vault
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
 ```
 
 Stop unless the dry run is exact. Record the full immutable commit SHA, successful backup identifier, owner, maintenance window, the separate explicit production go-live signal for the six-version forward apply, proven traffic isolation, and the separate deployment authorization. Then, and only then, re-bind the target immediately before the write:
@@ -326,8 +349,8 @@ Stop unless the dry run is exact. Record the full immutable commit SHA, successf
 ```bash
 set -euo pipefail
 node supabase/verify/verify-target-binding.mjs
-node supabase/verify/run-reviewed-supabase-cli.mjs db push --linked --skip-vault
-node supabase/verify/run-reviewed-supabase-cli.mjs migration list --linked
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --skip-vault
+node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
 ```
 
 Expected database end state before deployment: 63 versions in sync / 17 policies. While full database isolation remains active, repeat all staging database verification, advisors, repayment aggregates, permission hashes, affected-table publication inventory, and redacted evidence capture. Run `node supabase/verify/verify-production-baseline-catalog.mjs post_apply`; it must exit `0`. Only then deploy the exact reviewed immutable candidate SHA with public ingress and Realtime blocked, restore only the prior Data API state, run the production application smoke paths through the proven operator bypass with Realtime intentionally unavailable, and restore and verify Realtime plus the remaining traffic/settings using the gate above.
