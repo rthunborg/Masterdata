@@ -12,7 +12,7 @@ export function readPausedLock(root) {
   if (!lock || lock.version !== 1 || !['paused', 'reopening-authorized'].includes(lock.state) || typeof lock.purpose !== 'string') {
     throw new Error('Production pause lock has an unrecognized shape; refusing Vercel build.');
   }
-  if (lock.state === 'reopening-authorized' && (typeof lock.reopeningDecision !== 'string' || lock.reopeningDecision.length < 1 || lock.reopeningDecision.length > 160 || /[\r\n]/.test(lock.reopeningDecision))) {
+  if (lock.state === 'reopening-authorized' && (typeof lock.reopeningDecision !== 'string' || lock.reopeningDecision.trim().length < 1 || lock.reopeningDecision.length > 160 || /[\r\n]/.test(lock.reopeningDecision))) {
     throw new Error('Production reopening authorization record is missing or invalid; refusing Vercel build.');
   }
 

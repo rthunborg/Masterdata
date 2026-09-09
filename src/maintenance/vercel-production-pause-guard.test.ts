@@ -1,18 +1,38 @@
 import { spawnSync } from 'node:child_process';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { assertNextBuildAllowed } from './production-pause-next-build-policy.mjs';
 
-const script = 'src/maintenance/vercel-production-pause-guard.mjs';
+const script = resolve(process.cwd(), 'src/maintenance/vercel-production-pause-guard.mjs');
 
-function run(environment: Record<string, string | undefined>) {
+function run(environment: Record<string, string | undefined>, cwd = process.cwd()) {
   return spawnSync(process.execPath, [script], {
-    cwd: process.cwd(),
+    cwd,
     env: { PATH: process.env.PATH, ...environment },
     encoding: 'utf8',
   });
 }
 
 describe('Vercel production-pause ignore command', () => {
+  it('rejects blank reopening records through both build entrypoints', () => {
+    const root = resolve(process.cwd(), 'output/production-pause-blank-decision-test');
+    const directory = resolve(root, 'src/maintenance');
+    const env = { VERCEL: '1', VERCEL_ENV: 'production' };
+    try {
+      mkdirSync(directory, { recursive: true });
+      for (const reopeningDecision of ['', ' ', '\t', '\u00a0', ' \t\u00a0 ']) {
+        writeFileSync(resolve(directory, 'production-pause-lock.json'), JSON.stringify({
+          version: 1, state: 'reopening-authorized', purpose: 'owner approval required', reopeningDecision,
+        }));
+        expect(run(env, root).status, JSON.stringify(reopeningDecision)).toBe(0);
+        expect(() => assertNextBuildAllowed(env, root)).toThrow(/authorization record/i);
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('allows named custom previews through both the ignore command and active Next config', () => {
     for (const target of ['staging', 'qa-preview']) {
       const env = { VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_TARGET_ENV: target };
