@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "repositoryMigrationCount": 66,
+  "repositoryMigrationCount": 67,
   "reviewedSupabaseCliVersion": "2.115.0",
   "catalogVerifier": "supabase/verify/production-baseline-catalog.sql",
   "restoredMigrationProvenance": {
@@ -78,7 +78,8 @@
       "20260831200026",
       "20260909115242",
       "20260910094517",
-      "20260910115024"
+      "20260910115024",
+      "20260910184841"
     ]
   },
   "unsafeReplayVersions": {
@@ -87,7 +88,9 @@
     "20251209120000": "Replaying the conversion can turn existing false values into true before dropping the represented columns.",
     "20251213000000": "The historical migration replaces the complete role_permissions JSON and can erase later permissions.",
     "20260130212612": "The represented user_filters objects are created unconditionally.",
-    "20260313000001": "The represented staffing tables, policies, index, and seed rows are created unconditionally."
+    "20260313000001": "The represented staffing tables, policies, index, and seed rows are created unconditionally.",
+    "20251102000000": "The represented column configuration columns/indexes must not be recreated or reordered; forward reconciliation adds only the missing timestamp and trigger.",
+    "20260607193000": "The historical repair deletes duplicate audit rows before replacing the function. Forward trigger reconciliation requires the existing valid conflict index and does not replay row cleanup."
   },
   "catalogProofExceptions": {
     "productionUserFiltersUpdatePolicy": {
@@ -111,13 +114,18 @@
       "acceptedPreApplyState": "The exact 65-version staging state has canonical saved filters, room ACLs and repayment defaults; get_user_role() has exactly anon, authenticated and service_role non-owner EXECUTE grants, and the two documented active-caller policies retain direct auth.uid() predicates. Every other final catalog contract remains required.",
       "requiredCatalogPhase": "staging_reconciliation_pre_apply",
       "reconciledByExecuteVersion": "20260910115024"
+    },
+    "stagingTriggerReconciliation": {
+      "acceptedPreApplyState": "The exact 66-version staging state lacks column_config.updated_at and its timestamp trigger. The audit trigger retains the reviewed February body and service_role EXECUTE only; the timestamp helper has the canonical body with PUBLIC, anon, authenticated and service_role EXECUTE. Existing employee/date trigger bindings, audit foreign key and conflict index must match exactly. Other final catalog contracts remain required.",
+      "requiredCatalogPhase": "staging_trigger_reconciliation_pre_apply",
+      "reconciledByExecuteVersion": "20260910184841"
     }
   },
   "environmentPlans": {
     "staging": {
       "repair-after-catalog-proof": [],
       "execute": [
-        "20260910115024"
+        "20260910184841"
       ]
     },
     "production": {

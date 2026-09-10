@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-10T10:45:04.7566811Z
+last_updated: 2026-09-10T18:50:27.989Z
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -73,15 +73,29 @@ development_status:
   epic-23-retrospective: optional
 
 verification_blockers:
-  local_quality_gates: 'Unchanged reviewed implementation: full Vitest 3451/0 skips on 269e3d5634c68e1bc502839678247833e1cccc54; exact Playwright 163/47 classified skips/0 failures/0 errors and clean 66-migration chain on 2c8f0066bb4eda847f2ed6ae294a56dd87125652. PR #98 final head CI/Vercel/Reviewbot passed. This result-only documentation follow-up changes no implementation or test source and claims no new full-suite run.'
-  remote_pr_review: 'PR #98 final ac38 head passed GitHub/Vercel and final Codex Reviewbot; owner authorized merge to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c. Evidence-only follow-up requires its own remote review before merge.'
-  hosted_owner_gates: 'Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold.'
+  local_quality_gates: 'New trigger reconciliation source changes require full current-candidate verification. Earlier 3451-test and 163-pass/47-skip Playwright results remain historical evidence at their recorded commits.'
+  remote_pr_review: 'PR #99 was reviewed and merged to staging fb8580920f4237b41272a2e263b2147a54c61b31. The new trigger reconciliation PR requires final exact-head CI, Vercel checks and Codex Reviewbot; standing authorization permits its staging merge only after review.'
+  hosted_owner_gates: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
 
-post_apply_staging_execution:
+historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
   candidate_commit: '62a52e32aae8302d6c6be4b35ec39da298c5061c'
   history_count: 66
   pending_versions: []
   post_apply_catalog_checks_passed: 15
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-completed-2026-09-10.md'
-  remaining: 'Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold.'
+  remaining: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
+
+trigger_reconciliation_preparation:
+  diagnosis_captured_at: '2026-09-10T18:50:27.989Z'
+  diagnosis_commit: 'fb8580920f4237b41272a2e263b2147a54c61b31'
+  historical_staging_baseline_history_count: 66
+  proposed_repository_history_count: 67
+  proposed_version: '20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'
+  staging_repair_versions: []
+  staging_pending_execute_versions: ['20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql']
+  pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
+  post_apply_catalog_checks_expected: 16
+  new_head_verification: 'pending'
+  evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
+  status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'

@@ -37,6 +37,7 @@ const expectedCheckNames = [
   "dietary_columns_and_permissions",
   "user_filters_objects",
   "user_filters_trigger_function_contract",
+  "represented_trigger_contracts",
   "represented_column_contracts",
   "represented_function_contracts",
   "staffing_crewing_done_permission_state",
@@ -179,7 +180,7 @@ describe("Story 22.15 catalog verifier runner", () => {
   it("accepts a complete all-pass psql CSV result", () => {
     expect(EXPECTED_CATALOG_CHECK_NAMES).toEqual(expectedCheckNames);
     expect(evaluateCatalogCsv(catalogCsv())).toEqual({
-      count: 15,
+      count: 16,
       failedChecks: [],
     });
   });
@@ -190,7 +191,7 @@ describe("Story 22.15 catalog verifier runner", () => {
         catalogCsv(["staffing_constraints_and_rls", "user_filters_objects"])
       )
     ).toEqual({
-      count: 15,
+      count: 16,
       failedChecks: ["staffing_constraints_and_rls", "user_filters_objects"],
     });
   });
@@ -264,7 +265,7 @@ describe("Story 22.15 catalog verifier runner", () => {
       targetVerifier: async () => true,
     });
 
-    expect(evaluation).toEqual({ count: 15, failedChecks: [] });
+    expect(evaluation).toEqual({ count: 16, failedChecks: [] });
     const commandLine = observedArguments.join(" ");
     expect(commandLine).not.toContain(environment.SUPABASE_DB_URL);
     expect(commandLine).not.toContain(projectRef);
@@ -308,9 +309,34 @@ describe("Story 22.15 catalog verifier runner", () => {
         },
         targetVerifier: async () => true,
       })
-    ).resolves.toEqual({ count: 15, failedChecks: [] });
+    ).resolves.toEqual({ count: 16, failedChecks: [] });
 
     expect(observedArguments).toContain("catalog_phase=staging_reconciliation_pre_apply");
+  });
+
+  it("accepts the dedicated staging trigger reconciliation phase and passes it to psql", async () => {
+    let observedArguments: string[] = [];
+
+    await expect(
+      runProductionBaselineCatalogVerifier({
+        ...reviewedTooling,
+        environment,
+        phase: "staging_trigger_reconciliation_pre_apply",
+        spawn: (_command: string, args: string[]) => {
+          observedArguments = args;
+          return {
+            error: undefined,
+            status: 0,
+            stdout: catalogCsv(),
+          };
+        },
+        targetVerifier: async () => true,
+      })
+    ).resolves.toEqual({ count: 16, failedChecks: [] });
+
+    expect(observedArguments).toContain(
+      "catalog_phase=staging_trigger_reconciliation_pre_apply"
+    );
   });
 
   it("passes an approved session-pooler target to psql without leaking binding inputs", async () => {

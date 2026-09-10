@@ -1,6 +1,8 @@
 # Epic 22 Supabase Cutover Runbook (Stories 22.10, 22.13, and 22.15)
 
-> **Current execution record — 2026-09-10 15:14 UTC.** PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold. [Completed reconciliation evidence](evidence/staging-reconciliation-completed-2026-09-10.md). This record supersedes earlier statements that PR #98 review, its merge, the correction apply or migration-apply authorization are pending; earlier dated entries remain historical.
+> **Current trigger reconciliation preparation — 2026-09-10.** Reviewed PR #99 is merged at staging `fb8580920f4237b41272a2e263b2147a54c61b31`; history is 66/66. Fresh read-only diagnosis found missing `column_config.updated_at` and its trigger, plus the old employee-audit body despite recorded historical repairs. The proposed 67-version candidate has no staging repair and only `20260910184841` pending. Use the new `staging_trigger_reconciliation_pre_apply` phase before that apply and require strict 16-check `post_apply` afterward. Production remains provisional at 57 repairs plus 10 applies after fresh inventory. Standing owner authorization covers required reviewed migration applies and merging reviewed PRs into staging; other gates remain separate. Story 22.15 is in-progress, Epic 23 is on hold, and production remains paused. [Current evidence](evidence/trigger-reconciliation-preparation-2026-09-10.md).
+
+> **Historical pre-trigger execution record — 2026-09-10 15:14 UTC (superseded below).** PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold. [Completed reconciliation evidence](evidence/staging-reconciliation-completed-2026-09-10.md). This record supersedes earlier statements that PR #98 review, its merge, the correction apply or migration-apply authorization are pending; earlier dated entries remain historical.
 
 
 Status: **Staging schema reconciled and verified; hosted authorization acceptance and owner staging verification remain open.** The owner-authorized repair and seven-file apply completed on 2026-09-10. The subsequent PR #98 correction also completed; current staging has 66 history rows and no pending migrations. Production remains paused and untouched by this database work.
@@ -132,6 +134,21 @@ The counts/hashes must be identical before and after staging repair/apply. The f
 
 On 2026-06-14 Story 22.10 recorded 57 history rows through `20260614000000` and 19 policies. On 2026-09-10 the owner separately authorized the single `20250113000000` history repair and then the seven pending forward versions through `20260910094517`. Both operations succeeded; history reached 65/65. See the dated evidence records for their exact approvals, commands, hashes, and timestamps. The historical `staging_pre_apply` profile is retained only for prior-state fixture evidence. It is not the current release gate.
 
+### Current trigger-reconciliation plan — pending
+
+The completed 66/66 correction is historical. The current proposed candidate is the forward-only `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`; it adds the missing `column_config.updated_at` metadata/trigger, restores the documented June audit body, preserves valid represented objects, and performs no row cleanup or history repair. Staging repair remains `[]`. The dry run must list exactly this one apply:
+
+1. `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`
+
+```bash
+set -euo pipefail
+node supabase/verify/verify-production-baseline-catalog.mjs staging_trigger_reconciliation_pre_apply
+node supabase/verify/verify-target-binding.mjs
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
+```
+
+Stop unless the dry run is exactly the list above and the pre-apply phase passes. Focused 67-version local evidence has passed strict catalog/reapply 16/16 in 1.45 seconds and guarded post-apply integration 3/3 in 3.63 seconds. Standing authorization covers the reviewed staging merge and this required migration apply; it does not authorize fixture writes, history repair, main/deployment/settings changes, or reopening. Exact new-head full-suite and hosted evidence remain pending.
+
 ### Historical correction plan and reusable proof procedure
 
 The following procedure was completed on 2026-09-10; its one-version manifest plan describes that reconciliation baseline, not a currently pending migration. Use post_apply for current staging validation. Do not rerun its pre-apply phase or apply after successful 66/66 history. Historical procedure: after the correction PR is reviewed and separately authorized for merge, fetch staging/main, inspect intervening commits, and create a clean isolated checkout at the resulting staging SHA. Reverify reviewed tooling, CLI 2.115.0, certificate integrity, and three-way target binding. Capture fresh migration history: exactly 65 recorded repository versions, no remote-only versions, no repair candidates, and only `20260910115024` pending against the 66-version manifest. The CLI wrapper must reject every staging repair request because that allowlist is empty.
@@ -146,7 +163,7 @@ Require every row to pass. This phase retains the strict canonical saved-filter,
 
 Pre-apply advisors must freshly reproduce security 0 WARN-or-higher and performance 5 WARN: three `multiple_permissive_policies` plus the two `auth_rls_initplan` findings on the documented tables. Stop on any other delta. The pinned CLI excludes INFO severity and certain Management API checks; record those coverage limits rather than asserting broad zero counts. Post-apply must remove both initplan warnings and retain the three classified permissive-policy warnings.
 
-The dry run must list exactly this one apply:
+Historical dry run requirement (already completed; do not execute): it listed exactly this one apply:
 
 1. `20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql`
 
@@ -232,7 +249,7 @@ Under the approved window, perform and prove all of the following before the fir
 4. Restrict direct PostgreSQL and pooler ingress to the operator's approved egress addresses using [Network Restrictions](https://supabase.com/docs/guides/platform/network-restrictions). Supabase network restrictions do not cover HTTPS APIs, which is why the Data API, Realtime, and application/client controls are separate mandatory gates.
 5. From a non-operator probe, demonstrate that the production application is unavailable, database REST/GraphQL calls fail, and direct PostgreSQL/pooler access is blocked. When Realtime was previously enabled, prove that the representative Realtime connection established before isolation is disconnected; in either prior state, prove that a fresh WebSocket/subscription reconnect is rejected with the disabled-tenant outcome and confirm the Connected Clients report reaches zero within the approved bounded drain interval. From the operator path, repeat the mode-aware target binding and demonstrate that the selected approved database connection still works. Record only redacted outcomes, counts, timestamps, and hashes.
 
-If isolation cannot be proven, the production cutover is NO-GO. Use this exact production-day order: **fresh production backup -> publication/connection inventory -> technical traffic and Realtime isolation -> history repair and immediate reconciliation -> exact dry run -> nine-file database apply -> post-apply catalog/grant/direct-role/advisor/data verification -> retain the existing production pause -> restore only separately authorized prior Data API state -> bounded direct-role/database verification and staging application smoke -> restore only separately authorized database/Realtime controls while retaining the production pause and job shutdown -> verify restored publication, connection, access, and monitoring state**. Keep both the Data API and Realtime service disabled through every migration and all database post-apply verification. Do not merge/deploy early merely because the database step has begun. If the push or any database verification fails, remain fully isolated and follow the failure procedure; restoration or continuation is an explicit owner decision based on the observed state.
+If isolation cannot be proven, the production cutover is NO-GO. Use this exact production-day order: **fresh production backup -> publication/connection inventory -> technical traffic and Realtime isolation -> history repair and immediate reconciliation -> exact dry run -> ten-file database apply -> post-apply catalog/grant/direct-role/advisor/data verification -> retain the existing production pause -> restore only separately authorized prior Data API state -> bounded direct-role/database verification and staging application smoke -> restore only separately authorized database/Realtime controls while retaining the production pause and job shutdown -> verify restored publication, connection, access, and monitoring state**. Keep both the Data API and Realtime service disabled through every migration and all database post-apply verification. Do not merge/deploy early merely because the database step has begun. If the push or any database verification fails, remain fully isolated and follow the failure procedure; restoration or continuation is an explicit owner decision based on the observed state.
 
 After final grants, RLS, direct-role behavior, and the complete database end state are verified, repeat the affected-table publication inventory and review every delta before enabling any client path. Retain the existing static pause. Application smoke runs against the exact staging candidate. Restoring Data API or Realtime can expose direct clients despite the page pause, so restore only the specifically approved prior state after final authorization tests; keep disabled settings disabled unless separately authorized. A later production operator-only application deployment requires its own reviewed isolation design and explicit approval; it is not part of this database completion sequence.
 
@@ -333,7 +350,7 @@ If even one version lacks its signed ledger proof, stop before the first repair 
 
 ### Explicit production apply list
 
-After the 57 repairs, the dry run must list exactly these nine versions:
+After the 57 repairs, the dry run must list exactly these ten versions:
 
 1. `20260614000000_reconcile_environments_security_and_policies.sql`
 2. `20260615000000_add_is_checklist_item_to_column_config.sql`
@@ -344,6 +361,7 @@ After the 57 repairs, the dry run must list exactly these nine versions:
 7. `20260909115242_reconcile_saved_filters_and_room_acl.sql`
 8. `20260910094517_reconcile_repayment_defaults.sql`
 9. `20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql`
+10. `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`
 
 ```bash
 set -euo pipefail
@@ -351,7 +369,7 @@ node supabase/verify/verify-target-binding.mjs
 node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
 ```
 
-Stop unless the dry run is exact. Record the full immutable commit SHA, ordered nine-version file set and SQL hashes, successful backup identifier, owner, maintenance window, the standing 2026-09-10 owner authorization covering this production migration apply, proven separately authorized traffic isolation, and the separate deployment authorization required by this runbook. The standing apply authorization satisfies only the migration-write gate; no repeat migration-apply approval is required, and none of the other prerequisites or authorizations is waived. Then, and only then, re-bind the target immediately before the write:
+Stop unless the dry run is exact. Record the full immutable commit SHA, ordered ten-version file set and SQL hashes, successful backup identifier, owner, maintenance window, the standing 2026-09-10 owner authorization covering this production migration apply, proven separately authorized traffic isolation, and the separate deployment authorization required by this runbook. The standing apply authorization satisfies only the migration-write gate; no repeat migration-apply approval is required, and none of the other prerequisites or authorizations is waived. Then, and only then, re-bind the target immediately before the write:
 
 ```bash
 set -euo pipefail
@@ -389,7 +407,7 @@ The retry must return HTTP `200` and `cleanup_state: completed`. If the first re
 - [ ] Complete 57-row production proof ledger signed before the first history repair.
 - [ ] Owner separately authorized the exact 57-version production history-repair batch; immediate history reconciliation passed without an unresolved partial baseline.
 - [ ] Production-day backup succeeded; maintenance window, separate history-repair/traffic-isolation/rollback/deployment approvals, and the standing migration-apply authorization bound to the exact production candidate/file hashes are recorded; prior Realtime settings, affected-table publication state, and connected-client reports captured privately.
-- [ ] Production nine-version dry run exact; target binding rechecked immediately before apply.
+- [ ] Production ten-version dry run exact; target binding rechecked immediately before apply.
 - [ ] Full technical isolation proven from operator and non-operator paths, including existing-client disconnect and fresh Realtime reconnect rejection, and held through repair/apply/database post-verification; production static pause and job shutdown remain intact through separately approved database/Realtime restoration; application smoke uses staging.
 - [ ] Production shows 66 migrations / 17 policies; direct-role/advisor/data-preservation evidence recorded before deployment.
 - [ ] Existing static pause retained; exact staging candidate application smoke and production direct-role/database probes recorded. Database/Realtime restoration separately authorized and verified. Public page pause, API/mutation 503, and zero schedules reverified. Any later production deployment or reopening remains a separate owner decision.

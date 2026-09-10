@@ -12,7 +12,7 @@ epic_completion_gate:
     title: 'Story 22.10 Phase B — Supabase production cutover'
     status: 'pending' # set to 'done' once executed to silence the reminder
     trigger: 'Only after Story 22.15 is locally complete, PR-reviewed, recorded at a final immutable remediation SHA, and owner-verified on staging; before any production mutation.'
-    actions: 'PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold.'
+    actions: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
     source: 'supabase/migration-baseline-manifest.json; docs/commercial-readiness/27_supabase_cutover_runbook.md; tracker E-010/E-013'
 
 sprint:
@@ -248,7 +248,7 @@ stories:
     blockers:
       - 'Hosted direct-role/RPC acceptance and owner staging verification remain open; current staging schema is reconciled at 66/66.'
       - 'Production inventory, history-proof ledger, backup and isolation gates remain; preserve production pause. Standing migration-apply authorization does not authorize history repair, settings, deployment, merges or reopening.'
-    notes: 'PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold.'
+    notes: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
 
 progress_summary:
   total_stories: 15
@@ -301,9 +301,9 @@ next_actions:
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA was deferred to Epic 23 Story 23.4 by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b. Epic 23 is on hold, so no Auth attack-protection change is claimed or active work planned here.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
-  - 'PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold.'
+  - 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
 last_updated: 2026-09-10
-updated_by: 'Codex: PR #98 merged and staging correction applied/verified; hosted acceptance and production gates remain.'
+updated_by: 'Codex: trigger reconciliation preparation recorded; 67th forward-only migration and verification pending.'
 
 pr_95_playwright_gate:
   date: 2026-09-09
@@ -319,11 +319,25 @@ pr_95_playwright_gate:
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
   next_action: 'Staging correction completed at 62a52e32aae8302d6c6be4b35ec39da298c5061c; 66/66 history and strict catalog 15/15. Complete hosted authorization acceptance and owner staging verification; preserve production pause and separate production/merge gates. See post_apply_staging_execution.'
 
-post_apply_staging_execution:
+historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
   candidate_commit: '62a52e32aae8302d6c6be4b35ec39da298c5061c'
   history_count: 66
   pending_versions: []
   post_apply_catalog_checks_passed: 15
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-completed-2026-09-10.md'
-  remaining: 'Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold.'
+  remaining: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
+
+trigger_reconciliation_preparation:
+  diagnosis_captured_at: '2026-09-10T18:50:27.989Z'
+  diagnosis_commit: 'fb8580920f4237b41272a2e263b2147a54c61b31'
+  historical_staging_baseline_history_count: 66
+  proposed_repository_history_count: 67
+  proposed_version: '20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'
+  staging_repair_versions: []
+  staging_pending_execute_versions: ['20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql']
+  pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
+  post_apply_catalog_checks_expected: 16
+  new_head_verification: 'pending'
+  evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
+  status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
