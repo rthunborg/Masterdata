@@ -20,7 +20,7 @@ A draft subprocessor register built from the tables below now exists: `24_subpro
 
 | Dependency | Purpose | License evidence | Risk/comment |
 | --- | --- | --- | --- |
-| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; the 2026-09-10 compatible Browserslist/Sharp remediation returns the audit to zero critical/high, pending fresh full local gates |
+| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; the 2026-09-10 compatible Browserslist/Sharp remediation returns the audit to zero critical/high, fresh full local gates passed; final documentation-head checks open |
 | `react`, `react-dom` | UI | MIT | Standard |
 | `@supabase/ssr`, `@supabase/supabase-js` | Auth/database/realtime client | MIT transitive in license list | Compatible transitive `ws` remediation is pinned in the production lockfile |
 | `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/react-virtual` | Data fetching/table/virtualization | MIT | Standard |
@@ -47,7 +47,7 @@ Recommended action: generate a complete third-party notice file from the final p
 
 ## Security Audit Findings
 
-The 2026-09-09 audit failure is historical: **0 critical / 3 high / 3 moderate**. The narrow 2026-09-10 patch raises Nodemailer to `9.1.1`, Sharp to `0.35.4`, and compatible workspace floors to Browserslist `4.28.7`, baseline-browser-mapping `2.11.0`, and Sharp `0.35.4`. The resulting audit is **0 critical / 0 high / 1 moderate**, exit 1 solely for the existing time-bounded ExcelJS→UUID residual through 2026-09-30. Fresh full local gates remain pending. See the current advisory register and dated remediation evidence.
+The 2026-09-09 audit failure is historical: **0 critical / 3 high / 3 moderate**. The narrow 2026-09-10 patch raises Nodemailer to `9.1.1`, Sharp to `0.35.4`, and compatible workspace floors to Browserslist `4.28.7`, baseline-browser-mapping `2.11.0`, and Sharp `0.35.4`. The resulting audit is **0 critical / 0 high / 1 moderate**, exit 1 solely for the existing time-bounded ExcelJS→UUID residual through 2026-09-30. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated. See the current advisory register and dated remediation evidence.
 
 Historical checkpoint after the three approved batches:
 

@@ -2,6 +2,29 @@
 
 Status: preparation in progress. Story 22.15 remains **in-progress**; Epic 23 remains **on hold**. No hosted database write, history repair, production/manual deployment, hosted setting change, staging/main merge, or reopening occurred in this preparation. The authorized branch push triggered Vercel's normal automatic preview build.
 
+## Current final-candidate overview — 2026-09-10
+
+| Area | Current evidence |
+| --- | --- |
+| Candidate | c27a9ee7543b681fb9424484ee3caf7b402a33c7 |
+| Full local quality | Fresh local Vitest and Playwright passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442/3,442 with zero skips across 321 files (exit 0; 121.05 seconds report; 138.1062096 seconds wall), custom staging preview build exit 0 in 52.4770991 seconds, and Playwright 163 passed / 47 skipped / 0 failed / 0 errors; exit 0; report duration 1406.2776500000002 seconds; wall duration 1420.0368432 seconds; 2026-09-10T08:11:01.6061167Z–2026-09-10T08:34:41.6399543Z; report SHA-256 0759faeab8a094092751043587664dcb1873c2e41d41908a23b571014e7b581b. |
+| Focused verification | 197/197 across 14 files in 37.85 seconds; zero skips; TypeScript and lint passed; observed-state fixture and live-export cases enabled |
+| Dependency audit | 0 critical / 0 high / 1 accepted UUID moderate; audit exit 1 solely for the existing 2026-09-30 acceptance |
+| Candidate CI | GitHub run 34453323113: test:silent 3,375 passed / 67 skipped (311 files passed / 10 skipped; 508.33 seconds); integration 827 passed / 67 skipped (93 files passed / 10 skipped; 154.71 seconds) |
+| Candidate Vercel | READY independently verified at 2026-09-10T08:13:19.327Z |
+| Production build refusal | Local production-targeted `pnpm build` refused by the committed paused lock, expected exit 1 in 1.6185082 seconds; no deployment |
+| Local SQL revalidation | September 10 cloned the retained, previously replayed 63-migration template, applied the final migration and parity seed, and passed all 15 post-apply checks; clone removal verified. It did not replay the first 63 files again. |
+| Candidate review | Review 5164559421 found only P1 inline 3976995821: stale parent-SHA exact-head evidence; this documentation patch corrects it |
+| Result-only docs head | Fresh CI, Vercel, and Reviewbot verification is required after this documentation-only commit is pushed |
+
+The 7826a339414fccf6694798ef039a2e1e4403a8b6 CI/Vercel/Reviewbot evidence is historical parent evidence, not evidence for the result-only documentation head. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated.
+
+The full Vitest run started at 2026-09-10T08:05:41.5262820Z and ended at 2026-09-10T08:07:59.6299175Z. All required local database and five live-export cases ran. The 67 CI skips are the same service-dependent cases in ten files, not passes or hosted proof. The 47 Playwright skip names and classes match the prior inventory exactly: nine require separately authorized notification capture, and 38 are obsolete/superseded or deterministic-fixture coverage debt. Their [individual classifications](production-readiness-pr95-playwright-2026-09-09.md) remain unchanged.
+
+Under the fresh trusted lifecycle context, exact Stop requests for the owned PostgreSQL, export server, and Playwright/Next.js tree returned `ok=true`, `state=stop_requested`, `verified=false`. These are accepted asynchronous acknowledgments, not verified shutdown. No teardown polling, resource deletion, or user-owned Supabase stop/reset/adoption occurred. Saved local state is retained. Historical September 9 CloseActor/List observations below describe the earlier lifecycle contract only.
+
+A September 10 fetch again found staging `8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c` and main `822350986f4c023948a7bbf490ddffc371185c4a`, with no intervening commits. The owner reports a local backup taken when users were asked to pause usage, and the next season is in 2027. Preservation is preferred; acceptable data loss is a recovery tradeoff, not reset/purge authorization or a tested restore proof. No cleanup is proposed for the observed staging snapshot.
+
 ## Authoritative Git baseline
 
 Fresh fetch: staging `8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c`, main `822350986f4c023948a7bbf490ddffc371185c4a`, PR #95 reviewed head `6a13898ec54c62632562c8504360ef9361b53ea5`. All match the owner-supplied state; no intervening commits. PR #95 was already explicitly authorized and merged. Isolated work uses `codex/story-22-15-reconcile-pause`. Earlier PR #95 local/remote tests remain historical evidence, not proof for this change.
@@ -47,7 +70,7 @@ Read-only Vercel dashboard inspection completed around 12:03 UTC. The current Pr
 
 The original untracked pause deployment remains unchanged. Versioned preparation adds a portable static artifact, committed paused lock, production-build refusal/ignore safeguards, and empty root cron definitions. Platform-admin promotions/prebuilt uploads bypass source controls and remain explicit owner gates. These observations must be repeated before any approved production-target operation.
 
-## Local verification and remaining gates
+## Initial local verification and remaining gates — 2026-09-09
 
 Pinned dependency installation with frozen lockfile and lifecycle scripts disabled passed. An agent-owned PostgreSQL 17.11 instance was started through the trusted resource guard on a distinct loopback port. An empty local Supabase auth schema was read from the healthy user-owned local stack; all original 63 immutable migration files replayed successfully in the fresh isolated database. The shared stack was not reset, stopped, adopted, or reconfigured. The full 64-file chain was then verified by cloning that freshly replayed 63-file database, applying the new forward migration and local parity seed, and invoking the reviewed catalog-verifier entrypoint with a strictly loopback-only test adapter: all 15 post-apply checks passed. The disposable clone was dropped and its absence verified. This is local SQL proof, not hosted target/TLS or migration-history proof. Full-suite, exact-commit, final review and turn cleanup evidence remain pending.
 
@@ -71,7 +94,7 @@ A local full-suite attempt on `9b60f5d` exposed an empty installed `rimraf` dire
 
 Browser attempts on `76e69e0` and `9b60f5d` were interrupted through exact guard Stop after new review findings; neither has a completed suite result or counts as a passing gate. Their logs and verified process cleanup were retained. The pending final browser run must test the complete final implementation. Review also identified a stale six-apply production completion instruction (corrected to seven) and the English static notice; the portable page, document language, accessibility label, and API notice are now Swedish, with updated regression assertions. This changes only future source artifacts, not the currently deployed pause.
 
-## Newly detected dependency gate
+## Historical newly detected dependency gate — 2026-09-09
 
 Fresh `pnpm audit --prod --json` on 2026-09-09 exited 1: **0 critical / 3 high / 3 moderate**. The prior 0-high/1-moderate result is historical. Two high findings affect Browserslist 4.28.1, and one high affects Sharp 0.35.3. New moderate findings affect baseline-browser-mapping 2.9.19 and Nodemailer 9.1.0, alongside the prior UUID advisory. No dependency version was changed. Targeted fixes are awaiting owner direction because this is a material finding beyond the focused reconciliation/pause change. The release audit gate is failed, not waived.
 
@@ -89,9 +112,9 @@ The narrow compatible patch was applied after the dated 2026-09-09 failure evide
 | `baseline-browser-mapping` compatible workspace floor | `>=2.0.0 <2.11.0` | `2.11.0` |
 | `sharp` compatible workspace floor | `>=0.35.0 <0.35.4` | `0.35.4` |
 
-The approved Supabase CLI remains `2.115.0`. The sanitized post-patch audit artifact is retained as `C:\DEV\hr-masterdata-22-15-support-20260909\audit-patched-20260910.json`. Relevant advisories: [Browserslist cache growth](https://github.com/advisories/GHSA-c83g-rgw3-j3cx), [Browserslist custom stats](https://github.com/advisories/GHSA-73wf-gq98-2v4g), [Nodemailer](https://github.com/advisories/GHSA-w5vr-8v7q-w6rv), [Sharp/libheif](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c), and [baseline-browser-mapping](https://github.com/advisories/GHSA-8m3c-c648-2xjj).
+The approved Supabase CLI remains `2.115.0`. The sanitized post-patch audit artifact is retained as `C:\DEV\hr-masterdata-22-15-support-20260909\audit-patched-20260910.json`. Relevant advisories: [Browserslist cache growth](https://github.com/advisories/GHSA-c83g-rgw3-j3cx), [Browserslist custom stats](https://github.com/advisories/GHSA-73wf-gq98-2v4g), [baseline-browser-mapping denial of service](https://github.com/advisories/GHSA-w5vr-8v7q-w6rv), [Sharp/libheif](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c), and [Nodemailer legacy-signature access-policy bypass](https://github.com/advisories/GHSA-8m3c-c648-2xjj).
 
-The fresh trusted resource-guard hook is now available, resolving the historical `ACTOR_CLOSING` restart blocker. Renewed full local Vitest and Playwright gates are pending and must not be inferred from earlier candidate results. Exact-head CI on `7826a339414fccf6694798ef039a2e1e4403a8b6` is green: `test:silent` 3,372 passed / 67 skipped in 502.41 seconds and integration 827 passed / 67 skipped in 151.06 seconds. GitHub and Vercel checks are green; Reviewbot reported no findings in comment `5603868237`, and all eight inline threads are resolved. These remote results do not replace the pending fresh local full gates or authorize hosted actions, deployment, merging, or reopening.
+Historical September 10 pre-full-run note (superseded by the current overview above): The fresh trusted resource-guard hook is now available, resolving the historical `ACTOR_CLOSING` restart blocker. Renewed full local Vitest and Playwright gates are pending and must not be inferred from earlier candidate results. Exact-head CI on `7826a339414fccf6694798ef039a2e1e4403a8b6` is green: `test:silent` 3,372 passed / 67 skipped in 502.41 seconds and integration 827 passed / 67 skipped in 151.06 seconds. GitHub and Vercel checks are green; Reviewbot reported no findings in comment `5603868237`, and all eight inline threads are resolved. These remote results do not replace the pending fresh local full gates or authorize hosted actions, deployment, merging, or reopening.
 
 ## Full local candidate evidence before the custom-preview correction
 
@@ -115,14 +138,14 @@ The earlier failed and interrupted attempts above remain part of the record. Fin
 
 Resource cleanup was verified at 2026-09-09T14:15:42.6073493Z: actor-scoped CloseActor succeeded with verified=true, followed by List with verified=true and zero unresolved owned resources. The owned PostgreSQL and Playwright/Next.js trees are stopped; no lease remains. The borrowed user-owned Supabase stack was not stopped or adopted. Child exit hooks had previously failed closed; no child-owned managed resources were launched, and root cleanup does not represent those hook failures as successes.
 
-## Custom-preview review correction and renewed verification gate
+## Historical custom-preview review correction — 2026-09-09
 
-Custom-preview review correction (2026-09-09): VERCEL_ENV is authoritative for the deployment class; a named VERCEL_TARGET_ENV is accepted only for a preview class. Production in either marker remains paused; missing/invalid base markers and conflicting built-in targets fail closed. Both guards now share the same target and lock policy. The new focused gate passes 49/49 (25 pause tests plus 24 release checks), including active Next config import for named staging/QA previews and negative marker cases. Full local Vitest/Playwright renewal is blocked: after verified CloseActor/List cleanup, a managed PostgreSQL restart was rejected with ACTOR_CLOSING. No unmanaged fallback was launched and no skip classification was changed. Earlier full results are historical evidence for 5f60e58/2ea1077, not a pass for this correction. A fresh hook-established lifecycle context is required before managed full verification; dependency-audit resolution and final exact-head remote review also remain open. Story 22.15 remains in-progress and Epic 23 remains on hold.
+Historical custom-preview review correction (2026-09-09): VERCEL_ENV is authoritative for the deployment class; a named VERCEL_TARGET_ENV is accepted only for a preview class. Production in either marker remains paused; missing/invalid base markers and conflicting built-in targets fail closed. Both guards now share the same target and lock policy. The new focused gate passes 49/49 (25 pause tests plus 24 release checks), including active Next config import for named staging/QA previews and negative marker cases. Full local Vitest/Playwright renewal is blocked: after verified CloseActor/List cleanup, a managed PostgreSQL restart was rejected with ACTOR_CLOSING. No unmanaged fallback was launched and no skip classification was changed. Earlier full results are historical evidence for 5f60e58/2ea1077, not a pass for this correction. A fresh hook-established lifecycle context is required before managed full verification; dependency-audit resolution and final exact-head remote review also remain open. Story 22.15 remains in-progress and Epic 23 remains on hold.
 
 The Vercel contract is documented at [System environment variables](https://vercel.com/docs/environment-variables/system-environment-variables#vercel_target_env).
 
 Additional correction checks: TypeScript exits 0; lint exits 0 with zero errors and 297 existing warnings. An initial bounded preview build compiled but failed during prerender because local Supabase fixture inputs had not been loaded (exit 1, 26.0489055 seconds). Reusing the reviewed loopback-only input loader produced a successful named staging preview build (exit 0, 8.3803021 seconds). These runs used the correction working tree; exact committed-head checks are recorded on PR #96. No hosted connection or deployment was involved in those local builds. The earlier bf00933 GitHub run 34362653764 completed successfully, but Reviewbot found the custom-preview issue, so it is not a clean final-head review.
 
-## Blank reopening-record review correction
+## Historical blank reopening-record review correction — 2026-09-09
 
 The subsequent review of be8076ca1a67e851decc73acb3f102beb4238695 found whitespace-only reopeningDecision records were accepted. The shared lock reader now requires nonblank trimmed content while retaining the 160-character raw bound and newline rejection. A new regression checks empty, spaces, tabs and nonbreaking spaces through both guards without changing the committed paused lock. Focused verification is now 50/50 (26 pause tests plus 24 release checks), zero failures/skips, 3.08 seconds; TypeScript passes. Renewed full local gates remain blocked by ACTOR_CLOSING, and the failed dependency audit still needs owner direction. No reopening or hosted action occurred.
