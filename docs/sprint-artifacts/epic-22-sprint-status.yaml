@@ -12,7 +12,7 @@ epic_completion_gate:
     title: 'Story 22.10 Phase B — Supabase production cutover'
     status: 'pending' # set to 'done' once executed to silence the reminder
     trigger: 'Only after Story 22.15 is locally complete, PR-reviewed, recorded at a final immutable remediation SHA, and owner-verified on staging; before any production mutation.'
-    actions: 'Current staging reached 65/65 after the separately owner-authorized repair/seven applies. Complete correction 20260910115024 tests/review; only then may a separate owner authorize its current one-version staging execute and post-apply re-verification. Production still requires fresh catalog proof, a signed 57-row ledger, exact explicit repairs, dry-run and nine applies after fresh inventory, backup, maintenance window, and explicit production authorization. Preserve the pause; reopening is separate. Verify migration history, policies, grants, direct-role behavior, advisors, and data-preservation evidence before closing R-010/R-023/R-020. Epic 23 remains on hold.'
+    actions: 'Current staging reached 65/65 after the separately owner-authorized repair/seven applies. Exact local implementation verification for correction 20260910115024 is complete; future documentation-head CI/Vercel/Reviewbot remains open after push. Only then may a separate owner authorize its current one-version staging execute and post-apply re-verification. Production still requires fresh catalog proof, a signed 57-row ledger, exact explicit repairs, dry-run and nine applies after fresh inventory, backup, maintenance window, and explicit production authorization. Preserve the pause; reopening is separate. Verify migration history, policies, grants, direct-role behavior, advisors, and data-preservation evidence before closing R-010/R-023/R-020. Epic 23 remains on hold.'
     source: 'supabase/migration-baseline-manifest.json; docs/commercial-readiness/27_supabase_cutover_runbook.md; tracker E-010/E-013'
 
 sprint:
@@ -247,8 +247,8 @@ stories:
     completed_date: null
     blockers:
       - 'PR #97 merged to staging 4aa2143dc42b4bc82a8ca7fa6efd7a95e9bde3be; authorized repair/seven applies reached 65/65 history. Only get_user_role() extra service_role EXECUTE remains; no rows were exposed.'
-      - 'Forward no-data-write 20260910115024 is the only current staging execute; its tests/review are pending. Production remains fresh-inventory/ledger-gated at 57 repairs plus nine executes. Pause stays active; no further hosted action is authorized.'
-    notes: 'Historical local 65-version gates remain evidence for their commit. PR #97 staging reached 65/65 after authorized repair/seven applies; new forward-only 20260910115024 correction tests/review are pending and no earlier gate is claimed for it. Story 22.15 remains in-progress, Epic 23 on hold, production paused, and no further hosted action is authorized.'
+      - 'Forward no-data-write 20260910115024 is the only current staging execute; exact local implementation verification is complete, while future documentation-head CI/Vercel/Reviewbot remains open after push. Production remains fresh-inventory/ledger-gated at 57 repairs plus nine executes. Pause stays active; no further hosted action is authorized.'
+    notes: 'Historical local 65-version gates remain evidence for their commit. PR #97 staging reached 65/65 after authorized repair/seven applies; new forward-only 20260910115024 correction passed exact local implementation verification; future documentation-head CI/Vercel/Reviewbot remains open after push. Story 22.15 remains in-progress, Epic 23 on hold, production paused, and no further hosted action is authorized.'
 
 progress_summary:
   total_stories: 15
@@ -276,8 +276,8 @@ test_coverage_summary:
   manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 291 + 116 + 3 + 0 + 2 = 412.
 
 blockers:
-  - 'PR #97 staging is 65/65 after authorized repair/seven applies. The sole forward correction is 20260910115024; its tests/review are pending and historical local gates are not proof for it.'
-  - 'No further hosted staging/production action is authorized. After correction tests/review, separately authorize only staging execute 20260910115024 and re-verify; production remains fresh-inventory/ledger-gated at 57 repairs plus nine executes.'
+  - 'PR #97 staging is 65/65 after authorized repair/seven applies. The sole forward correction is 20260910115024; its exact local implementation verification passes and future documentation-head remote checks remain open.'
+  - 'No further hosted staging/production action is authorized. After correction review and future documentation-head remote evidence, separately authorize only staging execute 20260910115024 and re-verify; production remains fresh-inventory/ledger-gated at 57 repairs plus nine executes.'
 known_issues:
   - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'
   - 'Post-merge Epic 22 release/readiness gate: after final deployment, unauthenticated deployed-app diagnostic checks for removed diagnostic endpoints must return a non-success auth/not-found status before P0 external-presentation readiness is claimed.'
@@ -301,9 +301,9 @@ next_actions:
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA was deferred to Epic 23 Story 23.4 by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b. Epic 23 is on hold, so no Auth attack-protection change is claimed or active work planned here.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
-  - 'Story 22.15 remains in progress after PR #97 staging reached 65/65 history. Post-apply catalog found only extra get_user_role() service_role EXECUTE. New 20260910115024 is no-data-write and pending tests/review; production needs fresh inventory, signed 57-row ledger, and separate 57-repair/nine-execute gates. Pause active; Epic 23 on hold.'
+  - 'Story 22.15 remains in progress after PR #97 staging reached 65/65 history. Post-apply catalog found only extra get_user_role() service_role EXECUTE. New 20260910115024 is no-data-write and exact local implementation verification passes; future documentation-head remote checks remain open; production needs fresh inventory, signed 57-row ledger, and separate 57-repair/nine-execute gates. Pause active; Epic 23 on hold.'
 last_updated: 2026-09-10
-updated_by: Codex (2026-09-10T11:34:43.467Z PR #97 post-apply staging result recorded; correction tests/review and further owner gates remain open).
+updated_by: Codex (2026-09-10T12:52:41.5005005Z final exact local implementation verification recorded; future documentation-head remote checks and further owner gates remain open).
 
 pr_95_playwright_gate:
   date: 2026-09-09
