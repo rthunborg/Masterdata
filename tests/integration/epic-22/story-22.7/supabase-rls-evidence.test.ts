@@ -212,7 +212,11 @@ describe.skipIf(!databaseReachable)("Story 22.7 Supabase RLS evidence", () => {
     async (_roleName, authId) => {
       await asAuthenticatedUser(authId, async () => {
         const read = await client.query<{ id: string }>(
-          "SELECT id FROM public.employees ORDER BY first_name"
+          // Other live suites may commit their own fixtures concurrently.
+          // Prove visibility of both rows owned by this test, including the
+          // archived row that the external-role policy must hide.
+          "SELECT id FROM public.employees WHERE id = ANY($1::uuid[]) ORDER BY first_name",
+          [[ids.activeEmployee, ids.archivedEmployee]]
         );
         expect(read.rows.map((row) => row.id)).toEqual([ids.activeEmployee]);
 
