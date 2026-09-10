@@ -31,10 +31,11 @@ if (
 const environment = guardedFixtureUrl
   ? null
   : loadEpic22SupabaseTestEnvironment();
-const reconciliationMigrationSource = readFileSync(
+const reconciliationMigrationSources = [
   "supabase/migrations/20260909115242_reconcile_saved_filters_and_room_acl.sql",
-  "utf8"
-);
+  "supabase/migrations/20260910094517_reconcile_repayment_defaults.sql",
+  "supabase/migrations/20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql",
+].map((filename) => readFileSync(filename, "utf8"));
 const localParitySeedSource = readFileSync("supabase/seed.sql", "utf8");
 const reconciliationFixtureDatabaseName = `story_2215_post_apply_${randomUUID()
   .replaceAll("-", "")
@@ -73,7 +74,9 @@ async function createGuardedPostApplyFixture() {
       VALUES ('20260831200026')
       ON CONFLICT (version) DO NOTHING;
     `);
-    await fixtureClient.query(reconciliationMigrationSource);
+    for (const source of reconciliationMigrationSources) {
+      await fixtureClient.query(source);
+    }
     // This mirrors the local-only Supabase reset parity grants. It is applied
     // only to the disposable clone so authenticated RLS evidence can execute;
     // migrations remain the sole staged/hosted schema change mechanism.
