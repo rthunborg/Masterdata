@@ -9,7 +9,7 @@ Repository target: **66 migration versions / 17 policies**. The immutable classi
 
 > **Epic 23 stays on hold.** Leaked-password protection, CAPTCHA, MFA/session changes, and other Auth/dashboard settings are not part of this runbook.
 
-> **No authorization by documentation.** Running catalog reads is safe only with the correct linked project. History repair, migration apply, workflow dispatch, backup, deployment, or any hosted write requires the environment-specific owner approval described below.
+> **Authorization record.** Running catalog reads is safe only with the correct linked project. On 2026-09-10 the owner explicitly authorized all required future migration applies; this includes reviewed staging and production forward migrations once their prerequisites pass. Record that standing authorization against each exact environment, candidate, ordered file set and SQL hashes; do not request it again merely because an apply targets production. History repair, fixture/data-cleanup writes outside reviewed migrations, workflow dispatch, backup, hosted settings, deployment, merges and reopening retain their separate gates below. Documentation itself grants no authorization.
 
 ## Historical pre-correction reconciliation decision — 2026-09-10
 
@@ -42,7 +42,7 @@ For each environment, do not reorder:
 5. If the manifest has a nonempty environment repair list, obtain explicit owner authorization for that exact **history-repair** list. Current staging has an empty list: skip repair steps 5–6 entirely. This is a hosted write and is a separate decision from forward migration apply.
 6. Re-run the target-binding check, repair only the explicit environment list below, and immediately reconcile `migration list`. Stop on the first repair failure; never continue to push from a partial baseline.
 7. Re-run the target-binding check, run `db push --reviewed-target --dry-run --skip-vault` through the reviewed CLI wrapper, and compare the exact ordered output with the explicit apply list. `--reviewed-target` is consumed by the wrapper and is never passed to the Supabase CLI.
-8. Obtain the separate environment-specific owner database-apply authorization (which does not authorize application reopening).
+8. Record the standing 2026-09-10 owner migration-apply authorization against the exact environment, reviewed immutable SHA, ordered pending versions and SQL hashes. Verify every preceding prerequisite; the authorization does not permit history repair, other hosted writes or application reopening. Ask again only if the owner revokes or narrows that authorization, or the action falls outside migration apply.
 9. For production only, obtain the separate traffic-isolation and deployment authorizations, prove the isolation gate below, and keep it active across every forward migration, post-apply verification, deployment, and smoke test.
 10. Re-run the target-binding check, apply the exact list, verify migration history/policies/grants/direct-role behavior/advisors, and capture redacted evidence.
 11. For production only, preserve the existing static pause while validating the database candidate. Application smoke runs against staging; any production operator-only application deployment needs a separately reviewed isolation design and explicit deployment approval. The committed lock currently refuses production application builds. Database completion never authorizes replacement of the pause.
@@ -351,7 +351,7 @@ node supabase/verify/verify-target-binding.mjs
 node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
 ```
 
-Stop unless the dry run is exact. Record the full immutable commit SHA, successful backup identifier, owner, maintenance window, the separate explicit production database-apply authorization for the nine-version forward apply, proven traffic isolation, and the separate deployment authorization. Then, and only then, re-bind the target immediately before the write:
+Stop unless the dry run is exact. Record the full immutable commit SHA, ordered nine-version file set and SQL hashes, successful backup identifier, owner, maintenance window, the standing 2026-09-10 owner authorization covering this production migration apply, proven separately authorized traffic isolation, and the separate deployment authorization required by this runbook. The standing apply authorization satisfies only the migration-write gate; no repeat migration-apply approval is required, and none of the other prerequisites or authorizations is waived. Then, and only then, re-bind the target immediately before the write:
 
 ```bash
 set -euo pipefail
@@ -365,7 +365,7 @@ Expected database end state before deployment: 66 versions in sync / 17 policies
 ## Rollback and failure behavior
 
 - `migration repair` records history only and requires its own explicit owner authorization. A pre-repair catalog mismatch causes a stop with no repair write. A mid-batch production repair failure can leave partial history; inventory it, stop, and obtain approval for an explicit continuation plan—never guess at rollback or proceed to push.
-- Each forward migration file is transactional, but a multi-file `db push` is **not** an all-or-nothing batch: earlier files may remain committed and recorded if a later file fails. On any apply failure, stop, preserve the exact output, re-establish three-way target binding, and capture fresh migration/catalog state. Do not rerun blindly, do not repair a failed forward version as applied, and do not continue to deployment. Obtain owner approval for an explicit reviewed forward-fix or continuation plan based on the observed partial state.
+- Each forward migration file is transactional, but a multi-file `db push` is **not** an all-or-nothing batch: earlier files may remain committed and recorded if a later file fails. On any apply failure, stop, preserve the exact output, re-establish three-way target binding, and capture fresh migration/catalog state. Do not rerun blindly, do not repair a failed forward version as applied, and do not continue to deployment. Prepare and review an explicit forward-fix or continuation plan based on the observed partial state and repeat its prerequisites. The standing authorization covers required reviewed forward migration applies; obtain separate approval for any history repair, non-migration cleanup, setting change or other action outside that scope.
 - Application authorization regressions are corrected by a new least-privilege migration, never by dashboard edits or broad re-grants.
 - `delete_app_user` commits the app-row deletion and durable opaque cleanup handoff in one database transaction before external Auth cleanup. If Auth deletion or handoff completion fails, database authorization is already removed; use the exact owner retry procedure below without recreating the app role.
 - A fresh production backup is mandatory even if an older local backup exists.
@@ -388,7 +388,7 @@ The retry must return HTTP `200` and `cleanup_state: completed`. If the first re
 - [ ] Production fresh inventory/catalog proof passed for all 57 repair versions.
 - [ ] Complete 57-row production proof ledger signed before the first history repair.
 - [ ] Owner separately authorized the exact 57-version production history-repair batch; immediate history reconciliation passed without an unresolved partial baseline.
-- [ ] Production-day backup succeeded; maintenance window and explicit history-repair, forward-apply, traffic/Realtime-isolation rollback, and deployment decisions recorded separately; prior Realtime settings, affected-table publication state, and connected-client reports captured privately.
+- [ ] Production-day backup succeeded; maintenance window, separate history-repair/traffic-isolation/rollback/deployment approvals, and the standing migration-apply authorization bound to the exact production candidate/file hashes are recorded; prior Realtime settings, affected-table publication state, and connected-client reports captured privately.
 - [ ] Production nine-version dry run exact; target binding rechecked immediately before apply.
 - [ ] Full technical isolation proven from operator and non-operator paths, including existing-client disconnect and fresh Realtime reconnect rejection, and held through repair/apply/database post-verification; production static pause and job shutdown remain intact through separately approved database/Realtime restoration; application smoke uses staging.
 - [ ] Production shows 66 migrations / 17 policies; direct-role/advisor/data-preservation evidence recorded before deployment.

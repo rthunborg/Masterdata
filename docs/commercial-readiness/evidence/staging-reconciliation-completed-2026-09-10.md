@@ -43,6 +43,8 @@ The aggregate SQL uses an explicit READ ONLY transaction, 15-second statement ti
 | repayment_needed_omc | `02b8319f6f054191fe4131b27e060f98` |
 | repayment_needed_pe3 | `3a274a1d25cd34f07f378195bb080f29` |
 
+A separately reviewed READ ONLY role probe at **15:24:41.869Z** passed **8/8 booleans**: unknown and anonymous identities resolve to NULL application roles; the unknown identity sees no rows in users, employees, staffing, staffing history, audit and saved filters. Zero visible rows does not prove each table contained rows that RLS hid. The probe verified synthetic identity absence, exact clean candidate, strict catalog and SQL hash `bd4ad169db845f4360909e02b78406730effbac863f09dda25c7c3cef5e8bace`; it used local claims/roles, bounded timeouts and ROLLBACK. No fixture rows were written. [Completed apply and bounded role proof](https://github.com/rthunborg/Masterdata/pull/98#issuecomment-5621130666).
+
 Advisor scope is the pinned CLI default WARN-or-higher database query. INFO severity and certain Management API security-definer/GraphQL checks are not covered. The remaining three performance warnings are classified evidence, not zero findings or an unqualified security clearance.
 
 ## Remaining gates and proof limits
@@ -65,3 +67,5 @@ This follow-up changes documentation and status evidence only. Application, migr
 The evidence follow-up receives targeted documentation/static checks and its own remote CI/Vercel/review before any merge approval. Operational JSON, private orchestration, encrypted inputs and deployment identifiers remain outside version control. No new managed resources were needed for the hosted apply/proofs; user-owned resources were untouched.
 
 Targeted static verification on this documentation tree: `npx vitest run tests/unit/epic-22/story-22.15/production-readiness-migrations.test.ts` passed **26/26**, zero skips/failures, exit **0**, report duration **14.41 seconds** (15 ms test execution). This verifies the unchanged manifest/runbook contract; it does not replace hosted acceptance or claim a new full-suite run.
+
+PR #99 review of `276fac63fcfdc2c513cca44e5d1d87558c073752` found two P2 documentation inconsistencies: the active spec still described the correction as pending, and the active production procedure still demanded a new migration-apply approval. Both are corrected: the acceptance criterion now requires current 66/66 post-apply state, and the production procedure/policy explicitly binds the standing authorization to the exact candidate and migration hashes without waiving any other gate. Repeated targeted static checks pass **26/26**, zero skips/failures, exit **0**, **1.04 seconds** (13 ms tests). CloseActor and one List succeeded after operational work, with all 26 returned resources stopped; no user-owned resource was altered. The resulting documentation head requires fresh remote checks and final review.
