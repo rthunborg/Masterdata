@@ -56,7 +56,7 @@ expected_policy_contracts AS (
       ('staging_pre_apply', 'user_filters', 'Users can update their own filters', '{authenticated}', 'UPDATE', '((selectauth.uid()asuid)=user_id)', '((selectauth.uid()asuid)=user_id)'),
       ('staging_pre_apply', 'user_filters', 'Users can delete their own filters', '{authenticated}', 'DELETE', '((selectauth.uid()asuid)=user_id)', NULL),
 
-      -- Final state after all six forward versions. Unlike the historical
+      -- Final state after all seven forward versions. Unlike the historical
       -- profiles above, post_apply is the complete exact public-schema policy
       -- profile: these 17 rows must exist and no policy may exist elsewhere.
       ('post_apply', 'employees', 'HR Admin and Recruiter can manage employees', '{authenticated}', 'ALL', '((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''recruiter''::text]))', NULL),
@@ -645,7 +645,15 @@ catalog_checks(check_name, passed, observed) AS (
           SELECT count(*) = 2
           FROM public.column_config
           WHERE db_column_name IN ('special_diet', 'diet_details')
-            AND role_permissions = '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false}}'::jsonb
+            AND role_permissions = CASE (SELECT catalog_phase FROM verifier_context)
+              WHEN 'production_pre_apply' THEN
+                '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false}}'::jsonb
+              WHEN 'staging_pre_apply' THEN
+                '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false},"admin_limited":{"view":true,"edit":false}}'::jsonb
+              WHEN 'post_apply' THEN
+                '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false},"admin_limited":{"view":true,"edit":false}}'::jsonb
+              ELSE NULL
+            END
         ),
       jsonb_build_object(
         'columns', (
@@ -659,7 +667,15 @@ catalog_checks(check_name, passed, observed) AS (
           SELECT count(*)
           FROM public.column_config
           WHERE db_column_name IN ('special_diet', 'diet_details')
-            AND role_permissions = '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false}}'::jsonb
+            AND role_permissions = CASE (SELECT catalog_phase FROM verifier_context)
+              WHEN 'production_pre_apply' THEN
+                '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false}}'::jsonb
+              WHEN 'staging_pre_apply' THEN
+                '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false},"admin_limited":{"view":true,"edit":false}}'::jsonb
+              WHEN 'post_apply' THEN
+                '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false},"admin_limited":{"view":true,"edit":false}}'::jsonb
+              ELSE NULL
+            END
         )
       )
     ),
@@ -673,10 +689,15 @@ catalog_checks(check_name, passed, observed) AS (
               AND actual.ordinal_position = expected.ordinal_position
               AND actual.data_type = expected.data_type
               AND actual.is_nullable = expected.is_nullable
-              AND (
+              AND coalesce((
                 (
                   expected.column_default IS NULL
                   AND actual.column_default IS NULL
+                  AND NOT (
+                    (SELECT catalog_phase FROM verifier_context) =
+                      'staging_pre_apply'
+                    AND expected.column_name = 'filters'
+                  )
                 )
                 OR (
                   expected.column_default IS NOT NULL
@@ -690,7 +711,18 @@ catalog_checks(check_name, passed, observed) AS (
                     false
                   )
                 )
-              )
+                OR (
+                  (SELECT catalog_phase FROM verifier_context) =
+                    'staging_pre_apply'
+                  AND expected.column_name = 'filters'
+                  AND regexp_replace(
+                    lower(actual.column_default),
+                    '[[:space:]]+',
+                    '',
+                    'g'
+                  ) = '''[]''::jsonb'
+                )
+              ), false)
             )
           FROM information_schema.columns AS actual
           LEFT JOIN (
@@ -712,49 +744,100 @@ catalog_checks(check_name, passed, observed) AS (
           WHERE actual.table_schema = 'public'
             AND actual.table_name = 'user_filters'
         )
-        AND (
-          SELECT count(*) = 4
-            AND bool_and(
-              expected.constraint_name IS NOT NULL
-              AND actual.contype::text = expected.constraint_type
-              AND actual.convalidated
-              AND NOT actual.condeferrable
-              AND NOT actual.condeferred
-              AND regexp_replace(
-                lower(pg_get_constraintdef(actual.oid, true)),
-                '[[:space:]()]',
-                '',
-                'g'
-              ) = expected.normalized_definition
-            )
-          FROM pg_constraint AS actual
-          LEFT JOIN (
-            VALUES
-              ('user_filters_pkey', 'p', 'primarykeyid'),
-              (
-                'user_filters_user_id_fkey',
-                'f',
-                'foreignkeyuser_idreferencesauth.usersidondeletecascade'
-              ),
-              (
-                'unique_user_filter_name',
-                'u',
-                'uniqueuser_id,name'
-              ),
-              (
-                'valid_name_length',
-                'c',
-                'checkchar_lengthname>0andchar_lengthname<=50'
-              )
-          ) AS expected(
-            constraint_name,
-            constraint_type,
-            normalized_definition
+        AND CASE (SELECT catalog_phase FROM verifier_context)
+          WHEN 'staging_pre_apply' THEN (
+            SELECT count(*) = 3
+              AND count(*) FILTER (
+                WHERE conname = 'user_filters_pkey'
+                  AND contype = 'p'
+                  AND normalized_definition = 'primarykeyid'
+              ) = 1
+              AND count(*) FILTER (
+                WHERE conname = 'user_filters_user_id_name_key'
+                  AND contype = 'u'
+                  AND normalized_definition = 'uniqueuser_id,name'
+              ) = 1
+              AND count(*) FILTER (
+                WHERE conname = 'user_filters_name_check'
+                  AND contype = 'c'
+                  AND normalized_definition = 'checkchar_lengthname<=50'
+              ) = 1
+              AND bool_and(convalidated AND NOT condeferrable AND NOT condeferred)
+            FROM (
+              SELECT
+                conname,
+                contype,
+                convalidated,
+                condeferrable,
+                condeferred,
+                regexp_replace(
+                  lower(pg_get_constraintdef(oid, true)),
+                  '[[:space:]()]',
+                  '',
+                  'g'
+                ) AS normalized_definition
+              FROM pg_constraint
+              WHERE conrelid = to_regclass('public.user_filters')
+            ) AS actual
           )
-            ON actual.conname = expected.constraint_name
-          WHERE actual.conrelid = to_regclass('public.user_filters')
-        )
-        AND (
+          ELSE (
+            SELECT count(*) = 4
+              AND bool_and(
+                expected.constraint_name IS NOT NULL
+                AND actual.contype::text = expected.constraint_type
+                AND actual.convalidated
+                AND NOT actual.condeferrable
+                AND NOT actual.condeferred
+                AND regexp_replace(
+                  lower(pg_get_constraintdef(actual.oid, true)),
+                  '[[:space:]()]',
+                  '',
+                  'g'
+                ) = expected.normalized_definition
+              )
+            FROM pg_constraint AS actual
+            LEFT JOIN (
+              VALUES
+                ('user_filters_pkey', 'p', 'primarykeyid'),
+                (
+                  'user_filters_user_id_fkey',
+                  'f',
+                  'foreignkeyuser_idreferencesauth.usersidondeletecascade'
+                ),
+                (
+                  'unique_user_filter_name',
+                  'u',
+                  'uniqueuser_id,name'
+                ),
+                (
+                  'valid_name_length',
+                  'c',
+                  'checkchar_lengthname>0andchar_lengthname<=50'
+                )
+            ) AS expected(
+              constraint_name,
+              constraint_type,
+              normalized_definition
+            )
+              ON actual.conname = expected.constraint_name
+            WHERE actual.conrelid = to_regclass('public.user_filters')
+          )
+        END
+        AND CASE (SELECT catalog_phase FROM verifier_context)
+          WHEN 'staging_pre_apply' THEN (
+            SELECT count(*) = 0
+            FROM pg_index AS indexes
+            JOIN pg_class AS table_relation
+              ON table_relation.oid = indexes.indrelid
+            JOIN pg_namespace AS table_namespace
+              ON table_namespace.oid = table_relation.relnamespace
+            LEFT JOIN pg_constraint AS backing_constraint
+              ON backing_constraint.conindid = indexes.indexrelid
+            WHERE table_namespace.nspname = 'public'
+              AND table_relation.relname = 'user_filters'
+              AND backing_constraint.oid IS NULL
+          )
+          ELSE (
           SELECT count(*) = 2
             AND bool_and(
               expected.index_name IS NOT NULL
@@ -799,19 +882,47 @@ catalog_checks(check_name, passed, observed) AS (
           WHERE table_namespace.nspname = 'public'
             AND table_relation.relname = 'user_filters'
             AND backing_constraint.oid IS NULL
-        )
+          )
+        END
         AND (
           SELECT relrowsecurity
           FROM pg_class
           WHERE oid = to_regclass('public.user_filters')
         )
+        AND CASE (SELECT catalog_phase FROM verifier_context)
+          WHEN 'staging_pre_apply' THEN (
+            SELECT
+              count(*) FILTER (
+                WHERE NOT EXISTS (
+                  SELECT 1
+                  FROM auth.users AS auth_user
+                  WHERE auth_user.id = saved_filter.user_id
+                )
+              ) = 0
+              AND count(*) FILTER (
+                WHERE char_length(saved_filter.name) = 0
+              ) = 0
+              AND count(*) FILTER (
+                WHERE char_length(saved_filter.name) > 50
+              ) = 0
+            FROM public.user_filters AS saved_filter
+          )
+          ELSE true
+        END
         AND (
           SELECT count(*) = 1
             AND bool_and(
-              tgname = 'set_updated_at'
+              tgname = CASE (SELECT catalog_phase FROM verifier_context)
+                WHEN 'staging_pre_apply' THEN 'user_filters_updated_at'
+                ELSE 'set_updated_at'
+              END
               AND tgenabled = 'O'
               AND tgtype = 19
-              AND tgfoid = to_regprocedure('public.trigger_set_updated_at()')
+              AND tgfoid = CASE (SELECT catalog_phase FROM verifier_context)
+                WHEN 'staging_pre_apply' THEN
+                  to_regprocedure('public.update_user_filters_updated_at()')
+                ELSE to_regprocedure('public.trigger_set_updated_at()')
+              END
               AND tgattr::text = ''
               AND tgqual IS NULL
               AND tgconstraint = 0
@@ -820,6 +931,14 @@ catalog_checks(check_name, passed, observed) AS (
           FROM pg_trigger
           WHERE tgrelid = to_regclass('public.user_filters')
             AND NOT tgisinternal
+        )
+        AND (
+          (SELECT catalog_phase FROM verifier_context) <> 'staging_pre_apply'
+          OR to_regprocedure('public.trigger_set_updated_at()') IS NULL
+        )
+        AND (
+          (SELECT catalog_phase FROM verifier_context) <> 'post_apply'
+          OR to_regprocedure('public.update_user_filters_updated_at()') IS NULL
         ),
       jsonb_build_object(
         'table', to_regclass('public.user_filters')::text,
@@ -901,7 +1020,30 @@ catalog_checks(check_name, passed, observed) AS (
           WHERE schemaname = 'public'
             AND tablename = 'user_filters'
             AND policyname = 'Users can update their own filters'
-        )
+        ),
+        'staging_pre_apply_data_prerequisites', CASE
+          WHEN (SELECT catalog_phase FROM verifier_context) =
+            'staging_pre_apply' THEN (
+            SELECT jsonb_build_object(
+              'total', count(*),
+              'orphan_auth_references', count(*) FILTER (
+                WHERE NOT EXISTS (
+                  SELECT 1
+                  FROM auth.users AS auth_user
+                  WHERE auth_user.id = saved_filter.user_id
+                )
+              ),
+              'empty_names', count(*) FILTER (
+                WHERE char_length(saved_filter.name) = 0
+              ),
+              'overlength_names', count(*) FILTER (
+                WHERE char_length(saved_filter.name) > 50
+              )
+            )
+            FROM public.user_filters AS saved_filter
+          )
+          ELSE NULL
+        END
       )
     ),
     (
@@ -932,18 +1074,33 @@ catalog_checks(check_name, passed, observed) AS (
                   ARRAY['search_path=public, pg_temp']::text[]
               ELSE false
             END
-            AND regexp_replace(
-              lower(functions.prosrc),
-              '[[:space:]]+',
-              '',
-              'g'
-            ) = 'beginnew.updated_at=now();returnnew;end;'
+            AND CASE (SELECT catalog_phase FROM verifier_context)
+              WHEN 'staging_pre_apply' THEN
+                md5(functions.prosrc) = '10ff09e0d1433006b865e7959e736c46'
+              ELSE regexp_replace(
+                lower(functions.prosrc),
+                '[[:space:]]+',
+                '',
+                'g'
+              ) = 'beginnew.updated_at=now();returnnew;end;'
+            END
           )
         FROM pg_proc AS functions
         JOIN pg_language AS language
           ON language.oid = functions.prolang
-        WHERE functions.oid =
-          to_regprocedure('public.trigger_set_updated_at()')
+        WHERE functions.oid = CASE (SELECT catalog_phase FROM verifier_context)
+          WHEN 'staging_pre_apply' THEN
+            to_regprocedure('public.update_user_filters_updated_at()')
+          ELSE to_regprocedure('public.trigger_set_updated_at()')
+        END
+        AND (
+          (SELECT catalog_phase FROM verifier_context) <> 'staging_pre_apply'
+          OR to_regprocedure('public.trigger_set_updated_at()') IS NULL
+        )
+        AND (
+          (SELECT catalog_phase FROM verifier_context) <> 'post_apply'
+          OR to_regprocedure('public.update_user_filters_updated_at()') IS NULL
+        )
       ),
       (
         SELECT coalesce(
@@ -967,8 +1124,11 @@ catalog_checks(check_name, passed, observed) AS (
         FROM pg_proc AS functions
         JOIN pg_language AS language
           ON language.oid = functions.prolang
-        WHERE functions.oid =
-          to_regprocedure('public.trigger_set_updated_at()')
+        WHERE functions.oid = CASE (SELECT catalog_phase FROM verifier_context)
+          WHEN 'staging_pre_apply' THEN
+            to_regprocedure('public.update_user_filters_updated_at()')
+          ELSE to_regprocedure('public.trigger_set_updated_at()')
+        END
       )
     ),
     (
@@ -976,14 +1136,31 @@ catalog_checks(check_name, passed, observed) AS (
       (
         SELECT count(*) = 22
           AND bool_and(
-            actual.column_name IS NOT NULL
-            AND actual.data_type = expected.data_type
-            AND actual.is_nullable = expected.is_nullable
-            AND (
-              (expected.column_default IS NULL AND actual.column_default IS NULL)
-              OR regexp_replace(lower(actual.column_default), '[[:space:]]+', '', 'g') =
-                expected.column_default
-            )
+            (
+              actual.column_name IS NOT NULL
+              AND actual.data_type = expected.data_type
+              AND actual.is_nullable = expected.is_nullable
+              AND CASE
+                WHEN expected.table_name = 'user_filters'
+                  AND expected.column_name = 'filters'
+                  AND (SELECT catalog_phase FROM verifier_context) =
+                    'staging_pre_apply' THEN
+                  regexp_replace(
+                    lower(actual.column_default),
+                    '[[:space:]]+',
+                    '',
+                    'g'
+                  ) = '''[]''::jsonb'
+                WHEN expected.column_default IS NULL THEN
+                  actual.column_default IS NULL
+                ELSE regexp_replace(
+                  lower(actual.column_default),
+                  '[[:space:]]+',
+                  '',
+                  'g'
+                ) = expected.column_default
+              END
+            ) IS TRUE
           )
         FROM (
           VALUES
@@ -1065,9 +1242,10 @@ catalog_checks(check_name, passed, observed) AS (
       (
         SELECT count(*) = 3
           AND bool_and(
-            functions.oid IS NOT NULL
-            AND language.lanname = 'plpgsql'
-            AND CASE expected.contract
+            (
+              functions.oid IS NOT NULL
+              AND language.lanname = 'plpgsql'
+              AND CASE expected.contract
               WHEN 'room' THEN
                 functions.prosecdef = false
                 AND CASE (SELECT catalog_phase FROM verifier_context)
@@ -1082,8 +1260,12 @@ catalog_checks(check_name, passed, observed) AS (
                       ARRAY['search_path=public, pg_temp']::text[]
                   ELSE false
                 END
-                AND privileges.non_owner_execute_grants =
-                  ARRAY['PUBLIC', 'authenticated']::text[]
+                AND privileges.non_owner_execute_grants = CASE
+                  WHEN (SELECT catalog_phase FROM verifier_context) =
+                    'staging_pre_apply' THEN
+                    ARRAY['PUBLIC', 'anon', 'authenticated', 'service_role']::text[]
+                  ELSE ARRAY['PUBLIC', 'authenticated']::text[]
+                END
                 AND regexp_replace(
                   lower(pg_get_functiondef(functions.oid)),
                   '[[:space:]]+',
@@ -1136,8 +1318,9 @@ catalog_checks(check_name, passed, observed) AS (
                     ) LIKE '%p_user_idisdistinctfromv_actor_id%forupdate%updated_by=v_actor_id%'
                   ELSE false
                 END
-              ELSE false
-            END
+                ELSE false
+              END
+            ) IS TRUE
           )
         FROM (
           VALUES

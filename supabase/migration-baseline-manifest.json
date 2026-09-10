@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "repositoryMigrationCount": 63,
+  "repositoryMigrationCount": 64,
   "reviewedSupabaseCliVersion": "2.115.0",
   "catalogVerifier": "supabase/verify/production-baseline-catalog.sql",
   "restoredMigrationProvenance": {
@@ -75,7 +75,8 @@
       "20260709194903",
       "20260710144000",
       "20260710150000",
-      "20260831200026"
+      "20260831200026",
+      "20260909115242"
     ]
   },
   "unsafeReplayVersions": {
@@ -90,6 +91,15 @@
     "productionUserFiltersUpdatePolicy": {
       "acceptedPreApplyState": "The dated production aliases Users can read own filters, Users can insert own filters, and Users can delete own filters exist; no update policy exists.",
       "reconciledByExecuteVersion": "20260614000000"
+    },
+    "stagingSavedFilterReconciliation": {
+      "acceptedPreApplyState": "The exact staging representation has filters default []::jsonb, user_filters_user_id_name_key, user_filters_name_check, user_filters_updated_at using update_user_filters_updated_at(), no user_filters foreign keys or standalone indexes, canonical trigger_set_updated_at() absent, and the documented dietary/room ACL extensions only.",
+      "requiredPreApplyCounts": {
+        "orphan_auth_references": 0,
+        "empty_names": 0,
+        "overlength_names": 0
+      },
+      "reconciledByExecuteVersion": "20260909115242"
     }
   },
   "environmentPlans": {
@@ -100,7 +110,8 @@
         "20260709194903",
         "20260710144000",
         "20260710150000",
-        "20260831200026"
+        "20260831200026",
+        "20260909115242"
       ]
     },
     "production": {

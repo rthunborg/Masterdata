@@ -2,11 +2,15 @@
 
 Prepared: 2026-08-31 (Story 22.15 refresh)
 
-Revalidated: 2026-09-01
+Revalidated: 2026-09-10 — narrow remediation returns to the accepted residual threshold; fresh local gates passed; result-only-documentation-head checks open
 
 Source evidence: `docs/commercial-readiness/evidence/dependency-audit-2026-08-31.md`
 
-## Summary
+## Current release gate — 2026-09-10
+
+The 2026-09-09 failure remains historical evidence: **0 critical / 3 high / 3 moderate / 0 low**, exit 1. A narrow compatible patch on 2026-09-10 updates Nodemailer `9.1.0`→`9.1.1`, Sharp `0.35.3`→`0.35.4`, and the compatible workspace floors for Browserslist `4.28.7`, baseline-browser-mapping `2.11.0`, and Sharp `0.35.4`. The post-patch `pnpm audit --prod --json` result is **0 critical / 0 high / 1 moderate / 0 low**, exit 1 solely for the existing `exceljs`→`uuid 8.3.2` (`GHSA-w5hq-g745-h8pq`) residual. Its existing acceptance ends 2026-09-30; no new waiver was added and no incompatible UUID major override was used. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated. See [dated remediation evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md#dependency-remediation-evidence--2026-09-10).
+
+## Historical remediation summary — 2026-09-01
 
 Story 22.15 refreshed the production audit after the candidate had regressed to 28 advisories, including 15 high-severity findings. Three reviewed upgrade batches remove every critical/high production advisory. The only retained production advisory is the ExcelJS transitive UUID moderate risk below.
 
@@ -37,7 +41,7 @@ Batch 3's local verification scope is complete. The 47 Playwright skips are not 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `uuid 8.3.2` (`GHSA-w5hq-g745-h8pq`) | Moderate | `.>exceljs>uuid` | `exceljs 4.4.0` requires `uuid ^8.3.0`; forcing `uuid >=11.1.1` is an unsupported major transitive override. | Technical owner | 2026-09-30 | ExcelJS is used only for authenticated server-side XLSX export. The application does not expose UUID v3/v5/v6 buffer/offset APIs to user input. Recheck for an ExcelJS release with a patched UUID range or select a replacement before the review date. | Time-bounded acceptance for controlled production readiness; not an enterprise waiver. |
 
-No Nodemailer risk remains registered: the direct package is now `9.1.0`, its types are aligned, and a non-network compatibility test exercises the application mail shape.
+Historical 2026-09-01 conclusion: Nodemailer was `9.1.0`. The 2026-09-10 narrow patch raises it to `9.1.1`; its types remain aligned and the non-network compatibility test remains the compatibility evidence.
 
 ## Development Tooling
 

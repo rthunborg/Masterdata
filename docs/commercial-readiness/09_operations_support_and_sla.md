@@ -4,6 +4,10 @@ Prepared: 2026-06-03
 
 Updated: 2026-08-29 (Story 22.14 production-safe ÖMC masterdata reminders)
 
+Current preparation is draft PR #96: 64 repository versions, one separately approved staging repair followed by six exact applies, and provisional production 57 catalog-proven repairs followed by seven applies after fresh inventory. Production remains paused; deployment, settings changes and reopening require separate owner decisions. The narrow dependency patch remains 0 critical/0 high/1 accepted UUID moderate; pnpm audit exits 1 solely for the existing acceptance through 2026-09-30. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated. See [current evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md) and [pause safeguards](29_production_pause_release_safeguards.md).
+
+While paused, the normal application-operation procedures below do not authorize production deployment, promotion, job restoration or reopening. Follow the linked pause safeguards and current cutover runbook first.
+
 ## Current Operational View
 
 | Area | Current state | Evidence | Status |

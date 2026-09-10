@@ -24,6 +24,15 @@ type Manifest = {
       acceptedPreApplyState: string;
       reconciledByExecuteVersion: string;
     };
+    stagingSavedFilterReconciliation: {
+      acceptedPreApplyState: string;
+      requiredPreApplyCounts: {
+        orphan_auth_references: number;
+        empty_names: number;
+        overlength_names: number;
+      };
+      reconciledByExecuteVersion: string;
+    };
   };
   environmentPlans: {
     staging: {
@@ -49,6 +58,13 @@ const migrationSql = readFileSync(
   resolve(
     root,
     'supabase/migrations/20260831200026_enforce_active_authorization_and_atomic_user_deletion.sql'
+  ),
+  'utf8'
+);
+const reconciliationMigrationSql = readFileSync(
+  resolve(
+    root,
+    'supabase/migrations/20260909115242_reconcile_saved_filters_and_room_acl.sql'
   ),
   'utf8'
 );
@@ -108,13 +124,13 @@ describe('Story 22.15 migration baseline safety', () => {
     const execute = manifest.classifications.execute;
     const classified = [...repair, ...execute];
 
-    expect(repositoryVersions).toHaveLength(63);
-    expect(manifest.repositoryMigrationCount).toBe(63);
+    expect(repositoryVersions).toHaveLength(64);
+    expect(manifest.repositoryMigrationCount).toBe(64);
     expect(manifest.reviewedSupabaseCliVersion).toBe('2.115.0');
     expect(new Set(classified).size).toBe(classified.length);
     expect([...classified].sort()).toEqual(repositoryVersions);
     expect(repair).toHaveLength(57);
-    expect(execute).toHaveLength(6);
+    expect(execute).toHaveLength(7);
   });
 
   it('keeps every replay-dangerous historical version out of the execute set', () => {
@@ -143,6 +159,7 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260710144000',
       '20260710150000',
       '20260831200026',
+      '20260909115242',
     ]);
     expect(manifest.environmentPlans.production).toEqual({
       'repair-after-catalog-proof':
@@ -151,15 +168,49 @@ describe('Story 22.15 migration baseline safety', () => {
     });
   });
 
+  it('adds the forward reconciliation after every pre-existing staging apply', () => {
+    expect(manifest.classifications.execute).toEqual([
+      '20260614000000',
+      '20260615000000',
+      '20260709194903',
+      '20260710144000',
+      '20260710150000',
+      '20260831200026',
+      '20260909115242',
+    ]);
+    expect(manifest.environmentPlans.staging.execute).toEqual([
+      '20260615000000',
+      '20260709194903',
+      '20260710144000',
+      '20260710150000',
+      '20260831200026',
+      '20260909115242',
+    ]);
+  });
+
+  it('pins the one reviewed staging exception and its zero-data prerequisites', () => {
+    expect(manifest.catalogProofExceptions.stagingSavedFilterReconciliation).toEqual({
+      acceptedPreApplyState: expect.stringContaining(
+        'user_filters_user_id_name_key'
+      ),
+      requiredPreApplyCounts: {
+        orphan_auth_references: 0,
+        empty_names: 0,
+        overlength_names: 0,
+      },
+      reconciledByExecuteVersion: '20260909115242',
+    });
+  });
+
   it('keeps the duplicated runbook repair/apply lists aligned with the manifest', () => {
     const repairBlock = cutoverRunbook.match(
       /readonly -a PRODUCTION_REPAIR_VERSIONS=\(\s*([\s\S]*?)\n\)/
     )?.[1];
     const stagingApplyBlock = cutoverRunbook.match(
-      /The dry run must list exactly these five applies, in this order:([\s\S]*?)Stop unless the dry run is exactly/
+      /The dry run must list exactly these six applies, in this order:([\s\S]*?)Stop unless the dry run is exactly/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /After the 57 repairs, the dry run must list exactly these six versions:([\s\S]*?)Stop unless the dry run is exact/
+      /After the 57 repairs, the dry run must list exactly these seven versions:([\s\S]*?)Stop unless the dry run is exact/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -576,6 +627,14 @@ describe('Story 22.15 migration baseline safety', () => {
       'actual.is_nullable = expected.is_nullable'
     );
     expect(userFiltersContract).toContain('actual.column_default');
+    expect(verifierSql).toContain(
+      "expected.table_name = 'user_filters'"
+    );
+    expect(verifierSql).toContain(
+      "expected.column_name = 'filters'"
+    );
+    expect(verifierSql).toContain("= '''[]''::jsonb'");
+    expect(verifierSql).toContain(') IS TRUE');
 
     for (const exactConstraint of [
       "('user_filters_pkey', 'p', 'primarykeyid')",
@@ -605,11 +664,14 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(userFiltersContract).toContain('NOT indexes.indisunique');
 
     expect(userFiltersContract).toContain('SELECT count(*) = 1');
-    expect(userFiltersContract).toContain("tgname = 'set_updated_at'");
+    expect(userFiltersContract).toContain("ELSE 'set_updated_at'");
     expect(userFiltersContract).toContain("tgenabled = 'O'");
     expect(userFiltersContract).toContain('tgtype = 19');
     expect(userFiltersContract).toContain(
-      "tgfoid = to_regprocedure('public.trigger_set_updated_at()')"
+      "ELSE to_regprocedure('public.trigger_set_updated_at()')"
+    );
+    expect(userFiltersContract).toContain(
+      "to_regprocedure('public.update_user_filters_updated_at()') IS NULL"
     );
     expect(userFiltersContract).toContain("tgattr::text = ''");
     expect(userFiltersContract).toContain('tgqual IS NULL');
@@ -633,6 +695,65 @@ describe('Story 22.15 migration baseline safety', () => {
     );
     expect(userFiltersContract).toContain(
       "'beginnew.updated_at=now();returnnew;end;'"
+    );
+  });
+
+  it('accepts only the reviewed staging drift profile before applying the forward reconciliation', () => {
+    expect(verifierSql).toContain("conname = 'user_filters_user_id_name_key'");
+    expect(verifierSql).toContain("conname = 'user_filters_name_check'");
+    expect(verifierSql).toContain("THEN 'user_filters_updated_at'");
+    expect(verifierSql).toContain(
+      "to_regprocedure('public.update_user_filters_updated_at()')"
+    );
+    expect(verifierSql).toContain("'checkchar_lengthname<=50'");
+    expect(verifierSql).toContain("'uniqueuser_id,name'");
+    expect(verifierSql).toContain(
+      "md5(functions.prosrc) = '10ff09e0d1433006b865e7959e736c46'"
+    );
+    expect(verifierSql).toContain("SELECT count(*) = 0");
+    expect(verifierSql).toContain(
+      "ARRAY['PUBLIC', 'anon', 'authenticated', 'service_role']::text[]"
+    );
+  });
+
+  it('canonicalizes represented saved-filter and room ACL objects without replaying history', () => {
+    expect(reconciliationMigrationSql).toContain(
+      'ALTER COLUMN filters DROP DEFAULT'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'DROP CONSTRAINT user_filters_user_id_name_key'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'DROP CONSTRAINT user_filters_name_check'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'ADD CONSTRAINT user_filters_user_id_fkey'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'ADD CONSTRAINT unique_user_filter_name UNIQUE (user_id, name)'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'ADD CONSTRAINT valid_name_length'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'CREATE INDEX IF NOT EXISTS idx_user_filters_user_id'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'CREATE INDEX IF NOT EXISTS idx_user_filters_name'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'DROP TRIGGER IF EXISTS user_filters_updated_at ON public.user_filters'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'CREATE OR REPLACE FUNCTION public.trigger_set_updated_at()'
+    );
+    expect(reconciliationMigrationSql).toContain(
+      'REVOKE EXECUTE ON FUNCTION public.recalculate_rooms_for_date(uuid)'
+    );
+    expect(reconciliationMigrationSql).toContain('TO PUBLIC, authenticated');
+    expect(reconciliationMigrationSql).toContain("'admin_limited'");
+    expect(reconciliationMigrationSql).not.toMatch(
+      /SET\s+role_permissions\s*=\s*'\{/i
     );
   });
 
@@ -735,7 +856,7 @@ describe('Story 22.15 migration baseline safety', () => {
       'psql "$SUPABASE_DB_URL" --set ON_ERROR_STOP=1'
     );
     expect(cutoverRunbook).toContain(
-      'a five/six-file `db push` is **not** an all-or-nothing batch'
+      'a six/seven-file `db push` is **not** an all-or-nothing batch'
     );
     expect(cutoverRunbook).toContain(
       'do not repair a failed forward version as applied'
@@ -761,23 +882,31 @@ describe('Story 22.15 migration baseline safety', () => {
       'fresh WebSocket/subscription reconnect is rejected'
     );
     expect(cutoverRunbook).toContain(
-      'deploy the exact reviewed immutable candidate SHA'
+      'Record the full immutable commit SHA'
     );
     expect(cutoverRunbook).toContain(
       'If isolation cannot be proven, the production cutover is NO-GO'
     );
     expect(cutoverRunbook).toContain(
-      'restore only the previously recorded Data API state'
+      'Restore database settings only under separate explicit approval'
     );
-    expect(cutoverRunbook).toContain('operator-only application bypass');
+    expect(cutoverRunbook).toContain('Application smoke runs against staging');
+    expect(cutoverRunbook).not.toContain('operator-only application bypass');
     expect(cutoverRunbook).toContain(
-      'direct API clients can reach only the now-verified final RLS/grant state'
+      'verify direct-role/database behavior and run application smoke against the exact staging candidate'
     );
     expect(cutoverRunbook).toContain(
-      'restore the exact prior **Enable Realtime service** state'
+      'restore only the separately approved prior **Enable Realtime service** state'
     );
     expect(cutoverRunbook).toContain(
       'Epic 23 remains on hold; temporary Data API/Realtime/network cutover controls were restored'
+    );
+    expect(cutoverRunbook).toContain('Retain the existing production pause');
+    expect(cutoverRunbook).toContain(
+      'production application deployment is blocked by the committed pause lock'
+    );
+    expect(cutoverRunbook).not.toContain(
+      'deploy the exact reviewed immutable candidate SHA'
     );
     expect(cutoverRunbook).not.toMatch(
       /migration repair[^\n]*(?:\*|--include-all)/i
@@ -928,6 +1057,22 @@ describe('Story 22.15 active authorization migration', () => {
     expect(liveDatabaseEvidenceTest).toContain(
       'REQUIRE_STORY_22_15_DB_EVIDENCE'
     );
+    expect(liveDatabaseEvidenceTest).toContain(
+      'STORY_22_15_RECONCILIATION_FIXTURE_DATABASE_URL'
+    );
+    expect(liveDatabaseEvidenceTest).toContain(
+      'guardedFixtureUrl.hostname !== "127.0.0.1"'
+    );
+    expect(liveDatabaseEvidenceTest).toContain(
+      'guardedFixtureUrl.port !== "45432"'
+    );
+    expect(liveDatabaseEvidenceTest).toContain(
+      'CREATE DATABASE ${reconciliationFixtureDatabaseName} TEMPLATE postgres'
+    );
+    expect(liveDatabaseEvidenceTest).toContain(
+      'DROP DATABASE ${reconciliationFixtureDatabaseName}'
+    );
+    expect(liveDatabaseEvidenceTest).toContain('reconciliationMigrationSource');
     expect(liveDatabaseEvidenceTest).toContain('createStartBarrier(2)');
     expect(liveDatabaseEvidenceTest).toContain(
       'synchronizedTransactionAttempt'

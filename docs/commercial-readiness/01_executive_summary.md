@@ -3,6 +3,8 @@
 Prepared: 2026-06-03
 Basis: repository files, configuration, sanitized platform metadata, private endpoint checks, sanitized Supabase metadata, and Supabase connector access results. No employee rows, secrets, concrete production hostnames, project references, deployment identifiers, or secret names are disclosed in this public package.
 
+Current preparation candidate is c27a9ee7543b681fb9424484ee3caf7b402a33c7. The 7826a339414fccf6694798ef039a2e1e4403a8b6 GitHub/Vercel/Reviewbot evidence is historical parent evidence. c27a9ee review 5164559421 found only P1 inline 3976995821 for stale parent-SHA exact-head evidence; this documentation patch corrects it. Fresh CI/Vercel/Reviewbot checks for the result-only documentation head remain open. The release plan remains 64 repository versions, one separately approved staging repair followed by six exact applies, and provisional production 57 catalog-proven repairs followed by seven applies after fresh inventory. Production remains paused; deployment, settings changes and reopening require separate owner decisions. The 2026-09-10 narrow dependency remediation returns the audit to 0 critical / 0 high / 1 accepted moderate (exit 1 solely for ExcelJS→UUID through 2026-09-30); focused verification is 197/197. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated. See [current evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md) and [pause safeguards](29_production_pause_release_safeguards.md).
+
 ## What The System Solves
 
 HR Masterdata replaces a spreadsheet-driven seasonal recruitment process with a centralized web application. The problem described in `README.md` and `docs/prd.md` is that HR masterdata was previously managed through Excel files, manual email distribution, and scripts, while different internal and external parties needed controlled access to different parts of the same employee data.
@@ -28,7 +30,7 @@ Evidence: `README.md`, `src/app/dashboard/page.tsx`, `src/app/api/employees/impo
 ## Automations
 
 - Supabase Realtime updates employee views in the dashboard (`src/lib/hooks/use-realtime.ts`, `src/lib/hooks/use-employees.ts`).
-- Vercel cron entries exist for ÖMC and PE3 reminders (`vercel.json`).
+- ÖMC/PE3 reminder code exists, but root `vercel.json` schedules are empty while production is paused. Prior schedules are stored inertly under `src/maintenance`; restoration requires separate approval.
 - PE3 notification idempotency uses `pe3_notifications_log` (`supabase/migrations/20260520000000_ensure_pe3_notifications_log_idempotency.sql`).
 - ÖMC reminders claim a marker before sending to reduce duplicate sends (`src/lib/services/omc-masterdata-reminder.ts`).
 - Nightly Supabase backup and staging refresh workflow exists in GitHub Actions (`.github/workflows/supabase-nightly-backup.yml`); the latest scheduled run checked on 2026-06-03 succeeded, including partial staging restore.
@@ -43,12 +45,12 @@ The main readiness gaps are operational governance, hosted RLS policy/migration 
 ## Key Risks And Dependencies
 
 - Pre-remediation production runtime checks found unauthenticated diagnostic behavior that exposed configuration/auth metadata. Story 22.1 removed the route handlers and local/non-production gates pass; post-deployment production runtime verification remains a release gate. Detailed endpoint evidence is held privately.
-- Story 22.15 refreshed and remediated the candidate production audit from 28 advisories (15 high) to 0 critical, 0 high, 1 moderate, and 0 low across 281 production dependencies. Nodemailer is remediated at `9.1.0`; the sole residual ExcelJS→UUID risk is tracked and time-bounded in `docs/commercial-readiness/15_dependency_advisory_risk_register.md`.
+- The 2026-09-09 dependency failure is historical. The 2026-09-10 narrow patch returns the production audit to 0 critical / 0 high / 1 moderate; its exit 1 is solely the existing, time-bounded ExcelJS→UUID acceptance through 2026-09-30. Fresh full local gates passed on c27a9ee; final documentation-head remote checks remain open.
 - Story 22.3 corrected the selected-employee export path to read custom columns from real employee-table columns instead of the removed `custom_data` table. Evidence: `src/app/api/employees/export/route.ts`, `src/lib/server/repositories/custom-data-repository.ts`.
 - Several privileged flows use a Supabase service-role client that bypasses RLS after application-level checks. This can be acceptable but should be reviewed carefully. Evidence: `src/lib/supabase/server.ts`, `rg createServiceRoleClient src`.
 - Backup automation exists and the 2026-06-03 scheduled workflow completed successfully, including partial staging restore. A full restore drill of a production backup into a non-production target was verified on 2026-06-11 (`evidence/restore-drill-2026-06-11.md`). Backup-failure alerting was added in Story 22.12 (2026-06-16): the workflow now alerts on any non-best-effort step failure (an `if: failure()` step opens/comments a `backup-failure` GitHub issue) and retries the CLI setup once with a pinned version, so the 2026-06-05 silent-gap class cannot recur. Still open: operational ownership confirmation.
 - Repository security posture needs private hardening review; detailed feature-state evidence is held privately.
-- Vercel build logs for the latest production deployment show successful Next.js build, with `DYNAMIC_SERVER_USAGE` warnings for admin pages that use cookies during static generation.
+- Historical application-deployment Vercel build logs showed a successful Next.js build, with `DYNAMIC_SERVER_USAGE` warnings for admin pages that use cookies during static generation.
 - Managed database project controls need private hardening review; detailed control-state evidence and project identifiers are held privately.
 - Staging and production schemas are not identical: staging has custom-looking `employees` columns not in production and lacks production `seably_*` columns.
 - `.env.test` now points at local/non-production Supabase. Keep that guard in place before running integration/e2e tests that may mutate data.
@@ -56,8 +58,8 @@ The main readiness gaps are operational governance, hosted RLS policy/migration 
 ## Recommended Next Steps Before Formal Use
 
 1. Close the post-deployment diagnostic endpoint verification gate.
-2. Keep the dependency advisory risk register current and recheck the sole ExcelJS→UUID moderate advisory by 2026-09-30.
-3. Directly verify Supabase staging/production RLS policies, Auth settings, and migration history with `SUPABASE_DB_PASSWORD` or equivalent database access.
+2. Record the completed local gates and recheck the separately accepted ExcelJS→UUID moderate risk by 2026-09-30.
+3. Use the reviewed target-binding, CLI and catalog wrappers in the cutover runbook for authorized read-only staging/production proof; each hosted mutation retains its separate owner gate.
 4. Full restore drill done (2026-06-11); backup-failure alerting + a one-shot CLI-setup retry added in Story 22.12 (2026-06-16). Remaining: document/measure RTO including auth-user re-provisioning (auth schema is outside logical backup scope).
 5. Complete a DPIA/privacy assessment, retention schedule, DPA/subprocessor list, and incident process.
 6. Confirm remaining production Vercel and Supabase settings, including environment scopes, production deployment protection/custom-domain exposure, secrets rotation, and logging.

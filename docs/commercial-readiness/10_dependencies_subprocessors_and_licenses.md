@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-03
 
-Updated: 2026-08-31 — Story 22.15 final dependency checkpoints
+Updated: 2026-09-10 — Story 22.15 narrow dependency remediation evidence
 
 A draft subprocessor register built from the tables below now exists: `24_subprocessor_register.md` (Story 22.9).
 
@@ -20,13 +20,13 @@ A draft subprocessor register built from the tables below now exists: `24_subpro
 
 | Dependency | Purpose | License evidence | Risk/comment |
 | --- | --- | --- | --- |
-| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; current production audit reports no Next.js advisories |
+| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; the 2026-09-10 compatible Browserslist/Sharp remediation returns the audit to zero critical/high, fresh full local gates passed; final documentation-head checks open |
 | `react`, `react-dom` | UI | MIT | Standard |
 | `@supabase/ssr`, `@supabase/supabase-js` | Auth/database/realtime client | MIT transitive in license list | Compatible transitive `ws` remediation is pinned in the production lockfile |
 | `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/react-virtual` | Data fetching/table/virtualization | MIT | Standard |
 | `zod` | Validation | MIT | Strong validation dependency |
 | `zustand` | Client state | MIT | Persists auth metadata to localStorage |
-| `nodemailer` | SMTP email | MIT-0 | Updated to `9.1.0` with types `8.0.1`; non-network JSON-transport compatibility test covers the SMTP integration surface |
+| `nodemailer` | SMTP email | MIT-0 | Version `9.1.1` with types `8.0.1`; the JSON-transport compatibility test remains in place |
 | `exceljs` | XLSX export | MIT but transitive licenses/advisories | High transitive advisories patched with pnpm overrides; sole residual `uuid` moderate advisory is time-bounded and risk-accepted through 2026-09-30 |
 | `papaparse` | CSV import/export | MIT | CSV injection controls not specifically verified |
 | Radix packages | UI primitives | MIT | Standard |
@@ -47,14 +47,16 @@ Recommended action: generate a complete third-party notice file from the final p
 
 ## Security Audit Findings
 
-The fresh Story 22.15 `pnpm audit --prod --json` checkpoint returns one residual production advisory after the three approved batches:
+The 2026-09-09 audit failure is historical: **0 critical / 3 high / 3 moderate**. The narrow 2026-09-10 patch raises Nodemailer to `9.1.1`, Sharp to `0.35.4`, and compatible workspace floors to Browserslist `4.28.7`, baseline-browser-mapping `2.11.0`, and Sharp `0.35.4`. The resulting audit is **0 critical / 0 high / 1 moderate**, exit 1 solely for the existing time-bounded ExcelJS→UUID residual through 2026-09-30. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated. See the current advisory register and dated remediation evidence.
+
+Historical checkpoint after the three approved batches:
 
 - 0 critical
 - 0 high
 - 1 moderate
 - 0 low
 
-Patched areas include Next.js/ESLint/analyzer, Sharp, Nodemailer, Babel, `brace-expansion`, `postcss`, and `nanoid`, in addition to the existing compatible production overrides. The sole residual is `exceljs` → `uuid@8.3.2` (`GHSA-w5hq-g745-h8pq` / `CVE-2026-41907`); it is tracked with server-side controls and a 2026-09-30 review in `15_dependency_advisory_risk_register.md`.
+Patched areas include Next.js/ESLint/analyzer, Sharp, Nodemailer, Babel, `brace-expansion`, `postcss`, and `nanoid`, in addition to the existing compatible production overrides. The sole residual at that historical checkpoint was `exceljs` → `uuid@8.3.2` (`GHSA-w5hq-g745-h8pq` / `CVE-2026-41907`); it is tracked with server-side controls and a 2026-09-30 review in `15_dependency_advisory_risk_register.md`.
 
 ## Potential Subprocessor Data Map
 

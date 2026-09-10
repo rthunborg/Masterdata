@@ -85,7 +85,7 @@ Current implementation:
 - Supabase is the database, auth provider, RLS engine, and realtime provider.
 - SMTP/Nodemailer is used for email delivery.
 - GitHub Actions handles CI and backup automation.
-- Vercel cron is configured for two notification jobs.
+- Notification code exists for two jobs, but Vercel cron definitions are empty while production is paused. Restoring the inert prior schedules requires separate owner authorization.
 
 Does not currently prove:
 
