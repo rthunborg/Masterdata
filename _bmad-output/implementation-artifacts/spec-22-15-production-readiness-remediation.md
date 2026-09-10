@@ -57,7 +57,7 @@ context:
 **Acceptance Criteria:**
 - Inactive users cannot obtain a database role, access role-gated data/RPCs, or CRUD saved filters; active-role behavior remains green.
 - Deletion invariant checks and app-row deletion are one transaction; a failed delete cannot change `is_active`.
-- The historical 64-version plan is superseded by the current proposed 65-version plan: staging is one history repair plus seven applies, production is provisionally 57 catalog-proven repairs plus eight applies after fresh inventory. Instructions require explicit lists, `--dry-run --skip-vault`, an immutable commit, and backup/go-live gates.
+- The historical 64- and 65-version plans are superseded by the current 66-version plan. Staging completed the separately approved repair and seven applies, reaching 65/65 history; current staging permits no repair and only forward version 20260910115024. Production is provisionally 57 catalog-proven repairs plus nine applies after fresh inventory. Instructions require explicit lists, `--dry-run --skip-vault`, an immutable commit, and backup/go-live gates.
 - Fresh `pnpm audit --prod` reports zero critical/high advisories; the sole expected residual is documented ExcelJS→UUID moderate risk with control and review date.
 - Story 22.14 focused reminder/PostgREST evidence and the full quality suite pass without real-recipient delivery; all skips identify the missing environment/authorization.
 - All readiness/status artifacts agree, PR review blockers are addressed, and Epic 23 remains explicitly on hold.
