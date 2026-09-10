@@ -3,7 +3,7 @@
 > **Current execution record — 2026-09-10 15:14 UTC.** PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold. [Completed reconciliation evidence](evidence/staging-reconciliation-completed-2026-09-10.md). This record supersedes earlier statements that PR #98 review, its merge, the correction apply or migration-apply authorization are pending; earlier dated entries remain historical.
 
 
-Status: **Staging schema reconciled and verified; hosted authorization acceptance and owner staging verification remain open.** The owner-authorized repair and seven-file apply completed on 2026-09-10. Current staging has 65 history rows. Production remains paused and untouched by this database work.
+Status: **Staging schema reconciled and verified; hosted authorization acceptance and owner staging verification remain open.** The owner-authorized repair and seven-file apply completed on 2026-09-10. The subsequent PR #98 correction also completed; current staging has 66 history rows and no pending migrations. Production remains paused and untouched by this database work.
 
 Repository target: **66 migration versions / 17 policies**. The immutable classification source is `supabase/migration-baseline-manifest.json`; the machine-enforced read-only proof entry point is `supabase/verify/verify-production-baseline-catalog.mjs`, backed by `supabase/verify/production-baseline-catalog.sql`.
 
@@ -136,7 +136,7 @@ On 2026-06-14 Story 22.10 recorded 57 history rows through `20260614000000` and 
 
 The following procedure was completed on 2026-09-10; its one-version manifest plan describes that reconciliation baseline, not a currently pending migration. Use post_apply for current staging validation. Do not rerun its pre-apply phase or apply after successful 66/66 history. Historical procedure: after the correction PR is reviewed and separately authorized for merge, fetch staging/main, inspect intervening commits, and create a clean isolated checkout at the resulting staging SHA. Reverify reviewed tooling, CLI 2.115.0, certificate integrity, and three-way target binding. Capture fresh migration history: exactly 65 recorded repository versions, no remote-only versions, no repair candidates, and only `20260910115024` pending against the 66-version manifest. The CLI wrapper must reject every staging repair request because that allowlist is empty.
 
-Run the current staging-specific read-only proof:
+Historical pre-apply proof used before the completed correction:
 
 ```bash
 node supabase/verify/verify-production-baseline-catalog.mjs staging_reconciliation_pre_apply
