@@ -1,9 +1,9 @@
 # Evidence Index
 
 Prepared: 2026-06-03
-Updated: 2026-09-09 — PR #95 staging merge and reconciliation/pause preparation recorded; earlier local candidate gates recorded; pause-guard corrections require renewed full gates; audit and hosted gates remain open
+Updated: 2026-09-10 — dependency remediation, exact-head remote evidence, and pending fresh local gates recorded
 
-Current amendment: [staging reconciliation and pause preparation](evidence/staging-reconciliation-and-pause-2026-09-09.md) records the merged staging SHA, 64-version provisional plan, read-only zero-cleanup/aggregate proof, and redacted pause inspection. It records dated local results; it is not hosted mutation proof or production-readiness approval. Fresh production audit is an open material gate at 0 critical/3 high/3 moderate; targeted remediation awaits owner direction.
+Current amendment: [staging reconciliation and pause preparation](evidence/staging-reconciliation-and-pause-2026-09-09.md) records the merged staging SHA, 64-version provisional plan, read-only zero-cleanup/aggregate proof, redacted pause inspection, and 2026-09-10 dependency remediation. The post-patch audit is 0 critical / 0 high / 1 accepted moderate, exit 1 solely for the time-bounded ExcelJS→UUID residual; fresh full local gates remain pending. It is not hosted mutation proof or production-readiness approval.
 
 | Area | File/module | What it proves | Relevant documents | Comment |
 | --- | --- | --- | --- | --- |

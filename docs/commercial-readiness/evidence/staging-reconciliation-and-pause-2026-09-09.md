@@ -77,6 +77,22 @@ Fresh `pnpm audit --prod --json` on 2026-09-09 exited 1: **0 critical / 3 high /
 
 Primary advisory records: [Browserslist cache growth](https://github.com/advisories/GHSA-c83g-rgw3-j3cx), [Browserslist custom stats](https://github.com/advisories/GHSA-73wf-gq98-2v4g), [Sharp/libheif](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c). Proposed bounded fix versions are Browserslist >=4.28.7, Sharp 0.35.4, baseline-browser-mapping >=2.11.0 and Nodemailer 9.1.1, followed by fresh audit and all affected gates. Supabase CLI remains 2.115.0.
 
+## Dependency remediation evidence — 2026-09-10
+
+The narrow compatible patch was applied after the dated 2026-09-09 failure evidence above. Before the patch, `pnpm audit --prod --json` exited `1` with **0 critical / 3 high / 3 moderate / 0 low**. After the patch, the same command still exited `1`, solely because the accepted `exceljs` transitive `uuid 8.3.2` finding (`GHSA-w5hq-g745-h8pq`) remains: **0 critical / 0 high / 1 moderate / 0 low** across 282 production dependencies. This exit code is not a blanket waiver; the only residual is covered by the existing time-bounded acceptance through 2026-09-30. No new risk waiver was created, and the deliberately incompatible UUID major override was not used.
+
+| Dependency / constraint | Before | After |
+| --- | --- | --- |
+| Nodemailer | `9.1.0` | `9.1.1` |
+| Sharp | `0.35.3` | `0.35.4` |
+| `browserslist` compatible workspace floor | `>=4.0.0 <4.28.7` | `4.28.7` |
+| `baseline-browser-mapping` compatible workspace floor | `>=2.0.0 <2.11.0` | `2.11.0` |
+| `sharp` compatible workspace floor | `>=0.35.0 <0.35.4` | `0.35.4` |
+
+The approved Supabase CLI remains `2.115.0`. The sanitized post-patch audit artifact is retained as `C:\DEV\hr-masterdata-22-15-support-20260909\audit-patched-20260910.json`. Relevant advisories: [Browserslist cache growth](https://github.com/advisories/GHSA-c83g-rgw3-j3cx), [Browserslist custom stats](https://github.com/advisories/GHSA-73wf-gq98-2v4g), [Nodemailer](https://github.com/advisories/GHSA-w5vr-8v7q-w6rv), [Sharp/libheif](https://github.com/advisories/GHSA-rgj7-g3m4-5g8c), and [baseline-browser-mapping](https://github.com/advisories/GHSA-8m3c-c648-2xjj).
+
+The fresh trusted resource-guard hook is now available, resolving the historical `ACTOR_CLOSING` restart blocker. Renewed full local Vitest and Playwright gates are pending and must not be inferred from earlier candidate results. Exact-head CI on `7826a339414fccf6694798ef039a2e1e4403a8b6` is green: `test:silent` 3,372 passed / 67 skipped in 502.41 seconds and integration 827 passed / 67 skipped in 151.06 seconds. GitHub and Vercel checks are green; Reviewbot reported no findings in comment `5603868237`, and all eight inline threads are resolved. These remote results do not replace the pending fresh local full gates or authorize hosted actions, deployment, merging, or reopening.
+
 ## Full local candidate evidence before the custom-preview correction
 
 Application, test, migration and build-control implementation: `5f60e58c9aa9a7e117bc589ec82d0b99a5846839`. Exact full browser candidate: `2ea1077aec62729303116bb85c49b4c44e98639f`; only readiness Markdown changed between those revisions. The final evidence commit also changes documentation only.

@@ -30,8 +30,8 @@ epic_metrics:
   current_coverage_critical: 0
   current_test_execution_time_seconds: 1196
   total_tests_estimated: 106
-  total_tests_implemented: 403
-  total_tests_passing: 403
+  total_tests_implemented: 406
+  total_tests_passing: 406
 
 stories:
   - id: '22.1'
@@ -239,8 +239,8 @@ stories:
     status: 'in-progress'
     story_points: 0
     estimated_tests: 26
-    implemented_tests: 156 # Prior 153 plus two custom-preview and one blank-approval guard regressions; current focused gate 50/50.
-    passing_tests: 156
+    implemented_tests: 159 # Prior 156 plus two Nodemailer legacy-plugin access-policy and one native Sharp alpha-compatibility regressions; mail/dependency focused evidence 4/4.
+    passing_tests: 159
     dependencies: ['22.10', '22.13', '22.14']
     assignee: 'Codex'
     started_date: 2026-08-31
@@ -248,7 +248,7 @@ stories:
     blockers:
       - 'PR #95 is merged into staging at 8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c; main remains 822350986f4c023948a7bbf490ddffc371185c4a with no intervening commits. The new 64-version reconciliation/pause PR requires renewed full local gates after the custom-preview correction, dependency-audit resolution and exact-head review before an owner merge decision.'
       - 'Hosted staging/production actions require fresh proof and separate explicit owner gates: one staging repair then six applies; production inventory then 57 repairs plus seven applies. No hosted delta is applied and the production pause remains active.'
-    notes: 'Earlier candidate verification (superseded by the custom-preview and blank-approval guard corrections; renewed full local gates are blocked by ACTOR_CLOSING): full Vitest 3,436/3,436 with zero skips on 5f60e58c9aa9a7e117bc589ec82d0b99a5846839; exact full Playwright 163 passed / 47 classified skips / zero failures or errors on 2ea1077aec62729303116bb85c49b4c44e98639f, exit 0, 1127.916442 seconds. TypeScript, zero-error lint, preview build, pause safeguards and complete local migration fixtures pass. Exact-head CI/Vercel/Reviewbot results must be checked on PR #96 after publishing the evidence commit. The dependency audit remains failed at 0 critical/3 high/3 moderate, with targeted patches awaiting owner direction. Story 22.15 stays in-progress; Epic 23 stays on hold. Hosted repair/apply, staging/main merges, production deployment/settings and reopening remain separately owner-gated.'
+    notes: 'Earlier candidate full results remain historical because they predate the custom-preview and blank-approval guard corrections. A fresh trusted lifecycle context is restored, resolving ACTOR_CLOSING; renewed full local Vitest and Playwright gates (expected 3,442 Vitest tests) remain pending. Current focused evidence is 197/197 across 14 files in 37.85 seconds with zero skips; TypeScript and lint pass, and required observed-state fixture/live-export cases are enabled. The 2026-09-10 narrow dependency patch updates Nodemailer 9.1.0→9.1.1 and Sharp 0.35.3→0.35.4, returns audit from 0 critical/3 high/3 moderate to 0 critical/0 high/1 accepted UUID moderate, and adds three passing regressions (159 total): two mocked Nodemailer legacy-plugin access-policy cases and one native Sharp PNG→WebP alpha case. Exact-head GitHub/Vercel checks are green on 7826a339414fccf6694798ef039a2e1e4403a8b6; Reviewbot has no findings and all eight inline threads are resolved. Story 22.15 stays in-progress; Epic 23 stays on hold. Hosted actions remain separately owner-gated.'
 
 progress_summary:
   total_stories: 15
@@ -266,14 +266,14 @@ progress_summary:
 
 test_coverage_summary:
   total_tests_estimated: 106
-  total_tests_implemented: 403
-  total_tests_passing: 403
+  total_tests_implemented: 406
+  total_tests_passing: 406
   implementation_percentage: 380.2
-  unit_tests: 286
+  unit_tests: 289
   integration_tests: 112
   e2e_tests: 3 # Includes one safe unauthorized-only Story 22.14 cron case, passed in the exact full Playwright gate.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 286 + 112 + 3 + 0 + 2 = 403
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 289 + 112 + 3 + 0 + 2 = 406
 
 blockers:
   - 'PR #95 is merged. PR #96 reconciliation/pause preparation requires final test evidence, exact-head checks/review, resolution of the failed dependency audit, and explicit owner merge authorization. No hosted mutation or reopening is authorized.'

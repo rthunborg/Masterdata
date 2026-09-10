@@ -2,7 +2,7 @@
 
 Prepared: 2026-06-03
 
-Updated: 2026-08-31 — Story 22.15 final dependency checkpoints
+Updated: 2026-09-10 — Story 22.15 narrow dependency remediation evidence
 
 A draft subprocessor register built from the tables below now exists: `24_subprocessor_register.md` (Story 22.9).
 
@@ -20,13 +20,13 @@ A draft subprocessor register built from the tables below now exists: `24_subpro
 
 | Dependency | Purpose | License evidence | Risk/comment |
 | --- | --- | --- | --- |
-| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; new transitive Browserslist/Sharp findings remain an open production audit gate |
+| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; the 2026-09-10 compatible Browserslist/Sharp remediation returns the audit to zero critical/high, pending fresh full local gates |
 | `react`, `react-dom` | UI | MIT | Standard |
 | `@supabase/ssr`, `@supabase/supabase-js` | Auth/database/realtime client | MIT transitive in license list | Compatible transitive `ws` remediation is pinned in the production lockfile |
 | `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/react-virtual` | Data fetching/table/virtualization | MIT | Standard |
 | `zod` | Validation | MIT | Strong validation dependency |
 | `zustand` | Client state | MIT | Persists auth metadata to localStorage |
-| `nodemailer` | SMTP email | MIT-0 | Version `9.1.0` with types `8.0.1`; a new moderate advisory requires review of the proposed `9.1.1` patch; the JSON-transport compatibility test remains in place |
+| `nodemailer` | SMTP email | MIT-0 | Version `9.1.1` with types `8.0.1`; the JSON-transport compatibility test remains in place |
 | `exceljs` | XLSX export | MIT but transitive licenses/advisories | High transitive advisories patched with pnpm overrides; sole residual `uuid` moderate advisory is time-bounded and risk-accepted through 2026-09-30 |
 | `papaparse` | CSV import/export | MIT | CSV injection controls not specifically verified |
 | Radix packages | UI primitives | MIT | Standard |
@@ -47,7 +47,7 @@ Recommended action: generate a complete third-party notice file from the final p
 
 ## Security Audit Findings
 
-The earlier Story 22.15 checkpoint below is historical and superseded by the 2026-09-09 production audit: **0 critical / 3 high / 3 moderate**, an open release blocker. Targeted remediation awaits owner direction; the earlier UUID acceptance does not waive new findings. See the current advisory register and preparation evidence.
+The 2026-09-09 audit failure is historical: **0 critical / 3 high / 3 moderate**. The narrow 2026-09-10 patch raises Nodemailer to `9.1.1`, Sharp to `0.35.4`, and compatible workspace floors to Browserslist `4.28.7`, baseline-browser-mapping `2.11.0`, and Sharp `0.35.4`. The resulting audit is **0 critical / 0 high / 1 moderate**, exit 1 solely for the existing time-bounded ExcelJS→UUID residual through 2026-09-30. Fresh full local gates remain pending. See the current advisory register and dated remediation evidence.
 
 Historical checkpoint after the three approved batches:
 

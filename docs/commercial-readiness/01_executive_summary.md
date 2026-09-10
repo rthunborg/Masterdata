@@ -3,7 +3,7 @@
 Prepared: 2026-06-03
 Basis: repository files, configuration, sanitized platform metadata, private endpoint checks, sanitized Supabase metadata, and Supabase connector access results. No employee rows, secrets, concrete production hostnames, project references, deployment identifiers, or secret names are disclosed in this public package.
 
-Current preparation is draft PR #96: 64 repository versions, one separately approved staging repair followed by six exact applies, and provisional production 57 catalog-proven repairs followed by seven applies after fresh inventory. Production remains paused; deployment, settings changes and reopening require separate owner decisions. The production dependency audit is an open release blocker at 0 critical / 3 high / 3 moderate. See [current evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md) and [pause safeguards](29_production_pause_release_safeguards.md).
+Current preparation is PR #96 at reviewed exact head `7826a339414fccf6694798ef039a2e1e4403a8b6`: 64 repository versions, one separately approved staging repair followed by six exact applies, and provisional production 57 catalog-proven repairs followed by seven applies after fresh inventory. Production remains paused; deployment, settings changes and reopening require separate owner decisions. The 2026-09-10 narrow dependency remediation returns the audit to 0 critical / 0 high / 1 accepted moderate (exit 1 solely for ExcelJS→UUID through 2026-09-30); focused verification is 197/197 and fresh full local gates remain pending. See [current evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md) and [pause safeguards](29_production_pause_release_safeguards.md).
 
 ## What The System Solves
 
@@ -45,7 +45,7 @@ The main readiness gaps are operational governance, hosted RLS policy/migration 
 ## Key Risks And Dependencies
 
 - Pre-remediation production runtime checks found unauthenticated diagnostic behavior that exposed configuration/auth metadata. Story 22.1 removed the route handlers and local/non-production gates pass; post-deployment production runtime verification remains a release gate. Detailed endpoint evidence is held privately.
-- The earlier dependency remediation is historical. The fresh 2026-09-09 production audit reports 0 critical / 3 high / 3 moderate; targeted fixes await owner direction and the release gate is failed. The previous UUID acceptance does not cover these new findings.
+- The 2026-09-09 dependency failure is historical. The 2026-09-10 narrow patch returns the production audit to 0 critical / 0 high / 1 moderate; its exit 1 is solely the existing, time-bounded ExcelJS→UUID acceptance through 2026-09-30. Fresh full local gates remain pending.
 - Story 22.3 corrected the selected-employee export path to read custom columns from real employee-table columns instead of the removed `custom_data` table. Evidence: `src/app/api/employees/export/route.ts`, `src/lib/server/repositories/custom-data-repository.ts`.
 - Several privileged flows use a Supabase service-role client that bypasses RLS after application-level checks. This can be acceptable but should be reviewed carefully. Evidence: `src/lib/supabase/server.ts`, `rg createServiceRoleClient src`.
 - Backup automation exists and the 2026-06-03 scheduled workflow completed successfully, including partial staging restore. A full restore drill of a production backup into a non-production target was verified on 2026-06-11 (`evidence/restore-drill-2026-06-11.md`). Backup-failure alerting was added in Story 22.12 (2026-06-16): the workflow now alerts on any non-best-effort step failure (an `if: failure()` step opens/comments a `backup-failure` GitHub issue) and retries the CLI setup once with a pinned version, so the 2026-06-05 silent-gap class cannot recur. Still open: operational ownership confirmation.
@@ -58,7 +58,7 @@ The main readiness gaps are operational governance, hosted RLS policy/migration 
 ## Recommended Next Steps Before Formal Use
 
 1. Close the post-deployment diagnostic endpoint verification gate.
-2. Resolve the newly detected dependency findings and recheck the separately accepted ExcelJS→UUID moderate risk by 2026-09-30.
+2. Complete fresh full local gates and recheck the separately accepted ExcelJS→UUID moderate risk by 2026-09-30.
 3. Use the reviewed target-binding, CLI and catalog wrappers in the cutover runbook for authorized read-only staging/production proof; each hosted mutation retains its separate owner gate.
 4. Full restore drill done (2026-06-11); backup-failure alerting + a one-shot CLI-setup retry added in Story 22.12 (2026-06-16). Remaining: document/measure RTO including auth-user re-provisioning (auth schema is outside logical backup scope).
 5. Complete a DPIA/privacy assessment, retention schedule, DPA/subprocessor list, and incident process.
