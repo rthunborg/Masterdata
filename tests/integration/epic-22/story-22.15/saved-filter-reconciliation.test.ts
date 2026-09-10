@@ -53,6 +53,7 @@ const stagingForwardMigrationSources = [
   'supabase/migrations/20260710150000_atomic_user_status_transition.sql',
   'supabase/migrations/20260831200026_enforce_active_authorization_and_atomic_user_deletion.sql',
   'supabase/migrations/20260909115242_reconcile_saved_filters_and_room_acl.sql',
+  'supabase/migrations/20260910094517_reconcile_repayment_defaults.sql',
 ].map((path) => readFileSync(path, 'utf8'));
 const catalogSql = readFileSync(
   'supabase/verify/production-baseline-catalog.sql',
@@ -127,6 +128,9 @@ describe.skipIf(!fixtureUrl)(
       await fixtureClient.connect();
 
       await fixtureClient.query(`
+        ALTER TABLE public.employees
+          ALTER COLUMN repayment_needed_omc DROP DEFAULT,
+          ALTER COLUMN repayment_needed_pe3 DROP DEFAULT;
         ALTER TABLE public.user_filters
           ALTER COLUMN filters SET DEFAULT '[]'::jsonb;
         ALTER TABLE public.user_filters
@@ -290,6 +294,43 @@ describe.skipIf(!fixtureUrl)(
       );
     });
 
+    it('keeps production pre-apply repayment defaults strict until its separate inventory', async () => {
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query(
+          `ALTER TABLE public.user_filters ALTER COLUMN filters DROP DEFAULT;`
+        );
+        const missingDefaults = await readCatalog(
+          fixtureClient,
+          'production_pre_apply',
+          false
+        );
+        expect(
+          missingDefaults.find(
+            (check) => check.check_name === 'represented_column_contracts'
+          )?.passed
+        ).toBe(false);
+
+        await fixtureClient.query(`
+          ALTER TABLE public.employees
+            ALTER COLUMN repayment_needed_omc SET DEFAULT false,
+            ALTER COLUMN repayment_needed_pe3 SET DEFAULT false;
+        `);
+        const falseDefaults = await readCatalog(
+          fixtureClient,
+          'production_pre_apply',
+          false
+        );
+        expect(
+          falseDefaults.find(
+            (check) => check.check_name === 'represented_column_contracts'
+          )?.passed
+        ).toBe(true);
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+    });
+
     it.each([
       {
         label: 'mixed foreign key',
@@ -297,6 +338,26 @@ describe.skipIf(!fixtureUrl)(
         sql: `ALTER TABLE public.user_filters
                 ADD CONSTRAINT user_filters_user_id_fkey
                   FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;`,
+      },
+      {
+        label: 'mixed repayment defaults',
+        checkName: 'represented_column_contracts',
+        sql: `ALTER TABLE public.employees
+                ALTER COLUMN repayment_needed_omc SET DEFAULT false;`,
+      },
+      {
+        label: 'true repayment defaults',
+        checkName: 'represented_column_contracts',
+        sql: `ALTER TABLE public.employees
+                ALTER COLUMN repayment_needed_omc SET DEFAULT true,
+                ALTER COLUMN repayment_needed_pe3 SET DEFAULT true;`,
+      },
+      {
+        label: 'both canonical defaults before staging reconciliation',
+        checkName: 'represented_column_contracts',
+        sql: `ALTER TABLE public.employees
+                ALTER COLUMN repayment_needed_omc SET DEFAULT false,
+                ALTER COLUMN repayment_needed_pe3 SET DEFAULT false;`,
       },
       {
         label: 'NULL saved-filter array default',
@@ -437,12 +498,156 @@ describe.skipIf(!fixtureUrl)(
     });
 
     it('converges the represented fixture on the strict post-apply catalog', async () => {
+      const preservedEmployeeId = randomUUID();
+      const preservedNullEmployeeId = randomUUID();
+      await fixtureClient.query(
+        `INSERT INTO public.employees (
+           id, first_name, surname, ssn, email, mobile, rank, gender,
+           town_district, hire_date, is_archived, is_terminated, comments,
+           one, talmundo, isps, photo, origo, loneiva, mail_lon,
+           bankuppgifter, li, passport, kvitto_c17_18, c17, crewing_done,
+           hotel_required, special_diet, diet_details,
+           repayment_needed_omc, repayment_needed_pe3
+         ) VALUES (
+           $1, 'Repayment', 'Preservation', $2, $3, '+46700002215',
+           'SEV', 'Woman', 'Göteborg', '2020-01-01', false, false, null,
+           false, false, false, false, false, 1, false, false, false,
+           false, false, false, false, false, false, null, true, false
+         )`,
+        [
+          preservedEmployeeId,
+          `221500-${preservedEmployeeId.slice(0, 4)}`,
+          `repayment-${preservedEmployeeId}@example.test`,
+        ]
+      );
+      await fixtureClient.query(
+        `INSERT INTO public.employees (
+           id, first_name, surname, ssn, email, mobile, rank, gender,
+           town_district, hire_date, is_archived, is_terminated, comments,
+           one, talmundo, isps, photo, origo, loneiva, mail_lon,
+           bankuppgifter, li, passport, kvitto_c17_18, c17, crewing_done,
+           hotel_required, special_diet, diet_details,
+           repayment_needed_omc, repayment_needed_pe3
+         ) VALUES (
+           $1, 'Repayment', 'Null Preservation', $2, $3, '+46700002218',
+           'SEV', 'Woman', 'Göteborg', '2020-01-01', false, false, null,
+           false, false, false, false, false, 1, false, false, false,
+           false, false, false, false, false, false, null, null, null
+         )`,
+        [
+          preservedNullEmployeeId,
+          `221503-${preservedNullEmployeeId.slice(0, 4)}`,
+          `repayment-null-before-${preservedNullEmployeeId}@example.test`,
+        ]
+      );
       for (const source of stagingForwardMigrationSources) {
         await fixtureClient.query(source);
       }
       const checks = await readCatalog(fixtureClient, 'post_apply');
       expect(checks).toHaveLength(15);
       expect(checks.filter((check) => !check.passed)).toEqual([]);
+
+      const preserved = await fixtureClient.query<{
+        repayment_needed_omc: boolean | null;
+        repayment_needed_pe3: boolean | null;
+      }>(
+        `SELECT repayment_needed_omc, repayment_needed_pe3
+         FROM public.employees WHERE id = $1`,
+        [preservedEmployeeId]
+      );
+      expect(preserved.rows).toEqual([
+        { repayment_needed_omc: true, repayment_needed_pe3: false },
+      ]);
+      const preservedNulls = await fixtureClient.query<{
+        repayment_needed_omc: boolean | null;
+        repayment_needed_pe3: boolean | null;
+      }>(
+        `SELECT repayment_needed_omc, repayment_needed_pe3
+         FROM public.employees WHERE id = $1`,
+        [preservedNullEmployeeId]
+      );
+      expect(preservedNulls.rows).toEqual([
+        { repayment_needed_omc: null, repayment_needed_pe3: null },
+      ]);
+
+      const omittedDefaultEmployeeId = randomUUID();
+      const explicitNullEmployeeId = randomUUID();
+      const insertEmployee = async (
+        id: string,
+        suffix: string,
+        repaymentColumns: string,
+        repaymentValues: string
+      ) => {
+        await fixtureClient.query(
+          `INSERT INTO public.employees (
+             id, first_name, surname, ssn, email, mobile, rank, gender,
+             town_district, hire_date, is_archived, is_terminated, comments,
+             one, talmundo, isps, photo, origo, loneiva, mail_lon,
+             bankuppgifter, li, passport, kvitto_c17_18, c17, crewing_done,
+             hotel_required, special_diet, diet_details${repaymentColumns}
+           ) VALUES (
+             $1, 'Repayment', 'Default', $2, $3, '+46700002216',
+             'SEV', 'Woman', 'Göteborg', '2020-01-01', false, false, null,
+             false, false, false, false, false, 1, false, false, false,
+             false, false, false, false, false, false, null${repaymentValues}
+           )`,
+          [
+            id,
+            `2215-${suffix}-${id.slice(0, 4)}`,
+            `repayment-${suffix}-${id}@example.test`,
+          ]
+        );
+      };
+      await insertEmployee(omittedDefaultEmployeeId, 'omitted', '', '');
+      await insertEmployee(
+        explicitNullEmployeeId,
+        'explicit-null',
+        ', repayment_needed_omc, repayment_needed_pe3',
+        ', null, null'
+      );
+      const omittedDefaults = await fixtureClient.query<{
+        repayment_needed_omc: boolean | null;
+        repayment_needed_pe3: boolean | null;
+      }>(
+        `SELECT repayment_needed_omc, repayment_needed_pe3
+         FROM public.employees WHERE id = $1`,
+        [omittedDefaultEmployeeId]
+      );
+      expect(omittedDefaults.rows).toEqual([
+        { repayment_needed_omc: false, repayment_needed_pe3: false },
+      ]);
+      const explicitNulls = await fixtureClient.query<{
+        repayment_needed_omc: boolean | null;
+        repayment_needed_pe3: boolean | null;
+      }>(
+        `SELECT repayment_needed_omc, repayment_needed_pe3
+         FROM public.employees WHERE id = $1`,
+        [explicitNullEmployeeId]
+      );
+      expect(explicitNulls.rows).toEqual([
+        { repayment_needed_omc: null, repayment_needed_pe3: null },
+      ]);
+
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query(`
+          ALTER TABLE public.employees
+            ALTER COLUMN repayment_needed_omc DROP DEFAULT,
+            ALTER COLUMN repayment_needed_pe3 SET DEFAULT true;
+        `);
+        const strictPostApplyChecks = await readCatalog(
+          fixtureClient,
+          'post_apply',
+          false
+        );
+        expect(
+          strictPostApplyChecks.find(
+            (check) => check.check_name === 'represented_column_contracts'
+          )?.passed
+        ).toBe(false);
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
 
       await fixtureClient.query('BEGIN');
       try {

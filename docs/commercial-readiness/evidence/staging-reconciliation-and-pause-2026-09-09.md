@@ -2,7 +2,11 @@
 
 Status: preparation in progress. Story 22.15 remains **in-progress**; Epic 23 remains **on hold**. No hosted database write, history repair, production/manual deployment, hosted setting change, staging/main merge, or reopening occurred in this preparation. The authorized branch push triggered Vercel's normal automatic preview build.
 
-## Current final-candidate overview — 2026-09-10
+## Current post-merge default-reconciliation amendment — 2026-09-10
+
+PR #96 was subsequently merged to staging at `3724809065f9e4559802fdcd80e7e526172cc8fd`; main remains `822350986f4c023948a7bbf490ddffc371185c4a`. A fresh fetch found no intervening commit and the tree equalled that reviewed head before the new candidate work. The post-merge catalog failed at 2026-09-10T09:19:52.669Z only on `represented_column_contracts`: all 22 represented columns match expected type and nullability, 20 defaults match, and only `repayment_needed_omc` and `repayment_needed_pe3` lack the expected `false` default. The authorized diagnostic at 2026-09-10T09:44:14.972Z read no employee rows and made no write. The proposed forward-only `20260910094517_reconcile_repayment_defaults.sql` sets those two defaults without changing existing values, including NULLs. The proposed plan is 65 repository versions: staging one repair plus seven ordered applies, and provisional production 57 repairs plus eight ordered applies after fresh inventory. New migration/verifier/manifest tests and all final-head gates are pending; the earlier c27a9ee gates below are historical and do not prove this new candidate. See [repayment default diagnostic](repayment-defaults-diagnostic-2026-09-10.md).
+
+## Historical PR #96 implementation-candidate overview — 2026-09-10
 
 | Area | Current evidence |
 | --- | --- |

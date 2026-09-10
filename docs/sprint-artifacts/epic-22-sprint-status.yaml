@@ -12,7 +12,7 @@ epic_completion_gate:
     title: 'Story 22.10 Phase B — Supabase production cutover'
     status: 'pending' # set to 'done' once executed to silence the reminder
     trigger: 'Only after Story 22.15 is locally complete, PR-reviewed, recorded at a final immutable remediation SHA, and owner-verified on staging; before any production mutation.'
-    actions: 'Follow docs/commercial-readiness/27_supabase_cutover_runbook.md from supabase/migration-baseline-manifest.json: capture fresh catalog proof; complete and sign the 57-row production proof ledger; run only the exact explicit repairs; require the reviewed wrapper''s db push --reviewed-target --dry-run --skip-vault with actual connection binding to show the seven exact applies after fresh production inventory; then require a fresh backup, approved maintenance window, and explicit production database-apply authorization. Preserve the pause; reopening requires a separate owner decision. Verify migration history, 17 policies, grants, direct-role behavior, advisors, and data-preservation evidence; close R-010/R-023/R-020 only after verification. Epic 23 Auth/dashboard work remains on hold and excluded.'
+    actions: 'Follow docs/commercial-readiness/27_supabase_cutover_runbook.md from supabase/migration-baseline-manifest.json: capture fresh catalog proof; complete and sign the 57-row production proof ledger; run only the exact explicit repairs; require the reviewed wrapper''s db push --reviewed-target --dry-run --skip-vault with actual connection binding to show the eight exact applies after fresh production inventory; then require a fresh backup, approved maintenance window, and explicit production database-apply authorization. Preserve the pause; reopening requires a separate owner decision. Verify migration history, 17 policies, grants, direct-role behavior, advisors, and data-preservation evidence; close R-010/R-023/R-020 only after verification. Epic 23 Auth/dashboard work remains on hold and excluded.'
     source: 'supabase/migration-baseline-manifest.json; docs/commercial-readiness/27_supabase_cutover_runbook.md; tracker E-010/E-013'
 
 sprint:
@@ -30,8 +30,8 @@ epic_metrics:
   current_coverage_critical: 0
   current_test_execution_time_seconds: 1196
   total_tests_estimated: 106
-  total_tests_implemented: 406
-  total_tests_passing: 406
+  total_tests_implemented: 412
+  total_tests_passing: 412
 
 stories:
   - id: '22.1'
@@ -239,16 +239,16 @@ stories:
     status: 'in-progress'
     story_points: 0
     estimated_tests: 26
-    implemented_tests: 159 # Prior 156 plus two Nodemailer legacy-plugin access-policy and one native Sharp alpha-compatibility regressions; mail/dependency focused evidence 4/4.
-    passing_tests: 159
+    implemented_tests: 165 # Prior 159 plus six repayment-default/catalog-verifier regressions; focused 232/232 pending exact full gate.
+    passing_tests: 165
     dependencies: ['22.10', '22.13', '22.14']
     assignee: 'Codex'
     started_date: 2026-08-31
     completed_date: null
     blockers:
-      - 'PR #95 is merged into staging. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated.'
-      - 'Hosted staging/production actions require fresh proof and separate explicit owner gates: one staging repair then six applies; production inventory then 57 repairs plus seven applies. No hosted delta is applied and the production pause remains active.'
-    notes: 'Historical candidate results remain preserved. The narrow dependency patch remains 0 critical/0 high/1 accepted UUID moderate; pnpm audit exits 1 solely for the existing acceptance through 2026-09-30. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Parent 7826a339414fccf6694798ef039a2e1e4403a8b6 remote evidence is historical; c27a9ee review P1 is corrected by this documentation patch. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated.'
+      - 'PR #96 is merged into staging at 3724809065f9e4559802fdcd80e7e526172cc8fd. The post-merge catalog diagnosis found only two absent repayment defaults; no individual row data was returned and no hosted write occurred.'
+      - 'New migration/verifier/manifest regression tests and final-head CI/Vercel/review are pending. Hosted staging/production actions require fresh proof and separate explicit owner gates: one staging repair then seven applies; production inventory then 57 repairs plus eight applies. No hosted delta is applied and the production pause remains active.'
+    notes: 'Historical c27a9ee candidate results remain preserved. The current proposed 65-version candidate adds a forward-only false default to repayment_needed_omc and repayment_needed_pe3 without changing existing rows. All 22 represented columns match type/nullability and 20 defaults; its new local tests and final-head CI/Vercel/review remain pending. The production-scoped audit remains 0 critical/0 high/1 accepted UUID moderate; the broader development-tooling audit is separately tracked and no new waiver is created. Story 22.15 remains in-progress and Epic 23 remains on hold. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated.'
 
 progress_summary:
   total_stories: 15
@@ -266,17 +266,17 @@ progress_summary:
 
 test_coverage_summary:
   total_tests_estimated: 106
-  total_tests_implemented: 406
-  total_tests_passing: 406
-  implementation_percentage: 380.2
-  unit_tests: 289
-  integration_tests: 112
+  total_tests_implemented: 412
+  total_tests_passing: 412
+  implementation_percentage: 388.7
+  unit_tests: 291
+  integration_tests: 116
   e2e_tests: 3 # Includes one safe unauthorized-only Story 22.14 cron case, passed in the exact full Playwright gate.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 289 + 112 + 3 + 0 + 2 = 406
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 291 + 116 + 3 + 0 + 2 = 412.
 
 blockers:
-  - 'PR #95 is merged. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated.'
+  - 'PR #96 is merged to staging. The proposed 65-version default-reconciliation candidate has new migration/verifier/manifest tests and final-head CI/Vercel/review pending; historical c27a9ee results do not prove it.'
   - 'Hosted staging/production proof, repair/apply, and verification remain separately owner-gated; no hosted mutation is authorized by this amendment.'
 known_issues:
   - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'
@@ -301,9 +301,9 @@ next_actions:
   - 'Story 22.10: staging reconciliation EXECUTED + VERIFIED on masterdata-staging (2026-06-14) via the Supabase MCP - reconciliation migration applied, remote history baselined (57 in sync), advisors re-verified (function_search_path 12->0, secdef anon 5->1/auth 5->3, auth_rls_initplan 9->0, multiple_permissive 54->3, policies 26->19); production untouched (freeze honored). 22.10 is DONE (code review Round 1 passed 2026-06-15; Phase A complete): AC1-AC4 + AC6 met; AC5 (leaked-password) + CAPTCHA was deferred to Epic 23 Story 23.4 by owner decision 2026-06-14 (Auth/dashboard hardening, not schema). Phase B (production cutover, runbook 27 §B) stays the Epic 22 completion gate story-22.10-phase-b. Epic 23 is on hold, so no Auth attack-protection change is claimed or active work planned here.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
-  - 'Story 22.15 remains in progress after PR #95 merged at 8c82bd8f4cc3c5076b2b6a37f4ced209bd8cba1c, with main unchanged. Record passed local reconciliation/pause gates and complete final documentation-head remote checks and review, then seek explicit owner authorization to merge. After merge: fresh staging proof, a separately authorized single repair and verification, then separately authorized six applies. Production requires fresh inventory, signed 57-row ledger, and separate 57-repair/seven-apply gates. The pause remains active until separately authorized reopening. Sources: supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md. Epic 23 remains on hold.'
-last_updated: 2026-09-09
-updated_by: Codex (PR #95 merge and 64-version reconciliation/pause preparation recorded; fresh local candidate gates and remediated audit recorded; result-only-head remote checks and hosted gates remain open).
+  - 'Story 22.15 remains in progress after PR #96 merged at 3724809065f9e4559802fdcd80e7e526172cc8fd, with main unchanged. The proposed forward-only default reconciliation changes no existing rows. New local migration/verifier/manifest tests and final-head remote checks are pending. Then repeat fresh staging proof and seek separate approval for one repair plus seven applies. Production requires fresh inventory, signed 57-row ledger, and separate 57-repair/eight-apply gates. The pause remains active until separately authorized reopening. Sources: supabase/migration-baseline-manifest.json and docs/commercial-readiness/27_supabase_cutover_runbook.md. Epic 23 remains on hold.'
+last_updated: 2026-09-10
+updated_by: Codex (PR #96 merged and post-merge default diagnosis recorded; 65-version candidate verification and hosted gates remain open).
 
 pr_95_playwright_gate:
   date: 2026-09-09
@@ -317,4 +317,4 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'Local reconciliation/pause tests passed. Complete final documentation-head CI/Vercel/Reviewbot checks and record them on PR #96. After explicit owner merge authorization, record staging, repeat fresh read-only proof, then request separate repair and six-apply approvals. No hosted write, deployment, setting change, staging-to-main merge, or reopening is authorized.'
+  next_action: 'Run the proposed default-reconciliation local gates, then record final-head CI/Vercel/Reviewbot evidence. Repeat fresh read-only proof before separate repair and seven-apply approvals. No hosted write, deployment, setting change, staging-to-main merge, or reopening is authorized.'

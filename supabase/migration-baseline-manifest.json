@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "repositoryMigrationCount": 64,
+  "repositoryMigrationCount": 65,
   "reviewedSupabaseCliVersion": "2.115.0",
   "catalogVerifier": "supabase/verify/production-baseline-catalog.sql",
   "restoredMigrationProvenance": {
@@ -76,7 +76,8 @@
       "20260710144000",
       "20260710150000",
       "20260831200026",
-      "20260909115242"
+      "20260909115242",
+      "20260910094517"
     ]
   },
   "unsafeReplayVersions": {
@@ -100,6 +101,10 @@
         "overlength_names": 0
       },
       "reconciledByExecuteVersion": "20260909115242"
+    },
+    "stagingRepaymentDefaults": {
+      "acceptedPreApplyState": "The dated staging catalog has both employees.repayment_needed_omc and employees.repayment_needed_pe3 boolean defaults absent; mixed, false, true, or other default states are not accepted.",
+      "reconciledByExecuteVersion": "20260910094517"
     }
   },
   "environmentPlans": {
@@ -111,7 +116,8 @@
         "20260710144000",
         "20260710150000",
         "20260831200026",
-        "20260909115242"
+        "20260909115242",
+        "20260910094517"
       ]
     },
     "production": {
