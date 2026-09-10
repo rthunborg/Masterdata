@@ -259,26 +259,6 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       expected: ['db', 'advisors', '--type', 'performance'],
     },
     {
-      label: 'staging history repair from the reviewed manifest plan',
-      args: [
-        'migration',
-        'repair',
-        '--status',
-        'applied',
-        '20250113000000',
-        REVIEWED_TARGET_FLAG,
-        REVIEWED_ENVIRONMENT_FLAG,
-        'staging',
-      ],
-      expected: [
-        'migration',
-        'repair',
-        '--status',
-        'applied',
-        '20250113000000',
-      ],
-    },
-    {
       label: 'production history repair from the reviewed manifest plan',
       args: [
         'migration',
@@ -335,6 +315,11 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
   });
 
   it.each([
+    {
+      label: 'the prior staging repair after staging repairs were removed from the manifest',
+      version: '20250113000000',
+      reviewedEnvironment: 'staging',
+    },
     {
       label: 'a production-only repair on staging',
       version: '20251027000000',

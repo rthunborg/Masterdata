@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   EXPECTED_CATALOG_CHECK_NAMES,
@@ -287,6 +287,32 @@ describe("Story 22.15 catalog verifier runner", () => {
     expect(observedEnvironment).not.toHaveProperty("UNRELATED_PARENT_SECRET");
   });
 
+  it("accepts the staging reconciliation pre-apply phase and passes it to psql", async () => {
+    let observedArguments: string[] = [];
+
+    await expect(
+      runProductionBaselineCatalogVerifier({
+        ...reviewedTooling,
+        environment,
+        phase: "staging_reconciliation_pre_apply",
+        spawn: (
+          _command: string,
+          args: string[]
+        ) => {
+          observedArguments = args;
+          return {
+            error: undefined,
+            status: 0,
+            stdout: catalogCsv(),
+          };
+        },
+        targetVerifier: async () => true,
+      })
+    ).resolves.toEqual({ count: 15, failedChecks: [] });
+
+    expect(observedArguments).toContain("catalog_phase=staging_reconciliation_pre_apply");
+  });
+
   it("passes an approved session-pooler target to psql without leaking binding inputs", async () => {
     const poolerHost = "aws-0-eu-north-1.pooler.supabase.com";
     const poolerEnvironment = {
@@ -342,6 +368,9 @@ describe("Story 22.15 catalog verifier runner", () => {
   });
 
   it("rejects unknown phases before invoking psql", async () => {
+    const targetVerifier = async () => true;
+    const targetVerifierSpy = vi.fn(targetVerifier);
+
     await expect(
       runProductionBaselineCatalogVerifier({
         ...reviewedTooling,
@@ -350,8 +379,9 @@ describe("Story 22.15 catalog verifier runner", () => {
         spawn: () => {
           throw new Error("psql must not run");
         },
-        targetVerifier: async () => true,
+        targetVerifier: targetVerifierSpy,
       })
     ).rejects.toThrow("A valid catalog verification phase is required");
+    expect(targetVerifierSpy).not.toHaveBeenCalled();
   });
 });

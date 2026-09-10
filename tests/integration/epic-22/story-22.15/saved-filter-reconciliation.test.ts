@@ -54,6 +54,7 @@ const stagingForwardMigrationSources = [
   'supabase/migrations/20260831200026_enforce_active_authorization_and_atomic_user_deletion.sql',
   'supabase/migrations/20260909115242_reconcile_saved_filters_and_room_acl.sql',
   'supabase/migrations/20260910094517_reconcile_repayment_defaults.sql',
+  'supabase/migrations/20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql',
 ].map((path) => readFileSync(path, 'utf8'));
 const catalogSql = readFileSync(
   'supabase/verify/production-baseline-catalog.sql',

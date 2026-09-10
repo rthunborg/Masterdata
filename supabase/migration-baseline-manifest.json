@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "repositoryMigrationCount": 65,
+  "repositoryMigrationCount": 66,
   "reviewedSupabaseCliVersion": "2.115.0",
   "catalogVerifier": "supabase/verify/production-baseline-catalog.sql",
   "restoredMigrationProvenance": {
@@ -77,7 +77,8 @@
       "20260710150000",
       "20260831200026",
       "20260909115242",
-      "20260910094517"
+      "20260910094517",
+      "20260910115024"
     ]
   },
   "unsafeReplayVersions": {
@@ -105,19 +106,18 @@
     "stagingRepaymentDefaults": {
       "acceptedPreApplyState": "The dated staging catalog has both employees.repayment_needed_omc and employees.repayment_needed_pe3 boolean defaults absent; mixed, false, true, or other default states are not accepted.",
       "reconciledByExecuteVersion": "20260910094517"
+    },
+    "stagingPostApplyAclAndInitplans": {
+      "acceptedPreApplyState": "The exact 65-version staging state has canonical saved filters, room ACLs and repayment defaults; get_user_role() has exactly anon, authenticated and service_role non-owner EXECUTE grants, and the two documented active-caller policies retain direct auth.uid() predicates. Every other final catalog contract remains required.",
+      "requiredCatalogPhase": "staging_reconciliation_pre_apply",
+      "reconciledByExecuteVersion": "20260910115024"
     }
   },
   "environmentPlans": {
     "staging": {
-      "repair-after-catalog-proof": ["20250113000000"],
+      "repair-after-catalog-proof": [],
       "execute": [
-        "20260615000000",
-        "20260709194903",
-        "20260710144000",
-        "20260710150000",
-        "20260831200026",
-        "20260909115242",
-        "20260910094517"
+        "20260910115024"
       ]
     },
     "production": {
