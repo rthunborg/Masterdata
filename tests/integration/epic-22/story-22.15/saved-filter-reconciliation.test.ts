@@ -271,7 +271,7 @@ describe.skipIf(!fixtureUrl)(
 
     it('recognizes the complete reviewed staging representation before reconciliation', async () => {
       const checks = await readCatalog(fixtureClient, 'staging_pre_apply');
-      expect(checks).toHaveLength(15);
+      expect(checks).toHaveLength(16);
       expect(checks.filter((check) => !check.passed)).toEqual([]);
 
       const grants = await fixtureClient.query<{ grants: string }>(`
@@ -545,7 +545,7 @@ describe.skipIf(!fixtureUrl)(
         await fixtureClient.query(source);
       }
       const checks = await readCatalog(fixtureClient, 'post_apply');
-      expect(checks).toHaveLength(15);
+      expect(checks).toHaveLength(16);
       expect(checks.filter((check) => !check.passed)).toEqual([]);
 
       const preserved = await fixtureClient.query<{
