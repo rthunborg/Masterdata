@@ -73,7 +73,7 @@ context:
 
 ## Design Notes
 
-Hosted historical SQL is not made idempotent after the fact. The safe model is: prove the material catalog state, repair only the explicit historical allowlist, dry-run the exact forward set, then apply only after the environment-specific owner gate.
+Hosted historical SQL is not made idempotent after the fact. The safe model is: prove the material catalog state, obtain separate history-repair authorization for the explicit historical allowlist, dry-run the exact forward set, and apply under the recorded standing owner authorization only after the environment-specific prerequisites pass. Other hosted actions retain their separate gates.
 
 An IPv4-only operator network may use the Shared Supavisor session pooler as transport without weakening project identity. The pooler hostname is shared infrastructure and does not itself encode the project, so the verifier binds both the exact separately approved hostname and the project reference encoded in the pooler username, in addition to the CLI link and intended-project reference.
 

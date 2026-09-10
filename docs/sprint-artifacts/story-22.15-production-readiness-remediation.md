@@ -56,7 +56,7 @@ The dated entries below preserve earlier verification snapshots; this current en
 ## File List
 
 - Authorization/application: `middleware.ts`, login route, admin-user route, and their focused tests.
-- Database/migration safety: restored room migration; forward Story 22.15 migrations through `20260910094517_reconcile_repayment_defaults.sql`; proposed `20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql`; 66-version manifest; strict read-only catalog verifier; helper/live/static tests; and historical all-65 template-plus-seed verification.
+- Database/migration safety: restored room migration; completed staging forward migrations through `20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql`, including repayment-default reconciliation `20260910094517`; 66-version manifest; strict read-only catalog verifier; helper/live/static tests; complete local 66-migration-plus-seed verification and hosted 66/66 history with strict post_apply 15/15. No staging migration is pending.
 - Dependencies: `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, Nodemailer compatibility test, audit evidence/register.
 - Readiness/status: committed frozen Story 22.15 specification, commercial-readiness index, security/auth/role/dependency/evidence/risk/reconciliation/runbook/policy surfaces plus all Story 22.15 sprint/BMAD status carriers.
 - IPv4 operator amendment: mode-aware target-binding verifier, direct/session-pooler unit coverage, catalog-runner secret-isolation coverage, and synchronized runbook/evidence/status surfaces.

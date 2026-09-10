@@ -124,7 +124,7 @@ WHERE db_column_name IN (
 ORDER BY db_column_name;
 ```
 
-The counts/hashes must be identical before and after staging repair/apply. The new forward migration adds only admin_limited view=true/edit=false to dietary permissions on clean databases that lack it; fresh production inventory must explicitly review that proposed hash delta before authorizing production apply. No other permission delta or repayment change is allowed. History repair itself must never change them.
+The counts/hashes must be identical before and after staging repair/apply. The forward reconciliation adds only admin_limited view=true/edit=false to dietary permissions on clean databases that lack it; fresh production inventory must explicitly review that expected hash delta before executing production apply under the standing migration authorization. No other permission delta or repayment change is allowed. History repair itself must never change them.
 
 ## A. Staging — completed correction procedure (do not repeat)
 
