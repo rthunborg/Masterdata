@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-09-09T14:10:00+02:00
+# last_updated: 2026-09-10T10:45:04.7566811Z
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-09T14:10:00+02:00
+last_updated: 2026-09-10T10:45:04.7566811Z
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -73,6 +73,6 @@ development_status:
   epic-23-retrospective: optional
 
 verification_blockers:
-  local_quality_gates: 'PR #96 is merged to staging at 3724809065f9e4559802fdcd80e7e526172cc8fd. The post-merge catalog diagnosis found only two absent repayment defaults; the proposed 65-version forward-only candidate changes no existing rows. New migration/verifier/manifest tests and final-head CI/Vercel/Reviewbot are pending; c27a9ee gates are historical. The production-scoped audit remains 0 critical/0 high/1 accepted UUID moderate; the broader development-tooling audit is a separate follow-up without a new waiver. Story 22.15 remains in-progress and Epic 23 remains on hold.'
+  local_quality_gates: 'The code-identical pre-commit focused regression passed 232/232; exact 7069 Vitest passes 3448/3448 zero skips, Playwright 163 passed / 47 classified skips / 0 failed / 0 errors, exit 0, and fresh all-65 template plus seed passes 15/15 catalog checks. Future documentation-only head CI/Vercel/Reviewbot remains open after push; Story 22.15 stays in-progress and Epic 23 on hold; hosted actions remain owner-gated.'
   remote_pr_review: 'Historical PR #95 and PR #96 merge evidence is preserved. Obtain exact-head CI/Vercel/Reviewbot evidence for the new default-reconciliation candidate before any further release decision; main remains unchanged.'
   hosted_owner_gates: 'Open: after the correction is reviewed and explicitly authorized for merge into staging, fetch the resulting SHA into a clean checkout and repeat fresh catalog proof, then obtain separate owner authorization for one staging repair and later seven exact staging applies. Production is separately inventoried/owner-gated at 57 repairs plus eight applies; pause reopening remains a separate owner decision.'
