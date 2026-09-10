@@ -11,6 +11,7 @@ import { verifyConfiguredSupabaseTarget } from "./verify-target-binding.mjs";
 const ALLOWED_PHASES = new Set([
   "production_pre_apply",
   "staging_pre_apply",
+  "staging_reconciliation_pre_apply",
   "post_apply",
 ]);
 export const EXPECTED_CATALOG_CHECK_NAMES = Object.freeze([

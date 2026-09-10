@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-09-10T10:45:04.7566811Z
+# last_updated: 2026-09-10T11:34:43.467Z
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -73,6 +73,6 @@ development_status:
   epic-23-retrospective: optional
 
 verification_blockers:
-  local_quality_gates: 'The code-identical pre-commit focused regression passed 232/232; exact 7069 Vitest passes 3448/3448 zero skips, Playwright 163 passed / 47 classified skips / 0 failed / 0 errors, exit 0, and fresh all-65 template plus seed passes 15/15 catalog checks. Future documentation-only head CI/Vercel/Reviewbot remains open after push; Story 22.15 stays in-progress and Epic 23 on hold; hosted actions remain owner-gated.'
-  remote_pr_review: 'Historical PR #95 and PR #96 merge evidence is preserved. Obtain exact-head CI/Vercel/Reviewbot evidence for the new default-reconciliation candidate before any further release decision; main remains unchanged.'
-  hosted_owner_gates: 'Open: after the correction is reviewed and explicitly authorized for merge into staging, fetch the resulting SHA into a clean checkout and repeat fresh catalog proof, then obtain separate owner authorization for one staging repair and later seven exact staging applies. Production is separately inventoried/owner-gated at 57 repairs plus eight applies; pause reopening remains a separate owner decision.'
+  local_quality_gates: 'Historical 65-version local gates remain commit evidence. PR #97 staging is 65/65 after authorized repair/seven applies; forward-only 20260910115024 tests are pending and no prior test result is claimed. Story 22.15 in-progress, Epic 23 on hold, production paused.'
+  remote_pr_review: 'PR #97 merged to staging. New 20260910115024 needs its own tests/review and future candidate-head CI/Vercel/Reviewbot after push; main remains unchanged.'
+  hosted_owner_gates: 'No further hosted action is authorized. After correction tests/review, separately authorize only staging execute 20260910115024 and re-verify; production remains fresh-inventory/owner-gated at 57 repairs plus nine executes; reopening separate.'

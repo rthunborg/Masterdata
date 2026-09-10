@@ -7,7 +7,11 @@ BEGIN TRANSACTION READ ONLY;
 
 WITH verifier_context AS (
   -- Required psql variable. Omission is a syntax error by design.
-  SELECT :'catalog_phase'::text AS catalog_phase
+  SELECT :'catalog_phase'::text AS catalog_phase,
+    CASE :'catalog_phase'::text
+      WHEN 'staging_reconciliation_pre_apply' THEN 'post_apply'
+      ELSE :'catalog_phase'::text
+    END AS contract_phase
 ),
 represented_policies AS (
   SELECT
@@ -56,16 +60,35 @@ expected_policy_contracts AS (
       ('staging_pre_apply', 'user_filters', 'Users can update their own filters', '{authenticated}', 'UPDATE', '((selectauth.uid()asuid)=user_id)', '((selectauth.uid()asuid)=user_id)'),
       ('staging_pre_apply', 'user_filters', 'Users can delete their own filters', '{authenticated}', 'DELETE', '((selectauth.uid()asuid)=user_id)', NULL),
 
-      -- Final state after all seven forward versions. Unlike the historical
+      -- Exact observed 65-version staging policy state before 20260910115024.
+      ('staging_reconciliation_pre_apply', 'employees', 'HR Admin and Recruiter can manage employees', '{authenticated}', 'ALL', '((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''recruiter''::text]))', NULL),
+      ('staging_reconciliation_pre_apply', 'employees', 'External parties can view employees', '{authenticated}', 'SELECT', '(((selectget_user_role()asget_user_role)=any(array[''sodexo''::text,''omc''::text,''payroll''::text,''toplux''::text,''crewing''::text]))and(is_archived=false))', NULL),
+      ('staging_reconciliation_pre_apply', 'column_config', 'Everyone can read column configs', '{public}', 'SELECT', 'true', NULL),
+      ('staging_reconciliation_pre_apply', 'column_config', 'Manage column configs', '{authenticated}', 'ALL', '(exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.role=''hr_admin''::text)and(caller.is_active=true))))', '(exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.role=''hr_admin''::text)and(caller.is_active=true))))'),
+      ('staging_reconciliation_pre_apply', 'important_dates', 'Everyone can read important dates', '{public}', 'SELECT', 'true', NULL),
+      ('staging_reconciliation_pre_apply', 'important_dates', 'HR Admin and Recruiter can manage important dates', '{authenticated}', 'ALL', '((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''recruiter''::text]))', NULL),
+      ('staging_reconciliation_pre_apply', 'employee_column_changes', 'Authorized roles can read visible employee changes', '{authenticated}', 'SELECT', '((exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.is_active=true)and(caller.role=any(array[''hr_admin''::text,''recruiter''::text,''sodexo''::text,''omc''::text,''payroll''::text,''toplux''::text,''crewing''::text])))))and(exists(select1fromemployeesvisible_employeewhere(visible_employee.id=employee_column_changes.employee_id)))and(((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''recruiter''::text]))or(exists(select1fromcolumn_configvisible_columnwhere((lower(visible_column.db_column_name)=lower(employee_column_changes.column_name))and(visible_column.is_masterdata=true)and(coalesce(((visible_column.role_permissions->(selectget_user_role()asget_user_role))->>''view''::text),''false''::text)=''true''::text))))))', NULL),
+      ('staging_reconciliation_pre_apply', 'users', 'HR Admin can insert users', '{authenticated}', 'INSERT', NULL, '((selectget_user_role()asget_user_role)=''hr_admin''::text)'),
+      ('staging_reconciliation_pre_apply', 'users', 'Users can read users', '{authenticated}', 'SELECT', '(((selectget_user_role()asget_user_role)=''hr_admin''::text)or(auth_user_id=(selectauth.uid()asuid)))', NULL),
+      ('staging_reconciliation_pre_apply', 'staffing_needs', 'staffing_needs_select', '{authenticated}', 'SELECT', '((selectget_user_role()asget_user_role)isnotnull)', NULL),
+      ('staging_reconciliation_pre_apply', 'staffing_needs', 'staffing_needs_update', '{authenticated}', 'UPDATE', '((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''crewing''::text]))', NULL),
+      ('staging_reconciliation_pre_apply', 'staffing_needs_changelog', 'staffing_needs_changelog_insert', '{authenticated}', 'INSERT', NULL, '((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''crewing''::text]))'),
+      ('staging_reconciliation_pre_apply', 'staffing_needs_changelog', 'staffing_needs_changelog_select', '{authenticated}', 'SELECT', '((selectget_user_role()asget_user_role)isnotnull)', NULL),
+      ('staging_reconciliation_pre_apply', 'user_filters', 'Users can view their own filters', '{authenticated}', 'SELECT', '(((selectauth.uid()asuid)=user_id)and((selectget_user_role()asget_user_role)isnotnull))', NULL),
+      ('staging_reconciliation_pre_apply', 'user_filters', 'Users can create their own filters', '{authenticated}', 'INSERT', NULL, '(((selectauth.uid()asuid)=user_id)and((selectget_user_role()asget_user_role)isnotnull))'),
+      ('staging_reconciliation_pre_apply', 'user_filters', 'Users can update their own filters', '{authenticated}', 'UPDATE', '(((selectauth.uid()asuid)=user_id)and((selectget_user_role()asget_user_role)isnotnull))', '(((selectauth.uid()asuid)=user_id)and((selectget_user_role()asget_user_role)isnotnull))'),
+      ('staging_reconciliation_pre_apply', 'user_filters', 'Users can delete their own filters', '{authenticated}', 'DELETE', '(((selectauth.uid()asuid)=user_id)and((selectget_user_role()asget_user_role)isnotnull))', NULL),
+
+      -- Final state after the forward ACL/initplan correction. Unlike the historical
       -- profiles above, post_apply is the complete exact public-schema policy
       -- profile: these 17 rows must exist and no policy may exist elsewhere.
       ('post_apply', 'employees', 'HR Admin and Recruiter can manage employees', '{authenticated}', 'ALL', '((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''recruiter''::text]))', NULL),
       ('post_apply', 'employees', 'External parties can view employees', '{authenticated}', 'SELECT', '(((selectget_user_role()asget_user_role)=any(array[''sodexo''::text,''omc''::text,''payroll''::text,''toplux''::text,''crewing''::text]))and(is_archived=false))', NULL),
       ('post_apply', 'column_config', 'Everyone can read column configs', '{public}', 'SELECT', 'true', NULL),
-      ('post_apply', 'column_config', 'Manage column configs', '{authenticated}', 'ALL', '(exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.role=''hr_admin''::text)and(caller.is_active=true))))', '(exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.role=''hr_admin''::text)and(caller.is_active=true))))'),
+      ('post_apply', 'column_config', 'Manage column configs', '{authenticated}', 'ALL', '(exists(select1fromuserscallerwhere((caller.auth_user_id=(selectauth.uid()asuid))and(caller.role=''hr_admin''::text)and(caller.is_active=true))))', '(exists(select1fromuserscallerwhere((caller.auth_user_id=(selectauth.uid()asuid))and(caller.role=''hr_admin''::text)and(caller.is_active=true))))'),
       ('post_apply', 'important_dates', 'Everyone can read important dates', '{public}', 'SELECT', 'true', NULL),
       ('post_apply', 'important_dates', 'HR Admin and Recruiter can manage important dates', '{authenticated}', 'ALL', '((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''recruiter''::text]))', NULL),
-      ('post_apply', 'employee_column_changes', 'Authorized roles can read visible employee changes', '{authenticated}', 'SELECT', '((exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.is_active=true)and(caller.role=any(array[''hr_admin''::text,''recruiter''::text,''sodexo''::text,''omc''::text,''payroll''::text,''toplux''::text,''crewing''::text])))))and(exists(select1fromemployeesvisible_employeewhere(visible_employee.id=employee_column_changes.employee_id)))and(((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''recruiter''::text]))or(exists(select1fromcolumn_configvisible_columnwhere((lower(visible_column.db_column_name)=lower(employee_column_changes.column_name))and(visible_column.is_masterdata=true)and(coalesce(((visible_column.role_permissions->(selectget_user_role()asget_user_role))->>''view''::text),''false''::text)=''true''::text))))))', NULL),
+      ('post_apply', 'employee_column_changes', 'Authorized roles can read visible employee changes', '{authenticated}', 'SELECT', '((exists(select1fromuserscallerwhere((caller.auth_user_id=(selectauth.uid()asuid))and(caller.is_active=true)and(caller.role=any(array[''hr_admin''::text,''recruiter''::text,''sodexo''::text,''omc''::text,''payroll''::text,''toplux''::text,''crewing''::text])))))and(exists(select1fromemployeesvisible_employeewhere(visible_employee.id=employee_column_changes.employee_id)))and(((selectget_user_role()asget_user_role)=any(array[''hr_admin''::text,''recruiter''::text]))or(exists(select1fromcolumn_configvisible_columnwhere((lower(visible_column.db_column_name)=lower(employee_column_changes.column_name))and(visible_column.is_masterdata=true)and(coalesce(((visible_column.role_permissions->(selectget_user_role()asget_user_role))->>''view''::text),''false''::text)=''true''::text))))))', NULL),
       ('post_apply', 'users', 'HR Admin can insert users', '{authenticated}', 'INSERT', NULL, '((selectget_user_role()asget_user_role)=''hr_admin''::text)'),
       ('post_apply', 'users', 'Users can read users', '{authenticated}', 'SELECT', '(((selectget_user_role()asget_user_role)=''hr_admin''::text)or(auth_user_id=(selectauth.uid()asuid)))', NULL),
       ('post_apply', 'staffing_needs', 'staffing_needs_select', '{authenticated}', 'SELECT', '((selectget_user_role()asget_user_role)isnotnull)', NULL),
@@ -142,6 +165,7 @@ catalog_checks(check_name, passed, observed) AS (
       (SELECT catalog_phase FROM verifier_context) IN (
         'production_pre_apply',
         'staging_pre_apply',
+        'staging_reconciliation_pre_apply',
         'post_apply'
       ),
       jsonb_build_object(
@@ -150,7 +174,7 @@ catalog_checks(check_name, passed, observed) AS (
     ),
     (
       'story_22_15_phase_contracts',
-      CASE (SELECT catalog_phase FROM verifier_context)
+      CASE (SELECT contract_phase FROM verifier_context)
         WHEN 'production_pre_apply' THEN
           to_regclass('public.app_user_auth_cleanup_outbox') IS NULL
           AND to_regprocedure('public.delete_app_user(uuid)') IS NULL
@@ -319,7 +343,11 @@ catalog_checks(check_name, passed, observed) AS (
                     provolatile = 's'
                     AND return_type = 'text'
                     AND non_owner_execute_grants =
-                      ARRAY['anon', 'authenticated']::text[]
+                      CASE (SELECT catalog_phase FROM verifier_context)
+                        WHEN 'staging_reconciliation_pre_apply' THEN
+                          ARRAY['anon', 'authenticated', 'service_role']::text[]
+                        ELSE ARRAY['anon', 'authenticated']::text[]
+                      END
                     AND pg_catalog.encode(
                       pg_catalog.sha256(
                         pg_catalog.convert_to(prosrc, 'UTF8')
@@ -379,6 +407,7 @@ catalog_checks(check_name, passed, observed) AS (
       END,
       jsonb_build_object(
         'catalog_phase', (SELECT catalog_phase FROM verifier_context),
+        'contract_phase', (SELECT contract_phase FROM verifier_context),
         'cleanup_outbox',
           to_regclass('public.app_user_auth_cleanup_outbox')::text,
         'functions', (
@@ -645,7 +674,7 @@ catalog_checks(check_name, passed, observed) AS (
           SELECT count(*) = 2
           FROM public.column_config
           WHERE db_column_name IN ('special_diet', 'diet_details')
-            AND role_permissions = CASE (SELECT catalog_phase FROM verifier_context)
+            AND role_permissions = CASE (SELECT contract_phase FROM verifier_context)
               WHEN 'production_pre_apply' THEN
                 '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false}}'::jsonb
               WHEN 'staging_pre_apply' THEN
@@ -667,7 +696,7 @@ catalog_checks(check_name, passed, observed) AS (
           SELECT count(*)
           FROM public.column_config
           WHERE db_column_name IN ('special_diet', 'diet_details')
-            AND role_permissions = CASE (SELECT catalog_phase FROM verifier_context)
+            AND role_permissions = CASE (SELECT contract_phase FROM verifier_context)
               WHEN 'production_pre_apply' THEN
                 '{"hr_admin":{"view":true,"edit":true},"omc":{"view":true,"edit":false},"crewing":{"view":true,"edit":false},"recruiter":{"view":true,"edit":false},"sodexo":{"view":true,"edit":false}}'::jsonb
               WHEN 'staging_pre_apply' THEN
@@ -694,7 +723,7 @@ catalog_checks(check_name, passed, observed) AS (
                   expected.column_default IS NULL
                   AND actual.column_default IS NULL
                   AND NOT (
-                    (SELECT catalog_phase FROM verifier_context) =
+                    (SELECT contract_phase FROM verifier_context) =
                       'staging_pre_apply'
                     AND expected.column_name = 'filters'
                   )
@@ -712,7 +741,7 @@ catalog_checks(check_name, passed, observed) AS (
                   )
                 )
                 OR (
-                  (SELECT catalog_phase FROM verifier_context) =
+                  (SELECT contract_phase FROM verifier_context) =
                     'staging_pre_apply'
                   AND expected.column_name = 'filters'
                   AND regexp_replace(
@@ -744,7 +773,7 @@ catalog_checks(check_name, passed, observed) AS (
           WHERE actual.table_schema = 'public'
             AND actual.table_name = 'user_filters'
         )
-        AND CASE (SELECT catalog_phase FROM verifier_context)
+        AND CASE (SELECT contract_phase FROM verifier_context)
           WHEN 'staging_pre_apply' THEN (
             SELECT count(*) = 3
               AND count(*) FILTER (
@@ -823,7 +852,7 @@ catalog_checks(check_name, passed, observed) AS (
             WHERE actual.conrelid = to_regclass('public.user_filters')
           )
         END
-        AND CASE (SELECT catalog_phase FROM verifier_context)
+        AND CASE (SELECT contract_phase FROM verifier_context)
           WHEN 'staging_pre_apply' THEN (
             SELECT count(*) = 0
             FROM pg_index AS indexes
@@ -889,7 +918,7 @@ catalog_checks(check_name, passed, observed) AS (
           FROM pg_class
           WHERE oid = to_regclass('public.user_filters')
         )
-        AND CASE (SELECT catalog_phase FROM verifier_context)
+        AND CASE (SELECT contract_phase FROM verifier_context)
           WHEN 'staging_pre_apply' THEN (
             SELECT
               count(*) FILTER (
@@ -912,13 +941,13 @@ catalog_checks(check_name, passed, observed) AS (
         AND (
           SELECT count(*) = 1
             AND bool_and(
-              tgname = CASE (SELECT catalog_phase FROM verifier_context)
+              tgname = CASE (SELECT contract_phase FROM verifier_context)
                 WHEN 'staging_pre_apply' THEN 'user_filters_updated_at'
                 ELSE 'set_updated_at'
               END
               AND tgenabled = 'O'
               AND tgtype = 19
-              AND tgfoid = CASE (SELECT catalog_phase FROM verifier_context)
+              AND tgfoid = CASE (SELECT contract_phase FROM verifier_context)
                 WHEN 'staging_pre_apply' THEN
                   to_regprocedure('public.update_user_filters_updated_at()')
                 ELSE to_regprocedure('public.trigger_set_updated_at()')
@@ -933,11 +962,11 @@ catalog_checks(check_name, passed, observed) AS (
             AND NOT tgisinternal
         )
         AND (
-          (SELECT catalog_phase FROM verifier_context) <> 'staging_pre_apply'
+          (SELECT contract_phase FROM verifier_context) <> 'staging_pre_apply'
           OR to_regprocedure('public.trigger_set_updated_at()') IS NULL
         )
         AND (
-          (SELECT catalog_phase FROM verifier_context) <> 'post_apply'
+          (SELECT contract_phase FROM verifier_context) <> 'post_apply'
           OR to_regprocedure('public.update_user_filters_updated_at()') IS NULL
         ),
       jsonb_build_object(
@@ -1022,7 +1051,7 @@ catalog_checks(check_name, passed, observed) AS (
             AND policyname = 'Users can update their own filters'
         ),
         'staging_pre_apply_data_prerequisites', CASE
-          WHEN (SELECT catalog_phase FROM verifier_context) =
+          WHEN (SELECT contract_phase FROM verifier_context) =
             'staging_pre_apply' THEN (
             SELECT jsonb_build_object(
               'total', count(*),
@@ -1063,7 +1092,7 @@ catalog_checks(check_name, passed, observed) AS (
             AND functions.pronargs = 0
             AND functions.proargmodes IS NULL
             AND functions.proallargtypes IS NULL
-            AND CASE (SELECT catalog_phase FROM verifier_context)
+            AND CASE (SELECT contract_phase FROM verifier_context)
               WHEN 'production_pre_apply' THEN
                 functions.proconfig IS NULL
               WHEN 'staging_pre_apply' THEN
@@ -1074,7 +1103,7 @@ catalog_checks(check_name, passed, observed) AS (
                   ARRAY['search_path=public, pg_temp']::text[]
               ELSE false
             END
-            AND CASE (SELECT catalog_phase FROM verifier_context)
+            AND CASE (SELECT contract_phase FROM verifier_context)
               WHEN 'staging_pre_apply' THEN
                 md5(functions.prosrc) = '10ff09e0d1433006b865e7959e736c46'
               ELSE regexp_replace(
@@ -1088,17 +1117,17 @@ catalog_checks(check_name, passed, observed) AS (
         FROM pg_proc AS functions
         JOIN pg_language AS language
           ON language.oid = functions.prolang
-        WHERE functions.oid = CASE (SELECT catalog_phase FROM verifier_context)
+        WHERE functions.oid = CASE (SELECT contract_phase FROM verifier_context)
           WHEN 'staging_pre_apply' THEN
             to_regprocedure('public.update_user_filters_updated_at()')
           ELSE to_regprocedure('public.trigger_set_updated_at()')
         END
         AND (
-          (SELECT catalog_phase FROM verifier_context) <> 'staging_pre_apply'
+          (SELECT contract_phase FROM verifier_context) <> 'staging_pre_apply'
           OR to_regprocedure('public.trigger_set_updated_at()') IS NULL
         )
         AND (
-          (SELECT catalog_phase FROM verifier_context) <> 'post_apply'
+          (SELECT contract_phase FROM verifier_context) <> 'post_apply'
           OR to_regprocedure('public.update_user_filters_updated_at()') IS NULL
         )
       ),
@@ -1124,7 +1153,7 @@ catalog_checks(check_name, passed, observed) AS (
         FROM pg_proc AS functions
         JOIN pg_language AS language
           ON language.oid = functions.prolang
-        WHERE functions.oid = CASE (SELECT catalog_phase FROM verifier_context)
+        WHERE functions.oid = CASE (SELECT contract_phase FROM verifier_context)
           WHEN 'staging_pre_apply' THEN
             to_regprocedure('public.update_user_filters_updated_at()')
           ELSE to_regprocedure('public.trigger_set_updated_at()')
@@ -1143,7 +1172,7 @@ catalog_checks(check_name, passed, observed) AS (
               AND CASE
                 WHEN expected.table_name = 'user_filters'
                   AND expected.column_name = 'filters'
-                  AND (SELECT catalog_phase FROM verifier_context) =
+                  AND (SELECT contract_phase FROM verifier_context) =
                     'staging_pre_apply' THEN
                   regexp_replace(
                     lower(actual.column_default),
@@ -1159,7 +1188,7 @@ catalog_checks(check_name, passed, observed) AS (
                     'repayment_needed_omc',
                     'repayment_needed_pe3'
                   )
-                  AND (SELECT catalog_phase FROM verifier_context) =
+                  AND (SELECT contract_phase FROM verifier_context) =
                     'staging_pre_apply' THEN
                   actual.column_default IS NULL
                 WHEN expected.column_default IS NULL THEN
@@ -1259,7 +1288,7 @@ catalog_checks(check_name, passed, observed) AS (
               AND CASE expected.contract
               WHEN 'room' THEN
                 functions.prosecdef = false
-                AND CASE (SELECT catalog_phase FROM verifier_context)
+                AND CASE (SELECT contract_phase FROM verifier_context)
                   WHEN 'production_pre_apply' THEN
                     coalesce(functions.proconfig, ARRAY[]::text[]) =
                       ARRAY[]::text[]
@@ -1272,7 +1301,7 @@ catalog_checks(check_name, passed, observed) AS (
                   ELSE false
                 END
                 AND privileges.non_owner_execute_grants = CASE
-                  WHEN (SELECT catalog_phase FROM verifier_context) =
+                  WHEN (SELECT contract_phase FROM verifier_context) =
                     'staging_pre_apply' THEN
                     ARRAY['PUBLIC', 'anon', 'authenticated', 'service_role']::text[]
                   ELSE ARRAY['PUBLIC', 'authenticated']::text[]
@@ -1285,7 +1314,7 @@ catalog_checks(check_name, passed, observed) AS (
                 ) LIKE '%hotel_required=true%forupdate%room_number_shared%v_room_occupancy%'
               WHEN 'staffing_pre_or_post_apply' THEN
                 functions.prosecdef = true
-                AND CASE (SELECT catalog_phase FROM verifier_context)
+                AND CASE (SELECT contract_phase FROM verifier_context)
                   WHEN 'production_pre_apply' THEN
                     coalesce(functions.proconfig, ARRAY[]::text[]) =
                       ARRAY[]::text[]
@@ -1431,7 +1460,7 @@ catalog_checks(check_name, passed, observed) AS (
             (
               SELECT count(*)
               FROM represented_policies AS actual
-              WHERE expected.profile_name = 'post_apply'
+              WHERE expected.profile_name IN ('post_apply', 'staging_reconciliation_pre_apply')
                 OR actual.tablename IN (
                   SELECT scoped.table_name
                   FROM expected_policy_contracts AS scoped

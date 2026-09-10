@@ -135,13 +135,13 @@ describe('Story 22.15 migration baseline safety', () => {
     const execute = manifest.classifications.execute;
     const classified = [...repair, ...execute];
 
-    expect(repositoryVersions).toHaveLength(65);
-    expect(manifest.repositoryMigrationCount).toBe(65);
+    expect(repositoryVersions).toHaveLength(66);
+    expect(manifest.repositoryMigrationCount).toBe(66);
     expect(manifest.reviewedSupabaseCliVersion).toBe('2.115.0');
     expect(new Set(classified).size).toBe(classified.length);
     expect([...classified].sort()).toEqual(repositoryVersions);
     expect(repair).toHaveLength(57);
-    expect(execute).toHaveLength(8);
+    expect(execute).toHaveLength(9);
   });
 
   it('keeps every replay-dangerous historical version out of the execute set', () => {
@@ -163,16 +163,8 @@ describe('Story 22.15 migration baseline safety', () => {
   it('pins the exact staging and production repair/apply plans', () => {
     expect(
       manifest.environmentPlans.staging['repair-after-catalog-proof']
-    ).toEqual(['20250113000000']);
-    expect(manifest.environmentPlans.staging.execute).toEqual([
-      '20260615000000',
-      '20260709194903',
-      '20260710144000',
-      '20260710150000',
-      '20260831200026',
-      '20260909115242',
-      '20260910094517',
-    ]);
+    ).toEqual([]);
+    expect(manifest.environmentPlans.staging.execute).toEqual(['20260910115024']);
     expect(manifest.environmentPlans.production).toEqual({
       'repair-after-catalog-proof':
         'classifications.repair-after-catalog-proof',
@@ -180,7 +172,7 @@ describe('Story 22.15 migration baseline safety', () => {
     });
   });
 
-  it('adds both forward reconciliations after every pre-existing staging apply', () => {
+  it('orders every forward reconciliation and excludes already-applied staging versions', () => {
     expect(manifest.classifications.execute).toEqual([
       '20260614000000',
       '20260615000000',
@@ -190,16 +182,9 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260831200026',
       '20260909115242',
       '20260910094517',
+      '20260910115024',
     ]);
-    expect(manifest.environmentPlans.staging.execute).toEqual([
-      '20260615000000',
-      '20260709194903',
-      '20260710144000',
-      '20260710150000',
-      '20260831200026',
-      '20260909115242',
-      '20260910094517',
-    ]);
+    expect(manifest.environmentPlans.staging.execute).toEqual(['20260910115024']);
   });
 
   it('uses a forward-only default reconciliation without rewriting repayment rows', () => {
@@ -241,10 +226,10 @@ describe('Story 22.15 migration baseline safety', () => {
       /readonly -a PRODUCTION_REPAIR_VERSIONS=\(\s*([\s\S]*?)\n\)/
     )?.[1];
     const stagingApplyBlock = cutoverRunbook.match(
-      /The dry run must list exactly these seven applies, in this order:([\s\S]*?)Stop unless the dry run is exactly/
+      /The dry run must list exactly this one apply:([\s\S]*?)Stop unless the dry run is exactly/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /After the 57 repairs, the dry run must list exactly these eight versions:([\s\S]*?)Stop unless the dry run is exact/
+      /After the 57 repairs, the dry run must list exactly these nine versions:([\s\S]*?)Stop unless the dry run is exact/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -432,9 +417,9 @@ describe('Story 22.15 migration baseline safety', () => {
         name: 'Manage column configs',
         roles: '{authenticated}',
         command: 'ALL',
-        qual: "(exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.role='hr_admin'::text)and(caller.is_active=true))))",
+        qual: "(exists(select1fromuserscallerwhere((caller.auth_user_id=(selectauth.uid()asuid))and(caller.role='hr_admin'::text)and(caller.is_active=true))))",
         withCheck:
-          "(exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.role='hr_admin'::text)and(caller.is_active=true))))",
+          "(exists(select1fromuserscallerwhere((caller.auth_user_id=(selectauth.uid()asuid))and(caller.role='hr_admin'::text)and(caller.is_active=true))))",
       },
       {
         table: 'important_dates',
@@ -457,7 +442,7 @@ describe('Story 22.15 migration baseline safety', () => {
         name: 'Authorized roles can read visible employee changes',
         roles: '{authenticated}',
         command: 'SELECT',
-        qual: "((exists(select1fromuserscallerwhere((caller.auth_user_id=auth.uid())and(caller.is_active=true)and(caller.role=any(array['hr_admin'::text,'recruiter'::text,'sodexo'::text,'omc'::text,'payroll'::text,'toplux'::text,'crewing'::text])))))and(exists(select1fromemployeesvisible_employeewhere(visible_employee.id=employee_column_changes.employee_id)))and(((selectget_user_role()asget_user_role)=any(array['hr_admin'::text,'recruiter'::text]))or(exists(select1fromcolumn_configvisible_columnwhere((lower(visible_column.db_column_name)=lower(employee_column_changes.column_name))and(visible_column.is_masterdata=true)and(coalesce(((visible_column.role_permissions->(selectget_user_role()asget_user_role))->>'view'::text),'false'::text)='true'::text))))))",
+        qual: "((exists(select1fromuserscallerwhere((caller.auth_user_id=(selectauth.uid()asuid))and(caller.is_active=true)and(caller.role=any(array['hr_admin'::text,'recruiter'::text,'sodexo'::text,'omc'::text,'payroll'::text,'toplux'::text,'crewing'::text])))))and(exists(select1fromemployeesvisible_employeewhere(visible_employee.id=employee_column_changes.employee_id)))and(((selectget_user_role()asget_user_role)=any(array['hr_admin'::text,'recruiter'::text]))or(exists(select1fromcolumn_configvisible_columnwhere((lower(visible_column.db_column_name)=lower(employee_column_changes.column_name))and(visible_column.is_masterdata=true)and(coalesce(((visible_column.role_permissions->(selectget_user_role()asget_user_role))->>'view'::text),'false'::text)='true'::text))))))",
         withCheck: null,
       },
       {
@@ -588,7 +573,7 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(verifierSql).toContain(
       'profile.expected_count = profile.actual_count'
     );
-    expect(verifierSql).toContain("WHERE expected.profile_name = 'post_apply'");
+    expect(verifierSql).toContain("WHERE expected.profile_name IN ('post_apply', 'staging_reconciliation_pre_apply')");
     expect(verifierSql).toContain(
       'WHERE scoped.profile_name = expected.profile_name'
     );
@@ -752,7 +737,7 @@ describe('Story 22.15 migration baseline safety', () => {
       "AND expected.column_name IN (\n                    'repayment_needed_omc',\n                    'repayment_needed_pe3'\n                  )"
     );
     expect(verifierSql).toContain(
-      "AND (SELECT catalog_phase FROM verifier_context) =\n                    'staging_pre_apply' THEN\n                  actual.column_default IS NULL"
+      "AND (SELECT contract_phase FROM verifier_context) =\n                    'staging_pre_apply' THEN\n                  actual.column_default IS NULL"
     );
     expect(verifierSql).toContain("('employees', 'repayment_needed_omc', 'boolean', 'YES', 'false')");
     expect(verifierSql).toContain("('employees', 'repayment_needed_pe3', 'boolean', 'YES', 'false')");
@@ -886,7 +871,7 @@ describe('Story 22.15 migration baseline safety', () => {
       'URL hostname to equal the separately approved exact pooler hostname'
     );
     expect(cutoverRunbook).toContain(
-      'verify-production-baseline-catalog.mjs staging_pre_apply'
+      'verify-production-baseline-catalog.mjs staging_reconciliation_pre_apply'
     );
     expect(cutoverRunbook).toContain(
       'verify-production-baseline-catalog.mjs production_pre_apply'
@@ -898,7 +883,7 @@ describe('Story 22.15 migration baseline safety', () => {
       'psql "$SUPABASE_DB_URL" --set ON_ERROR_STOP=1'
     );
     expect(cutoverRunbook).toContain(
-      'a seven/eight-file `db push` is **not** an all-or-nothing batch'
+      'a multi-file `db push` is **not** an all-or-nothing batch'
     );
     expect(cutoverRunbook).toContain(
       'do not repair a failed forward version as applied'

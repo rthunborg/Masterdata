@@ -142,7 +142,6 @@ function resolveManifestRepairVersions(manifest, reviewedEnvironment) {
 
   if (
     !Array.isArray(repairVersions) ||
-    repairVersions.length === 0 ||
     repairVersions.some(
       (version) =>
         typeof version !== 'string' || !MIGRATION_VERSION_PATTERN.test(version)
