@@ -116,6 +116,29 @@ const expectedCatalogCheckNames = [
   'staffing_crewing_done_permission_state',
   'represented_policy_contracts',
 ].sort();
+const completeProfilePolicyTables = [
+  'employees',
+  'column_config',
+  'important_dates',
+  'employee_column_changes',
+  'users',
+  'staffing_needs',
+  'staffing_needs_changelog',
+  'user_filters',
+];
+
+function rlsDisableFailures(tableName: string) {
+  if (
+    tableName === 'staffing_needs' ||
+    tableName === 'staffing_needs_changelog'
+  ) {
+    return ['represented_policy_contracts', 'staffing_constraints_and_rls'];
+  }
+  if (tableName === 'user_filters') {
+    return ['represented_policy_contracts', 'user_filters_objects'];
+  }
+  return ['represented_policy_contracts'];
+}
 
 function normalize(expression: string) {
   return expression.toLowerCase().replace(/\s+/g, '');
@@ -646,6 +669,20 @@ describe.skipIf(!fixtureUrl)(
           'GRANT EXECUTE ON FUNCTION public.get_user_role() TO PUBLIC',
           ['story_22_15_phase_contracts']
         );
+        for (const grantee of ['anon', 'authenticated', 'service_role']) {
+          await verifyPreApplyViolation(
+            `pre_${grantee}_execute_grant_option`,
+            `GRANT EXECUTE ON FUNCTION public.get_user_role() TO ${grantee} WITH GRANT OPTION`,
+            ['story_22_15_phase_contracts']
+          );
+        }
+        for (const tableName of completeProfilePolicyTables) {
+          await verifyPreApplyViolation(
+            `pre_rls_disabled_${tableName}`,
+            `ALTER TABLE public.${tableName} DISABLE ROW LEVEL SECURITY`,
+            rlsDisableFailures(tableName)
+          );
+        }
         await verifyPreApplyViolation(
           'pre_mixed_policy_phase',
           `ALTER POLICY "Manage column configs"
@@ -773,6 +810,45 @@ describe.skipIf(!fixtureUrl)(
           'REVOKE EXECUTE ON FUNCTION public.get_user_role() FROM anon',
           ['story_22_15_phase_contracts']
         );
+        for (const grantee of ['anon', 'authenticated']) {
+          await verifyViolation(
+            `post_${grantee}_execute_grant_option`,
+            `GRANT EXECUTE ON FUNCTION public.get_user_role() TO ${grantee} WITH GRANT OPTION`,
+            ['story_22_15_phase_contracts']
+          );
+        }
+        for (const [signature, grantee] of [
+          ['public.delete_app_user(uuid)', 'authenticated'],
+          ['public.complete_app_user_auth_cleanup(uuid)', 'service_role'],
+        ]) {
+          await verifyViolation(
+            `post_${signature.slice(7, signature.indexOf('('))}_execute_grant_option`,
+            `GRANT EXECUTE ON FUNCTION ${signature} TO ${grantee} WITH GRANT OPTION`,
+            ['story_22_15_phase_contracts']
+          );
+        }
+        await verifyViolation(
+          'post_staffing_function_execute_grant_option',
+          'GRANT EXECUTE ON FUNCTION public.update_staffing_need(text, integer, uuid) TO authenticated WITH GRANT OPTION',
+          ['represented_function_contracts']
+        );
+        for (const signature of [
+          'public.recalculate_rooms_for_date(uuid)',
+          'public.calculate_room_number(uuid, text, text)',
+        ]) {
+          await verifyViolation(
+            `post_${signature.slice(7, signature.indexOf('('))}_execute_grant_option`,
+            `GRANT EXECUTE ON FUNCTION ${signature} TO authenticated WITH GRANT OPTION`,
+            ['represented_function_contracts']
+          );
+        }
+        for (const tableName of completeProfilePolicyTables) {
+          await verifyViolation(
+            `post_rls_disabled_${tableName}`,
+            `ALTER TABLE public.${tableName} DISABLE ROW LEVEL SECURITY`,
+            rlsDisableFailures(tableName)
+          );
+        }
         await verifyViolation(
           'mixed_policy_phase',
           `ALTER POLICY "Manage column configs"

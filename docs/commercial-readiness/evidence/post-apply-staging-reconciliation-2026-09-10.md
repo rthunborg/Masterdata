@@ -36,9 +36,9 @@ Post-apply aggregates captured at 2026-09-10T11:36:35.863Z match the pre-apply b
 | `repayment_needed_omc` | `02b8319f6f054191fe4131b27e060f98` |
 | `repayment_needed_pe3` | `3a274a1d25cd34f07f378195bb080f29` |
 
-The new migration SHA-256 is `7b4f11898f43d88d36fbc1661fb45175629a950750350d43c3f639e959afc74d`; catalog SQL SHA-256 is `626421b57f09d1630113b149a1f73d6bd3bb5375e9a4477a277511144bb966d4`. Historical migration files are unchanged.
+The new migration SHA-256 is `7b4f11898f43d88d36fbc1661fb45175629a950750350d43c3f639e959afc74d`; pre-review catalog SQL SHA-256 is `626421b57f09d1630113b149a1f73d6bd3bb5375e9a4477a277511144bb966d4`. Historical migration files are unchanged.
 
-## Final local verification — 2026-09-10
+## Verified pre-review implementation — 2026-09-10
 
 | Gate | Result and scope |
 | --- | --- |
@@ -58,6 +58,10 @@ The user-owned local Supabase service remains at its validated 63-version baseli
 
 - `8625158` full Vitest was deliberately interrupted before completion to add independent negative cases for the second changed policy. It is not a passing gate.
 - `e122197` full Vitest exited 1: **3,449 passed / 2 failed**, 321 passing files / 1 failing file; 631.16 seconds report / 632.812088 seconds wall. Both failures came from the older atomic-authorization fixture omitting the new forward correction before asserting strict post-apply policies. The fixture now applies the full forward sequence; its 11 focused tests and the complete `eceaee7` rerun pass. No skip classification or verifier contract was weakened.
+
+## PR #98 review follow-up
+
+Codex reviewed `56b4fb2c66ad85befbd31a3be43deb96b5f46f9e` and identified two valid verifier gaps: complete policy definitions could pass with table RLS disabled, and EXECUTE grantee comparisons omitted grant-option rights. The follow-up requires RLS enabled on every table in a complete policy profile and rejects non-owner function execution grants with delegation rights. Negative fixtures must prove rejection before and after reconciliation. The forward migration is unchanged. The preceding full local results remain evidence for `eceaee7`; the review fixes require fresh full verification and another exact-head remote review before merge approval.
 
 ## Production pause and remaining gates
 

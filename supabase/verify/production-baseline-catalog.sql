@@ -120,7 +120,8 @@ story_22_15_functions AS (
     functions.prorettype::regtype::text AS return_type,
     function_owner.rolname::text AS owner_name,
     language.lanname AS language_name,
-    privileges.non_owner_execute_grants
+    privileges.non_owner_execute_grants,
+    privileges.has_non_owner_execute_grant_option
   FROM (
     VALUES
       ('get_user_role', 'public.get_user_role()'),
@@ -149,7 +150,8 @@ story_22_15_functions AS (
         END
       ),
       ARRAY[]::text[]
-    ) AS non_owner_execute_grants
+    ) AS non_owner_execute_grants,
+    coalesce(bool_or(acl.is_grantable), false) AS has_non_owner_execute_grant_option
     FROM aclexplode(
       coalesce(functions.proacl, acldefault('f', functions.proowner))
     ) AS acl
@@ -342,6 +344,7 @@ catalog_checks(check_name, passed, observed) AS (
                   WHEN 'get_user_role' THEN
                     provolatile = 's'
                     AND return_type = 'text'
+                    AND NOT has_non_owner_execute_grant_option
                     AND non_owner_execute_grants =
                       CASE (SELECT catalog_phase FROM verifier_context)
                         WHEN 'staging_reconciliation_pre_apply' THEN
@@ -359,6 +362,7 @@ catalog_checks(check_name, passed, observed) AS (
                   WHEN 'delete_app_user' THEN
                     provolatile = 'v'
                     AND return_type = 'jsonb'
+                    AND NOT has_non_owner_execute_grant_option
                     AND non_owner_execute_grants =
                       ARRAY['authenticated']::text[]
                     AND pg_catalog.encode(
@@ -386,6 +390,7 @@ catalog_checks(check_name, passed, observed) AS (
                   WHEN 'complete_app_user_auth_cleanup' THEN
                     provolatile = 'v'
                     AND return_type = 'jsonb'
+                    AND NOT has_non_owner_execute_grant_option
                     AND non_owner_execute_grants =
                       ARRAY['service_role']::text[]
                     AND pg_catalog.encode(
@@ -420,7 +425,8 @@ catalog_checks(check_name, passed, observed) AS (
                 'security_definer', prosecdef,
                 'volatility', provolatile,
                 'settings', proconfig,
-                'execute_grants', non_owner_execute_grants
+                'execute_grants', non_owner_execute_grants,
+                'has_execute_grant_option', has_non_owner_execute_grant_option
               )
               ORDER BY function_name
             ),
@@ -1285,6 +1291,7 @@ catalog_checks(check_name, passed, observed) AS (
             (
               functions.oid IS NOT NULL
               AND language.lanname = 'plpgsql'
+              AND NOT privileges.has_non_owner_execute_grant_option
               AND CASE expected.contract
               WHEN 'room' THEN
                 functions.prosecdef = false
@@ -1385,7 +1392,8 @@ catalog_checks(check_name, passed, observed) AS (
               END
             ),
             ARRAY[]::text[]
-          ) AS non_owner_execute_grants
+          ) AS non_owner_execute_grants,
+          coalesce(bool_or(acl.is_grantable), false) AS has_non_owner_execute_grant_option
           FROM aclexplode(
             coalesce(functions.proacl, acldefault('f', functions.proowner))
           ) AS acl
@@ -1452,6 +1460,24 @@ catalog_checks(check_name, passed, observed) AS (
           profile.expected_count = profile.actual_count
             AND profile.matched_count = profile.expected_count
             AND profile.all_contracts_match
+            AND CASE
+              WHEN profile.profile_name IN (
+                'staging_reconciliation_pre_apply',
+                'post_apply'
+              ) THEN (
+                SELECT count(*) = count(protected_table.oid)
+                  AND coalesce(bool_and(protected_table.relrowsecurity), false)
+                FROM (
+                  SELECT DISTINCT table_name
+                  FROM expected_policy_contracts AS expected_contract
+                  WHERE expected_contract.profile_name = profile.profile_name
+                ) AS expected_table
+                LEFT JOIN pg_class AS protected_table
+                  ON protected_table.oid =
+                    to_regclass('public.' || expected_table.table_name)
+              )
+              ELSE true
+            END
         ), false)
         FROM (
           SELECT

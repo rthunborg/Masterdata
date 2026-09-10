@@ -365,6 +365,22 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(verifierSql).toContain("owner_name = 'postgres'");
     expect(verifierSql).toContain('privileges.non_owner_execute_grants');
     expect(verifierSql).toContain('pg_catalog.aclexplode');
+    expect(verifierSql).toContain('acl.is_grantable');
+    expect(verifierSql).toContain('has_non_owner_execute_grant_option');
+    expect(verifierSql).toContain('NOT has_non_owner_execute_grant_option');
+    expect(verifierSql).toContain('protected_table.relrowsecurity');
+    for (const tableName of [
+      'employees',
+      'column_config',
+      'important_dates',
+      'employee_column_changes',
+      'users',
+      'staffing_needs',
+      'staffing_needs_changelog',
+      'user_filters',
+    ]) {
+      expect(verifierSql).toContain(`'${tableName}'`);
+    }
     expect(verifierSql).not.toContain('information_schema.role_table_grants');
     expect(verifierSql).toContain('\"crewing\":{\"view\":true,\"edit\":false}');
     expect(
