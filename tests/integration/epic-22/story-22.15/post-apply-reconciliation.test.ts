@@ -127,6 +127,25 @@ function isCanonicalPolicyExpression(expression: string) {
   );
 }
 
+function canonicalizeDirectAuthUid(expression: string) {
+  const canonical = expression.replace(/\bauth[.]uid\(\)/gi, '(SELECT auth.uid())');
+  if (canonical === expression) {
+    throw new Error('Expected a direct auth.uid() policy predicate');
+  }
+  return canonical;
+}
+
+function restoreDirectAuthUid(expression: string) {
+  const direct = expression.replace(
+    /\(\s*select\s+auth[.]uid\(\)(?:\s+as\s+uid)?\s*\)/gi,
+    'auth.uid()'
+  );
+  if (direct === expression) {
+    throw new Error('Expected an initplan auth.uid() policy predicate');
+  }
+  return direct;
+}
+
 function catalogFor(phase: string, includeTransaction = true) {
   const boundPhaseSql = catalogSql.replaceAll(":'catalog_phase'", `'${phase}'`);
   return includeTransaction
@@ -228,6 +247,40 @@ describe.skipIf(!fixtureUrl)(
         ORDER BY policy.polname
       `);
       return result.rows;
+    }
+
+    async function policyExpression(
+      policyname: string,
+      field: 'using_expression' | 'check_expression'
+    ) {
+      const policy = (await getPolicyExpressions()).find(
+        (candidate) => candidate.policyname === policyname
+      );
+      const expression = policy?.[field];
+      if (typeof expression !== 'string') {
+        throw new Error(`Policy ${policyname} has no ${field}`);
+      }
+      return expression;
+    }
+
+    async function alteredPolicyUsingSql(
+      policyname: string,
+      tableName: string,
+      transform: (expression: string) => string
+    ) {
+      const expression = transform(
+        await policyExpression(policyname, 'using_expression')
+      );
+      return `ALTER POLICY "${policyname}" ON public.${tableName} USING ${expression}`;
+    }
+
+    async function alteredManageWithCheckSql(
+      transform: (expression: string) => string
+    ) {
+      const expression = transform(
+        await policyExpression('Manage column configs', 'check_expression')
+      );
+      return `ALTER POLICY "Manage column configs" ON public.column_config WITH CHECK ${expression}`;
     }
 
     async function readCatalog(phase: string, includeTransaction = true) {
@@ -616,6 +669,15 @@ describe.skipIf(!fixtureUrl)(
           ['represented_policy_contracts']
         );
         await verifyPreApplyViolation(
+          'pre_audit_policy_canonicalized_only',
+          await alteredPolicyUsingSql(
+            'Authorized roles can read visible employee changes',
+            'employee_column_changes',
+            canonicalizeDirectAuthUid
+          ),
+          ['represented_policy_contracts']
+        );
+        await verifyPreApplyViolation(
           'pre_removed_active_predicate',
           `ALTER POLICY "Manage column configs"
              ON public.column_config
@@ -731,6 +793,20 @@ describe.skipIf(!fixtureUrl)(
                    AND caller.is_active = true
                )
              )`,
+          ['represented_policy_contracts']
+        );
+        await verifyViolation(
+          'post_audit_policy_restored_direct_only',
+          await alteredPolicyUsingSql(
+            'Authorized roles can read visible employee changes',
+            'employee_column_changes',
+            restoreDirectAuthUid
+          ),
+          ['represented_policy_contracts']
+        );
+        await verifyViolation(
+          'post_manage_with_check_restored_direct_only',
+          await alteredManageWithCheckSql(restoreDirectAuthUid),
           ['represented_policy_contracts']
         );
         await verifyViolation(
