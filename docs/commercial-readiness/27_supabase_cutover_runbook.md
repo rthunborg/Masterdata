@@ -1,6 +1,9 @@
 # Epic 22 Supabase Cutover Runbook (Stories 22.10, 22.13, and 22.15)
 
-Status: **Staging baseline applied; post-apply correction pending review and separate approval.** The owner-authorized repair and seven-file apply completed on 2026-09-10. Current staging has 65 history rows. Production remains paused and untouched by this database work.
+> **Current execution record — 2026-09-10 15:14 UTC.** PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold. [Completed reconciliation evidence](evidence/staging-reconciliation-completed-2026-09-10.md). This record supersedes earlier statements that PR #98 review, its merge, the correction apply or migration-apply authorization are pending; earlier dated entries remain historical.
+
+
+Status: **Staging schema reconciled and verified; hosted authorization acceptance and owner staging verification remain open.** The owner-authorized repair and seven-file apply completed on 2026-09-10. Current staging has 65 history rows. Production remains paused and untouched by this database work.
 
 Repository target: **66 migration versions / 17 policies**. The immutable classification source is `supabase/migration-baseline-manifest.json`; the machine-enforced read-only proof entry point is `supabase/verify/verify-production-baseline-catalog.mjs`, backed by `supabase/verify/production-baseline-catalog.sql`.
 
@@ -8,7 +11,7 @@ Repository target: **66 migration versions / 17 policies**. The immutable classi
 
 > **No authorization by documentation.** Running catalog reads is safe only with the correct linked project. History repair, migration apply, workflow dispatch, backup, deployment, or any hosted write requires the environment-specific owner approval described below.
 
-## Current reconciliation and production-pause decision — 2026-09-10
+## Historical pre-correction reconciliation decision — 2026-09-10
 
 PR #97 was reviewed and owner-authorized, then merged into staging at `4aa2143dc42b4bc82a8ca7fa6efd7a95e9bde3be`; its tree exactly matched reviewed head `5ec0deb81d921923330ddecc93fcb3b1e57d8ec9`. Main remains `822350986f4c023948a7bbf490ddffc371185c4a`. The separately authorized repair of `20250113000000` succeeded, followed by the separately authorized seven-version apply. Immediate history at 2026-09-10T11:34:43.467Z showed **65/65 with zero pending or remote-only versions**. Those completed operations must not be repeated.
 
@@ -123,15 +126,15 @@ ORDER BY db_column_name;
 
 The counts/hashes must be identical before and after staging repair/apply. The new forward migration adds only admin_limited view=true/edit=false to dietary permissions on clean databases that lack it; fresh production inventory must explicitly review that proposed hash delta before authorizing production apply. No other permission delta or repayment change is allowed. History repair itself must never change them.
 
-## A. Staging — no repair and one apply
+## A. Staging — completed correction procedure (do not repeat)
 
 ### Completed history (do not repeat)
 
 On 2026-06-14 Story 22.10 recorded 57 history rows through `20260614000000` and 19 policies. On 2026-09-10 the owner separately authorized the single `20250113000000` history repair and then the seven pending forward versions through `20260910094517`. Both operations succeeded; history reached 65/65. See the dated evidence records for their exact approvals, commands, hashes, and timestamps. The historical `staging_pre_apply` profile is retained only for prior-state fixture evidence. It is not the current release gate.
 
-### Fresh correction plan
+### Historical correction plan and reusable proof procedure
 
-After the correction PR is reviewed and separately authorized for merge, fetch staging/main, inspect intervening commits, and create a clean isolated checkout at the resulting staging SHA. Reverify reviewed tooling, CLI 2.115.0, certificate integrity, and three-way target binding. Capture fresh migration history: exactly 65 recorded repository versions, no remote-only versions, no repair candidates, and only `20260910115024` pending against the 66-version manifest. The CLI wrapper must reject every staging repair request because that allowlist is empty.
+The following procedure was completed on 2026-09-10; its one-version manifest plan describes that reconciliation baseline, not a currently pending migration. Use post_apply for current staging validation. Do not rerun its pre-apply phase or apply after successful 66/66 history. Historical procedure: after the correction PR is reviewed and separately authorized for merge, fetch staging/main, inspect intervening commits, and create a clean isolated checkout at the resulting staging SHA. Reverify reviewed tooling, CLI 2.115.0, certificate integrity, and three-way target binding. Capture fresh migration history: exactly 65 recorded repository versions, no remote-only versions, no repair candidates, and only `20260910115024` pending against the 66-version manifest. The CLI wrapper must reject every staging repair request because that allowlist is empty.
 
 Run the current staging-specific read-only proof:
 
@@ -376,10 +379,10 @@ The retry must return HTTP `200` and `cleanup_state: completed`. If the first re
 ## Close-out checklist
 
 - [ ] Immutable commit SHA recorded; local quality/audit/Story 22.14 gates green with no real-recipient delivery.
-- [ ] Staging fresh inventory/catalog proof passed.
+- [x] Staging fresh inventory/catalog proof passed at reviewed PR #98 merge; strict post_apply also passes 15/15.
 - [x] Owner separately authorized staging history repair; staging repaired only `20250113000000`; immediate history reconciliation passed on 2026-09-10. No further staging repair is permitted.
 - [x] Historical staging seven-version dry run exact; owner separately authorized that apply and immediate history reached 65/65.
-- [ ] Correction PR reviewed/merged with approval; fresh current pre-apply proof and one-version dry run exact; separate owner approval for `20260910115024` recorded.
+- [x] PR #98 reviewed/merged with approval; fresh pre-apply proof and exact one-version dry run passed; owner authorized required future migration applies and `20260910115024` completed successfully.
 - [ ] Staging shows 66 migrations / 17 policies; direct-role/advisor/data-preservation evidence recorded.
 - [ ] Owner verified staging.
 - [ ] Production fresh inventory/catalog proof passed for all 57 repair versions.
