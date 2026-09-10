@@ -317,4 +317,4 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: '2c8 local gates and 2c8 CI/Vercel/Reviewbot pass; record future documentation-head CI/Vercel/Reviewbot evidence. Repeat fresh read-only proof before separately authorizing the one current staging execute. No hosted write, deployment, setting change, staging-to-main merge, or reopening is authorized.'
+  next_action: '2c8 local/remote gates pass; final selector 269 has fresh Vitest/TS/lint evidence and retains 2c8-scope Playwright; record future documentation-head CI/Vercel/Reviewbot evidence. Repeat fresh read-only proof before separately authorizing the one current staging execute. No hosted write, deployment, setting change, staging-to-main merge, or reopening is authorized.'

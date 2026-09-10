@@ -2,7 +2,7 @@ schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
 last_updated: 2026-09-10
-updated_by: Codex (2026-09-10 PR #98 P1/P2 verifier-proof remediation full 2c8 local and 2c8 remote verification recorded; future documentation-head remote checks and owner gates pending).
+updated_by: Codex (2026-09-10 final test-only selector 269 Vitest/TS/lint verification recorded; retained 2c8 Playwright scope, future documentation-head remote checks and owner gates pending).
 
 current_focus:
   active_epic: 22
@@ -85,12 +85,12 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: '2c8 local gates and 2c8 CI/Vercel/Reviewbot pass; obtain future documentation-head CI/Vercel/Reviewbot evidence after push. Fresh read-only proof and separate owner authorization remain required before the one current staging execute 20260910115024. No hosted write, deployment, setting change, staging-to-main merge, or reopening is authorized.'
+  next_action: '2c8 local/remote gates pass; final selector 269 has fresh Vitest/TS/lint evidence and retains 2c8-scope Playwright; obtain future documentation-head CI/Vercel/Reviewbot evidence after push. Fresh read-only proof and separate owner authorization remain required before the one current staging execute 20260910115024. No hosted write, deployment, setting change, staging-to-main merge, or reopening is authorized.'
 
 reconciliation_pause_candidate:
   previous_implementation_sha: '5f60e58c9aa9a7e117bc589ec82d0b99a5846839'
   previous_playwright_sha: '2ea1077aec62729303116bb85c49b4c44e98639f'
-  local_verification: 'Historical pre-review ecea implementation passed Vitest 3451/3451 zero skips and Playwright 163/47/0/0 with PR96-identical skips; code-identical e122 clean 66+seed chain passed 15/15 in 9.781s. PR #98 P1/P2 verifier-proof fixes are covered by exact 2c8 Vitest 3451/3451 zero skips and Playwright 163/47/0/0; 2c8 CI/Vercel/Reviewbot are clean, while the future documentation-head CI/Vercel/Reviewbot remains open. Story 22.15 in-progress, Epic 23 on hold, production paused; no further hosted write authorized, read-only observation allowed.'
+  local_verification: 'Historical pre-review ecea implementation passed Vitest 3451/3451 zero skips and Playwright 163/47/0/0 with PR96-identical skips; code-identical e122 clean 66+seed chain passed 15/15 in 9.781s. Latest Vitest evidence is final test-only selector 269: 3451/3451 zero skips (TypeScript exit 0; lint 0 errors/296 warnings); Playwright 163/47/0/0 remains exact 2c8-scope evidence because application/migration/verifier/Playwright sources are unchanged and Playwright was not rerun. 2c8 CI/Vercel/Reviewbot are clean, while the future documentation-head CI/Vercel/Reviewbot remains open. Story 22.15 in-progress, Epic 23 on hold, production paused; no further hosted write authorized, read-only observation allowed.'
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-and-pause-2026-09-09.md'
 
 custom_preview_correction:
