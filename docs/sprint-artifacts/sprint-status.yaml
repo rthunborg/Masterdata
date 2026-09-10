@@ -90,7 +90,7 @@ pr_95_playwright_gate:
 reconciliation_pause_candidate:
   previous_implementation_sha: '5f60e58c9aa9a7e117bc589ec82d0b99a5846839'
   previous_playwright_sha: '2ea1077aec62729303116bb85c49b4c44e98639f'
-  local_verification: 'Historical pre-review ecea implementation passed Vitest 3451/3451 zero skips and Playwright 163/47/0/0 with PR96-identical skips; code-identical e122 clean 66+seed chain passed 15/15 in 9.781s. Latest Vitest evidence is final test-only selector 269: 3451/3451 zero skips (TypeScript exit 0; lint 0 errors/296 warnings); Playwright 163/47/0/0 remains exact 2c8-scope evidence because application/migration/verifier/Playwright sources are unchanged and Playwright was not rerun. 2c8 CI/Vercel/Reviewbot are clean, while the future documentation-head CI/Vercel/Reviewbot remains open. Story 22.15 in-progress, Epic 23 on hold, production paused; no further hosted write authorized, read-only observation allowed.'
+  local_verification: 'Historical tested-commit results remain in the dated evidence. PR #98 final head passed CI/Vercel/Reviewbot and was owner-approved and merged; the staging correction is applied/verified at 66/66. The current evidence-only PR has its own final review/check gate.'
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-and-pause-2026-09-09.md'
 
 custom_preview_correction:
