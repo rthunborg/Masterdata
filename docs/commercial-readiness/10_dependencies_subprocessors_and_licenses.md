@@ -20,7 +20,7 @@ A draft subprocessor register built from the tables below now exists: `24_subpro
 
 | Dependency | Purpose | License evidence | Risk/comment |
 | --- | --- | --- | --- |
-| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; the 2026-09-10 compatible Browserslist/Sharp remediation returns the audit to zero critical/high, fresh full local gates passed; final documentation-head checks open |
+| `next` | App framework | `pnpm licenses list --prod`: MIT | Updated to `16.3.3` with matching ESLint/analyzer packages; the 2026-09-10 compatible Browserslist/Sharp remediation returns the audit to zero critical/high, fresh full local gates passed; future documentation-only head CI/Vercel/Reviewbot checks open after push |
 | `react`, `react-dom` | UI | MIT | Standard |
 | `@supabase/ssr`, `@supabase/supabase-js` | Auth/database/realtime client | MIT transitive in license list | Compatible transitive `ws` remediation is pinned in the production lockfile |
 | `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/react-virtual` | Data fetching/table/virtualization | MIT | Standard |

@@ -2,7 +2,11 @@
 
 Status: preparation in progress. Story 22.15 remains **in-progress**; Epic 23 remains **on hold**. No hosted database write, history repair, production/manual deployment, hosted setting change, staging/main merge, or reopening occurred in this preparation. The authorized branch push triggered Vercel's normal automatic preview build.
 
-## Current final-candidate overview — 2026-09-10
+## Current post-merge default-reconciliation amendment — 2026-09-10
+
+PR #96 was subsequently merged to staging at `3724809065f9e4559802fdcd80e7e526172cc8fd`; main remains `822350986f4c023948a7bbf490ddffc371185c4a`. A fresh fetch found no intervening commit and the tree equalled that reviewed head before the new candidate work. The post-merge catalog failed at 2026-09-10T09:19:52.669Z only on `represented_column_contracts`: all 22 represented columns match expected type and nullability, 20 defaults match, and only `repayment_needed_omc` and `repayment_needed_pe3` lack the expected `false` default. The authorized diagnostic at 2026-09-10T09:44:14.972Z read no employee rows and made no write. The forward-only `20260910094517_reconcile_repayment_defaults.sql` sets those two defaults without changing existing values, including NULLs. The current plan is 65 repository versions: staging one repair plus seven ordered applies, and provisional production 57 repairs plus eight ordered applies after fresh inventory. The code-identical focused regression and exact 7069 local migration/verifier/manifest gates are complete; only future documentation-head CI/Vercel/Reviewbot remains pending after push. The earlier c27a9ee gates below are historical and do not prove this new candidate. See [repayment default diagnostic](repayment-defaults-diagnostic-2026-09-10.md).
+
+## Historical PR #96 implementation-candidate overview — 2026-09-10
 
 | Area | Current evidence |
 | --- | --- |
@@ -56,7 +60,7 @@ No row cleanup is needed for the observed snapshot. These predicates must be fre
 
 A bounded name-equivalence query at 11:54:47Z confirmed `user_filters_user_id_name_key`, `user_filters_name_check`, and `user_filters_updated_at`; query SHA-256 `46f3e3b82f2a47fc8e3a41d4c373edf322b95646085fadd082b45eaa2c034b8c`. No row values were read. This supplements the prior redacted 15-check catalog failure and predicate-level diagnosis, not a passing release gate.
 
-## Reconciliation decisions
+## Historical reconciliation decisions — 2026-09-09
 
 - Preserve immutable historical migrations and all staging repayment/permission hashes. Preserve the documented admin_limited dietary view access without edit access. A clean database receives the same exact six-role dietary contract through the new forward migration; production remains subject to fresh inventory and an explicitly reviewed permission delta.
 - Forward version `20260909115242` drops the filters default, canonicalizes UNIQUE/CHECK/trigger names, validates the auth.users cascade FK and nonempty/50-character name constraint, and creates the two exact standalone indexes. No historical CREATE TABLE replay, purge/reset, or data cleanup.
@@ -64,7 +68,7 @@ A bounded name-equivalence query at 11:54:47Z confirmed `user_filters_user_id_na
 - Canonicalize redundant room-function direct ACLs to PUBLIC + authenticated, preserving effective execution through PUBLIC. This is representation reconciliation, not a claim of broader function equivalence.
 - Revised manifest: 64 versions; staging one repair then six applies; production candidate 57 catalog-proven repairs then seven applies. The new version is forward-only and cannot be repaired as applied. Every hosted gate remains separate.
 
-## Fresh production-pause inspection
+## Historical production-pause inspection — 2026-09-09
 
 Read-only Vercel dashboard inspection completed around 12:03 UTC. The current Production Deployment panel's private deployment-ID hash matched the recorded pause ID. The production environment's Auto-Assign Custom Production Domains checkbox was off. The Cron Jobs page showed the empty onboarding state with no configured jobs. No values were revealed, buttons toggled, or settings saved. The connector's project summary does not expose the complete target/settings record, so the missing fields were verified through the authenticated dashboard; a summary of the latest preview is not production-target proof.
 
@@ -76,7 +80,7 @@ Pinned dependency installation with frozen lockfile and lifecycle scripts disabl
 
 Supabase changelog checked 2026-09-09. Relevant current notices include public-table exposure/grant changes, extension version pinning, and Realtime schema restrictions. This change adds no table/API exposure, creates no extension version pin, and changes no Realtime schema. CLI remains 2.115.0. Sources: [changelog](https://supabase.com/changelog), [table exposure](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically).
 
-Required remaining sequence: finish local gates and exact-head reviews -> explicit staging-merge authorization -> immutable merged staging checkout -> repeat reviewed read-only proofs -> separate single-history-repair authorization -> immediate history verification -> separate exact six-version apply authorization -> staging validation -> separate production inventory/rollout gates. Production reopening is never implied by database readiness.
+Historical remaining sequence (superseded by the final-local record): finish local gates and exact-head reviews -> explicit staging-merge authorization -> immutable merged staging checkout -> repeat reviewed read-only proofs -> separate single-history-repair authorization -> immediate history verification -> separate exact six-version apply authorization -> staging validation -> separate production inventory/rollout gates. Production reopening is never implied by database readiness.
 
 ## Review and verification attempts
 

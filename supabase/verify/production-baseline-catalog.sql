@@ -1151,6 +1151,17 @@ catalog_checks(check_name, passed, observed) AS (
                     '',
                     'g'
                   ) = '''[]''::jsonb'
+                -- The dated 2026-09-10 staging catalog observed both repayment
+                -- defaults absent. Migration 20260910094517 reconciles only that
+                -- exact difference; production and post-apply remain strict false.
+                WHEN expected.table_name = 'employees'
+                  AND expected.column_name IN (
+                    'repayment_needed_omc',
+                    'repayment_needed_pe3'
+                  )
+                  AND (SELECT catalog_phase FROM verifier_context) =
+                    'staging_pre_apply' THEN
+                  actual.column_default IS NULL
                 WHEN expected.column_default IS NULL THEN
                   actual.column_default IS NULL
                 ELSE regexp_replace(

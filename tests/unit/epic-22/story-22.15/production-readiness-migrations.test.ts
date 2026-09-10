@@ -33,6 +33,10 @@ type Manifest = {
       };
       reconciledByExecuteVersion: string;
     };
+    stagingRepaymentDefaults: {
+      acceptedPreApplyState: string;
+      reconciledByExecuteVersion: string;
+    };
   };
   environmentPlans: {
     staging: {
@@ -65,6 +69,13 @@ const reconciliationMigrationSql = readFileSync(
   resolve(
     root,
     'supabase/migrations/20260909115242_reconcile_saved_filters_and_room_acl.sql'
+  ),
+  'utf8'
+);
+const repaymentDefaultsMigrationSql = readFileSync(
+  resolve(
+    root,
+    'supabase/migrations/20260910094517_reconcile_repayment_defaults.sql'
   ),
   'utf8'
 );
@@ -124,13 +135,13 @@ describe('Story 22.15 migration baseline safety', () => {
     const execute = manifest.classifications.execute;
     const classified = [...repair, ...execute];
 
-    expect(repositoryVersions).toHaveLength(64);
-    expect(manifest.repositoryMigrationCount).toBe(64);
+    expect(repositoryVersions).toHaveLength(65);
+    expect(manifest.repositoryMigrationCount).toBe(65);
     expect(manifest.reviewedSupabaseCliVersion).toBe('2.115.0');
     expect(new Set(classified).size).toBe(classified.length);
     expect([...classified].sort()).toEqual(repositoryVersions);
     expect(repair).toHaveLength(57);
-    expect(execute).toHaveLength(7);
+    expect(execute).toHaveLength(8);
   });
 
   it('keeps every replay-dangerous historical version out of the execute set', () => {
@@ -160,6 +171,7 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260710150000',
       '20260831200026',
       '20260909115242',
+      '20260910094517',
     ]);
     expect(manifest.environmentPlans.production).toEqual({
       'repair-after-catalog-proof':
@@ -168,7 +180,7 @@ describe('Story 22.15 migration baseline safety', () => {
     });
   });
 
-  it('adds the forward reconciliation after every pre-existing staging apply', () => {
+  it('adds both forward reconciliations after every pre-existing staging apply', () => {
     expect(manifest.classifications.execute).toEqual([
       '20260614000000',
       '20260615000000',
@@ -177,6 +189,7 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260710150000',
       '20260831200026',
       '20260909115242',
+      '20260910094517',
     ]);
     expect(manifest.environmentPlans.staging.execute).toEqual([
       '20260615000000',
@@ -185,7 +198,19 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260710150000',
       '20260831200026',
       '20260909115242',
+      '20260910094517',
     ]);
+  });
+
+  it('uses a forward-only default reconciliation without rewriting repayment rows', () => {
+    expect(repaymentDefaultsMigrationSql).toMatch(
+      /ALTER TABLE public\.employees\s+ALTER COLUMN repayment_needed_omc SET DEFAULT false,\s+ALTER COLUMN repayment_needed_pe3 SET DEFAULT false;/i
+    );
+    expect(repaymentDefaultsMigrationSql).not.toMatch(
+      /\b(?:UPDATE|INSERT|DELETE)\s+(?:FROM\s+)?public\.employees\b/i
+    );
+    expect(repaymentDefaultsMigrationSql).toMatch(/BEGIN;/i);
+    expect(repaymentDefaultsMigrationSql).toMatch(/COMMIT;\s*$/i);
   });
 
   it('pins the one reviewed staging exception and its zero-data prerequisites', () => {
@@ -202,15 +227,24 @@ describe('Story 22.15 migration baseline safety', () => {
     });
   });
 
+  it('pins the exact absent-default staging exception to its forward reconciliation', () => {
+    expect(manifest.catalogProofExceptions.stagingRepaymentDefaults).toEqual({
+      acceptedPreApplyState: expect.stringContaining(
+        'repayment_needed_omc and employees.repayment_needed_pe3 boolean defaults absent'
+      ),
+      reconciledByExecuteVersion: '20260910094517',
+    });
+  });
+
   it('keeps the duplicated runbook repair/apply lists aligned with the manifest', () => {
     const repairBlock = cutoverRunbook.match(
       /readonly -a PRODUCTION_REPAIR_VERSIONS=\(\s*([\s\S]*?)\n\)/
     )?.[1];
     const stagingApplyBlock = cutoverRunbook.match(
-      /The dry run must list exactly these six applies, in this order:([\s\S]*?)Stop unless the dry run is exactly/
+      /The dry run must list exactly these seven applies, in this order:([\s\S]*?)Stop unless the dry run is exactly/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /After the 57 repairs, the dry run must list exactly these seven versions:([\s\S]*?)Stop unless the dry run is exact/
+      /After the 57 repairs, the dry run must list exactly these eight versions:([\s\S]*?)Stop unless the dry run is exact/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -714,6 +748,14 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(verifierSql).toContain(
       "ARRAY['PUBLIC', 'anon', 'authenticated', 'service_role']::text[]"
     );
+    expect(verifierSql).toContain(
+      "AND expected.column_name IN (\n                    'repayment_needed_omc',\n                    'repayment_needed_pe3'\n                  )"
+    );
+    expect(verifierSql).toContain(
+      "AND (SELECT catalog_phase FROM verifier_context) =\n                    'staging_pre_apply' THEN\n                  actual.column_default IS NULL"
+    );
+    expect(verifierSql).toContain("('employees', 'repayment_needed_omc', 'boolean', 'YES', 'false')");
+    expect(verifierSql).toContain("('employees', 'repayment_needed_pe3', 'boolean', 'YES', 'false')");
   });
 
   it('canonicalizes represented saved-filter and room ACL objects without replaying history', () => {
@@ -856,7 +898,7 @@ describe('Story 22.15 migration baseline safety', () => {
       'psql "$SUPABASE_DB_URL" --set ON_ERROR_STOP=1'
     );
     expect(cutoverRunbook).toContain(
-      'a six/seven-file `db push` is **not** an all-or-nothing batch'
+      'a seven/eight-file `db push` is **not** an all-or-nothing batch'
     );
     expect(cutoverRunbook).toContain(
       'do not repair a failed forward version as applied'
