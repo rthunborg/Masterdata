@@ -42,7 +42,11 @@ context:
 
 ## Code Map
 
-## Reviewbot follow-up — 2026-09-11
+## Current audit-FK follow-up — 2026-09-11
+
+Additional audit-FK reconciliation is prepared but unverified: staging changed_by references public.users.auth_user_id, with 353 audit rows and 90 nonnull actors, all mapped to existing application users. The forward migration must translate those 90 current references and replace the FK together with the June audit function, preserving rows and timestamps. Prior full results on b4bbdb2 are historical and do not verify this revision. Managed database restart failed BROKER_UNAVAILABLE; representative/clean-chain and renewed full Vitest/Playwright gates are blocked. No merge or hosted apply is permitted before those gates and final review. Standing authorization for reviewed staging merges and required migrations remains; unrelated fixture writes/history repair/main/deploy/settings/reopening stay separately gated. Story 22.15 in-progress; Epic 23 on hold; production paused.
+
+## Historical owner/profile follow-up — 2026-09-11
 
 Reviewbot findings on c92fe15 are fixed: exact postgres owners are required and mixed observed/canonical profiles are rejected. Implementation b4bbdb25e291d37fe3743d2db88fb25751c52c8c: Vitest 3455 passed across 322 files, zero skips/failures (80.67s); exact npx playwright test 163 passed, 47 individually classified skips, zero failures/errors (1310.568207s); both exit 0. Clean 67-migration chain and canonical reapply pass 16/16 (3.534s), with cleanup verified. TypeScript and preview build pass; lint has zero errors and 296 warnings. Production application build is correctly refused while paused. Final PR-head CI/Vercel/Reviewbot and hosted staging verification remain pending. Standing reviewed-staging-merge and required-migration-apply authorization remains effective; other hosted action gates remain separate. Story 22.15 remains in-progress, Epic 23 on hold, production paused.
 

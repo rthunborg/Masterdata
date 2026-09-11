@@ -1433,6 +1433,8 @@ catalog_checks(check_name, passed, observed) AS (
               AND constraints.contype = 'f'
               AND constraints.confrelid = to_regclass('public.users')
               AND constraints.convalidated
+              AND constraints.conname =
+                'employee_column_changes_changed_by_fkey'
               AND constraints.conkey = ARRAY[
                 (
                   SELECT attnum
@@ -1447,10 +1449,67 @@ catalog_checks(check_name, passed, observed) AS (
                   SELECT attnum
                   FROM pg_attribute
                   WHERE attrelid = constraints.confrelid
-                    AND attname = 'id'
+                    AND attname = CASE
+                      WHEN (
+                        SELECT trigger_contract_profile
+                        FROM verifier_context
+                      ) = 'observed_staging_pre_apply' THEN 'auth_user_id'
+                      ELSE 'id'
+                    END
                     AND NOT attisdropped
                 )
               ]
+              AND constraints.confdeltype = 'n'
+              AND constraints.confupdtype = 'a'
+              AND constraints.confmatchtype = 's'
+              AND NOT constraints.condeferrable
+              AND NOT constraints.condeferred
+          )
+          AND (
+            SELECT count(*)
+            FROM pg_constraint AS changed_by_constraints
+            WHERE changed_by_constraints.conrelid =
+                to_regclass('public.employee_column_changes')
+              AND changed_by_constraints.contype = 'f'
+              AND (
+                SELECT attnum
+                FROM pg_attribute
+                WHERE attrelid = changed_by_constraints.conrelid
+                  AND attname = 'changed_by'
+                  AND NOT attisdropped
+              ) = ANY (changed_by_constraints.conkey)
+          ) = 1
+          AND NOT EXISTS (
+            SELECT 1
+            FROM public.employee_column_changes AS audit_rows
+            WHERE audit_rows.changed_by IS NOT NULL
+              AND NOT EXISTS (
+                SELECT 1
+                FROM public.users AS audit_users
+                WHERE (
+                  (SELECT trigger_contract_profile FROM verifier_context) =
+                    'observed_staging_pre_apply'
+                  AND audit_users.auth_user_id = audit_rows.changed_by
+                )
+                OR (
+                  (SELECT trigger_contract_profile FROM verifier_context) <>
+                    'observed_staging_pre_apply'
+                  AND audit_users.id = audit_rows.changed_by
+                )
+              )
+          )
+          AND NOT EXISTS (
+            SELECT 1
+            FROM pg_trigger AS audit_triggers
+            WHERE audit_triggers.tgrelid =
+                to_regclass('public.employee_column_changes')
+              AND NOT audit_triggers.tgisinternal
+          )
+          AND NOT EXISTS (
+            SELECT 1
+            FROM pg_rewrite AS audit_rules
+            WHERE audit_rules.ev_class =
+              to_regclass('public.employee_column_changes')
           )
           AND EXISTS (
             SELECT 1

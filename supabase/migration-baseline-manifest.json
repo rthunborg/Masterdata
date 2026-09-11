@@ -116,7 +116,7 @@
       "reconciledByExecuteVersion": "20260910115024"
     },
     "stagingTriggerReconciliation": {
-      "acceptedPreApplyState": "The exact 66-version staging state lacks column_config.updated_at and its timestamp trigger. The audit trigger retains the reviewed February body and service_role EXECUTE only; the timestamp helper has the canonical body with PUBLIC, anon, authenticated and service_role EXECUTE. Existing employee/date trigger bindings, audit foreign key and conflict index must match exactly. Other final catalog contracts remain required.",
+      "acceptedPreApplyState": "The exact 66-version staging state lacks column_config.updated_at and its timestamp trigger. The postgres-owned audit trigger retains the reviewed February body and service_role EXECUTE only; the postgres-owned timestamp helper has the canonical body with PUBLIC, anon, authenticated and service_role EXECUTE. The sole changed_by foreign key is employee_column_changes_changed_by_fkey to public.users.auth_user_id, validated, MATCH SIMPLE, ON UPDATE NO ACTION, ON DELETE SET NULL and not deferrable. Every nonnull audit actor must map to an application user; no custom audit-table triggers or rewrite rules are accepted. Forward reconciliation preserves audit rows and timestamps while translating actors to public.users.id and replacing the FK together with the June audit body. Existing employee/date trigger bindings and audit conflict index must match exactly. Other final catalog contracts remain required.",
       "requiredCatalogPhase": "staging_trigger_reconciliation_pre_apply",
       "reconciledByExecuteVersion": "20260910184841"
     }

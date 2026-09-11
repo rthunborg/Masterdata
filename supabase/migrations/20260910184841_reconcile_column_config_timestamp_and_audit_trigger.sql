@@ -1,13 +1,17 @@
 -- Story 22.15: forward reconciliation of represented trigger drift.
 -- 66-version staging lacks column_config.updated_at and its timestamp trigger;
 -- its audit trigger still has the February body despite recorded June repair.
+-- Its changed_by foreign key also retains auth_user_id as the referenced key.
+-- Translate those existing actor references to application IDs without deleting
+-- audit rows or changing their timestamps, employee references, or column names.
 -- No history repair, historical replay, audit deletion, or permission-JSON rewrite.
 -- Existing configuration rows receive the new timestamp default at apply time;
 -- that value is initialization metadata, not a reconstructed historical edit time.
 BEGIN;
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '30s';
-LOCK TABLE public.column_config, public.employees, public.important_dates
+LOCK TABLE public.column_config, public.employees, public.important_dates,
+  public.employee_column_changes, public.users
   IN SHARE ROW EXCLUSIVE MODE;
 
 DO $guard$
@@ -15,6 +19,9 @@ DECLARE
   timestamp_exists boolean;
   actual_acl text[];
   function_row record;
+  audit_rows_before bigint;
+  audit_actors_before bigint;
+  mapped_actor_rows bigint;
 BEGIN
   SELECT EXISTS(SELECT 1 FROM pg_attribute
     WHERE attrelid='public.column_config'::regclass
@@ -99,8 +106,16 @@ BEGIN
 
   IF NOT EXISTS(SELECT 1 FROM pg_constraint c WHERE c.conrelid='public.employee_column_changes'::regclass
     AND c.contype='f' AND c.confrelid='public.users'::regclass AND c.convalidated
+    AND c.conname='employee_column_changes_changed_by_fkey'
+    AND c.confdeltype='n' AND c.confupdtype='a' AND c.confmatchtype='s'
+    AND NOT c.condeferrable AND NOT c.condeferred
     AND c.conkey=ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid=c.conrelid AND attname='changed_by')]
-    AND c.confkey=ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid=c.confrelid AND attname='id')])
+    AND c.confkey=ARRAY[(SELECT attnum FROM pg_attribute WHERE attrelid=c.confrelid
+      AND attname=CASE WHEN timestamp_exists THEN 'id' ELSE 'auth_user_id' END AND NOT attisdropped)])
+    OR (SELECT count(*) FROM pg_constraint c
+      WHERE c.conrelid='public.employee_column_changes'::regclass AND c.contype='f'
+        AND c.conkey @> ARRAY[(SELECT attnum FROM pg_attribute
+          WHERE attrelid=c.conrelid AND attname='changed_by' AND NOT attisdropped)])<>1
     OR NOT EXISTS(SELECT 1 FROM pg_index i WHERE i.indrelid='public.employee_column_changes'::regclass
       AND i.indisunique AND i.indisvalid AND i.indisready AND i.indimmediate
       AND i.indpred IS NULL AND i.indexprs IS NULL AND i.indnkeyatts=3
@@ -108,6 +123,39 @@ BEGIN
         JOIN pg_attribute a ON a.attrelid=i.indrelid AND a.attnum=k.attnum WHERE k.ord<=3)
         =ARRAY['employee_id','column_name','changed_at']::name[])
   THEN RAISE EXCEPTION 'Expected audit foreign key or conflict index missing'; END IF;
+
+  IF EXISTS(SELECT 1 FROM pg_trigger
+      WHERE tgrelid='public.employee_column_changes'::regclass AND NOT tgisinternal)
+    OR EXISTS(SELECT 1 FROM pg_rewrite
+      WHERE ev_class='public.employee_column_changes'::regclass)
+  THEN RAISE EXCEPTION 'Unexpected audit write side effects'; END IF;
+
+  IF EXISTS(SELECT 1 FROM public.employee_column_changes changes
+    WHERE changes.changed_by IS NOT NULL AND NOT EXISTS(
+      SELECT 1 FROM public.users users
+      WHERE changes.changed_by=CASE WHEN timestamp_exists THEN users.id ELSE users.auth_user_id END))
+  THEN RAISE EXCEPTION 'Unmapped audit actor prevents reconciliation'; END IF;
+
+  IF NOT timestamp_exists THEN
+    -- The validated observed FK makes every nonnull actor an Auth ID. The locks
+    -- keep that mapping stable while the FK and actor references change together.
+    SELECT count(*),count(changed_by) INTO audit_rows_before,audit_actors_before
+      FROM public.employee_column_changes;
+    ALTER TABLE public.employee_column_changes
+      DROP CONSTRAINT employee_column_changes_changed_by_fkey;
+    UPDATE public.employee_column_changes changes
+      SET changed_by=users.id FROM public.users users
+      WHERE changes.changed_by=users.auth_user_id;
+    GET DIAGNOSTICS mapped_actor_rows = ROW_COUNT;
+    IF mapped_actor_rows<>audit_actors_before
+      OR (SELECT count(*) FROM public.employee_column_changes)<>audit_rows_before
+      OR (SELECT count(changed_by) FROM public.employee_column_changes)<>audit_actors_before
+    THEN RAISE EXCEPTION 'Audit history preservation check failed'; END IF;
+    ALTER TABLE public.employee_column_changes
+      ADD CONSTRAINT employee_column_changes_changed_by_fkey
+      FOREIGN KEY (changed_by) REFERENCES public.users(id)
+      MATCH SIMPLE ON UPDATE NO ACTION ON DELETE SET NULL NOT DEFERRABLE;
+  END IF;
 END $guard$;
 
 ALTER TABLE public.column_config

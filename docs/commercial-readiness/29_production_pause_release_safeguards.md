@@ -5,7 +5,7 @@
 
 Status: preparation only, 2026-09-09. Story 22.15 remains in-progress; Epic 23 remains on hold. Production stays paused until a separate explicit owner reopening decision.
 
-Current trigger reconciliation is recorded in [the v67 preparation evidence](evidence/trigger-reconciliation-preparation-2026-09-10.md). The required migration and reviewed staging merge have standing authorization, subject to their gates. Neither authorizes a main merge, deployment, hosted setting change, fixture write or reopening. Read-only lookup at 2026-09-11T11:12:24.106Z still matched the recorded production pause target in READY state; alias-assignment and active-cron settings were not re-queried and must be refreshed before a production-targeted action.
+Additional audit-FK reconciliation is unverified and blocked on managed local resources; no staging merge or hosted apply has occurred. Current trigger reconciliation is recorded in [the v67 preparation evidence](evidence/trigger-reconciliation-preparation-2026-09-10.md). The required migration and reviewed staging merge have standing authorization, subject to their gates. Neither authorizes a main merge, deployment, hosted setting change, fixture write or reopening. Read-only lookup at 2026-09-11T11:12:24.106Z still matched the recorded production pause target in READY state; alias-assignment and active-cron settings were not re-queried and must be refreshed before a production-targeted action.
 
 ## Versioned controls
 

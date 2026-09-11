@@ -86,6 +86,13 @@ const triggerReconciliationMigrationSql = readFileSync(
   ),
   'utf8'
 );
+const employeeColumnChangesMigrationSql = readFileSync(
+  resolve(
+    root,
+    'supabase/migrations/20251209130000_create_employee_column_changes.sql'
+  ),
+  'utf8'
+);
 const initialSchemaMigrationSql = readFileSync(
   resolve(root, 'supabase/migrations/20251027000000_initial_schema.sql'),
   'utf8'
@@ -254,8 +261,56 @@ describe('Story 22.15 migration baseline safety', () => {
       'CREATE TRIGGER update_column_config_updated_at'
     );
     expect(triggerReconciliationMigrationSql).not.toMatch(
-      /\b(?:DELETE|UPDATE|INSERT)\s+(?:FROM\s+)?public\.employee_column_changes\b/i
+      /\bDELETE\s+FROM\s+public\.employee_column_changes\b/i
     );
+    expect(triggerReconciliationMigrationSql).toMatch(
+      /UPDATE\s+public\.employee_column_changes\s+changes\s+SET\s+changed_by\s*=\s*users\.id\s+FROM\s+public\.users\s+users/i
+    );
+    expect(employeeColumnChangesMigrationSql).toMatch(
+      /changed_by\s+UUID\s+REFERENCES\s+public\.users\(id\)\s+ON\s+DELETE\s+SET\s+NULL/i
+    );
+    for (const predicate of [
+      "c.confdeltype='n'",
+      "c.confupdtype='a'",
+      "c.confmatchtype='s'",
+      'NOT c.condeferrable',
+      'NOT c.condeferred',
+      'c.conkey @> ARRAY',
+    ]) {
+      expect(triggerReconciliationMigrationSql).toContain(predicate);
+    }
+
+    const representedTriggerContractsIndex = verifierSql.indexOf(
+      "'represented_trigger_contracts'"
+    );
+    const auditForeignKeyContract = verifierSql.slice(
+      verifierSql.indexOf(
+        "to_regclass('public.employee_column_changes')",
+        representedTriggerContractsIndex
+      ),
+      verifierSql.indexOf('AND EXISTS (\n            SELECT 1\n            FROM pg_index')
+    );
+    for (const predicate of [
+      "constraints.confdeltype = 'n'",
+      "constraints.confupdtype = 'a'",
+      "constraints.confmatchtype = 's'",
+      'NOT constraints.condeferrable',
+      'NOT constraints.condeferred',
+      "= 'observed_staging_pre_apply' THEN 'auth_user_id'",
+      "ELSE 'id'",
+      "constraints.conname =\n                'employee_column_changes_changed_by_fkey'",
+      'changed_by_constraints.contype = \'f\'',
+      '= ANY (changed_by_constraints.conkey)',
+      ') = 1',
+      'FROM public.employee_column_changes AS audit_rows',
+      'FROM public.users AS audit_users',
+      'audit_users.auth_user_id = audit_rows.changed_by',
+      'audit_users.id = audit_rows.changed_by',
+      'FROM pg_trigger AS audit_triggers',
+      'FROM pg_rewrite AS audit_rules',
+    ]) {
+      expect(auditForeignKeyContract).toContain(predicate);
+    }
 
     const timestampBodyMd5 = normalizedFunctionBodyMd5(
       initialSchemaMigrationSql,
