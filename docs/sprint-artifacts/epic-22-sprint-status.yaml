@@ -12,7 +12,7 @@ epic_completion_gate:
     title: 'Story 22.10 Phase B — Supabase production cutover'
     status: 'pending' # set to 'done' once executed to silence the reminder
     trigger: 'Only after Story 22.15 is locally complete, PR-reviewed, recorded at a final immutable remediation SHA, and owner-verified on staging; before any production mutation.'
-    actions: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
+    actions: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and Hosted 16-check post_apply and final PR-head gates are pending; local implementation results are recorded below and in the dated evidence. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
     source: 'supabase/migration-baseline-manifest.json; docs/commercial-readiness/27_supabase_cutover_runbook.md; tracker E-010/E-013'
 
 sprint:
@@ -246,7 +246,7 @@ stories:
     started_date: 2026-08-31
     completed_date: null
     blockers:
-      - 'Hosted direct-role/RPC acceptance and owner staging verification remain open; current staging schema is reconciled at 66/66.'
+      - 'Hosted direct-role/RPC acceptance and owner staging verification remain open; the historical staging baseline is 66/66 and v67 has one pending forward execute with no repair.'
       - 'Production inventory, history-proof ledger, backup and isolation gates remain; preserve production pause. Standing migration-apply authorization does not authorize history repair, settings, deployment, merges or reopening.'
     notes: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
 
@@ -276,8 +276,8 @@ test_coverage_summary:
   manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 291 + 116 + 3 + 0 + 2 = 412.
 
 blockers:
-  - 'Hosted active/inactive fixture and mutating-RPC acceptance, then owner staging verification, remain open. Staging schema is already reconciled: 66/66 history, strict catalog 15/15, expected advisors and unchanged aggregates/hashes.'
-  - 'Required future migration applies have standing owner authorization. Production inventory, signed repair ledger, backup and separately authorized history repair/isolation/settings/deployment remain open; merges and reopening remain separate. No staging migration is pending.'
+  - 'Hosted active/inactive fixture and mutating-RPC acceptance, then owner staging verification, remain open. Historical staging proof is 66/66 with strict catalog 15/15; current v67 has one pending forward execute with no repair and a strict 16-check post_apply requirement.'
+  - 'Required reviewed migration applies and merging reviewed PRs into staging have standing owner authorization. Production inventory, signed repair ledger, backup and separately authorized history repair/isolation/settings/deployment remain open; main merges and reopening remain separate. Current staging has one pending v67 forward execute and no repair.'
 known_issues:
   - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'
   - 'Post-merge Epic 22 release/readiness gate: after final deployment, unauthenticated deployed-app diagnostic checks for removed diagnostic endpoints must return a non-success auth/not-found status before P0 external-presentation readiness is claimed.'
@@ -317,7 +317,7 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'Staging correction completed at 62a52e32aae8302d6c6be4b35ec39da298c5061c; 66/66 history and strict catalog 15/15. Complete hosted authorization acceptance and owner staging verification; preserve production pause and separate production/merge gates. See post_apply_staging_execution.'
+  next_action: 'Historical PR #98 established the 66/66 baseline. Current v67 has one pending staging forward execute with no repair and a strict 16-check post_apply requirement. Complete hosted authorization acceptance and owner staging verification; preserve production pause and separate production/merge gates. See trigger_reconciliation_preparation.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -338,6 +338,7 @@ trigger_reconciliation_preparation:
   staging_pending_execute_versions: ['20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql']
   pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
   post_apply_catalog_checks_expected: 16
-  new_head_verification: 'pending'
+  tested_implementation_commit: '61392422bde5f4a8b7546a2131d9094ef8564936'
+  new_head_verification: "Implementation 61392422bde5f4a8b7546a2131d9094ef8564936: Vitest 3454 passed, zero skips/failures (80.86s); exact npx playwright test 163 passed, 47 individually classified skips, zero failures/errors (1333.475657s); both exit 0. Clean 67-migration chain and canonical reapply pass 16/16 (1.646s). TypeScript passes; ESLint has zero errors and 296 warnings. Final PR-head CI/Vercel/Reviewbot and hosted staging verification remain pending."
   evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
   status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'

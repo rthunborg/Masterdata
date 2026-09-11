@@ -5,13 +5,13 @@
 > **Historical pre-trigger execution record — 2026-09-10 15:14 UTC (superseded below).** PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold. [Completed reconciliation evidence](evidence/staging-reconciliation-completed-2026-09-10.md). This record supersedes earlier statements that PR #98 review, its merge, the correction apply or migration-apply authorization are pending; earlier dated entries remain historical.
 
 
-Status: **Staging schema reconciled and verified; hosted authorization acceptance and owner staging verification remain open.** The owner-authorized repair and seven-file apply completed on 2026-09-10. The subsequent PR #98 correction also completed; current staging has 66 history rows and no pending migrations. Production remains paused and untouched by this database work.
+Status: **Historical staging baseline is 66/66; v67 trigger reconciliation has one pending forward execute and no repair.** Use `staging_trigger_reconciliation_pre_apply` before that execute and require strict 16-check `post_apply` afterward. Hosted authorization acceptance and owner staging verification remain open. Production remains paused and untouched by this database work.
 
-Repository target: **66 migration versions / 17 policies**. The immutable classification source is `supabase/migration-baseline-manifest.json`; the machine-enforced read-only proof entry point is `supabase/verify/verify-production-baseline-catalog.mjs`, backed by `supabase/verify/production-baseline-catalog.sql`.
+Repository target: **67 migration versions / 17 policies**. The immutable classification source is `supabase/migration-baseline-manifest.json`; the machine-enforced read-only proof entry point is `supabase/verify/verify-production-baseline-catalog.mjs`, backed by `supabase/verify/production-baseline-catalog.sql`.
 
 > **Epic 23 stays on hold.** Leaked-password protection, CAPTCHA, MFA/session changes, and other Auth/dashboard settings are not part of this runbook.
 
-> **Authorization record.** Running catalog reads is safe only with the correct linked project. On 2026-09-10 the owner explicitly authorized all required future migration applies; this includes reviewed staging and production forward migrations once their prerequisites pass. Record that standing authorization against each exact environment, candidate, ordered file set and SQL hashes; do not request it again merely because an apply targets production. History repair, fixture/data-cleanup writes outside reviewed migrations, workflow dispatch, backup, hosted settings, deployment, merges and reopening retain their separate gates below. Documentation itself grants no authorization.
+> **Authorization record.** Running catalog reads is safe only with the correct linked project. On 2026-09-10 the owner explicitly authorized all required future migration applies; this includes reviewed staging and production forward migrations once their prerequisites pass. Record that standing authorization against each exact environment, candidate, ordered file set and SQL hashes; do not request it again merely because an apply targets production. The owner also authorized merging reviewed PRs into staging after the exact-head checks and review pass. History repair, fixture/data-cleanup writes outside reviewed migrations, workflow dispatch, backup, hosted settings, deployment, main merges and reopening retain their separate gates below. Documentation itself grants no authorization.
 
 ## Historical pre-correction reconciliation decision — 2026-09-10
 
@@ -147,11 +147,43 @@ node supabase/verify/verify-target-binding.mjs
 node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
 ```
 
-Stop unless the dry run is exactly the list above and the pre-apply phase passes. Focused 67-version local evidence has passed strict catalog/reapply 16/16 in 1.45 seconds and guarded post-apply integration 3/3 in 3.63 seconds. Standing authorization covers the reviewed staging merge and this required migration apply; it does not authorize fixture writes, history repair, main/deployment/settings changes, or reopening. Exact new-head full-suite and hosted evidence remain pending.
+Stop unless the dry run is exactly the list above and the pre-apply phase passes. Focused 67-version local evidence has passed strict catalog/reapply 16/16 in 1.45 seconds and guarded post-apply integration 3/3 in 3.63 seconds. Standing authorization covers the reviewed staging merge and this required migration apply; it does not authorize fixture writes, history repair, main/deployment/settings changes, or reopening. Local implementation gates pass at the exact commit in the linked evidence; final PR-head checks/review and hosted evidence remain pending.
+
+After the exact final PR head passes its required tests, CI, Vercel checks and review, merge it into staging under the standing authorization. Fetch staging/main again, inspect intervening commits and tree equivalence, and use a new clean isolated checkout at the resulting staging SHA. Repeat the shared private tooling, TLS and three-way target proofs. Require exactly 67 repository versions, 66 remote versions, no remote-only versions, and only the version above missing. Before the dry run, require all 16 pre-apply catalog checks, zero security WARN+ and exactly three classified `multiple_permissive_policies` WARN within the pinned advisor coverage, and unchanged repayment aggregates/four permission hashes. Unexpected findings stop the operation.
+
+Record the standing migration authorization against that exact merged SHA, SQL/manifest hashes and the single ordered file. Rebind immediately before the one intended apply; do not retry an uncertain write automatically. There is no staging history-repair step.
+
+From that clean merged checkout, repeat the pre-apply commands below. Capture the shared pre-flight repayment/permission queries in an explicit read-only transaction with the reviewed tooling and bounded timeouts; compare their redacted results with the approved baseline before proceeding to the final dry run. These queries expose only aggregates and hashes.
+
+```bash
+node supabase/verify/verify-target-binding.mjs
+node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
+node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type security
+node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type performance
+node supabase/verify/verify-production-baseline-catalog.mjs staging_trigger_reconciliation_pre_apply
+# Capture and compare the shared pre-flight read-only aggregates/permission hashes.
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
+```
+
+Only after all those proofs pass and the dry run names exactly the single version above:
+
+```bash
+set -euo pipefail
+node supabase/verify/verify-target-binding.mjs
+staging_apply_status=0
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --skip-vault || staging_apply_status=$?
+node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
+test "$staging_apply_status" -eq 0
+node supabase/verify/verify-production-baseline-catalog.mjs post_apply
+node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type security
+node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type performance
+```
+
+Immediately reconcile history even if the apply reports an error; a shell/operator must not skip that inspection merely because an earlier command returned nonzero. Stop before further writes on any failure or ambiguity. Successful completion requires 67/67 exact history, zero pending/remote-only versions, all 16 strict post-apply checks, the unchanged advisor counts and before/after aggregates/hashes, and preserved production pause. Hosted fixture/RPC acceptance remains a separate exact approval, followed by owner staging verification; neither is claimed by the catalog result.
 
 ### Historical correction plan and reusable proof procedure
 
-The following procedure was completed on 2026-09-10; its one-version manifest plan describes that reconciliation baseline, not a currently pending migration. Use post_apply for current staging validation. Do not rerun its pre-apply phase or apply after successful 66/66 history. Historical procedure: after the correction PR is reviewed and separately authorized for merge, fetch staging/main, inspect intervening commits, and create a clean isolated checkout at the resulting staging SHA. Reverify reviewed tooling, CLI 2.115.0, certificate integrity, and three-way target binding. Capture fresh migration history: exactly 65 recorded repository versions, no remote-only versions, no repair candidates, and only `20260910115024` pending against the 66-version manifest. The CLI wrapper must reject every staging repair request because that allowlist is empty.
+The following procedure was completed on 2026-09-10; its one-version manifest plan describes that reconciliation baseline, not a currently pending migration. That completed 66-version correction used post_apply validation. Do not rerun its pre-apply phase or apply; use the current v67 procedure above. Historical procedure: after the correction PR is reviewed and separately authorized for merge, fetch staging/main, inspect intervening commits, and create a clean isolated checkout at the resulting staging SHA. Reverify reviewed tooling, CLI 2.115.0, certificate integrity, and three-way target binding. Capture fresh migration history: exactly 65 recorded repository versions, no remote-only versions, no repair candidates, and only `20260910115024` pending against the 66-version manifest. The CLI wrapper must reject every staging repair request because that allowlist is empty.
 
 Historical pre-apply proof used before the completed correction:
 
@@ -197,17 +229,17 @@ Expected end state: 66 local↔remote versions in sync, zero pending/remote-only
 
 Owner must explicitly verify staging before production can proceed.
 
-## B. Production — 57 repairs plus nine applies
+## B. Production — 57 repairs plus ten applies
 
 Do not begin until all of Epic 22 is merged to staging, the owner verifies staging, the immutable candidate is reviewed and promotion-ready, a maintenance window is approved, and a fresh production backup completes successfully immediately before the first hosted mutation. A backup taken before production day does not satisfy this gate.
 
 ### Mandatory production traffic-isolation and deployment gate
 
-Migration `20260614000000` temporarily grants legacy execution privileges to `authenticated`/`service_role`; migration `20260709194903` later revokes or narrows those privileges. Because each file commits independently and the nine-file push can stop between them, the production system must not accept non-operator traffic anywhere in that interval. The fact that seasonal users have paused activity is useful scheduling context, but it is not technical isolation.
+Migration `20260614000000` temporarily grants legacy execution privileges to `authenticated`/`service_role`; migration `20260709194903` later revokes or narrows those privileges. Because each file commits independently and the ten-file push can stop between them, the production system must not accept non-operator traffic anywhere in that interval. The fact that seasonal users have paused activity is useful scheduling context, but it is not technical isolation.
 
 The accountable owner must separately authorize (a) temporary hosted traffic/setting changes and their rollback and (b) the production deployment. Before making either change, record privately the current Supabase **Enable Data API** state, **Enable Realtime service** state, Realtime public-channel setting and configured limits, database network restrictions, production application traffic control, schedules/workers, responsible operator, rollback owner, and UTC window. Do not commit project references, IP/CIDR values, credentials, tokens, channel topics, or client identifiers.
 
-The nine forward migrations create or change columns, policies, grants, functions, or rows associated with these affected tables: `public.column_config`, `public.employee_column_changes`, `public.employees`, `public.important_dates`, `public.staffing_needs`, `public.staffing_needs_changelog`, `public.user_filters`, `public.users`, and the new `public.app_user_auth_cleanup_outbox`. Before isolation, capture and hash the complete read-only publication result below. Also record privately, with a UTC timestamp, the Realtime **Connected Clients**, **Rate of Channel Joins**, and **Postgres Changes Events** report values; the current service-enabled state; and every known application or external consumer. Repository clients currently subscribe to Postgres Changes on `employees` and `important_dates`, but repository inspection is not proof that no other hosted client exists.
+The ten forward migrations create or change columns, policies, grants, functions, or rows associated with these affected tables: `public.column_config`, `public.employee_column_changes`, `public.employees`, `public.important_dates`, `public.staffing_needs`, `public.staffing_needs_changelog`, `public.user_filters`, `public.users`, and the new `public.app_user_auth_cleanup_outbox`. Before isolation, capture and hash the complete read-only publication result below. Also record privately, with a UTC timestamp, the Realtime **Connected Clients**, **Rate of Channel Joins**, and **Postgres Changes Events** report values; the current service-enabled state; and every known application or external consumer. Repository clients currently subscribe to Postgres Changes on `employees` and `important_dates`, but repository inspection is not proof that no other hosted client exists.
 
 ```sql
 WITH affected(schema_name, table_name) AS (
@@ -378,7 +410,7 @@ node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --s
 node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
 ```
 
-Expected database end state before deployment: 66 versions in sync / 17 policies. While full database isolation remains active, repeat all staging database verification, advisors, repayment aggregates, permission hashes, affected-table publication inventory, and redacted evidence capture. Run `node supabase/verify/verify-production-baseline-catalog.mjs post_apply`; it must exit `0`. Retain the existing production pause. Restore database settings only under separate explicit approval, then verify direct-role/database behavior and run application smoke against the exact staging candidate. A production application deployment is blocked by the committed pause lock and requires a later separately reviewed operator-isolation design plus explicit authorization. No deployment or reopening follows automatically from a passing database gate.
+Expected database end state before deployment: 67 versions in sync / 17 policies, with all 16 strict post-apply catalog checks passing. While full database isolation remains active, repeat all staging database verification, advisors, repayment aggregates, permission hashes, affected-table publication inventory, and redacted evidence capture. Run `node supabase/verify/verify-production-baseline-catalog.mjs post_apply`; it must exit `0`. Retain the existing production pause. Restore database settings only under separate explicit approval, then verify direct-role/database behavior and run application smoke against the exact staging candidate. A production application deployment is blocked by the committed pause lock and requires a later separately reviewed operator-isolation design plus explicit authorization. No deployment or reopening follows automatically from a passing database gate.
 
 ## Rollback and failure behavior
 
@@ -397,11 +429,11 @@ The retry must return HTTP `200` and `cleanup_state: completed`. If the first re
 ## Close-out checklist
 
 - [ ] Immutable commit SHA recorded; local quality/audit/Story 22.14 gates green with no real-recipient delivery.
-- [x] Staging fresh inventory/catalog proof passed at reviewed PR #98 merge; strict post_apply also passes 15/15.
+- [x] Historical staging inventory/catalog proof passed at reviewed PR #98 merge; its 15/15 post_apply result excludes the newly diagnosed trigger drift.
 - [x] Owner separately authorized staging history repair; staging repaired only `20250113000000`; immediate history reconciliation passed on 2026-09-10. No further staging repair is permitted.
 - [x] Historical staging seven-version dry run exact; owner separately authorized that apply and immediate history reached 65/65.
 - [x] PR #98 reviewed/merged with approval; fresh pre-apply proof and exact one-version dry run passed; owner authorized required future migration applies and `20260910115024` completed successfully.
-- [ ] Staging shows 66 migrations / 17 policies; direct-role/advisor/data-preservation evidence recorded.
+- [ ] Current v67 trigger reconciliation reviewed, merged and applied under the standing authorizations; staging shows 67 migrations / 17 policies and 16/16 catalog checks; direct-role/advisor/data-preservation evidence recorded.
 - [ ] Owner verified staging.
 - [ ] Production fresh inventory/catalog proof passed for all 57 repair versions.
 - [ ] Complete 57-row production proof ledger signed before the first history repair.
@@ -409,7 +441,7 @@ The retry must return HTTP `200` and `cleanup_state: completed`. If the first re
 - [ ] Production-day backup succeeded; maintenance window, separate history-repair/traffic-isolation/rollback/deployment approvals, and the standing migration-apply authorization bound to the exact production candidate/file hashes are recorded; prior Realtime settings, affected-table publication state, and connected-client reports captured privately.
 - [ ] Production ten-version dry run exact; target binding rechecked immediately before apply.
 - [ ] Full technical isolation proven from operator and non-operator paths, including existing-client disconnect and fresh Realtime reconnect rejection, and held through repair/apply/database post-verification; production static pause and job shutdown remain intact through separately approved database/Realtime restoration; application smoke uses staging.
-- [ ] Production shows 66 migrations / 17 policies; direct-role/advisor/data-preservation evidence recorded before deployment.
+- [ ] Production shows 67 migrations / 17 policies and 16/16 catalog checks; direct-role/advisor/data-preservation evidence recorded before deployment.
 - [ ] Existing static pause retained; exact staging candidate application smoke and production direct-role/database probes recorded. Database/Realtime restoration separately authorized and verified. Public page pause, API/mutation 503, and zero schedules reverified. Any later production deployment or reopening remains a separate owner decision.
 - [ ] `R-010` / `R-020` / `R-023` closed and `story-22.10-phase-b` set to done.
 - [ ] Epic 23 remains on hold; temporary Data API/Realtime/network cutover controls were restored and are not treated as Epic 23 Auth-hardening implementation.

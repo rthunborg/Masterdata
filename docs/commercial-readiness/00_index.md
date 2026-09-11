@@ -1,7 +1,7 @@
 # Commercial Readiness Documentation Index
 
 Prepared: 2026-06-03
-Updated: 2026-09-10 — staging reconciliation completed at 66/66; hosted fixture acceptance and production prerequisites remain open
+Updated: 2026-09-10 — historical staging baseline is 66/66; v67 has one pending forward execute with no repair, while hosted acceptance and production prerequisites remain open
 
 Current Story 22.15 trigger-reconciliation preparation (2026-09-10): the completed PR #98 correction is historical 66/66 baseline evidence. Repository migration `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql` is the proposed 67th forward-only version: staging repair `[]`, one pending execute, no history repair. Read-only diagnosis found the `column_config.updated_at` column and timestamp trigger absent; valid `display_order` (`integer NOT NULL DEFAULT 0`), visibility/indexes, conflict index, and zero duplicate condition are preserved. The new strict `staging_trigger_reconciliation_pre_apply` phase recognizes only the documented variants; strict 16-check post-apply, exact new-head tests, and hosted evidence are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Production remains provisional at 57 repairs plus 10 applies after fresh inventory; the production pause remains active, Story 22.15 is in-progress, and Epic 23 is on hold. [Preparation evidence](evidence/trigger-reconciliation-preparation-2026-09-10.md).
 
@@ -83,14 +83,14 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 
 ## Needs Manual Review
 
-- Supabase Auth session lifetime and MFA settings (dashboard-only). Preserve the dated 2026-06-14 57-migration/19-policy snapshot as historical. Current staging is 66/66 with no pending migrations; production inventory and authorization acceptance remain open. Production stays paused. Leaked-password protection and CAPTCHA remain held under Epic 23 Story 23.4.
+- Supabase Auth session lifetime and MFA settings (dashboard-only). Preserve the dated 2026-06-14 57-migration/19-policy snapshot as historical. Current staging has the historical 66/66 baseline and one pending v67 forward execute with no repair; production inventory and authorization acceptance remain open. Production stays paused. Leaked-password protection and CAPTCHA remain held under Epic 23 Story 23.4.
 - Vercel environment variable scopes, production rollback process, and production runtime settings beyond deployment metadata/build logs.
 - Recovery time objective for a full production recovery, including auth-user re-provisioning (auth schema is outside logical backup scope). The full restore drill itself was verified on 2026-06-11; nominal RPO follows the nightly backup schedule (~24h). The 2026-06-05 backup failure that went unnoticed for six days had shown the effective recovery point was not assured; Story 22.12 (2026-06-16) added backup-failure alerting plus a CLI-setup retry so silent gaps are now detected, and auth-user re-provisioning is documented as the accepted manual recovery step (with the staging-refresh `users` exclusion deliberately kept). The RTO itself remains unmeasured.
 - Code-owner review requirements, release approvals, and incident process.
 - SMTP provider contract, DPA/subprocessor status, and email retention.
 - Legal basis, data retention periods, DPIA need, controller/processor roles, and customer-specific privacy obligations.
 - Diagnostic endpoint production runtime verification remains open as a post-merge release/readiness gate: pre-Story 22.1 checks showed removed diagnostic paths exposed on the checked production runtime, route handlers have since been removed in the repository, Story 22.1 is done, and the paths must be rechecked after the final Epic 22 deployment.
-- Story 22.15 staging reconciliation is complete at 66/66. Complete hosted fixture/RPC acceptance and owner staging verification; production remains governed by the runbook prerequisites and separate non-migration gates. See `17_blocker_remediation_tracker.md#tracker`.
+- Story 22.15 has a historical 66/66 staging baseline and one pending v67 forward execute with no repair; strict post_apply requires 16 checks. Complete hosted fixture/RPC acceptance and owner staging verification; production remains governed by the runbook prerequisites and separate non-migration gates. See `17_blocker_remediation_tracker.md#tracker`.
 
 ## Recommended Reading Order
 
