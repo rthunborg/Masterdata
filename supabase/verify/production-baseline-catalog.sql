@@ -235,6 +235,7 @@ managed_trigger_functions AS (
     functions.proargmodes,
     functions.proallargtypes,
     functions.proconfig,
+    pg_get_userbyid(functions.proowner)::text AS owner_name,
     language.lanname::text AS language_name,
     md5(
       replace(
@@ -1341,6 +1342,7 @@ catalog_checks(check_name, passed, observed) AS (
                 AND functions.proallargtypes IS NULL
                 AND functions.proconfig =
                   ARRAY['search_path=public, pg_temp']::text[]
+                AND functions.owner_name = 'postgres'
                 AND NOT functions.has_non_owner_execute_grant_option
                 AND CASE functions.function_name
                   WHEN 'timestamp' THEN

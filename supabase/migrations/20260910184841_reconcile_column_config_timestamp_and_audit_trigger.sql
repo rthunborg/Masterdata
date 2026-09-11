@@ -28,14 +28,16 @@ BEGIN
       AND pg_get_expr(d.adbin,d.adrelid)='now()'
   ) THEN RAISE EXCEPTION 'Unexpected column configuration timestamp contract'; END IF;
 
-  -- The two reviewed bodies are compared exactly after CRLF and outer-space
-  -- normalization only. Unknown logic is never silently replaced.
+  -- Accept only the complete observed or complete canonical trigger profile.
+  -- Body comparisons normalize CRLF and outer whitespace only; function owners
+  -- and ACLs remain exact. Partial combinations are never silently replaced.
   FOR function_row IN
     SELECT p.*, l.lanname FROM pg_proc p JOIN pg_language l ON l.oid=p.prolang
     WHERE p.oid IN (to_regprocedure('public.update_updated_at_column()'),
                    to_regprocedure('public.track_employee_column_changes()'))
   LOOP
-    IF function_row.lanname<>'plpgsql' OR function_row.prorettype<>'trigger'::regtype
+    IF pg_get_userbyid(function_row.proowner)<>'postgres'
+      OR function_row.lanname<>'plpgsql' OR function_row.prorettype<>'trigger'::regtype
       OR function_row.prokind<>'f' OR function_row.pronargs<>0
       OR function_row.proretset OR function_row.proargmodes IS NOT NULL
       OR function_row.proallargtypes IS NOT NULL
@@ -48,7 +50,9 @@ BEGIN
       md5(btrim(replace(function_row.prosrc,E'\r\n',E'\n'),E' \t\n\r'))<>'45b9bb012d6413bfe2a994fcbebcc959'
     THEN RAISE EXCEPTION 'Unexpected timestamp function body'; END IF;
     IF function_row.proname='track_employee_column_changes' AND
-      md5(btrim(replace(function_row.prosrc,E'\r\n',E'\n'),E' \t\n\r')) NOT IN ('f0397dc227d9cdee0f9045dfdd056121','3e8426f1177f00af4c46ed63f13a97d6')
+      md5(btrim(replace(function_row.prosrc,E'\r\n',E'\n'),E' \t\n\r')) IS DISTINCT FROM
+        (CASE WHEN timestamp_exists THEN '3e8426f1177f00af4c46ed63f13a97d6'
+              ELSE 'f0397dc227d9cdee0f9045dfdd056121' END)
     THEN RAISE EXCEPTION 'Unexpected employee audit function body'; END IF;
     SELECT coalesce(array_agg(CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE r.rolname END
       ORDER BY CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE r.rolname END),ARRAY[]::text[])
@@ -58,10 +62,11 @@ BEGIN
     WHERE a.grantee<>function_row.proowner;
     IF EXISTS(SELECT 1 FROM aclexplode(coalesce(function_row.proacl,acldefault('f',function_row.proowner))) a
       WHERE a.grantee<>function_row.proowner AND (a.is_grantable OR a.privilege_type<>'EXECUTE'))
-      OR (function_row.proname='update_updated_at_column' AND actual_acl NOT IN
-        (ARRAY['PUBLIC']::text[],ARRAY['PUBLIC','anon','authenticated','service_role']::text[]))
-      OR (function_row.proname='track_employee_column_changes' AND actual_acl NOT IN
-        (ARRAY[]::text[],ARRAY['service_role']::text[]))
+      OR (function_row.proname='update_updated_at_column' AND actual_acl IS DISTINCT FROM
+        (CASE WHEN timestamp_exists THEN ARRAY['PUBLIC']::text[]
+              ELSE ARRAY['PUBLIC','anon','authenticated','service_role']::text[] END))
+      OR (function_row.proname='track_employee_column_changes' AND actual_acl IS DISTINCT FROM
+        (CASE WHEN timestamp_exists THEN ARRAY[]::text[] ELSE ARRAY['service_role']::text[] END))
     THEN RAISE EXCEPTION 'Unexpected represented trigger function ACL'; END IF;
   END LOOP;
   IF to_regprocedure('public.update_updated_at_column()') IS NULL

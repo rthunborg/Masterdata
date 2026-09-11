@@ -458,7 +458,17 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(verifierSql).toContain('pg_get_functiondef(functions.oid)');
     expect(verifierSql).toContain('functions.prosecdef');
     expect(verifierSql).toContain('functions.proconfig');
+    expect(verifierSql).toContain(
+      'pg_get_userbyid(functions.proowner)::text AS owner_name'
+    );
     expect(verifierSql).toContain("owner_name = 'postgres'");
+    const triggerFunctionContract = verifierSql.slice(
+      verifierSql.indexOf('managed_trigger_functions AS ('),
+      verifierSql.indexOf("'represented_column_contracts'")
+    );
+    expect(triggerFunctionContract).toContain(
+      "AND functions.owner_name = 'postgres'"
+    );
     expect(verifierSql).toContain('privileges.non_owner_execute_grants');
     expect(verifierSql).toContain('pg_catalog.aclexplode');
     expect(verifierSql).toContain('acl.is_grantable');

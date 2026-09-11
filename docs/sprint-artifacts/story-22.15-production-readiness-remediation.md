@@ -7,6 +7,10 @@
 
 in-progress
 
+## Reviewbot follow-up — 2026-09-11
+
+Reviewbot follow-up on 2026-09-11 adds exact postgres ownership guards and rejects mixed observed/canonical trigger profiles. The prior 6139242 results below are historical; full verification of these code changes is pending. Story 22.15 remains in-progress, Epic 23 on hold, and production paused.
+
 ## Trigger-reconciliation current amendment — 2026-09-10
 
 The 66/66 PR #98 correction is historical baseline evidence. Proposed `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql` is a 67th forward-only version with staging repair `[]` and one pending execute, no history repair, exact-observed-state pre-apply, and strict 16-check post-apply pending. Implementation 61392422bde5f4a8b7546a2131d9094ef8564936: Vitest 3454 passed, zero skips/failures (80.86s); exact npx playwright test 163 passed, 47 individually classified skips, zero failures/errors (1333.475657s); both exit 0. Clean 67-migration chain and canonical reapply pass 16/16 (1.646s). TypeScript passes; ESLint has zero errors and 296 warnings. Final PR-head CI/Vercel/Reviewbot and hosted staging verification remain pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Production remains provisional at 57 repairs plus 10 applies after fresh inventory; production pause active, Story 22.15 in-progress, Epic 23 on hold.

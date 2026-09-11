@@ -26,7 +26,15 @@ Historical migrations remain immutable. The new migration preserves every valid 
 
 `staging_trigger_reconciliation_pre_apply` is the new strict phase. It accepts only the documented observed variants above. The strict post-apply profile has 16 checks: the prior 15 checks plus `represented_trigger_contracts`. The prior 66-version 15-check result is historical pre-trigger evidence only; it does not validate this 67-version change or full-schema equivalence.
 
-## Verification and remaining gates
+## Reviewbot follow-up — 2026-09-11
+
+Review 5178025999 on c92fe15467ff50b1b7d1b0237faa9fc0ef0c9510 found three issues: missing exact function-owner validation, independently accepted partial trigger profiles, and a stale current inventory table. The verifier and migration now require postgres ownership; the migration accepts the complete documented observed tuple or the complete canonical tuple, with coupled body/ACL/column/trigger contracts. Regression fixtures reject owner changes in pre/post phases and refuse partial reconciliation. The inventory now distinguishes the current 67-version/16-check target from the historical PR #98 result.
+
+Fresh bounded read-only staging proof at 2026-09-11T11:18:17.161Z confirmed both managed functions are owned by postgres (2/2), with tooling/TLS/three-way target binding verified and no hosted write. Supporting artifact: trigger-owners-redacted-20260911.json; diagnostic SQL SHA-256 6768a337fba6ba8270bd249c2f1c15ba3e5f29fbe393b65b912a4439247f08cd. The revised migration SQL SHA-256 is 18e02462ba72d4a383991981a77e1ed8df190aa4aa3dec2c576156fd12bbd698.
+
+The focused follow-up gate passed 50 tests across three files, no failures or skips, in 4.77 seconds. Full suites, clean-chain proof, final exact-head review/checks, and hosted execution remain pending for this revision. All implementation 6139242 results below remain historical evidence only.
+
+## Historical verification before review fixes
 
 The tested implementation is `61392422bde5f4a8b7546a2131d9094ef8564936`. Full `npx vitest run` passed **3,454/3,454 tests across 322 files, no skips or failures**, exit `0`, report duration **80.86 seconds** (wall duration 82.410 seconds). Required live export and local reconciliation evidence were enabled. The run includes 26 production-pause tests covering page/API/mutation routing, the static artifact, empty cron configuration, and production build refusal. These local contract tests do not substitute for hosted Vercel response and setting checks.
 

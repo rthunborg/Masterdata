@@ -986,6 +986,25 @@ describe.skipIf(!fixtureUrl)(
         await fixtureClient.query('ROLLBACK');
       }
 
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query('GRANT USAGE, CREATE ON SCHEMA public TO authenticated');
+        await fixtureClient.query(
+          'ALTER FUNCTION public.track_employee_column_changes() OWNER TO authenticated'
+        );
+        await expectCatalogFails(
+          'staging_trigger_reconciliation_pre_apply',
+          ['represented_trigger_contracts'],
+          false
+        );
+        await expect(
+          fixtureClient.query(triggerReconciliationMigrationSql)
+        ).rejects.toThrow('Unexpected represented trigger function attributes');
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+      await expectCatalogPasses('staging_trigger_reconciliation_pre_apply');
+
       await fixtureClient.query(
         `CREATE TRIGGER trigger_reconciliation_unexpected
          BEFORE UPDATE ON public.column_config
@@ -1014,6 +1033,22 @@ describe.skipIf(!fixtureUrl)(
       await expectCatalogFails('staging_trigger_reconciliation_pre_apply', [
         'represented_trigger_contracts',
       ]);
+
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query('GRANT USAGE, CREATE ON SCHEMA public TO authenticated');
+        await fixtureClient.query(
+          'ALTER FUNCTION public.update_updated_at_column() OWNER TO authenticated'
+        );
+        await expectCatalogFails(
+          'post_apply',
+          ['represented_trigger_contracts'],
+          false
+        );
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+      await expectCatalogPasses('post_apply');
 
       await fixtureClient.query('BEGIN');
       try {
@@ -1124,6 +1159,55 @@ describe.skipIf(!fixtureUrl)(
       } finally {
         await fixtureClient.query('ROLLBACK');
       }
+    });
+
+    it('rejects a mixed observed/canonical trigger profile before it can be reconciled', async () => {
+      await applyCorrection();
+      await applyTriggerCorrection();
+      await expectCatalogPasses('post_apply');
+
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query(
+          'DROP TRIGGER update_column_config_updated_at ON public.column_config'
+        );
+        await fixtureClient.query(
+          'ALTER TABLE public.column_config DROP COLUMN updated_at'
+        );
+        await fixtureClient.query(februaryAuditFunctionSql);
+        await fixtureClient.query(
+          'ALTER FUNCTION public.track_employee_column_changes() SET search_path = public, pg_temp'
+        );
+        await fixtureClient.query(
+          'REVOKE EXECUTE ON FUNCTION public.track_employee_column_changes() FROM PUBLIC, anon, authenticated, service_role'
+        );
+        await fixtureClient.query(
+          'GRANT EXECUTE ON FUNCTION public.track_employee_column_changes() TO service_role'
+        );
+        await fixtureClient.query(
+          'GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO anon, authenticated, service_role'
+        );
+        await expectCatalogPasses(
+          'staging_trigger_reconciliation_pre_apply',
+          false
+        );
+
+        await fixtureClient.query(
+          'ALTER TABLE public.column_config ADD COLUMN updated_at timestamptz DEFAULT now()'
+        );
+        await expectCatalogFails(
+          'staging_trigger_reconciliation_pre_apply',
+          ['represented_trigger_contracts'],
+          false
+        );
+        await expect(
+          fixtureClient.query(triggerReconciliationMigrationSql)
+        ).rejects.toThrow('Unexpected represented trigger function');
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+
+      await expectCatalogPasses('post_apply');
     });
   }
 );
