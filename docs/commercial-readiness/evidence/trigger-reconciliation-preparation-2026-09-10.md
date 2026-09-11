@@ -32,7 +32,19 @@ Review 5178025999 on c92fe15467ff50b1b7d1b0237faa9fc0ef0c9510 found three issues
 
 Fresh bounded read-only staging proof at 2026-09-11T11:18:17.161Z confirmed both managed functions are owned by postgres (2/2), with tooling/TLS/three-way target binding verified and no hosted write. Supporting artifact: trigger-owners-redacted-20260911.json; diagnostic SQL SHA-256 6768a337fba6ba8270bd249c2f1c15ba3e5f29fbe393b65b912a4439247f08cd. The revised migration SQL SHA-256 is 18e02462ba72d4a383991981a77e1ed8df190aa4aa3dec2c576156fd12bbd698.
 
-The focused follow-up gate passed 50 tests across three files, no failures or skips, in 4.77 seconds. Full suites, clean-chain proof, final exact-head review/checks, and hosted execution remain pending for this revision. All implementation 6139242 results below remain historical evidence only.
+The focused follow-up gate passed **50/50** tests across three files, no failures or skips, in **4.77 seconds**. Independent review found no remaining issue in these fixes.
+
+Implementation b4bbdb25e291d37fe3743d2db88fb25751c52c8c: Vitest 3455 passed across 322 files, zero skips/failures (80.67s); exact npx playwright test 163 passed, 47 individually classified skips, zero failures/errors (1310.568207s); both exit 0. Clean 67-migration chain and canonical reapply pass 16/16 (3.534s), with cleanup verified. TypeScript and preview build pass; lint has zero errors and 296 warnings. Production application build is correctly refused while paused. Final PR-head CI/Vercel/Reviewbot and hosted staging verification remain pending.
+
+Full Vitest UTC interval: 2026-09-11T11:25:26.2365947Z to 2026-09-11T11:26:51.0601211Z; wall duration **84.8265258s**. Required live export and local reconciliation were enabled, including the 26 pause tests. Exact Playwright UTC interval: 2026-09-11T11:28:01.9432035Z to 2026-09-11T11:50:02.5134456Z; wall duration **1320.5722423s**; JUnit SHA-256 **779abc8c92e55db9f156d6ebe10999e9d7ae95ebec99d07672302ee925c83e54**. All 47 skip identities match the individually classified prior inventory (9 notification/cron authorization cases and 38 superseded-flow/fixture-debt cases); none is passing evidence.
+
+TypeScript exit 0 in **61.685846s**; ESLint exit 0 in **48.3304805s**, 0 errors/296 warnings. A clean separate checkout of the same commit passed the frozen offline install and exact pnpm build for a named staging preview in **20.064280699999998s**. A production-targeted local build correctly returned exit 1 with the committed pause refusal in **1.7680954999999998s**. The first separate-checkout preview attempt failed because its node_modules junction crossed Turbopack's filesystem root; the junction was replaced with a frozen offline install, with no dependency/version or repository change. That failed attempt is retained separately.
+
+Fresh pnpm audit --prod --json at 2026-09-11T11:29:42.5642463Z returned exit **1** solely for the accepted moderate ExcelJS→uuid 8.3.2 advisory GHSA-w5hq-g745-h8pq: 0 critical, 0 high, 1 moderate, 0 low across 282 production dependencies. It matches the registered residual through 2026-09-30; it is not a zero-advisory or exit-zero audit.
+
+The separately gated acceptance proposal was refreshed against b4bbdb25e291d37fe3743d2db88fb25751c52c8c: **21/21** rollback checks, **16** catalog checks, **five** negative mutations detected, fixture/staffing restoration and generated-clone cleanup verified in **7.756s**. Contract tests passed **12/12** (lead verification 0.5374053s). SQL SHA-256 remains **79e0ce87d9ff970f173bcd138f22f320d758ad21cc9719407382fba4ba5f2595**. Hosted fixture execution remains separately approval-gated.
+
+Final documentation/runbook regression checks pass 27/27, exit 0, in 0.777s. These results supersede the implementation 6139242 scope below. Final exact-head review/checks and hosted staging reconciliation remain pending; no hosted apply or acceptance is claimed here.
 
 ## Historical verification before review fixes
 

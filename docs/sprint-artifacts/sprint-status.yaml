@@ -1,7 +1,7 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: 2026-09-10
+last_updated: 2026-09-11
 updated_by: 'Codex: trigger reconciliation preparation recorded; 67th forward-only migration and verification pending.'
 
 current_focus:
@@ -105,7 +105,7 @@ historical_post_apply_staging_execution:
   pending_versions: []
   post_apply_catalog_checks_passed: 15
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-completed-2026-09-10.md'
-  remaining: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and 16-check post_apply plus exact new-head tests are pending. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
+  remaining: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and Hosted 16-check post_apply and final PR-head gates remain pending; the reviewed-fix local gates pass. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
 
 trigger_reconciliation_preparation:
   diagnosis_captured_at: '2026-09-10T18:50:27.989Z'
@@ -117,7 +117,7 @@ trigger_reconciliation_preparation:
   staging_pending_execute_versions: ['20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql']
   pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
   post_apply_catalog_checks_expected: 16
-  tested_implementation_commit: '61392422bde5f4a8b7546a2131d9094ef8564936'
-  new_head_verification: "Reviewbot follow-up on 2026-09-11 adds exact postgres ownership guards and rejects mixed observed/canonical trigger profiles. The prior 6139242 results below are historical; full verification of these code changes is pending. Story 22.15 remains in-progress, Epic 23 on hold, and production paused. Implementation 61392422bde5f4a8b7546a2131d9094ef8564936: Vitest 3454 passed, zero skips/failures (80.86s); exact npx playwright test 163 passed, 47 individually classified skips, zero failures/errors (1333.475657s); both exit 0. Clean 67-migration chain and canonical reapply pass 16/16 (1.646s). TypeScript passes; ESLint has zero errors and 296 warnings. Final PR-head CI/Vercel/Reviewbot and hosted staging verification remain pending."
+  tested_implementation_commit: 'b4bbdb25e291d37fe3743d2db88fb25751c52c8c'
+  new_head_verification: "Implementation b4bbdb25e291d37fe3743d2db88fb25751c52c8c: Vitest 3455 passed across 322 files, zero skips/failures (80.67s); exact npx playwright test 163 passed, 47 individually classified skips, zero failures/errors (1310.568207s); both exit 0. Clean 67-migration chain and canonical reapply pass 16/16 (3.534s), with cleanup verified. TypeScript and preview build pass; lint has zero errors and 296 warnings. Production application build is correctly refused while paused. Final PR-head CI/Vercel/Reviewbot and hosted staging verification remain pending."
   evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
   status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
