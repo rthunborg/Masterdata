@@ -147,6 +147,8 @@ node supabase/verify/verify-target-binding.mjs
 node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
 ```
 
+Stop unless the dry run is exactly the single migration listed above.
+
 Local evidence at 12e526ff36922a1ff41277bc7cb1ef2f81a2321d passes the representative fixture, clean chain/canonical reapply/catalog, full Vitest and exact Playwright gates. Before any hosted apply, require the reviewed merge, fresh clean-checkout binding, exact 66/67 history, the documented pre-apply audit proof, the dry run containing only 20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql, and all 16 pre-apply checks. Verify the same row/nonnull counts, canonical actor references and strict post-apply contract after the apply. The prior b4bbdb2 result is historical only. Standing authorization covers the reviewed staging merge and this required migration apply; fixture writes, history repair, main/deployment/settings changes, and reopening remain separate.
 
 After the exact final PR head passes its required tests, CI, Vercel checks and review, merge it into staging under the standing authorization. Fetch staging/main again, inspect intervening commits and tree equivalence, and use a new clean isolated checkout at the resulting staging SHA. Repeat the shared private tooling, TLS and three-way target proofs. Require exactly 67 repository versions, 66 remote versions, no remote-only versions, and only the version above missing. Before the dry run, require all 16 pre-apply catalog checks, zero security WARN+ and exactly three classified `multiple_permissive_policies` WARN within the pinned advisor coverage, and unchanged repayment aggregates/four permission hashes. Unexpected findings stop the operation.
