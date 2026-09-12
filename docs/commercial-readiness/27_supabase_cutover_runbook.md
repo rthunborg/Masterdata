@@ -139,7 +139,7 @@ On 2026-06-14 Story 22.10 recorded 57 history rows through `20260614000000` and 
 
 ### Completed trigger-reconciliation procedure — do not repeat
 
-The completed 66/66 correction is historical. The forward-only `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql` was applied once on staging at `2026-09-12T11:50:57.715Z` without row cleanup or history repair. The immutable manifest retains staging repair `[]` and its one-file execute plan as the represented-baseline record. The retained dry-run list below documents exactly what was executed and must never be replayed. The recorded procedure required: The dry run must list exactly this one apply:
+The completed 66/66 correction is historical. The forward-only `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql` was applied once on staging at `2026-09-12T11:50:57.715Z` without row cleanup or history repair. The immutable manifest retains staging repair `[]` and its one-file execute plan as the represented-baseline record. The retained dry-run list below documents exactly what was executed and must never be replayed. For the completed historical execution, the requirement was: The dry run must list exactly this one apply:
 
 1. `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`
 
@@ -438,7 +438,8 @@ The retry must return HTTP `200` and `cleanup_state: completed`. If the first re
 - [x] Owner separately authorized staging history repair; staging repaired only `20250113000000`; immediate history reconciliation passed on 2026-09-10. No further staging repair is permitted.
 - [x] Historical staging seven-version dry run exact; owner separately authorized that apply and immediate history reached 65/65.
 - [x] PR #98 reviewed/merged with approval; fresh pre-apply proof and exact one-version dry run passed; owner authorized required future migration applies and `20260910115024` completed successfully.
-- [ ] Current v67 trigger reconciliation reviewed, merged and applied under the standing authorizations; staging shows 67 migrations / 17 policies and 16/16 catalog checks; direct-role/advisor/data-preservation evidence recorded.
+- [x] Current v67 trigger reconciliation reviewed, merged and applied under the standing authorizations at ad9650ccfc8be412447a03847cc7ddfb372f8666; staging shows 67 migrations / 17 policies and 16/16 catalog checks; scoped advisor and audit/repayment/permission-preservation evidence recorded.
+- [ ] Separately approved hosted staging fixture/RPC acceptance executed once with all 21 checks and independent rollback/restoration proofs; only its read-only preflight has passed so far.
 - [ ] Owner verified staging.
 - [ ] Production fresh inventory/catalog proof passed for all 57 repair versions.
 - [ ] Complete 57-row production proof ledger signed before the first history repair.
