@@ -33,6 +33,9 @@ The production dependency audit has 0 critical, 0 high, and one accepted UUID mo
 
 Read-only Vercel inspection at 2026-09-12T10:37:29.178Z confirms that the production alias resolves to the recorded READY pause deployment targeting production. Connector coverage did not expose automatic-domain-assignment or active-cron settings, so the prior observations about those settings remain historical and must be refreshed before any production-targeted action. Production stays paused. Final remote checks/review, the authorized staging merge, fresh hosted staging proof, the one forward apply, hosted fixture/RPC acceptance, and owner staging verification remain pending.
 
+
+Final review 5186225684 on f5b961d83b135f9bfd9884c001426ec3bfb8970d found one stale function-inventory decision: the audit trigger row still said no grant change. The inventory now states the reviewed PUBLIC/anon/authenticated/service_role revocation and postgres-owner execution, and distinguishes the 67-version release target from the 66-row hosted baseline. This correction changes documentation only; all implementation, migration, verifier, and test bytes retain the fully verified 12e526ff36922a1ff41277bc7cb1ef2f81a2321d scope. A new exact-head review remains required before merge.
+
 ## Earlier read-only observed state (reference-column assumption corrected above)
 
 | Surface | Observation | Forward-only treatment |
@@ -43,7 +46,7 @@ Read-only Vercel inspection at 2026-09-12T10:37:29.178Z confirms that the produc
 | Audit conflict index | One expected unique conflict index; duplicate groups `0`. | Preserve; no duplicate cleanup. |
 | `track_employee_column_changes` | Current body matches the older February form, inserts `auth.uid()` directly despite the `public.users` foreign key, and does not match the documented June correction. | Restore the June audit body. |
 | Shared timestamp function | Body differs only by newline normalization; token sequence, invoker posture, and pinned search path are correct. | Preserve semantics while normalizing redundant timestamp ACLs to `PUBLIC` only. |
-| Function grants | Timestamp function has redundant API-role grants; audit function has a service-role grant. | Keep timestamp execution `PUBLIC` only and limit the audit service-role grant to its owner-only intended posture. |
+| Function grants | Timestamp function has redundant API-role grants; audit function has a service-role grant. | Keep timestamp execution `PUBLIC` only; revoke every non-owner audit EXECUTE grant, including the observed `service_role` grant. |
 
 The diagnosis source is the redacted support artifact `C:\DEV\hr-masterdata-trigger-support-20260910\trigger-diagnosis-redacted.json` (SQL SHA-256 `5643d64929004f2a82a95c0822b59ff71f0b041a8af1c43230c25787390ee04a`).
 
