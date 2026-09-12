@@ -70,7 +70,7 @@ The 2026-09-09 audit failure remains historical: 0 critical / 3 high / 3 moderat
 - Run full test suite after dependency updates.
 - Verify all API routes require auth unless explicitly public.
 - Confirm hosted RLS policies by role with staging/prod test users.
-- Follow `27_supabase_cutover_runbook.md`: staging has the historical 66/66 baseline and one pending v67 forward execute with no repair; strict post_apply requires 16 checks. Complete hosted fixture/RPC acceptance. Production needs fresh representation proof, backup and separately authorized history repair/isolation/settings/deployment; standing future migration-apply authorization does not reopen production.
+- Follow `27_supabase_cutover_runbook.md`: staging v67 was applied once with no repair; current history is 67/67 and strict post_apply passes 16/16. Complete separately approved hosted fixture/RPC acceptance and owner staging verification. Production needs fresh representation proof, backup and separately authorized history repair/isolation/settings/deployment; standing future migration-apply authorization does not reopen production.
 - Confirm scheduler, SMTP, Supabase, Vercel, and GitHub secret scopes without disclosing values or secret names.
 - Managed database transport/network posture is formally risk-accepted (2026-06-11, review 2026-09-30); execute the documented hardening steps before enterprise use.
 - Reconcile staging to its declared branch baseline. Production may legitimately differ before its separately approved rollout; do not force staging to match the older production schema.

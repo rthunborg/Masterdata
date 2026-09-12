@@ -90,7 +90,7 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 - SMTP provider contract, DPA/subprocessor status, and email retention.
 - Legal basis, data retention periods, DPIA need, controller/processor roles, and customer-specific privacy obligations.
 - Diagnostic endpoint production runtime verification remains open as a post-merge release/readiness gate: pre-Story 22.1 checks showed removed diagnostic paths exposed on the checked production runtime, route handlers have since been removed in the repository, Story 22.1 is done, and the paths must be rechecked after the final Epic 22 deployment.
-- Story 22.15 has a historical 66/66 staging baseline and one pending v67 forward execute with no repair; strict post_apply requires 16 checks. Complete hosted fixture/RPC acceptance and owner staging verification; production remains governed by the runbook prerequisites and separate non-migration gates. See `17_blocker_remediation_tracker.md#tracker`.
+- Story 22.15 staging v67 was applied once with no repair; current history is 67/67 and strict post_apply passes 16/16. Complete hosted fixture/RPC acceptance and owner staging verification; production remains governed by the runbook prerequisites and separate non-migration gates. See `17_blocker_remediation_tracker.md#tracker`.
 
 ## Recommended Reading Order
 
