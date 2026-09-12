@@ -4,7 +4,7 @@ Prepared: 2026-06-03
 
 Updated: 2026-09-10 — post-apply ACL/policy reconciliation preparation
 
-Current Story 22.15 tested implementation commit 12e526ff36922a1ff41277bc7cb1ef2f81a2321d has final local database and quality evidence; staging remains at 66 applied versions and, after the reviewed merge, one pending forward execute 20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql remains with no repair. Strict 16-check post-apply and fresh hosted proof/apply remain pending after final remote checks, review, and the authorized staging merge. Production remains paused; Story 22.15 is in-progress and Epic 23 is on hold.
+Story 22.15 staging v67 is applied and verified: PR #100 head 0150d55b4aa359b19149fd6c288242809e14901b merged as ad9650ccfc8be412447a03847cc7ddfb372f8666, and the one forward migration applied with no repair. Staging history is 67/67 with a strict 16/16 post-apply catalog; audit preservation, repayment aggregates and all four permission hashes are unchanged, while advisors retain only three classified performance WARN. Hosted fixture/RPC acceptance and owner staging verification remain open. Production remains paused; Story 22.15 is in-progress and Epic 23 is on hold.
 
 While paused, the normal application-operation procedures below do not authorize production deployment, promotion, job restoration or reopening. Follow the linked pause safeguards and current cutover runbook first.
 
