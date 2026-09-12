@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-10T10:45:04.7566811Z
+last_updated: 2026-09-11
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -73,15 +73,30 @@ development_status:
   epic-23-retrospective: optional
 
 verification_blockers:
-  local_quality_gates: 'Unchanged reviewed implementation: full Vitest 3451/0 skips on 269e3d5634c68e1bc502839678247833e1cccc54; exact Playwright 163/47 classified skips/0 failures/0 errors and clean 66-migration chain on 2c8f0066bb4eda847f2ed6ae294a56dd87125652. PR #98 final head CI/Vercel/Reviewbot passed. This result-only documentation follow-up changes no implementation or test source and claims no new full-suite run.'
-  remote_pr_review: 'PR #98 final ac38 head passed GitHub/Vercel and final Codex Reviewbot; owner authorized merge to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c. Evidence-only follow-up requires its own remote review before merge.'
-  hosted_owner_gates: 'Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold.'
+  local_quality_gates: "Additional audit-FK reconciliation is locally verified. Tested implementation commit 12e526ff36922a1ff41277bc7cb1ef2f81a2321d has final local evidence: representative reconciliation 4/4 passed (14.76s; tests 4.633s); a guard-owned clean 67-migration-plus-seed chain, canonical reapply and 16/16 catalog passed (1.31s); Vitest 3,455/3,455 across 322 files passed (report 68.19s; wall 71.1260068s); exact Playwright passed 163, skipped 47, failed 0, errors 0, with the reviewed prior skip list unchanged (report 1096.527256s; wall 1105.5963393s; UTC 2026-09-12T10:33:00.4831738Z to 2026-09-12T10:51:26.0775145Z; XML SHA-256 411b894173f8830850268b4367ddccdd6e18ff058c8e4f9fd31e228a82ef6b58). TypeScript passed (15.2714803s); ESLint passed with 0 errors/296 warnings (52.6691106s); staging preview build passed (9.2354438s) and the production application build correctly refused while paused (1.191649s). The guard recovered for this local verification; the earlier BROKER_UNAVAILABLE is historical. The 353-row/90-nonnull-actor staging finding remains read-only diagnosis, and the forward migration preserves audit rows/timestamps while translating only mapped actors. Staging remains at 66 applied versions; after the reviewed merge, one forward execute 20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql remains with no repair. The later runbook-only correction in 02a819f1674c22935128c976bac6f9486bd42d12 restores the explicit single-migration dry-run stop condition. Its 27 focused tests and full Vitest pass (3,455 tests, zero skips/failures; report 58.15s; wall 59.197405399999994s). CI failures on f5b961d and 6ecaddc are retained as failures; the corrected final head still requires remote checks and review. Merge and fresh hosted staging proof/apply remain pending under standing authorization. Production remains paused; Story 22.15 remains in-progress and Epic 23 remains on hold."
+  remote_pr_review: 'PR #99 was reviewed and merged to staging fb8580920f4237b41272a2e263b2147a54c61b31. The new trigger reconciliation PR requires final exact-head CI, Vercel checks and Codex Reviewbot; standing authorization permits its staging merge only after review.'
+  hosted_owner_gates: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and Hosted 16-check post_apply and final PR-head gates are pending; local implementation results are recorded below and in the dated evidence. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
 
-post_apply_staging_execution:
+historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
   candidate_commit: '62a52e32aae8302d6c6be4b35ec39da298c5061c'
   history_count: 66
   pending_versions: []
   post_apply_catalog_checks_passed: 15
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-completed-2026-09-10.md'
-  remaining: 'Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold.'
+  remaining: 'Historical PR #98 correction is the 66/66 baseline. Proposed forward-only 20260910184841 has staging repair [] and one pending execute; strict pre_apply recognizes documented trigger variants and Hosted 16-check post_apply and final PR-head gates remain pending; the reviewed-fix local gates pass. Standing authorization covers merging reviewed PRs into staging and required reviewed migration applies, including production applies after all production prerequisites pass. Fixture writes, history repair, main merges, deployments, hosted setting changes, and production reopening still require separate authorization. Story 22.15 in-progress; Epic 23 on-hold.'
+
+trigger_reconciliation_preparation:
+  diagnosis_captured_at: '2026-09-10T18:50:27.989Z'
+  diagnosis_commit: 'fb8580920f4237b41272a2e263b2147a54c61b31'
+  historical_staging_baseline_history_count: 66
+  proposed_repository_history_count: 67
+  proposed_version: '20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'
+  staging_repair_versions: []
+  staging_pending_execute_versions: ['20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql']
+  pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
+  post_apply_catalog_checks_expected: 16
+  tested_implementation_commit: 'b4bbdb25e291d37fe3743d2db88fb25751c52c8c'
+  new_head_verification: "Additional audit-FK reconciliation is locally verified. Tested implementation commit 12e526ff36922a1ff41277bc7cb1ef2f81a2321d has final local evidence: representative reconciliation 4/4 passed (14.76s; tests 4.633s); a guard-owned clean 67-migration-plus-seed chain, canonical reapply and 16/16 catalog passed (1.31s); Vitest 3,455/3,455 across 322 files passed (report 68.19s; wall 71.1260068s); exact Playwright passed 163, skipped 47, failed 0, errors 0, with the reviewed prior skip list unchanged (report 1096.527256s; wall 1105.5963393s; UTC 2026-09-12T10:33:00.4831738Z to 2026-09-12T10:51:26.0775145Z; XML SHA-256 411b894173f8830850268b4367ddccdd6e18ff058c8e4f9fd31e228a82ef6b58). TypeScript passed (15.2714803s); ESLint passed with 0 errors/296 warnings (52.6691106s); staging preview build passed (9.2354438s) and the production application build correctly refused while paused (1.191649s). The guard recovered for this local verification; the earlier BROKER_UNAVAILABLE is historical. The 353-row/90-nonnull-actor staging finding remains read-only diagnosis, and the forward migration preserves audit rows/timestamps while translating only mapped actors. Staging remains at 66 applied versions; after the reviewed merge, one forward execute 20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql remains with no repair. The later runbook-only correction in 02a819f1674c22935128c976bac6f9486bd42d12 restores the explicit single-migration dry-run stop condition. Its 27 focused tests and full Vitest pass (3,455 tests, zero skips/failures; report 58.15s; wall 59.197405399999994s). CI failures on f5b961d and 6ecaddc are retained as failures; the corrected final head still requires remote checks and review. Merge and fresh hosted staging proof/apply remain pending under standing authorization. Production remains paused; Story 22.15 remains in-progress and Epic 23 remains on hold."
+  evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
+  status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'

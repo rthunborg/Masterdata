@@ -12,6 +12,7 @@ const ALLOWED_PHASES = new Set([
   "production_pre_apply",
   "staging_pre_apply",
   "staging_reconciliation_pre_apply",
+  "staging_trigger_reconciliation_pre_apply",
   "post_apply",
 ]);
 export const EXPECTED_CATALOG_CHECK_NAMES = Object.freeze([
@@ -26,6 +27,7 @@ export const EXPECTED_CATALOG_CHECK_NAMES = Object.freeze([
   "dietary_columns_and_permissions",
   "user_filters_objects",
   "user_filters_trigger_function_contract",
+  "represented_trigger_contracts",
   "represented_column_contracts",
   "represented_function_contracts",
   "staffing_crewing_done_permission_state",

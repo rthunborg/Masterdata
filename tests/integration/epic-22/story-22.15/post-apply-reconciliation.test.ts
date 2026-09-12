@@ -46,6 +46,19 @@ const migrationSql = readFileSync(
   'supabase/migrations/20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql',
   'utf8'
 );
+const triggerReconciliationMigrationSql = readFileSync(
+  'supabase/migrations/20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql',
+  'utf8'
+);
+const februaryAuditFunctionSql = readFileSync(
+  'supabase/migrations/20260223000000_add_dietary_columns_to_change_trigger.sql',
+  'utf8'
+).match(
+  /CREATE OR REPLACE FUNCTION track_employee_column_changes\([\s\S]*?\$\$ LANGUAGE plpgsql SECURITY DEFINER;/
+)?.[0];
+if (!februaryAuditFunctionSql) {
+  throw new Error('Story 22.15 February audit trigger definition is unavailable');
+}
 const stagingForwardMigrationSources = [
   'supabase/migrations/20260615000000_add_is_checklist_item_to_column_config.sql',
   'supabase/migrations/20260709194903_remediate_pr_91_security_findings.sql',
@@ -111,6 +124,7 @@ const expectedCatalogCheckNames = [
   'dietary_columns_and_permissions',
   'user_filters_objects',
   'user_filters_trigger_function_contract',
+  'represented_trigger_contracts',
   'represented_column_contracts',
   'represented_function_contracts',
   'staffing_crewing_done_permission_state',
@@ -188,6 +202,7 @@ describe.skipIf(!fixtureUrl)(
     let adminConnected = false;
     let fixtureCreated = false;
     let correctionApplied = false;
+    let triggerCorrectionApplied = false;
 
     async function asAuthenticated<T>(
       authUserId: string,
@@ -322,7 +337,7 @@ describe.skipIf(!fixtureUrl)(
 
     async function expectCatalogPasses(phase: string, includeTransaction = true) {
       const checks = await readCatalog(phase, includeTransaction);
-      expect(checks).toHaveLength(15);
+      expect(checks).toHaveLength(16);
       expect(checks.map(({ check_name }) => check_name).sort()).toEqual(
         expectedCatalogCheckNames
       );
@@ -335,7 +350,7 @@ describe.skipIf(!fixtureUrl)(
       includeTransaction = true
     ) {
       const checks = await readCatalog(phase, includeTransaction);
-      expect(checks).toHaveLength(15);
+      expect(checks).toHaveLength(16);
       expect(checks.map(({ check_name }) => check_name).sort()).toEqual(
         expectedCatalogCheckNames
       );
@@ -351,6 +366,27 @@ describe.skipIf(!fixtureUrl)(
       if (correctionApplied) return;
       await fixtureClient.query(migrationSql);
       correctionApplied = true;
+    }
+
+    async function applyTriggerCorrection() {
+      if (triggerCorrectionApplied) return;
+      await fixtureClient.query(triggerReconciliationMigrationSql);
+      triggerCorrectionApplied = true;
+    }
+
+    async function restoreObservedChangedByForeignKey() {
+      await fixtureClient.query(
+        `ALTER TABLE public.employee_column_changes
+           DROP CONSTRAINT employee_column_changes_changed_by_fkey;
+         UPDATE public.employee_column_changes AS changes
+         SET changed_by = users.auth_user_id
+         FROM public.users AS users
+         WHERE changes.changed_by = users.id;
+         ALTER TABLE public.employee_column_changes
+           ADD CONSTRAINT employee_column_changes_changed_by_fkey
+             FOREIGN KEY (changed_by) REFERENCES public.users(auth_user_id)
+             ON DELETE SET NULL`
+      );
     }
 
     async function collectRlsSemantics(): Promise<RlsSemantics> {
@@ -467,6 +503,13 @@ describe.skipIf(!fixtureUrl)(
       );
       await fixtureClient.query(
         'GRANT INSERT ON TABLE public.column_config TO authenticated'
+      );
+      // The migration-built fixture intentionally has only its minimum table
+      // grants. Add the application update grants to this disposable clone so
+      // the trigger assertions exercise RLS and function behavior, rather
+      // than failing at relation privilege resolution.
+      await fixtureClient.query(
+        'GRANT UPDATE ON TABLE public.employees, public.column_config TO authenticated'
       );
 
       await fixtureClient.query(
@@ -917,6 +960,493 @@ describe.skipIf(!fixtureUrl)(
       } finally {
         await fixtureClient.query('ROLLBACK');
       }
+    });
+
+    it('accepts only the reviewed trigger pre-state and rejects post-apply trigger or ACL drift', async () => {
+      await applyCorrection();
+      const observedAuditRows = [
+        {
+          columnName: 'observed_auth_fk_nonnull',
+          changedAt: '2020-01-02T03:04:05.000Z',
+          observedActorId: ids.activeExternalAuth,
+          canonicalActorId: ids.activeExternalApp,
+        },
+        {
+          columnName: 'observed_auth_fk_null',
+          changedAt: '2020-01-02T03:04:06.000Z',
+          observedActorId: null,
+          canonicalActorId: null,
+        },
+      ];
+      await restoreObservedChangedByForeignKey();
+      await fixtureClient.query(
+        `INSERT INTO public.employee_column_changes (
+           employee_id, column_name, changed_at, changed_by
+         ) VALUES
+           ($1, $2, $3::timestamptz, $4),
+           ($1, $5, $6::timestamptz, $7)`,
+        [
+          ids.activeEmployee,
+          observedAuditRows[0].columnName,
+          observedAuditRows[0].changedAt,
+          observedAuditRows[0].observedActorId,
+          observedAuditRows[1].columnName,
+          observedAuditRows[1].changedAt,
+          observedAuditRows[1].observedActorId,
+        ]
+      );
+      const observedAuditHistoryCount = await fixtureClient.query<{
+        count: string;
+      }>('SELECT count(*)::text AS count FROM public.employee_column_changes');
+      const observedAuditHistory = await fixtureClient.query<{
+        column_name: string;
+        changed_at: Date;
+        changed_by: string | null;
+      }>(
+        `SELECT column_name, changed_at, changed_by
+         FROM public.employee_column_changes
+         WHERE column_name = ANY ($1::text[])
+         ORDER BY column_name`,
+        [observedAuditRows.map(({ columnName }) => columnName)]
+      );
+      expect(
+        observedAuditHistory.rows.map(({ column_name, changed_at, changed_by }) => ({
+          column_name,
+          changed_at: changed_at.toISOString(),
+          changed_by,
+        }))
+      ).toEqual(
+        observedAuditRows.map(({ columnName, changedAt, observedActorId }) => ({
+          column_name: columnName,
+          changed_at: changedAt,
+          changed_by: observedActorId,
+        }))
+      );
+      await fixtureClient.query(
+        'DROP TRIGGER update_column_config_updated_at ON public.column_config'
+      );
+      await fixtureClient.query(
+        'ALTER TABLE public.column_config DROP COLUMN updated_at'
+      );
+      await fixtureClient.query(februaryAuditFunctionSql);
+      await fixtureClient.query(
+        'ALTER FUNCTION public.track_employee_column_changes() SET search_path = public, pg_temp'
+      );
+      await fixtureClient.query(
+        'REVOKE EXECUTE ON FUNCTION public.track_employee_column_changes() FROM PUBLIC, anon, authenticated, service_role'
+      );
+      await fixtureClient.query(
+        'GRANT EXECUTE ON FUNCTION public.track_employee_column_changes() TO service_role'
+      );
+      await fixtureClient.query(
+        'GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO anon, authenticated, service_role'
+      );
+
+      await expectCatalogPasses('staging_trigger_reconciliation_pre_apply');
+      await expectCatalogFails('post_apply', ['represented_trigger_contracts']);
+
+      await fixtureClient.query('BEGIN');
+      try {
+        const oldAuditWrite = await asAuthenticated(ids.activeHrAuth, () =>
+          attempt(
+            `UPDATE public.employees
+             SET comments = 'old-audit-body-records-auth-uuid'
+             WHERE id = '${ids.activeEmployee}'`
+          )
+        );
+        expect(oldAuditWrite).toEqual({ ok: true, rowCount: 1 });
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query('GRANT USAGE, CREATE ON SCHEMA public TO authenticated');
+        await fixtureClient.query(
+          'ALTER FUNCTION public.track_employee_column_changes() OWNER TO authenticated'
+        );
+        await expectCatalogFails(
+          'staging_trigger_reconciliation_pre_apply',
+          ['represented_trigger_contracts'],
+          false
+        );
+        await expect(
+          fixtureClient.query(triggerReconciliationMigrationSql)
+        ).rejects.toThrow('Unexpected represented trigger function attributes');
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+      await expectCatalogPasses('staging_trigger_reconciliation_pre_apply');
+
+      await fixtureClient.query(
+        `CREATE TRIGGER trigger_reconciliation_unexpected
+         BEFORE UPDATE ON public.column_config
+         FOR EACH ROW
+         EXECUTE FUNCTION public.update_updated_at_column()`
+      );
+      await expect(
+        fixtureClient.query(triggerReconciliationMigrationSql)
+      ).rejects.toThrow();
+      await fixtureClient.query('ROLLBACK');
+      const absentAfterRefusal = await fixtureClient.query<{ count: string }>(
+        `SELECT count(*)::text AS count
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'column_config'
+           AND column_name = 'updated_at'`
+      );
+      expect(absentAfterRefusal.rows[0]?.count).toBe('0');
+      await fixtureClient.query(
+        'DROP TRIGGER trigger_reconciliation_unexpected ON public.column_config'
+      );
+      await expectCatalogPasses('staging_trigger_reconciliation_pre_apply');
+
+      const changedByForeignKeyVariants = [
+        {
+          name: 'delete_cascade',
+          definition: 'ON DELETE CASCADE',
+        },
+        {
+          name: 'delete_restrict',
+          definition: 'ON DELETE RESTRICT',
+        },
+        {
+          name: 'update_cascade',
+          definition: 'ON DELETE SET NULL ON UPDATE CASCADE',
+        },
+        {
+          name: 'update_restrict',
+          definition: 'ON DELETE SET NULL ON UPDATE RESTRICT',
+        },
+        {
+          name: 'match_full',
+          definition: 'MATCH FULL ON DELETE SET NULL',
+        },
+        {
+          name: 'deferrable',
+          definition: 'ON DELETE SET NULL DEFERRABLE',
+        },
+        {
+          name: 'initially_deferred',
+          definition: 'ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED',
+        },
+      ];
+      const verifyChangedByForeignKeyViolations = async (
+        phase: 'staging_trigger_reconciliation_pre_apply' | 'post_apply',
+        expectMigrationRefusal: boolean
+      ) => {
+        const referencedColumn =
+          phase === 'staging_trigger_reconciliation_pre_apply'
+            ? 'auth_user_id'
+            : 'id';
+        await fixtureClient.query('BEGIN');
+        try {
+          const verifyViolation = async (
+            name: string,
+            sql: string,
+            expectedMigrationFailure = 'Expected audit foreign key'
+          ) => {
+            const savepoint = `changed_by_fk_${phase}_${name}`;
+            await fixtureClient.query(`SAVEPOINT ${savepoint}`);
+            try {
+              await fixtureClient.query(sql);
+              await expectCatalogFails(
+                phase,
+                ['represented_trigger_contracts'],
+                false
+              );
+              if (expectMigrationRefusal) {
+                await expect(
+                  fixtureClient.query(triggerReconciliationMigrationSql)
+                ).rejects.toThrow(expectedMigrationFailure);
+              }
+            } finally {
+              await fixtureClient.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+              await fixtureClient.query(`RELEASE SAVEPOINT ${savepoint}`);
+            }
+          };
+
+          for (const { name, definition } of changedByForeignKeyVariants) {
+            await verifyViolation(
+              name,
+              `ALTER TABLE public.employee_column_changes
+                 DROP CONSTRAINT employee_column_changes_changed_by_fkey;
+               ALTER TABLE public.employee_column_changes
+                 ADD CONSTRAINT employee_column_changes_changed_by_fkey
+                   FOREIGN KEY (changed_by) REFERENCES public.users(${referencedColumn}) ${definition}`
+            );
+          }
+          await verifyViolation(
+            'duplicate',
+            `ALTER TABLE public.employee_column_changes
+               ADD CONSTRAINT employee_column_changes_changed_by_duplicate_fkey
+                 FOREIGN KEY (changed_by) REFERENCES public.users(${referencedColumn}) ON DELETE SET NULL`
+          );
+          await verifyViolation(
+            'renamed',
+            `ALTER TABLE public.employee_column_changes
+               DROP CONSTRAINT employee_column_changes_changed_by_fkey;
+             ALTER TABLE public.employee_column_changes
+               ADD CONSTRAINT employee_column_changes_changed_by_renamed_fkey
+                 FOREIGN KEY (changed_by) REFERENCES public.users(${referencedColumn}) ON DELETE SET NULL`
+          );
+          await verifyViolation(
+            'unexpected_trigger',
+            `CREATE FUNCTION public.employee_column_changes_noop_trigger()
+               RETURNS trigger LANGUAGE plpgsql AS $$
+               BEGIN
+                 RETURN NEW;
+               END;
+               $$;
+             CREATE TRIGGER employee_column_changes_unexpected_trigger
+               BEFORE UPDATE ON public.employee_column_changes
+               FOR EACH ROW
+               EXECUTE FUNCTION public.employee_column_changes_noop_trigger()`,
+            'Unexpected audit write side effects'
+          );
+          await verifyViolation(
+            'unexpected_rule',
+            `CREATE RULE employee_column_changes_unexpected_rule AS
+               ON UPDATE TO public.employee_column_changes
+               DO INSTEAD NOTHING`,
+            'Unexpected audit write side effects'
+          );
+          await verifyViolation(
+            'unmapped_actor',
+            `SET LOCAL session_replication_role = 'replica';
+             UPDATE public.employee_column_changes
+             SET changed_by = '${ids.hiddenConfig}'
+             WHERE column_name = '${observedAuditRows[0].columnName}';
+             SET LOCAL session_replication_role = 'origin'`,
+            'Unmapped audit actor prevents reconciliation'
+          );
+        } finally {
+          await fixtureClient.query('ROLLBACK');
+        }
+      };
+
+      await verifyChangedByForeignKeyViolations(
+        'staging_trigger_reconciliation_pre_apply',
+        true
+      );
+      await expectCatalogPasses('staging_trigger_reconciliation_pre_apply');
+
+      await applyTriggerCorrection();
+      const canonicalAuditHistoryCount = await fixtureClient.query<{
+        count: string;
+      }>('SELECT count(*)::text AS count FROM public.employee_column_changes');
+      expect(canonicalAuditHistoryCount.rows[0]?.count).toBe(
+        observedAuditHistoryCount.rows[0]?.count
+      );
+      const canonicalAuditHistory = await fixtureClient.query<{
+        column_name: string;
+        changed_at: Date;
+        changed_by: string | null;
+      }>(
+        `SELECT column_name, changed_at, changed_by
+         FROM public.employee_column_changes
+         WHERE column_name = ANY ($1::text[])
+         ORDER BY column_name`,
+        [observedAuditRows.map(({ columnName }) => columnName)]
+      );
+      expect(
+        canonicalAuditHistory.rows.map(
+          ({ column_name, changed_at, changed_by }) => ({
+            column_name,
+            changed_at: changed_at.toISOString(),
+            changed_by,
+          })
+        )
+      ).toEqual(
+        observedAuditRows.map(({ columnName, changedAt, canonicalActorId }) => ({
+          column_name: columnName,
+          changed_at: changedAt,
+          changed_by: canonicalActorId,
+        }))
+      );
+      await expectCatalogPasses('post_apply');
+      await expectCatalogFails('staging_trigger_reconciliation_pre_apply', [
+        'represented_trigger_contracts',
+      ]);
+
+      await verifyChangedByForeignKeyViolations('post_apply', true);
+      await expectCatalogPasses('post_apply');
+
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query('GRANT USAGE, CREATE ON SCHEMA public TO authenticated');
+        await fixtureClient.query(
+          'ALTER FUNCTION public.update_updated_at_column() OWNER TO authenticated'
+        );
+        await expectCatalogFails(
+          'post_apply',
+          ['represented_trigger_contracts'],
+          false
+        );
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+      await expectCatalogPasses('post_apply');
+
+      await fixtureClient.query('BEGIN');
+      try {
+        const configBefore = await fixtureClient.query<{
+          column_name: string;
+          db_column_name: string;
+          column_type: string;
+          is_masterdata: boolean;
+          role_permissions: unknown;
+        }>(
+          `SELECT column_name, db_column_name, column_type, is_masterdata,
+                  role_permissions
+           FROM public.column_config
+           WHERE id = $1`,
+          [ids.visibleConfig]
+        );
+        const auditBefore = await fixtureClient.query<{ count: string }>(
+          `SELECT count(*)::text AS count
+           FROM public.employee_column_changes
+           WHERE employee_id = $1
+             AND column_name = 'comments'
+             AND changed_by = $2`,
+          [ids.activeEmployee, ids.activeHrApp]
+        );
+
+        const configUpdate = await asAuthenticated(ids.activeHrAuth, () =>
+          fixtureClient.query<{
+            updated_at: Date;
+          }>(
+            `UPDATE public.column_config
+             SET column_name = column_name || ' timestamp proof',
+                 updated_at = '2000-01-01T00:00:00Z'::timestamptz
+             WHERE id = $1
+             RETURNING updated_at`,
+            [ids.visibleConfig]
+          )
+        );
+        expect(configUpdate.rowCount).toBe(1);
+        expect(configUpdate.rows[0]?.updated_at.toISOString()).not.toBe(
+          '2000-01-01T00:00:00.000Z'
+        );
+
+        const employeeUpdate = await asAuthenticated(ids.activeHrAuth, () =>
+          fixtureClient.query(
+            `UPDATE public.employees
+             SET comments = 'canonical-audit-body-records-app-user'
+             WHERE id = $1`,
+            [ids.activeEmployee]
+          )
+        );
+        expect(employeeUpdate.rowCount).toBe(1);
+        await fixtureClient.query('RESET ROLE');
+
+        const configAfter = await fixtureClient.query<{
+          db_column_name: string;
+          column_type: string;
+          is_masterdata: boolean;
+          role_permissions: unknown;
+        }>(
+          `SELECT db_column_name, column_type, is_masterdata, role_permissions
+           FROM public.column_config
+           WHERE id = $1`,
+          [ids.visibleConfig]
+        );
+        expect(configAfter.rows[0]).toEqual({
+          db_column_name: configBefore.rows[0]?.db_column_name,
+          column_type: configBefore.rows[0]?.column_type,
+          is_masterdata: configBefore.rows[0]?.is_masterdata,
+          role_permissions: configBefore.rows[0]?.role_permissions,
+        });
+
+        const auditAfter = await fixtureClient.query<{ count: string }>(
+          `SELECT count(*)::text AS count
+           FROM public.employee_column_changes
+           WHERE employee_id = $1
+             AND column_name = 'comments'
+             AND changed_by = $2`,
+          [ids.activeEmployee, ids.activeHrApp]
+        );
+        expect(Number(auditAfter.rows[0]?.count)).toBe(
+          Number(auditBefore.rows[0]?.count) + 1
+        );
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query(
+          'ALTER TABLE public.column_config DISABLE TRIGGER update_column_config_updated_at'
+        );
+        await expectCatalogFails(
+          'post_apply',
+          ['represented_trigger_contracts'],
+          false
+        );
+        await fixtureClient.query('ROLLBACK');
+
+        await fixtureClient.query('BEGIN');
+        await fixtureClient.query(
+          'GRANT EXECUTE ON FUNCTION public.track_employee_column_changes() TO service_role'
+        );
+        await expectCatalogFails(
+          'post_apply',
+          ['represented_trigger_contracts'],
+          false
+        );
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+    });
+
+    it('rejects a mixed observed/canonical trigger profile before it can be reconciled', async () => {
+      await applyCorrection();
+      await applyTriggerCorrection();
+      await expectCatalogPasses('post_apply');
+
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query(
+          'DROP TRIGGER update_column_config_updated_at ON public.column_config'
+        );
+        await fixtureClient.query(
+          'ALTER TABLE public.column_config DROP COLUMN updated_at'
+        );
+        await fixtureClient.query(februaryAuditFunctionSql);
+        await fixtureClient.query(
+          'ALTER FUNCTION public.track_employee_column_changes() SET search_path = public, pg_temp'
+        );
+        await fixtureClient.query(
+          'REVOKE EXECUTE ON FUNCTION public.track_employee_column_changes() FROM PUBLIC, anon, authenticated, service_role'
+        );
+        await fixtureClient.query(
+          'GRANT EXECUTE ON FUNCTION public.track_employee_column_changes() TO service_role'
+        );
+        await fixtureClient.query(
+          'GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO anon, authenticated, service_role'
+        );
+        await restoreObservedChangedByForeignKey();
+        await expectCatalogPasses(
+          'staging_trigger_reconciliation_pre_apply',
+          false
+        );
+
+        await fixtureClient.query(
+          'ALTER TABLE public.column_config ADD COLUMN updated_at timestamptz DEFAULT now()'
+        );
+        await expectCatalogFails(
+          'staging_trigger_reconciliation_pre_apply',
+          ['represented_trigger_contracts'],
+          false
+        );
+        await expect(
+          fixtureClient.query(triggerReconciliationMigrationSql)
+        ).rejects.toThrow('Unexpected represented trigger function');
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+
+      await expectCatalogPasses('post_apply');
     });
   }
 );

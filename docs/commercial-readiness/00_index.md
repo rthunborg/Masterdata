@@ -1,9 +1,9 @@
 # Commercial Readiness Documentation Index
 
 Prepared: 2026-06-03
-Updated: 2026-09-10 — staging reconciliation completed at 66/66; hosted fixture acceptance and production prerequisites remain open
+Updated: 2026-09-10 — historical staging baseline is 66/66; v67 has one pending forward execute with no repair, while hosted acceptance and production prerequisites remain open
 
-Current Story 22.15 state (2026-09-10): PR #98 was approved and merged at 62a52e32aae8302d6c6be4b35ec39da298c5061c; correction 20260910115024 applied successfully. Staging history is 66/66, no repair or forward migration is pending, strict post_apply passes 15/15, both initplan warnings are removed, and aggregates/permission hashes are unchanged. Hosted active/inactive fixture/RPC acceptance and owner staging verification remain open. Required future migration applies have standing owner authorization; production inventory/ledger/backup and separate history-repair/isolation/settings/deployment gates remain. Production stays paused; merges and reopening remain separate. Story 22.15 in-progress, Epic 23 on hold. [Exact evidence and tested-commit scope](evidence/staging-reconciliation-completed-2026-09-10.md).
+Current Story 22.15 tested implementation commit 12e526ff36922a1ff41277bc7cb1ef2f81a2321d has final local database and quality evidence; staging remains at 66 applied versions and, after the reviewed merge, one pending forward execute 20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql remains with no repair. Strict 16-check post-apply and fresh hosted proof/apply remain pending after final remote checks, review, and the authorized staging merge. Production remains paused; Story 22.15 is in-progress and Epic 23 is on hold.
 
 Scope: repository review plus GitHub, Vercel, and limited Supabase-related runtime verification of the HR Masterdata Management System. No employee rows, secrets, private environment variable values, concrete production domain names, project refs, deployment IDs, or secret-name inventories are disclosed in this public package. Detailed operational evidence is held privately. Pre-remediation production diagnostic endpoint checks returned configuration metadata; Story 22.1 is done with route-handler removal and passing local/non-production gates. A post-merge Epic 22 release/readiness gate remains: after final deployment, the production runtime must stop returning success responses for the removed diagnostic paths.
 
@@ -43,7 +43,7 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 | `23_privacy_annex_draft.md` | Legal/privacy, management | Draft privacy annex: controller/processor assumptions per commercial model, legal basis status, data categories, retention, DSAR handling, DPIA screening, open legal questions |
 | `24_subprocessor_register.md` | Legal/privacy, procurement, security | Draft subprocessor register with purpose, data exposure, environment, DPA/transfer status, and review owner per service |
 | `25_incident_breach_process.md` | IT, security, legal/privacy, operations | Draft incident/breach process: roles, severity, triage, evidence capture, notification timing, communication templates, post-incident review |
-| `26_environment_reconciliation_inventory.md` | Security, IT, reviewers | Staging 66/66 and strict post_apply 15/15; zero pending migrations. Hosted fixture/RPC acceptance remains open. Production stays provisional at 57 proven repairs plus nine applies after fresh inventory. |
+| `26_environment_reconciliation_inventory.md` | Security, IT, reviewers | Historical 66/66 baseline; current 67th trigger reconciliation is one forward apply with no repair and strict 16-check post-apply pending. Production is provisional at 57 repairs plus 10 applies after fresh inventory. |
 | `27_supabase_cutover_runbook.md` | Security, IT, operations | Completed staging correction must not be repeated. Current validation uses post_apply; standing future migration authorization preserves separate history-repair/isolation/settings/deployment/merge/reopening gates. |
 | `28_migrations_only_change_policy.md` | Security, IT, developers | Binding migrations-only policy for hosted schema, RLS, function, and grant changes |
 | [`29_production_pause_release_safeguards.md`](29_production_pause_release_safeguards.md) | Operations, security, reviewers | Committed pause lock, empty schedules, static API/mutation shutdown, production-build guards and separate reopening approval |
@@ -83,14 +83,14 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 
 ## Needs Manual Review
 
-- Supabase Auth session lifetime and MFA settings (dashboard-only). Preserve the dated 2026-06-14 57-migration/19-policy snapshot as historical. Current staging is 66/66 with no pending migrations; production inventory and authorization acceptance remain open. Production stays paused. Leaked-password protection and CAPTCHA remain held under Epic 23 Story 23.4.
+- Supabase Auth session lifetime and MFA settings (dashboard-only). Preserve the dated 2026-06-14 57-migration/19-policy snapshot as historical. Current staging has the historical 66/66 baseline and one pending v67 forward execute with no repair; production inventory and authorization acceptance remain open. Production stays paused. Leaked-password protection and CAPTCHA remain held under Epic 23 Story 23.4.
 - Vercel environment variable scopes, production rollback process, and production runtime settings beyond deployment metadata/build logs.
 - Recovery time objective for a full production recovery, including auth-user re-provisioning (auth schema is outside logical backup scope). The full restore drill itself was verified on 2026-06-11; nominal RPO follows the nightly backup schedule (~24h). The 2026-06-05 backup failure that went unnoticed for six days had shown the effective recovery point was not assured; Story 22.12 (2026-06-16) added backup-failure alerting plus a CLI-setup retry so silent gaps are now detected, and auth-user re-provisioning is documented as the accepted manual recovery step (with the staging-refresh `users` exclusion deliberately kept). The RTO itself remains unmeasured.
 - Code-owner review requirements, release approvals, and incident process.
 - SMTP provider contract, DPA/subprocessor status, and email retention.
 - Legal basis, data retention periods, DPIA need, controller/processor roles, and customer-specific privacy obligations.
 - Diagnostic endpoint production runtime verification remains open as a post-merge release/readiness gate: pre-Story 22.1 checks showed removed diagnostic paths exposed on the checked production runtime, route handlers have since been removed in the repository, Story 22.1 is done, and the paths must be rechecked after the final Epic 22 deployment.
-- Story 22.15 staging reconciliation is complete at 66/66. Complete hosted fixture/RPC acceptance and owner staging verification; production remains governed by the runbook prerequisites and separate non-migration gates. See `17_blocker_remediation_tracker.md#tracker`.
+- Story 22.15 has a historical 66/66 staging baseline and one pending v67 forward execute with no repair; strict post_apply requires 16 checks. Complete hosted fixture/RPC acceptance and owner staging verification; production remains governed by the runbook prerequisites and separate non-migration gates. See `17_blocker_remediation_tracker.md#tracker`.
 
 ## Recommended Reading Order
 

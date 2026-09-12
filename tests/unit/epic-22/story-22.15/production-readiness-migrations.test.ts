@@ -79,6 +79,38 @@ const repaymentDefaultsMigrationSql = readFileSync(
   ),
   'utf8'
 );
+const triggerReconciliationMigrationSql = readFileSync(
+  resolve(
+    root,
+    'supabase/migrations/20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'
+  ),
+  'utf8'
+);
+const employeeColumnChangesMigrationSql = readFileSync(
+  resolve(
+    root,
+    'supabase/migrations/20251209130000_create_employee_column_changes.sql'
+  ),
+  'utf8'
+);
+const initialSchemaMigrationSql = readFileSync(
+  resolve(root, 'supabase/migrations/20251027000000_initial_schema.sql'),
+  'utf8'
+);
+const februaryAuditMigrationSql = readFileSync(
+  resolve(
+    root,
+    'supabase/migrations/20260223000000_add_dietary_columns_to_change_trigger.sql'
+  ),
+  'utf8'
+);
+const juneAuditMigrationSql = readFileSync(
+  resolve(
+    root,
+    'supabase/migrations/20260607193000_fix_employee_column_changes_conflict_target.sql'
+  ),
+  'utf8'
+);
 const verifierSql = readFileSync(
   resolve(root, 'supabase/verify/production-baseline-catalog.sql'),
   'utf8'
@@ -125,6 +157,26 @@ function exactFunctionBodySha256(functionName: string) {
   return createHash('sha256').update(definition[1], 'utf8').digest('hex');
 }
 
+function normalizedFunctionBodyMd5(sql: string, functionName: string) {
+  const definition = sql.match(
+    new RegExp(
+      `CREATE OR REPLACE FUNCTION (?:public\\.)?${functionName}\\([\\s\\S]*?AS \\$\\$([\\s\\S]*?)\\$\\$`
+    )
+  );
+  if (!definition?.[1]) {
+    throw new Error(`Missing function body for ${functionName}`);
+  }
+
+  return createHash('md5')
+    .update(
+      definition[1]
+        .replace(/\r\n/g, '\n')
+        .replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, ''),
+      'utf8'
+    )
+    .digest('hex');
+}
+
 describe('Story 22.15 migration baseline safety', () => {
   it('classifies every repository migration exactly once', () => {
     const repositoryVersions = readdirSync(migrationDir)
@@ -135,13 +187,13 @@ describe('Story 22.15 migration baseline safety', () => {
     const execute = manifest.classifications.execute;
     const classified = [...repair, ...execute];
 
-    expect(repositoryVersions).toHaveLength(66);
-    expect(manifest.repositoryMigrationCount).toBe(66);
+    expect(repositoryVersions).toHaveLength(67);
+    expect(manifest.repositoryMigrationCount).toBe(67);
     expect(manifest.reviewedSupabaseCliVersion).toBe('2.115.0');
     expect(new Set(classified).size).toBe(classified.length);
     expect([...classified].sort()).toEqual(repositoryVersions);
     expect(repair).toHaveLength(57);
-    expect(execute).toHaveLength(9);
+    expect(execute).toHaveLength(10);
   });
 
   it('keeps every replay-dangerous historical version out of the execute set', () => {
@@ -164,7 +216,9 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(
       manifest.environmentPlans.staging['repair-after-catalog-proof']
     ).toEqual([]);
-    expect(manifest.environmentPlans.staging.execute).toEqual(['20260910115024']);
+    expect(manifest.environmentPlans.staging.execute).toEqual([
+      '20260910184841',
+    ]);
     expect(manifest.environmentPlans.production).toEqual({
       'repair-after-catalog-proof':
         'classifications.repair-after-catalog-proof',
@@ -183,8 +237,103 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260909115242',
       '20260910094517',
       '20260910115024',
+      '20260910184841',
     ]);
-    expect(manifest.environmentPlans.staging.execute).toEqual(['20260910115024']);
+    expect(manifest.environmentPlans.staging.execute).toEqual([
+      '20260910184841',
+    ]);
+  });
+
+  it('pins the exact trigger-reconciliation pre-state and forward-only correction', () => {
+    expect(manifest.catalogProofExceptions).toHaveProperty(
+      'stagingTriggerReconciliation',
+      expect.objectContaining({
+        requiredCatalogPhase: 'staging_trigger_reconciliation_pre_apply',
+        reconciledByExecuteVersion: '20260910184841',
+      })
+    );
+    expect(triggerReconciliationMigrationSql).toContain('BEGIN;');
+    expect(triggerReconciliationMigrationSql.trimEnd()).toMatch(/COMMIT;$/);
+    expect(triggerReconciliationMigrationSql).toContain(
+      'ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now()'
+    );
+    expect(triggerReconciliationMigrationSql).toContain(
+      'CREATE TRIGGER update_column_config_updated_at'
+    );
+    expect(triggerReconciliationMigrationSql).not.toMatch(
+      /\bDELETE\s+FROM\s+public\.employee_column_changes\b/i
+    );
+    expect(triggerReconciliationMigrationSql).toMatch(
+      /UPDATE\s+public\.employee_column_changes\s+changes\s+SET\s+changed_by\s*=\s*users\.id\s+FROM\s+public\.users\s+users/i
+    );
+    expect(employeeColumnChangesMigrationSql).toMatch(
+      /changed_by\s+UUID\s+REFERENCES\s+public\.users\(id\)\s+ON\s+DELETE\s+SET\s+NULL/i
+    );
+    for (const predicate of [
+      "c.confdeltype='n'",
+      "c.confupdtype='a'",
+      "c.confmatchtype='s'",
+      'NOT c.condeferrable',
+      'NOT c.condeferred',
+      'c.conkey @> ARRAY',
+    ]) {
+      expect(triggerReconciliationMigrationSql).toContain(predicate);
+    }
+
+    const representedTriggerContractsIndex = verifierSql.indexOf(
+      "'represented_trigger_contracts'"
+    );
+    const auditForeignKeyContract = verifierSql.slice(
+      verifierSql.indexOf(
+        "to_regclass('public.employee_column_changes')",
+        representedTriggerContractsIndex
+      ),
+      verifierSql.indexOf('AND EXISTS (\n            SELECT 1\n            FROM pg_index')
+    );
+    for (const predicate of [
+      "constraints.confdeltype = 'n'",
+      "constraints.confupdtype = 'a'",
+      "constraints.confmatchtype = 's'",
+      'NOT constraints.condeferrable',
+      'NOT constraints.condeferred',
+      "= 'observed_staging_pre_apply' THEN 'auth_user_id'",
+      "ELSE 'id'",
+      "constraints.conname =\n                'employee_column_changes_changed_by_fkey'",
+      'changed_by_constraints.contype = \'f\'',
+      '= ANY (changed_by_constraints.conkey)',
+      ') = 1',
+      'FROM public.employee_column_changes AS audit_rows',
+      'FROM public.users AS audit_users',
+      'audit_users.auth_user_id = audit_rows.changed_by',
+      'audit_users.id = audit_rows.changed_by',
+      'FROM pg_trigger AS audit_triggers',
+      'FROM pg_rewrite AS audit_rules',
+    ]) {
+      expect(auditForeignKeyContract).toContain(predicate);
+    }
+
+    const timestampBodyMd5 = normalizedFunctionBodyMd5(
+      initialSchemaMigrationSql,
+      'update_updated_at_column'
+    );
+    const februaryAuditBodyMd5 = normalizedFunctionBodyMd5(
+      februaryAuditMigrationSql,
+      'track_employee_column_changes'
+    );
+    const juneAuditBodyMd5 = normalizedFunctionBodyMd5(
+      juneAuditMigrationSql,
+      'track_employee_column_changes'
+    );
+    expect(timestampBodyMd5).toBe('45b9bb012d6413bfe2a994fcbebcc959');
+    expect(februaryAuditBodyMd5).toBe('f0397dc227d9cdee0f9045dfdd056121');
+    expect(juneAuditBodyMd5).toBe('3e8426f1177f00af4c46ed63f13a97d6');
+    for (const bodyMd5 of [
+      timestampBodyMd5,
+      februaryAuditBodyMd5,
+      juneAuditBodyMd5,
+    ]) {
+      expect(verifierSql).toContain(bodyMd5);
+    }
   });
 
   it('uses a forward-only default reconciliation without rewriting repayment rows', () => {
@@ -229,7 +378,7 @@ describe('Story 22.15 migration baseline safety', () => {
       /The dry run must list exactly this one apply:([\s\S]*?)Stop unless the dry run is exactly/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /After the 57 repairs, the dry run must list exactly these nine versions:([\s\S]*?)Stop unless the dry run is exact/
+      /After the 57 repairs, the dry run must list exactly these ten versions:([\s\S]*?)Stop unless the dry run is exact/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -304,6 +453,7 @@ describe('Story 22.15 migration baseline safety', () => {
       'dietary_columns_and_permissions',
       'user_filters_objects',
       'user_filters_trigger_function_contract',
+      'represented_trigger_contracts',
       'represented_column_contracts',
       'represented_function_contracts',
       'represented_policy_contracts',
@@ -313,6 +463,7 @@ describe('Story 22.15 migration baseline safety', () => {
     }
     expect(verifierSql).toContain('production_pre_apply');
     expect(verifierSql).toContain('staging_pre_apply');
+    expect(verifierSql).toContain('staging_trigger_reconciliation_pre_apply');
     expect(verifierSql).toContain('post_apply');
     expect(verifierSql).toContain('verifier_phase');
     expect(verifierSql).toContain('story_22_15_phase_contracts');
@@ -362,7 +513,17 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(verifierSql).toContain('pg_get_functiondef(functions.oid)');
     expect(verifierSql).toContain('functions.prosecdef');
     expect(verifierSql).toContain('functions.proconfig');
+    expect(verifierSql).toContain(
+      'pg_get_userbyid(functions.proowner)::text AS owner_name'
+    );
     expect(verifierSql).toContain("owner_name = 'postgres'");
+    const triggerFunctionContract = verifierSql.slice(
+      verifierSql.indexOf('managed_trigger_functions AS ('),
+      verifierSql.indexOf("'represented_column_contracts'")
+    );
+    expect(triggerFunctionContract).toContain(
+      "AND functions.owner_name = 'postgres'"
+    );
     expect(verifierSql).toContain('privileges.non_owner_execute_grants');
     expect(verifierSql).toContain('pg_catalog.aclexplode');
     expect(verifierSql).toContain('acl.is_grantable');

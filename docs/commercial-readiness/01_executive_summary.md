@@ -3,7 +3,7 @@
 Prepared: 2026-06-03
 Basis: repository files, configuration, sanitized platform metadata, private endpoint checks, sanitized Supabase metadata, and Supabase connector access results. No employee rows, secrets, concrete production hostnames, project references, deployment identifiers, or secret names are disclosed in this public package.
 
-Current Story 22.15 state (2026-09-10): PR #98 was approved and merged at 62a52e32aae8302d6c6be4b35ec39da298c5061c; correction 20260910115024 applied successfully. Staging history is 66/66, no repair or forward migration is pending, strict post_apply passes 15/15, both initplan warnings are removed, and aggregates/permission hashes are unchanged. Hosted active/inactive fixture/RPC acceptance and owner staging verification remain open. Required future migration applies have standing owner authorization; production inventory/ledger/backup and separate history-repair/isolation/settings/deployment gates remain. Production stays paused; merges and reopening remain separate. Story 22.15 in-progress, Epic 23 on hold. [Exact evidence and tested-commit scope](evidence/staging-reconciliation-completed-2026-09-10.md).
+Current Story 22.15 tested implementation commit 12e526ff36922a1ff41277bc7cb1ef2f81a2321d has final local database and quality evidence; staging remains at 66 applied versions and, after the reviewed merge, one pending forward execute 20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql remains with no repair. Strict 16-check post-apply and fresh hosted proof/apply remain pending after final remote checks, review, and the authorized staging merge. Production remains paused; Story 22.15 is in-progress and Epic 23 is on hold.
 
 ## What The System Solves
 

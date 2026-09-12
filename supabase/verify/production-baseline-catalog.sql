@@ -10,8 +10,18 @@ WITH verifier_context AS (
   SELECT :'catalog_phase'::text AS catalog_phase,
     CASE :'catalog_phase'::text
       WHEN 'staging_reconciliation_pre_apply' THEN 'post_apply'
+      WHEN 'staging_trigger_reconciliation_pre_apply' THEN 'post_apply'
       ELSE :'catalog_phase'::text
-    END AS contract_phase
+    END AS contract_phase,
+    CASE :'catalog_phase'::text
+      WHEN 'staging_trigger_reconciliation_pre_apply' THEN 'post_apply'
+      ELSE :'catalog_phase'::text
+    END AS policy_contract_phase,
+    CASE :'catalog_phase'::text
+      WHEN 'staging_trigger_reconciliation_pre_apply' THEN
+        'observed_staging_pre_apply'
+      ELSE 'canonical'
+    END AS trigger_contract_profile
 ),
 represented_policies AS (
   SELECT
@@ -160,6 +170,114 @@ story_22_15_functions AS (
       AND acl.grantee <> functions.proowner
   ) AS privileges ON true
 ),
+managed_public_triggers AS (
+  SELECT
+    relation_namespace.nspname::text AS schema_name,
+    relation_name.relname::text AS table_name,
+    triggers.tgname::text AS trigger_name,
+    triggers.tgfoid,
+    triggers.tgenabled,
+    triggers.tgtype,
+    triggers.tgattr,
+    triggers.tgqual,
+    triggers.tgconstraint,
+    triggers.tgnargs,
+    octet_length(triggers.tgargs) AS argument_bytes,
+    triggers.tgdeferrable,
+    triggers.tginitdeferred,
+    triggers.tgoldtable,
+    triggers.tgnewtable
+  FROM pg_trigger AS triggers
+  JOIN pg_class AS relation_name
+    ON relation_name.oid = triggers.tgrelid
+  JOIN pg_namespace AS relation_namespace
+    ON relation_namespace.oid = relation_name.relnamespace
+  WHERE relation_namespace.nspname = 'public'
+    AND relation_name.relname IN (
+      'employees',
+      'important_dates',
+      'column_config'
+    )
+    AND NOT triggers.tgisinternal
+),
+expected_managed_public_triggers AS (
+  SELECT *
+  FROM (
+    VALUES
+      ('observed_staging_pre_apply', 'employees', 'update_employees_updated_at', 'public.update_updated_at_column()', 19),
+      ('observed_staging_pre_apply', 'employees', 'trg_track_employee_column_changes', 'public.track_employee_column_changes()', 17),
+      ('observed_staging_pre_apply', 'important_dates', 'update_important_dates_updated_at', 'public.update_updated_at_column()', 19),
+      ('canonical', 'employees', 'update_employees_updated_at', 'public.update_updated_at_column()', 19),
+      ('canonical', 'employees', 'trg_track_employee_column_changes', 'public.track_employee_column_changes()', 17),
+      ('canonical', 'important_dates', 'update_important_dates_updated_at', 'public.update_updated_at_column()', 19),
+      ('canonical', 'column_config', 'update_column_config_updated_at', 'public.update_updated_at_column()', 19)
+  ) AS expected(
+    profile_name,
+    table_name,
+    trigger_name,
+    function_signature,
+    trigger_type
+  )
+),
+managed_trigger_functions AS (
+  SELECT
+    expected.function_name,
+    functions.oid,
+    functions.prokind,
+    functions.prorettype,
+    functions.proretset,
+    functions.prosecdef,
+    functions.provolatile,
+    functions.proparallel,
+    functions.proisstrict,
+    functions.proleakproof,
+    functions.pronargs,
+    functions.proargmodes,
+    functions.proallargtypes,
+    functions.proconfig,
+    pg_get_userbyid(functions.proowner)::text AS owner_name,
+    language.lanname::text AS language_name,
+    md5(
+      replace(
+        btrim(functions.prosrc, chr(32) || chr(9) || chr(10) || chr(13)),
+        chr(13) || chr(10),
+        chr(10)
+      )
+    ) AS normalized_body_md5,
+    privileges.non_owner_execute_grants,
+    privileges.has_non_owner_execute_grant_option
+  FROM (
+    VALUES
+      ('timestamp', 'public.update_updated_at_column()'),
+      ('employee_audit', 'public.track_employee_column_changes()')
+  ) AS expected(function_name, signature)
+  LEFT JOIN pg_proc AS functions
+    ON functions.oid = to_regprocedure(expected.signature)
+  LEFT JOIN pg_language AS language
+    ON language.oid = functions.prolang
+  LEFT JOIN LATERAL (
+    SELECT coalesce(
+      array_agg(
+        CASE
+          WHEN acl.grantee = 0 THEN 'PUBLIC'
+          ELSE roles.rolname::text
+        END
+        ORDER BY CASE
+          WHEN acl.grantee = 0 THEN 'PUBLIC'
+          ELSE roles.rolname::text
+        END
+      ),
+      ARRAY[]::text[]
+    ) AS non_owner_execute_grants,
+    coalesce(bool_or(acl.is_grantable), false) AS has_non_owner_execute_grant_option
+    FROM aclexplode(
+      coalesce(functions.proacl, acldefault('f', functions.proowner))
+    ) AS acl
+    LEFT JOIN pg_roles AS roles ON roles.oid = acl.grantee
+    WHERE acl.privilege_type = 'EXECUTE'
+      AND acl.grantee <> functions.proowner
+  ) AS privileges ON true
+),
 catalog_checks(check_name, passed, observed) AS (
   VALUES
     (
@@ -168,6 +286,7 @@ catalog_checks(check_name, passed, observed) AS (
         'production_pre_apply',
         'staging_pre_apply',
         'staging_reconciliation_pre_apply',
+        'staging_trigger_reconciliation_pre_apply',
         'post_apply'
       ),
       jsonb_build_object(
@@ -1167,6 +1286,321 @@ catalog_checks(check_name, passed, observed) AS (
       )
     ),
     (
+      'represented_trigger_contracts',
+      (
+        SELECT
+          (
+            SELECT count(*)
+            FROM managed_public_triggers
+          ) = (
+            SELECT count(*)
+            FROM expected_managed_public_triggers
+            WHERE profile_name = (
+              SELECT trigger_contract_profile FROM verifier_context
+            )
+          )
+          AND (
+            SELECT count(*) = count(actual.trigger_name)
+              AND bool_and(
+                actual.schema_name = 'public'
+                AND actual.table_name = expected.table_name
+                AND actual.tgfoid = to_regprocedure(expected.function_signature)
+                AND actual.tgenabled = 'O'
+                AND actual.tgtype = expected.trigger_type
+                AND actual.tgattr::text = ''
+                AND actual.tgqual IS NULL
+                AND actual.tgconstraint = 0
+                AND actual.tgnargs = 0
+                AND actual.argument_bytes = 0
+                AND NOT actual.tgdeferrable
+                AND NOT actual.tginitdeferred
+                AND actual.tgoldtable IS NULL
+                AND actual.tgnewtable IS NULL
+              )
+            FROM expected_managed_public_triggers AS expected
+            LEFT JOIN managed_public_triggers AS actual
+              ON actual.table_name = expected.table_name
+              AND actual.trigger_name = expected.trigger_name
+            WHERE expected.profile_name = (
+              SELECT trigger_contract_profile FROM verifier_context
+            )
+          )
+          AND (
+            SELECT count(*) = 2
+              AND bool_and(
+                functions.oid IS NOT NULL
+                AND functions.language_name = 'plpgsql'
+                AND functions.prokind = 'f'
+                AND functions.prorettype = 'trigger'::regtype
+                AND NOT functions.proretset
+                AND functions.provolatile = 'v'
+                AND functions.proparallel = 'u'
+                AND NOT functions.proisstrict
+                AND NOT functions.proleakproof
+                AND functions.pronargs = 0
+                AND functions.proargmodes IS NULL
+                AND functions.proallargtypes IS NULL
+                AND functions.proconfig =
+                  ARRAY['search_path=public, pg_temp']::text[]
+                AND functions.owner_name = 'postgres'
+                AND NOT functions.has_non_owner_execute_grant_option
+                AND CASE functions.function_name
+                  WHEN 'timestamp' THEN
+                    NOT functions.prosecdef
+                    AND functions.normalized_body_md5 =
+                      '45b9bb012d6413bfe2a994fcbebcc959'
+                    AND functions.non_owner_execute_grants = CASE
+                      WHEN (SELECT trigger_contract_profile FROM verifier_context) =
+                        'observed_staging_pre_apply' THEN
+                        ARRAY[
+                          'PUBLIC',
+                          'anon',
+                          'authenticated',
+                          'service_role'
+                        ]::text[]
+                      ELSE ARRAY['PUBLIC']::text[]
+                    END
+                  WHEN 'employee_audit' THEN
+                    functions.prosecdef
+                    AND functions.normalized_body_md5 = CASE
+                      WHEN (SELECT trigger_contract_profile FROM verifier_context) =
+                        'observed_staging_pre_apply' THEN
+                        'f0397dc227d9cdee0f9045dfdd056121'
+                      ELSE '3e8426f1177f00af4c46ed63f13a97d6'
+                    END
+                    AND functions.non_owner_execute_grants = CASE
+                      WHEN (SELECT trigger_contract_profile FROM verifier_context) =
+                        'observed_staging_pre_apply' THEN
+                        ARRAY['service_role']::text[]
+                      ELSE ARRAY[]::text[]
+                    END
+                  ELSE false
+                END
+              )
+            FROM managed_trigger_functions AS functions
+          )
+          AND CASE (SELECT trigger_contract_profile FROM verifier_context)
+            WHEN 'observed_staging_pre_apply' THEN
+              to_regclass('public.column_config') IS NOT NULL
+              AND NOT EXISTS (
+                SELECT 1
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = 'column_config'
+                  AND column_name = 'updated_at'
+              )
+            WHEN 'canonical' THEN
+              EXISTS (
+                SELECT 1
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = 'column_config'
+                  AND column_name = 'updated_at'
+                  AND data_type = 'timestamp with time zone'
+                  AND is_nullable = 'YES'
+                  AND regexp_replace(
+                    lower(column_default),
+                    '[[:space:]]+',
+                    '',
+                    'g'
+                  ) = 'now()'
+              )
+            ELSE false
+          END
+          AND (
+            SELECT count(*)
+            FROM pg_trigger
+            WHERE NOT tgisinternal
+              AND tgfoid = to_regprocedure('public.update_updated_at_column()')
+          ) = CASE
+            WHEN (SELECT trigger_contract_profile FROM verifier_context) =
+              'observed_staging_pre_apply' THEN 2
+            ELSE 3
+          END
+          AND (
+            SELECT count(*)
+            FROM pg_trigger
+            WHERE NOT tgisinternal
+              AND tgfoid = to_regprocedure(
+                'public.track_employee_column_changes()'
+              )
+          ) = 1
+          AND EXISTS (
+            SELECT 1
+            FROM pg_constraint AS constraints
+            WHERE constraints.conrelid =
+                to_regclass('public.employee_column_changes')
+              AND constraints.contype = 'f'
+              AND constraints.confrelid = to_regclass('public.users')
+              AND constraints.convalidated
+              AND constraints.conname =
+                'employee_column_changes_changed_by_fkey'
+              AND constraints.conkey = ARRAY[
+                (
+                  SELECT attnum
+                  FROM pg_attribute
+                  WHERE attrelid = constraints.conrelid
+                    AND attname = 'changed_by'
+                    AND NOT attisdropped
+                )
+              ]
+              AND constraints.confkey = ARRAY[
+                (
+                  SELECT attnum
+                  FROM pg_attribute
+                  WHERE attrelid = constraints.confrelid
+                    AND attname = CASE
+                      WHEN (
+                        SELECT trigger_contract_profile
+                        FROM verifier_context
+                      ) = 'observed_staging_pre_apply' THEN 'auth_user_id'
+                      ELSE 'id'
+                    END
+                    AND NOT attisdropped
+                )
+              ]
+              AND constraints.confdeltype = 'n'
+              AND constraints.confupdtype = 'a'
+              AND constraints.confmatchtype = 's'
+              AND NOT constraints.condeferrable
+              AND NOT constraints.condeferred
+          )
+          AND (
+            SELECT count(*)
+            FROM pg_constraint AS changed_by_constraints
+            WHERE changed_by_constraints.conrelid =
+                to_regclass('public.employee_column_changes')
+              AND changed_by_constraints.contype = 'f'
+              AND (
+                SELECT attnum
+                FROM pg_attribute
+                WHERE attrelid = changed_by_constraints.conrelid
+                  AND attname = 'changed_by'
+                  AND NOT attisdropped
+              ) = ANY (changed_by_constraints.conkey)
+          ) = 1
+          AND NOT EXISTS (
+            SELECT 1
+            FROM public.employee_column_changes AS audit_rows
+            WHERE audit_rows.changed_by IS NOT NULL
+              AND NOT EXISTS (
+                SELECT 1
+                FROM public.users AS audit_users
+                WHERE (
+                  (SELECT trigger_contract_profile FROM verifier_context) =
+                    'observed_staging_pre_apply'
+                  AND audit_users.auth_user_id = audit_rows.changed_by
+                )
+                OR (
+                  (SELECT trigger_contract_profile FROM verifier_context) <>
+                    'observed_staging_pre_apply'
+                  AND audit_users.id = audit_rows.changed_by
+                )
+              )
+          )
+          AND NOT EXISTS (
+            SELECT 1
+            FROM pg_trigger AS audit_triggers
+            WHERE audit_triggers.tgrelid =
+                to_regclass('public.employee_column_changes')
+              AND NOT audit_triggers.tgisinternal
+          )
+          AND NOT EXISTS (
+            SELECT 1
+            FROM pg_rewrite AS audit_rules
+            WHERE audit_rules.ev_class =
+              to_regclass('public.employee_column_changes')
+          )
+          AND EXISTS (
+            SELECT 1
+            FROM pg_index AS indexes
+            WHERE indexes.indrelid =
+                to_regclass('public.employee_column_changes')
+              AND indexes.indisunique
+              AND indexes.indisvalid
+              AND indexes.indisready
+              AND indexes.indimmediate
+              AND indexes.indpred IS NULL
+              AND indexes.indexprs IS NULL
+              AND indexes.indnkeyatts = 3
+              AND (
+                SELECT array_agg(attributes.attname ORDER BY keys.ordinality)
+                FROM unnest(indexes.indkey) WITH ORDINALITY AS keys(
+                  attnum,
+                  ordinality
+                )
+                JOIN pg_attribute AS attributes
+                  ON attributes.attrelid = indexes.indrelid
+                  AND attributes.attnum = keys.attnum
+                WHERE keys.ordinality <= 3
+              ) = ARRAY[
+                'employee_id',
+                'column_name',
+                'changed_at'
+              ]::name[]
+          )
+      ),
+      (
+        SELECT jsonb_build_object(
+          'trigger_profile', (
+            SELECT trigger_contract_profile FROM verifier_context
+          ),
+          'triggers', coalesce(
+            jsonb_agg(
+              jsonb_build_object(
+                'table', table_name,
+                'name', trigger_name,
+                'function', tgfoid::regprocedure::text,
+                'enabled', tgenabled,
+                'type', tgtype
+              )
+              ORDER BY table_name, trigger_name
+            ),
+            '[]'::jsonb
+          ),
+          'functions', (
+            SELECT coalesce(
+              jsonb_agg(
+                jsonb_build_object(
+                  'name', function_name,
+                  'body_md5', normalized_body_md5,
+                  'security_definer', prosecdef,
+                  'settings', proconfig,
+                  'execute_grants', non_owner_execute_grants,
+                  'grant_option', has_non_owner_execute_grant_option
+                )
+                ORDER BY function_name
+              ),
+              '[]'::jsonb
+            )
+            FROM managed_trigger_functions
+          ),
+          'column_config_updated_at', (
+            SELECT coalesce(
+              jsonb_agg(
+                jsonb_build_object(
+                  'type', data_type,
+                  'nullable', is_nullable,
+                  'default', regexp_replace(
+                    lower(column_default),
+                    '[[:space:]]+',
+                    '',
+                    'g'
+                  )
+                )
+              ),
+              '[]'::jsonb
+            )
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'column_config'
+              AND column_name = 'updated_at'
+          )
+        )
+        FROM managed_public_triggers
+      )
+    ),
+    (
       'represented_column_contracts',
       (
         SELECT count(*) = 22
@@ -1507,7 +1941,7 @@ catalog_checks(check_name, passed, observed) AS (
             ON policy.tablename = expected.table_name
             AND policy.policyname = expected.policy_name
           WHERE expected.profile_name = (
-            SELECT catalog_phase FROM verifier_context
+            SELECT policy_contract_phase FROM verifier_context
           )
           GROUP BY expected.profile_name
         ) AS profile
