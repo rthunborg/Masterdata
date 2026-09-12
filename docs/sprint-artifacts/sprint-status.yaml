@@ -1,8 +1,8 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: 2026-09-11
-updated_by: 'Codex: trigger reconciliation preparation recorded; 67th forward-only migration and verification pending.'
+last_updated: 2026-09-12
+updated_by: 'Codex: staging v67 migration and bounded 21-check acceptance completed; owner staging verification remains open.'
 
 current_focus:
   active_epic: 22
