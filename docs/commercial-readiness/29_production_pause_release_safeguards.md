@@ -5,7 +5,7 @@
 
 Status: preparation only, 2026-09-09. Story 22.15 remains in-progress; Epic 23 remains on hold. Production stays paused until a separate explicit owner reopening decision.
 
-Additional audit-FK reconciliation is unverified and blocked on managed local resources; no staging merge or hosted apply has occurred. Current trigger reconciliation is recorded in [the v67 preparation evidence](evidence/trigger-reconciliation-preparation-2026-09-10.md). The required migration and reviewed staging merge have standing authorization, subject to their gates. Neither authorizes a main merge, deployment, hosted setting change, fixture write or reopening. Read-only lookup at 2026-09-11T11:12:24.106Z still matched the recorded production pause target in READY state; alias-assignment and active-cron settings were not re-queried and must be refreshed before a production-targeted action.
+Tested implementation commit 12e526ff36922a1ff41277bc7cb1ef2f81a2321d has final local reconciliation evidence; the earlier managed-resource failure is historical. No staging merge or hosted apply has occurred. Read-only Vercel proof at 2026-09-12T10:37:29.178Z confirms the production alias resolves to the recorded READY pause deployment targeting production; the connector did not expose automatic-domain-assignment or active-cron settings, so earlier observations of those settings remain historical and must be refreshed before a production-targeted action. The required migration and reviewed staging merge have standing authorization subject to final remote checks/review and fresh staging proof; they do not authorize a main merge, deployment, settings change, fixture write, or reopening.
 
 ## Versioned controls
 
