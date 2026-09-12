@@ -143,8 +143,8 @@ The completed 66/66 correction is historical. The forward-only `20260910184841_r
 
 1. `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`
 
-```bash
-set -euo pipefail
+```text
+Historical completed pre-apply commands — do not execute on reconciled staging:
 node supabase/verify/verify-production-baseline-catalog.mjs staging_trigger_reconciliation_pre_apply
 node supabase/verify/verify-target-binding.mjs
 node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
@@ -152,43 +152,13 @@ node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --d
 
 Stop unless the dry run is exactly the single migration listed above.
 
-Local evidence at 12e526ff36922a1ff41277bc7cb1ef2f81a2321d passes the representative fixture, clean chain/canonical reapply/catalog, full Vitest and exact Playwright gates. Before any hosted apply, require the reviewed merge, fresh clean-checkout binding, exact 66/67 history, the documented pre-apply audit proof, the dry run containing only 20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql, and all 16 pre-apply checks. Verify the same row/nonnull counts, canonical actor references and strict post-apply contract after the apply. The prior b4bbdb2 result is historical only. Standing authorization covers the reviewed staging merge and this required migration apply; fixture writes, history repair, main/deployment/settings changes, and reopening remain separate.
+The local gates on `12e526ff36922a1ff41277bc7cb1ef2f81a2321d` covered the representative fixture, clean chain/canonical reapply, full Vitest and exact Playwright. Reviewed PR #100 then merged to staging `ad9650ccfc8be412447a03847cc7ddfb372f8666`. Its fresh pre-flight established 67 repository / 66 hosted versions, all 16 pre-apply checks, the exact one-file dry run, unchanged audit/repayment/permission baselines and scoped advisor counts. The single authorized v67 apply and immediate 67/67 history verification completed successfully; no history repair or cleanup occurred. Exact times, SQL/manifest hashes, results and authorization are retained in the [completed execution receipt](evidence/trigger-reconciliation-preparation-2026-09-10.md#staging-v67-execution-receipt--2026-09-12).
 
-After the exact final PR head passes its required tests, CI, Vercel checks and review, merge it into staging under the standing authorization. Fetch staging/main again, inspect intervening commits and tree equivalence, and use a new clean isolated checkout at the resulting staging SHA. Repeat the shared private tooling, TLS and three-way target proofs. Require exactly 67 repository versions, 66 remote versions, no remote-only versions, and only the version above missing. Before the dry run, require all 16 pre-apply catalog checks, zero security WARN+ and exactly three classified `multiple_permissive_policies` WARN within the pinned advisor coverage, and unchanged repayment aggregates/four permission hashes. Unexpected findings stop the operation.
-
-Record the standing migration authorization against that exact merged SHA, SQL/manifest hashes and the single ordered file. Rebind immediately before the one intended apply; do not retry an uncertain write automatically. There is no staging history-repair step.
-
-From that clean merged checkout, repeat the pre-apply commands below. Capture the shared pre-flight repayment/permission queries in an explicit read-only transaction with the reviewed tooling and bounded timeouts; compare their redacted results with the approved baseline before proceeding to the final dry run. These queries expose only aggregates and hashes.
-
-```bash
-node supabase/verify/verify-target-binding.mjs
-node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
-node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type security
-node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type performance
-node supabase/verify/verify-production-baseline-catalog.mjs staging_trigger_reconciliation_pre_apply
-# Capture and compare the shared pre-flight read-only aggregates/permission hashes.
-node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
-```
-
-Only after all those proofs pass and the dry run names exactly the single version above:
-
-```bash
-set -euo pipefail
-node supabase/verify/verify-target-binding.mjs
-staging_apply_status=0
-node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --skip-vault || staging_apply_status=$?
-node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
-test "$staging_apply_status" -eq 0
-node supabase/verify/verify-production-baseline-catalog.mjs post_apply
-node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type security
-node supabase/verify/run-reviewed-supabase-cli.mjs db advisors --reviewed-target --type performance
-```
-
-Immediately reconcile history even if the apply reports an error; a shell/operator must not skip that inspection merely because an earlier command returned nonzero. Stop before further writes on any failure or ambiguity. Successful completion requires 67/67 exact history, zero pending/remote-only versions, all 16 strict post-apply checks, the unchanged advisor counts and before/after aggregates/hashes, and preserved production pause. The owner subsequently approved the separate hosted fixture/RPC operation, which passed 21/21 with rollback/restoration proof on 2026-09-12. Do not repeat it; owner staging verification remains open. The catalog result alone does not prove behavioral acceptance.
+**Current staging verification is read-only.** From the exact reviewed clean staging candidate, repeat reviewed tooling/TLS/three-way binding, migration history (67/67, no pending or remote-only versions), scoped advisors, strict `post_apply` catalog (16/16), repayment/permission comparisons and canonical audit drift checks. The old pre-apply/dry-run/apply sequence is complete and must not be repeated. The separately approved fixture/RPC acceptance also passed once, 21/21, with independent fixture absence and staffing/aggregate restoration; do not re-execute it. Owner staging verification and the separate production prerequisites remain open. Keep the production pause intact.
 
 ### Historical correction plan and reusable proof procedure
 
-The following procedure was completed on 2026-09-10; its one-version manifest plan describes that reconciliation baseline, not a currently pending migration. That completed 66-version correction used post_apply validation. Do not rerun its pre-apply phase or apply; use the current v67 procedure above. Historical procedure: after the correction PR is reviewed and separately authorized for merge, fetch staging/main, inspect intervening commits, and create a clean isolated checkout at the resulting staging SHA. Reverify reviewed tooling, CLI 2.115.0, certificate integrity, and three-way target binding. Capture fresh migration history: exactly 65 recorded repository versions, no remote-only versions, no repair candidates, and only `20260910115024` pending against the 66-version manifest. The CLI wrapper must reject every staging repair request because that allowlist is empty.
+The following procedure was completed on 2026-09-10; its one-version manifest plan describes that reconciliation baseline, not a currently pending migration. That completed 66-version correction used post_apply validation. Do not rerun its pre-apply phase or apply; use only the current read-only staging verification above. Historical procedure: after the correction PR is reviewed and separately authorized for merge, fetch staging/main, inspect intervening commits, and create a clean isolated checkout at the resulting staging SHA. Reverify reviewed tooling, CLI 2.115.0, certificate integrity, and three-way target binding. Capture fresh migration history: exactly 65 recorded repository versions, no remote-only versions, no repair candidates, and only `20260910115024` pending against the 66-version manifest. The CLI wrapper must reject every staging repair request because that allowlist is empty.
 
 Historical pre-apply proof used before the completed correction:
 
