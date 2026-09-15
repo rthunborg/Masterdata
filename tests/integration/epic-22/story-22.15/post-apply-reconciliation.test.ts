@@ -641,6 +641,46 @@ describe.skipIf(!fixtureUrl)(
       if (cleanupFailure) throw cleanupFailure;
     });
 
+    it('accepts only the bounded production lower-only headcount contract before its immutable apply', async () => {
+      const constraint = 'staffing_needs_headcount_need_check';
+      const checkPasses = async (phase: string) =>
+        (await readCatalog(phase, false)).find(
+          (row) => row.check_name === 'staffing_constraints_and_rls'
+        )?.passed;
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query(`ALTER TABLE public.staffing_needs DROP CONSTRAINT ${constraint};
+          ALTER TABLE public.staffing_needs ADD CONSTRAINT ${constraint} CHECK (headcount_need >= 0)`);
+        expect(await checkPasses('production_pre_apply')).toBe(true);
+        expect(await checkPasses('post_apply')).toBe(false);
+        expect(await checkPasses('staging_pre_apply')).toBe(false);
+        await fixtureClient.query('SAVEPOINT lower_only');
+        const outsideRange = await fixtureClient.query('UPDATE public.staffing_needs SET headcount_need = 10000');
+        expect(outsideRange.rowCount).toBeGreaterThan(0);
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        await fixtureClient.query('ROLLBACK TO SAVEPOINT lower_only');
+        await fixtureClient.query('ALTER TABLE public.staffing_needs ADD CONSTRAINT unexpected_headcount CHECK (headcount_need >= 0)');
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        await fixtureClient.query('ROLLBACK TO SAVEPOINT lower_only');
+        await fixtureClient.query(`ALTER TABLE public.staffing_needs DROP CONSTRAINT ${constraint};
+          ALTER TABLE public.staffing_needs ADD CONSTRAINT ${constraint} CHECK (headcount_need >= -1)`);
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        await fixtureClient.query('ROLLBACK TO SAVEPOINT lower_only');
+        await fixtureClient.query(`ALTER TABLE public.staffing_needs DROP CONSTRAINT ${constraint};
+          ALTER TABLE public.staffing_needs ADD CONSTRAINT ${constraint} CHECK (headcount_need >= 0) NOT VALID`);
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        await fixtureClient.query('ROLLBACK TO SAVEPOINT lower_only');
+        const immutableApply = readFileSync('supabase/migrations/20260314000002_add_headcount_upper_bound.sql', 'utf8')
+          .replace(/^BEGIN;\s*/m, '').replace(/^COMMIT;\s*/m, '');
+        await fixtureClient.query(immutableApply);
+        expect(await checkPasses('production_pre_apply')).toBe(true);
+        expect(await checkPasses('post_apply')).toBe(true);
+        await expect(fixtureClient.query('UPDATE public.staffing_needs SET headcount_need = 10000')).rejects.toThrow();
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+    });
+
     it('reconciles the precise ACL and policy-initplan drift without changing RLS behavior', async () => {
       const beforeGrants = await getGetUserRoleGrants();
       const beforePolicies = await getPolicyExpressions();

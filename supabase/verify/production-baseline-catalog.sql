@@ -724,16 +724,39 @@ catalog_checks(check_name, passed, observed) AS (
               contype = 'c'
               AND convalidated
               AND NOT connoinherit
-              AND regexp_replace(
+              AND (regexp_replace(
                 lower(pg_get_expr(conbin, conrelid, true)),
                 '[[:space:]()]',
                 '',
                 'g'
               ) = 'headcount_need>=0andheadcount_need<=9999'
+                OR (
+                  (SELECT catalog_phase FROM verifier_context) = 'production_pre_apply'
+                  AND regexp_replace(
+                    lower(pg_get_expr(conbin, conrelid, true)),
+                    '[[:space:]()]', '', 'g'
+                  ) = 'headcount_need>=0'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM public.staffing_needs
+                    WHERE headcount_need < 0 OR headcount_need > 9999
+                  )
+                )
+              )
             )
           FROM pg_constraint
           WHERE conrelid = to_regclass('public.staffing_needs')
             AND conname = 'staffing_needs_headcount_need_check'
+        )
+        AND (
+          SELECT count(*) = 1
+          FROM pg_constraint
+          WHERE conrelid = to_regclass('public.staffing_needs')
+            AND contype = 'c'
+            AND conkey @> ARRAY[(
+              SELECT attnum FROM pg_attribute
+              WHERE attrelid = to_regclass('public.staffing_needs')
+                AND attname = 'headcount_need' AND NOT attisdropped
+            )]::smallint[]
         )
         AND EXISTS (
           SELECT 1

@@ -192,8 +192,10 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(manifest.reviewedSupabaseCliVersion).toBe('2.115.0');
     expect(new Set(classified).size).toBe(classified.length);
     expect([...classified].sort()).toEqual(repositoryVersions);
-    expect(repair).toHaveLength(57);
-    expect(execute).toHaveLength(10);
+    expect(repair).toHaveLength(56);
+    expect(execute).toHaveLength(11);
+    expect(repair).not.toContain('20260314000002');
+    expect(execute[0]).toBe('20260314000002');
   });
 
   it('keeps every replay-dangerous historical version out of the execute set', () => {
@@ -228,6 +230,7 @@ describe('Story 22.15 migration baseline safety', () => {
 
   it('orders every forward reconciliation and excludes already-applied staging versions', () => {
     expect(manifest.classifications.execute).toEqual([
+      '20260314000002',
       '20260614000000',
       '20260615000000',
       '20260709194903',
@@ -378,7 +381,7 @@ describe('Story 22.15 migration baseline safety', () => {
       /The dry run must list exactly this one apply:([\s\S]*?)Stop unless the dry run is exactly/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /After the 57 repairs, the dry run must list exactly these ten versions:([\s\S]*?)Stop unless the dry run is exact/
+      /After the 56 repairs, the dry run must list exactly these eleven versions:([\s\S]*?)```bash/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -794,6 +797,11 @@ describe('Story 22.15 migration baseline safety', () => {
       userFiltersStart,
       userFiltersEnd
     );
+    expect(staffingContract).toContain("(SELECT catalog_phase FROM verifier_context) = 'production_pre_apply'");
+    expect(staffingContract).toContain(
+      'WHERE headcount_need < 0 OR headcount_need > 9999'
+    );
+    expect(staffingContract).toContain('AND conkey @> ARRAY[');
 
     expect(staffingContract).toContain(
       "conname = 'staffing_needs_headcount_need_check'"
@@ -993,7 +1001,7 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(cutoverRunbook).toContain(
       `Supabase CLI version **\`${manifest.reviewedSupabaseCliVersion}\`**`
     );
-    expect(cutoverRunbook).toContain('57-row proof ledger');
+    expect(cutoverRunbook).toContain('56-row proof ledger');
     expect(cutoverRunbook).toContain('--dry-run --skip-vault');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_PROJECT_REF');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_ENVIRONMENT');

@@ -64,12 +64,12 @@
       "20260224000000",
       "20260313000001",
       "20260314000001",
-      "20260314000002",
       "20260520000000",
       "20260605151000",
       "20260607193000"
     ],
     "execute": [
+      "20260314000002",
       "20260614000000",
       "20260615000000",
       "20260709194903",
@@ -93,6 +93,13 @@
     "20260607193000": "The historical repair deletes duplicate audit rows before replacing the function. Forward trigger reconciliation requires the existing valid conflict index and does not replay row cleanup."
   },
   "catalogProofExceptions": {
+    "productionHeadcountUpperBound": {
+      "acceptedPreApplyState": "Only production_pre_apply may accept the exact validated headcount_need >= 0 named CHECK with no competing headcount CHECK and zero values outside 0..9999. The missing upper-bound effect is not eligible for history repair; apply the unchanged, never-recorded historical migration before the later forward migrations. Every other production proof remains mandatory.",
+      "requiredPreApplyCounts": {
+        "out_of_range_headcounts": 0
+      },
+      "reconciledByExecuteVersion": "20260314000002"
+    },
     "productionUserFiltersUpdatePolicy": {
       "acceptedPreApplyState": "The dated production aliases Users can read own filters, Users can insert own filters, and Users can delete own filters exist; no update policy exists.",
       "reconciledByExecuteVersion": "20260614000000"

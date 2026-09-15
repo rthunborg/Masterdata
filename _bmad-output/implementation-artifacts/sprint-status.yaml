@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-12
+last_updated: 2026-09-15
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -75,7 +75,7 @@ development_status:
 verification_blockers:
   local_quality_gates: "PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged as ad9650ccfc8be412447a03847cc7ddfb372f8666 and the one authorized staging execute completed. Current staging is 67/67 with no pending or remote-only versions; strict post-apply catalog passes 16/16; audit history, repayment aggregates and four permission hashes are preserved; advisors are 0 security WARN-or-higher and three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. PR #100 GitHub Test Check 34690888518 passed (unit 3,380 passed/75 skipped; integration 827 passed/75 skipped). Hosted fixture/RPC acceptance passed 21/21 with restoration proved; owner staging verification remains open. Production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   remote_pr_review: 'PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged to staging ad9650ccfc8be412447a03847cc7ddfb372f8666 after clean final CI, Vercel checks and Codex Reviewbot. Earlier failed CI/parser-format attempts remain historical failures.'
-  hosted_owner_gates: 'PR #100 staging v67 is applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
+  hosted_owner_gates: 'PR #100 staging v67 is applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. Production read-only diagnosis now classifies 56 repair candidates plus 11 applies, with 20260314000002 first because its upper-bound effect is absent; strict catalog failure, proof ledger, isolation/settings, repair and deployment gates remain open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'

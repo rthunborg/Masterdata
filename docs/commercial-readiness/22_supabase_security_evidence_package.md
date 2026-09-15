@@ -9,6 +9,8 @@ Prepared: 2026-06-11
 
 Updated: 2026-09-12 — staging v67 audit reference mapping and bounded hosted acceptance complete; owner staging verification remains open
 
+> **Production classification addendum — 2026-09-15.** Read-only diagnosis found that production lacks the upper-bound effect of immutable `20260314000002_add_headcount_upper_bound.sql`. The plan is now 56 repair candidates plus 11 applies, with that migration first; no production write occurred. The narrow lower-bound-only staffing pre-profile does not relax the other strict production checks. Owner-confirmed fresh local database/schema dumps are available for recovery, without recording their location or claiming an independent restore test. [Redacted evidence](evidence/production-history-classification-2026-09-15.md).
+
 Story: 22.8, with Story 22.10, Story 22.13, and Story 22.15 addenda
 
 > **Historical 66-version staging state — 2026-09-10:** Historical baseline: staging was 66/66 at reviewed merge 62a52e32aae8302d6c6be4b35ec39da298c5061c after the authorized correction; no migration or repair is pending. Strict post_apply passes 15/15, advisors match the classified residuals, and aggregates/hashes are unchanged. Hosted fixture/RPC acceptance and owner staging verification remain open. Required future migration applies have standing authorization. Production inventory/ledger/backup and separate history-repair/isolation/settings/deployment gates remain; preserve the pause and separate merge/reopening decisions. Story 22.15 in-progress; Epic 23 on hold.
@@ -119,7 +121,7 @@ Story 22.15 retains six justified authenticated SECURITY DEFINER entry points: a
 
 ## Migration History
 
-- Historical plans progressed through 63, 64 and 65 versions; PR #98 established the 66/66 staging baseline and PR #100 applied v67 once. Staging is 67/67 with strict 16/16 post_apply, no repair, preserved audit/aggregate baselines, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Production still requires fresh 57-row representation proof and its ten-file forward plan.
+- Historical plans progressed through 63, 64 and 65 versions; PR #98 established the 66/66 staging baseline and PR #100 applied v67 once. Staging is 67/67 with strict 16/16 post_apply, no repair, preserved audit/aggregate baselines, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Production now requires fresh 56-row representation proof and its eleven-file forward plan, starting with immutable `20260314000002`; the other strict catalog failures remain unresolved.
 
 ## SSL, Network Restrictions, And PITR Posture
 

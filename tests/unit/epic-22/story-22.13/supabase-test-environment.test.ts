@@ -44,7 +44,7 @@ describe("Epic 22 Supabase test environment", () => {
     });
   });
 
-  it("accepts explicit local URLs only when they match this repo's ports", () => {
+  it("accepts explicit local URLs when they match this repo's ports", () => {
     const resolved = resolveEpic22SupabaseTestEnvironment({
       configToml,
       envFilePresent: true,
@@ -57,9 +57,29 @@ describe("Epic 22 Supabase test environment", () => {
 
     expect(resolved.apiPort).toBe(15421);
     expect(resolved.dbPort).toBe(15422);
+    expect(resolved.usesExplicitGuardManagedFixture).toBe(false);
   });
 
-  it("rejects the old default Supabase ports instead of testing another stack", () => {
+  it("accepts an explicit guard-managed loopback fixture on its own ports", () => {
+    expect(
+      resolveEpic22SupabaseTestEnvironment({
+        configToml,
+        envFilePresent: true,
+        env: {
+          EPIC_22_GUARD_MANAGED_FIXTURE: "true",
+          NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:16421",
+          SUPABASE_DB_URL:
+            "postgresql://postgres:fixture@127.0.0.1:16422/postgres",
+        },
+      })
+    ).toMatchObject({
+      apiUrl: "http://127.0.0.1:16421",
+      dbUrl: "postgresql://postgres:fixture@127.0.0.1:16422/postgres",
+      usesExplicitGuardManagedFixture: true,
+    });
+  });
+
+  it("rejects an unmarked alternate loopback fixture", () => {
     expect(() =>
       resolveEpic22SupabaseTestEnvironment({
         configToml,
@@ -71,7 +91,22 @@ describe("Epic 22 Supabase test environment", () => {
           SUPABASE_SERVICE_ROLE_KEY: "captured-local-key",
         },
       })
-    ).toThrow(/hr-masterdata.*15421.*15422/i);
+    ).toThrow(/guard-managed loopback fixture/i);
+  });
+
+  it("rejects a partially switched fixture even when it carries the marker", () => {
+    expect(() =>
+      resolveEpic22SupabaseTestEnvironment({
+        configToml,
+        envFilePresent: true,
+        env: {
+          EPIC_22_GUARD_MANAGED_FIXTURE: "true",
+          NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:16421",
+          SUPABASE_DB_URL:
+            "postgresql://postgres:fixture@127.0.0.1:15422/postgres",
+        },
+      })
+    ).toThrow(/must not mix configured-stack and explicit-fixture ports/i);
   });
 
   it("rejects remote databases for local evidence tests", () => {
@@ -86,7 +121,34 @@ describe("Epic 22 Supabase test environment", () => {
           SUPABASE_SERVICE_ROLE_KEY: "captured-local-key",
         },
       })
-    ).toThrow(/local Supabase/i);
+    ).toThrow(/loopback/i);
+  });
+
+  it.each([
+    {
+      label: "non-loopback API host",
+      env: {
+        EPIC_22_GUARD_MANAGED_FIXTURE: "true",
+        NEXT_PUBLIC_SUPABASE_URL: "http://192.0.2.10:16421",
+        SUPABASE_DB_URL: "postgresql://postgres:fixture@127.0.0.1:16422/postgres",
+      },
+    },
+    {
+      label: "malformed database URL",
+      env: {
+        EPIC_22_GUARD_MANAGED_FIXTURE: "true",
+        NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:16421",
+        SUPABASE_DB_URL: "not-a-url",
+      },
+    },
+  ])("rejects $label", ({ env }) => {
+    expect(() =>
+      resolveEpic22SupabaseTestEnvironment({
+        configToml,
+        envFilePresent: true,
+        env,
+      })
+    ).toThrow(/loopback|valid URL/i);
   });
 
   it("names missing .env.test and the expected project endpoints in skip output", () => {
