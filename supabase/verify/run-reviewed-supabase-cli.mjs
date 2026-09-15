@@ -83,7 +83,7 @@ function isApprovedReviewedDatabaseArguments(
   args,
   approvedRepairVersions,
   approvedStagingPush,
-  approvedProductionIncludeAll
+  approvedIncludeAllEnvironment
 ) {
   if (
     argumentsEqual(args, ['migration', 'list', REVIEWED_TARGET_FLAG]) ||
@@ -106,13 +106,13 @@ function isApprovedReviewedDatabaseArguments(
   }
 
   if (
-    approvedProductionIncludeAll &&
+    approvedIncludeAllEnvironment &&
     (argumentsEqual(args, [
       'db',
       'push',
       REVIEWED_TARGET_FLAG,
       REVIEWED_ENVIRONMENT_FLAG,
-      'production',
+      approvedIncludeAllEnvironment,
       '--include-all',
       '--skip-vault',
     ]) ||
@@ -121,7 +121,7 @@ function isApprovedReviewedDatabaseArguments(
         'push',
         REVIEWED_TARGET_FLAG,
         REVIEWED_ENVIRONMENT_FLAG,
-        'production',
+        approvedIncludeAllEnvironment,
         '--dry-run',
         '--include-all',
         '--skip-vault',
@@ -253,15 +253,15 @@ function loadApprovedRepairVersions({
   }
 }
 
-function loadApprovedProductionIncludeAll({
+function loadApprovedIncludeAllEnvironment({
   args,
   workspace,
   environment,
   readManifest = readFileSync,
 }) {
   if (
-    args[4] !== 'production' ||
-    environment.EXPECTED_SUPABASE_ENVIRONMENT !== 'production'
+    !REVIEWED_ENVIRONMENTS.has(args[4]) ||
+    environment.EXPECTED_SUPABASE_ENVIRONMENT !== args[4]
   ) {
     return false;
   }
@@ -273,7 +273,18 @@ function loadApprovedProductionIncludeAll({
       'migration-baseline-manifest.json'
     );
     const manifest = JSON.parse(readManifest(manifestPath, 'utf8'));
-    return resolveManifestProductionIncludeAll(manifest);
+    if (args[4] === 'production') {
+      resolveManifestProductionIncludeAll(manifest);
+      return 'production';
+    }
+    const plan = resolveManifestMigrationPlan(manifest, 'staging');
+    if (plan.repairVersions.size !== 0 || plan.executeVersions.size !== 1 ||
+        !plan.executeVersions.has('20260910184840') ||
+        !manifest.orderedPrerequisites?.some((entry) =>
+          entry.version === '20260910184840' && entry.beforeVersion === '20260910184841')) {
+      throw new Error('Reviewed migration baseline manifest is unavailable or invalid');
+    }
+    return 'staging';
   } catch (error) {
     if (
       error instanceof Error &&
@@ -458,9 +469,9 @@ export async function runReviewedSupabaseCli({
             readManifest,
           })
         : undefined;
-    const approvedProductionIncludeAll =
+    const approvedIncludeAllEnvironment =
       databaseCommandKey === 'db:push' && args.includes('--include-all')
-        ? loadApprovedProductionIncludeAll({
+        ? loadApprovedIncludeAllEnvironment({
             args,
             workspace,
             environment,
@@ -476,7 +487,7 @@ export async function runReviewedSupabaseCli({
         args,
         approvedRepairVersions,
         approvedStagingPush,
-        approvedProductionIncludeAll
+        approvedIncludeAllEnvironment
       )
     ) {
       throw new Error(

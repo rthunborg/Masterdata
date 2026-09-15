@@ -344,15 +344,18 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       ],
       expected: ['db', 'push', '--dry-run', '--include-all', '--skip-vault'],
     },
-  ])(
-    'forwards the exact reviewed production include-all $label shape with minimal TLS environment',
-    async ({ args, expected }) => {
+  ].flatMap((entry) => ['production', 'staging'].map((targetEnvironment) => ({
+    ...entry, targetEnvironment,
+    args: entry.args.map((argument) => argument === 'production' ? targetEnvironment : argument),
+  }))))(
+    'forwards the exact reviewed $targetEnvironment include-all $label shape with minimal TLS environment',
+    async ({ args, expected, targetEnvironment }) => {
       const spawn = vi.fn(() => ({ error: undefined, status: 0 }));
       const targetVerifier = vi.fn(async () => true);
       const rootCertificateVerifier = vi.fn(() => reviewedCertificatePath);
       const workspace = resolve('.');
       const environment = {
-        EXPECTED_SUPABASE_ENVIRONMENT: 'production',
+        EXPECTED_SUPABASE_ENVIRONMENT: targetEnvironment,
         SUPABASE_DB_URL: `postgresql://postgres:${password}@db.${projectRef}.supabase.co:5432/postgres?sslmode=verify-full`,
         SUPABASE_ACCESS_TOKEN: 'must-not-reach-production-push',
         PGSERVICE: 'ambient-service-must-not-survive',
@@ -556,7 +559,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'staging' },
     },
     {
-      label: 'a staging command shape',
+      label: 'a staging command shape with a production target',
       args: [
         'db',
         'push',
@@ -566,7 +569,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         '--include-all',
         '--skip-vault',
       ],
-      environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'staging' },
+      environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
     },
     {
       label: 'extra arguments',
@@ -602,6 +605,29 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       expect(spawn).not.toHaveBeenCalled();
     }
   );
+
+
+  it.each([
+    { label: 'extra pending version', execute: ['20260910184840', '20260910184841'], repair: [], before: '20260910184841' },
+    { label: 'missing prerequisite version', execute: ['20260910184841'], repair: [], before: '20260910184841' },
+    { label: 'repair authorization', execute: ['20260910184840'], repair: ['20250113000000'], before: '20260910184841' },
+    { label: 'wrong successor', execute: ['20260910184840'], repair: [], before: '20260910115024' },
+    { label: 'duplicate pending version', execute: ['20260910184840', '20260910184840'], repair: [], before: '20260910184841' },
+  ])('rejects staging include-all manifest with $label before any target access', async ({ execute, repair, before }) => {
+    const spawn = vi.fn();
+    const targetVerifier = vi.fn();
+    await expect(runReviewedSupabaseCli({
+      args: ['db', 'push', REVIEWED_TARGET_FLAG, REVIEWED_ENVIRONMENT_FLAG, 'staging', '--include-all', '--skip-vault'],
+      environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'staging' },
+      spawn, targetVerifier, executableVerifier: () => reviewedCliPath,
+      readManifest: () => JSON.stringify({
+        environmentPlans: { staging: { 'repair-after-catalog-proof': repair, execute } },
+        orderedPrerequisites: [{ version: '20260910184840', beforeVersion: before }],
+      }),
+    })).rejects.toThrow('Reviewed migration baseline manifest is unavailable or invalid');
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
+  });
 
   it('rejects production include-all when the reviewed manifest plan is wrong before target verification or spawn', async () => {
     const spawn = vi.fn();

@@ -5,9 +5,9 @@
 > **Historical pre-trigger execution record — 2026-09-10 15:14 UTC (superseded below).** PR #98 approved head ac38f8e874b61948809c5dfdb09ca2df054da254 merged to staging 62a52e32aae8302d6c6be4b35ec39da298c5061c with an identical tree. Authorized correction 20260910115024 applied at 2026-09-10T15:12:39.328Z; immediate history was 66/66 with no pending or remote-only versions. Strict post_apply catalog passes 15/15, security advisors report 0 WARN+ within pinned CLI coverage, performance retains only 3 classified multiple_permissive_policies WARN, and repayment aggregates/all four permission hashes are unchanged. Hosted direct-role/RPC acceptance and owner staging verification remain open. Production requires fresh inventory, signed history-proof ledger, backup and separately authorized history repair/isolation/settings/deployment; the owner has supplied standing authorization for required future migration applies, subject to reviewed prerequisites. Production remains paused; reopening and staging/main merges require separate authorization. Story 22.15 remains in-progress; Epic 23 on hold. [Completed reconciliation evidence](evidence/staging-reconciliation-completed-2026-09-10.md). This record supersedes earlier statements that PR #98 review, its merge, the correction apply or migration-apply authorization are pending; earlier dated entries remain historical.
 
 
-Status: **Staging v67 was applied once under the reviewed plan: history is 67/67, strict post_apply is 16/16, and no history repair occurred.** The exact one-file staging list and its stop delimiter below remain the reviewed record and must not be replayed. The bounded hosted fixture/RPC acceptance passed 21/21 with rollback/restoration proved; owner staging verification remains open. Production remains paused and untouched by this database work.
+Status: **Staging v67 was applied once under the reviewed plan: history is 67/67, strict post_apply is 16/16, and no history repair occurred.** The exact one-file staging list and its stop delimiter below remain the reviewed record and must not be replayed. New forward-only `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql` is pending as the 68th repository version; it must be applied through the separate reviewed staging `--include-all` procedure below. The bounded hosted fixture/RPC acceptance passed 21/21 with rollback/restoration proved; owner staging verification remains open. Production remains paused and untouched by this database work.
 
-Repository target: **67 migration versions / 17 policies**. The immutable classification source is `supabase/migration-baseline-manifest.json`; the machine-enforced read-only proof entry point is `supabase/verify/verify-production-baseline-catalog.mjs`, backed by `supabase/verify/production-baseline-catalog.sql`.
+Repository target: **68 migration versions / 17 policies**. The immutable classification source is `supabase/migration-baseline-manifest.json`; the machine-enforced read-only proof entry point is `supabase/verify/verify-production-baseline-catalog.mjs`, backed by `supabase/verify/production-baseline-catalog.sql`.
 
 > **Epic 23 stays on hold.** Leaked-password protection, CAPTCHA, MFA/session changes, and other Auth/dashboard settings are not part of this runbook.
 
@@ -139,7 +139,7 @@ On 2026-06-14 Story 22.10 recorded 57 history rows through `20260614000000` and 
 
 ### Completed trigger-reconciliation procedure — do not repeat
 
-The completed 66/66 correction is historical. The forward-only `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql` was applied once on staging at `2026-09-12T11:50:57.715Z` without row cleanup or history repair. The immutable manifest retains staging repair `[]` and its one-file execute plan as the represented-baseline record. The retained dry-run list below documents exactly what was executed and must never be replayed. For the completed historical execution, the requirement was: The dry run must list exactly this one apply:
+The completed 66/66 correction is historical. The forward-only `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql` was applied once on staging at `2026-09-12T11:50:57.715Z` without row cleanup or history repair. The historical approval record retained staging repair `[]` and its one-file execute plan as the represented-baseline record; the current manifest separately contains the pending v68 staging plan below. The retained dry-run list below documents exactly what was executed and must never be replayed. Its completed historical dry run listed this one apply:
 
 1. `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`
 
@@ -150,11 +150,44 @@ node supabase/verify/verify-target-binding.mjs
 node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --dry-run --skip-vault
 ```
 
-Stop unless the dry run is exactly the single migration listed above.
+That historical result is retained as evidence only; do not execute or replay it.
 
 The local gates on `12e526ff36922a1ff41277bc7cb1ef2f81a2321d` covered the representative fixture, clean chain/canonical reapply, full Vitest and exact Playwright. Reviewed PR #100 then merged to staging `ad9650ccfc8be412447a03847cc7ddfb372f8666`. Its fresh pre-flight established 67 repository / 66 hosted versions, all 16 pre-apply checks, the exact one-file dry run, unchanged audit/repayment/permission baselines and scoped advisor counts. The single authorized v67 apply and immediate 67/67 history verification completed successfully; no history repair or cleanup occurred. Exact times, SQL/manifest hashes, results and authorization are retained in the [completed execution receipt](evidence/trigger-reconciliation-preparation-2026-09-10.md#staging-v67-execution-receipt--2026-09-12).
 
-**Current staging verification is read-only.** From the exact reviewed clean staging candidate, repeat reviewed tooling/TLS/three-way binding, migration history (67/67, no pending or remote-only versions), scoped advisors, strict `post_apply` catalog (16/16), repayment/permission comparisons and canonical audit drift checks. The old pre-apply/dry-run/apply sequence is complete and must not be repeated. The separately approved fixture/RPC acceptance also passed once, 21/21, with independent fixture absence and staffing/aggregate restoration; do not re-execute it. Owner staging verification and the separate production prerequisites remain open. Keep the production pause intact.
+**Historical staging v67 verification record.** At the completed v67 release point, read-only verification captured 67/67 history with no pending or remote-only version, scoped advisors, strict `post_apply` catalog (16/16), repayment/permission comparisons, and canonical audit drift checks. The old pre-apply/dry-run/apply sequence is complete and must not be repeated. The separately approved fixture/RPC acceptance also passed once, 21/21, with independent fixture absence and staffing/aggregate restoration; do not re-execute it. The current staging state remains 67/67 but has pending v68 in the 68-version repository target, so use the next procedure. Owner staging verification and the separate production prerequisites remain open. Keep the production pause intact.
+
+### Pending canonical trigger ACL prerequisite — 2026-09-15
+
+The clean isolated Supabase baseline reached canonical trigger bodies, owners, bindings, and audit state, but carried the documented platform-default explicit ACL extension: `update_updated_at_column()` had `PUBLIC`, `anon`, `authenticated`, and `service_role`; `track_employee_column_changes()` had `service_role`. Immutable `20260910184841` rejects that clean baseline while current staging v67 already has the strict canonical ACL. New forward-only `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql` is deliberately ordered immediately before immutable v67. It recognizes only the full documented platform profile, preserves the historical no-timestamp representation for v67, and is a no-op on current strict staging. See [redacted cause and provenance](evidence/canonical-trigger-acl-prerequisite-2026-09-15.md).
+
+Current staging remains **67/67**. Do not infer 68/68 or replay v67. After the exact final PR head is reviewed and merged to staging, first capture the existing strict `post_apply` 16/16 proof and migration history. The dry run must list exactly this one apply:
+
+1. `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql`
+
+Obtain that dry run with:
+
+```bash
+set -euo pipefail
+node supabase/verify/verify-target-binding.mjs
+node supabase/verify/verify-production-baseline-catalog.mjs post_apply
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --reviewed-environment staging --dry-run --include-all --skip-vault
+```
+
+Stop unless the dry run is exactly the single migration listed above.
+
+The ordered output must be exact. `--include-all` is required because the new prerequisite sorts before staging's already-recorded v67. The reviewed wrapper must accept only this staging command shape. Record the standing migration-apply authorization against the exact merged SHA, this single ordered file, and its SQL hash; no history repair, cleanup, deployment, setting change, or reopening is included.
+
+Immediately before apply, re-bind the target and run:
+
+```bash
+set -euo pipefail
+node supabase/verify/verify-target-binding.mjs
+node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --reviewed-environment staging --include-all --skip-vault
+node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
+node supabase/verify/verify-production-baseline-catalog.mjs post_apply
+```
+
+Expected result: 68/68 history, no pending or remote-only version, the unchanged strict 16/16 catalog, and no data or pause-state change. Capture fresh advisor and preservation evidence before requesting the already-required owner staging verification. Any mismatch stops; do not use history repair or an unversioned ACL command.
 
 ### Historical correction plan and reusable proof procedure
 
@@ -204,7 +237,7 @@ Expected end state: 66 local↔remote versions in sync, zero pending/remote-only
 
 Owner must explicitly verify staging before production can proceed.
 
-## B. Production — 56 repair candidates plus eleven applies
+## B. Production — 56 repair candidates plus twelve applies
 
 > **Current classification, 2026-09-15.** Production has exactly `headcount_need >= 0`, with no upper-bound conjunct supplied by immutable `20260314000002_add_headcount_upper_bound.sql`; the recorded aggregate has zero out-of-range values. That historical migration must execute first and must not be repaired as applied. This is the sole documented production pre-profile amendment: every other strict catalog requirement remains in force, and the current production catalog is still a no-go for its other failures. No production history repair or apply may start until the reviewed manifest, runner, regression tests, and 56-row effect ledger agree on this order. See [the redacted classification evidence](evidence/production-history-classification-2026-09-15.md).
 
@@ -212,11 +245,11 @@ Do not begin until all of Epic 22 is merged to staging, the owner verifies stagi
 
 ### Mandatory production database-window traffic-isolation and hosted-setting gate
 
-Migration `20260614000000` temporarily grants legacy execution privileges to `authenticated`/`service_role`; migration `20260709194903` later revokes or narrows those privileges. Because each file commits independently and the eleven-file push can stop between them, the production system must not accept non-operator traffic anywhere in that interval. The fact that seasonal users have paused activity is useful scheduling context, but it is not technical isolation.
+Migration `20260614000000` temporarily grants legacy execution privileges to `authenticated`/`service_role`; migration `20260709194903` later revokes or narrows those privileges. Because each file commits independently and the twelve-file push can stop between them, the production system must not accept non-operator traffic anywhere in that interval. The fact that seasonal users have paused activity is useful scheduling context, but it is not technical isolation.
 
 The accountable owner must separately authorize temporary hosted traffic/setting changes and their rollback. This database window retains the existing production pause and does not include an application deployment; any later proposed deployment requires its own reviewed isolation design and explicit authorization. Before making the approved traffic/setting changes, record privately the current Supabase **Enable Data API** state, **Enable Realtime service** state, Realtime public-channel setting and configured limits, database network restrictions, production application traffic control, schedules/workers, responsible operator, rollback owner, and UTC window. Do not commit project references, IP/CIDR values, credentials, tokens, channel topics, or client identifiers.
 
-The eleven forward migrations create or change columns, policies, grants, functions, or rows associated with these affected tables: `public.column_config`, `public.employee_column_changes`, `public.employees`, `public.important_dates`, `public.staffing_needs`, `public.staffing_needs_changelog`, `public.user_filters`, `public.users`, and the new `public.app_user_auth_cleanup_outbox`. Before isolation, capture and hash the complete read-only publication result below. Also record privately, with a UTC timestamp, the Realtime **Connected Clients**, **Rate of Channel Joins**, and **Postgres Changes Events** report values; the current service-enabled state; and every known application or external consumer. Repository clients currently subscribe to Postgres Changes on `employees` and `important_dates`, but repository inspection is not proof that no other hosted client exists.
+The twelve forward migrations create or change columns, policies, grants, functions, or rows associated with these affected tables: `public.column_config`, `public.employee_column_changes`, `public.employees`, `public.important_dates`, `public.staffing_needs`, `public.staffing_needs_changelog`, `public.user_filters`, `public.users`, and the new `public.app_user_auth_cleanup_outbox`. Before isolation, capture and hash the complete read-only publication result below. Also record privately, with a UTC timestamp, the Realtime **Connected Clients**, **Rate of Channel Joins**, and **Postgres Changes Events** report values; the current service-enabled state; and every known application or external consumer. Repository clients currently subscribe to Postgres Changes on `employees` and `important_dates`, but repository inspection is not proof that no other hosted client exists.
 
 ```sql
 WITH affected(schema_name, table_name) AS (
@@ -258,7 +291,7 @@ Under the approved window, perform and prove all of the following before the fir
 4. Restrict direct PostgreSQL and pooler ingress to the operator's approved egress addresses using [Network Restrictions](https://supabase.com/docs/guides/platform/network-restrictions). Supabase network restrictions do not cover HTTPS APIs, which is why the Data API, Realtime, and application/client controls are separate mandatory gates.
 5. From a non-operator probe, demonstrate that the production application is unavailable, database REST/GraphQL calls fail, and direct PostgreSQL/pooler access is blocked. When Realtime was previously enabled, prove that the representative Realtime connection established before isolation is disconnected; in either prior state, prove that a fresh WebSocket/subscription reconnect is rejected with the disabled-tenant outcome and confirm the Connected Clients report reaches zero within the approved bounded drain interval. From the operator path, repeat the mode-aware target binding and demonstrate that the selected approved database connection still works. Record only redacted outcomes, counts, timestamps, and hashes.
 
-If isolation cannot be proven, the production cutover is NO-GO. Use this exact production-day order: **fresh production backup -> publication/connection inventory -> technical traffic and Realtime isolation -> history repair and immediate reconciliation -> exact eleven-version include-all dry run -> eleven-file database apply -> post-apply catalog/grant/direct-role/advisor/data verification -> retain the existing production pause -> restore only separately authorized prior Data API state -> bounded direct-role/database verification and staging application smoke -> restore only separately authorized database/Realtime controls while retaining the production pause and job shutdown -> verify restored publication, connection, access, and monitoring state**. Keep both the Data API and Realtime service disabled through every migration and all database post-apply verification. Do not merge/deploy early merely because the database step has begun. If the push or any database verification fails, remain fully isolated and follow the failure procedure; restoration or continuation is an explicit owner decision based on the observed state.
+If isolation cannot be proven, the production cutover is NO-GO. Use this exact production-day order: **fresh production backup -> publication/connection inventory -> technical traffic and Realtime isolation -> history repair and immediate reconciliation -> exact twelve-version include-all dry run -> twelve-file database apply -> post-apply catalog/grant/direct-role/advisor/data verification -> retain the existing production pause -> restore only separately authorized prior Data API state -> bounded direct-role/database verification and staging application smoke -> restore only separately authorized database/Realtime controls while retaining the production pause and job shutdown -> verify restored publication, connection, access, and monitoring state**. Keep both the Data API and Realtime service disabled through every migration and all database post-apply verification. Do not merge/deploy early merely because the database step has begun. If the push or any database verification fails, remain fully isolated and follow the failure procedure; restoration or continuation is an explicit owner decision based on the observed state.
 
 After final grants, RLS, direct-role behavior, and the complete database end state are verified, repeat the affected-table publication inventory and review every delta before enabling any client path. Retain the existing static pause. Application smoke runs against the exact staging candidate. Restoring Data API or Realtime can expose direct clients despite the page pause, so restore only the specifically approved prior state after final authorization tests; keep disabled settings disabled unless separately authorized. A later production operator-only application deployment requires its own reviewed isolation design and explicit approval; it is not part of this database completion sequence.
 
@@ -358,7 +391,7 @@ If even one version lacks its signed ledger proof, stop before the first repair 
 
 ### Explicit production apply list
 
-After the 56 repairs, the dry run must list exactly these eleven versions:
+After the 56 repairs, the dry run must list exactly these twelve versions:
 
 1. `20260314000002_add_headcount_upper_bound.sql`
 2. `20260614000000_reconcile_environments_security_and_policies.sql`
@@ -370,7 +403,8 @@ After the 56 repairs, the dry run must list exactly these eleven versions:
 8. `20260909115242_reconcile_saved_filters_and_room_acl.sql`
 9. `20260910094517_reconcile_repayment_defaults.sql`
 10. `20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql`
-11. `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`
+11. `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql`
+12. `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`
 
 ```bash
 set -euo pipefail
@@ -378,7 +412,7 @@ node supabase/verify/verify-target-binding.mjs
 node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --reviewed-environment production --dry-run --include-all --skip-vault
 ```
 
-Stop unless the dry-run output is exact. `--include-all` is required because the first pending version is older than the repaired history candidates; the reviewed runner accepts only this production-specific command shape, while the operator records and verifies the exact ordered eleven-version output. If its implementation or test evidence is absent, stop—do not bypass the reviewed wrapper or mark the older version applied. Record the full immutable commit SHA, ordered eleven-version file set and SQL hashes, owner-confirmed fresh database/schema dumps, owner, maintenance window, the standing 2026-09-10 owner authorization covering this production migration apply, proven separately authorized traffic isolation and hosted-setting rollback, and the unchanged production pause. The dumps are confirmed as containing the real data; no location, content, or independent restore-test claim belongs in this record. A deployment authorization is required only if a later production deployment is separately proposed; no deployment is part of this database apply. The standing apply authorization satisfies only the migration-write gate; no repeat migration-apply approval is required, and none of the other prerequisites or authorizations is waived. Then, and only then, re-bind the target immediately before the write:
+Stop unless the dry-run output is exact. `--include-all` is required because the first pending version is older than the repaired history candidates; the reviewed runner accepts only this production-specific command shape, while the operator records and verifies the exact ordered twelve-version output. If its implementation or test evidence is absent, stop—do not bypass the reviewed wrapper or mark the older version applied. Record the full immutable commit SHA, ordered twelve-version file set and SQL hashes, owner-confirmed fresh database/schema dumps, owner, maintenance window, the standing 2026-09-10 owner authorization covering this production migration apply, proven separately authorized traffic isolation and hosted-setting rollback, and the unchanged production pause. The dumps are confirmed as containing the real data; no location, content, or independent restore-test claim belongs in this record. A deployment authorization is required only if a later production deployment is separately proposed; no deployment is part of this database apply. The standing apply authorization satisfies only the migration-write gate; no repeat migration-apply approval is required, and none of the other prerequisites or authorizations is waived. Then, and only then, re-bind the target immediately before the write:
 
 ```bash
 set -euo pipefail
@@ -387,7 +421,7 @@ node supabase/verify/run-reviewed-supabase-cli.mjs db push --reviewed-target --r
 node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target
 ```
 
-Expected database end state before any later deployment: 67 versions in sync / 17 policies, with all 16 strict post-apply catalog checks passing. While full database isolation remains active, repeat all staging database verification, advisors, repayment aggregates, permission hashes, affected-table publication inventory, and redacted evidence capture. Run `node supabase/verify/verify-production-baseline-catalog.mjs post_apply`; it must exit `0`. Retain the existing production pause. Restore database settings only under separate explicit approval, then verify direct-role/database behavior and run application smoke against the exact staging candidate. A production application deployment is blocked by the committed pause lock and requires a later separately reviewed operator-isolation design plus explicit authorization. No deployment or reopening follows automatically from a passing database gate.
+Expected database end state before any later deployment: 68 versions in sync / 17 policies, with all 16 strict post-apply catalog checks passing. While full database isolation remains active, repeat all staging database verification, advisors, repayment aggregates, permission hashes, affected-table publication inventory, and redacted evidence capture. Run `node supabase/verify/verify-production-baseline-catalog.mjs post_apply`; it must exit `0`. Retain the existing production pause. Restore database settings only under separate explicit approval, then verify direct-role/database behavior and run application smoke against the exact staging candidate. A production application deployment is blocked by the committed pause lock and requires a later separately reviewed operator-isolation design plus explicit authorization. No deployment or reopening follows automatically from a passing database gate.
 
 ## Rollback and failure behavior
 
@@ -417,9 +451,9 @@ The retry must return HTTP `200` and `cleanup_state: completed`. If the first re
 - [ ] Complete 56-row production proof ledger signed before the first history repair.
 - [ ] Owner separately authorized the exact 56-version production history-repair batch; immediate history reconciliation passed without an unresolved partial baseline.
 - [ ] Production-day backup succeeded; maintenance window, separate history-repair/traffic-isolation/hosted-setting/rollback approvals, and the standing migration-apply authorization bound to the exact production candidate/file hashes are recorded; prior Realtime settings, affected-table publication state, and connected-client reports captured privately.
-- [ ] Production eleven-version `--include-all` dry run exact through the reviewed production-only runner; target binding rechecked immediately before apply.
+- [ ] Production twelve-version `--include-all` dry run exact through the reviewed production-only runner; target binding rechecked immediately before apply.
 - [ ] Full technical isolation proven from operator and non-operator paths, including existing-client disconnect and fresh Realtime reconnect rejection, and held through repair/apply/database post-verification; production static pause and job shutdown remain intact through separately approved database/Realtime restoration; application smoke uses staging.
-- [ ] Production shows 67 migrations / 17 policies and 16/16 catalog checks; direct-role/advisor/data-preservation evidence recorded before any later separately proposed deployment.
+- [ ] Production shows 68 migrations / 17 policies and 16/16 catalog checks; direct-role/advisor/data-preservation evidence recorded before any later separately proposed deployment.
 - [ ] Existing static pause retained; exact staging candidate application smoke and production direct-role/database probes recorded. Database/Realtime restoration separately authorized and verified. Public page pause, API/mutation 503, and zero schedules reverified. Any later production deployment or reopening remains a separate owner decision.
 - [ ] `R-010` / `R-020` / `R-023` closed and `story-22.10-phase-b` set to done.
 - [ ] Epic 23 remains on hold; temporary Data API/Realtime/network cutover controls were restored and are not treated as Epic 23 Auth-hardening implementation.

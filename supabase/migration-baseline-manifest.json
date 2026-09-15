@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "repositoryMigrationCount": 67,
+  "repositoryMigrationCount": 68,
   "reviewedSupabaseCliVersion": "2.115.0",
   "catalogVerifier": "supabase/verify/production-baseline-catalog.sql",
   "restoredMigrationProvenance": {
@@ -79,6 +79,7 @@
       "20260909115242",
       "20260910094517",
       "20260910115024",
+      "20260910184840",
       "20260910184841"
     ]
   },
@@ -126,18 +127,31 @@
       "acceptedPreApplyState": "The exact 66-version staging state lacks column_config.updated_at and its timestamp trigger. The postgres-owned audit trigger retains the reviewed February body and service_role EXECUTE only; the postgres-owned timestamp helper has the canonical body with PUBLIC, anon, authenticated and service_role EXECUTE. The sole changed_by foreign key is employee_column_changes_changed_by_fkey to public.users.auth_user_id, validated, MATCH SIMPLE, ON UPDATE NO ACTION, ON DELETE SET NULL and not deferrable. Every nonnull audit actor must map to an application user; no custom audit-table triggers or rewrite rules are accepted. Forward reconciliation preserves audit rows and timestamps while translating actors to public.users.id and replacing the FK together with the June audit body. Existing employee/date trigger bindings and audit conflict index must match exactly. Other final catalog contracts remain required.",
       "requiredCatalogPhase": "staging_trigger_reconciliation_pre_apply",
       "reconciledByExecuteVersion": "20260910184841"
+    },
+    "stagingCanonicalTriggerAclPrerequisite": {
+      "acceptedPreApplyState": "Current staging must already satisfy all strict post_apply checks. The new prerequisite is a no-op on that complete canonical state; no historical trigger migration is replayed. Fresh builds additionally reconcile only the complete canonical Supabase default-ACL pair, leaving the exact old observed profile for its immutable successor.",
+      "requiredCatalogPhase": "post_apply",
+      "reconciledByExecuteVersion": "20260910184840"
     }
   },
   "environmentPlans": {
     "staging": {
       "repair-after-catalog-proof": [],
       "execute": [
-        "20260910184841"
+        "20260910184840"
       ]
     },
     "production": {
       "repair-after-catalog-proof": "classifications.repair-after-catalog-proof",
       "execute": "classifications.execute"
     }
-  }
+  },
+  "orderedPrerequisites": [
+    {
+      "version": "20260910184840",
+      "beforeVersion": "20260910184841",
+      "cliGeneratedVersion": "20260915164637",
+      "reason": "New forward-only ACL prerequisite ordered before the immutable trigger migration; current staging applies the missing prerequisite after its already-recorded successor using reviewed --include-all. No existing version is changed or repaired."
+    }
+  ]
 }

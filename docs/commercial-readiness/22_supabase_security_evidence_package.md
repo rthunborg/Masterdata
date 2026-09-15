@@ -9,7 +9,9 @@ Prepared: 2026-06-11
 
 Updated: 2026-09-12 — staging v67 audit reference mapping and bounded hosted acceptance complete; owner staging verification remains open
 
-> **Production classification addendum — 2026-09-15.** Read-only diagnosis found that production has exactly lower-only `headcount_need >= 0`, without the upper-bound effect of immutable `20260314000002_add_headcount_upper_bound.sql`. The plan is now 56 repair candidates plus 11 applies, with that migration first; no production write occurred. This precise pre-profile does not relax the other strict production checks. Owner-confirmed fresh local database/schema dumps are available for recovery, without recording their location or claiming an independent restore test. [Redacted evidence](evidence/production-history-classification-2026-09-15.md).
+> **Production classification addendum — 2026-09-15.** Read-only diagnosis found that production has exactly lower-only `headcount_need >= 0`, without the upper-bound effect of immutable `20260314000002_add_headcount_upper_bound.sql`. The plan is now 56 repair candidates plus 12 applies, with that migration first and the new ACL prerequisite immediately before immutable v67; no production write occurred. This precise pre-profile does not relax the other strict production checks. Owner-confirmed fresh local database/schema dumps are available for recovery, without recording their location or claiming an independent restore test. [Redacted evidence](evidence/production-history-classification-2026-09-15.md).
+
+> **ACL-prerequisite addendum — 2026-09-15.** A clean isolated Supabase image reached canonical v67 bodies/bindings with only the platform's documented explicit default trigger-function `EXECUTE` extension, which immutable v67 refuses. Forward-only `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql` is intentionally ordered immediately before v67, accepts only that complete profile, and normalizes it to the existing strict grant contract. It is pending fresh verification and applies; staging is still 67/67, and production is now 56 repair candidates plus 12 applies. No hosted write occurred and the production pause remains active. [Redacted evidence](evidence/canonical-trigger-acl-prerequisite-2026-09-15.md).
 
 Story: 22.8, with Story 22.10, Story 22.13, and Story 22.15 addenda
 
@@ -121,7 +123,7 @@ Story 22.15 retains six justified authenticated SECURITY DEFINER entry points: a
 
 ## Migration History
 
-- Historical plans progressed through 63, 64 and 65 versions; PR #98 established the 66/66 staging baseline and PR #100 applied v67 once. Staging is 67/67 with strict 16/16 post_apply, no repair, preserved audit/aggregate baselines, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Production now requires fresh 56-row representation proof and its eleven-file forward plan, starting with immutable `20260314000002`; the other strict catalog failures remain unresolved.
+- Historical plans progressed through 63, 64 and 65 versions; PR #98 established the 66/66 staging baseline and PR #100 applied v67 once. Staging is 67/67 with strict 16/16 post_apply, no repair, preserved audit/aggregate baselines, and pending v68 prerequisite. Production now requires fresh 56-row representation proof and its twelve-file forward plan, starting with immutable `20260314000002`; the other strict catalog failures remain unresolved.
 
 ## SSL, Network Restrictions, And PITR Posture
 
