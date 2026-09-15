@@ -9,7 +9,7 @@ Prepared: 2026-06-11
 
 Updated: 2026-09-12 — staging v67 audit reference mapping and bounded hosted acceptance complete; owner staging verification remains open
 
-> **Production classification addendum — 2026-09-15.** Read-only diagnosis found that production lacks the upper-bound effect of immutable `20260314000002_add_headcount_upper_bound.sql`. The plan is now 56 repair candidates plus 11 applies, with that migration first; no production write occurred. The narrow lower-bound-only staffing pre-profile does not relax the other strict production checks. Owner-confirmed fresh local database/schema dumps are available for recovery, without recording their location or claiming an independent restore test. [Redacted evidence](evidence/production-history-classification-2026-09-15.md).
+> **Production classification addendum — 2026-09-15.** Read-only diagnosis found that production has exactly lower-only `headcount_need >= 0`, without the upper-bound effect of immutable `20260314000002_add_headcount_upper_bound.sql`. The plan is now 56 repair candidates plus 11 applies, with that migration first; no production write occurred. This precise pre-profile does not relax the other strict production checks. Owner-confirmed fresh local database/schema dumps are available for recovery, without recording their location or claiming an independent restore test. [Redacted evidence](evidence/production-history-classification-2026-09-15.md).
 
 Story: 22.8, with Story 22.10, Story 22.13, and Story 22.15 addenda
 

@@ -724,12 +724,16 @@ catalog_checks(check_name, passed, observed) AS (
               contype = 'c'
               AND convalidated
               AND NOT connoinherit
-              AND (regexp_replace(
-                lower(pg_get_expr(conbin, conrelid, true)),
-                '[[:space:]()]',
-                '',
-                'g'
-              ) = 'headcount_need>=0andheadcount_need<=9999'
+              AND (
+                (
+                  (SELECT catalog_phase FROM verifier_context) <> 'production_pre_apply'
+                  AND regexp_replace(
+                    lower(pg_get_expr(conbin, conrelid, true)),
+                    '[[:space:]()]',
+                    '',
+                    'g'
+                  ) = 'headcount_need>=0andheadcount_need<=9999'
+                )
                 OR (
                   (SELECT catalog_phase FROM verifier_context) = 'production_pre_apply'
                   AND regexp_replace(

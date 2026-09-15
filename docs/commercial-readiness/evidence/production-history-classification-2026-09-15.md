@@ -8,7 +8,7 @@ Fresh production inventory found the required staffing column but only its lower
 
 ## Revised classification and ordering
 
-`20260314000002_add_headcount_upper_bound.sql` remains immutable. It moves from the production repair-candidate set to the first production apply candidate. The read-only precondition for that migration is exact lower-bound-only representation and zero out-of-range `headcount_need` values. Later catalog phases retain the exact `0..9999` requirement.
+`20260314000002_add_headcount_upper_bound.sql` remains immutable. It moves from the production repair-candidate set to the first production apply candidate. The read-only precondition for that migration is exactly `headcount_need >= 0`, with no upper-bound conjunct, and zero out-of-range `headcount_need` values. Later catalog phases retain the exact `0..9999` requirement.
 
 The complete apply order is:
 
@@ -28,7 +28,7 @@ The historic staffing migration is older than the repair candidates. The reviewe
 
 ## Current no-go status
 
-The strict production catalog gate has not passed. The reclassification accepts only the specifically observed lower-bound-only staffing pre-profile and preserves the zero-out-of-range prerequisite; it does not weaken the remaining strict contracts. The other current production failures, the complete 56-row signed effect-proof ledger, approved isolation/settings actions, and the separately authorized history-repair batch remain open.
+The strict production catalog gate has not passed. The reclassification accepts only the specifically observed lower-only `headcount_need >= 0` staffing pre-profile and preserves the zero-out-of-range prerequisite; it does not weaken the remaining strict contracts. The other current production failures, the complete 56-row signed effect-proof ledger, approved isolation/settings actions, and the separately authorized history-repair batch remain open.
 
 The owner confirmed fresh database and schema dumps were made locally and verified to contain the real data. This record neither requests nor records a backup location or contents, and it does not claim an independent restore test.
 
@@ -36,9 +36,24 @@ The owner confirmed fresh database and schema dumps were made locally and verifi
 
 The supporting contract-detail diagnostic completed 18 focused tooling tests with 0 failures, skips, cancellations, or todos. The reviewed migration/runner-focused combined gate later passed **87/87** in **798 ms** with exit `0`. These are interim focused results; full release gates remain pending the reviewed implementation changes.
 
-## Context gap
+## Current implementation candidate — 2026-09-15
 
-The Story 22.15 status carrier references `_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md` as a frozen specification. That file is absent from this worktree and no matching file was found under `C:\DEV`. This is a documentation-context gap only: no replacement specification was invented, and the current change follows the reviewed migration, verifier, and runbook evidence available in the repository.
+Initial implementation commit `5d004cafafcacef7c29d19c361e982d0ea1641a2` is the recorded initial head of draft PR #102. It is not the ongoing review-fix head, is not merged, and is not a release-candidate approval.
+
+- Initial focused migration/runner regression: 189/189 passed; 0 skipped and 0 failed; 2.69 seconds. This pre-commit result covered code identical to the initial implementation commit.
+- Initial post-apply regression: 5/5 passed in 8.52 seconds. The saved-filter regression (20/20 in 5.81 seconds) and exact clean 67-migration-chain receipt (16/16 in 7.653 seconds) were run on the initial implementation commit.
+- Current uncommitted review fix: focused migration/runner regression passed 190/190 with zero failures or skips in 3.29 seconds; the corrected lower-only pre-apply/post-apply regression passed 5/5 with zero failures or skips in 6.10 seconds. Type checking and scoped lint also pass. A clean-chain receipt and full release gates must be rerun for the final exact head.
+- Type checking passed. Lint passed with 0 errors and 296 warnings. A normal `pnpm build` passed in 11.824 seconds after the local dependency junction issue was resolved with a frozen install; no lockfile changed.
+- Production dependency audit reports 0 critical and 0 high findings with one accepted UUID moderate finding. The audit command exits 1 for that accepted residual; the documented threshold passes.
+- GitHub CI on the initial implementation commit is successful: full Vitest via `pnpm test:silent` (underlying `vitest run --silent=passed-only`) reports 3,393 passed with 76 managed local-service skips in 11 files (179.56 seconds), and integration reports 827 passed with the same 76 managed skips (54.46 seconds). The integration result is not counted as additional unique tests. Both Vercel checks are green. These results do not certify the future review-fix head.
+
+The lead-agent full local `npx vitest run` and exact `npx playwright test` gates are **blocked pending broker recovery, not passed**. Earlier guarded Compose attempts returned `BROKER_UNAVAILABLE` and `RESOURCE_UNCERTAIN`; after the stale Compose state was cleared, the fresh controlled retry again returned `BROKER_UNAVAILABLE`. No `.env.test` content was used and no user-owned local stack was accessed. CI does not replace those lead-agent gates. Native guard cleanup remains pending; do not treat resource cleanup as final until its receipt is recorded.
+
+The first Codex review of the initial implementation completed with two P1 findings, both addressed in the current review fix: strict production pre-apply now accepts only the documented lower-only contract, and the tracked frozen specification is correctly synchronized. Final Codex review for the future exact head, PR readiness, merge, hosted database work, and production release remain pending. Production remains paused.
+
+## Frozen specification confirmation
+
+The tracked frozen Story 22.15 specification at `_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md` was re-read from its absolute worktree path on 2026-09-15. Its human-owned intent is unchanged. This evidence records the non-frozen execution classification and preparation results only; it does not amend the frozen specification or overwrite its dated historical records.
 
 ## References
 

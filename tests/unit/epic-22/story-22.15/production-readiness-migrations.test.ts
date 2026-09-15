@@ -178,6 +178,17 @@ function normalizedFunctionBodyMd5(sql: string, functionName: string) {
 }
 
 describe('Story 22.15 migration baseline safety', () => {
+  it('keeps the tracked BMAD acceptance plan aligned with the production manifest', () => {
+    const spec = readFileSync(
+      resolve(root, '_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md'),
+      'utf8'
+    );
+    const acceptance = spec.match(/\*\*Acceptance Criteria:\*\*([\s\S]*?)## Spec Change Log/)?.[1];
+    expect(acceptance).toBeDefined();
+    expect(acceptance).toMatch(new RegExp(
+      `${manifest.classifications['repair-after-catalog-proof'].length} repair(?: candidates|s) plus ${manifest.classifications.execute.length} applies`
+    ));
+  });
   it('classifies every repository migration exactly once', () => {
     const repositoryVersions = readdirSync(migrationDir)
       .map((name) => name.match(/^(\d{14})_.*\.sql$/)?.[1])

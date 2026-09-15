@@ -673,7 +673,7 @@ describe.skipIf(!fixtureUrl)(
         const immutableApply = readFileSync('supabase/migrations/20260314000002_add_headcount_upper_bound.sql', 'utf8')
           .replace(/^BEGIN;\s*/m, '').replace(/^COMMIT;\s*/m, '');
         await fixtureClient.query(immutableApply);
-        expect(await checkPasses('production_pre_apply')).toBe(true);
+        expect(await checkPasses('production_pre_apply')).toBe(false);
         expect(await checkPasses('post_apply')).toBe(true);
         await expect(fixtureClient.query('UPDATE public.staffing_needs SET headcount_need = 10000')).rejects.toThrow();
       } finally {
