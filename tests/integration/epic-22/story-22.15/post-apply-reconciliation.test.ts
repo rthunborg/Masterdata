@@ -50,6 +50,10 @@ const triggerReconciliationMigrationSql = readFileSync(
   'supabase/migrations/20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql',
   'utf8'
 );
+const triggerAclPrerequisiteMigrationSql = readFileSync(
+  'supabase/migrations/20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql',
+  'utf8'
+);
 const februaryAuditFunctionSql = readFileSync(
   'supabase/migrations/20260223000000_add_dietary_columns_to_change_trigger.sql',
   'utf8'
@@ -374,6 +378,39 @@ describe.skipIf(!fixtureUrl)(
       triggerCorrectionApplied = true;
     }
 
+    async function getFunctionExecuteGrants(signature: string) {
+      const result = await fixtureClient.query<{
+        grantee: string;
+        is_grantable: boolean;
+      }>(
+        `
+        SELECT
+          CASE WHEN privilege.grantee = 0 THEN 'PUBLIC' ELSE role.rolname END AS grantee,
+          privilege.is_grantable
+        FROM pg_proc AS function
+        CROSS JOIN LATERAL aclexplode(
+          coalesce(function.proacl, acldefault('f', function.proowner))
+        ) AS privilege
+        LEFT JOIN pg_roles AS role ON role.oid = privilege.grantee
+        WHERE function.oid = to_regprocedure($1)
+          AND privilege.privilege_type = 'EXECUTE'
+          AND privilege.grantee <> function.proowner
+        ORDER BY grantee
+      `,
+        [signature]
+      );
+      return result.rows;
+    }
+
+    async function expectFunctionExecuteGrants(
+      signature: string,
+      expectedGrantees: string[]
+    ) {
+      const grants = await getFunctionExecuteGrants(signature);
+      expect(grants.map(({ grantee }) => grantee)).toEqual(expectedGrantees);
+      expect(grants.every(({ is_grantable }) => !is_grantable)).toBe(true);
+    }
+
     async function restoreObservedChangedByForeignKey() {
       await fixtureClient.query(
         `ALTER TABLE public.employee_column_changes
@@ -639,6 +676,46 @@ describe.skipIf(!fixtureUrl)(
         }
       }
       if (cleanupFailure) throw cleanupFailure;
+    });
+
+    it('accepts only the bounded production lower-only headcount contract before its immutable apply', async () => {
+      const constraint = 'staffing_needs_headcount_need_check';
+      const checkPasses = async (phase: string) =>
+        (await readCatalog(phase, false)).find(
+          (row) => row.check_name === 'staffing_constraints_and_rls'
+        )?.passed;
+      await fixtureClient.query('BEGIN');
+      try {
+        await fixtureClient.query(`ALTER TABLE public.staffing_needs DROP CONSTRAINT ${constraint};
+          ALTER TABLE public.staffing_needs ADD CONSTRAINT ${constraint} CHECK (headcount_need >= 0)`);
+        expect(await checkPasses('production_pre_apply')).toBe(true);
+        expect(await checkPasses('post_apply')).toBe(false);
+        expect(await checkPasses('staging_pre_apply')).toBe(false);
+        await fixtureClient.query('SAVEPOINT lower_only');
+        const outsideRange = await fixtureClient.query('UPDATE public.staffing_needs SET headcount_need = 10000');
+        expect(outsideRange.rowCount).toBeGreaterThan(0);
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        await fixtureClient.query('ROLLBACK TO SAVEPOINT lower_only');
+        await fixtureClient.query('ALTER TABLE public.staffing_needs ADD CONSTRAINT unexpected_headcount CHECK (headcount_need >= 0)');
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        await fixtureClient.query('ROLLBACK TO SAVEPOINT lower_only');
+        await fixtureClient.query(`ALTER TABLE public.staffing_needs DROP CONSTRAINT ${constraint};
+          ALTER TABLE public.staffing_needs ADD CONSTRAINT ${constraint} CHECK (headcount_need >= -1)`);
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        await fixtureClient.query('ROLLBACK TO SAVEPOINT lower_only');
+        await fixtureClient.query(`ALTER TABLE public.staffing_needs DROP CONSTRAINT ${constraint};
+          ALTER TABLE public.staffing_needs ADD CONSTRAINT ${constraint} CHECK (headcount_need >= 0) NOT VALID`);
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        await fixtureClient.query('ROLLBACK TO SAVEPOINT lower_only');
+        const immutableApply = readFileSync('supabase/migrations/20260314000002_add_headcount_upper_bound.sql', 'utf8')
+          .replace(/^BEGIN;\s*/m, '').replace(/^COMMIT;\s*/m, '');
+        await fixtureClient.query(immutableApply);
+        expect(await checkPasses('production_pre_apply')).toBe(false);
+        expect(await checkPasses('post_apply')).toBe(true);
+        await expect(fixtureClient.query('UPDATE public.staffing_needs SET headcount_need = 10000')).rejects.toThrow();
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
     });
 
     it('reconciles the precise ACL and policy-initplan drift without changing RLS behavior', async () => {
@@ -960,6 +1037,346 @@ describe.skipIf(!fixtureUrl)(
       } finally {
         await fixtureClient.query('ROLLBACK');
       }
+    });
+
+    it('normalizes only the complete Supabase ACL profile before immutable trigger reconciliation', async () => {
+      const timestampSignature = 'public.update_updated_at_column()';
+      const auditSignature = 'public.track_employee_column_changes()';
+      const platformTimestampGrants = [
+        'PUBLIC',
+        'anon',
+        'authenticated',
+        'service_role',
+      ];
+      const strictTimestampGrants = ['PUBLIC'];
+      const platformAuditGrants = ['service_role'];
+      const strictAuditGrants: string[] = [];
+      const auditHistoryBefore = await fixtureClient.query<{
+        row_count: string;
+        nonnull_actor_count: string;
+      }>(`
+        SELECT
+          count(*)::text AS row_count,
+          count(changed_by)::text AS nonnull_actor_count
+        FROM public.employee_column_changes
+      `);
+      const expectStrictGrants = async () => {
+        await expectFunctionExecuteGrants(
+          timestampSignature,
+          strictTimestampGrants
+        );
+        await expectFunctionExecuteGrants(auditSignature, strictAuditGrants);
+      };
+
+      await applyCorrection();
+      await fixtureClient.query(
+        'DROP TRIGGER IF EXISTS update_column_config_updated_at ON public.column_config'
+      );
+      await fixtureClient.query(
+        'ALTER TABLE public.column_config DROP COLUMN IF EXISTS updated_at'
+      );
+      await fixtureClient.query(februaryAuditFunctionSql);
+      await fixtureClient.query(
+        'ALTER FUNCTION public.track_employee_column_changes() SET search_path = public, pg_temp'
+      );
+      await fixtureClient.query(`
+        REVOKE EXECUTE ON FUNCTION public.track_employee_column_changes()
+          FROM PUBLIC, anon, authenticated, service_role;
+        GRANT EXECUTE ON FUNCTION public.track_employee_column_changes()
+          TO service_role;
+        GRANT EXECUTE ON FUNCTION public.update_updated_at_column()
+          TO anon, authenticated, service_role;
+      `);
+      // Migration 20260607193000 is already represented by the reviewed
+      // reconciliation fixture; v67 also requires its exact audit conflict
+      // target before it evaluates trigger state.
+      await fixtureClient.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS employee_column_changes_employee_column_changed_at_key
+         ON public.employee_column_changes(employee_id, column_name, changed_at)`
+      );
+      await restoreObservedChangedByForeignKey();
+      await fixtureClient.query(triggerReconciliationMigrationSql);
+      await expectCatalogPasses('post_apply');
+
+      // This is the normal Supabase default-privilege representation after the
+      // canonical objects exist. The prerequisite must narrow it before v67
+      // evaluates its immutable strict canonical branch.
+      await fixtureClient.query(`
+        GRANT EXECUTE ON FUNCTION public.update_updated_at_column()
+          TO anon, authenticated, service_role;
+        GRANT EXECUTE ON FUNCTION public.track_employee_column_changes()
+          TO service_role;
+      `);
+      await expectFunctionExecuteGrants(
+        timestampSignature,
+        platformTimestampGrants
+      );
+      await expectFunctionExecuteGrants(auditSignature, platformAuditGrants);
+
+      await fixtureClient.query(triggerAclPrerequisiteMigrationSql);
+      await expectStrictGrants();
+      await expect(
+        fixtureClient.query(triggerReconciliationMigrationSql)
+      ).resolves.toBeDefined();
+      await expectStrictGrants();
+
+      // The profile already left by v67 is a no-op, which is required when the
+      // intentionally ordered prerequisite is later applied to staging with
+      // --include-all.
+      await fixtureClient.query(triggerAclPrerequisiteMigrationSql);
+      await expectStrictGrants();
+      expect(
+        (
+          await fixtureClient.query<{
+            row_count: string;
+            nonnull_actor_count: string;
+          }>(`
+            SELECT
+              count(*)::text AS row_count,
+              count(changed_by)::text AS nonnull_actor_count
+            FROM public.employee_column_changes
+          `)
+        ).rows
+      ).toEqual(auditHistoryBefore.rows);
+
+      // Recreate the precise old staging representation. The prerequisite must
+      // leave it untouched so immutable v67 remains responsible for the actor
+      // translation and timestamp/trigger reconciliation.
+      await fixtureClient.query(`
+        DROP TRIGGER update_column_config_updated_at ON public.column_config;
+        ALTER TABLE public.column_config DROP COLUMN updated_at;
+      `);
+      await fixtureClient.query(februaryAuditFunctionSql);
+      await fixtureClient.query(
+        'ALTER FUNCTION public.track_employee_column_changes() SET search_path = public, pg_temp'
+      );
+      await fixtureClient.query(`
+        REVOKE EXECUTE ON FUNCTION public.track_employee_column_changes()
+          FROM PUBLIC, anon, authenticated, service_role;
+        GRANT EXECUTE ON FUNCTION public.track_employee_column_changes()
+          TO service_role;
+        GRANT EXECUTE ON FUNCTION public.update_updated_at_column()
+          TO anon, authenticated, service_role;
+      `);
+      await restoreObservedChangedByForeignKey();
+      await fixtureClient.query(triggerAclPrerequisiteMigrationSql);
+      await expectFunctionExecuteGrants(
+        timestampSignature,
+        platformTimestampGrants
+      );
+      await expectFunctionExecuteGrants(auditSignature, platformAuditGrants);
+      await expect(
+        fixtureClient.query(triggerReconciliationMigrationSql)
+      ).resolves.toBeDefined();
+      await expectStrictGrants();
+      expect(
+        (
+          await fixtureClient.query<{
+            row_count: string;
+            nonnull_actor_count: string;
+          }>(`
+            SELECT
+              count(*)::text AS row_count,
+              count(changed_by)::text AS nonnull_actor_count
+            FROM public.employee_column_changes
+          `)
+        ).rows
+      ).toEqual(auditHistoryBefore.rows);
+      await expectCatalogPasses('post_apply');
+    });
+
+    it('rejects incomplete platform ACL profiles and preserves state when later prerequisite guards fail', async () => {
+      const timestampSignature = 'public.update_updated_at_column()';
+      const auditSignature = 'public.track_employee_column_changes()';
+      const strictTimestampGrants = ['PUBLIC'];
+      const platformTimestampGrants = [
+        'PUBLIC',
+        'anon',
+        'authenticated',
+        'service_role',
+      ];
+      const assertPrerequisiteRefuses = async (message: string) => {
+        await expect(
+          fixtureClient.query(triggerAclPrerequisiteMigrationSql)
+        ).rejects.toThrow(message);
+        // The migration starts its own transaction. PostgreSQL leaves this
+        // session in its failed transaction until an explicit rollback.
+        await fixtureClient.query('ROLLBACK');
+      };
+
+      await applyCorrection();
+      await fixtureClient.query(triggerReconciliationMigrationSql);
+      await expectCatalogPasses('post_apply');
+
+      // A canonical timestamp helper with the platform grants but an audit
+      // helper missing its paired service-role grant is a mixed profile.
+      await fixtureClient.query(`
+        GRANT EXECUTE ON FUNCTION public.update_updated_at_column()
+          TO anon, authenticated, service_role;
+      `);
+      await assertPrerequisiteRefuses(
+        'Unexpected represented trigger function ACL'
+      );
+      await expectFunctionExecuteGrants(
+        timestampSignature,
+        platformTimestampGrants
+      );
+      await expectFunctionExecuteGrants(auditSignature, []);
+      await fixtureClient.query(`
+        REVOKE EXECUTE ON FUNCTION public.update_updated_at_column()
+          FROM anon, authenticated, service_role;
+      `);
+      await expectFunctionExecuteGrants(
+        timestampSignature,
+        strictTimestampGrants
+      );
+
+      await fixtureClient.query(
+        'GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO pg_read_all_data'
+      );
+      await assertPrerequisiteRefuses(
+        'Unexpected represented trigger function ACL'
+      );
+      expect(
+        (await getFunctionExecuteGrants(timestampSignature)).map(
+          ({ grantee }) => grantee
+        )
+      ).toEqual(['PUBLIC', 'pg_read_all_data']);
+      await fixtureClient.query(
+        'REVOKE EXECUTE ON FUNCTION public.update_updated_at_column() FROM pg_read_all_data'
+      );
+
+      await fixtureClient.query(
+        'GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO authenticated WITH GRANT OPTION'
+      );
+      await assertPrerequisiteRefuses(
+        'Unexpected represented trigger function ACL'
+      );
+      expect(await getFunctionExecuteGrants(timestampSignature)).toContainEqual(
+        {
+          grantee: 'authenticated',
+          is_grantable: true,
+        }
+      );
+      await fixtureClient.query(
+        'REVOKE EXECUTE ON FUNCTION public.update_updated_at_column() FROM authenticated'
+      );
+
+      const originalTimestampDefinition = await fixtureClient.query<{
+        definition: string;
+      }>('SELECT pg_get_functiondef(to_regprocedure($1)) AS definition', [
+        timestampSignature,
+      ]);
+      await fixtureClient.query(`
+        CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+        RETURNS TRIGGER
+        LANGUAGE plpgsql
+        AS $$
+        BEGIN
+          NEW.updated_at = clock_timestamp();
+          RETURN NEW;
+        END;
+        $$;
+        ALTER FUNCTION public.update_updated_at_column()
+          SET search_path = public, pg_temp;
+      `);
+      await assertPrerequisiteRefuses('Unexpected timestamp function body');
+      const originalTimestampSql =
+        originalTimestampDefinition.rows[0]?.definition;
+      if (!originalTimestampSql) {
+        throw new Error(
+          'Canonical timestamp function definition is unavailable'
+        );
+      }
+      await fixtureClient.query(originalTimestampSql);
+
+      const schemaPrivileges = await fixtureClient.query<{
+        has_usage: boolean;
+        has_create: boolean;
+      }>(`
+        SELECT
+          has_schema_privilege('authenticated', 'public', 'USAGE') AS has_usage,
+          has_schema_privilege('authenticated', 'public', 'CREATE') AS has_create
+      `);
+      await fixtureClient.query(
+        'GRANT USAGE, CREATE ON SCHEMA public TO authenticated'
+      );
+      await fixtureClient.query(
+        'ALTER FUNCTION public.update_updated_at_column() OWNER TO authenticated'
+      );
+      await assertPrerequisiteRefuses(
+        'Unexpected represented trigger function attributes'
+      );
+      await fixtureClient.query(
+        'ALTER FUNCTION public.update_updated_at_column() OWNER TO postgres'
+      );
+      if (!schemaPrivileges.rows[0]?.has_create) {
+        await fixtureClient.query(
+          'REVOKE CREATE ON SCHEMA public FROM authenticated'
+        );
+      }
+      if (!schemaPrivileges.rows[0]?.has_usage) {
+        await fixtureClient.query(
+          'REVOKE USAGE ON SCHEMA public FROM authenticated'
+        );
+      }
+
+      // The trigger-binding check happens after the complete platform ACL has
+      // been recognized. A failure there must roll back the prerequisite's
+      // transaction: no ACL is narrowed and existing audit data is unchanged.
+      const auditBefore = await fixtureClient.query<{
+        row_count: string;
+        nonnull_actor_count: string;
+      }>(`
+        SELECT
+          count(*)::text AS row_count,
+          count(changed_by)::text AS nonnull_actor_count
+        FROM public.employee_column_changes
+      `);
+      await fixtureClient.query(`
+        GRANT EXECUTE ON FUNCTION public.update_updated_at_column()
+          TO anon, authenticated, service_role;
+        GRANT EXECUTE ON FUNCTION public.track_employee_column_changes()
+          TO service_role;
+        CREATE TRIGGER prerequisite_unexpected_timestamp_binding
+          BEFORE UPDATE ON public.column_config
+          FOR EACH ROW
+          EXECUTE FUNCTION public.update_updated_at_column();
+      `);
+      await assertPrerequisiteRefuses(
+        'Unexpected represented trigger bindings'
+      );
+      await expectFunctionExecuteGrants(
+        timestampSignature,
+        platformTimestampGrants
+      );
+      await expectFunctionExecuteGrants(auditSignature, ['service_role']);
+      expect(
+        (
+          await fixtureClient.query<{
+            row_count: string;
+            nonnull_actor_count: string;
+          }>(`
+            SELECT
+              count(*)::text AS row_count,
+              count(changed_by)::text AS nonnull_actor_count
+            FROM public.employee_column_changes
+          `)
+        ).rows
+      ).toEqual(auditBefore.rows);
+      await fixtureClient.query(`
+        DROP TRIGGER prerequisite_unexpected_timestamp_binding ON public.column_config;
+        REVOKE EXECUTE ON FUNCTION public.update_updated_at_column()
+          FROM anon, authenticated, service_role;
+        REVOKE EXECUTE ON FUNCTION public.track_employee_column_changes()
+          FROM service_role;
+      `);
+      await expectFunctionExecuteGrants(
+        timestampSignature,
+        strictTimestampGrants
+      );
+      await expectFunctionExecuteGrants(auditSignature, []);
+      await expectCatalogPasses('post_apply');
     });
 
     it('accepts only the reviewed trigger pre-state and rejects post-apply trigger or ACL drift', async () => {

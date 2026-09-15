@@ -178,6 +178,17 @@ function normalizedFunctionBodyMd5(sql: string, functionName: string) {
 }
 
 describe('Story 22.15 migration baseline safety', () => {
+  it('keeps the tracked BMAD acceptance plan aligned with the production manifest', () => {
+    const spec = readFileSync(
+      resolve(root, '_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md'),
+      'utf8'
+    );
+    const acceptance = spec.match(/\*\*Acceptance Criteria:\*\*([\s\S]*?)## Spec Change Log/)?.[1];
+    expect(acceptance).toBeDefined();
+    expect(acceptance).toMatch(new RegExp(
+      `${manifest.classifications['repair-after-catalog-proof'].length} repair(?: candidates|s) plus ${manifest.classifications.execute.length} applies`
+    ));
+  });
   it('classifies every repository migration exactly once', () => {
     const repositoryVersions = readdirSync(migrationDir)
       .map((name) => name.match(/^(\d{14})_.*\.sql$/)?.[1])
@@ -187,13 +198,15 @@ describe('Story 22.15 migration baseline safety', () => {
     const execute = manifest.classifications.execute;
     const classified = [...repair, ...execute];
 
-    expect(repositoryVersions).toHaveLength(67);
-    expect(manifest.repositoryMigrationCount).toBe(67);
+    expect(repositoryVersions).toHaveLength(68);
+    expect(manifest.repositoryMigrationCount).toBe(68);
     expect(manifest.reviewedSupabaseCliVersion).toBe('2.115.0');
     expect(new Set(classified).size).toBe(classified.length);
     expect([...classified].sort()).toEqual(repositoryVersions);
-    expect(repair).toHaveLength(57);
-    expect(execute).toHaveLength(10);
+    expect(repair).toHaveLength(56);
+    expect(execute).toHaveLength(12);
+    expect(repair).not.toContain('20260314000002');
+    expect(execute[0]).toBe('20260314000002');
   });
 
   it('keeps every replay-dangerous historical version out of the execute set', () => {
@@ -217,7 +230,7 @@ describe('Story 22.15 migration baseline safety', () => {
       manifest.environmentPlans.staging['repair-after-catalog-proof']
     ).toEqual([]);
     expect(manifest.environmentPlans.staging.execute).toEqual([
-      '20260910184841',
+      '20260910184840',
     ]);
     expect(manifest.environmentPlans.production).toEqual({
       'repair-after-catalog-proof':
@@ -228,6 +241,7 @@ describe('Story 22.15 migration baseline safety', () => {
 
   it('orders every forward reconciliation and excludes already-applied staging versions', () => {
     expect(manifest.classifications.execute).toEqual([
+      '20260314000002',
       '20260614000000',
       '20260615000000',
       '20260709194903',
@@ -237,11 +251,28 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260909115242',
       '20260910094517',
       '20260910115024',
+      '20260910184840',
       '20260910184841',
     ]);
     expect(manifest.environmentPlans.staging.execute).toEqual([
-      '20260910184841',
+      '20260910184840',
     ]);
+  });
+
+  it('preserves the applied successor and limits its ordered prerequisite to ACL changes', () => {
+    const prerequisite = readFileSync(resolve(migrationDir,
+      '20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql'), 'utf8');
+    expect(createHash('sha256').update(triggerReconciliationMigrationSql.replace(/\r\n/g, '\n')).digest('hex'))
+      .toBe('03fe5979539d307ed6f5b5d9ca6f9394e5290a04f656b8b157552eaed927bd24');
+    expect(manifest).toHaveProperty('orderedPrerequisites', [expect.objectContaining({
+      version: '20260910184840', beforeVersion: '20260910184841',
+      cliGeneratedVersion: '20260915164637',
+    })]);
+    expect(manifest.catalogProofExceptions).toHaveProperty('stagingCanonicalTriggerAclPrerequisite',
+      expect.objectContaining({ requiredCatalogPhase: 'post_apply', reconciledByExecuteVersion: '20260910184840' }));
+    expect(prerequisite).not.toMatch(/\b(?:UPDATE|DELETE\s+FROM|INSERT\s+INTO)\s+public\./i);
+    expect(prerequisite).not.toMatch(/\bALTER\s+DEFAULT\s+PRIVILEGES|\bCREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION/i);
+    expect(prerequisite.indexOf('REVOKE EXECUTE')).toBeGreaterThan(prerequisite.indexOf('Unmapped audit actor prevents reconciliation'));
   });
 
   it('pins the exact trigger-reconciliation pre-state and forward-only correction', () => {
@@ -378,7 +409,7 @@ describe('Story 22.15 migration baseline safety', () => {
       /The dry run must list exactly this one apply:([\s\S]*?)Stop unless the dry run is exactly/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /After the 57 repairs, the dry run must list exactly these ten versions:([\s\S]*?)Stop unless the dry run is exact/
+      /After the 56 repairs, the dry run must list exactly these twelve versions:([\s\S]*?)```bash/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -794,6 +825,11 @@ describe('Story 22.15 migration baseline safety', () => {
       userFiltersStart,
       userFiltersEnd
     );
+    expect(staffingContract).toContain("(SELECT catalog_phase FROM verifier_context) = 'production_pre_apply'");
+    expect(staffingContract).toContain(
+      'WHERE headcount_need < 0 OR headcount_need > 9999'
+    );
+    expect(staffingContract).toContain('AND conkey @> ARRAY[');
 
     expect(staffingContract).toContain(
       "conname = 'staffing_needs_headcount_need_check'"
@@ -993,7 +1029,7 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(cutoverRunbook).toContain(
       `Supabase CLI version **\`${manifest.reviewedSupabaseCliVersion}\`**`
     );
-    expect(cutoverRunbook).toContain('57-row proof ledger');
+    expect(cutoverRunbook).toContain('56-row proof ledger');
     expect(cutoverRunbook).toContain('--dry-run --skip-vault');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_PROJECT_REF');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_ENVIRONMENT');

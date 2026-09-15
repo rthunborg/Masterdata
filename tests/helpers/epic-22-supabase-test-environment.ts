@@ -19,6 +19,7 @@ export interface Epic22SupabaseTestEnvironment extends ParsedSupabaseConfig {
   apiUrl: string;
   dbUrl: string;
   envFilePresent: boolean;
+  usesExplicitGuardManagedFixture: boolean;
 }
 
 interface ResolveEnvironmentOptions {
@@ -70,12 +71,7 @@ export function parseSupabaseConfig(
   };
 }
 
-function assertExpectedLocalUrl(
-  rawUrl: string,
-  expectedPort: number,
-  label: string,
-  config: ParsedSupabaseConfig
-) {
+function parseLoopbackUrl(rawUrl: string, label: string) {
   let parsed: URL;
   try {
     parsed = new URL(rawUrl);
@@ -83,14 +79,57 @@ function assertExpectedLocalUrl(
     throw new Error(`${label} is not a valid URL for Epic 22 evidence tests`);
   }
 
-  const actualPort = Number(parsed.port);
-  if (!LOCAL_HOSTS.has(parsed.hostname) || actualPort !== expectedPort) {
+  const port = Number(parsed.port);
+  if (!LOCAL_HOSTS.has(parsed.hostname) || !Number.isInteger(port) || port <= 0) {
     throw new Error(
-      `Epic 22 evidence must use the local Supabase project ${config.projectId} ` +
-        `at API port ${config.apiPort} and database port ${config.dbPort}; ` +
-        `${label} points to ${parsed.hostname}:${parsed.port || "default"}.`
+      `${label} must use an explicit loopback host and port for Epic 22 evidence.`
     );
   }
+
+  return { port };
+}
+
+function usesConfiguredPorts(
+  apiPort: number,
+  databasePort: number,
+  config: ParsedSupabaseConfig
+) {
+  return apiPort === config.apiPort && databasePort === config.dbPort;
+}
+
+function assertApprovedFixturePorts({
+  apiPort,
+  databasePort,
+  env,
+  config,
+}: {
+  apiPort: number;
+  databasePort: number;
+  env: Record<string, string | undefined>;
+  config: ParsedSupabaseConfig;
+}) {
+  if (usesConfiguredPorts(apiPort, databasePort, config)) return false;
+
+  const apiUsesConfiguredPort = apiPort === config.apiPort;
+  const databaseUsesConfiguredPort = databasePort === config.dbPort;
+  if (apiUsesConfiguredPort || databaseUsesConfiguredPort) {
+    throw new Error(
+      "Epic 22 evidence must not mix configured-stack and explicit-fixture ports."
+    );
+  }
+
+  // This marker only selects the explicit local port pair. The guard-managed
+  // resource runner must verify lifecycle ownership before it exposes .env.test;
+  // the marker is neither an ownership proof nor authorization to use a target.
+  if (env.EPIC_22_GUARD_MANAGED_FIXTURE !== "true") {
+    throw new Error(
+      `Epic 22 evidence must use the configured local ports (${config.apiPort}/${config.dbPort}) ` +
+        "or an explicit guard-managed loopback fixture. Set " +
+        "EPIC_22_GUARD_MANAGED_FIXTURE=true only for that fixture."
+    );
+  }
+
+  return true;
 }
 
 export function resolveEpic22SupabaseTestEnvironment({
@@ -112,14 +151,21 @@ export function resolveEpic22SupabaseTestEnvironment({
       : defaultApiUrl;
   const dbUrl = env.SUPABASE_DB_URL ?? defaultDbUrl;
 
-  assertExpectedLocalUrl(apiUrl, config.apiPort, "NEXT_PUBLIC_SUPABASE_URL", config);
-  assertExpectedLocalUrl(dbUrl, config.dbPort, "SUPABASE_DB_URL", config);
+  const api = parseLoopbackUrl(apiUrl, "NEXT_PUBLIC_SUPABASE_URL");
+  const database = parseLoopbackUrl(dbUrl, "SUPABASE_DB_URL");
+  const usesExplicitGuardManagedFixture = assertApprovedFixturePorts({
+    apiPort: api.port,
+    databasePort: database.port,
+    env,
+    config,
+  });
 
   return {
     ...config,
     apiUrl,
     dbUrl,
     envFilePresent,
+    usesExplicitGuardManagedFixture,
   };
 }
 
@@ -167,13 +213,18 @@ export function loadEpic22SupabaseTestEnvironment() {
 export function formatEpic22SupabaseSkipDiagnostic(
   environment: Epic22SupabaseTestEnvironment
 ) {
+  const apiPort = new URL(environment.apiUrl).port;
+  const databasePort = new URL(environment.dbUrl).port;
+  const fixture = environment.usesExplicitGuardManagedFixture
+    ? "explicit guard-managed fixture"
+    : "configured local stack";
   const envState = environment.envFilePresent
     ? ".env.test is present"
     : ".env.test is absent; configured local defaults are in use";
 
   return (
-    `[Epic 22] ${environment.projectId} local Supabase is unreachable at ` +
-    `API 127.0.0.1:${environment.apiPort} / Postgres 127.0.0.1:${environment.dbPort}; ` +
+    `[Epic 22] ${environment.projectId} ${fixture} is unreachable at ` +
+    `API 127.0.0.1:${apiPort} / Postgres 127.0.0.1:${databasePort}; ` +
     `${envState}. Start the project-scoped stack before accepting database evidence.`
   );
 }
