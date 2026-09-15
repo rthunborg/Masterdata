@@ -1,5 +1,7 @@
 # Production history classification reassessment — 2026-09-15
 
+> **Historical classification, superseded for current execution ordering.** This record preserves the then-current 56-repair/11-apply classification and its dated receipts. The later forward-only v68 ACL prerequisite raises the current production plan to 56 repairs plus 12 applies; see [the dated current ACL-prerequisite evidence](canonical-trigger-acl-prerequisite-2026-09-15.md). Do not rewrite the historical classifications below.
+
 ## Scope and outcome
 
 This is a redacted planning and read-only-diagnosis record for Story 22.15. It records no hosted database write, history repair, migration apply, deployment, hosted-setting change, or reopening action. Production remains paused; Story 22.15 remains in progress and Epic 23 remains on hold.
