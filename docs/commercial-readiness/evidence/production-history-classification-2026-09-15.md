@@ -63,6 +63,8 @@ After testing, native PostgreSQL and the uncertain Compose attempt were stopped 
 
 ## References
 
+The second review identified one indentation error in the BMAD YAML status file. The key is now aligned with its siblings. All three synchronized YAML status files were parsed successfully using the existing ESLint dependency's YAML parser; no dependency was added. This documentation correction changes no application code, tests, migration SQL or catalog SQL. Final exact-head review remains required.
+
 - [Environment reconciliation inventory](../26_environment_reconciliation_inventory.md)
 - [Supabase cutover runbook](../27_supabase_cutover_runbook.md)
 - [Migrations-only change policy](../28_migrations_only_change_policy.md)
