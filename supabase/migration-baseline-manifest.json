@@ -63,12 +63,12 @@
       "20260223000000",
       "20260224000000",
       "20260313000001",
-      "20260314000001",
       "20260520000000",
       "20260605151000",
       "20260607193000"
     ],
     "execute": [
+      "20260314000001",
       "20260314000002",
       "20260614000000",
       "20260615000000",
@@ -104,6 +104,10 @@
     "productionUserFiltersUpdatePolicy": {
       "acceptedPreApplyState": "The dated production aliases Users can read own filters, Users can insert own filters, and Users can delete own filters exist; no update policy exists.",
       "reconciledByExecuteVersion": "20260614000000"
+    },
+    "productionStaffingFunctionSecurityMode": {
+      "acceptedPreApplyState": "The observed production update_staffing_need(text, integer, uuid) is SECURITY INVOKER. The immutable migration's SECURITY DEFINER effect is absent, so this version is not eligible for history repair. It remains execute-only pending a reviewed fail-closed pre-execute function profile and full production traffic isolation.",
+      "reconciledByExecuteVersion": "20260314000001"
     },
     "stagingSavedFilterReconciliation": {
       "acceptedPreApplyState": "The exact staging representation has filters default []::jsonb, user_filters_user_id_name_key, user_filters_name_check, user_filters_updated_at using update_user_filters_updated_at(), no user_filters foreign keys or standalone indexes, canonical trigger_set_updated_at() absent, and the documented dietary/room ACL extensions only.",

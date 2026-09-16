@@ -20,6 +20,10 @@ type Manifest = {
   };
   unsafeReplayVersions: Record<string, string>;
   catalogProofExceptions: {
+    productionStaffingFunctionSecurityMode: {
+      acceptedPreApplyState: string;
+      reconciledByExecuteVersion: string;
+    };
     productionUserFiltersUpdatePolicy: {
       acceptedPreApplyState: string;
       reconciledByExecuteVersion: string;
@@ -186,7 +190,7 @@ describe('Story 22.15 migration baseline safety', () => {
     const acceptance = spec.match(/\*\*Acceptance Criteria:\*\*([\s\S]*?)## Spec Change Log/)?.[1];
     expect(acceptance).toBeDefined();
     expect(acceptance).toMatch(new RegExp(
-      `${manifest.classifications['repair-after-catalog-proof'].length} repair(?: candidates|s) plus ${manifest.classifications.execute.length} applies`
+      `${manifest.classifications['repair-after-catalog-proof'].length} repair(?: candidates|s) plus ${manifest.classifications.execute.length} (?:applies|executes)`
     ));
   });
   it('classifies every repository migration exactly once', () => {
@@ -203,10 +207,24 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(manifest.reviewedSupabaseCliVersion).toBe('2.115.0');
     expect(new Set(classified).size).toBe(classified.length);
     expect([...classified].sort()).toEqual(repositoryVersions);
-    expect(repair).toHaveLength(56);
-    expect(execute).toHaveLength(12);
+    expect(repair).toHaveLength(55);
+    expect(execute).toHaveLength(13);
+    expect(repair).not.toContain('20260314000001');
     expect(repair).not.toContain('20260314000002');
-    expect(execute[0]).toBe('20260314000002');
+    expect(execute.slice(0, 2)).toEqual([
+      '20260314000001',
+      '20260314000002',
+    ]);
+    expect(manifest.catalogProofExceptions).toHaveProperty(
+      'productionStaffingFunctionSecurityMode',
+      expect.objectContaining({
+        reconciledByExecuteVersion: '20260314000001',
+      })
+    );
+    expect(
+      manifest.catalogProofExceptions.productionStaffingFunctionSecurityMode
+        .acceptedPreApplyState
+    ).toContain("immutable migration's SECURITY DEFINER effect is absent");
   });
 
   it('keeps every replay-dangerous historical version out of the execute set', () => {
@@ -241,6 +259,7 @@ describe('Story 22.15 migration baseline safety', () => {
 
   it('orders every forward reconciliation and excludes already-applied staging versions', () => {
     expect(manifest.classifications.execute).toEqual([
+      '20260314000001',
       '20260314000002',
       '20260614000000',
       '20260615000000',
@@ -409,7 +428,7 @@ describe('Story 22.15 migration baseline safety', () => {
       /The dry run must list exactly this one apply:([\s\S]*?)Stop unless the dry run is exactly/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /After the 56 repairs, the dry run must list exactly these twelve versions:([\s\S]*?)```bash/
+      /After the 55 repairs, the dry run must list exactly these thirteen versions:([\s\S]*?)```bash/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -1029,7 +1048,9 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(cutoverRunbook).toContain(
       `Supabase CLI version **\`${manifest.reviewedSupabaseCliVersion}\`**`
     );
-    expect(cutoverRunbook).toContain('56-row proof ledger');
+    expect(cutoverRunbook).toContain(
+      `${manifest.classifications['repair-after-catalog-proof'].length}-row proof ledger`
+    );
     expect(cutoverRunbook).toContain('--dry-run --skip-vault');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_PROJECT_REF');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_ENVIRONMENT');
