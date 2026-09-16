@@ -1,6 +1,6 @@
 # Canonical Trigger ACL Prerequisite — 2026-09-15
 
-Status: local verification recorded; no hosted write, deployment, setting change, history repair, or production reopening occurred.
+Status: reviewed PR #102 merged and its one staging forward migration applied; staging is verified at 68/68. No production write, deployment, setting change, history repair, or production reopening occurred. The dated local results below remain historical verification evidence.
 
 ## Cause
 
@@ -23,11 +23,25 @@ The new migration accepts only complete profiles:
 
 It rejects mixed or partial ACLs, grant options, unknown grantees, altered owners, attributes, bodies, bindings, audit foreign keys, conflict indexes, or audit write side effects. It does not alter global default privileges, function definitions, rows, timestamps, or migration history.
 
-## Required sequence and pending verification
+## Required sequence and completed staging verification
 
-The repository target is now 68 migrations. Staging remains **67/67** until a reviewed PR is merged and the new migration is applied through the reviewed staging-specific `--include-all` dry run and apply sequence. Before and after that apply, strict existing `post_apply` catalog proof must pass 16/16; no new catalog phase broadens the contract.
+The repository target is 68 migrations. PR #102 reviewed head `841794efd9377f719a2262cfd1b2f633780c8a56` merged as `3e41b35c269d606545b766d1445d1e361e92f88c`; six fresh pre-proofs passed, the exact reviewed `--include-all` dry run listed only `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql`, and the authorized apply exited 0 without timeout. Immediate staging history is **68/68** with no pending or remote-only version. All five post-apply phases passed: strict catalog 16/16; advisors 0 security WARN-or-higher and three known performance WARN; and preserved repayment aggregates, four permission hashes, and audit baseline. No catalog phase broadens the contract. Production remains 56 repair candidates plus 12 applies, no-go on its remaining strict gates, and paused.
 
 Production remains 56 repair candidates plus 12 forward applies. The new prerequisite is execute-only, ordered between `20260910115024` and immutable `20260910184841`, and must never be repaired as applied. Production repair, traffic isolation, hosted-setting, backup, deployment, main-merge, and reopening approvals remain separate. The production pause remains active.
+
+## Production read-only v68 preflight — 2026-09-15
+
+Against candidate `3e41b35c269d606545b766d1445d1e361e92f88c` and manifest SHA-256 `d61d5cca0754f60e55dfea9ccfc4a8d4b39d0861aa3df732035fb12f4169ed01`, production tooling preflight passed at `2026-09-15T19:05:15Z`: pinned Supabase CLI 2.115.0, psql 17.11, reviewed TLS material, and three-way target binding. Before execution, review corrected the external production loader to validate the exact clean checkout, source hashes/blobs and migration inventory before decrypting credentials. The corrected package passed independent review and 15/15 tests in 5052.4711 ms. This was separate from the staging package's omitted-reason correction recorded in its execution receipt. No repository SQL changed.
+
+At `2026-09-15T19:05:35Z`, migration history contained 68 local versions and zero remote rows, with no duplicate or remote-only version. All 68 versions are absent from production history; that observation does not authorize replay. Strict `production_pre_apply` at `2026-09-15T19:05:57Z` passed 9 of 16 checks and failed 7: `dietary_columns_and_permissions`, `represented_column_contracts`, `represented_function_contracts`, `represented_policy_contracts`, `represented_trigger_contracts`, `user_filters_objects`, and `user_filters_trigger_function_contract`. These are the prior eight failed groups minus `staffing_constraints_and_rls`, consistent with the reviewed lower-bound-only staffing preprofile. This comparison does not prove the unchanged detailed state of the other groups; fresh bounded diagnosis and the cleanup fingerprint remain required. This production gate remains failed. No production write, cleanup, history repair, setting change, main merge, deployment, or reopening occurred. Production remains 56 repair candidates plus 12 applies, no-go, and paused.
+
+## Follow-up read-only diagnosis and evidence checks — 2026-09-16
+
+The candidate-pinned aggregate diagnosis succeeded at `2026-09-16T10:58:37.225Z` (15.457 seconds), with reviewed CLI/psql/TLS and three-way target binding. The cleanup subset still contains 48 filters for one absent owner, zero retained filters, and affected-set SHA-256 `1edde05ca6a2c10923172b1db78e35af87400e1270751a8e3a4520f49a7629d6`, matching the prior draft. Coarse catalog observations include 19 of 22 column contracts matching, no standalone saved-filter indexes, the legacy filter timestamp function present, and the canonical helper absent. Counts and combined hashes are not per-object material-effect proof: the strict production gate remains failed, zero repair-ledger rows were signed, and no cleanup, repair, migration apply, setting change or deployment was performed.
+
+Two failed read-only attempts are retained. The second identified SQLSTATE `42601`; a missing closing parenthesis in the external diagnostic SQL was corrected before the successful third attempt. Tool-verification ordering, SQL boundary/parenthesis checks, error redaction and minimal libpq environment checks passed 5/5 (358.5133 ms). No failed attempt is counted as passing evidence.
+
+PR #103 documentation head `facaa5270236f4f9806529cfc0dce7ce0f49d5e7` exposed a runbook list-extraction regression in CI: 3,401 unit tests passed, 78 skipped and one failed, exit nonzero (235.46 seconds). The completed one-file list contract is now retained as an explicitly archived quotation for the existing manifest-consistency test, without executable apply commands. The corrected documentation working tree then passed the unchanged migration/runbook suite: 29/29, zero skips/failures, exit 0, 48.20 seconds. Final code-review quota was exhausted on that head; no final clean review or staging merge is claimed for this follow-up.
 
 ## Local verification — 2026-09-15
 
@@ -49,4 +63,4 @@ Exact `npx playwright test` on that commit passed **163**, skipped **47**, faile
 
 After the browser run, strict local `post_apply` remained **16/16** and the dashboard-fixture cleanup aggregate was zero at `2026-09-15T18:36:20.102Z`. Test-resource Stop requests were accepted through Windows PowerShell 5.1; saved synthetic state is retained, and no CloseActor completion is claimed while the actor remains open. The fresh pre-merge fetch remains at staging `a85f65ef882b85a035ae16183dcb95f39bbab810` and main `822350986f4c023948a7bbf490ddffc371185c4a`, with no intervening commits.
 
-At this pre-merge point, final exact-head review/checks, reviewed PR merge, staging `--include-all` apply, owner staging verification, and production gates remain next steps. No hosted result is claimed.
+The preceding pre-merge details are historical. Current staging execution is complete at 68/68. Owner staging verification and production gates remain next steps; no production result is claimed.
