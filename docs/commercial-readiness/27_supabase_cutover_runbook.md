@@ -160,6 +160,16 @@ The local gates on `12e526ff36922a1ff41277bc7cb1ef2f81a2321d` covered the repres
 
 **Historical execution record — do not run another dry run or apply for this version.** The prerequisite `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql` was applied once to reviewed staging candidate `3e41b35c269d606545b766d1445d1e361e92f88c`. It is represented in staging history and is not pending. Its deliberately earlier ordering required the reviewed staging `--include-all` form for that completed operation; this is not an instruction to replay it or immutable v67.
 
+The following archived list contract is retained verbatim for the manifest/runbook consistency check. It describes the completed operation only and contains no executable command:
+
+> The dry run must list exactly this one apply:
+>
+> 1. `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql`
+>
+> Stop unless the dry run is exactly the single migration listed above.
+
+This historical contract is fulfilled. Do not repeat its dry run or apply.
+
 PR #102 final checks/review and all six fresh pre-apply proofs passed. The recorded dry run listed only the prerequisite. The apply command returned exit 0 before independent history verification at `2026-09-15T18:56:31.866Z`. The overall orchestration window ended at `18:56:47.101Z` after the five post-apply proof phases; that ending time is not the end of the database write. Staging history is 68/68, no version is pending or remote-only, strict catalog passes 16/16, and advisor/aggregate/permission-hash/audit preservation checks pass. See the [execution receipt](evidence/production-history-classification-2026-09-15.md#staging-v68-execution-receipt--2026-09-15) and [design/local verification](evidence/canonical-trigger-acl-prerequisite-2026-09-15.md).
 
 **Current staging operation: read-only verification only.** From a clean, explicitly pinned current candidate with reviewed tooling/TLS and three-way target binding, obtain migration history through `run-reviewed-supabase-cli.mjs migration list --reviewed-target` and strict catalog through `verify-production-baseline-catalog.mjs post_apply`. Require 68/68 and 16/16, plus fresh advisor and preservation comparisons. An unexpected delta stops readiness; it does not authorize a repair or replay. Owner staging verification and the distinct production gates remain open. Production stays paused.
