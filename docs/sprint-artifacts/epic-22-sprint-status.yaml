@@ -12,7 +12,7 @@ epic_completion_gate:
     title: 'Story 22.10 Phase B — Supabase production cutover'
     status: 'pending' # set to 'done' once executed to silence the reminder
     trigger: 'Only after Story 22.15 is locally complete, PR-reviewed, recorded at a final immutable remediation SHA, and owner-verified on staging; before any production mutation.'
-    actions: 'PR #100 staging v67 is applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
+    actions: 'The v67 staging execution and 21/21 fixture/RPC acceptance are historical. Current staging is 68/68 after the reviewed v68 execution, with no pending/remote-only version and all five post-apply phases passing, including strict catalog 16/16. Owner staging verification and production gates remain open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
     source: 'supabase/migration-baseline-manifest.json; docs/commercial-readiness/27_supabase_cutover_runbook.md; tracker E-010/E-013'
 
 sprint:
@@ -247,7 +247,7 @@ stories:
     completed_date: null
     blockers:
       - 'PR #102 reviewed head 841794efd9377f719a2262cfd1b2f633780c8a56 passed final Reviewbot comment 5686075592 and all three checks, then merged under standing authorization as staging 3e41b35c269d606545b766d1445d1e361e92f88c; its tree matches the reviewed head, main is unchanged, and no unexpected intervening commit occurred. Six fresh pre-proofs, exact one-file reviewed dry run, and authorized v68 20260910184840 apply passed. Immediate staging history is 68/68 with no pending/remote-only version; all five post phases pass, including strict catalog 16/16 and preserved advisor/aggregate/permission-hash/audit baselines. Owner staging verification remains open; production stays paused.'
-      - 'The prior 3423667 focused 215/215 and clean 67-migration 16/16 results are historical. The guarded fixture then exposed the canonical trigger ACL prerequisite. Pushed 5ec0228ea8605b411d25f2d00911dcf7b62b5b10 passes full Vitest 3,480/3,480 across 322 files, zero skips/failures; focused 89/89; and strict 16/16 clean-68 plus preserved-66-to-68 fixtures. The named staging build passed (exit 0, 14.633s), forced production refusal and pause regression 26/26 passed, but the earlier historical Playwright attempt 3 failed (162 passed, 47 classified skips, 1 failed; exit 1; 1,091.088s) because the external fixture lacks Realtime and returns WebSocket 404. Pre-merge local gates pass at test-only commit `413b6f809b708145df0e6518f49f5afbc04ebeca`; detailed results and retained failed attempts are in the dated ACL-prerequisite evidence. Remaining gates: build review, and PR checks. Prior final 6f5dbe CI/Vercel/Reviewbot is historical. Production has 56 repair candidates plus 12 apply candidates; strict catalog, ledger, isolation/settings, repair, deployment and reopening gates remain open.'
+      - 'The prior 3423667 focused 215/215 and clean 67-migration 16/16 results are historical. The guarded fixture then exposed the canonical trigger ACL prerequisite. Pushed 5ec0228ea8605b411d25f2d00911dcf7b62b5b10 passes full Vitest 3,480/3,480 across 322 files, zero skips/failures; focused 89/89; and strict 16/16 clean-68 plus preserved-66-to-68 fixtures. The named staging build passed (exit 0, 14.633s), forced production refusal and pause regression 26/26 passed, but the earlier historical Playwright attempt 3 failed (162 passed, 47 classified skips, 1 failed; exit 1; 1,091.088s) because the external fixture lacks Realtime and returns WebSocket 404. Pre-merge local gates pass at test-only commit `413b6f809b708145df0e6518f49f5afbc04ebeca`; detailed results and retained failed attempts are in the dated ACL-prerequisite evidence. The PR #102 build, final review and checks subsequently passed; remaining gates are owner staging verification and production readiness. Prior final 6f5dbe CI/Vercel/Reviewbot is historical. Production has 56 repair candidates plus 12 apply candidates; strict catalog, ledger, isolation/settings, repair, deployment and reopening gates remain open.'
     notes: 'PR #100 v67 is historical evidence. PR #102 reviewed head `841794efd9377f719a2262cfd1b2f633780c8a56` merged as staging `3e41b35c269d606545b766d1445d1e361e92f88c`; the one execute-only v68 `20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql` applied after six fresh pre-proofs and an exact dry run. Staging is 68/68 with no pending/remote-only version; all five post phases pass, including strict 16/16, 0 security WARN-or-higher/three known performance WARN, and preserved aggregate/four-permission-hash/audit baseline. Owner staging verification and production gates remain open. Production is 56 repair candidates plus 12 applies and stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 
 progress_summary:
@@ -317,7 +317,7 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'Complete owner staging verification after the successful 21/21 hosted fixture/RPC acceptance and restoration proofs. Staging v67 is already 67/67 with strict catalog 16/16; preserve the production pause and separate production/main/reopening gates.'
+  next_action: 'The v67 fixture/RPC acceptance is historical. Current staging is 68/68 with no pending/remote-only version and all five post-apply phases passing, including strict catalog 16/16. Complete owner staging verification, preserve the production pause, and keep production/main/reopening gates separate.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -326,7 +326,7 @@ historical_post_apply_staging_execution:
   pending_versions: []
   post_apply_catalog_checks_passed: 15
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-completed-2026-09-10.md'
-  remaining: 'PR #100 staging v67 is applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
+  remaining: 'This is historical v67 evidence: no history repair, strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors, and completed 21/21 fixture/RPC acceptance. Current staging is 68/68 after the reviewed v68 execution, with no pending/remote-only version and all five post-apply phases passing. Owner staging verification and production gates remain open; production stays paused, Story 22.15 remains in-progress, and Epic 23 remains on-hold.'
 
 trigger_reconciliation_preparation:
   diagnosis_captured_at: '2026-09-10T18:50:27.989Z'
@@ -335,12 +335,12 @@ trigger_reconciliation_preparation:
   proposed_repository_history_count: 67
   proposed_version: '20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'
   staging_repair_versions: []
-  staging_pending_execute_versions: [] # Current staging history; the reviewed manifest plan remains recorded below.
+  staging_pending_execute_versions: [] # Historical v67 snapshot; the reviewed manifest plan remains recorded below and must not be replayed.
   manifest_staging_execute_versions: ['20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'] # Immutable reviewed plan, recorded applied above; never replay.
   pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
   post_apply_catalog_checks_expected: 16
-  tested_implementation_commit: '12e526ff36922a1ff41277bc7cb1ef2f81a2321d' # Current full local implementation evidence; b4bbdb2 remains historical.
-  new_head_verification: "PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged as ad9650ccfc8be412447a03847cc7ddfb372f8666 and the one authorized staging execute completed. Current staging is 67/67 with no pending or remote-only versions; strict post-apply catalog passes 16/16; audit history, repayment aggregates and four permission hashes are preserved; advisors are 0 security WARN-or-higher and three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. PR #100 GitHub Test Check 34690888518 passed (unit 3,380 passed/75 skipped; integration 827 passed/75 skipped). Hosted fixture/RPC acceptance passed 21/21 with restoration proved; owner staging verification remains open. Production pause active; Story 22.15 in-progress; Epic 23 on-hold."
+  tested_implementation_commit: '12e526ff36922a1ff41277bc7cb1ef2f81a2321d' # Historical v67 local implementation evidence; b4bbdb2 remains historical.
+  new_head_verification: "Historical v67 record: PR #100 merged as ad9650ccfc8be412447a03847cc7ddfb372f8666 and its authorized execute completed at 67/67 with strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors, and 21/21 fixture/RPC acceptance. Current staging is 68/68 after PR #102 and authorized v68 execution, with no pending/remote-only version and all five post-apply phases passing. Owner staging verification and production gates remain open; production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
   status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
 
@@ -348,7 +348,7 @@ canonical_trigger_acl_prerequisite_preparation:
   date: 2026-09-15
   repository_migration_count: 68
   staging_current_history: '68/68; no pending or remote-only version; all five post-apply phases pass, including strict catalog 16/16'
-  staging_pending_execute_versions: ['20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql']
+  staging_pending_execute_versions: []
   production_plan: '56 repair candidates plus 12 execute candidates; prerequisite is never repairable and sorts immediately before immutable v67'
   implementation_commit: '5ec0228ea8605b411d25f2d00911dcf7b62b5b10'
   migration_sql_sha256: 'fd4b331e61e830421516b99cac9eedb0ac55184ce4ae4216e58137012737723a'

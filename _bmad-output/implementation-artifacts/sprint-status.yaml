@@ -84,7 +84,7 @@ historical_post_apply_staging_execution:
   pending_versions: []
   post_apply_catalog_checks_passed: 15
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-completed-2026-09-10.md'
-  remaining: 'PR #100 staging v67 is applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
+  remaining: 'This is historical v67 evidence: no history repair, strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors, and completed 21/21 fixture/RPC acceptance. Current staging is 68/68 after the reviewed v68 execution, with no pending/remote-only version and all five post-apply phases passing. Owner staging verification and production gates remain open; production stays paused, Story 22.15 remains in-progress, and Epic 23 remains on-hold.'
 
 trigger_reconciliation_preparation:
   diagnosis_captured_at: '2026-09-10T18:50:27.989Z'
@@ -93,12 +93,12 @@ trigger_reconciliation_preparation:
   proposed_repository_history_count: 67
   proposed_version: '20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'
   staging_repair_versions: []
-  staging_pending_execute_versions: [] # Current staging history; the reviewed manifest plan remains recorded below.
+  staging_pending_execute_versions: [] # Historical v67 snapshot; the reviewed manifest plan remains recorded below and must not be replayed.
   manifest_staging_execute_versions: ['20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'] # Immutable reviewed plan, recorded applied above; never replay.
   pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
   post_apply_catalog_checks_expected: 16
-  tested_implementation_commit: '12e526ff36922a1ff41277bc7cb1ef2f81a2321d' # Current full local implementation evidence; b4bbdb2 remains historical.
-  new_head_verification: "PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged as ad9650ccfc8be412447a03847cc7ddfb372f8666 and the one authorized staging execute completed. Current staging is 67/67 with no pending or remote-only versions; strict post-apply catalog passes 16/16; audit history, repayment aggregates and four permission hashes are preserved; advisors are 0 security WARN-or-higher and three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. PR #100 GitHub Test Check 34690888518 passed (unit 3,380 passed/75 skipped; integration 827 passed/75 skipped). Hosted fixture/RPC acceptance passed 21/21 with restoration proved; owner staging verification remains open. Production pause active; Story 22.15 in-progress; Epic 23 on-hold."
+  tested_implementation_commit: '12e526ff36922a1ff41277bc7cb1ef2f81a2321d' # Historical v67 local implementation evidence; b4bbdb2 remains historical.
+  new_head_verification: "Historical v67 record: PR #100 merged as ad9650ccfc8be412447a03847cc7ddfb372f8666 and its authorized execute completed at 67/67 with strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors, and 21/21 fixture/RPC acceptance. Current staging is 68/68 after PR #102 and authorized v68 execution, with no pending/remote-only version and all five post-apply phases passing. Owner staging verification and production gates remain open; production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
   status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
 
