@@ -20,10 +20,6 @@ type Manifest = {
   };
   unsafeReplayVersions: Record<string, string>;
   catalogProofExceptions: {
-    productionStaffingFunctionSecurityMode: {
-      acceptedPreApplyState: string;
-      reconciledByExecuteVersion: string;
-    };
     productionUserFiltersUpdatePolicy: {
       acceptedPreApplyState: string;
       reconciledByExecuteVersion: string;
@@ -40,6 +36,14 @@ type Manifest = {
     stagingRepaymentDefaults: {
       acceptedPreApplyState: string;
       reconciledByExecuteVersion: string;
+    };
+  };
+  pendingProductionProofs: {
+    staffingFunctionSecurityMode: {
+      observedState: string;
+      blockedOperation: string;
+      requiredImplementation: string;
+      executeVersion: string;
     };
   };
   environmentPlans: {
@@ -215,16 +219,21 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260314000001',
       '20260314000002',
     ]);
-    expect(manifest.catalogProofExceptions).toHaveProperty(
-      'productionStaffingFunctionSecurityMode',
-      expect.objectContaining({
-        reconciledByExecuteVersion: '20260314000001',
-      })
+    expect(manifest.catalogProofExceptions).not.toHaveProperty(
+      'productionStaffingFunctionSecurityMode'
     );
     expect(
-      manifest.catalogProofExceptions.productionStaffingFunctionSecurityMode
-        .acceptedPreApplyState
+      manifest.pendingProductionProofs.staffingFunctionSecurityMode.observedState
     ).toContain("immutable migration's SECURITY DEFINER effect is absent");
+    expect(
+      manifest.pendingProductionProofs.staffingFunctionSecurityMode.blockedOperation
+    ).toContain('non-dry-run production db push --include-all is blocked');
+    expect(
+      manifest.pendingProductionProofs.staffingFunctionSecurityMode.requiredImplementation
+    ).toContain('fail-closed production pre-execute function profile');
+    expect(manifest.pendingProductionProofs.staffingFunctionSecurityMode.executeVersion).toBe(
+      '20260314000001'
+    );
   });
 
   it('keeps every replay-dangerous historical version out of the execute set', () => {

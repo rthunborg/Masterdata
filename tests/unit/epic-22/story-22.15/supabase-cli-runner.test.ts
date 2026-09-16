@@ -319,6 +319,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
   it.each([
     {
       label: 'apply',
+      targetEnvironments: ['staging'],
       args: [
         'db',
         'push',
@@ -332,6 +333,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     },
     {
       label: 'dry run',
+      targetEnvironments: ['production', 'staging'],
       args: [
         'db',
         'push',
@@ -344,10 +346,15 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       ],
       expected: ['db', 'push', '--dry-run', '--include-all', '--skip-vault'],
     },
-  ].flatMap((entry) => ['production', 'staging'].map((targetEnvironment) => ({
-    ...entry, targetEnvironment,
-    args: entry.args.map((argument) => argument === 'production' ? targetEnvironment : argument),
-  }))))(
+  ].flatMap(({ targetEnvironments, ...entry }) =>
+    targetEnvironments.map((targetEnvironment) => ({
+      ...entry,
+      targetEnvironment,
+      args: entry.args.map((argument) =>
+        argument === 'production' ? targetEnvironment : argument
+      ),
+    }))
+  ))(
     'forwards the exact reviewed $targetEnvironment include-all $label shape with minimal TLS environment',
     async ({ args, expected, targetEnvironment }) => {
       const spawn = vi.fn(() => ({ error: undefined, status: 0 }));
@@ -397,6 +404,34 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     }
   );
 
+  it('blocks a real production include-all apply before executable, target verification, or spawn', async () => {
+    const spawn = vi.fn();
+    const targetVerifier = vi.fn();
+    const executableVerifier = vi.fn(() => reviewedCliPath);
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: [
+          'db',
+          'push',
+          REVIEWED_TARGET_FLAG,
+          REVIEWED_ENVIRONMENT_FLAG,
+          'production',
+          '--include-all',
+          '--skip-vault',
+        ],
+        environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
+        spawn,
+        executableVerifier,
+        targetVerifier,
+      })
+    ).rejects.toThrow(
+      'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation'
+    );
+    expect(executableVerifier).not.toHaveBeenCalled();
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
+  });
 
   it.each([
     ['apply', ['db', 'push', REVIEWED_TARGET_FLAG, '--skip-vault']],
@@ -694,6 +729,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
             REVIEWED_TARGET_FLAG,
             REVIEWED_ENVIRONMENT_FLAG,
             'production',
+            '--dry-run',
             '--include-all',
             '--skip-vault',
           ],

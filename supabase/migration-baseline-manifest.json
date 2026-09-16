@@ -105,10 +105,6 @@
       "acceptedPreApplyState": "The dated production aliases Users can read own filters, Users can insert own filters, and Users can delete own filters exist; no update policy exists.",
       "reconciledByExecuteVersion": "20260614000000"
     },
-    "productionStaffingFunctionSecurityMode": {
-      "acceptedPreApplyState": "The observed production update_staffing_need(text, integer, uuid) is SECURITY INVOKER. The immutable migration's SECURITY DEFINER effect is absent, so this version is not eligible for history repair. It remains execute-only pending a reviewed fail-closed pre-execute function profile and full production traffic isolation.",
-      "reconciledByExecuteVersion": "20260314000001"
-    },
     "stagingSavedFilterReconciliation": {
       "acceptedPreApplyState": "The exact staging representation has filters default []::jsonb, user_filters_user_id_name_key, user_filters_name_check, user_filters_updated_at using update_user_filters_updated_at(), no user_filters foreign keys or standalone indexes, canonical trigger_set_updated_at() absent, and the documented dietary/room ACL extensions only.",
       "requiredPreApplyCounts": {
@@ -136,6 +132,14 @@
       "acceptedPreApplyState": "Current staging must already satisfy all strict post_apply checks. The new prerequisite is a no-op on that complete canonical state; no historical trigger migration is replayed. Fresh builds additionally reconcile only the complete canonical Supabase default-ACL pair, leaving the exact old observed profile for its immutable successor.",
       "requiredCatalogPhase": "post_apply",
       "reconciledByExecuteVersion": "20260910184840"
+    }
+  },
+  "pendingProductionProofs": {
+    "staffingFunctionSecurityMode": {
+      "observedState": "The observed production update_staffing_need(text, integer, uuid) is SECURITY INVOKER. The immutable migration's SECURITY DEFINER effect is absent, so this version is not eligible for history repair.",
+      "blockedOperation": "A non-dry-run production db push --include-all is blocked while the staffing function's reviewed pre-execute proof is unimplemented.",
+      "requiredImplementation": "Implement and review a fail-closed production pre-execute function profile that proves the exact staffing contract, then prove full production traffic isolation before executing the immutable migration.",
+      "executeVersion": "20260314000001"
     }
   },
   "environmentPlans": {

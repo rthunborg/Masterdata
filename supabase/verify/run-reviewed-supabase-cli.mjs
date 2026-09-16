@@ -25,6 +25,8 @@ const PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS = Object.freeze([
   '20260314000001',
   '20260314000002',
 ]);
+const PRODUCTION_STAFFING_PRE_EXECUTE_PROOF_BLOCK_MESSAGE =
+  'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation';
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
 const SAFE_VERSION_ENVIRONMENT_KEYS = [
@@ -506,6 +508,13 @@ export async function runReviewedSupabaseCli({
       throw new Error(
         'Supabase CLI database arguments do not match an approved command shape'
       );
+    }
+    if (
+      databaseCommandKey === 'db:push' &&
+      approvedIncludeAllEnvironment === 'production' &&
+      !args.includes('--dry-run')
+    ) {
+      throw new Error(PRODUCTION_STAFFING_PRE_EXECUTE_PROOF_BLOCK_MESSAGE);
     }
     executable = executableVerifier({ environment });
     await targetVerifier({ workspace, environment });
