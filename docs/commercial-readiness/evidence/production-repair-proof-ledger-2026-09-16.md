@@ -2,6 +2,8 @@
 
 Status: **UNSIGNED / UNPROVED / NO-GO.** This is a new 55-row working ledger generated from commit `5f9b07dd6b914bc69af4029bd2bc14d87bb25961` and its `repair-after-catalog-proof` manifest list. It does not replace, amend, or sign the earlier 56-row scaffold.
 
+PR #104 final-head review/checks passed and it merged as staging `1cb4b02108183eeec4fa61fa980c99f835933344`; the fresh staging read-only proof also passed. Those staging results do not sign or prove any production ledger row. All 55 rows below remain `UNPROVED` and unsigned.
+
 Every row requires fresh, redacted, source-specific read-only evidence that its listed material effects are already represented in production, a named reviewer, and a technical-owner signature before any history repair. Catalog group results, version absence, a matching object name, or a filename alone are insufficient. For data/seed effects, record only approved aggregates or hashes, never row contents. Where a later source-defined state supersedes a seed, or the owner intentionally deleted a historical seed, prove that supersession or deletion decision; do not recreate records merely to satisfy this ledger. `UNPROVED` means no hosted evidence has been accepted for this ledger; `signed_count` is zero.
 
 Every `SHA-256` value is computed from the raw bytes returned by `git cat-file blob <Git blob>` at the pinned commit, never from decoded or newline-normalized text. This ledger supports future history-proof review only and never authorizes replay.
