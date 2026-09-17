@@ -678,6 +678,63 @@ describe.skipIf(!fixtureUrl)(
       if (cleanupFailure) throw cleanupFailure;
     });
 
+    it('applies the absent staffing security effect and requires later caller-bound hardening before final acceptance', async () => {
+      const historical = readFileSync(
+        'supabase/migrations/20260314000001_add_update_staffing_need_rpc.sql', 'utf8'
+      ).replace(/^BEGIN;\s*/m, '').replace(/^COMMIT;\s*/m, '');
+      const securityMigration = readFileSync(
+        'supabase/migrations/20260709194903_remediate_pr_91_security_findings.sql', 'utf8'
+      );
+      const hardenedStaffing = securityMigration.slice(
+        securityMigration.indexOf('CREATE OR REPLACE FUNCTION public.update_staffing_need('),
+        securityMigration.indexOf('-- Runtime custom columns:')
+      );
+      expect(hardenedStaffing).toContain("SET search_path = ''");
+      const attributes = async () => (await fixtureClient.query(`
+        SELECT prosecdef, proowner, proacl::text AS acl
+        FROM pg_proc WHERE oid = 'public.update_staffing_need(text,integer,uuid)'::regprocedure
+      `)).rows[0];
+      const finalFunctionCheck = async () => (await readCatalog('post_apply', false))
+        .find(row => row.check_name === 'represented_function_contracts')?.passed;
+      await fixtureClient.query('BEGIN');
+      try {
+        // Synthetic missing-effect variant, not a claim of full hosted-body equivalence.
+        await fixtureClient.query(historical);
+        await fixtureClient.query(`ALTER FUNCTION public.update_staffing_need(text,integer,uuid) SECURITY INVOKER;
+          GRANT EXECUTE ON FUNCTION public.update_staffing_need(text,integer,uuid) TO PUBLIC, anon, authenticated, service_role`);
+        const before = await attributes();
+        expect(before.prosecdef).toBe(false);
+        expect(await finalFunctionCheck()).toBe(false);
+        await fixtureClient.query(historical);
+        const applied = await attributes();
+        expect(applied.prosecdef).toBe(true);
+        // CREATE OR REPLACE does not remove the old grants or change ownership.
+        expect(applied.proowner).toBe(before.proowner);
+        expect(applied.acl).toBe(before.acl);
+        expect(await finalFunctionCheck()).toBe(false);
+        await fixtureClient.query(hardenedStaffing);
+        expect(await finalFunctionCheck()).toBe(true);
+        const location = (await fixtureClient.query<{ location: string }>(
+          'SELECT location FROM public.staffing_needs ORDER BY location LIMIT 1'
+        )).rows[0]?.location;
+        expect(location).toBeDefined();
+        const call = (actor: string) => `SELECT * FROM public.update_staffing_need(
+          '${location!.replaceAll("'", "''")}', 1, '${actor}'::uuid)`;
+        const allowed = await asAuthenticated(ids.activeHrAuth, () => attempt(call(ids.activeHrApp)));
+        expect(allowed.ok).toBe(true);
+        for (const [auth, actor] of [
+          [ids.inactiveHrAuth, ids.inactiveHrApp],
+          [ids.activeExternalAuth, ids.activeExternalApp],
+          [ids.activeHrAuth, ids.activeExternalApp],
+        ]) {
+          expect(await asAuthenticated(auth, () => attempt(call(actor))))
+            .toEqual({ ok: false, code: '42501' });
+        }
+      } finally {
+        await fixtureClient.query('ROLLBACK');
+      }
+    });
+
     it('accepts only the bounded production lower-only headcount contract before its immutable apply', async () => {
       const constraint = 'staffing_needs_headcount_need_check';
       const checkPasses = async (phase: string) =>

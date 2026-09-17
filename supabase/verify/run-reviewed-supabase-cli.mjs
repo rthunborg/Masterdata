@@ -21,6 +21,12 @@ const REVIEWED_DATABASE_COMMANDS = new Set([
 ]);
 const MIGRATION_VERSION_PATTERN = /^\d{14}$/u;
 const REVIEWED_ENVIRONMENTS = new Set(['staging', 'production']);
+const PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS = Object.freeze([
+  '20260314000001',
+  '20260314000002',
+]);
+const PRODUCTION_STAFFING_PRE_EXECUTE_PROOF_BLOCK_MESSAGE =
+  'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation';
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
 const SAFE_VERSION_ENVIRONMENT_KEYS = [
@@ -195,6 +201,7 @@ function resolveManifestMigrationPlan(manifest, reviewedEnvironment) {
   return {
     repairVersions: new Set(repairVersions),
     executeVersions: new Set(executeVersions),
+    orderedExecuteVersions: executeVersions,
   };
 }
 
@@ -205,10 +212,18 @@ function resolveManifestRepairVersions(manifest, reviewedEnvironment) {
 
 function resolveManifestProductionIncludeAll(manifest) {
   const plan = resolveManifestMigrationPlan(manifest, 'production');
-  const olderPendingVersion = '20260314000002';
   if (
-    !plan.executeVersions.has(olderPendingVersion) ||
-    plan.repairVersions.has(olderPendingVersion)
+    !argumentsEqual(
+      plan.orderedExecuteVersions.slice(
+        0,
+        PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS.length
+      ),
+      PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS
+    ) ||
+    PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS.some(
+      (version) =>
+        !plan.executeVersions.has(version) || plan.repairVersions.has(version)
+    )
   ) {
     throw new Error(
       'Reviewed migration baseline manifest is unavailable or invalid'
@@ -423,7 +438,6 @@ export async function runReviewedSupabaseCli({
     );
   }
 
-  const executable = executableVerifier({ environment });
   const databaseCommandKey = getDatabaseCommandKey(args);
   const isDatabaseCommand = DATABASE_COMMAND_GROUPS.has(args[0]);
   const isReviewedDatabaseCommand =
@@ -458,6 +472,7 @@ export async function runReviewedSupabaseCli({
 
   let childArguments = args;
   let childEnvironment = environment;
+  let executable;
   if (isReviewedDatabaseCommand && !helpCommand) {
     childArguments = prepareReviewedDatabaseArguments(args);
     const approvedRepairVersions =
@@ -494,6 +509,14 @@ export async function runReviewedSupabaseCli({
         'Supabase CLI database arguments do not match an approved command shape'
       );
     }
+    if (
+      databaseCommandKey === 'db:push' &&
+      approvedIncludeAllEnvironment === 'production' &&
+      !args.includes('--dry-run')
+    ) {
+      throw new Error(PRODUCTION_STAFFING_PRE_EXECUTE_PROOF_BLOCK_MESSAGE);
+    }
+    executable = executableVerifier({ environment });
     await targetVerifier({ workspace, environment });
     const sslRootCertificatePath = rootCertificateVerifier({ environment });
     const databaseUrl = new URL(environment.SUPABASE_DB_URL);
@@ -503,6 +526,8 @@ export async function runReviewedSupabaseCli({
       sslRootCertificatePath
     );
   }
+
+  executable ??= executableVerifier({ environment });
 
   const result = spawn(executable, childArguments, {
     cwd: workspace,

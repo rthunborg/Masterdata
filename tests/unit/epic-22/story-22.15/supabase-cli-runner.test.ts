@@ -319,6 +319,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
   it.each([
     {
       label: 'apply',
+      targetEnvironments: ['staging'],
       args: [
         'db',
         'push',
@@ -332,6 +333,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     },
     {
       label: 'dry run',
+      targetEnvironments: ['production', 'staging'],
       args: [
         'db',
         'push',
@@ -344,10 +346,15 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       ],
       expected: ['db', 'push', '--dry-run', '--include-all', '--skip-vault'],
     },
-  ].flatMap((entry) => ['production', 'staging'].map((targetEnvironment) => ({
-    ...entry, targetEnvironment,
-    args: entry.args.map((argument) => argument === 'production' ? targetEnvironment : argument),
-  }))))(
+  ].flatMap(({ targetEnvironments, ...entry }) =>
+    targetEnvironments.map((targetEnvironment) => ({
+      ...entry,
+      targetEnvironment,
+      args: entry.args.map((argument) =>
+        argument === 'production' ? targetEnvironment : argument
+      ),
+    }))
+  ))(
     'forwards the exact reviewed $targetEnvironment include-all $label shape with minimal TLS environment',
     async ({ args, expected, targetEnvironment }) => {
       const spawn = vi.fn(() => ({ error: undefined, status: 0 }));
@@ -396,6 +403,35 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       }
     }
   );
+
+  it('blocks a real production include-all apply before executable, target verification, or spawn', async () => {
+    const spawn = vi.fn();
+    const targetVerifier = vi.fn();
+    const executableVerifier = vi.fn(() => reviewedCliPath);
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: [
+          'db',
+          'push',
+          REVIEWED_TARGET_FLAG,
+          REVIEWED_ENVIRONMENT_FLAG,
+          'production',
+          '--include-all',
+          '--skip-vault',
+        ],
+        environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
+        spawn,
+        executableVerifier,
+        targetVerifier,
+      })
+    ).rejects.toThrow(
+      'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation'
+    );
+    expect(executableVerifier).not.toHaveBeenCalled();
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
+  });
 
   it.each([
     ['apply', ['db', 'push', REVIEWED_TARGET_FLAG, '--skip-vault']],
@@ -448,7 +484,13 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     },
     {
       label:
-        'the older production pending migration reserved for reviewed include-all execution',
+        'the older production staffing migration reserved for reviewed include-all execution',
+      version: '20260314000001',
+      reviewedEnvironment: 'production',
+    },
+    {
+      label:
+        'the older production upper-bound migration reserved for reviewed include-all execution',
       version: '20260314000002',
       reviewedEnvironment: 'production',
     },
@@ -489,6 +531,37 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       expect(spawn).not.toHaveBeenCalled();
     }
   );
+
+  it('rejects a production staffing history repair before executable, target, or spawn access', async () => {
+    const executableVerifier = vi.fn(() => reviewedCliPath);
+    const targetVerifier = vi.fn();
+    const spawn = vi.fn();
+
+    await expect(
+      runReviewedSupabaseCli({
+        args: [
+          'migration',
+          'repair',
+          '--status',
+          'applied',
+          '20260314000001',
+          REVIEWED_TARGET_FLAG,
+          REVIEWED_ENVIRONMENT_FLAG,
+          'production',
+        ],
+        workspace: resolve('.'),
+        environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
+        executableVerifier,
+        targetVerifier,
+        spawn,
+      })
+    ).rejects.toThrow(
+      'Supabase CLI database arguments do not match an approved command shape'
+    );
+    expect(executableVerifier).not.toHaveBeenCalled();
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
+  });
 
   it('requires an explicit reviewed environment for every history repair', async () => {
     const spawn = vi.fn();
@@ -606,7 +679,6 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     }
   );
 
-
   it.each([
     { label: 'extra pending version', execute: ['20260910184840', '20260910184841'], repair: [], before: '20260910184841' },
     { label: 'missing prerequisite version', execute: ['20260910184841'], repair: [], before: '20260910184841' },
@@ -629,40 +701,60 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     expect(spawn).not.toHaveBeenCalled();
   });
 
-  it('rejects production include-all when the reviewed manifest plan is wrong before target verification or spawn', async () => {
-    const spawn = vi.fn();
-    const targetVerifier = vi.fn();
-    await expect(
-      runReviewedSupabaseCli({
-        args: [
-          'db',
-          'push',
-          REVIEWED_TARGET_FLAG,
-          REVIEWED_ENVIRONMENT_FLAG,
-          'production',
-          '--include-all',
-          '--skip-vault',
-        ],
-        environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
-        spawn,
-        executableVerifier: () => reviewedCliPath,
-        targetVerifier,
-        readManifest: () =>
-          JSON.stringify({
-            environmentPlans: {
-              production: {
-                'repair-after-catalog-proof': ['20260314000002'],
-                execute: [],
+  it.each([
+    {
+      label: 'the staffing migration is missing from the older pending pair',
+      execute: ['20260314000002'],
+    },
+    {
+      label:
+        'the headcount upper-bound migration is missing from the older pending pair',
+      execute: ['20260314000001'],
+    },
+    {
+      label: 'the older pending pair is not in immutable migration order',
+      execute: ['20260314000002', '20260314000001'],
+    },
+  ])(
+    'rejects production include-all when $label before executable, target verification, or spawn',
+    async ({ execute }) => {
+      const spawn = vi.fn();
+      const targetVerifier = vi.fn();
+      const executableVerifier = vi.fn(() => reviewedCliPath);
+      await expect(
+        runReviewedSupabaseCli({
+          args: [
+            'db',
+            'push',
+            REVIEWED_TARGET_FLAG,
+            REVIEWED_ENVIRONMENT_FLAG,
+            'production',
+            '--dry-run',
+            '--include-all',
+            '--skip-vault',
+          ],
+          environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
+          spawn,
+          executableVerifier,
+          targetVerifier,
+          readManifest: () =>
+            JSON.stringify({
+              environmentPlans: {
+                production: {
+                  'repair-after-catalog-proof': [],
+                  execute,
+                },
               },
-            },
-          }),
-      })
-    ).rejects.toThrow(
-      'Reviewed migration baseline manifest is unavailable or invalid'
-    );
-    expect(targetVerifier).not.toHaveBeenCalled();
-    expect(spawn).not.toHaveBeenCalled();
-  });
+            }),
+        })
+      ).rejects.toThrow(
+        'Reviewed migration baseline manifest is unavailable or invalid'
+      );
+      expect(executableVerifier).not.toHaveBeenCalled();
+      expect(targetVerifier).not.toHaveBeenCalled();
+      expect(spawn).not.toHaveBeenCalled();
+    }
+  );
 
   it.each([
     { selector: ['--linked'] },
