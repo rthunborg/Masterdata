@@ -276,7 +276,7 @@ test_coverage_summary:
   manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 291 + 116 + 3 + 0 + 2 = 412.
 
 blockers:
-  - 'Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. Staging v67 remains 67/67 with strict catalog 16/16. Production remains separately gated and paused.'
+  - 'Historical v67 hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16 at that historical release point. Current staging is v68 at 68/68 with no pending or remote-only version and strict catalog 16/16. Owner application verification remains open. Production remains separately gated and paused.'
   - 'Required reviewed migration applies and merging reviewed PRs into staging have standing owner authorization. Staging is 68/68 after the reviewed v68 include-all execution; production inventory, signed repair ledger, backup and separately authorized history repair/isolation/settings/deployment remain open; main merges and reopening remain separate.'
 known_issues:
   - 'Readiness analysis identified public diagnostics, production-env test risk, dependency advisories, production-data review scope, and missing evidence as readiness blockers.'
