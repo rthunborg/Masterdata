@@ -7,6 +7,10 @@
 
 in-progress
 
+## Offline subset implementation preparation — 2026-09-19
+
+PR #107 isolates the non-executable offline subset preparer for review. Implementation 01abdf7 passes full Vitest 3519/3519 with zero skips and full Playwright 163 passed / 47 individually classified skips / zero failures or errors; TypeScript, lint and named staging preview build pass. Final-head review remains pending. Production-profile and CLI transaction/history implementation remain separate gates. Prior 856c933 receipts remain retained as historical evidence. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold. See [preparation evidence, failed attempts and remaining gates](../commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md). No hosted operation is enabled.
+
 ## Forward-bootstrap design proposal — 2026-09-19
 
 The new [non-executable production forward-bootstrap design](../commercial-readiness/30_production_forward_bootstrap_design.md) proposes testing the existing 13 execute migrations from a hash-pinned materialized source before any future history repair. Its current design source is PR #105 staging candidate `51f1adbf9cf3446dd2405bc4bee57cd22a005759`. It does not accept any current production policy/function variant, requires full traffic isolation before cleanup or migration writes, and retains strict final proof plus a lineage-aware unsigned ledger. The production-definition comparison is evidence of differences, not an accepted profile. Staging remains historically proven at 68/68 as of 2026-09-17; production remains paused, Story 22.15 remains in-progress, and Epic 23 remains on hold.
@@ -96,6 +100,8 @@ The dated entries below preserve earlier verification snapshots; this current en
 - Epic 23 remains explicitly on hold.
 
 ## File List
+
+- PR #107 offline component: `src/lib/release/prepare-forward-subset.mjs`, `tests/unit/epic-22/story-22.15/forward-subset.test.ts`, `docs/commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md`, `docs/commercial-readiness/evidence/forward-subset-verification-2026-09-19.json`, the explicit component ordering in design 30, and synchronized story/status/commercial-readiness surfaces.
 
 - Authorization/application: `middleware.ts`, login route, admin-user route, and their focused tests.
 - Database/migration safety: immutable historical migrations; `supabase/migrations/20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql` immediately before immutable `20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql`; the 68-version `supabase/migration-baseline-manifest.json`; `supabase/verify/run-reviewed-supabase-cli.mjs`; `supabase/verify/verify-production-baseline-catalog.mjs`; and their manifest/runner/catalog regression suites. The current hosted staging baseline is 68/68 with no pending/remote-only version and all five post phases passing, including strict 16/16.

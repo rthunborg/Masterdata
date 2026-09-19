@@ -2,7 +2,7 @@ schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
 last_updated: 2026-09-19
-updated_by: 'Codex: PR #105 is current staging 51f1adbf9cf3446dd2405bc4bee57cd22a005759; dated staging proof remains 68/68 and strict 16/16. Production forward-bootstrap is a non-executable design proposal; production remains paused.'
+updated_by: 'PR #107 isolates the non-executable offline subset preparer for review. Implementation 01abdf7 passes full Vitest 3519/3519 with zero skips and full Playwright 163 passed / 47 individually classified skips / zero failures or errors; TypeScript, lint and named staging preview build pass. Final-head review remains pending. Production-profile and CLI transaction/history implementation remain separate gates. Prior 856c933 receipts remain retained as historical evidence. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
 
 current_focus:
   active_epic: 22
@@ -44,7 +44,7 @@ epics:
     status_file: null # Intentionally absent; do not create while on hold.
 
 next_actions:
-  - 'Story 22.15: review the non-executable forward-bootstrap design before implementation. It requires a pinned 13-file subset, observed-profile fixture, transaction/history tests, full isolation before cleanup or writes, strict final proof, and a lineage-aware unsigned ledger; no production action is authorized by the design.'
+  - 'Story 22.15: complete exact-head review of the tested offline preparer, then capture the bounded production profile and implement CLI transaction/history proof; retain the production apply block until all bootstrap admission gates pass.'
   - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
   - 'Story 22.4 is done; standing production-data presentation controls are documented.'
   - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
@@ -139,3 +139,16 @@ canonical_trigger_acl_prerequisite_preparation:
   verification: 'PR #102 final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply are complete. Current staging is 68/68 with all five post-apply phases passing. Remaining gates: owner staging verification and production gates.'
   evidence: 'docs/commercial-readiness/evidence/canonical-trigger-acl-prerequisite-2026-09-15.md'
   status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
+
+forward_subset_preparation_20260919:
+  status: in-progress
+  executable: false
+  approval_attested: false
+  source_staging: 7cbbb11e7f5038a14519d89f2de524e6463dbf98
+  evidence: docs/commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md
+  tested_implementation: 01abdf707071cd3b884f7e207aaf343e5eac86d9
+  full_vitest: "3519 passed; zero skipped/failed; exit 0; 114.27 seconds"
+  full_playwright: "163 passed; 47 classified skips; zero failures/errors; exit 0; 1005.438 seconds runner"
+  final_local_and_remote_gates: "Local gates passed; final-head review pending"
+  production: paused
+  epic_23: on-hold

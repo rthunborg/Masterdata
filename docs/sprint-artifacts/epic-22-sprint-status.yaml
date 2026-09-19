@@ -303,7 +303,7 @@ next_actions:
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
   - 'PR #100 staging v67 is applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 last_updated: 2026-09-19
-updated_by: 'Codex: This documentation change records a non-executable production forward-bootstrap design based on PR #105 merge 51f1adbf9cf3446dd2405bc4bee57cd22a005759. Dated staging 68/68 and strict 16/16 evidence remains historical; production remains paused with strict proof, cleanup, isolation/settings, repair, deployment, and reopening gates pending.'
+updated_by: 'PR #107 isolates the non-executable offline subset preparer for review. Implementation 01abdf7 passes full Vitest 3519/3519 with zero skips and full Playwright 163 passed / 47 individually classified skips / zero failures or errors; TypeScript, lint and named staging preview build pass. Final-head review remains pending. Production-profile and CLI transaction/history implementation remain separate gates. Prior 856c933 receipts remain retained as historical evidence. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
 
 pr_95_playwright_gate:
   date: 2026-09-09
@@ -357,3 +357,16 @@ canonical_trigger_acl_prerequisite_preparation:
   pause: 'Production pause remains active; no deployment or reopening is implied.'
   evidence: 'docs/commercial-readiness/evidence/canonical-trigger-acl-prerequisite-2026-09-15.md'
   status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
+
+forward_subset_preparation_20260919:
+  status: in-progress
+  executable: false
+  approval_attested: false
+  source_staging: 7cbbb11e7f5038a14519d89f2de524e6463dbf98
+  evidence: docs/commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md
+  tested_implementation: 01abdf707071cd3b884f7e207aaf343e5eac86d9
+  full_vitest: "3519 passed; zero skipped/failed; exit 0; 114.27 seconds"
+  full_playwright: "163 passed; 47 classified skips; zero failures/errors; exit 0; 1005.438 seconds runner"
+  final_local_and_remote_gates: "Local gates passed; final-head review pending"
+  production: paused
+  epic_23: on-hold

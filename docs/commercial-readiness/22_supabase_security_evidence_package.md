@@ -1,5 +1,7 @@
 # Supabase Security Evidence Package
 
+> **Offline component review — 2026-09-19.** PR #107 proposes the source-only preparer as a separately reviewed component. Tested implementation `01abdf7` passes full Vitest 3,519/3,519 with zero skips and exact Playwright 163 passed / 47 classified skips / zero failures or errors, plus TypeScript, zero-error lint and named staging preview build. The prior `856c933` receipts remain historical evidence. Final-head review remains open. This does not enable hosted execution or satisfy production-profile, CLI transaction/history, isolation, cleanup or repair gates. [Evidence and limitations](evidence/forward-subset-preparation-2026-09-19.md).
+
 > **Forward-bootstrap design pointer — 2026-09-19.** The proposed materialized 13-file forward subset is not an accepted production operation. It must use normal reviewed CLI history recording after full isolation and before any ledger/reconciliation claim; current trigger compatibility and all production gates remain open. [Design](30_production_forward_bootstrap_design.md).
 
 > **Current staging evidence — 2026-09-17.** Reviewed PR #104 merged as staging `1cb4b02108183eeec4fa61fa980c99f835933344`; fresh pinned read-only proof passed 68/68 history, strict catalog 16/16, scoped advisors, and preservation comparisons. Production evidence remains provisional and no-go. [Receipt](evidence/pr104-post-merge-staging-proof-2026-09-17.md).
