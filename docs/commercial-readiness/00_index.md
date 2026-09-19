@@ -47,6 +47,7 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 | `27_supabase_cutover_runbook.md` | Security, IT, operations | Completed staging correction must not be repeated. Current validation uses post_apply; standing future migration authorization preserves separate history-repair/isolation/settings/deployment/merge/reopening gates. |
 | `28_migrations_only_change_policy.md` | Security, IT, developers | Binding migrations-only policy for hosted schema, RLS, function, and grant changes |
 | [`29_production_pause_release_safeguards.md`](29_production_pause_release_safeguards.md) | Operations, security, reviewers | Committed pause lock, empty schedules, static API/mutation shutdown, production-build guards and separate reopening approval |
+| [`30_production_forward_bootstrap_design.md`](30_production_forward_bootstrap_design.md) | Operations, security, reviewers | Non-executable proposal for a production forward-first bootstrap, strict proof, and separately gated release sequence |
 | [Canonical trigger ACL prerequisite evidence](evidence/canonical-trigger-acl-prerequisite-2026-09-15.md) | Security, IT, reviewers | Redacted isolated-baseline cause, generated-name provenance, narrow forward migration profile, and pending staging/production gates |
 | [Historical reconciliation/pause preparation](evidence/staging-reconciliation-and-pause-2026-09-09.md) | All reviewers | Redacted preflight, exact revisions, local verification attempts and remaining gates |
 
@@ -114,4 +115,5 @@ Primary evidence: `README.md`, `package.json`, `src/app`, `src/components`, `src
 17. `28_migrations_only_change_policy.md`
 
 18. `29_production_pause_release_safeguards.md`
-19. `evidence/staging-reconciliation-and-pause-2026-09-09.md`
+19. `30_production_forward_bootstrap_design.md`
+20. `evidence/staging-reconciliation-and-pause-2026-09-09.md`
