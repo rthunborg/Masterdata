@@ -46,10 +46,11 @@ After a successful future bootstrap and strict final catalog proof, ledger rows 
 
 ## Gates and ordering
 
-This design requires two explicitly ordered PRs:
+The implementation is proposed as these explicitly ordered, independently reviewed PRs. This scope split is part of PR #107 review; it does not waive the complete bootstrap acceptance gate:
 
-1. **Design PR (this document):** documentation and evidence pointers only. It does not alter the manifest, SQL, verifier, runner, or tests.
-2. **Implementation PR:** reviewed bootstrap tooling, subset-manifest generation, guarded local production-profile fixture, pinned-CLI transaction/history tests, negative cases, complete clean-chain and production-fixture migration checks, pause checks, full Vitest, exact `npx playwright test`, TypeScript, and lint, plus synchronized runbook/policy changes. Only after review may any future host action be proposed.
+1. **Design PR #106 (merged):** documentation and evidence pointers only.
+2. **Offline preparation PR #107:** a non-executable source-only subset preparer, its negative regression cases, full local application/pause verification and synchronized evidence. Its receipt confers no approval, contains no target material, and cannot be used by the hosted runner. This component may merge after its own exact-head review and checks; it does not claim the dedicated bootstrap mode is complete.
+3. **Future bootstrap implementation PR:** the guarded production-profile fixture, pinned-CLI transaction/history and uncertain-failure tests, private working-copy controls, complete admission path, production-fixture migration proof, full local suites, and synchronized runbook/policy changes. The current production non-dry-run block remains unchanged until this separate implementation passes review. Only then may a future hosted operation be proposed under all existing gates.
 
 Standing authorization covers reviewed required forward migration applies after their prerequisites pass. It does not cover the separate cleanup, traffic-isolation/settings changes, history repair, main merge, deployment, or reopening decisions. The current production non-dry-run block remains in force until an implementation PR changes it under review.
 
@@ -57,4 +58,4 @@ Evidence for the observed policy/function differences is recorded separately in 
 
 ## Implementation progress — 2026-09-19
 
-The design PR #106 merged at staging `7cbbb11e7f5038a14519d89f2de524e6463dbf98`. The first implementation component is an offline, source-only subset preparer. It is not the dedicated bootstrap mode or the private CLI working copy, and cannot pass the implementation acceptance gate alone. The [preparation evidence](evidence/forward-subset-preparation-2026-09-19.md) records its trusted-input boundary and outstanding fixture, transaction/history, local and remote gates. Production apply remains blocked.
+The design PR #106 merged at staging `7cbbb11e7f5038a14519d89f2de524e6463dbf98`. The first implementation component is an offline, source-only subset preparer. It is not the dedicated bootstrap mode or the private CLI working copy. PR #107 proposes independent review of this non-executable component while retaining every complete-bootstrap acceptance gate above. The refreshed 01abdf7 component evidence records 3,519 passing Vitest tests and 163 passed / 47 classified skipped Playwright tests; the prior 856c933 receipts remain historical evidence. The [preparation evidence](evidence/forward-subset-preparation-2026-09-19.md) records its trusted-input boundary, completed component checks, and outstanding production-profile, CLI transaction/history and final review gates. Production apply remains blocked.

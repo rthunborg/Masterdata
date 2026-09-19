@@ -1,6 +1,6 @@
 # Evidence Index
 
-> **Offline implementation preparation — 2026-09-19.** PR #106 design is merged at staging `7cbbb11`. A source-only subset preparer is under development; it has no hosted execution path and does not satisfy the complete bootstrap gate. Production remains paused; exact profile, CLI transaction/history, isolation, cleanup and repair proof remain open. [Current preparation and test limitations](evidence/forward-subset-preparation-2026-09-19.md).
+> **Offline component review — 2026-09-19.** PR #107 proposes the source-only preparer as a separately reviewed component. Tested implementation `01abdf7` passes full Vitest 3,519/3,519 with zero skips and exact Playwright 163 passed / 47 classified skips / zero failures or errors, plus TypeScript, zero-error lint and named staging preview build. The prior `856c933` receipts remain historical evidence. Final-head review remains open. This does not enable hosted execution or satisfy production-profile, CLI transaction/history, isolation, cleanup or repair gates. [Evidence and limitations](evidence/forward-subset-preparation-2026-09-19.md).
 
 > **Forward-bootstrap design pointer — 2026-09-19.** The proposed 13-file production forward-first route is documentation-only and non-executable. It retains the production block, pause, strict catalog, unsigned 55-row ledger, and separate cleanup/isolation/repair/settings/main/deployment/reopening gates. [Design](30_production_forward_bootstrap_design.md); [definition comparison](evidence/production-definition-comparison-2026-09-19.md).
 

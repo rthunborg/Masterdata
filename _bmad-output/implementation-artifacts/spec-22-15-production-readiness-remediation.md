@@ -39,7 +39,7 @@ context:
 
 ## Offline subset implementation preparation — 2026-09-19
 
-PR #106 is merged at staging 7cbbb11e7f5038a14519d89f2de524e6463dbf98. Offline subset preparation is in progress; it has no hosted execution path or approval authority. The complete production-profile fixture, CLI transaction/history tests and final gates remain open. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold. See [preparation evidence, failed attempts and remaining gates](../../docs/commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md). No hosted operation is enabled.
+PR #107 isolates the non-executable offline subset preparer for review. Implementation 01abdf7 passes full Vitest 3519/3519 with zero skips and full Playwright 163 passed / 47 individually classified skips / zero failures or errors; TypeScript, lint and named staging preview build pass. Final-head review remains pending. Production-profile and CLI transaction/history implementation remain separate gates. Prior 856c933 receipts remain retained as historical evidence. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold. See [preparation evidence, failed attempts and remaining gates](../../docs/commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md). No hosted operation is enabled.
 
 ## Post-freeze execution note — 2026-09-19
 
