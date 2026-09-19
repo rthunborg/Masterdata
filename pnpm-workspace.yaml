@@ -4,3 +4,17 @@ ignoredBuiltDependencies:
 
 onlyBuiltDependencies:
   - unrs-resolver
+
+overrides:
+  "baseline-browser-mapping@>=2.0.0 <2.11.0": 2.11.0
+  "browserslist@>=4.0.0 <4.28.7": 4.28.7
+  "@babel/core@<7.29.6": 7.29.6
+  "brace-expansion@<1.1.18": 1.1.18
+  "brace-expansion@>=2.0.0 <2.1.4": 2.1.4
+  "minimatch@<3.1.4": 3.1.4
+  "minimatch@>=5.0.0 <5.1.8": 5.1.8
+  "nanoid@>=3.0.0 <3.3.18": 3.3.18
+  "postcss@>=8.0.0 <8.5.23": 8.5.23
+  "sharp@>=0.35.0 <0.35.4": 0.35.4
+  "tmp@<0.2.6": 0.2.7
+  "ws@>=8.0.0 <8.20.1": 8.21.0

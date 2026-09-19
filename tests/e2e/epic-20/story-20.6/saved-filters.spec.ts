@@ -10,7 +10,9 @@
  */
 
 import { test, expect, type Page } from "@playwright/test";
-import { loginAsUser } from "../../helpers/e2e-helpers";
+import { createEmployeeViaUI, loginAsUser } from "../../helpers/e2e-helpers";
+
+let savedFilterSeedCounter = 0;
 
 async function openFilterPanel(page: Page) {
   const filterPanel = page.getByTestId("filter-panel");
@@ -80,6 +82,18 @@ async function saveCurrentFilter(page: Page, name: string) {
 test.describe("Story 20.6: Saved Filters", () => {
   test.beforeEach(async ({ page }) => {
     await loginAsUser(page, "admin@test.com", "Test123!");
+    await page.goto("/dashboard");
+    await page.waitForLoadState("load");
+
+    const seed = `${Date.now().toString().slice(-3)}${savedFilterSeedCounter++ % 10}`;
+    await createEmployeeViaUI(page, {
+      first_name: `SavedFilter${seed}`,
+      surname: "Employee",
+      ssn: `19900101${seed}`,
+      rank: "SEV",
+      gender: "Man",
+      hire_date: "2026-01-01",
+    });
     await page.goto("/dashboard");
     await page.waitForLoadState("load");
   });
@@ -157,7 +171,7 @@ test.describe("Story 20.6: Saved Filters", () => {
     await openFilterPanel(page);
 
     // Apply a filter
-    await applyBooleanFilter(page, "hotel_required", true);
+    await applyBooleanFilter(page, "special_diet", true);
 
     // Save filter
     await saveCurrentFilter(page, filterName);

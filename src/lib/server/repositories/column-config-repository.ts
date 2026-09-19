@@ -1,6 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import {
+  createClient,
+  createServiceRoleClient,
+} from '@/lib/supabase/server';
 import type { ColumnConfig } from '@/lib/types/column-config';
-import type { UserRole } from '@/lib/types/user';
+import { UserRole } from '@/lib/types/user';
 import { getColumnViewRole } from '@/lib/utils/role-utils';
 
 /**
@@ -105,9 +108,8 @@ export class ColumnConfigRepository {
 
   /**
    * Create a new custom column
-   * Can create custom columns (is_masterdata = false) or masterdata columns (is_masterdata = true)
-   * - HR Admin: Creates with HR Admin having full access, other roles no access by default
-   * - External parties: Creates with creating role having full access
+   * HR Admin-only privileged schema operation. External parties can edit values
+   * in columns assigned later through Column Settings, but cannot create schema.
    *
    * Automatically creates the actual database column in the employees table
    */
@@ -121,7 +123,9 @@ export class ColumnConfigRepository {
     category_color?: string | null;
     is_checklist_item?: boolean; // Story 19.5: Mark boolean column as checklist item
   }): Promise<ColumnConfig> {
-    const supabase = await this.getSupabaseClient();
+    if (input.role !== UserRole.HR_ADMIN) {
+      throw new Error('Endast HR Admin kan skapa nya kolumner');
+    }
 
     // Check for duplicate db_column_name
     const allColumns = await this.findAll();
@@ -136,33 +140,7 @@ export class ColumnConfigRepository {
       );
     }
 
-    // Map column type to SQL type
-    const sqlTypeMap: Record<string, string> = {
-      text: 'TEXT',
-      number: 'NUMERIC(20,2)',
-      date: 'DATE',
-      boolean: 'BOOLEAN',
-    };
-    const sqlType = sqlTypeMap[input.column_type];
-
-    // Step 1: Create the actual database column in the employees table
-    // Use the add_custom_column_to_employees database function
-    const { error: alterError } = await supabase.rpc(
-      'add_custom_column_to_employees',
-      {
-        column_name_param: input.db_column_name,
-        column_type_param: sqlType,
-      }
-    );
-
-    if (alterError) {
-      console.error('Misslyckades att skapa databas kolumn:', alterError);
-      throw new Error(
-        `Misslyckades att skapa databas kolumn: ${alterError.message}`
-      );
-    }
-
-    // Step 2: Create default role permissions
+    // Create default role permissions
     // Only the creating role gets permissions by default
     // HR Admin can add themselves later via column settings if needed
     const rolePermissions: Record<string, { view: boolean; edit: boolean }> = {
@@ -179,37 +157,37 @@ export class ColumnConfigRepository {
     // Give the creating role full access
     rolePermissions[input.role] = { view: true, edit: true };
 
-    // Step 3: Create column config entry
-    // Story 19.5: Include is_checklist_item (only valid for boolean masterdata columns)
-    // Non-masterdata columns can never be checklist items
+    // Story 19.5: checklist items are boolean masterdata columns only.
     const canBeChecklistItem =
       input.column_type === 'boolean' && input.is_masterdata;
-    const columnData = {
-      column_name: input.column_name,
-      db_column_name: input.db_column_name,
-      column_type: input.column_type,
-      is_masterdata: input.is_masterdata,
-      category: input.category || null,
-      category_color: input.category_color || null,
-      role_permissions: rolePermissions,
-      is_checklist_item: canBeChecklistItem
-        ? (input.is_checklist_item ?? false)
-        : false,
-    };
-
-    const { data, error } = await supabase
-      .from('column_config')
-      .insert(columnData)
-      .select()
-      .single();
+    // One service-role-only database function performs the definitive physical
+    // collision check, metadata INSERT, ALTER TABLE, and index creation in a
+    // single transaction. This prevents both system-column relabelling and
+    // orphan DDL if metadata validation fails.
+    const privilegedClient = createServiceRoleClient();
+    const { data, error } = await privilegedClient.rpc(
+      'create_employee_column_config',
+      {
+        p_column_name: input.column_name,
+        p_db_column_name: input.db_column_name,
+        p_column_type: input.column_type,
+        p_is_masterdata: input.is_masterdata,
+        p_category: input.category || null,
+        p_category_color: input.category_color || null,
+        p_role_permissions: rolePermissions,
+        p_is_checklist_item: canBeChecklistItem
+          ? (input.is_checklist_item ?? false)
+          : false,
+      }
+    );
 
     if (error) {
       console.error(
-        'Misslyckades att skapa custom kolumnkonfiguration:',
+        'Misslyckades att skapa kolumn och kolumnkonfiguration:',
         error
       );
       throw new Error(
-        `Misslyckades att skapa custom kolumnkonfiguration: ${error.message}`
+        `Misslyckades att skapa kolumn och kolumnkonfiguration: ${error.message}`
       );
     }
 
@@ -217,7 +195,7 @@ export class ColumnConfigRepository {
       throw new Error('Misslyckades att skapa kolumn: Ingen data returnerad');
     }
 
-    return data;
+    return data as ColumnConfig;
   }
 
   /**
@@ -240,27 +218,12 @@ export class ColumnConfigRepository {
     >
   ): Promise<ColumnConfig> {
     const supabase = await this.getSupabaseClient();
+    void userId;
+    void userRole;
 
-    // Verify column exists and user has permission
-    const existing = await this.findById(id);
-    if (!existing) {
-      throw new Error('Kolumn hittades inte');
-    }
-
-    if (existing.is_masterdata) {
-      throw new Error(
-        'Kan inte uppdatera masterdata kolumn via denna endpoint'
-      );
-    }
-
-    // Check if user has edit permission for this column
-    const rolePerms = existing.role_permissions[userRole];
-    if (!rolePerms || !rolePerms.edit) {
-      throw new Error('Du saknar behörighet att uppdatera denna kolumn');
-    }
-
-    // Only allow updating specific fields
-    const safeUpdates: Partial<ColumnConfig> = {};
+    const safeUpdates: Partial<
+      Pick<ColumnConfig, 'column_name' | 'category' | 'category_color'>
+    > = {};
     if (updates.column_name !== undefined) {
       safeUpdates.column_name = updates.column_name;
     }
@@ -271,127 +234,22 @@ export class ColumnConfigRepository {
       safeUpdates.category_color = updates.category_color;
     }
 
-    // Determine the category to use for shared color updates
-    // Use the new category if provided, otherwise use the existing category
-    const targetCategory =
-      updates.category !== undefined ? updates.category : existing.category;
-
-    // If category_color is being updated and we have a category, update all columns with that category
-    // (AC4: "the color is applied to all columns sharing that category")
-    if (updates.category_color !== undefined && targetCategory) {
-      // First, find all columns with the same category that the user has edit permission for
-      const allColumns = await this.findAll();
-      const columnsToUpdate = allColumns.filter((col) => {
-        // Only update custom columns (not masterdata)
-        if (col.is_masterdata) return false;
-
-        // Only update columns with the same category (the target category after update)
-        if (col.category !== targetCategory) return false;
-
-        // Only update columns the user has edit permission for
-        const colRolePerms = col.role_permissions[userRole];
-        if (!colRolePerms || !colRolePerms.edit) return false;
-
-        return true;
-      });
-
-      // Always include the original column in the update (it might be changing category)
-      const columnIdsToUpdate = columnsToUpdate
-        .map((col) => col.id)
-        .filter((colId) => colId !== id); // Remove original if already in list
-
-      // Add the original column ID to ensure it's updated
-      columnIdsToUpdate.push(id);
-
-      if (columnIdsToUpdate.length > 0) {
-        // Update all columns with the same category (including the original column)
-        // First update category_color for all matching columns
-        const { error: bulkError } = await supabase
-          .from('column_config')
-          .update({ category_color: updates.category_color })
-          .in('id', columnIdsToUpdate);
-
-        if (bulkError) {
-          console.error(
-            'Misslyckades att uppdatera kategorifärg för flera kolumner:',
-            bulkError
-          );
-          throw new Error(
-            `Misslyckades att uppdatera kategorifärg: ${bulkError.message}`
-          );
-        }
+    const { data, error } = await supabase.rpc(
+      'update_assigned_column_presentation',
+      {
+        p_column_id: id,
+        p_updates: safeUpdates,
       }
-
-      // Now apply other updates (column_name, category) to the original column if needed
-      const otherUpdates: Partial<ColumnConfig> = {};
-      if (updates.column_name !== undefined) {
-        otherUpdates.column_name = updates.column_name;
-      }
-      if (updates.category !== undefined) {
-        otherUpdates.category = updates.category;
-      }
-
-      // If we have other updates, apply them to the original column
-      if (Object.keys(otherUpdates).length > 0) {
-        const { data: finalData, error: finalError } = await supabase
-          .from('column_config')
-          .update(otherUpdates)
-          .eq('id', id)
-          .select()
-          .single();
-
-        if (finalError) {
-          console.error(
-            'Misslyckades att uppdatera andra uppdateringar:',
-            finalError
-          );
-          throw new Error(
-            `Misslyckades att uppdatera kolumn: ${finalError.message}`
-          );
-        }
-
-        if (!finalData) {
-          throw new Error(
-            'Misslyckades att uppdatera kolumn: Ingen data returnerad'
-          );
-        }
-
-        return finalData;
-      }
-
-      // If no other updates, just fetch and return the updated original column
-      const { data, error } = await supabase
-        .from('column_config')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        console.error('Misslyckades att hämta uppdaterad kolumn:', error);
-        throw new Error(
-          `Misslyckades att hämta uppdaterad kolumn: ${error.message}`
-        );
-      }
-
-      if (!data) {
-        throw new Error(
-          'Misslyckades att hämta uppdaterad kolumn: Ingen data returnerad'
-        );
-      }
-
-      return data;
-    }
-
-    // If not updating category_color with a category, or if no category exists, update only the single column
-    const { data, error } = await supabase
-      .from('column_config')
-      .update(safeUpdates)
-      .eq('id', id)
-      .select()
-      .single();
+    );
 
     if (error) {
       console.error('Misslyckades att uppdatera kolumn:', error);
+      if (error.code === '42501') {
+        throw new Error('permission denied to update this column');
+      }
+      if (error.code === 'P0002') {
+        throw new Error('Column not found');
+      }
       throw new Error(`Misslyckades att uppdatera kolumn: ${error.message}`);
     }
 

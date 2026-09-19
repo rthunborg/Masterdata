@@ -1,0 +1,20 @@
+name: ${COMPOSE_PROJECT_NAME:-hr-masterdata-test}
+
+services:
+  mailpit:
+    image: axllent/mailpit:v1.30.0
+    restart: "no"
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: ${MAILPIT_TEST_MAX_MESSAGES:-100}
+    ports:
+      - "127.0.0.1:${MAILPIT_TEST_SMTP_PORT:-11026}:1025"
+      - "127.0.0.1:${MAILPIT_TEST_WEB_PORT:-18026}:8025"
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s

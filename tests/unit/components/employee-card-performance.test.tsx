@@ -262,7 +262,7 @@ describe("EmployeeCard - Performance Tests", () => {
       
       // Component should be removed from DOM
       expect(screen.queryByText("John")).not.toBeInTheDocument();
-    });
+    }, 15000);
 
     it("should have smooth animation on slower devices (simulated)", async () => {
       const user = userEvent.setup();

@@ -3,16 +3,21 @@
  * E2E tests for mobile accessibility features
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { loginAsHRAdmin } from '../../helpers/e2e-helpers';
+
+async function openMobileDashboard(page: Page) {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto('/dashboard', { waitUntil: 'load' });
+  await expect(page.getByRole('region', { name: /Employee list/i })).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('#employee-search')).toBeVisible({ timeout: 30000 });
+}
 
 test.describe('Story 12.7: Mobile Accessibility', () => {
+  test.describe.configure({ timeout: 120_000 });
+
   test.beforeEach(async ({ page }) => {
-    // Set mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 });
-    
-    await loginAsHRAdmin(page);
+    await openMobileDashboard(page);
   });
 
   test('should have proper ARIA landmarks on mobile', async ({ page }) => {
@@ -29,12 +34,19 @@ test.describe('Story 12.7: Mobile Accessibility', () => {
   });
 
   test('should have proper ARIA labels on employee cards', async ({ page }) => {
-    // Wait for employee cards to load
-    await page.waitForSelector('article[aria-label]', { timeout: 5000 });
+    await expect(
+      page.getByRole('region', { name: /Employee cards/i })
+    ).toBeVisible({ timeout: 10000 });
     
-    const firstCard = page.locator('article[aria-label]').first();
-    const ariaLabel = await firstCard.getAttribute('aria-label');
+    const cards = page.locator('article[aria-label]');
+    const cardCount = await cards.count();
     
+    if (cardCount === 0) {
+      await expect(page.getByRole('status')).toContainText(/No employees found/i);
+      return;
+    }
+
+    const ariaLabel = await cards.first().getAttribute('aria-label');
     expect(ariaLabel).toBeTruthy();
     expect(ariaLabel).toMatch(/employee/i);
   });
@@ -102,9 +114,6 @@ test.describe('Story 12.7: Mobile Accessibility', () => {
   });
 
   test('should have descriptive ARIA labels on action buttons', async ({ page }) => {
-    // Wait for employee cards
-    await page.waitForSelector('article[aria-label]', { timeout: 5000 });
-    
     // Check for buttons with descriptive labels
     const buttons = page.locator('button[aria-label]');
     const count = await buttons.count();

@@ -16,6 +16,9 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { UserRole } from '@/lib/types/user';
+import { validateNonProductionSupabaseEnvironment } from '@/lib/env/non-production-supabase-guard';
+
+validateNonProductionSupabaseEnvironment();
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;

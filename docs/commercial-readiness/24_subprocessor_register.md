@@ -1,0 +1,36 @@
+# Subprocessor Register (Draft)
+
+Prepared: 2026-06-12
+Story: 22.9
+
+This is not legal advice. It is a draft subprocessor register based on repository evidence, prepared as diligence material. Processor/subprocessor classification, DPA terms, and transfer mechanisms must be assessed by the responsible organization with qualified legal/privacy support before any commercial deployment.
+
+**Markers:** `Technical fact from repository evidence` applies to the service inventory, purpose, and data-exposure columns (sourced from `10_dependencies_subprocessors_and_licenses.md` "SaaS And Service Dependencies" and "Potential Subprocessor Data Map"). `Draft — needs legal review` applies to the role classification, contract/DPA status, and transfer columns throughout.
+
+Classification caveat: whether each vendor is a "processor" or "subprocessor" depends on the controller/processor allocation, which depends on the undecided commercial model — see `23_privacy_annex_draft.md` section 2. The role column below assumes the managed-service model (supplier as processor, vendors as subprocessors); under the customer-hosted model the same vendors become the customer's direct processors.
+
+## Register
+
+| Service | Role (assumed) | Purpose | Personal data exposed | Environment | Contract/DPA status | Transfer/region status | Review owner + date |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Supabase | Subprocessor (core data processor) | PostgreSQL database, Auth, RLS, Realtime, Storage (backup bucket) | Full application database: employees (incl. SSN, dietary, payroll-adjacent fields), users, dates, audit tables, backup bucket contents, auth metadata | Production and staging | Vendor standard terms; DPA not yet executed for a commercial deployment — Epic 23.2 follow-up | Concrete regions held privately per evidence convention; verified privately / needs DPA confirmation | Technical owner; 2026-09-30 |
+| Vercel | Subprocessor | Hosting, serverless functions, cron, logs for the Next.js app | HTTP requests/responses, function logs (may include personal data via console calls), runtime env metadata, deployment metadata | Production and preview | Vendor standard terms; DPA not yet executed for a commercial deployment — Epic 23.2 follow-up | Concrete regions held privately; verified privately / needs DPA confirmation | Technical owner; 2026-09-30 |
+| GitHub | Subprocessor/unknown — needs assessment | Source repository, CI workflows, Actions secrets, nightly backup workflow execution | CI logs and secrets; the backup workflow handles full production DB dumps in CI runtime (`.github/workflows/supabase-nightly-backup.yml`) | Dev/CI (workflow touches production data) | Vendor standard terms; DPA not yet executed — Epic 23.2 follow-up; review whether CI-based backup handling of customer data is acceptable (`10` procurement action 6) | Held privately / needs DPA confirmation | Technical owner; 2026-09-30 |
+| Google Workspace (SMTP relay) | Subprocessor | Transmits outbound notification email (ÖMC/PE3 reminders, staffing notifications) via Nodemailer using the Google Workspace SMTP relay (`smtp-relay.gmail.com`) | Recipient email addresses; email content may include employee names, missing fields, and date reminders | Production (local Mailpit for development; optional in test) | Operator-confirmed provider (Google LLC); repository is consistent with Gmail use (`src/lib/services/email-service.ts` applies a generic inter-send delay its code comments annotate for Gmail rate limits — indicative, not proof of provider identity). Vendor standard terms; a Google Workspace Data Processing Amendment and the EU contracting entity (e.g. Google Ireland) must be confirmed/executed for this processing — Epic 23.2 follow-up | Google is a global provider with US ties — confirm contracting entity, SCCs, and third-country transfer posture | Business/data owner; 2026-09-30 |
+| npm registry / open-source packages | Generally not subprocessors | Application software dependencies | No runtime personal data observed (no package phone-home observed) | Build/runtime | Per existing analysis in `10_dependencies_subprocessors_and_licenses.md`: generally not subprocessors unless a package contacts external services; license/advisory review tracked separately (`15_dependency_advisory_risk_register.md`) | N/A | Technical owner; 2026-09-30 |
+
+## Notes
+
+- `Technical fact from repository evidence`: no other personal-data-processing services were identified in the repository. Evidence trail: `src/lib/supabase/*`, `vercel.json`, `.github/workflows/*`, `src/lib/services/email-service.ts`, `.env.example`. Outbound mail is sent via Nodemailer to an env-configured `SMTP_HOST`; the host value is not in the repository, and the code does not read the host or branch on the provider, so it cannot prove the relay's identity — but its inter-send delay (commented as guarding against Gmail rate limits) is consistent with the operator's confirmation that the relay is the Google Workspace SMTP relay.
+- `Draft — needs legal review`: the SMTP relay provider is operator-confirmed as Google Workspace (`smtp-relay.gmail.com`, Google LLC). What remains open is the **legal** posture, not the identity: confirm/execute a Google Workspace Data Processing Amendment, the EU contracting entity, and Google's transfer/SCC terms before listing it in an executed DPA.
+- `Technical fact from repository evidence`: no Cloudflare integration appears anywhere in this project's code, configuration, or workflows, so Cloudflare is not in this application's data path (email, hosting, or data processing) and is not listed as a subprocessor here. `Draft — needs legal review` (operator-asserted): the supplier uses Cloudflare only for the separate company website's DNS — this scoping is operator input, not repository-verifiable, and should be reconfirmed if Cloudflare ever touches this application.
+- `Draft — needs legal review`: no DPA has been executed with any vendor for a commercial deployment. All services currently run under vendor standard terms in an informal pilot arrangement. Executing DPAs and confirming the final subprocessor list is Story 23.2 work.
+- Region/transfer posture: concrete Supabase/Vercel regions and project identifiers are held privately by established evidence convention (see `00_index.md` scope note). The DPA process must confirm regions and any third-country transfer mechanisms; this register deliberately records "needs confirmation" rather than publishing them.
+- Review owner labels follow the role-label convention of `17_blocker_remediation_tracker.md` — no personal names or emails in committed docs.
+
+## Related Documents
+
+- [`10_dependencies_subprocessors_and_licenses.md`](10_dependencies_subprocessors_and_licenses.md) — source dependency/subprocessor analysis and procurement actions.
+- [`23_privacy_annex_draft.md`](23_privacy_annex_draft.md) — controller/processor assumptions that determine the role column.
+- [`25_incident_breach_process.md`](25_incident_breach_process.md) — vendor secret-rotation and notification steps on incident.
+- [`22_supabase_security_evidence_package.md`](22_supabase_security_evidence_package.md) — Supabase security posture and risk acceptances (Story 22.8).

@@ -13,6 +13,13 @@ import {
   getDeadlineBadgeLabel,
 } from '@/lib/utils/deadline-validator';
 
+function toLocalDateOnly(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 describe('validateDeadlines', () => {
   it('should validate when both deadlines are null', () => {
     const result = validateDeadlines(null, null, '2025-12-31');
@@ -56,14 +63,14 @@ describe('isSubmissionOpen', () => {
   it('should return true for future deadline', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
-    const dateString = futureDate.toISOString().split('T')[0];
+    const dateString = toLocalDateOnly(futureDate);
     expect(isSubmissionOpen(dateString)).toBe(true);
   });
 
   it('should return false for past deadline', () => {
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - 7);
-    const dateString = pastDate.toISOString().split('T')[0];
+    const dateString = toLocalDateOnly(pastDate);
     expect(isSubmissionOpen(dateString)).toBe(false);
   });
 
@@ -80,14 +87,14 @@ describe('isCancellationOpen', () => {
   it('should return true for future deadline', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
-    const dateString = futureDate.toISOString().split('T')[0];
+    const dateString = toLocalDateOnly(futureDate);
     expect(isCancellationOpen(dateString)).toBe(true);
   });
 
   it('should return false for past deadline', () => {
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - 7);
-    const dateString = pastDate.toISOString().split('T')[0];
+    const dateString = toLocalDateOnly(pastDate);
     expect(isCancellationOpen(dateString)).toBe(false);
   });
 });
@@ -96,7 +103,7 @@ describe('getDeadlineStatus', () => {
   it('should return "open" when both deadlines are in the future', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
-    const dateString = futureDate.toISOString().split('T')[0];
+    const dateString = toLocalDateOnly(futureDate);
     expect(getDeadlineStatus(dateString, dateString)).toBe('open');
   });
 
@@ -105,13 +112,13 @@ describe('getDeadlineStatus', () => {
     pastDate.setDate(pastDate.getDate() - 7);
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
-    expect(getDeadlineStatus(pastDate.toISOString().split('T')[0], futureDate.toISOString().split('T')[0])).toBe('submit_closed');
+    expect(getDeadlineStatus(toLocalDateOnly(pastDate), toLocalDateOnly(futureDate))).toBe('submit_closed');
   });
 
   it('should return "cancel_closed" when cancel deadline has passed', () => {
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - 7);
-    expect(getDeadlineStatus(pastDate.toISOString().split('T')[0], pastDate.toISOString().split('T')[0])).toBe('cancel_closed');
+    expect(getDeadlineStatus(toLocalDateOnly(pastDate), toLocalDateOnly(pastDate))).toBe('cancel_closed');
   });
 
   it('should return "open" when no deadlines are set', () => {
@@ -127,7 +134,7 @@ describe('getDeadlineWarning', () => {
   it('should return warning when deadline is approaching (within 7 days)', () => {
     const approachingDate = new Date();
     approachingDate.setDate(approachingDate.getDate() + 3);
-    const dateString = approachingDate.toISOString().split('T')[0];
+    const dateString = toLocalDateOnly(approachingDate);
     const warning = getDeadlineWarning(dateString, null);
     expect(warning).toContain('OBS: Inlämningsdeadline');
     expect(warning).toContain('3 dagar kvar');
@@ -136,7 +143,7 @@ describe('getDeadlineWarning', () => {
   it('should return error message when deadline has passed', () => {
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - 1);
-    const dateString = pastDate.toISOString().split('T')[0];
+    const dateString = toLocalDateOnly(pastDate);
     const warning = getDeadlineWarning(dateString, null);
     expect(warning).toContain('Inlämningsdeadline har passerat');
   });
@@ -144,7 +151,7 @@ describe('getDeadlineWarning', () => {
   it('should return null for distant future deadlines', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 30);
-    const dateString = futureDate.toISOString().split('T')[0];
+    const dateString = toLocalDateOnly(futureDate);
     expect(getDeadlineWarning(dateString, null)).toBeNull();
   });
 });

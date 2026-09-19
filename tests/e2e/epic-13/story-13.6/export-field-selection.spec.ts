@@ -7,9 +7,13 @@ test.describe("Export Field Selection", () => {
   });
 
   async function selectFirstEmployee(page: import("@playwright/test").Page) {
+    const employeeRows = page.locator('[data-testid^="employee-row-"]');
     const firstRowCheckbox = page.locator('[data-testid^="employee-select-checkbox-"]').first();
-    await firstRowCheckbox.waitFor({ state: 'attached', timeout: 10000 });
-    await firstRowCheckbox.click();
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 15000 });
+    await expect(employeeRows.first()).toBeVisible({ timeout: 15000 });
+    await expect(firstRowCheckbox).toBeEnabled({ timeout: 15000 });
+    await firstRowCheckbox.click({ timeout: 30000 });
+    await expect(firstRowCheckbox).toBeChecked({ timeout: 15000 });
   }
 
   test("should open export dialog when employees are selected and export button is clicked", async ({ page }) => {

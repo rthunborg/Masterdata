@@ -116,7 +116,7 @@
     },
     "statsActiveEmployeesLabel": "Totalt antal anställda",
     "statsCrewedEmployeesLabel": "Crewing done",
-    "statsHint": "Arkiverade exkluderas. Uppsagda inkluderas."
+    "statsHint": "Arkiverade och uppsagda exkluderas."
   },
   "filter": {
     "panelTitle": "Filtrera anställda",

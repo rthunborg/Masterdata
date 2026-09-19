@@ -6,8 +6,10 @@ test.describe('Story 13.11: Employee Status Visual Indicators', () => {
     await setupTestUser();
     await loginAsHRAdmin(page);
     await page.goto('/dashboard');
-    // Wait for table to load
-    await page.waitForSelector('[data-testid^="employee-row-"]', { timeout: 10000 });
+
+    const employeeRows = page.locator('[data-testid^="employee-row-"]');
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 15000 });
+    await expect(employeeRows.first()).toBeVisible({ timeout: 15000 });
   });
 
   test('terminated employees show red tint in table', async ({ page }) => {

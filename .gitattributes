@@ -1,0 +1,3 @@
+supabase/migrations/*.sql text eol=lf
+supabase/migrations/20250113000000_add_room_assignment_rpc.sql whitespace=-trailing-space,-blank-at-eof
+supabase/verify/*.sql text eol=lf

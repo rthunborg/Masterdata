@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { columnConfigRepository } from "@/lib/server/repositories/column-config-repository";
 import {
   requireAuthAPI,
+  requireHRAdminAPI,
   createErrorResponse,
 } from "@/lib/server/auth";
 import { ALL_ROLES } from "@/lib/types/user";
@@ -60,14 +61,12 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/columns
  * Create a new custom column
- * Authorization: All authenticated users (HR Admin and external parties)
- * - HR Admin can create custom columns for any role
- * - External parties create columns for their own role
+ * Authorization: HR Admin only. External parties may edit values in columns
+ * assigned to them, but column/schema creation is not self-service.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication and get user
-    const user = await requireAuthAPI(request);
+    const user = await requireHRAdminAPI(request);
 
     // Parse and validate request body
     const body = await request.json();
