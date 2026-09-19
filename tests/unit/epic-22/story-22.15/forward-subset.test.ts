@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import {
+  existsSync,
   mkdtempSync,
   mkdirSync,
   writeFileSync,
@@ -121,6 +122,70 @@ beforeEach(() => {
 // Real Git subprocesses are slower under the full Windows suite's CPU load.
 // Keep a file-scoped bound; production Git calls still time out after 15 seconds.
 describe('offline immutable forward subset', { timeout: 60_000 }, () => {
+  it.each(['committed', 'staged'])(
+    'rejects a %s populated gitlink before nested filters execute',
+    (state) => {
+      const nested = path.join(workspace, 'nested');
+      git('clone', '--quiet', '--no-hardlinks', workspace, nested);
+      const nestedGit = (...args: string[]) => {
+        const result = spawnSync(gitExecutable, ['-C', nested, ...args], {
+          encoding: 'utf8',
+          windowsHide: true,
+        });
+        if (result.status !== 0) throw new Error('nested fixture git failed');
+        return result.stdout.trim();
+      };
+      writeFileSync(
+        path.join(nested, '.gitattributes'),
+        '*.sql filter=untrusted\n'
+      );
+      nestedGit('add', '.gitattributes');
+      nestedGit(
+        '-c',
+        'user.name=Fixture',
+        '-c',
+        'user.email=fixture@example.invalid',
+        '-c',
+        'core.hooksPath=NUL',
+        'commit',
+        '-qm',
+        'nested fixture'
+      );
+      writeFileSync(
+        path.join(workspace, '.gitmodules'),
+        '[submodule "nested"]\npath = nested\nurl = https://example.invalid/nested\n'
+      );
+      git(
+        'update-index',
+        '--add',
+        '--cacheinfo',
+        '160000',
+        nestedGit('rev-parse', 'HEAD'),
+        'nested'
+      );
+      if (state === 'committed') record();
+      const marker = path.join(root, 'nested-filter-ran');
+      const script = path.join(root, 'nested-filter.cjs');
+      writeFileSync(
+        script,
+        "require('node:fs').writeFileSync(process.argv[2], 'ran');process.stdin.pipe(process.stdout);"
+      );
+      nestedGit(
+        'config',
+        'filter.untrusted.clean',
+        [process.execPath, script, marker]
+          .map((v) => '"' + v.replaceAll('\\', '/') + '"')
+          .join(' ')
+      );
+      writeFileSync(
+        path.join(nested, 'supabase/migrations', names[0]),
+        '-- unchanged source\nSELECT 1;\n'
+      );
+      expect(() => prepareForwardSubset(options())).toThrow();
+      expect(existsSync(marker)).toBe(false);
+      expect(existsSync(destination)).toBe(false);
+    }
+  );
   it('rejects a relative Git path or mismatched Git pin before creating output', () => {
     expect(() =>
       prepareForwardSubset({ ...options(), gitExecutable: 'git' })

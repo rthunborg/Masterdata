@@ -104,12 +104,30 @@ function cleanSource(workspace, commit, git) {
     .split(/\r?\n/u);
   if (localConfigKeys.some((key) => key.toLowerCase().startsWith('filter.')))
     fail();
+  // Reject gitlinks before status can enter nested repositories and run filters.
+  for (const args of [
+    ['ls-tree', '-r', '-z', commit],
+    ['ls-files', '--stage', '-z'],
+  ]) {
+    if (
+      git(root, args)
+        .toString()
+        .split('\0')
+        .some((entry) => entry.startsWith('160000 '))
+    )
+      fail();
+  }
   if (
     realpathSync(
       git(root, ['rev-parse', '--show-toplevel']).toString().trim()
     ) !== root ||
     git(root, ['rev-parse', 'HEAD']).toString().trim() !== commit ||
-    git(root, ['status', '--porcelain=v1', '--untracked-files=all']).length
+    git(root, [
+      'status',
+      '--porcelain=v1',
+      '--untracked-files=all',
+      '--ignore-submodules=all',
+    ]).length
   )
     fail();
   const indexEntries = git(root, ['ls-files', '-v', '-z'])
