@@ -149,6 +149,11 @@ describe('offline immutable forward subset', () => {
     writeFileSync(path.join(workspace, 'hidden.txt'), 'must detect');
     expect(() => verifyForwardSubset(options())).toThrow();
   });
+  it('rejects repository-local filter drivers before inspecting source dirt', () => {
+    git('config', 'filter.untrusted.clean', 'untrusted-clean-filter');
+    expect(() => prepareForwardSubset(options())).toThrow();
+    expect(readdirSync(root)).toEqual(['source']);
+  });
   it('forbids private CLI links and environment files in a source-only artifact', () => {
     const receipt = prepareForwardSubset(options());
     expect(receipt.privateMaterialAllowed).toBe(false);

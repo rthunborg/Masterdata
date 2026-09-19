@@ -90,6 +90,19 @@ function directory(dir) {
 function cleanSource(workspace, commit, git) {
   if (!path.isAbsolute(workspace) || !SHA.test(commit)) fail();
   const root = realpathSync(workspace);
+  // Git status may invoke repository-local clean filters while examining dirt.
+  // Reject those before status; global/system drivers are already disabled.
+  const localConfigKeys = git(root, [
+    'config',
+    '--local',
+    '--includes',
+    '--name-only',
+    '--list',
+  ])
+    .toString()
+    .split(/\r?\n/u);
+  if (localConfigKeys.some((key) => key.toLowerCase().startsWith('filter.')))
+    fail();
   if (
     realpathSync(
       git(root, ['rev-parse', '--show-toplevel']).toString().trim()
