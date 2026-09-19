@@ -36,6 +36,8 @@ function createGitReader({ gitExecutable, expectedGitSha256 }) {
       GIT_CONFIG_NOSYSTEM: '1',
       GIT_CONFIG_GLOBAL: process.platform === 'win32' ? 'NUL' : '/dev/null',
       GIT_TERMINAL_PROMPT: '0',
+      GIT_NO_LAZY_FETCH: '1',
+      GIT_ALLOW_PROTOCOL: '',
     };
     for (const key of [
       'PATH',

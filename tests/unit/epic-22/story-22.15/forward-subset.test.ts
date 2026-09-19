@@ -186,6 +186,32 @@ describe('offline immutable forward subset', { timeout: 60_000 }, () => {
       expect(existsSync(destination)).toBe(false);
     }
   );
+  it('rejects a missing promisor object without invoking its remote helper', () => {
+    const marker = path.join(root, 'remote-helper-ran');
+    const helper = path.join(root, 'remote-helper.cjs');
+    writeFileSync(
+      helper,
+      "require('node:fs').writeFileSync(process.argv[2], 'ran');process.exit(1);"
+    );
+    // The synthetic ext transport never contacts a network endpoint.
+    const command = [process.execPath, helper, marker]
+      .map((value) => value.replaceAll('\\', '/').replaceAll(' ', '% '))
+      .join(' ');
+    git('config', 'remote.origin.url', 'ext::' + command);
+    git('config', 'protocol.ext.allow', 'always');
+    git('config', 'remote.origin.promisor', 'true');
+    git('config', 'remote.origin.partialCloneFilter', 'blob:none');
+    const blob = git(
+      'rev-parse',
+      commit + ':supabase/migrations/20250113000000_unsafe.sql'
+    );
+    unlinkSync(
+      path.join(workspace, '.git/objects', blob.slice(0, 2), blob.slice(2))
+    );
+    expect(() => prepareForwardSubset(options())).toThrow();
+    expect(existsSync(marker)).toBe(false);
+    expect(existsSync(destination)).toBe(false);
+  });
   it('rejects a relative Git path or mismatched Git pin before creating output', () => {
     expect(() =>
       prepareForwardSubset({ ...options(), gitExecutable: 'git' })
