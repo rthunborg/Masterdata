@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-16
+last_updated: 2026-09-17
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -75,7 +75,7 @@ development_status:
 verification_blockers:
   local_quality_gates: "Historical local 67/v68 validation remains retained in canonical ACL evidence. PR #102 final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply are complete. Current staging is 68/68 with no pending/remote-only version and all five post phases passing, including strict 16/16. Remaining gates: owner staging verification and production gates. Production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   remote_pr_review: 'PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged to staging ad9650ccfc8be412447a03847cc7ddfb372f8666 after clean final CI, Vercel checks and Codex Reviewbot. Earlier failed CI/parser-format attempts remain historical failures.'
-  hosted_owner_gates: 'PR #102 completed staging v68; independently reviewed documentation-only PR #103 then merged as staging 6874ef20f5b8b3f9a5ac78a582c0ae1d7a580651, without fresh hosted proof. Exact local commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; no fresh clean migration chain was run. PR #104 carries this change; implementation-head checks passed, while exact-final-head review/checks remain pending. Production has a proposed 55-repair/13-execute ordering blocked before actual apply. Seven strict failures, its unsigned 55-row proof ledger, backup, cleanup, isolation/settings, history repair and deployment gates remain open. Pause status relies on the recorded 2026-09-15 observation; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
+  hosted_owner_gates: 'Reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344 with an identical reviewed tree. Fresh pinned read-only proof passed 68/68 history, strict catalog 16/16, scoped advisors, and every preservation comparison. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the final-head delta was documentation-only. Production has a proposed 55-repair/13-execute ordering blocked before actual apply. Seven strict failures, its unsigned 55-row proof ledger, cleanup, isolation/settings, history repair and deployment gates remain open. Pause status relies on the recorded 2026-09-15 observation; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
