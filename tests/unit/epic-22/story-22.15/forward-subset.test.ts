@@ -166,6 +166,32 @@ describe('offline immutable forward subset', () => {
       expect(readdirSync(root)).toEqual(['source']);
     }
   );
+  it('ignores replacement commits and rejects their substituted checkout bytes', () => {
+    const original = commit;
+    writeFileSync(
+      path.join(workspace, 'supabase/migrations', names[0]),
+      '-- replacement content\n'
+    );
+    record();
+    const replacement = commit;
+    git('replace', original, replacement);
+    git('reset', '--hard', original);
+    commit = original;
+    expect(() => prepareForwardSubset(options())).toThrow();
+    expect(readdirSync(root)).toEqual(['source']);
+    git('--no-replace-objects', 'reset', '--hard', original);
+    const receipt = prepareForwardSubset(options());
+    expect(receipt.sourceCommit).toBe(original);
+    expect(receipt.sourceTree).toBe(
+      git('--no-replace-objects', 'rev-parse', original + '^{tree}')
+    );
+    expect(
+      readFileSync(
+        path.join(destination, 'supabase/migrations', names[0]),
+        'utf8'
+      )
+    ).toBe('-- unchanged source\nSELECT 0;\n');
+  });
   it('forbids private CLI links and environment files in a source-only artifact', () => {
     const receipt = prepareForwardSubset(options());
     expect(receipt.privateMaterialAllowed).toBe(false);

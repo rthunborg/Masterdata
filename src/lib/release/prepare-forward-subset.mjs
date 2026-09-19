@@ -53,6 +53,7 @@ function createGitReader({ gitExecutable, expectedGitSha256 }) {
     const result = spawnSync(
       executable,
       [
+        '--no-replace-objects',
         '--no-optional-locks',
         '-c',
         'core.fsmonitor=false',
