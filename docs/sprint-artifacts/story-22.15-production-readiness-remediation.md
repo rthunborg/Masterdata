@@ -7,6 +7,10 @@
 
 in-progress
 
+## Forward-bootstrap design proposal — 2026-09-19
+
+The new [non-executable production forward-bootstrap design](../commercial-readiness/30_production_forward_bootstrap_design.md) proposes testing the existing 13 execute migrations from a hash-pinned materialized source before any future history repair. Its current design source is PR #105 staging candidate `51f1adbf9cf3446dd2405bc4bee57cd22a005759`. It does not accept any current production policy/function variant, requires full traffic isolation before cleanup or migration writes, and retains strict final proof plus a lineage-aware unsigned ledger. The production-definition comparison is evidence of differences, not an accepted profile. Staging remains historically proven at 68/68 as of 2026-09-17; production remains paused, Story 22.15 remains in-progress, and Epic 23 remains on hold.
+
 ## PR #104 merge and post-merge staging proof — 2026-09-17
 
 Independent review found no actionable issue at `0f8f8c15c371782f5115c1a57da124d8e664aeb6`; GitHub tests and both Vercel checks passed. PR #104 then merged under standing authorization as staging `1cb4b02108183eeec4fa61fa980c99f835933344`. The merge tree exactly matches the reviewed head, main remains `822350986f4c023948a7bbf490ddffc371185c4a`, and no unexpected intervening commit occurred. A fresh clean checkout, frozen install, pinned tooling/TLS, and three-way target binding preceded five read-only staging proofs: history 68/68 with no pending version, strict catalog 16/16, the same scoped advisor profile, unchanged repayment/permission aggregates, and unchanged fully mapped audit evidence. [Redacted receipt](../commercial-readiness/evidence/pr104-post-merge-staging-proof-2026-09-17.md).
