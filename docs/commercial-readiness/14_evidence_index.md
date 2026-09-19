@@ -1,5 +1,7 @@
 # Evidence Index
 
+> **Offline implementation preparation — 2026-09-19.** PR #106 design is merged at staging `7cbbb11`. A source-only subset preparer is under development; it has no hosted execution path and does not satisfy the complete bootstrap gate. Production remains paused; exact profile, CLI transaction/history, isolation, cleanup and repair proof remain open. [Current preparation and test limitations](evidence/forward-subset-preparation-2026-09-19.md).
+
 > **Forward-bootstrap design pointer — 2026-09-19.** The proposed 13-file production forward-first route is documentation-only and non-executable. It retains the production block, pause, strict catalog, unsigned 55-row ledger, and separate cleanup/isolation/repair/settings/main/deployment/reopening gates. [Design](30_production_forward_bootstrap_design.md); [definition comparison](evidence/production-definition-comparison-2026-09-19.md).
 
 > **Current post-merge staging proof — 2026-09-17.** PR #104 merged as staging `1cb4b02108183eeec4fa61fa980c99f835933344` after an issue-free independent review and green GitHub/Vercel checks. A fresh clean checkout and pinned read-only runner proved 68/68 history, strict catalog 16/16, the expected advisor profile, unchanged aggregates and permission hashes, and a fully mapped unchanged audit baseline. No hosted write occurred. [Summary and redacted receipts](evidence/pr104-post-merge-staging-proof-2026-09-17.md).

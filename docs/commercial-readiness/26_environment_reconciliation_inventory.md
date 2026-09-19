@@ -1,5 +1,7 @@
 # Environment Reconciliation Inventory (Stories 22.10, 22.13, and 22.15)
 
+> **Offline implementation preparation — 2026-09-19.** PR #106 design is merged at staging `7cbbb11`. A source-only subset preparer is under development; it has no hosted execution path and does not satisfy the complete bootstrap gate. Production remains paused; exact profile, CLI transaction/history, isolation, cleanup and repair proof remain open. [Current preparation and test limitations](evidence/forward-subset-preparation-2026-09-19.md).
+
 > **Forward-bootstrap design proposal — 2026-09-19.** A non-executable, source-pinned 13-file forward-first design is under review to avoid unsafe historical replay and false repair evidence. It must reproduce the observed seven-gap production profile locally, retain strict trigger guards, isolate all traffic before cleanup or migration writes, and prove a final catalog before a lineage-aware 55-row ledger can be signed. [Design](30_production_forward_bootstrap_design.md).
 
 > **Current staging snapshot — 2026-09-17.** PR #104 merge `1cb4b02108183eeec4fa61fa980c99f835933344` is the current candidate. Fresh post-merge read-only verification passed 68/68 history, strict catalog 16/16, scoped advisors, and every preservation comparison; no staging version is pending. Production remains a separate no-go inventory with seven failed strict groups and an unsigned 55-row ledger. [Receipt](evidence/pr104-post-merge-staging-proof-2026-09-17.md).

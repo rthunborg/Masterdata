@@ -37,6 +37,10 @@ context:
 
 </frozen-after-approval>
 
+## Offline subset implementation preparation — 2026-09-19
+
+PR #106 is merged at staging 7cbbb11e7f5038a14519d89f2de524e6463dbf98. Offline subset preparation is in progress; it has no hosted execution path or approval authority. The complete production-profile fixture, CLI transaction/history tests and final gates remain open. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold. See [preparation evidence, failed attempts and remaining gates](../../docs/commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md). No hosted operation is enabled.
+
 ## Post-freeze execution note — 2026-09-19
 
 The frozen intent above is unchanged. The [non-executable forward-bootstrap design](../../docs/commercial-readiness/30_production_forward_bootstrap_design.md) proposes a future normal-CLI, hash-pinned 13-file forward subset before any repair. It requires a production-profile fixture, pinned CLI transaction/history tests, full isolation before cleanup or writes, strict final proof, and lineage-aware ledger evidence. It accepts no current production policy/function variant, authorizes no hosted action, and leaves production paused, Story 22.15 in-progress, and Epic 23 on hold.

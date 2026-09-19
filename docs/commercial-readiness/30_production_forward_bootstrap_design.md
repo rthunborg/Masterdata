@@ -54,3 +54,7 @@ This design requires two explicitly ordered PRs:
 Standing authorization covers reviewed required forward migration applies after their prerequisites pass. It does not cover the separate cleanup, traffic-isolation/settings changes, history repair, main merge, deployment, or reopening decisions. The current production non-dry-run block remains in force until an implementation PR changes it under review.
 
 Evidence for the observed policy/function differences is recorded separately in [production definition comparison](evidence/production-definition-comparison-2026-09-19.md). This design does not classify those differences as equivalent or accepted.
+
+## Implementation progress — 2026-09-19
+
+The design PR #106 merged at staging `7cbbb11e7f5038a14519d89f2de524e6463dbf98`. The first implementation component is an offline, source-only subset preparer. It is not the dedicated bootstrap mode or the private CLI working copy, and cannot pass the implementation acceptance gate alone. The [preparation evidence](evidence/forward-subset-preparation-2026-09-19.md) records its trusted-input boundary and outstanding fixture, transaction/history, local and remote gates. Production apply remains blocked.

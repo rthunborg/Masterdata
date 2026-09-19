@@ -1,5 +1,7 @@
 # Supabase Migrations-Only Change Policy
 
+> **Offline implementation preparation — 2026-09-19.** PR #106 design is merged at staging `7cbbb11`. A source-only subset preparer is under development; it has no hosted execution path and does not satisfy the complete bootstrap gate. Production remains paused; exact profile, CLI transaction/history, isolation, cleanup and repair proof remain open. [Current preparation and test limitations](evidence/forward-subset-preparation-2026-09-19.md).
+
 > **Forward-bootstrap design proposal — 2026-09-19.** A non-executable extension is proposed for review: a normal reviewed CLI apply from a hash-pinned materialized directory containing only existing proposed forward migrations, before any history repair. It preserves immutable SQL and forbids raw `psql` DDL, manual migration-history inserts, or marking a forward migration repaired. It requires isolation, cleanup, fixture proof, pinned CLI transaction/history tests, strict final proof, and per-version lineage evidence. [Design](30_production_forward_bootstrap_design.md).
 
 > **Current staging evidence — 2026-09-17.** PR #104 merged as staging `1cb4b02108183eeec4fa61fa980c99f835933344`; fresh pinned read-only proof passed 68/68 history and strict catalog 16/16 with unchanged preservation evidence. There is no pending staging migration or repair. [Receipt](evidence/pr104-post-merge-staging-proof-2026-09-17.md).

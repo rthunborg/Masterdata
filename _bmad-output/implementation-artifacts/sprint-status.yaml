@@ -75,7 +75,7 @@ development_status:
 verification_blockers:
   local_quality_gates: "Historical local 67/v68 validation remains retained in canonical ACL evidence. PR #102 final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply are complete. Current staging is 68/68 with no pending/remote-only version and all five post phases passing, including strict 16/16. Remaining gates: owner staging verification and production gates. Production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   remote_pr_review: 'PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged to staging ad9650ccfc8be412447a03847cc7ddfb372f8666 after clean final CI, Vercel checks and Codex Reviewbot. Earlier failed CI/parser-format attempts remain historical failures.'
-  hosted_owner_gates: 'PR #105 is current staging 51f1adbf9cf3446dd2405bc4bee57cd22a005759; dated staging proof remains 68/68 and strict catalog 16/16. The 2026-09-19 forward-bootstrap proposal is non-executable: it requires a pinned subset, observed-profile fixture, transaction/history tests, full isolation before cleanup or writes, strict final proof, and a lineage-aware unsigned ledger. Production remains paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
+  hosted_owner_gates: 'PR #106 is merged at staging 7cbbb11e7f5038a14519d89f2de524e6463dbf98. Offline subset preparation is in progress; it has no hosted execution path or approval authority. The complete production-profile fixture, CLI transaction/history tests and final gates remain open. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -114,3 +114,13 @@ canonical_trigger_acl_prerequisite_preparation:
   verification: 'PR #102 reviewed head 841794efd9377f719a2262cfd1b2f633780c8a56 passed final Reviewbot and all three checks, then merged as staging 3e41b35c269d606545b766d1445d1e361e92f88c. Six fresh pre-proofs, exact one-file reviewed dry run, and authorized v68 20260910184840 apply passed; immediate history is 68/68 and all five post phases pass. Remaining gates: owner staging verification and production gates; no production action occurred.'
   pause: 'Production pause active; Story 22.15 in-progress; Epic 23 on-hold.'
   evidence: 'docs/commercial-readiness/evidence/canonical-trigger-acl-prerequisite-2026-09-15.md'
+
+forward_subset_preparation_20260919:
+  status: in-progress
+  executable: false
+  approval_attested: false
+  source_staging: 7cbbb11e7f5038a14519d89f2de524e6463dbf98
+  evidence: docs/commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md
+  final_local_and_remote_gates: pending
+  production: paused
+  epic_23: on-hold

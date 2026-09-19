@@ -7,6 +7,10 @@
 
 in-progress
 
+## Offline subset implementation preparation — 2026-09-19
+
+PR #106 is merged at staging 7cbbb11e7f5038a14519d89f2de524e6463dbf98. Offline subset preparation is in progress; it has no hosted execution path or approval authority. The complete production-profile fixture, CLI transaction/history tests and final gates remain open. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold. See [preparation evidence, failed attempts and remaining gates](../commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md). No hosted operation is enabled.
+
 ## Forward-bootstrap design proposal — 2026-09-19
 
 The new [non-executable production forward-bootstrap design](../commercial-readiness/30_production_forward_bootstrap_design.md) proposes testing the existing 13 execute migrations from a hash-pinned materialized source before any future history repair. Its current design source is PR #105 staging candidate `51f1adbf9cf3446dd2405bc4bee57cd22a005759`. It does not accept any current production policy/function variant, requires full traffic isolation before cleanup or migration writes, and retains strict final proof plus a lineage-aware unsigned ledger. The production-definition comparison is evidence of differences, not an accepted profile. Staging remains historically proven at 68/68 as of 2026-09-17; production remains paused, Story 22.15 remains in-progress, and Epic 23 remains on hold.
