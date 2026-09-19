@@ -149,11 +149,23 @@ describe('offline immutable forward subset', () => {
     writeFileSync(path.join(workspace, 'hidden.txt'), 'must detect');
     expect(() => verifyForwardSubset(options())).toThrow();
   });
-  it('rejects repository-local filter drivers before inspecting source dirt', () => {
-    git('config', 'filter.untrusted.clean', 'untrusted-clean-filter');
-    expect(() => prepareForwardSubset(options())).toThrow();
-    expect(readdirSync(root)).toEqual(['source']);
-  });
+  it.each(['direct', 'included'])(
+    'rejects %s repository-local filter drivers before inspecting source dirt',
+    (kind) => {
+      if (kind === 'included') {
+        const config = path.join(workspace, '.git', 'filter-config');
+        writeFileSync(
+          config,
+          '[filter "untrusted"]\nclean = untrusted-clean-filter\n'
+        );
+        git('config', 'include.path', config);
+      } else {
+        git('config', 'filter.untrusted.clean', 'untrusted-clean-filter');
+      }
+      expect(() => prepareForwardSubset(options())).toThrow();
+      expect(readdirSync(root)).toEqual(['source']);
+    }
+  );
   it('forbids private CLI links and environment files in a source-only artifact', () => {
     const receipt = prepareForwardSubset(options());
     expect(receipt.privateMaterialAllowed).toBe(false);
