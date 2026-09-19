@@ -118,7 +118,9 @@ beforeEach(() => {
   record();
 });
 
-describe('offline immutable forward subset', () => {
+// Real Git subprocesses are slower under the full Windows suite's CPU load.
+// Keep a file-scoped bound; production Git calls still time out after 15 seconds.
+describe('offline immutable forward subset', { timeout: 60_000 }, () => {
   it('rejects a relative Git path or mismatched Git pin before creating output', () => {
     expect(() =>
       prepareForwardSubset({ ...options(), gitExecutable: 'git' })
