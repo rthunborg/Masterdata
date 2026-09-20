@@ -7,7 +7,13 @@
 
 in-progress
 
-## Offline subset implementation preparation — 2026-09-19
+## Current production preflight and backup-job pause — 2026-09-20
+
+PR #108's pending-review snapshot is historical: reviewed head `cce6e2eb283bf9ab9018b3018467c71e86b7e9d1` merged into staging as `fa68141121fc46cd9949d9ff36cb39fde4a35ced`; its merge tree matched the reviewed tree and main remains `822350986f4c023948a7bbf490ddffc371185c4a`. The current candidate adds a bounded, read-only saved-filter prerequisite collector. It reports only count aggregates and is not integrated into protected bootstrap admission; it cannot perform or authorize cleanup, isolation, repair, or apply.
+
+An active legacy-main nightly backup workflow remains a separate blocker: its successful scheduled runs on 2026-09-18 through 2026-09-20 do not prove row changes, but its legacy restore path can truncate and reload staging. Owner approval to disable the entire workflow is pending. Quiesce it, then take fresh staging preservation proof before any staging assertion relies on prior evidence. The fail-closed backup-pause code and the protected-bootstrap work still require final local, fixture, review, CI, and exact-head gates. Production remains paused/no-go: seven dated strict catalog failures, 55 unsigned UNPROVED ledger rows, 13 proposed executes, and separate cleanup, isolation, repair, main, deployment, and reopening decisions remain open. [Current evidence](../commercial-readiness/evidence/production-preflight-and-job-pause-2026-09-20.md).
+
+## Historical offline subset preparation — 2026-09-19 (PR #107 subsequently merged)
 
 PR #107 isolates the non-executable offline subset preparer for review. Implementation 01abdf7 passes full Vitest 3519/3519 with zero skips and full Playwright 163 passed / 47 individually classified skips / zero failures or errors; TypeScript, lint and named staging preview build pass. Final-head review remains pending. Production-profile and CLI transaction/history implementation remain separate gates. Prior 856c933 receipts remain retained as historical evidence. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold. See [preparation evidence, failed attempts and remaining gates](../commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md). No hosted operation is enabled.
 
