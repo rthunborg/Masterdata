@@ -102,9 +102,19 @@ describe('Story 22.15 production forward-bootstrap admission', () => {
     ['executable', (value: ReturnType<typeof subset>) => (value.executable = true)],
     ['private material', (value: ReturnType<typeof subset>) => (value.privateMaterialAllowed = true)],
     ['approval claim', (value: ReturnType<typeof subset>) => (value.approvalAttested = true)],
+    ['offline target binding', (value: ReturnType<typeof subset>) => Object.assign(value, { targetBound: true })],
+    ['unallowlisted private field', (value: ReturnType<typeof subset>) => Object.assign(value, { privateConnectionApproved: false })],
   ])('rejects a %s source-only subset receipt', (_label, change) => {
     const altered = subset();
     change(altered);
+    expect(() =>
+      validateProductionBootstrapSubset({ source: source(), subset: altered })
+    ).toThrow('Production bootstrap subset is unavailable or invalid');
+  });
+
+  it('rejects unallowlisted nested migration receipt fields', () => {
+    const altered = subset();
+    Object.assign(altered.migrations[0], { targetBound: false });
     expect(() =>
       validateProductionBootstrapSubset({ source: source(), subset: altered })
     ).toThrow('Production bootstrap subset is unavailable or invalid');

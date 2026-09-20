@@ -21,6 +21,29 @@ const GIT_SHA = /^[a-f0-9]{40}$/u;
 const MIGRATION_FILE = /^(\d{14})_[a-z0-9_]+\.sql$/u;
 const MAX_DRY_RUN_OUTPUT_BYTES = 1024 * 1024;
 const DEFAULT_MAX_EVIDENCE_AGE_MS = 15 * 60 * 1000;
+const OFFLINE_SUBSET_RECEIPT_KEYS = Object.freeze([
+  'schemaVersion',
+  'kind',
+  'executable',
+  'privateMaterialAllowed',
+  'approvalAttested',
+  'gitExecutableSha256',
+  'sourceCommit',
+  'sourceTree',
+  'sourceManifestSha256',
+  'reviewedSupabaseCliVersion',
+  'migrations',
+]);
+const PRIVATE_PREPARATION_RECEIPT_KEYS = Object.freeze([
+  ...OFFLINE_SUBSET_RECEIPT_KEYS,
+  'targetBound',
+]);
+const MIGRATION_RECEIPT_KEYS = Object.freeze([
+  'version',
+  'file',
+  'gitBlob',
+  'sha256',
+]);
 
 const fail = (message) => {
   throw new Error(message);
@@ -36,6 +59,19 @@ function assertGitSha(value, message) {
   if (typeof value !== 'string' || !GIT_SHA.test(value)) fail(message);
 }
 
+function assertExactObjectKeys(value, keys, message) {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Array.isArray(value) ||
+    Object.getPrototypeOf(value) !== Object.prototype ||
+    Object.getOwnPropertySymbols(value).length !== 0 ||
+    !same(Object.keys(value).sort(), [...keys].sort())
+  ) {
+    fail(message);
+  }
+}
+
 function assertExactMigrationEntries(entries, message) {
   if (!Array.isArray(entries) || entries.length !== PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length) {
     fail(message);
@@ -44,8 +80,8 @@ function assertExactMigrationEntries(entries, message) {
   if (!same(versions, PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS)) fail(message);
 
   for (const entry of entries) {
+    assertExactObjectKeys(entry, MIGRATION_RECEIPT_KEYS, message);
     if (
-      !entry ||
       typeof entry.file !== 'string' ||
       !MIGRATION_FILE.test(entry.file) ||
       MIGRATION_FILE.exec(entry.file)?.[1] !== entry.version ||
@@ -101,6 +137,18 @@ export function validateProductionBootstrapSubset({ source, subset }) {
   const sourceFacts = validateProductionBootstrapSource(source);
   const isOfflineSubset = subset?.kind === 'offline-forward-subset';
   const isPrivatePreparation = subset?.kind === 'private-forward-preparation';
+  const expectedKeys = isOfflineSubset
+    ? OFFLINE_SUBSET_RECEIPT_KEYS
+    : isPrivatePreparation
+      ? PRIVATE_PREPARATION_RECEIPT_KEYS
+      : null;
+  if (expectedKeys) {
+    assertExactObjectKeys(
+      subset,
+      expectedKeys,
+      'Production bootstrap subset is unavailable or invalid'
+    );
+  }
   if (
     !subset ||
     subset.schemaVersion !== 1 ||
@@ -108,6 +156,7 @@ export function validateProductionBootstrapSubset({ source, subset }) {
     subset.executable !== false ||
     subset.privateMaterialAllowed !== false ||
     subset.approvalAttested !== false ||
+    (isOfflineSubset && 'targetBound' in subset) ||
     (isPrivatePreparation && subset.targetBound !== false) ||
     subset.reviewedSupabaseCliVersion !== '2.115.0'
   ) {

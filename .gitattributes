@@ -4,3 +4,4 @@ supabase/verify/*.sql text eol=lf
 src/lib/release/private-forward-workspace.ps1 text eol=lf
 src/lib/release/private-forward-workspace.mjs text eol=lf
 src/lib/release/prepare-forward-subset.mjs text eol=lf
+src/lib/release/launch-private-forward-workspace.mjs text eol=lf
