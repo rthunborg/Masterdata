@@ -118,9 +118,10 @@ describe('private forward preparation', { timeout: 60000 }, () => {
       const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-Command', "$p=[Console]::In.ReadToEnd();$a=[IO.Directory]::GetAccessControl($p);$i=New-Object Security.Principal.SecurityIdentifier('S-1-1-0');$r=New-Object Security.AccessControl.FileSystemAccessRule($i,'Read','Allow');$a.AddAccessRule($r);[IO.Directory]::SetAccessControl($p,$a)"], { input: options.privateRoot, encoding: 'utf8', windowsHide: true });
       expect(r.status).toBe(0);
     } else fs.chmodSync(options.privateRoot, 0o755);
-    await expect(preparePrivateForwardWorkspace(options)).rejects.toThrow(
-      process.platform === 'win32' ? 'verification failed (access)' : 'verification failed (integrity)'
-    );
+    const error = await preparePrivateForwardWorkspace(options).catch((failure: Error) => failure);
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toContain(process.platform === 'win32' ? 'verification failed (access)' : 'verification failed (integrity)');
+    expect(error.stack).not.toContain('data:text/javascript');
     expect(fs.existsSync(options.destination)).toBe(false);
   });
   it('rejects a protected private root below an ancestor that grants untrusted deletion control', async () => {

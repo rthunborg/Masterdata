@@ -98,7 +98,7 @@ async function redacted(operation, options) {
         error?.message ?? ''
       )
     )
-      throw error;
+      throw new Error(error.message);
     fail();
   }
 }
