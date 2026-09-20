@@ -5,11 +5,12 @@ import { spawnSync } from 'node:child_process';
 
 export function createPrivateForwardWorkspaceRuntime({
   inspectForwardSource,
-  runtimeDirectory,
+  authenticatedPowerShell,
 }) {
-  const ACL_SCRIPT = 'src/lib/release/private-forward-workspace.ps1';
-  const COORDINATOR = 'src/lib/release/private-forward-workspace.mjs';
-  const PREPARER = 'src/lib/release/prepare-forward-subset.mjs';
+  // Capture the launcher's authenticated bytes; never reopen a mutable helper path.
+  const encodedPowerShell = Buffer.from(
+    authenticatedPowerShell.toString('utf8'), 'utf16le'
+  ).toString('base64');
   const CONFIG = 'project_id = "hr-production-bootstrap-preparation"\n';
   const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
   const fail = (code = 'integrity') => {
@@ -47,27 +48,7 @@ export function createPrivateForwardWorkspaceRuntime({
     return { root, dest };
   }
 
-  function bindExecutingSource(options, source) {
-    const directory = runtimeDirectory;
-    for (const [localName, sourceName] of [
-      ['private-forward-workspace.mjs', COORDINATOR],
-      ['prepare-forward-subset.mjs', PREPARER],
-      ['private-forward-workspace.ps1', ACL_SCRIPT],
-    ]) {
-      const local = path.join(directory, localName);
-      noReparse(local);
-      if (
-        !fs
-          .readFileSync(local)
-          .equals(
-            source.git(source.root, ['show', options.commit + ':' + sourceName])
-          )
-      )
-        fail();
-    }
-  }
-
-  function access(options, source, operation, root, destination) {
+  function access(options, operation, root, destination) {
     if (process.platform !== 'win32') {
       for (let parent = path.dirname(root); ; parent = path.dirname(parent)) {
         const stat = fs.statSync(parent);
@@ -114,22 +95,12 @@ export function createPrivateForwardWorkspaceRuntime({
       options.expectedWindowsPowerShellSha256
     )
       fail();
-    const script = path.join(runtimeDirectory, 'private-forward-workspace.ps1');
-    noReparse(script);
-    if (
-      !fs
-        .readFileSync(script)
-        .equals(
-          source.git(source.root, ['show', options.commit + ':' + ACL_SCRIPT])
-        )
-    )
-      fail();
     const env = {};
     for (const key of ['SystemRoot', 'SYSTEMROOT', 'WINDIR', 'TEMP', 'TMP'])
       if (process.env[key]) env[key] = process.env[key];
     const result = spawnSync(
       executable,
-      ['-NoProfile', '-NonInteractive', '-File', script],
+      ['-NoProfile', '-NonInteractive', '-EncodedCommand', encodedPowerShell],
       {
         input: JSON.stringify({ operation, root, destination }),
         env,
@@ -181,9 +152,8 @@ export function createPrivateForwardWorkspaceRuntime({
 
   function preparePrivateForwardWorkspace(options) {
     const source = inspectForwardSource(options);
-    bindExecutingSource(options, source);
     const { root, dest } = boundary(options, source.root);
-    access(options, source, 'create', root, dest);
+    access(options, 'create', root, dest);
     fs.mkdirSync(path.join(dest, 'supabase'), { mode: 0o700 });
     fs.mkdirSync(path.join(dest, 'supabase', 'migrations'), { mode: 0o700 });
     fs.writeFileSync(path.join(dest, 'supabase', 'config.toml'), CONFIG, {
@@ -197,7 +167,7 @@ export function createPrivateForwardWorkspaceRuntime({
         { flag: 'wx', mode: 0o600 }
       );
     }
-    access(options, source, 'verify', root, dest);
+    access(options, 'verify', root, dest);
     inspectForwardSource(options);
     // Incomplete attempts are retained without a completed receipt; never reset or delete.
     fs.writeFileSync(
@@ -210,9 +180,8 @@ export function createPrivateForwardWorkspaceRuntime({
 
   function verifyPrivateForwardWorkspace(options) {
     const source = inspectForwardSource(options);
-    bindExecutingSource(options, source);
     const { root, dest } = boundary(options, source.root);
-    access(options, source, 'verify', root, dest);
+    access(options, 'verify', root, dest);
     const entries = (dir) => fs.readdirSync(dir).sort();
     if (
       !same(entries(dest), ['private-forward-subset.json', 'supabase']) ||

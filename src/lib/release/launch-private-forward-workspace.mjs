@@ -85,7 +85,7 @@ async function run(operation, options) {
   const coordinator = await load('private-forward-workspace.mjs');
   const runtime = coordinator.createPrivateForwardWorkspaceRuntime({
     inspectForwardSource: preparer.inspectForwardSource,
-    runtimeDirectory,
+    authenticatedPowerShell: authenticated.get('private-forward-workspace.ps1'),
   });
   return runtime[operation](options);
 }

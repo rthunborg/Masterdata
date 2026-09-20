@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,20 +18,22 @@ function git(...args: string[]) {
   if (r.status !== 0) throw new Error('fixture Git failed');
   return r.stdout.trim();
 }
-function setPrivateAcl(target: string) {
+function setPrivateAcl(target: string, create = false) {
   if (process.platform !== 'win32') {
+    if (create) fs.mkdirSync(target, { mode: 0o700 });
     fs.chmodSync(target, 0o700);
     return;
   }
   const script = "$p=[Console]::In.ReadToEnd();$u=[Security.Principal.WindowsIdentity]::GetCurrent().User;$a=New-Object Security.AccessControl.DirectorySecurity;$a.SetOwner($u);$a.SetAccessRuleProtection($true,$false);foreach($s in @($u.Value,'S-1-5-18','S-1-5-32-544')){$i=New-Object Security.Principal.SecurityIdentifier($s);$r=New-Object Security.AccessControl.FileSystemAccessRule($i,'FullControl','ContainerInherit,ObjectInherit','None','Allow');$a.AddAccessRule($r)};[IO.Directory]::SetAccessControl($p,$a)";
-  const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-Command', script], { input: target, encoding: 'utf8', windowsHide: true });
+  const command = create ? script.replace('[IO.Directory]::SetAccessControl($p,$a)', "if(Test-Path -LiteralPath $p){throw 'fixture exists'};$null=[IO.Directory]::CreateDirectory($p,$a)") : script;
+  const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-Command', command], { input: target, encoding: 'utf8', windowsHide: true });
   if (r.status !== 0) throw new Error('fixture ACL failed');
 }
 beforeEach(() => {
   const sourceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hr-private-forward-source-'));
   const workspace = path.join(sourceRoot, 'source');
-  const privateRoot = fs.mkdtempSync(path.join(os.homedir(), '.hr-private-forward-test-'));
-  fs.mkdirSync(workspace); setPrivateAcl(privateRoot);
+  const privateRoot = path.join(os.homedir(), '.hr-private-forward-test-' + randomUUID());
+  fs.mkdirSync(workspace); setPrivateAcl(privateRoot, true);
   options = { workspace, privateRoot, destination: path.join(privateRoot, 'attempt'), commit: '', gitExecutable, expectedGitSha256: digest(gitExecutable), windowsPowerShellExecutable: powershell, expectedWindowsPowerShellSha256: process.platform === 'win32' ? digest(powershell) : '' };
   git('init', '-q'); git('config', 'core.autocrlf', 'false');
   fs.mkdirSync(path.join(workspace, 'supabase/migrations'), { recursive: true });
@@ -112,6 +114,26 @@ describe('private forward preparation', { timeout: 60000 }, () => {
   it('redacts a missing runtime path without touching the destination', async () => {
     await expect(preparePrivateForwardWorkspace({ ...options, runtimeDirectory: path.join(options.privateRoot, 'sensitive-missing-runtime') })).rejects.toThrow(/^Private forward runtime authentication failed$/);
     expect(fs.existsSync(options.destination)).toBe(false);
+  });
+  it('executes the authenticated helper snapshot after the runtime path is replaced', async () => {
+    const runtimeDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'hr-authenticated-runtime-'));
+    for (const file of ['private-forward-workspace.mjs', 'prepare-forward-subset.mjs', 'private-forward-workspace.ps1']) {
+      fs.copyFileSync(path.resolve('src/lib/release', file), path.join(runtimeDirectory, file));
+    }
+    const helper = path.join(runtimeDirectory, 'private-forward-workspace.ps1');
+    const marker = path.join(options.privateRoot, 'replacement-helper-executed');
+    const replacement = `[IO.File]::WriteAllText('${marker.replaceAll("'", "''")}', 'executed'); exit 1`;
+    // This intentionally authenticated fixture module replaces the helper only
+    // after the launcher has captured all three authenticated runtime snapshots.
+    const suffix = `\nimport { writeFileSync as replaceHelper } from 'node:fs'; replaceHelper(${JSON.stringify(helper)}, ${JSON.stringify(replacement)});\n`;
+    fs.appendFileSync(path.join(runtimeDirectory, 'prepare-forward-subset.mjs'), suffix);
+    commitSourceMismatch('src/lib/release/prepare-forward-subset.mjs', suffix);
+    const receipt = await preparePrivateForwardWorkspace({ ...options, runtimeDirectory });
+    expect(receipt.executable).toBe(false);
+    expect(fs.readFileSync(helper, 'utf8')).toBe(replacement);
+    expect(fs.existsSync(marker)).toBe(false);
+    // A later invocation must authenticate again and reject the replaced path.
+    await expect(verifyPrivateForwardWorkspace({ ...options, runtimeDirectory })).rejects.toThrow('runtime authentication failed');
   });
   it('rejects a writable/readable-by-others private root before materialization', async () => {
     if (process.platform === 'win32') {
