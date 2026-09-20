@@ -6,9 +6,11 @@ import { fileURLToPath } from 'node:url';
 import { inspectForwardSource } from './prepare-forward-subset.mjs';
 
 const ACL_SCRIPT = 'src/lib/release/private-forward-workspace.ps1';
+const COORDINATOR = 'src/lib/release/private-forward-workspace.mjs';
+const PREPARER = 'src/lib/release/prepare-forward-subset.mjs';
 const CONFIG = 'project_id = "hr-production-bootstrap-preparation"\n';
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
-const fail = () => { throw new Error('Private forward workspace verification failed'); };
+const fail = (code = 'integrity') => { throw new Error(`Private forward workspace verification failed (${code})`); };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 function noReparse(target) {
@@ -28,6 +30,19 @@ function boundary(options, sourceRoot) {
   const relative = path.relative(sourceRoot, dest);
   if (!relative || (!relative.startsWith('..' + path.sep) && !path.isAbsolute(relative))) fail();
   return { root, dest };
+}
+
+function bindExecutingSource(options, source) {
+  const directory = path.dirname(fileURLToPath(import.meta.url));
+  for (const [localName, sourceName] of [
+    ['private-forward-workspace.mjs', COORDINATOR],
+    ['prepare-forward-subset.mjs', PREPARER],
+    ['private-forward-workspace.ps1', ACL_SCRIPT],
+  ]) {
+    const local = path.join(directory, localName);
+    noReparse(local);
+    if (!fs.readFileSync(local).equals(source.git(source.root, ['show', options.commit + ':' + sourceName]))) fail();
+  }
 }
 
 function access(options, source, operation, root, destination) {
@@ -61,8 +76,13 @@ function access(options, source, operation, root, destination) {
   const result = spawnSync(executable, ['-NoProfile', '-NonInteractive', '-File', script], {
     input: JSON.stringify({ operation, root, destination }), env, encoding: 'utf8', windowsHide: true, shell: false, timeout: 15000, maxBuffer: 4096,
   });
-  if (result.error || result.status !== 0 || result.stderr.trim()) fail();
-  let proof; try { proof = JSON.parse(result.stdout); } catch { fail(); }
+  if (result.error) fail(result.error.code === 'ETIMEDOUT' ? 'acl_timeout' : 'acl_process');
+  if (result.stderr.trim()) fail('acl_stderr');
+  let proof; try { proof = JSON.parse(result.stdout); } catch { fail('acl_output'); }
+  if (result.status !== 0) {
+    const codes = new Set(['runtime', 'operation', 'boundary', 'reparse', 'owner', 'inheritance', 'access', 'root', 'ancestor_access', 'exists', 'acl_runtime']);
+    fail(codes.has(proof?.reason) ? proof.reason : 'acl_exit');
+  }
   if (!same(proof, { ok: true, private: true })) fail();
 }
 
@@ -72,6 +92,7 @@ function receiptFor(source) {
 
 export function preparePrivateForwardWorkspace(options) {
   const source = inspectForwardSource(options);
+  bindExecutingSource(options, source);
   const { root, dest } = boundary(options, source.root);
   access(options, source, 'create', root, dest);
   fs.mkdirSync(path.join(dest, 'supabase'), { mode: 0o700 });
@@ -89,6 +110,7 @@ export function preparePrivateForwardWorkspace(options) {
 
 export function verifyPrivateForwardWorkspace(options) {
   const source = inspectForwardSource(options);
+  bindExecutingSource(options, source);
   const { root, dest } = boundary(options, source.root);
   access(options, source, 'verify', root, dest);
   const entries = (dir) => fs.readdirSync(dir).sort();

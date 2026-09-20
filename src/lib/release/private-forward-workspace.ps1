@@ -68,6 +68,8 @@ try {
   }
   [Console]::Out.Write('{"ok":true,"private":true}')
 } catch {
-  [Console]::Out.Write('{"ok":false,"private":false}')
+  $reason = 'acl_runtime'
+  if ($_.Exception.Message -cin @('runtime', 'operation', 'boundary', 'reparse', 'owner', 'inheritance', 'access', 'root', 'ancestor_access', 'exists')) { $reason = $_.Exception.Message }
+  [Console]::Out.Write(('{"ok":false,"private":false,"reason":"' + $reason + '"}'))
   exit 1
 }
