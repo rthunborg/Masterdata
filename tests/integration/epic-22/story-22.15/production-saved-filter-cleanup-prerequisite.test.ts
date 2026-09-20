@@ -4,9 +4,20 @@ import { readFileSync } from 'node:fs';
 import { Client, type QueryResult } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import {
+  assertGuardedPostgresSystemIdentifier,
+  createGuardedFixtureDatabase,
+  requireGuardedPostgresSystemIdentifier,
+} from '../../../support/guarded-postgres-fixture.mjs';
+
 const fixtureUrlValue = process.env.STORY_22_15_POST_APPLY_FIXTURE_DATABASE_URL;
 const requireFixture =
   process.env.REQUIRE_STORY_22_15_SAVED_FILTER_CLEANUP_DB_EVIDENCE === 'true';
+const guardedPostgresSystemIdentifier = fixtureUrlValue
+  ? requireGuardedPostgresSystemIdentifier(
+      process.env.STORY_22_15_GUARDED_POSTGRES_SYSTEM_IDENTIFIER
+    )
+  : null;
 
 if (!fixtureUrlValue && requireFixture) {
   throw new Error(
@@ -26,7 +37,7 @@ if (
 
 if (!fixtureUrl) {
   console.warn(
-    'Saved-filter cleanup SQL integration evidence is not configured; set STORY_22_15_POST_APPLY_FIXTURE_DATABASE_URL for the guarded local fixture, or REQUIRE_STORY_22_15_SAVED_FILTER_CLEANUP_DB_EVIDENCE=true to make it mandatory.'
+    'Saved-filter cleanup SQL integration evidence is not configured; set the guarded fixture URL and launcher-supplied PostgreSQL system identifier, or REQUIRE_STORY_22_15_SAVED_FILTER_CLEANUP_DB_EVIDENCE=true to make it mandatory.'
   );
 }
 
@@ -76,14 +87,24 @@ describe.skipIf(!fixtureUrl)(
         throw new Error('Guarded fixture administration URL is unavailable');
       }
       await adminClient.connect();
-      // The generated synthetic database is intentionally retained with the
-      // guard-owned service. It does not clone or modify an existing fixture.
-      await adminClient.query(`CREATE DATABASE ${fixtureDatabaseName} TEMPLATE template0`);
+      // The guarded launcher obtains this identifier from its exact registered
+      // container through guard-selected docker exec. It must not derive it from this connection
+      // or URL, since that would merely trust the server this test is about to
+      // mutate. A mismatch prevents CREATE DATABASE.
+      await createGuardedFixtureDatabase({
+        adminClient,
+        expectedSystemIdentifier: guardedPostgresSystemIdentifier,
+        databaseName: fixtureDatabaseName,
+      });
 
       const databaseUrl = new URL(fixtureUrlValue);
       databaseUrl.pathname = `/${fixtureDatabaseName}`;
       fixtureClient = new Client({ connectionString: databaseUrl.toString() });
       await fixtureClient.connect();
+      await assertGuardedPostgresSystemIdentifier({
+        adminClient: fixtureClient,
+        expectedSystemIdentifier: guardedPostgresSystemIdentifier,
+      });
       await fixtureClient.query(`
         CREATE SCHEMA auth;
         CREATE TABLE auth.users (id uuid PRIMARY KEY);
