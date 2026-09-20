@@ -249,8 +249,9 @@ function validateFreshObservation({ observation, facts, now, maxEvidenceAgeMs })
 
 /**
  * A plan-only gate. It validates source/subset/dry-run and freshness binding,
- * but always remains blocked: no repository collector can yet prove the
- * separately authorised cleanup or full technical isolation. In particular,
+ * but always remains blocked: the count-only cleanup prerequisite collector
+ * is not bound into a protected target bootstrap and cannot prove separately
+ * authorised cleanup or full technical isolation. In particular,
  * caller-supplied booleans are intentionally ignored and cannot enable a
  * production write.
  */
@@ -300,7 +301,7 @@ export function assessProductionBootstrapAdmission({
     observationSha256: observation.observationSha256,
     targetBindingSha256: observation.targetBindingSha256,
     blockers: Object.freeze([
-      'live_cleanup_proof_collector_not_implemented',
+      'live_cleanup_prerequisites_not_bound_to_protected_bootstrap',
       'live_full_technical_isolation_collector_not_implemented',
       'production_non_dry_run_apply_remains_blocked',
     ]),

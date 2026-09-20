@@ -178,13 +178,14 @@ describe('Story 22.15 production forward-bootstrap admission', () => {
       observedState: observedState(now),
       now,
       cleanupPassed: true,
+      cleanupPrerequisites: { total: 0, orphanAuthReferences: 0, emptyNames: 0, overlengthNames: 0, meetsMigrationDataPrerequisites: true },
       isolationPassed: true,
       ownerApproved: true,
     });
 
     expect(assessment.disposition).toBe('blocked');
     expect(assessment.blockers).toEqual([
-      'live_cleanup_proof_collector_not_implemented',
+      'live_cleanup_prerequisites_not_bound_to_protected_bootstrap',
       'live_full_technical_isolation_collector_not_implemented',
       'production_non_dry_run_apply_remains_blocked',
     ]);

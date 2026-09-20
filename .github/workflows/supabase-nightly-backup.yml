@@ -15,7 +15,27 @@ env:
   BACKUP_RETENTION_DAYS: 14
 
 jobs:
+  production-pause:
+    name: Check production pause before backup or staging refresh
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      backup_allowed: ${{ steps.pause.outputs.backup_allowed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Read committed production pause
+        id: pause
+        run: node src/maintenance/backup-production-pause-guard.mjs >> "$GITHUB_OUTPUT"
+
   backup-and-restore:
+    needs: production-pause
+    if: needs.production-pause.outputs.backup_allowed == 'true'
     name: Backup production & restore oldest to staging
     runs-on: ubuntu-latest
     environment: Production
