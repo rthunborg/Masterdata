@@ -10,9 +10,14 @@ and a forced Next.js application build fails. Preview deployments, including sta
 remain available.
 
 The nightly backup/staging-refresh workflow also reads this lock in a separate
-job before its Production job can receive credentials. Scheduled and manual
+job before its Production job can receive credentials. It rejects a manually
+selected branch or tag before checkout, checks the current default branch, and
+pins the Production job checkout to that gate's exact SHA. Scheduled and manual
 runs remain blocked while paused, including backup storage pruning and staging
-refresh. This source guard only applies to workflow revisions containing it;
+refresh. A separate checkout-free, secret-free failure-alert job opens or
+appends the existing `backup-failure` issue when the gate or backup job actually
+fails; intentional pause and unapproved-ref skips do not alert. This source
+guard only applies to workflow revisions containing it;
 the entire active old-main workflow must be separately disabled during the
 release window, covering scheduled runs and manual dispatch. Verify the hosted
 workflow state is disabled and no run remains queued or active. A staging merge

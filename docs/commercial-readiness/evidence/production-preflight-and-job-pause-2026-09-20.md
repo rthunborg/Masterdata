@@ -2,6 +2,8 @@
 
 Story 22.15 remains **in-progress**, Epic 23 **on-hold**, and production **paused / no-go**. This component provides evidence collection and a durable job safeguard. It does not enable the production bootstrap or authorize a hosted change.
 
+**Workflow review follow-up:** The second Reviewbot pass identified unapproved manual-dispatch source selection and a missing alert path when the pause prerequisite failed. The candidate is being corrected to require the approved default ref, bind both jobs to the checked source SHA, and alert independently of checkout/setup failures. The `122c2fe` results below precede these workflow corrections; renewed full gates and final-head review are required before merge.
+
 ## Source and preceding merge
 
 PR #108 merged into staging as `fa68141121fc46cd9949d9ff36cb39fde4a35ced`, from reviewed head `cce6e2eb283bf9ab9018b3018467c71e86b7e9d1`. Its merge tree exactly matched the reviewed tree, `d2079d7db38d9db523662f852c0ed3fabd7f4aea`; final GitHub/Vercel checks passed and the [final Reviewbot response](https://github.com/rthunborg/Masterdata/pull/108#issuecomment-5751175106) reported no major issues. Main remains `822350986f4c023948a7bbf490ddffc371185c4a`. No post-merge hosted database reproof is claimed.

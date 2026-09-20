@@ -122,7 +122,25 @@
     "errors": 0,
     "warnings": 296
   },
-  "finalFullGates": {
+  "migrationSqlAndManifestUnchanged": true,
+  "frozenIntentUnchanged": true,
+  "ledgerUnprovedUnsigned": 55,
+  "proposedExecutes": 13,
+  "productionStrictFailuresLastObserved": 7,
+  "storyStatus": "in-progress",
+  "epic23Status": "on-hold",
+  "localCatalog": {
+    "sourceHead": "122c2fe1c50ecab14554d16b7516d912a944f111",
+    "localOnly": true,
+    "hostedAccess": false,
+    "tlsClaim": "none-local-loopback-ssl-disabled",
+    "phase": "post_apply",
+    "count": 16,
+    "failedChecks": []
+  },
+  "remoteFinalHeadChecks": "pending",
+  "finalHeadReview": "pending",
+  "intermediate122FullGates": {
     "vitest": {
       "schemaVersion": 1,
       "kind": "guarded-local-release-gate",
@@ -208,22 +226,5 @@
       "receiptSha256": "ec4cc337bda11c1261945135124f44a2a9334b66ea7829dfd88e4a8ae91b9221"
     }
   },
-  "migrationSqlAndManifestUnchanged": true,
-  "frozenIntentUnchanged": true,
-  "ledgerUnprovedUnsigned": 55,
-  "proposedExecutes": 13,
-  "productionStrictFailuresLastObserved": 7,
-  "storyStatus": "in-progress",
-  "epic23Status": "on-hold",
-  "localCatalog": {
-    "sourceHead": "122c2fe1c50ecab14554d16b7516d912a944f111",
-    "localOnly": true,
-    "hostedAccess": false,
-    "tlsClaim": "none-local-loopback-ssl-disabled",
-    "phase": "post_apply",
-    "count": 16,
-    "failedChecks": []
-  },
-  "remoteFinalHeadChecks": "pending",
-  "finalHeadReview": "pending"
+  "workflowReviewCorrections": "pending renewed full gates and exact-head review; prior tests do not cover the corrected workflow"
 }
