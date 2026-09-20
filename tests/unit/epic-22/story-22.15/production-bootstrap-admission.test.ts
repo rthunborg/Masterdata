@@ -153,15 +153,15 @@ describe('Story 22.15 production forward-bootstrap admission', () => {
     );
   });
 
-  it('accepts a private preparation receipt only while all authority flags are false', () => {
+  it('rejects retired private preparation receipts even when all authority flags are false', () => {
     const preparation = {
       ...subset(),
       kind: 'private-forward-preparation',
       targetBound: false,
     };
-    expect(
-      validateProductionBootstrapSubset({ source: source(), subset: preparation }).sourceTree
-    ).toBe(tree);
+    expect(() =>
+      validateProductionBootstrapSubset({ source: source(), subset: preparation })
+    ).toThrow('Production bootstrap subset is unavailable or invalid');
     preparation.targetBound = true;
     expect(() =>
       validateProductionBootstrapSubset({ source: source(), subset: preparation })

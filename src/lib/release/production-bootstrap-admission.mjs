@@ -34,10 +34,6 @@ const OFFLINE_SUBSET_RECEIPT_KEYS = Object.freeze([
   'reviewedSupabaseCliVersion',
   'migrations',
 ]);
-const PRIVATE_PREPARATION_RECEIPT_KEYS = Object.freeze([
-  ...OFFLINE_SUBSET_RECEIPT_KEYS,
-  'targetBound',
-]);
 const MIGRATION_RECEIPT_KEYS = Object.freeze([
   'version',
   'file',
@@ -136,28 +132,21 @@ export function validateProductionBootstrapSource(source) {
 export function validateProductionBootstrapSubset({ source, subset }) {
   const sourceFacts = validateProductionBootstrapSource(source);
   const isOfflineSubset = subset?.kind === 'offline-forward-subset';
-  const isPrivatePreparation = subset?.kind === 'private-forward-preparation';
-  const expectedKeys = isOfflineSubset
-    ? OFFLINE_SUBSET_RECEIPT_KEYS
-    : isPrivatePreparation
-      ? PRIVATE_PREPARATION_RECEIPT_KEYS
-      : null;
-  if (expectedKeys) {
+  if (isOfflineSubset) {
     assertExactObjectKeys(
       subset,
-      expectedKeys,
+      OFFLINE_SUBSET_RECEIPT_KEYS,
       'Production bootstrap subset is unavailable or invalid'
     );
   }
   if (
     !subset ||
     subset.schemaVersion !== 1 ||
-    (!isOfflineSubset && !isPrivatePreparation) ||
+    !isOfflineSubset ||
     subset.executable !== false ||
     subset.privateMaterialAllowed !== false ||
     subset.approvalAttested !== false ||
     (isOfflineSubset && 'targetBound' in subset) ||
-    (isPrivatePreparation && subset.targetBound !== false) ||
     subset.reviewedSupabaseCliVersion !== '2.115.0'
   ) {
     fail('Production bootstrap subset is unavailable or invalid');
