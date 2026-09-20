@@ -75,7 +75,7 @@ development_status:
 verification_blockers:
   local_quality_gates: "Historical local 67/v68 validation remains retained in canonical ACL evidence. PR #102 final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply are complete. Current staging is 68/68 with no pending/remote-only version and all five post phases passing, including strict 16/16. Remaining gates: owner staging verification and production gates. Production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   remote_pr_review: 'PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged to staging ad9650ccfc8be412447a03847cc7ddfb372f8666 after clean final CI, Vercel checks and Codex Reviewbot. Earlier failed CI/parser-format attempts remain historical failures.'
-  hosted_owner_gates: 'PR #107 isolates the non-executable offline subset preparer for review. Implementation 01abdf7 passes full Vitest 3519/3519 with zero skips and full Playwright 163 passed / 47 individually classified skips / zero failures or errors; TypeScript, lint and named staging preview build pass. Final-head review remains pending. Production-profile and CLI transaction/history implementation remain separate gates. Prior 856c933 receipts remain retained as historical evidence. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
+  hosted_owner_gates: 'PR #107 is merged and its review state is historical. Current candidate 7473bb2 retains failed schema attempts 1-4, one bounded 14/14 match, a synthetic 13-file/strict-16-of-16 rehearsal, and a redacted permission collection confirming the unchanged 61-row baseline. Full Vitest 3563/3563, TypeScript, zero-error ESLint, and named staging-preview build pass; exact Playwright passed 163 tests with 47 individually classified skips and zero failures/errors; final review remains pending. A fresh read-only Vercel CLI proof confirms current pause settings. The complete bootstrap admission path remains pending. Dated staging proof remains 68/68 and strict 16/16; production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -124,6 +124,17 @@ forward_subset_preparation_20260919:
   tested_implementation: 01abdf707071cd3b884f7e207aaf343e5eac86d9
   full_vitest: "3519 passed; zero skipped/failed; exit 0; 114.27 seconds"
   full_playwright: "163 passed; 47 classified skips; zero failures/errors; exit 0; 1005.438 seconds runner"
-  final_local_and_remote_gates: "Local gates passed; final-head review pending"
+  final_local_and_remote_gates: "Historical component gates and final-head review passed; PR #107 merged as aac11ff8527e5c6696f4cee7089ae86a7cbc87f2"
   production: paused
   epic_23: on-hold
+
+production_bootstrap_preparation_20260920:
+  status: in-progress
+  executable: false
+  source_candidate: 7473bb2e829966a71e52bcbeff6f24e5dc094c9f
+  local_evidence: 'Retained schema reconstruction attempts 1-4; attempt 5 matched 14/14 groups. Synthetic observed-orphan rehearsal stopped after eight history versions; declared post-cleanup derivative applied 13 versions and strict catalog 16/16 passed. Redacted production permission collection confirmed unchanged 61-row baseline and two repayment-map hashes.'
+  private_workspace: 'Final candidate retained one failed-closed existing-root ACL classification with no artifact or ACL weakening, then passed fresh restricted-root preparation and independent verification. Fresh ACL validation remains mandatory for every use.'
+  remaining_gates: 'Complete admission/cleanup/isolation collectors and failure classification; then exact-head review, CI and fresh hosted proof; both dependency-audit scopes are recorded with existing residuals. Full Vitest 3563/3563, TypeScript, zero-error ESLint and named staging-preview build pass. Ledger remains 55 UNPROVED unsigned rows.'
+  production: paused
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/production-bootstrap-preparation-2026-09-20.md

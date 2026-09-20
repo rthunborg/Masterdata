@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "scope": "preparatory evidence; production admission remains blocked",
+  "productionWritePerformed": false,
+  "productionAdmission": false,
+  "implementationVerification": {
+    "sourceCommit": "7473bb2e829966a71e52bcbeff6f24e5dc094c9f",
+    "fullVitest": {
+      "testCount": 3563,
+      "fileCount": 326,
+      "skipped": 0,
+      "failed": 0,
+      "exitCode": 0,
+      "reportedDurationSeconds": 110.37,
+      "wrapperDurationMs": 126874,
+      "receiptSha256": "f194ba9301c48f6751fe9ac12f1fb0e3392db7910f500cea4daeac9de158be67",
+      "logSha256": "d2dfdd13e550d77e1bf5de15429cc8d020c3c67131abf12dafea645dd7244504"
+    },
+    "typescriptExitCode": 0,
+    "eslint": {
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 296
+    },
+    "stagingPreviewBuild": {
+      "exitCode": 0,
+      "childExitCode": 0,
+      "durationMs": 23385,
+      "logSha256": "d161fe57c921ecc79f03e7b555e77ef0fc37f1c52423bc1e1c66c4e5483a01a9"
+    },
+    "migrationSqlAndSeedIdentityMatchesEarlierRehearsalSource": true,
+    "audits": {
+      "productionDependencies": {
+        "exitCode": 1,
+        "critical": 0,
+        "high": 0,
+        "moderate": 1,
+        "classification": "existing accepted UUID advisory through 2026-09-30",
+        "reportSha256": "7b5378f68915ba80be9b158c26da886cd9a8497bb0457a08d59217b4a00d5f00"
+      },
+      "allDependencies": {
+        "exitCode": 1,
+        "critical": 1,
+        "high": 16,
+        "moderate": 10,
+        "classification": "already registered development-follow-up advisories",
+        "reportSha256": "e792be2fd036f636b44912de78972c394108c461938960e1f09facf5ffd96aab"
+      }
+    },
+    "privateWorkspaceSmoke": {
+      "earlierExistingRootFailedClosed": true,
+      "earlierFailureArtifactCreated": false,
+      "earlierFailureAclWeakened": false,
+      "earlierFailureClassification": "explicit untrusted read-and-execute grant",
+      "failureMechanismProven": false,
+      "freshRestrictedRootPassed": true,
+      "freshRestrictedRootAclModified": false,
+      "requiresFreshAclValidationForEveryUse": true,
+      "futureAdmissionRequiresTrustedOwnerChain": true,
+      "futureAdmissionRequiresUntrustedParentOwnerNegativeTest": true,
+      "receiptSha256": "eb1a94b59d38cee120485ce8e6f63b3136f8df8c49a5d2dcc6e9c96921309801"
+    },
+    "fullPlaywright": {
+      "command": "npx playwright test",
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0,
+      "exitCode": 0,
+      "reportedDurationSeconds": 1019.871936,
+      "wrapperDurationMs": 1036888,
+      "skipInventoryMatched": true,
+      "notificationAuthorizationSkips": 9,
+      "supersededOrFixtureDebtSkips": 38,
+      "xmlSha256": "d2a9ee4215ad870e7001c957f259d69720f7c07fba4a8f4d4ee197f207ad4ac4",
+      "logSha256": "9546c0976133465c40248bf61930ccbd7cb4896c9bc3227a16478f67679f28bf",
+      "receiptSha256": "fd5cdbb90b3ada9eb067519e71525ad4dbd9634d92de17c5e8550c33b5a0c050"
+    }
+  },
+  "permissionCollection": {
+    "capturedAtUtc": "2026-09-20T14:10:16.645Z",
+    "sourceCommit": "aac11ff8527e5c6696f4cee7089ae86a7cbc87f2",
+    "sourceTree": "39defa5e7bbf7e4e0f78b91fc56ebf3f330dcdc1",
+    "durationMs": 6787,
+    "collectionSucceeded": true,
+    "previousBaselineUnchanged": true,
+    "baseline": {
+      "rowCount": 61,
+      "rowsSha256": "643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8",
+      "nonObjectCount": 0,
+      "nullColumnCount": 0,
+      "distinctColumnCount": 61,
+      "unknownRoleEntryCount": 0,
+      "invalidKnownRoleContractCount": 0
+    },
+    "roleCounts": [
+      4,
+      5
+    ],
+    "canonicalPermissionSha256": {
+      "repayment_needed_omc": "647825e1b97318ea60b1c29ff5e97132b544c5db6b442797b87006d00479eb65",
+      "repayment_needed_pe3": "070cec9b08e92fd3faa246e20eaba17de86710ae4a3e9a1f7f4f6b7d3d2676d3"
+    },
+    "receiptSha256": "e57fac2b13952c74eff3ab5a5d776e28248f21ab22094b151a50bbb43827e915",
+    "sqlSha256": "7fae1ff42fb49f33b1608a730f3ad71fd38d1e9e079251027c67c5cfb8ef7ed2"
+  },
+  "localRehearsal": {
+    "sourceCommit": "aac11ff8527e5c6696f4cee7089ae86a7cbc87f2",
+    "sourceTree": "39defa5e7bbf7e4e0f78b91fc56ebf3f330dcdc1",
+    "completed": true,
+    "startedAtUtc": "2026-09-20T14:27:58.248Z",
+    "finishedAtUtc": "2026-09-20T14:28:07.123Z",
+    "receiptSha256": "c7ce72d910fceb6771257d99c693878ae62cf1b12346e8b2fd19e6b4e4c10f17",
+    "cases": [
+      {
+        "name": "observed",
+        "dryRunExitCode": 0,
+        "applyExitCode": 1,
+        "applyDurationMs": 723,
+        "historyCount": 8,
+        "counts": {
+          "employees": 73,
+          "audit_rows": 1025,
+          "audit_nonnull": 202,
+          "filters": 48,
+          "filter_orphans": 48,
+          "config_rows": 61
+        },
+        "strictPostCatalog": null,
+        "expectedStop": {
+          "version": "20260909115242",
+          "historyPrefixCount": 8
+        }
+      },
+      {
+        "name": "postcleanup",
+        "dryRunExitCode": 0,
+        "applyExitCode": 0,
+        "applyDurationMs": 793,
+        "historyCount": 13,
+        "counts": {
+          "employees": 73,
+          "audit_rows": 1025,
+          "audit_nonnull": 202,
+          "filters": 0,
+          "filter_orphans": 0,
+          "config_rows": 61
+        },
+        "strictPostCatalog": {
+          "checkCount": 16
+        },
+        "expectedStop": null
+      }
+    ],
+    "limitations": [
+      "56 other permission maps remain synthetic",
+      "Minimal Auth emulation is not a complete Supabase platform",
+      "Local post-cleanup derivative is not production cleanup",
+      "No hosted TLS or target proof is claimed for loopback adapters"
+    ]
+  },
+  "vercelInspection": {
+    "connectorAttempt": {
+      "attemptDate": "2026-09-20",
+      "succeeded": false,
+      "errorCode": "INVALID_ARGUMENT",
+      "previousCompletePauseObservation": "2026-09-15",
+      "partialDeploymentObservation": {
+        "observedAtUtc": "2026-09-20T14:40:22.945Z",
+        "readOnly": true,
+        "recordedPauseDeploymentIdMatched": true,
+        "recordedProjectIdMatched": true,
+        "recordedPauseDeploymentReady": true,
+        "deploymentTargetIsProduction": true,
+        "aliasCount": 1,
+        "aliasErrorPresent": false,
+        "projectSettingsVerified": false,
+        "productionTargetSelectionVerified": false,
+        "activeCronDefinitionsVerified": false,
+        "automaticProductionDomainAssignmentVerified": false,
+        "projectInspectionError": "INVALID_ARGUMENT",
+        "fullPauseProof": false
+      }
+    },
+    "cliFallback": {
+      "observedAtUtc": "2026-09-20T15:02:49.673Z",
+      "readOnly": true,
+      "cliVersion": "59.11.7",
+      "projectMatchedPrivateRecord": true,
+      "productionTargetMatchedPrivatePauseRecord": true,
+      "automaticCustomDomainAssignment": false,
+      "cronDefinitionsPresent": true,
+      "cronDefinitionCount": 0,
+      "pauseSettingsProof": true,
+      "receiptSha256": "c0098b6824b145024ac1509b668e5f81fb76a637a2c5b9c6f6cbbf3bcf70c295"
+    },
+    "succeeded": true,
+    "lastCompletePauseSettingsProof": "2026-09-20"
+  },
+  "repairLedger": {
+    "rows": 55,
+    "proved": 0,
+    "signed": 0
+  },
+  "localResourceCleanup": {
+    "stopRequestsAccepted": true,
+    "acknowledgmentIsNotSynchronousShutdown": true,
+    "savedStateRetained": true,
+    "userOwnedResourcesUntouched": true
+  }
+}
