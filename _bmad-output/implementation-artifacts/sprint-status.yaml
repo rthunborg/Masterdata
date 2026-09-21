@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-09-10T12:52:41.5005005Z
+# last_updated: 2026-09-21
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-19
+last_updated: 2026-09-21
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -75,7 +75,7 @@ development_status:
 verification_blockers:
   local_quality_gates: "Historical local 67/v68 validation remains retained in canonical ACL evidence. PR #102 final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply are complete. Current staging is 68/68 with no pending/remote-only version and all five post phases passing, including strict 16/16. Remaining gates: owner staging verification and production gates. Production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   remote_pr_review: 'PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged to staging ad9650ccfc8be412447a03847cc7ddfb372f8666 after clean final CI, Vercel checks and Codex Reviewbot. Earlier failed CI/parser-format attempts remain historical failures.'
-  hosted_owner_gates: 'PR #107 is merged and historical. PR #108 reviewed cce6e2e merged as staging fa681411 with an identical tree; its pending-review snapshot is historical. The current saved-filter collector is read-only evidence only and not bootstrap admission. The active legacy-main nightly backup workflow can truncate/reload staging; its disable approval is pending, followed by fresh staging preservation proof. Protected bootstrap, full technical isolation, cleanup, repair, main, deployment, reopening, future complete-bootstrap local/fixture gates, CI, and exact-head review remain separate. This collector component passed all local gates at 122c2fe. Production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
+  hosted_owner_gates: 'PR #107 is merged and historical. PR #108 reviewed cce6e2e merged as staging fa681411 with an identical tree; its pending-review snapshot is historical. The current saved-filter collector is read-only evidence only and not bootstrap admission. The active legacy-main nightly backup workflow can truncate/reload staging; its disable approval is pending, followed by fresh staging preservation proof. Protected bootstrap, full technical isolation, cleanup, repair, main, deployment, reopening, future complete-bootstrap local/fixture gates, CI, and exact-head review remain separate. This collector component passed all local gates at 0f1162a. Production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -134,7 +134,7 @@ production_bootstrap_preparation_20260920:
   source_candidate: 00dfc4d086f5d151ef25e0f1b3c2ad9bee0efd8c
   local_evidence: 'Retained schema reconstruction attempts 1-4; attempt 5 matched 14/14 groups. Synthetic observed-orphan rehearsal stopped after eight history versions; declared post-cleanup derivative applied 13 versions and strict catalog 16/16 passed. Redacted production permission collection confirmed unchanged 61-row baseline and two repayment-map hashes.'
   private_workspace: 'Private preparation is retired fail closed before options/process/import/approval access. Historical smoke results are not a supported API or an ACL waiver; protected installation/origin, trusted-owner ACL, read-sharing executable locks, and unforgeable bootstrap origin require a future reviewed design.'
-  remaining_gates: 'The prior PR #108 pending-review snapshot is historical: reviewed cce6e2e merged as staging fa681411. Current collector and backup-pause implementation 122c2fe passes all local gates (Vitest 3619/3619, Playwright 163 passed/47 classified skips/zero failures); final PR #109 CI and exact-head review remain pending. The collector is evidence-only and not bootstrap admission. Quiesce the legacy-main nightly backup workflow under separate approval, then refresh staging preservation proof. Fresh hosted proof remains separate. Ledger remains 55 UNPROVED unsigned rows.'
+  remaining_gates: 'The prior PR #108 pending-review snapshot is historical: reviewed cce6e2e merged as staging fa681411. Current collector and backup-pause implementation 0f1162a passes all local gates (Vitest 3625/3625, Playwright 163 passed/47 classified skips/zero failures); PR #109 records final-head CI/review and merge outcomes; this pre-merge source snapshot does not assert their completion. The collector is evidence-only and not bootstrap admission. Quiesce the legacy-main nightly backup workflow under separate approval, then refresh staging preservation proof. Fresh hosted proof remains separate. Ledger remains 55 UNPROVED unsigned rows.'
   production: paused
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/production-bootstrap-preparation-2026-09-20.md
