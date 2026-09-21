@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "sourceStaging": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+  "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "storyStatus": "in-progress",
+  "epic23Status": "on-hold",
+  "productionStatus": "paused-no-go",
+  "merge": {
+    "capturedAtUtc": "2026-09-21T11:46:09.7141590Z",
+    "pullRequest": 109,
+    "reviewedHead": "b827a7b312d57f4a796485ce4d110c86b75b94e9",
+    "testedImplementation": "0f1162aa1a414f03820cc8aadc089dd190a552f5",
+    "previousStaging": "fa68141121fc46cd9949d9ff36cb39fde4a35ced",
+    "stagingMerge": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+    "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+    "mergeTree": "11df81d4911dde0d678bcd7730e8e5c00c71ffc4",
+    "mergeTreeMatchesReviewedHead": true,
+    "expectedParentsVerified": true,
+    "postMergeCheckoutClean": true,
+    "finalReview": "https://github.com/rthunborg/Masterdata/pull/109#issuecomment-5759885686",
+    "newInlineFindings": 0,
+    "checks": [
+      "Run Tests: success",
+      "Vercel: success",
+      "Vercel Preview Comments: success"
+    ],
+    "productionWritePerformed": false,
+    "hostedSettingsChanged": false,
+    "productionDeploymentPerformed": false,
+    "mainMergePerformed": false,
+    "hostedStagingReproofPerformed": false,
+    "legacyWorkflowDisableApproval": "pending"
+  },
+  "workflow": {
+    "observedAtUtc": "2026-09-21T12:51:49.9529884Z",
+    "workflowId": 235701425,
+    "workflowName": "Supabase Nightly Backup",
+    "state": "disabled_manually",
+    "nonterminalRunCounts": {
+      "in_progress": 0,
+      "queued": 0,
+      "requested": 0,
+      "waiting": 0,
+      "pending": 0
+    },
+    "ownerApproval": "Approve. Proceed with remaining items.",
+    "actionCompleted": "disable workflow 235701425",
+    "backupsDeleted": false,
+    "workflowDispatched": false,
+    "fullDatabaseWriterIsolationProven": false
+  },
+  "vercel": {
+    "observedAtUtc": "2026-09-21T12:52:58.663Z",
+    "readOnly": true,
+    "cliVersion": "59.11.7",
+    "cliSha256": "2dd6e7c273a24bf4317af867d9b7bacb4db35487b42ea77912e2e7c33fa0c152",
+    "exitCode": 0,
+    "parsed": true,
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "projectIdMatched": true,
+    "productionTargetMatchesRecordedPause": true,
+    "autoAssignCustomDomainsDisabled": true,
+    "cronDefinitionsPresent": true,
+    "activeCronDefinitionCount": 0,
+    "pauseSettingsProof": true
+  },
+  "staging": {
+    "migration": {
+      "phase": "migration-post",
+      "commit": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+      "capturedAtUtc": "2026-09-21T12:53:12.596Z",
+      "hostedWriteAttempted": false,
+      "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+      "repositoryMigrationCount": 68,
+      "verificationStage": "complete",
+      "toolingTlsAndThreeWayBindingVerified": true,
+      "hostedConnectionAttempted": true,
+      "localHistoryCount": 68,
+      "remoteHistoryCount": 68,
+      "expectedPendingVersions": [],
+      "historyMatchesManifest": true,
+      "passed": true
+    },
+    "advisors": {
+      "phase": "advisors-post",
+      "commit": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+      "capturedAtUtc": "2026-09-21T12:53:22.876Z",
+      "hostedWriteAttempted": false,
+      "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+      "repositoryMigrationCount": 68,
+      "verificationStage": "complete",
+      "toolingTlsAndThreeWayBindingVerified": true,
+      "hostedConnectionAttempted": true,
+      "advisors": {
+        "security": {
+          "total": 0,
+          "counts": {}
+        },
+        "performance": {
+          "total": 3,
+          "counts": {
+            "multiple_permissive_policies:WARN": 3
+          }
+        },
+        "scope": "exact reviewed commands; pinned CLI WARN minimum; dated scope limitations retained"
+      },
+      "passed": true
+    },
+    "catalog": {
+      "phase": "catalog-post",
+      "commit": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+      "capturedAtUtc": "2026-09-21T12:53:28.986Z",
+      "hostedWriteAttempted": false,
+      "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+      "repositoryMigrationCount": 68,
+      "verificationStage": "complete",
+      "toolingTlsAndThreeWayBindingVerified": true,
+      "hostedConnectionAttempted": true,
+      "checksPassed": 16,
+      "failedChecks": [],
+      "passed": true
+    },
+    "aggregates": {
+      "phase": "aggregates-post",
+      "commit": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+      "capturedAtUtc": "2026-09-21T12:53:31.088Z",
+      "hostedWriteAttempted": false,
+      "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+      "repositoryMigrationCount": 68,
+      "verificationStage": "complete",
+      "toolingTlsAndThreeWayBindingVerified": true,
+      "hostedConnectionAttempted": true,
+      "unchangedFromPriorAppliedBaseline": true,
+      "diagnostics": {
+        "repayment": {
+          "omc_null": 32,
+          "omc_true": 0,
+          "pe3_null": 32,
+          "pe3_true": 1,
+          "omc_false": 1,
+          "pe3_false": 0
+        },
+        "saved_filters": {
+          "total": 0,
+          "empty_names": 0,
+          "overlength_names": 0,
+          "orphan_auth_references": 0
+        },
+        "permission_hashes": {
+          "diet_details": {
+            "config_rows": 1,
+            "permission_hash": "608d8d6a5846555a137171568d7b82a5"
+          },
+          "special_diet": {
+            "config_rows": 1,
+            "permission_hash": "608d8d6a5846555a137171568d7b82a5"
+          },
+          "repayment_needed_omc": {
+            "config_rows": 1,
+            "permission_hash": "02b8319f6f054191fe4131b27e060f98"
+          },
+          "repayment_needed_pe3": {
+            "config_rows": 1,
+            "permission_hash": "3a274a1d25cd34f07f378195bb080f29"
+          }
+        }
+      },
+      "passed": true
+    },
+    "audit": {
+      "phase": "audit-post",
+      "commit": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+      "capturedAtUtc": "2026-09-21T12:53:33.377Z",
+      "hostedWriteAttempted": false,
+      "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+      "repositoryMigrationCount": 68,
+      "verificationStage": "complete",
+      "toolingTlsAndThreeWayBindingVerified": true,
+      "hostedConnectionAttempted": true,
+      "audit": {
+        "audit_rows": 353,
+        "nonnull_changed_by": 90,
+        "unmapped_changed_by": 0,
+        "canonical_history_hash": "084def93b0dfd29df9076e2d007116ff"
+      },
+      "predecessorComparison": {
+        "matched": true,
+        "interpretation": "v68 pre/post preservation comparison against reviewed staging baseline"
+      },
+      "passed": true
+    }
+  },
+  "productionCleanupPrerequisite": {
+    "sourceSha": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+    "mainSha": "822350986f4c023948a7bbf490ddffc371185c4a",
+    "hostedWriteAttempted": false,
+    "productionAdmission": false,
+    "collectionSucceeded": true,
+    "evidence": {
+      "schemaVersion": 1,
+      "kind": "production-saved-filter-cleanup-prerequisite",
+      "environment": "production",
+      "capturedAt": "2026-09-21T12:57:59.595Z",
+      "sqlSha256": "5ee745284aa6b6a275637d95bfc4525c786bdd73c1290644f670aa59696b790c",
+      "total": 48,
+      "orphanAuthReferences": 48,
+      "emptyNames": 0,
+      "overlengthNames": 0,
+      "meetsMigrationDataPrerequisites": false,
+      "evidenceOnly": true,
+      "authorizesCleanup": false,
+      "authorizesMigrationApply": false
+    },
+    "finishedAtUtc": "2026-09-21T12:57:59.596Z"
+  },
+  "hostedDatabaseWrites": false,
+  "fullDatabaseWriterIsolationProven": false,
+  "productionBootstrapAdmission": false,
+  "supportReceiptSha256": {
+    "backup-workflow-disabled-redacted.json": "e8de1e026dc0711d6f2b1085cea2f9938dedbbcdeea7bfb691394226bccc2291",
+    "vercel-cli-readonly.json": "3406cf379ac20af1bbacea0b3b0fbd6f2835dd524b8cbc623837536aec2e8459",
+    "reviewed-pins.json": "86f57ffdece5513596a154bfc7880c9b102c6eed47bc4df601ec66a4a55949e8",
+    "reviewed-candidate-inventory.json": "cbdd72b8721f71fc3fa599d126b00f343fbedeb646f4d7f5cd4e0f153bb352ad",
+    "production/cleanup-prerequisite-redacted.json": "cf574096c012227f1c7cb16eda2330b78dbff588fcb1171aca2567ff92705cb8",
+    "v68-migration-post-redacted.json": "b3a9ec845a32a9c7039aca19be46ed8584768b43801104317f2ee974add935a6",
+    "v68-advisors-post-redacted.json": "12bad2ccc4afe00d8a1634be95ea9704abef60c435c348089e4a06d44338bd35",
+    "v68-catalog-post-redacted.json": "638cb13f2f3a253de2d7f4af0fccd7c3ebc5da730e81b411670b0f179900c260",
+    "v68-aggregates-post-redacted.json": "964d421379c20d17c86655220674e84b63ce1d18516c5721f4b73872686589ca",
+    "v68-audit-post-redacted.json": "ff5bb7405cce4dc0628b2ec6a629681bce2c270f1386e78d482a661532ef1501"
+  }
+}

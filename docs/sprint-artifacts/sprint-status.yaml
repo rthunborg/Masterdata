@@ -2,7 +2,7 @@ schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
 last_updated: 2026-09-21
-updated_by: 'PR #108 is merged: reviewed cce6e2e became staging fa681411 with an identical tree; main remains 8223509. The prior pending-review snapshot is historical. Current work adds evidence-only saved-filter preflight collection and a fail-closed backup-pause control, neither of which enables protected bootstrap admission or production apply. A legacy-main nightly backup workflow can truncate/reload staging; disable approval is pending, and fresh staging preservation proof follows quiescence. Implementation 0f1162a passes 84 focused tests, full Vitest 3625/3625 with zero skips, exact Playwright 163 passed/47 classified skips/zero failures, TypeScript, zero-error lint, staging-preview build, and retained local strict catalog 16/16. PR #109 records final-head CI/review and merge outcomes; this pre-merge source snapshot does not assert their completion. Production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
+updated_by: 'PR #109 reviewed head b827a7b merged as staging 0a8341f with an identical tree; main remains 8223509. On 2026-09-21 the owner-approved entire Supabase Nightly Backup workflow disable completed: disabled_manually, with zero runs in all five nonterminal states. Automated backups, pruning and staging refresh are paused; existing backups were untouched and re-enable needs a separate decision. Fresh staging proof passed 68/68 history, strict catalog 16/16, scoped advisors and unchanged repayment, four permission hashes and audit baseline. Read-only Vercel inspection reconfirmed the recorded production pause target, disabled automatic domain assignment and zero active crons. Fresh production count-only proof still finds 48 orphaned saved filters, zero empty/overlength names; its migration prerequisite fails. Full database isolation and protected bootstrap remain unproved; 55 ledger rows remain UNPROVED/unsigned and 13 executes remain proposed. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.'
 
 current_focus:
   active_epic: 22
@@ -44,7 +44,7 @@ epics:
     status_file: null # Intentionally absent; do not create while on hold.
 
 next_actions:
-  - 'Story 22.15: obtain the separate backup-workflow quiesce decision, then fresh staging preservation proof; complete protected bootstrap admission, cleanup/isolation collectors, failure classification, and final implementation gates. Retain the production apply block until all bootstrap admission gates pass.'
+  - 'Story 22.15: approved workflow disable and fresh staging preservation proof are complete. Continue protected bootstrap implementation, production-profile and failure-boundary tests, then separately approved isolation/cleanup and production gates. Retain the production apply block.'
   - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
   - 'Story 22.4 is done; standing production-data presentation controls are documented.'
   - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
@@ -152,3 +152,16 @@ forward_subset_preparation_20260919:
   final_local_and_remote_gates: "Historical component gates and final-head review passed; PR #107 merged as aac11ff8527e5c6696f4cee7089ae86a7cbc87f2"
   production: paused
   epic_23: on-hold
+
+post_quiescence_proof_20260921:
+  staging_source: 0a8341f6cfd8fb4f2371ad26a6646b7289d0472d
+  workflow_state: disabled_manually
+  staging_history: '68/68'
+  staging_catalog: '16/16'
+  preservation_comparisons: unchanged
+  production_orphan_filters: 48
+  production_data_prerequisite: false
+  production: paused-no-go
+  story_status: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md

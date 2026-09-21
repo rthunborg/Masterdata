@@ -75,7 +75,7 @@ development_status:
 verification_blockers:
   local_quality_gates: "Historical local 67/v68 validation remains retained in canonical ACL evidence. PR #102 final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply are complete. Current staging is 68/68 with no pending/remote-only version and all five post phases passing, including strict 16/16. Remaining gates: owner staging verification and production gates. Production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   remote_pr_review: 'PR #100 reviewed head 0150d55b4aa359b19149fd6c288242809e14901b merged to staging ad9650ccfc8be412447a03847cc7ddfb372f8666 after clean final CI, Vercel checks and Codex Reviewbot. Earlier failed CI/parser-format attempts remain historical failures.'
-  hosted_owner_gates: 'PR #107 is merged and historical. PR #108 reviewed cce6e2e merged as staging fa681411 with an identical tree; its pending-review snapshot is historical. The current saved-filter collector is read-only evidence only and not bootstrap admission. The active legacy-main nightly backup workflow can truncate/reload staging; its disable approval is pending, followed by fresh staging preservation proof. Protected bootstrap, full technical isolation, cleanup, repair, main, deployment, reopening, future complete-bootstrap local/fixture gates, CI, and exact-head review remain separate. This collector component passed all local gates at 0f1162a. Production remains paused, Story 22.15 in-progress and Epic 23 on-hold.'
+  hosted_owner_gates: 'PR #109 reviewed head b827a7b merged as staging 0a8341f with an identical tree; main remains 8223509. On 2026-09-21 the owner-approved entire Supabase Nightly Backup workflow disable completed: disabled_manually, with zero runs in all five nonterminal states. Automated backups, pruning and staging refresh are paused; existing backups were untouched and re-enable needs a separate decision. Fresh staging proof passed 68/68 history, strict catalog 16/16, scoped advisors and unchanged repayment, four permission hashes and audit baseline. Read-only Vercel inspection reconfirmed the recorded production pause target, disabled automatic domain assignment and zero active crons. Fresh production count-only proof still finds 48 orphaned saved filters, zero empty/overlength names; its migration prerequisite fails. Full database isolation and protected bootstrap remain unproved; 55 ledger rows remain UNPROVED/unsigned and 13 executes remain proposed. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold. Next: protected bootstrap implementation and production-profile/isolation/failure-boundary gates.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -134,7 +134,20 @@ production_bootstrap_preparation_20260920:
   source_candidate: 00dfc4d086f5d151ef25e0f1b3c2ad9bee0efd8c
   local_evidence: 'Retained schema reconstruction attempts 1-4; attempt 5 matched 14/14 groups. Synthetic observed-orphan rehearsal stopped after eight history versions; declared post-cleanup derivative applied 13 versions and strict catalog 16/16 passed. Redacted production permission collection confirmed unchanged 61-row baseline and two repayment-map hashes.'
   private_workspace: 'Private preparation is retired fail closed before options/process/import/approval access. Historical smoke results are not a supported API or an ACL waiver; protected installation/origin, trusted-owner ACL, read-sharing executable locks, and unforgeable bootstrap origin require a future reviewed design.'
-  remaining_gates: 'The prior PR #108 pending-review snapshot is historical: reviewed cce6e2e merged as staging fa681411. Current collector and backup-pause implementation 0f1162a passes all local gates (Vitest 3625/3625, Playwright 163 passed/47 classified skips/zero failures); PR #109 records final-head CI/review and merge outcomes; this pre-merge source snapshot does not assert their completion. The collector is evidence-only and not bootstrap admission. Quiesce the legacy-main nightly backup workflow under separate approval, then refresh staging preservation proof. Fresh hosted proof remains separate. Ledger remains 55 UNPROVED unsigned rows.'
+  remaining_gates: 'PR #109 reviewed head b827a7b merged as staging 0a8341f with an identical tree; main remains 8223509. On 2026-09-21 the owner-approved entire Supabase Nightly Backup workflow disable completed: disabled_manually, with zero runs in all five nonterminal states. Automated backups, pruning and staging refresh are paused; existing backups were untouched and re-enable needs a separate decision. Fresh staging proof passed 68/68 history, strict catalog 16/16, scoped advisors and unchanged repayment, four permission hashes and audit baseline. Read-only Vercel inspection reconfirmed the recorded production pause target, disabled automatic domain assignment and zero active crons. Fresh production count-only proof still finds 48 orphaned saved filters, zero empty/overlength names; its migration prerequisite fails. Full database isolation and protected bootstrap remain unproved; 55 ledger rows remain UNPROVED/unsigned and 13 executes remain proposed. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold. Next: protected bootstrap implementation and production-profile/isolation/failure-boundary gates.'
   production: paused
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/production-bootstrap-preparation-2026-09-20.md
+
+post_quiescence_proof_20260921:
+  staging_source: 0a8341f6cfd8fb4f2371ad26a6646b7289d0472d
+  workflow_state: disabled_manually
+  staging_history: '68/68'
+  staging_catalog: '16/16'
+  preservation_comparisons: unchanged
+  production_orphan_filters: 48
+  production_data_prerequisite: false
+  production: paused-no-go
+  story_status: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md
