@@ -5,7 +5,7 @@
   "storyStatus": "in-progress",
   "epic23Status": "on-hold",
   "productionStatus": "paused-no-go",
-  "merge": {
+  "historicalMergeSnapshotBeforeWorkflowDisable": {
     "capturedAtUtc": "2026-09-21T11:46:09.7141590Z",
     "pullRequest": 109,
     "reviewedHead": "b827a7b312d57f4a796485ce4d110c86b75b94e9",
@@ -213,6 +213,9 @@
     },
     "finishedAtUtc": "2026-09-21T12:57:59.596Z"
   },
+  "currentWorkflowDisableAuthorizedAndCompleted": true,
+  "currentHostedSettingsChanges": ["GitHub workflow 235701425 disabled"],
+  "currentHostedStagingReproofPerformed": true,
   "hostedDatabaseWrites": false,
   "fullDatabaseWriterIsolationProven": false,
   "productionBootstrapAdmission": false,

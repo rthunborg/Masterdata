@@ -11,6 +11,8 @@ PR #109 reviewed head b827a7b merged as staging 0a8341f with an identical tree; 
 - Owner approval “Approve. Proceed with remaining items.” followed the exact request to disable workflow **235701425**, including production backups, pruning and staging refresh. Disable succeeded before the fresh observation at **12:51:49.9529884 UTC**. This is an observation time, not an invented write-completion timestamp.
 - GitHub state: **disabled_manually**. Counts for in_progress, queued, requested, waiting and pending are each zero. Nothing was cancelled or dispatched. No backup contents were read or deleted. Re-enabling requires a separate owner decision.
 
+The machine receipt embeds PR #109 merge-time history under `historicalMergeSnapshotBeforeWorkflowDisable`; those earlier false/pending fields describe only that pre-disable snapshot. Explicit current-state fields record the completed authorized disable and staging reproof.
+
 This GitHub setting is the only hosted setting changed in this work. It is not full database writer isolation. No hosted database write, repair, cleanup, migration apply, Vercel change, deployment, main merge or reopening occurred.
 
 ## Fresh read-only evidence
