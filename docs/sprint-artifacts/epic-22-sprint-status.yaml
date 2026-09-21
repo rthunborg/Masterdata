@@ -401,7 +401,7 @@ tracked_test_tally_note: 'The pre-existing story-row/category-tally difference i
 
 protected_toolchain_draft_20260921:
   status: in-progress
-  verification: blocked-native-runtime-injection
+  verification: full-local-gates-pending
   production: paused-no-go
   epic_23: on-hold
   note: 'Draft protected toolchain installation/launch is incomplete and not release-ready. Independent focused inventory/denial tests passed 36/36 (34.75s, exit 0), TypeScript and scoped lint passed. The native host refused injected Windhawk modules before CLI dispatch: one failed setup suite, 23 setup-failure-skipped cases, zero native passes claimed. Full Vitest/Playwright and final review were not completed for this draft. No Windhawk setting, private input, hosted database, main, deployment or production-pause change occurred. Story 22.15 remains in-progress; Epic 23 remains on-hold. See docs/commercial-readiness/evidence/protected-toolchain-draft-blocker-2026-09-21.md.'

@@ -132,6 +132,52 @@ function skipQuoted(source, start) {
   fail();
 }
 
+function isAllowedTemplateSubstitution(expression) {
+  // The one method call is an exact reviewed catalog diagnostic. Everything
+  // else is a bare identifier, a property chain, or a numeric array access.
+  return (
+    /^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*|\[\d+\])*$/u.test(
+      expression
+    ) || expression === 'evaluation.failedChecks.join(", ")'
+  );
+}
+
+function skipTemplateSubstitution(source, start) {
+  let index = start;
+  while (index < source.length) {
+    if (source[index] === '\\') fail();
+    if (source[index] === "'" || source[index] === '"') {
+      index = skipQuoted(source, index);
+      continue;
+    }
+    if (source[index] === '`' || source[index] === '{') fail();
+    if (source[index] === '}') {
+      const expression = source.slice(start, index).trim();
+      if (!isAllowedTemplateSubstitution(expression)) fail();
+      return index + 1;
+    }
+    index += 1;
+  }
+  fail();
+}
+
+function skipTemplate(source, start) {
+  let index = start + 1;
+  while (index < source.length) {
+    if (source[index] === '\\') {
+      index += 2;
+      continue;
+    }
+    if (source[index] === '`') return index + 1;
+    if (source[index] === '$' && source[index + 1] === '{') {
+      index = skipTemplateSubstitution(source, index + 2);
+      continue;
+    }
+    index += 1;
+  }
+  fail();
+}
+
 function skipTrivia(source, start) {
   let index = start;
   while (index < source.length) {
@@ -179,8 +225,12 @@ function importsOf(source) {
   let index = 0;
   while (index < source.length) {
     const current = source[index];
-    if (current === "'" || current === '"' || current === '`') {
+    if (current === "'" || current === '"') {
       index = skipQuoted(source, index);
+      continue;
+    }
+    if (current === '`') {
+      index = skipTemplate(source, index);
       continue;
     }
     if (source.startsWith('//', index)) {

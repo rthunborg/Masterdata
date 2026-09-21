@@ -21,7 +21,9 @@ foreach($relative in $paths){
  [IO.File]::Copy($source,$destination,$false)
 }
 $marker=Join-Path $fixture 'cli-calls.txt'
-$fake='using System; using System.IO; class FakeCli { static int Main(string[] args) { if(args.Length!=1 || args[0]!="--version")return 33; foreach(string key in new[]{"NODE_OPTIONS","NODE_PATH","PGPASSWORD","SUPABASE_DB_URL","BOOTSTRAP_APPROVED"})if(Environment.GetEnvironmentVariable(key)!=null)return 34; File.AppendAllText(@"'+$marker.Replace('"','""')+'","called\n");System.Threading.Thread.Sleep(500);Console.WriteLine("2.115.0");return 0; } }'
+$modeFile=Join-Path $fixture 'cli-mode.txt';$pidFile=Join-Path $fixture 'descendant-pid.txt'
+[IO.File]::WriteAllText($modeFile,'ok')
+$fake='using System; using System.IO; using System.Diagnostics; class FakeCli { static int Main(string[] args) { if(args.Length==1 && args[0]=="--fixture-wait"){System.Threading.Thread.Sleep(60000);return 0;} if(args.Length!=1 || args[0]!="--version")return 33; foreach(string key in new[]{"NODE_OPTIONS","NODE_PATH","PGPASSWORD","SUPABASE_DB_URL","BOOTSTRAP_APPROVED"})if(Environment.GetEnvironmentVariable(key)!=null)return 34; File.AppendAllText(@"'+$marker.Replace('"','""')+'","called\n");string mode=File.ReadAllText(@"'+$modeFile.Replace('"','""')+'");if(mode=="fail")return 42;if(mode=="hang"){var c=Process.Start(new ProcessStartInfo{FileName=System.Reflection.Assembly.GetExecutingAssembly().Location,Arguments="--fixture-wait",UseShellExecute=false,CreateNoWindow=true});File.WriteAllText(@"'+$pidFile.Replace('"','""')+'",c.Id.ToString());System.Threading.Thread.Sleep(60000);}System.Threading.Thread.Sleep(500);Console.WriteLine("2.115.0");return 0; } }'
 Add-Type -TypeDefinition $fake -OutputAssembly (Join-Path $package 'runtime/supabase.exe') -OutputType ConsoleApplication
 $entries=@($paths|ForEach-Object {[ordered]@{path=$_;sha256=Digest ([IO.File]::ReadAllBytes((Join-Path $package $_)))}})
 $manifest=[ordered]@{schemaVersion=1;kind='offline-protected-toolchain-package';sourceCommit=('a'*40);sourceTree=('b'*40);files=$entries}
@@ -91,6 +93,25 @@ foreach($case in @('wrong-nonce','extra-packet-field','apply-operation','malform
    if($r.status -eq 0 -or (Count-Calls) -ne $before){throw 'accepted'}
   }finally{if($null -ne $process){$null=Finish $process}}
  }
+}
+Check 'failed-cli-refused-and-lease-released' {
+ [IO.File]::WriteAllText($modeFile,'fail')
+ try{$r=Finish (Start-Host);if($r.status -eq 0){throw 'accepted'};$s=[IO.File]::Open($worker,'Open','Write','Read');$s.Dispose()}finally{[IO.File]::WriteAllText($modeFile,'ok')}
+}
+Check 'timed-out-cli-descendant-contained' {
+ [IO.File]::WriteAllText($modeFile,'hang')
+ try{
+  $r=Finish (Start-Host);if($r.status -eq 0 -or -not(Test-Path -LiteralPath $pidFile)){throw 'timeout not exercised'}
+  $descendantId=[int][IO.File]::ReadAllText($pidFile)
+  $alive=$false
+  try{$descendant=[Diagnostics.Process]::GetProcessById($descendantId);try{$alive=-not $descendant.WaitForExit(5000)}finally{$descendant.Dispose()}}catch [ArgumentException]{}
+  if($alive){throw 'descendant survived'}
+  $s=[IO.File]::Open($worker,'Open','Write','Read');$s.Dispose()
+ }finally{[IO.File]::WriteAllText($modeFile,'ok')}
+}
+Check 'oversized-manifest-refused' {
+ $original=[IO.File]::ReadAllBytes($manifestFile)
+ try{[IO.File]::WriteAllText($manifestFile,(' '*16385));$oversized=Digest ([IO.File]::ReadAllBytes($manifestFile));if((Install $oversized).status -eq 0){throw 'accepted'}}finally{[IO.File]::WriteAllBytes($manifestFile,$original)}
 }
 Check 'unexpected-directory-refused-before-cli' {$before=Count-Calls;$null=[IO.Directory]::CreateDirectory((Join-Path $root 'unexpected'));$r=Finish (Start-Host);if($r.status -eq 0 -or (Count-Calls) -ne $before){throw 'accepted'}}
 [ordered]@{cases=@($results.ToArray());syntheticOnly=$true;fixtureRetained=$true;hostedAccess=$false;privateInputsLoaded=$false}|ConvertTo-Json -Depth 5 -Compress

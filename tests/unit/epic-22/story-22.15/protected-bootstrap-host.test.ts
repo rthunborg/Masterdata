@@ -11,7 +11,8 @@ const cases = [
   'completed-host-releases-lease', 'preexisting-writer-refused-before-cli',
   'tampered-module-refused-before-cli', 'copied-launcher-refused',
   'wrong-nonce', 'extra-packet-field', 'apply-operation', 'malformed-packet',
-  'unexpected-directory-refused-before-cli',
+  'failed-cli-refused-and-lease-released', 'timed-out-cli-descendant-contained',
+  'oversized-manifest-refused', 'unexpected-directory-refused-before-cli',
 ];
 
 // Real Windows ACLs, image loading, inherited pipes and Job Objects. These

@@ -5,6 +5,8 @@ import {
   mkdtempSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
+  rmSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -26,6 +28,7 @@ const expectedGitSha256 = createHash('sha256')
   .update(readFileSync(gitExecutable))
   .digest('hex');
 const papaRoot = path.resolve('node_modules/papaparse');
+const repositoryRoot = path.resolve('.');
 const integrity =
   'sha512-5QvjGxYVjxO59MGU2lHVYpRWBBtKHnlIAcSe1uNFCkkptUh63NFRj0FJQm7nR67puEruUci/ZkjmEFrjCAyP4A==';
 
@@ -109,6 +112,39 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 export const target = [readFile, path, pathToFileURL];
 `;
+}
+
+function installActualClosureSource() {
+  const actualManifest = path.join(
+    repositoryRoot,
+    'supabase/migration-baseline-manifest.json'
+  );
+  const actualMigrations = path.join(repositoryRoot, 'supabase/migrations');
+  copyFileSync(
+    actualManifest,
+    path.join(workspace, 'supabase/migration-baseline-manifest.json')
+  );
+  rmSync(path.join(workspace, 'supabase/migrations'), {
+    recursive: true,
+    force: true,
+  });
+  mkdirSync(path.join(workspace, 'supabase/migrations'), { recursive: true });
+  for (const name of readdirSync(actualMigrations)) {
+    write(path.join('supabase/migrations', name), '-- fixture migration\n');
+  }
+  for (const relative of [
+    'src/lib/release/protected-bootstrap-worker.mjs',
+    'supabase/verify/run-reviewed-supabase-cli.mjs',
+    'supabase/verify/verify-production-baseline-catalog.mjs',
+    'supabase/verify/verify-target-binding.mjs',
+    'pnpm-lock.yaml',
+  ]) {
+    copyFileSync(
+      path.join(repositoryRoot, relative),
+      path.join(workspace, relative)
+    );
+  }
+  record();
 }
 
 beforeEach(() => {
@@ -195,6 +231,16 @@ describe('Story 22.15 protected runner inventory', { timeout: 60_000 }, () => {
     expect(Object.isFrozen(receipt.modules[0])).toBe(true);
   });
 
+  it('accepts the real four-module graph with the current 68-migration manifest', () => {
+    installActualClosureSource();
+
+    const receipt = inspectProtectedRunnerInventory(options());
+    expect(receipt.modules).toHaveLength(4);
+    expect(receipt.modules[1].staticImports).toContain(
+      './verify-production-baseline-catalog.mjs'
+    );
+  });
+
   it.each([
     ['a committed missing worker', () => unlinkSync(path.join(workspace, 'src/lib/release/protected-bootstrap-worker.mjs')), true],
     ['uncommitted changed runtime bytes', () => write('supabase/verify/verify-target-binding.mjs', target() + '\n// changed\n'), false],
@@ -211,6 +257,20 @@ describe('Story 22.15 protected runner inventory', { timeout: 60_000 }, () => {
     ['a CommonJS load', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nrequire('node:fs');\n")],
   ])('rejects a committed module with %s', (_label, change) => {
     change();
+    record();
+    expect(() => inspectProtectedRunnerInventory(options())).toThrow(
+      'Protected runner inventory verification failed'
+    );
+  });
+
+  it.each([
+    ["await import('./unlisted.mjs')"],
+    ["await \\u0069mport('./unlisted.mjs')"],
+  ])('rejects a dynamic import hidden in template substitution %s', (hidden) => {
+    write(
+      'src/lib/release/protected-bootstrap-worker.mjs',
+      worker() + 'const hidden = `${' + hidden + '}`;\n'
+    );
     record();
     expect(() => inspectProtectedRunnerInventory(options())).toThrow(
       'Protected runner inventory verification failed'

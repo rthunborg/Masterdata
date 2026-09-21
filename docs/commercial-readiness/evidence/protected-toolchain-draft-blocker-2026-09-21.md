@@ -10,22 +10,30 @@ The draft adds an offline fixed-module inventory, a package-digest-bound Windows
 
 The package digest must come from an independently reviewed package record. Arbitrary caller-provided digests do not prove approval. The current operating-system user, local Administrators, SYSTEM and the Windows runtime are trusted. This draft does not establish origin against a malicious current user or administrator. The package is not an application deployment or a completed protected production runner.
 
-## Verification and retained failures
+## Historical draft verification and retained failures
 
 - Independent focused inventory/private-denial/admission tests: 36 passed, zero failed/skipped, exit 0, 34.75 seconds, on the draft working tree.
 - TypeScript: exit 0. Scoped ESLint and whitespace checks: exit 0.
-- Latest native fixture attempt with reviewed Node 24.19.0: one failed setup suite; all 23 cases were setup-failure skips, not Windows-platform skips and not passes; exit 1, 6.66 seconds. The host refused at native module admission before CLI dispatch.
+- Before the owner applied the exclusion, the latest native fixture attempt with reviewed Node 24.19.0: one failed setup suite; all 23 cases were setup-failure skips, not Windows-platform skips and not passes; exit 1, 6.66 seconds. The host refused at native module admission before CLI dispatch.
 - Earlier native fixture attempts exposed PowerShell exit-code capture and CodeDOM source-array binding issues, corrected locally. An overly specific draft Node-version predicate was removed: the externally reviewed package digest binds the exact runtime bytes. The preceding Node 22 attempt and all failed attempts remain failures, not substitute evidence.
 - Full Vitest, exact full Playwright, build and final review have not passed for this draft. Prior PR #111 results do not satisfy these gates.
 
 A bounded, synthetic worker inspection confirmed `windhawk.dll`, several Windhawk mod DLLs, and `.whl` runtime libraries loaded outside the expected installation and System32. No private target data was accessed. The draft correctly refused; no extra library was allowlisted and no user-owned program or setting was changed. The pre-launch native dependency/search policy, launcher process containment details and complete positive Windows fixture still require review and proof before this component can be accepted. A post-start module check is a refusal gate, not proof that unknown code never executed.
 
-## Required environment decision
+## Owner environment decision and subsequent verification
 
-Windhawk documents a Process exclusion list in Settings → Advanced settings → More advanced settings, with path patterns. A narrowly scoped proposed exclusion is `%USERPROFILE%\.hr-masterdata-toolchain-*\*`, covering only these retained synthetic/dedicated toolchain installations. Preserve every existing exclusion and all other application settings. The owner must decide whether to apply that local application-setting change or use a clean supported Windows test environment. The agent has not changed it.
+Windhawk documents a Process exclusion list in Settings → Advanced settings → More advanced settings, with path patterns. A narrowly scoped proposed exclusion is `%USERPROFILE%\.hr-masterdata-toolchain-*\*`, covering only these retained synthetic/dedicated toolchain installations. Preserve every existing exclusion and all other application settings. The owner subsequently reported adding this exclusion and restarting Windhawk. The agent did not change it.
 
-After the decision, recreate/relaunch the bounded fixture and verify that the injected modules are absent; do not infer success from the setting alone. Continue implementation review, negative tests, full local suites and exact-head review before any PR acceptance. No unrelated application, Docker Desktop, Windows-wide injection policy or production setting should be altered as a workaround.
+After the decision, each launch must verify its observed native modules; the setting alone does not prove success. Continue implementation review, negative tests, full local suites and exact-head review before any PR acceptance. No unrelated application, Docker Desktop, Windows-wide injection policy or production setting should be altered as a workaround.
 
 [Windhawk official injection/exclusion documentation](https://github.com/ramensoftware/windhawk/wiki/Injection-targets-and-critical-system-processes).
 
 The production isolation proposal still requires separate authorization: retained page/API/job pause, Data API and Realtime shutdown, operator-only PostgreSQL/pooler ingress, non-operator rejection probes, operator TLS/target proof, and all other consumers accounted for. No such hosted change was made. The 48-filter cleanup, 55-row unsigned proof ledger, reviewed bootstrap, history repair, main merge, deployment and reopening gates remain open.
+
+## Post-restart component verification
+
+The local-only protected toolchain component remains under verification. After the owner reported adding the narrow Windhawk exclusion and restarting it, the extended native fixture passed 26/26 (50.12s); a preceding post-restart attempt still failed native-module admission (26 setup-failure skips, exit 1), retained as a failure. Inventory regression tests passed 12/12 (54.38s), admission/private-denial tests 27/27 (1.10s); TypeScript and scoped lint passed. Full local suites and final review remain pending. The inventory proves fixed syntactic imports, not semantic JavaScript closure; native admission observes Node startup modules, not every transient CLI dependency. This component has no private-input loader or database operation. Production remains paused/no-go, Story 22.15 in-progress and Epic 23 on-hold. See docs/commercial-readiness/evidence/protected-toolchain-draft-blocker-2026-09-21.md.
+
+The first post-restart native run passed 23/23 (22.61s, exit 0). After adding CLI-failure, descendant-timeout and oversized-manifest cases, an attempt failed at native admission (26 setup-failure skips, zero passes, 7.91s, exit 1). A redacted module-basename diagnostic was added without broadening admission. The following extended run passed all 26 cases, zero skips/failures, 50.12s, exit 0. The remaining possibility of intermittent injection is not classified as resolved by one successful run.
+
+The syntactic inventory scanner now rejects executable template substitutions, including hidden and Unicode-obfuscated dynamic imports. It permits only the narrow existing template forms, and a positive fixture uses all four actual source modules and the current 68-migration manifest. The native check observes loaded Node modules after worker startup; it is not a complete pre-execution DLL policy or proof of the CLI child''s transient dependencies. The current package hash binds runtime bytes; no arbitrary Node version is accepted as proof of a reviewed package. Process containment is tested for the current nonce-waiting worker and its CLI subtree; it is not an atomic suspended-process launch or a guarantee against trusted-owner tampering.

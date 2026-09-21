@@ -64,6 +64,7 @@ namespace HrMasterdata.Release
             IntPtr job = IntPtr.Zero;
             ProtectedFileLease lease = null;
             int stage = 0;
+            string unexpectedModule = "";
             try
             {
                 Require(args.Length == 0);
@@ -126,7 +127,14 @@ namespace HrMasterdata.Release
                 Require(match.Success);
                 // Loaded native images must be this leased runtime or the OS.
                 stage = 5; foreach (ProcessModule module in child.Modules)
-                    Require(files.ContainsKey(module.FileName) || module.FileName.StartsWith(Environment.SystemDirectory + "\\", StringComparison.OrdinalIgnoreCase));
+                {
+                    if (!files.ContainsKey(module.FileName) && !module.FileName.StartsWith(Environment.SystemDirectory + "\\", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string name = Path.GetFileName(module.FileName);
+                        unexpectedModule = Regex.IsMatch(name, "\\A[a-zA-Z0-9_.-]{1,120}\\z") ? name : "redacted";
+                        Require(false);
+                    }
+                }
                 stage = 6; child.StandardInput.Write("{\"schemaVersion\":1,\"operation\":\"verify-toolchain\",\"nonce\":\"" + match.Groups[1].Value + "\"}");
                 child.StandardInput.Close();
                 var output = child.StandardOutput.ReadToEndAsync();
@@ -139,6 +147,7 @@ namespace HrMasterdata.Release
             catch
             {
                 Console.Error.WriteLine("Protected bootstrap refused at stage " + stage + "; no database operation is available.");
+                if (unexpectedModule.Length > 0) Console.Error.WriteLine("Unexpected native module: " + unexpectedModule);
                 return 1;
             }
             finally
