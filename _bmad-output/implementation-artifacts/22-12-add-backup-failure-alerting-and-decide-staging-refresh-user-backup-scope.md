@@ -8,6 +8,8 @@ baseline_commit: 5a6096948d1c1ace3287aa71b922b886da29f5e8
 
 done
 
+**Story 22.15 candidate follow-up — 2026-09-20:** The backup-pause change requires an approved default-branch invocation and a shared checked source commit for the pause gate and backup job. Its failure-alert path covers prerequisite failures as well as backup failures without treating an intentional pause as failure. This is candidate code preparation; the old-main workflow is still active pending separate approval to disable it. The June controlled throwaway-branch test below is historical evidence, not a current instruction or authorization to dispatch a hosted workflow. No new hosted failure drill was run. Current verification and remaining gates are recorded in [Story 22.15 evidence](../../docs/commercial-readiness/evidence/production-preflight-and-job-pause-2026-09-20.md).
+
 - **Priority:** P1
 - **Story Points:** 2
 - **Dependencies:** `22.8` (done — restore drill surfaced the backup gap + the two follow-ups), `22.11` (done — non-production email suppression removes the email-spam rationale for the staging-refresh `users` exclusion). No story is blocked by this one.

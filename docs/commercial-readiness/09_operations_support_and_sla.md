@@ -88,6 +88,8 @@ Not verified from repo. Recommended target:
 
 ### Backups And Restore
 
+**2026-09-20 candidate boundary:** Story 22.15 adds a default-branch-bound pause gate and a separate failure-alert path covering the pause prerequisite and backup job. Valid paused or unapproved-ref skips do not alert. This does not change the still-active old-main workflow: disabling that entire workflow remains a separate approval, followed by fresh staging preservation proof. The historical hosted verifications below are not operational proof of this candidate. See [current evidence](evidence/production-preflight-and-job-pause-2026-09-20.md).
+
 Current workflow:
 
 - Runs daily at 02:00 UTC.
