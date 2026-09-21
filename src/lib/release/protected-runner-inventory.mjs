@@ -252,6 +252,32 @@ function importsOf(source) {
       fail();
     }
     if (
+      source.startsWith('export', index) &&
+      isIdentifierBoundary(source, index - 1) &&
+      isIdentifierBoundary(source, index + 'export'.length)
+    ) {
+      const cursor = skipTrivia(source, index + 'export'.length);
+      // Re-export forms are module dependencies and do not belong in this
+      // fixed closure. Plain local export lists remain ordinary declarations.
+      if (source[cursor] === '*') fail();
+      if (source[cursor] === '{') {
+        const close = source.indexOf('}', cursor + 1);
+        if (close === -1) fail();
+        const afterList = skipTrivia(source, close + 1);
+        if (
+          source.startsWith('from', afterList) &&
+          isIdentifierBoundary(source, afterList - 1) &&
+          isIdentifierBoundary(source, afterList + 'from'.length)
+        ) {
+          fail();
+        }
+        index = close + 1;
+        continue;
+      }
+      index = cursor;
+      continue;
+    }
+    if (
       !source.startsWith('import', index) ||
       !isIdentifierBoundary(source, index - 1) ||
       !isIdentifierBoundary(source, index + 'import'.length)

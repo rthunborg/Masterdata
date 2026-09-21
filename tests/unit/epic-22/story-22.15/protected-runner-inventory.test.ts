@@ -241,6 +241,16 @@ describe('Story 22.15 protected runner inventory', { timeout: 60_000 }, () => {
     );
   });
 
+  it('keeps a plain local export list outside the dependency graph', () => {
+    write(
+      'supabase/verify/verify-target-binding.mjs',
+      target() + '\nexport { target as localTarget };\n'
+    );
+    record();
+
+    expect(inspectProtectedRunnerInventory(options()).modules).toHaveLength(4);
+  });
+
   it.each([
     ['a committed missing worker', () => unlinkSync(path.join(workspace, 'src/lib/release/protected-bootstrap-worker.mjs')), true],
     ['uncommitted changed runtime bytes', () => write('supabase/verify/verify-target-binding.mjs', target() + '\n// changed\n'), false],
@@ -255,6 +265,8 @@ describe('Story 22.15 protected runner inventory', { timeout: 60_000 }, () => {
     ['an unapproved static package', () => write('supabase/verify/verify-production-baseline-catalog.mjs', catalog("import other from 'other';"))],
     ['an unapproved dynamic import', () => write('src/lib/release/protected-bootstrap-worker.mjs', worker('./other.mjs'))],
     ['a CommonJS load', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nrequire('node:fs');\n")],
+    ['a star re-export', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nexport * from './unlisted.mjs';\n")],
+    ['a named re-export', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nexport { target } from './unlisted.mjs';\n")],
   ])('rejects a committed module with %s', (_label, change) => {
     change();
     record();
