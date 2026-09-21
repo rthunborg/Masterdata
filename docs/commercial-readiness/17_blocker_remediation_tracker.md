@@ -68,3 +68,8 @@ The additional preparation/rehearsal component is blocked from production use un
 ## E-013 protected file-lease preparation — 2026-09-21
 
 Protected Windows file-lease component at 7e54ae33d32d6cda791e3cd2143940573405e470. The 26 native Windows cases passed in the focused 53/53 run (5.19s); Linux CI classifies those 26 as Windows-kernel-only skips, never passes. Tested-implementation receipt SHA-256 34d28d1a8344fed29e9fc291397f5a85cd24f29a3a53b734f83604a353b05092. Production remains paused/no-go; Story 22.15 remains in-progress; Epic 23 remains on-hold. The component is not a complete bootstrap: trusted installation/origin attestation, complete module closure, runner integration, production-profile fixture admission, traffic isolation and target-write admission remain open. The 55 ledger rows are UNPROVED/unsigned, 13 executes are proposed, 48 orphan filters need separate approved cleanup, and seven dated strict production failures remain open. This is not an acceptance of a protected bootstrap or a production apply path.
+
+
+## Protected toolchain draft blocker — 2026-09-21
+
+Draft protected toolchain installation/launch is incomplete and not release-ready. Independent focused inventory/denial tests passed 36/36 (34.75s, exit 0), TypeScript and scoped lint passed. The native host refused injected Windhawk modules before CLI dispatch: one failed setup suite, 23 setup-failure-skipped cases, zero native passes claimed. Full Vitest/Playwright and final review were not completed for this draft. No Windhawk setting, private input, hosted database, main, deployment or production-pause change occurred. Story 22.15 remains in-progress; Epic 23 remains on-hold. See docs/commercial-readiness/evidence/protected-toolchain-draft-blocker-2026-09-21.md.

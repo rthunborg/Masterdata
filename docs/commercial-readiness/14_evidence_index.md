@@ -105,3 +105,8 @@ Current staging execution is 68/68 after reviewed PR #102; independently reviewe
 ## Protected file-lease component evidence — 2026-09-21
 
 Local Windows lease evidence is recorded in [protected-file-lease-component-2026-09-21.md](evidence/protected-file-lease-component-2026-09-21.md): 26 native cases passed on Windows within focused 53/53; Linux skips are explicitly non-passing. The component is not a complete bootstrap: trusted installation/origin attestation, complete module closure, runner integration, production-profile fixture admission, traffic isolation and target-write admission remain open. The 55 ledger rows are UNPROVED/unsigned, 13 executes are proposed, 48 orphan filters need separate approved cleanup, and seven dated strict production failures remain open.
+
+
+## Protected toolchain draft blocker — 2026-09-21
+
+Draft protected toolchain installation/launch is incomplete and not release-ready. Independent focused inventory/denial tests passed 36/36 (34.75s, exit 0), TypeScript and scoped lint passed. The native host refused injected Windhawk modules before CLI dispatch: one failed setup suite, 23 setup-failure-skipped cases, zero native passes claimed. Full Vitest/Playwright and final review were not completed for this draft. No Windhawk setting, private input, hosted database, main, deployment or production-pause change occurred. Story 22.15 remains in-progress; Epic 23 remains on-hold. See docs/commercial-readiness/evidence/protected-toolchain-draft-blocker-2026-09-21.md.
