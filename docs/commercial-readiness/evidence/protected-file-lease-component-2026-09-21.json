@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "kind": "protected-file-lease-component-evidence",
+  "testedImplementation": "7e54ae33d32d6cda791e3cd2143940573405e470",
+  "currentComponentScope": {
+    "encryptedTargetInputsAccessed": false,
+    "completeBootstrap": false,
+    "hostedAccess": false,
+    "productionApplyEnabled": false,
+    "localOnly": true,
+    "epic23": "on-hold",
+    "productionPauseChanged": false,
+    "storyStatus": "in-progress"
+  },
+  "precedingPr110MergeAndHostedProof": {
+    "scope": "Dated preceding merge and hosted reproof; not a current-component hosted operation",
+    "sha256": "29f624ee723e39ae064deffe7ad74a7e36805bfebd3f37aa480f36875cf9b18d",
+    "receipt": {
+      "capturedAtUtc": "2026-09-21T13:16:59.6762622Z",
+      "pullRequest": 110,
+      "reviewedHead": "8575a25bea6ca5a66e9a9f76c4a504db5d3cb9cf",
+      "previousStaging": "0a8341f6cfd8fb4f2371ad26a6646b7289d0472d",
+      "stagingMerge": "1860472755fa63802059203b2edda7d550dc2ba0",
+      "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+      "mergeTree": "a41564707891fe8ddd71259288ba6197c18d889e",
+      "mergeTreeMatchesReviewedHead": true,
+      "expectedParentsVerified": true,
+      "postMergeCheckoutClean": true,
+      "finalReview": "https://github.com/rthunborg/Masterdata/pull/110#issuecomment-5761048903",
+      "resolvedPriorInlineFindings": 1,
+      "newInlineFindings": 0,
+      "checks": [
+        "Run Tests: success",
+        "Vercel: success",
+        "Vercel Preview Comments: success"
+      ],
+      "finalHeadFocusedTests": {
+        "failed": 0,
+        "skipped": 0,
+        "durationSeconds": 1.03,
+        "exitCode": 0,
+        "passed": 51
+      },
+      "postMergeSupportTests": {
+        "durationMs": 79.8972,
+        "failed": 0,
+        "skipped": 0,
+        "passed": 11
+      },
+      "workflowState": "disabled_manually",
+      "postMergeProofs": {
+        "migration": {
+          "phase": "migration-post",
+          "commit": "1860472755fa63802059203b2edda7d550dc2ba0",
+          "capturedAtUtc": "2026-09-21T13:16:07.251Z",
+          "hostedWriteAttempted": false,
+          "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+          "repositoryMigrationCount": 68,
+          "verificationStage": "complete",
+          "toolingTlsAndThreeWayBindingVerified": true,
+          "hostedConnectionAttempted": true,
+          "localHistoryCount": 68,
+          "remoteHistoryCount": 68,
+          "expectedPendingVersions": [],
+          "historyMatchesManifest": true,
+          "passed": true
+        },
+        "advisors": {
+          "phase": "advisors-post",
+          "commit": "1860472755fa63802059203b2edda7d550dc2ba0",
+          "capturedAtUtc": "2026-09-21T13:16:10.681Z",
+          "hostedWriteAttempted": false,
+          "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+          "repositoryMigrationCount": 68,
+          "verificationStage": "complete",
+          "toolingTlsAndThreeWayBindingVerified": true,
+          "hostedConnectionAttempted": true,
+          "advisors": {
+            "security": {
+              "total": 0,
+              "counts": {}
+            },
+            "performance": {
+              "total": 3,
+              "counts": {
+                "multiple_permissive_policies:WARN": 3
+              }
+            },
+            "scope": "exact reviewed commands; pinned CLI WARN minimum; dated scope limitations retained"
+          },
+          "passed": true
+        },
+        "catalog": {
+          "phase": "catalog-post",
+          "commit": "1860472755fa63802059203b2edda7d550dc2ba0",
+          "capturedAtUtc": "2026-09-21T13:16:16.792Z",
+          "hostedWriteAttempted": false,
+          "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+          "repositoryMigrationCount": 68,
+          "verificationStage": "complete",
+          "toolingTlsAndThreeWayBindingVerified": true,
+          "hostedConnectionAttempted": true,
+          "checksPassed": 16,
+          "failedChecks": [],
+          "passed": true
+        },
+        "aggregates": {
+          "phase": "aggregates-post",
+          "commit": "1860472755fa63802059203b2edda7d550dc2ba0",
+          "capturedAtUtc": "2026-09-21T13:16:18.701Z",
+          "hostedWriteAttempted": false,
+          "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+          "repositoryMigrationCount": 68,
+          "verificationStage": "complete",
+          "toolingTlsAndThreeWayBindingVerified": true,
+          "hostedConnectionAttempted": true,
+          "unchangedFromPriorAppliedBaseline": true,
+          "diagnostics": {
+            "repayment": {
+              "omc_null": 32,
+              "omc_true": 0,
+              "pe3_null": 32,
+              "pe3_true": 1,
+              "omc_false": 1,
+              "pe3_false": 0
+            },
+            "saved_filters": {
+              "total": 0,
+              "empty_names": 0,
+              "overlength_names": 0,
+              "orphan_auth_references": 0
+            },
+            "permission_hashes": {
+              "diet_details": {
+                "config_rows": 1,
+                "permission_hash": "608d8d6a5846555a137171568d7b82a5"
+              },
+              "special_diet": {
+                "config_rows": 1,
+                "permission_hash": "608d8d6a5846555a137171568d7b82a5"
+              },
+              "repayment_needed_omc": {
+                "config_rows": 1,
+                "permission_hash": "02b8319f6f054191fe4131b27e060f98"
+              },
+              "repayment_needed_pe3": {
+                "config_rows": 1,
+                "permission_hash": "3a274a1d25cd34f07f378195bb080f29"
+              }
+            }
+          },
+          "passed": true
+        },
+        "audit": {
+          "phase": "audit-post",
+          "commit": "1860472755fa63802059203b2edda7d550dc2ba0",
+          "capturedAtUtc": "2026-09-21T13:16:20.418Z",
+          "hostedWriteAttempted": false,
+          "manifestSha256": "6f3b2b2f480e39b25e37f3974872236074985ed3b3b525c2d885cc6a7ad52167",
+          "repositoryMigrationCount": 68,
+          "verificationStage": "complete",
+          "toolingTlsAndThreeWayBindingVerified": true,
+          "hostedConnectionAttempted": true,
+          "audit": {
+            "audit_rows": 353,
+            "nonnull_changed_by": 90,
+            "unmapped_changed_by": 0,
+            "canonical_history_hash": "084def93b0dfd29df9076e2d007116ff"
+          },
+          "predecessorComparison": {
+            "matched": true,
+            "interpretation": "v68 pre/post preservation comparison against reviewed staging baseline"
+          },
+          "passed": true
+        }
+      },
+      "hostedDatabaseWritePerformed": false,
+      "productionDeploymentPerformed": false,
+      "mainMergePerformed": false,
+      "productionReopened": false,
+      "guardCloseActor": {
+        "ok": true,
+        "state": "stop_requested"
+      },
+      "guardList": {
+        "ok": true,
+        "state": "listed"
+      },
+      "managedServiceLaunched": false
+    }
+  },
+  "fullVitest": {
+    "passed": 3651,
+    "skipped": 0,
+    "gate": {
+      "file": "vitest-7e54ae3-third.json",
+      "sha256": "5dd282b96cbbabe9996024a93ebd4536c3ab6a0bbcb193f2eb0474a966630754",
+      "result": {
+        "schemaVersion": 1,
+        "kind": "guarded-local-release-gate",
+        "localOnly": true,
+        "gate": "vitest",
+        "command": "npx vitest run",
+        "sourceHead": "7e54ae33d32d6cda791e3cd2143940573405e470",
+        "sourceHeadUnchanged": true,
+        "sourceStillClean": true,
+        "sourcePlanSha256": "4059c0a2429ff2274ac8f53a801350877759f89e093dd74bd1af97355310c972",
+        "sourcePlanUnchanged": true,
+        "sourcePlanCompleteBinding": true,
+        "fixtureInputsValidated": true,
+        "ownedNext": "separate_guard_resource_verified",
+        "startedAt": "2026-09-21T15:24:42.913Z",
+        "durationMs": 127701,
+        "exitCode": 0,
+        "childExitCode": 0,
+        "signal": null,
+        "logSha256": "21a24ece889665ca76d9635c420f81310dd0e2adadfa9ff109bd9c1b0aae8141",
+        "logBytes": 1197190
+      }
+    },
+    "failedTests": 0,
+    "reportedDurationSeconds": 117.28,
+    "failedSuites": 0,
+    "filesPassed": 331
+  },
+  "retainedVitestFailures": [
+    {
+      "passed": 3650,
+      "skipped": 0,
+      "gate": {
+        "file": "vitest-7e54ae3.json",
+        "sha256": "d98ce9ab58b2e1361bd3aca298593cf147392bc7d9c6e13b1d2d7dc891fa4349",
+        "result": {
+          "schemaVersion": 1,
+          "kind": "guarded-local-release-gate",
+          "localOnly": true,
+          "gate": "vitest",
+          "command": "npx vitest run",
+          "sourceHead": "7e54ae33d32d6cda791e3cd2143940573405e470",
+          "sourceHeadUnchanged": true,
+          "sourceStillClean": true,
+          "sourcePlanSha256": "4059c0a2429ff2274ac8f53a801350877759f89e093dd74bd1af97355310c972",
+          "sourcePlanUnchanged": true,
+          "sourcePlanCompleteBinding": true,
+          "fixtureInputsValidated": true,
+          "ownedNext": "separate_guard_resource_verified",
+          "startedAt": "2026-09-21T15:16:35.522Z",
+          "durationMs": 149216,
+          "exitCode": 1,
+          "childExitCode": 1,
+          "signal": null,
+          "logSha256": "c35d0db9d67b751037f67cd001a2b122022b6ddadbd274fa950aeae73691b2e8",
+          "logBytes": 1203013
+        }
+      },
+      "failedTests": 1,
+      "reportedDurationSeconds": 127.91,
+      "failure": "Unchanged live export test AbortError; root cause not proved",
+      "failedSuites": 0
+    },
+    {
+      "gate": {
+        "file": "vitest-7e54ae3-rerun.json",
+        "sha256": "c636765d69fb83c5a1400562723a62742a456011980da92338ccd81194da3dc3",
+        "result": {
+          "schemaVersion": 1,
+          "kind": "guarded-local-release-gate",
+          "localOnly": true,
+          "gate": "vitest",
+          "command": "npx vitest run",
+          "sourceHead": "7e54ae33d32d6cda791e3cd2143940573405e470",
+          "sourceHeadUnchanged": true,
+          "sourceStillClean": true,
+          "sourcePlanSha256": "4059c0a2429ff2274ac8f53a801350877759f89e093dd74bd1af97355310c972",
+          "sourcePlanUnchanged": true,
+          "sourcePlanCompleteBinding": true,
+          "fixtureInputsValidated": true,
+          "ownedNext": "separate_guard_resource_verified",
+          "startedAt": "2026-09-21T15:20:13.025Z",
+          "durationMs": 134975,
+          "exitCode": 1,
+          "childExitCode": 1,
+          "signal": null,
+          "logSha256": "e5547218bb3b8ce9814f021573667e6e87b88bb159c70fa8420586d4b24b402a",
+          "logBytes": 1201171
+        }
+      },
+      "failedTests": 0,
+      "failedSuites": 1,
+      "passed": 3643,
+      "reportedDurationSeconds": 123.6,
+      "failure": "Unchanged RLS suite beforeAll RESET ROLE masked original SQL error; root cause not proved",
+      "managedSkips": 0,
+      "setupFailureSkips": 8
+    }
+  ],
+  "rlsFocusedDiagnostic": {
+    "passed": 8,
+    "skipped": 0,
+    "logSha256": "113cdca0fb5278c361968c26b324f4e0e286aea755159df0408d012d52ef8f2c",
+    "reportedDurationSeconds": 0.949,
+    "wrapperDurationMs": 1439,
+    "substitutesForFullGate": false,
+    "failed": 0
+  },
+  "playwright": {
+    "skipsCountAsPasses": false,
+    "summary": {
+      "tests": 210,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 47,
+      "durationSeconds": 1271.4770599999997,
+      "skippedInventoryCount": 47,
+      "observedSkipCount": 47,
+      "skipInventoryMatched": true,
+      "xmlSha256": "c28715ba86ecd06d9d2721fe25ed61060bf5cf2531c08bfa62f87ee732fd3878",
+      "passed": 163
+    },
+    "gate": {
+      "file": "playwright-7e54ae3.json",
+      "sha256": "252e6e3e5e290a20c1f63df938f04fcb5117676b9046a7a4119f732cf25b0852",
+      "result": {
+        "schemaVersion": 1,
+        "kind": "guarded-local-release-gate",
+        "localOnly": true,
+        "gate": "playwright",
+        "command": "npx playwright test",
+        "sourceHead": "7e54ae33d32d6cda791e3cd2143940573405e470",
+        "sourceHeadUnchanged": true,
+        "sourceStillClean": true,
+        "sourcePlanSha256": "4059c0a2429ff2274ac8f53a801350877759f89e093dd74bd1af97355310c972",
+        "sourcePlanUnchanged": true,
+        "sourcePlanCompleteBinding": true,
+        "fixtureInputsValidated": true,
+        "ownedNext": "playwright_webServer_child",
+        "startedAt": "2026-09-21T15:28:30.805Z",
+        "durationMs": 1285584,
+        "exitCode": 0,
+        "childExitCode": 0,
+        "signal": null,
+        "logSha256": "1ec2d8527db6db9ae5147a35b1c5b6c83e01a0be5e8a027948f374d1f011995f",
+        "logBytes": 177444
+      }
+    },
+    "skipInventory": "production-readiness-pr95-playwright-2026-09-09.md"
+  },
+  "stagingPreviewBuild": {
+    "file": "build-7e54ae3.json",
+    "sha256": "066ceda0ebda4c01ab51f4c391bd2c7482762c95ab5c3fb419ae67f1a4b8b5d2",
+    "result": {
+      "schemaVersion": 1,
+      "kind": "guarded-local-release-gate",
+      "localOnly": true,
+      "gate": "build",
+      "command": "pnpm run build",
+      "sourceHead": "7e54ae33d32d6cda791e3cd2143940573405e470",
+      "sourceHeadUnchanged": true,
+      "sourceStillClean": true,
+      "sourcePlanSha256": "4059c0a2429ff2274ac8f53a801350877759f89e093dd74bd1af97355310c972",
+      "sourcePlanUnchanged": true,
+      "sourcePlanCompleteBinding": true,
+      "fixtureInputsValidated": true,
+      "ownedNext": "not_required",
+      "startedAt": "2026-09-21T15:50:44.068Z",
+      "durationMs": 25264,
+      "exitCode": 0,
+      "childExitCode": 0,
+      "signal": null,
+      "logSha256": "863b419739bbd8fba8d69e806659e86407f2814bc7de547a4f8b987c4d9bc103",
+      "logBytes": 4099
+    }
+  },
+  "implementationInvariants": {
+    "file": "invariants\\lease-invariants-result.json",
+    "sha256": "277f7b8481deb5a3a9f44e59c544791223c9c6d382d331a63fa41ef1a628be79",
+    "result": {
+      "schemaVersion": 1,
+      "result": "pass",
+      "base": "1860472755fa63802059203b2edda7d550dc2ba0",
+      "testedImplementation": "7e54ae33d32d6cda791e3cd2143940573405e470",
+      "head": "7e54ae33d32d6cda791e3cd2143940573405e470",
+      "testedImplementationDelta": [
+        "src/lib/release/protected-file-lease.cs",
+        "tests/support/protected-file-lease-fixture.ps1",
+        "tests/unit/epic-22/story-22.15/protected-file-lease.test.ts"
+      ],
+      "finalDocumentationDelta": [],
+      "migrationCount": 68,
+      "protectedPathCount": 88,
+      "protectedPathsByteIdenticalToBase": true,
+      "frozenSpecificationRegionByteIdenticalToBase": true,
+      "statuses": {
+        "story_22_15": "in-progress",
+        "epic_23": "on-hold",
+        "yamlFilesChecked": 3,
+        "parser": "js-yaml 4.1.1 (duplicate keys rejected)"
+      },
+      "repairLedger": {
+        "rowCount": 55,
+        "everyRow": "UNPROVED/unsigned"
+      },
+      "windowsLeaseTests": {
+        "caseCount": 26,
+        "nonWindowsSkipExplicit": true,
+        "nativeKernelFixture": true
+      },
+      "hostedAccess": false
+    }
+  },
+  "quality": {
+    "file": "quality-7e54ae3.json",
+    "sha256": "778afb7cbc33f8e846d837398fc73acb0b6f7a736e736feb4865bb3a4e626a99",
+    "result": {
+      "schemaVersion": 1,
+      "sourceHead": "7e54ae33d32d6cda791e3cd2143940573405e470",
+      "localOnly": true,
+      "typescript": {
+        "exitCode": 0,
+        "command": "pnpm exec tsc --noEmit",
+        "durationMs": null
+      },
+      "eslint": {
+        "exitCode": 0,
+        "command": "pnpm exec eslint .",
+        "durationMs": null,
+        "errors": 0,
+        "warnings": 296
+      },
+      "focused": {
+        "passed": 53,
+        "nativeWindowsCases": 26,
+        "linuxNativeSkips": 26,
+        "skipped": 0,
+        "failed": 0,
+        "reportedDurationSeconds": 5.19
+      },
+      "independentCodeReview": {
+        "scope": "three implementation/test files; final 26 cases",
+        "actionableFindings": 0,
+        "executedNativeFixture": false
+      },
+      "encryptedTargetInputsAccessed": false,
+      "hostedAccess": false,
+      "productionApplyEnabled": false
+    }
+  },
+  "localRetainedCatalog": {
+    "file": "baseline-local-catalog-7e54ae3.json",
+    "sha256": "34418e9ae617b166a5505cbc98646f3e9dc35e7ff46a7e89b134e6900f69610f",
+    "result": {
+      "sourceHead": "7e54ae33d32d6cda791e3cd2143940573405e470",
+      "localOnly": true,
+      "hostedAccess": false,
+      "tlsClaim": "none-local-loopback-ssl-disabled",
+      "phase": "post_apply",
+      "count": 16,
+      "failedChecks": []
+    }
+  },
+  "freshCleanMigrationChainReplayed": false,
+  "audits": {
+    "all": {
+      "exitCode": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 10,
+        "high": 16,
+        "critical": 1
+      }
+    },
+    "production": {
+      "exitCode": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 1,
+        "high": 0,
+        "critical": 0
+      },
+      "acceptedUntil": "2026-09-30",
+      "advisory": "GHSA-w5hq-g745-h8pq"
+    }
+  },
+  "finalDocumentationHeadReview": "Pending at this evidence snapshot; track exact final head through PR checks/review"
+}

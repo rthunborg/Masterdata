@@ -57,7 +57,7 @@ development_status:
   22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: done
   22-13-remediate-pr-91-security-and-readiness-review-findings: done
   22-14-fix-omc-masterdata-reminder-timing-digest-and-failure-semantics: done
-  22-15-production-readiness-remediation: in-progress
+  22-15-production-readiness-remediation: in-progress # Protected Windows file-lease component is local-only preparation; remaining production actions retain their separate gates.
   epic-22-retrospective: optional
   epic-23: on-hold # Explicit owner hold; do not activate or create an Epic 23 status artifact.
   # Existing Epic 23 story placeholders remain backlog-only under the epic hold; no active planning is authorized.

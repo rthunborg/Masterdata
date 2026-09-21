@@ -30,8 +30,8 @@ epic_metrics:
   current_coverage_critical: 0
   current_test_execution_time_seconds: 1196
   total_tests_estimated: 106
-  total_tests_implemented: 412
-  total_tests_passing: 412
+  total_tests_implemented: 438 # Historical category tally 412 plus 26; not the full-suite count.
+  total_tests_passing: 438 # Same historical category tally; current full Vitest is 3651/3651.
 
 stories:
   - id: '22.1'
@@ -239,8 +239,8 @@ stories:
     status: 'in-progress'
     story_points: 0
     estimated_tests: 26
-    implemented_tests: 165 # Prior 159 plus six repayment-default/catalog-verifier regressions; focused 232/232 and exact full local gate complete.
-    passing_tests: 165
+    implemented_tests: 191 # Historical tracked subset 165 plus 26 protected Windows file-lease regressions.
+    passing_tests: 191 # Includes the recorded Windows run; Linux kernel-only skips are not passes.
     dependencies: ['22.10', '22.13', '22.14']
     assignee: 'Codex'
     started_date: 2026-08-31
@@ -248,7 +248,7 @@ stories:
     blockers:
       - 'PR #102 reviewed head 841794efd9377f719a2262cfd1b2f633780c8a56 passed final Reviewbot comment 5686075592 and all three checks, then merged under standing authorization as staging 3e41b35c269d606545b766d1445d1e361e92f88c; its tree matches the reviewed head, main is unchanged, and no unexpected intervening commit occurred. Six fresh pre-proofs, exact one-file reviewed dry run, and authorized v68 20260910184840 apply passed. Immediate staging history is 68/68 with no pending/remote-only version; all five post phases pass, including strict catalog 16/16 and preserved advisor/aggregate/permission-hash/audit baselines. Owner staging verification remains open; production stays paused.'
       - 'Historical local results remain dated evidence. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the PR #104 final-head delta was documentation-only. Independently reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344; fresh pinned read-only proof passed 68/68 history, strict 16/16, scoped advisors, and preservation comparisons. Production has a proposed 55-repair/13-execute ordering blocked before actual apply. Seven strict catalog failures, the unsigned 55-row ledger, cleanup, isolation/settings, repair, deployment and reopening gates remain open.'
-    notes: 'PR #100 v67 is historical evidence. Reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344; fresh pinned read-only proof passed 68/68 history, strict 16/16, scoped advisors, and preservation comparisons. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the final-head delta was documentation-only. This documentation change builds on PR #105 merge 51f1adbf9cf3446dd2405bc4bee57cd22a005759 and adds a non-executable forward-bootstrap design: the dated 13-file subset is a proposal, not an accepted production profile or apply proof. It requires a production-profile fixture, transaction/history behavior proof, complete write isolation, strict final proof, and per-effect unsigned-ledger lineage before any later action. Owner application verification and seven strict production failures remain open. Pause status relies on the recorded 2026-09-15 observation; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
+    notes: 'Historical PR #105 record: PR #100 v67 is historical evidence. Reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344; fresh pinned read-only proof passed 68/68 history, strict 16/16, scoped advisors, and preservation comparisons. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the final-head delta was documentation-only. This documentation change builds on PR #105 merge 51f1adbf9cf3446dd2405bc4bee57cd22a005759 and adds a non-executable forward-bootstrap design: the dated 13-file subset is a proposal, not an accepted production profile or apply proof. It requires a production-profile fixture, transaction/history behavior proof, complete write isolation, strict final proof, and per-effect unsigned-ledger lineage before any later action. Owner application verification and seven strict production failures remain open. Pause status relies on the recorded 2026-09-15 observation; Story 22.15 remains in-progress and Epic 23 remains on-hold. Current component at staging baseline 1860472 after reviewed PR #110: 26 native Windows protected file-lease cases passed within focused 53/53 in 5.19 seconds; Linux skips are explicitly non-passing. Full Vitest later passed 3,651/3,651 across 331 files with zero skips/failures (117.28 seconds reported; 127.701 seconds wrapper); the two earlier failed full attempts remain dated evidence. Exact Playwright passed 163 tests with 47 classified skips and zero failures/errors; the staging-preview build passed. A retained local fixture passed strict catalog 16/16; no fresh clean migration chain is claimed. See docs/commercial-readiness/evidence/protected-file-lease-component-2026-09-21.md. The component is not a complete bootstrap: trusted installation/origin attestation, complete module closure, runner integration, production-profile fixture admission, traffic isolation and target-write admission remain open. The 55 ledger rows are UNPROVED/unsigned, 13 executes are proposed, 48 orphan filters need separate approved cleanup, and seven dated strict production failures remain open.'
 
 progress_summary:
   total_stories: 15
@@ -266,14 +266,14 @@ progress_summary:
 
 test_coverage_summary:
   total_tests_estimated: 106
-  total_tests_implemented: 412
-  total_tests_passing: 412
-  implementation_percentage: 388.7
-  unit_tests: 291
+  total_tests_implemented: 438 # Historical category tally 412 plus 26; not the full-suite count.
+  total_tests_passing: 438 # Same historical category tally; current full Vitest is 3651/3651.
+  implementation_percentage: 413.2
+  unit_tests: 317
   integration_tests: 116
   e2e_tests: 3 # Includes one safe unauthorized-only Story 22.14 cron case, passed in the exact full Playwright gate.
   performance_tests: 0
-  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 291 + 116 + 3 + 0 + 2 = 412.
+  manual_checklist_tests: 2 # Story 22.8 restore validation checklist + Story 22.12 controlled workflow_dispatch failure verification; 317 + 116 + 3 + 0 + 2 = 438.
 
 blockers:
   - 'Historical v67 hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16 at that historical release point. Current staging is v68 at 68/68 with no pending or remote-only version and strict catalog 16/16. Owner application verification remains open. Production remains separately gated and paused.'
@@ -303,7 +303,7 @@ next_actions:
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
   - 'Historical PR #100 staging v67 was applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Current staging is v68 at 68/68 with no pending versions. Owner staging verification remains open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 last_updated: 2026-09-21
-updated_by: 'PR #109 reviewed head b827a7b merged as staging 0a8341f with an identical tree; main remains 8223509. On 2026-09-21 the owner-approved entire Supabase Nightly Backup workflow disable completed: disabled_manually, with zero runs in all five nonterminal states. Automated backups, pruning and staging refresh are paused; existing backups were untouched and re-enable needs a separate decision. Fresh staging proof passed 68/68 history, strict catalog 16/16, scoped advisors and unchanged repayment, four permission hashes and audit baseline. Read-only Vercel inspection reconfirmed the recorded production pause target, disabled automatic domain assignment and zero active crons. Fresh production count-only proof still finds 48 orphaned saved filters, zero empty/overlength names; its migration prerequisite fails. Full database isolation and protected bootstrap remain unproved; 55 ledger rows remain UNPROVED/unsigned and 13 executes remain proposed. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.'
+updated_by: 'Protected Windows file-lease component at 7e54ae33d32d6cda791e3cd2143940573405e470. The 26 native Windows cases passed in the focused 53/53 run (5.19s); Linux CI classifies those 26 as Windows-kernel-only skips, never passes. Tested-implementation receipt SHA-256 34d28d1a8344fed29e9fc291397f5a85cd24f29a3a53b734f83604a353b05092. Production remains paused/no-go; Story 22.15 remains in-progress; Epic 23 remains on-hold.'
 
 pr_95_playwright_gate:
   date: 2026-09-09
@@ -394,3 +394,7 @@ post_quiescence_proof_20260921:
   story_status: in-progress
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md
+
+lease_component_note: 'Protected Windows file-lease component at 7e54ae33d32d6cda791e3cd2143940573405e470. The 26 native Windows cases passed in the focused 53/53 run (5.19s); Linux CI classifies those 26 as Windows-kernel-only skips, never passes. Tested-implementation receipt SHA-256 34d28d1a8344fed29e9fc291397f5a85cd24f29a3a53b734f83604a353b05092. Production remains paused/no-go; Story 22.15 remains in-progress; Epic 23 remains on-hold. The component is not a complete bootstrap: trusted installation/origin attestation, complete module closure, runner integration, production-profile fixture admission, traffic isolation and target-write admission remain open. The 55 ledger rows are UNPROVED/unsigned, 13 executes are proposed, 48 orphan filters need separate approved cleanup, and seven dated strict production failures remain open.'
+
+tracked_test_tally_note: 'The pre-existing story-row/category-tally difference is 15 (427 versus 412 at the base; 453 versus 438 after adding these 26 cases). Its classification is not established here. These planning tallies are not canonical unique-test totals; use the exact 3651/3651 full-suite receipt for verification.'
