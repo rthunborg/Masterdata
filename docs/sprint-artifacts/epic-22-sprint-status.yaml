@@ -303,7 +303,7 @@ next_actions:
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
   - 'Historical PR #100 staging v67 was applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Current staging is v68 at 68/68 with no pending versions. Owner staging verification remains open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 last_updated: 2026-09-22
-updated_by: 'Implementation 357552b; guard Docker blocker cleared. Playwright 163 passed/47 matched skips/0 failures; staging build, TypeScript and lint passed. Full Vitest failed twice: cold export timeout, then Windhawk injection with 26 setup-failure skips. No waiver. Await absolute exclusion confirmation and fresh full Vitest; final-head review/checks also pending. Draft PR112 must not merge. Story in-progress, Epic23 on-hold, production paused/no-go.'
+updated_by: 'Head 3e191a1 full Vitest passed 3695/3695, 333 files, zero skips/failures, exit 0 after verified owner Windhawk exclusion and route prewarm. Focused component 44/44 passed. Earlier failures retained. Implementation 357552b remains byte-identical; Playwright 163 passed/47 matched skips, build, TypeScript and lint passed. Final documentation-head review/checks remain required before staging merge. Story in-progress, Epic23 on-hold, production paused/no-go.'
 
 pr_95_playwright_gate:
   date: 2026-09-09
@@ -397,14 +397,14 @@ post_quiescence_proof_20260921:
 
 lease_component_note: 'Protected Windows file-lease component at 7e54ae33d32d6cda791e3cd2143940573405e470. The 26 native Windows cases passed in the focused 53/53 run (5.19s); Linux CI classifies those 26 as Windows-kernel-only skips, never passes. Tested-implementation receipt SHA-256 34d28d1a8344fed29e9fc291397f5a85cd24f29a3a53b734f83604a353b05092. Production remains paused/no-go; Story 22.15 remains in-progress; Epic 23 remains on-hold. The component is not a complete bootstrap: trusted installation/origin attestation, complete module closure, runner integration, production-profile fixture admission, traffic isolation and target-write admission remain open. The 55 ledger rows are UNPROVED/unsigned, 13 executes are proposed, 48 orphan filters need separate approved cleanup, and seven dated strict production failures remain open.'
 
-tracked_test_tally_note: 'The pre-existing story-row/category-tally difference is 15 (427 versus 412 at the base; 453 versus 438 after adding these 26 cases). Its classification is not established here. These are historical planning tallies, not current unique-test totals. PR #112 adds 44 cases, reported separately below. Its exact full run discovers 3695 tests but has not passed; the prior 3651/3651 receipt is historical only.'
+tracked_test_tally_note: 'The pre-existing story-row/category-tally difference is 15 (427 versus 412 at the base; 453 versus 438 after adding these 26 cases). Its classification is not established here. These are historical planning tallies, not current unique-test totals. PR #112 adds 44 cases, reported separately below. Its exact full run at 3e191a1 passed 3695/3695 with zero skips/failures; the prior 3651/3651 receipt is historical only.'
 
 protected_toolchain_draft_20260921:
   evidence_updated: 2026-09-22
   new_component_cases: 44
-  complete_full_vitest_passed: false
+  complete_full_vitest_passed: true
   status: in-progress
-  verification: blocked-native-runtime-injection
+  verification: local-gates-passed-final-review-pending
   production: paused-no-go
   epic_23: on-hold
-  note: 'Implementation 357552b; guard Docker blocker cleared. Playwright 163 passed/47 matched skips/0 failures; staging build, TypeScript and lint passed. Full Vitest failed twice: cold export timeout, then Windhawk injection with 26 setup-failure skips. No waiver. Await absolute exclusion confirmation and fresh full Vitest; final-head review/checks also pending. Draft PR112 must not merge. Story in-progress, Epic23 on-hold, production paused/no-go.'
+  note: 'Head 3e191a1 full Vitest passed 3695/3695, 333 files, zero skips/failures, exit 0 after verified owner Windhawk exclusion and route prewarm. Focused component 44/44 passed. Earlier failures retained. Implementation 357552b remains byte-identical; Playwright 163 passed/47 matched skips, build, TypeScript and lint passed. Final documentation-head review/checks remain required before staging merge. Story in-progress, Epic23 on-hold, production paused/no-go.'
