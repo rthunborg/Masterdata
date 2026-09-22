@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-09-21
+# last_updated: 2026-09-22
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-21
+last_updated: 2026-09-22
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -151,3 +151,13 @@ post_quiescence_proof_20260921:
   story_status: in-progress
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md
+
+protected_toolchain_draft_20260921:
+  evidence_updated: 2026-09-22
+  new_component_cases: 44
+  complete_full_vitest_passed: true
+  status: in-progress
+  verification: local-gates-passed-final-review-pending
+  production: paused-no-go
+  epic_23: on-hold
+  note: 'Head 3e191a1 full Vitest passed 3695/3695, 333 files, zero skips/failures, exit 0 after verified owner Windhawk exclusion and route prewarm. Focused component 44/44 passed. Earlier failures retained. Implementation 357552b remains byte-identical; Playwright 163 passed/47 matched skips, build, TypeScript and lint passed. Final documentation-head review/checks remain required before staging merge. Story in-progress, Epic23 on-hold, production paused/no-go.'

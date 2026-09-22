@@ -1,8 +1,8 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: 2026-09-21
-updated_by: 'Protected Windows file-lease component at 7e54ae33d32d6cda791e3cd2143940573405e470. The 26 native Windows cases passed in the focused 53/53 run (5.19s); Linux CI classifies those 26 as Windows-kernel-only skips, never passes. Tested-implementation receipt SHA-256 34d28d1a8344fed29e9fc291397f5a85cd24f29a3a53b734f83604a353b05092. Production remains paused/no-go; Story 22.15 remains in-progress; Epic 23 remains on-hold.'
+last_updated: 2026-09-22
+updated_by: 'Head 3e191a1 full Vitest passed 3695/3695, 333 files, zero skips/failures, exit 0 after verified owner Windhawk exclusion and route prewarm. Focused component 44/44 passed. Earlier failures retained. Implementation 357552b remains byte-identical; Playwright 163 passed/47 matched skips, build, TypeScript and lint passed. Final documentation-head review/checks remain required before staging merge. Story in-progress, Epic23 on-hold, production paused/no-go.'
 
 current_focus:
   active_epic: 22
@@ -165,3 +165,13 @@ post_quiescence_proof_20260921:
   story_status: in-progress
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md
+
+protected_toolchain_draft_20260921:
+  evidence_updated: 2026-09-22
+  new_component_cases: 44
+  complete_full_vitest_passed: true
+  status: in-progress
+  verification: local-gates-passed-final-review-pending
+  production: paused-no-go
+  epic_23: on-hold
+  note: 'Head 3e191a1 full Vitest passed 3695/3695, 333 files, zero skips/failures, exit 0 after verified owner Windhawk exclusion and route prewarm. Focused component 44/44 passed. Earlier failures retained. Implementation 357552b remains byte-identical; Playwright 163 passed/47 matched skips, build, TypeScript and lint passed. Final documentation-head review/checks remain required before staging merge. Story in-progress, Epic23 on-hold, production paused/no-go.'
