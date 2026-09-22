@@ -1,6 +1,6 @@
 # Protected toolchain draft: native injection blocker — 2026-09-21
 
-Status: incomplete draft, not release-ready. Story 22.15 remains in-progress; Epic 23 remains on-hold. Production remains paused/no-go.
+Historical record through 2026-09-21; current verification is in [the 2026-09-22 record](protected-toolchain-verification-2026-09-22.md). The Docker blocker below is superseded; native injection still blocks full Vitest. Status: incomplete draft, not release-ready. Story 22.15 remains in-progress; Epic 23 remains on-hold. Production remains paused/no-go.
 
 Source staging is `5a67cd26ad4c3900c219c8c363cb856aa179c92c` (reviewed PR #111 merge). Main is unchanged at `822350986f4c023948a7bbf490ddffc371185c4a`. At the initial draft commit 5ecdc1cc5aeb03f8fd36fac64afc1c30173b266c it had not been pushed or reviewed. Subsequent implementation review is recorded below; it has not been merged or used with any hosted target.
 

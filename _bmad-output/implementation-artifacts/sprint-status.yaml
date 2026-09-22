@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-09-21
+# last_updated: 2026-09-22
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: 2026-09-21
+last_updated: 2026-09-22
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -153,8 +153,11 @@ post_quiescence_proof_20260921:
   evidence: docs/commercial-readiness/evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md
 
 protected_toolchain_draft_20260921:
+  evidence_updated: 2026-09-22
+  new_component_cases: 44
+  complete_full_vitest_passed: false
   status: in-progress
-  verification: blocked-resource-guard-docker
+  verification: blocked-native-runtime-injection
   production: paused-no-go
   epic_23: on-hold
-  note: 'Draft PR112 implementation 90d349b: inventory 15/15 passed; native 26/26 on unchanged c231ec9 code and denial/admission 27/27 passed. TypeScript and full lint passed again (0 errors, 296 warnings). Earlier implementation review clean; final-head CI/Reviewbot pending. Full suites/build blocked by guard Compose DOCKER_UNAVAILABLE despite working ordinary Docker. No waiver; draft must not merge. Earlier native failures retained. No private-input or hosted capability.'
+  note: 'Implementation 357552b; guard Docker blocker cleared. Playwright 163 passed/47 matched skips/0 failures; staging build, TypeScript and lint passed. Full Vitest failed twice: cold export timeout, then Windhawk injection with 26 setup-failure skips. No waiver. Await absolute exclusion confirmation and fresh full Vitest; final-head review/checks also pending. Draft PR112 must not merge. Story in-progress, Epic23 on-hold, production paused/no-go.'
