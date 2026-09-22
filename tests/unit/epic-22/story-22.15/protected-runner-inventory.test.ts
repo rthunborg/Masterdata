@@ -267,6 +267,9 @@ describe('Story 22.15 protected runner inventory', { timeout: 60_000 }, () => {
     ['a CommonJS load', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nrequire('node:fs');\n")],
     ['a star re-export', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nexport * from './unlisted.mjs';\n")],
     ['a named re-export', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nexport { target } from './unlisted.mjs';\n")],
+    ['a block-comment-hidden named re-export', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nexport { /* } */ target } from './unlisted.mjs';\n")],
+    ['a line-comment-hidden named re-export', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nexport { target // }\n} from './unlisted.mjs';\n")],
+    ['a quoted-name delimiter named re-export', () => write('supabase/verify/verify-target-binding.mjs', target() + "\nexport { \"}\" as named } from './unlisted.mjs';\n")],
   ])('rejects a committed module with %s', (_label, change) => {
     change();
     record();

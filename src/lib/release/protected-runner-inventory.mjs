@@ -215,6 +215,29 @@ function quotedSpecifier(source, start) {
   fail();
 }
 
+function closePlainLocalExportList(source, start) {
+  let index = start + 1;
+  while (index < source.length) {
+    // A re-export list can contain comments and quoted export names. The
+    // fixed graph has neither, so refusing those forms prevents a delimiter
+    // inside one from hiding a following `from` dependency.
+    if (
+      source.startsWith('//', index) ||
+      source.startsWith('/*', index) ||
+      source[index] === "'" ||
+      source[index] === '"' ||
+      source[index] === '`' ||
+      source[index] === '{' ||
+      source[index] === '\\'
+    ) {
+      fail();
+    }
+    if (source[index] === '}') return index;
+    index += 1;
+  }
+  fail();
+}
+
 /**
  * This small scanner rejects JavaScript module syntax outside the fixed graph.
  * It is deliberately not a generic dependency resolver or a semantic parser.
@@ -261,8 +284,7 @@ function importsOf(source) {
       // fixed closure. Plain local export lists remain ordinary declarations.
       if (source[cursor] === '*') fail();
       if (source[cursor] === '{') {
-        const close = source.indexOf('}', cursor + 1);
-        if (close === -1) fail();
+        const close = closePlainLocalExportList(source, cursor);
         const afterList = skipTrivia(source, close + 1);
         if (
           source.startsWith('from', afterList) &&
