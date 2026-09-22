@@ -7,6 +7,8 @@ const cases = [
   'tampered-blob-rejected', 'wrong-record-hash-rejected', 'wrong-record-schema-rejected',
   'extra-record-field-rejected', 'duplicate-record-key-rejected', 'extra-payload-field-rejected',
   'duplicate-payload-key-rejected', 'wrong-environment-rejected', 'wrong-mode-rejected',
+  'empty-password-rejected', 'placeholder-password-rejected', 'nul-password-rejected',
+  'cr-password-rejected', 'lf-password-rejected',
   'wrong-certificate-path-rejected', 'wrong-certificate-hash-rejected',
   'untrusted-ancestor-writable-rejected', 'reparse-input-directory-rejected',
   'writer-held-before-lease-rejected', 'lease-blocks-writer-until-dispose',

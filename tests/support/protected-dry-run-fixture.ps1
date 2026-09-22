@@ -95,7 +95,7 @@ $provider=New-Object Microsoft.CSharp.CSharpCodeProvider;$cp=New-Object CodeDom.
 try{$compiled=$provider.CompileAssemblyFromSource($cp,[string[]]@($leaseCode,$hostCode,$inputCode,$installation))}finally{$provider.Dispose();$private=$null}
 if($compiled.Errors.HasErrors){throw 'fixture host compilation failed'}
 $exe=Join-Path $root 'dry-run.exe'
-function Run-Host([int]$Timeout=120000){return Run-Process $exe '' @{NODE_OPTIONS='--require=untrusted';NODE_PATH='untrusted';FIXTURE_AMBIENT='untrusted'} $Timeout}
+function Run-Host([int]$Timeout=120000,[string]$Arguments=''){return Run-Process $exe $Arguments @{NODE_OPTIONS='--require=untrusted';NODE_PATH='untrusted';FIXTURE_AMBIENT='untrusted'} $Timeout}
 function Count-Calls {if(Test-Path $marker){return @([IO.File]::ReadAllLines($marker)).Count};return 0}
 function Assert-Refused([string]$FixtureMode,[int]$Timeout=120000){[IO.File]::WriteAllText($cliModePath,$FixtureMode);$before=Count-Calls;try{$r=Run-Host $Timeout;$calls=@([IO.File]::ReadAllLines($marker));if($r.status -eq 0 -or $calls.Count -ne ($before+3) -or $calls[-3] -ne 'version' -or $calls[-2] -ne ('mode:'+$FixtureMode) -or $calls[-1] -notmatch '^args:db\|push\|--dry-run\|--include-all\|--skip-vault\|--db-url\|postgresql:///postgres\?sslmode=verify-full$'){throw 'not exercised'};if($r.output -match 'synthetic|password|pooler'){throw 'output leaked'}}finally{[IO.File]::WriteAllText($cliModePath,'ok')}}
 function Write-MismatchedSyntheticInput {
@@ -108,6 +108,7 @@ function New-CleanPackageCopy([string]$Name){$copy=Join-Path $outer $Name;Privat
 
 Check 'valid-exact-production-dry-run-only' {$r=Run-Host;if($r.status -ne 0){throw 'dry run failed'};$receipt=$r.output.Trim()|ConvertFrom-Json;if($receipt.kind -ne 'protected-production-dry-run' -or -not $receipt.planningOnly -or $receipt.authorizesApply -or $receipt.authorizesRepair -or $receipt.authorizesCleanup -or @($receipt.versions).Count -ne 13){throw 'bad receipt'};if($r.output -match 'synthetic-password|'+$pooler){throw 'output leaked'}}
 Check 'version-and-exact-dry-run-arguments-only' {$calls=@([IO.File]::ReadAllLines($marker));if($calls[-3] -ne 'version' -or $calls[-2] -ne 'mode:ok' -or $calls[-1] -notmatch '^args:db\|push\|--dry-run\|--include-all\|--skip-vault\|--db-url\|postgresql:///postgres\?sslmode=verify-full$' -or ($calls -match 'apply|repair').Count -ne 0){throw 'command shape'}}
+Check 'launcher-arguments-refused-before-cli' {$before=Count-Calls;$r=Run-Host 120000 '--untrusted';if($r.status -eq 0 -or (Count-Calls) -ne $before){throw 'accepted'}}
 Check 'ambient-environment-stripped' {$r=Run-Host;if($r.status -ne 0){throw 'ambient reached cli'}}
 Check 'wrong-order-cli-output-refused' {Assert-Refused 'wrong-order'}
 Check 'extra-cli-output-refused' {Assert-Refused 'extra'}

@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 const cases = [
   'valid-exact-production-dry-run-only',
   'version-and-exact-dry-run-arguments-only',
+  'launcher-arguments-refused-before-cli',
   'ambient-environment-stripped',
   'wrong-order-cli-output-refused',
   'extra-cli-output-refused',

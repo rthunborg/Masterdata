@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "kind": "protected-production-dry-run-local-verification",
+  "testedImplementation": "7bc00317e790dc3226367ee7a333b805b9d59be1",
+  "stagingBase": "8aec3140677e436392f85a1b5fb8026e06f23437",
+  "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "hostedAccess": false,
+  "realPrivateInputsLoaded": false,
+  "production": "paused-no-go",
+  "story": "in-progress",
+  "epic23": "on-hold",
+  "newComponentCases": 68,
+  "fullVitest": {
+    "passed": 3763,
+    "skipped": 0,
+    "failed": 0,
+    "files": 337,
+    "runnerSeconds": 182.17,
+    "receipt": {
+      "schemaVersion": 1,
+      "kind": "guarded-local-release-gate",
+      "localOnly": true,
+      "gate": "vitest",
+      "command": "npx vitest run",
+      "sourceHead": "7bc00317e790dc3226367ee7a333b805b9d59be1",
+      "sourceHeadUnchanged": true,
+      "sourceStillClean": true,
+      "sourcePlanSha256": "b8b561098e3a0a1e90fc3247fbae0ee05f53302b24b3e4b5bdfcba50237d8b06",
+      "sourcePlanUnchanged": true,
+      "sourcePlanCompleteBinding": true,
+      "fixtureInputsValidated": true,
+      "ownedNext": "separate_guard_resource_verified",
+      "startedAt": "2026-09-22T12:39:02.441Z",
+      "durationMs": 191575,
+      "exitCode": 0,
+      "childExitCode": 0,
+      "signal": null,
+      "logSha256": "146c747326ae1222ea4e348dfae89fcd5f8779e234e680956b6cb935b6ffd60a",
+      "logBytes": 1200147
+    }
+  },
+  "playwright": {
+    "sourceHead": "7bc00317e790dc3226367ee7a333b805b9d59be1",
+    "command": "npx playwright test",
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "exitCode": 0,
+    "runnerSeconds": 1248.546564,
+    "orchestrationMs": 1258009,
+    "historical47SkipIdentitiesExactlyMatched": true,
+    "reportSha256": "f94f14659b6986d53e14257440a8087a6527596fd8ebba3acfb79c2697ced31d",
+    "reportBytes": 60923
+  },
+  "build": {
+    "schemaVersion": 1,
+    "kind": "guarded-local-release-gate",
+    "localOnly": true,
+    "gate": "build",
+    "command": "pnpm run build",
+    "sourceHead": "7bc00317e790dc3226367ee7a333b805b9d59be1",
+    "sourceHeadUnchanged": true,
+    "sourceStillClean": true,
+    "sourcePlanSha256": "b8b561098e3a0a1e90fc3247fbae0ee05f53302b24b3e4b5bdfcba50237d8b06",
+    "sourcePlanUnchanged": true,
+    "sourcePlanCompleteBinding": true,
+    "fixtureInputsValidated": true,
+    "ownedNext": "not_required",
+    "startedAt": "2026-09-22T12:37:26.400Z",
+    "durationMs": 19696,
+    "exitCode": 0,
+    "childExitCode": 0,
+    "signal": null,
+    "logSha256": "e92527f66f2f3ff9512a7adad0c2f4a225f4c5927ecab2f71a7c0a311f930593",
+    "logBytes": 4104
+  },
+  "typescript": {
+    "command": "pnpm exec tsc --noEmit",
+    "exitCode": 0,
+    "durationMs": 8603.8421,
+    "sourceHead": "7bc00317e790dc3226367ee7a333b805b9d59be1"
+  },
+  "lint": {
+    "command": "pnpm exec eslint .",
+    "exitCode": 0,
+    "durationMs": 23447.3428,
+    "sourceHead": "7bc00317e790dc3226367ee7a333b805b9d59be1",
+    "errors": 0,
+    "warnings": 296
+  },
+  "productionAudit": {
+    "critical": 0,
+    "high": 0,
+    "moderate": 1,
+    "exitCode": 1,
+    "existingAcceptanceExpiry": "2026-09-30"
+  },
+  "developmentAudit": {
+    "critical": 1,
+    "high": 16,
+    "moderate": 10,
+    "exitCode": 1
+  },
+  "initialFocusedAttempts": [
+    {
+      "attempt": 1,
+      "exitCode": 1,
+      "durationMs": 118177,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "logSha256": "f916e3f58443551b45858d0e324130a487dee2b4056939114580474e08a993f9"
+    },
+    {
+      "attempt": 2,
+      "exitCode": 1,
+      "durationMs": 50741,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "logSha256": "2efc5dfcd4d835328a3037c3a525b71fba9e308b8f4b936de7bfd6bc4cb6a037"
+    },
+    {
+      "attempt": 3,
+      "exitCode": 1,
+      "durationMs": 52154,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "logSha256": "17d485730b8edf2e5bc22e3219826c6fc67636dedb7b0753e45ec20a3c9c414e"
+    },
+    {
+      "attempt": 4,
+      "exitCode": 0,
+      "durationMs": 107620,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "logSha256": "41ee67f2909917d5454e5d5f9ce6466b73933eccc4f96bade81297c3511faff8"
+    }
+  ],
+  "finalReview": "pending",
+  "resourceCleanup": "pending"
+}

@@ -160,7 +160,7 @@ protected_toolchain_draft_20260921:
   verification: merged-reviewed-clean
   production: paused-no-go
   epic_23: on-hold
-  note: 'PR #112 reviewed final e4ab223 merged as staging 8aec314 with clean required GitHub/Vercel checks and Codex review. Historical local results remain attached to the merged toolchain component. The next protected production dry-run-only component is in-progress/testing, with no new final head or test receipt claimed. Story in-progress, Epic23 on-hold, production paused/no-go.'
+  note: 'PR #112 reviewed final e4ab223 merged as staging 8aec314 with clean required GitHub/Vercel checks and Codex review. Historical local results remain attached to the merged toolchain component. The next dry-run component remains in-progress with its own verification below. Story in-progress, Epic23 on-hold, production paused/no-go.'
 
 protected_toolchain_component_20260922:
   status: merged
@@ -175,8 +175,8 @@ protected_toolchain_component_20260922:
 protected_production_dry_run_component_20260922:
   status: in-progress-testing
   final_head: null # No exact final head is claimed before review.
-  test_receipt: 'Focused pre-commit working tree: 67/67 across 4 files; 0 skipped/failed; exit 0; Vitest 111.37s; guard wrapper 107620ms. Full gates remain pending.'
-  scope: 'Local immutable dry-run path only; no hosted/private-input access, target admission, apply, repair, cleanup, deployment or reopening authority.'
+  test_receipt: 'Implementation 7bc00317e790dc3226367ee7a333b805b9d59be1: Vitest 3763/3763, 337 files, zero skips/failures; Playwright 163 passed, 47 exact classified skips, zero failures/errors; build, TypeScript and zero-error lint passed. Final-head checks/review pending.'
+  scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'
   external_digest_authority: 'An independently approved package digest is an external trusted-operator boundary; a caller-supplied digest is not approval.'
   evidence: docs/commercial-readiness/evidence/protected-production-dry-run-2026-09-22.md
   production: paused-no-go

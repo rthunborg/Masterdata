@@ -21,7 +21,15 @@ function Get-Environment([object]$Loaded){return $loaderType.GetProperty('Enviro
 function Dispose-Inputs([object]$Loaded){$loaderType.GetMethod('Dispose',[Reflection.BindingFlags]'Public,Instance').Invoke($Loaded,@())}
 $results=New-Object 'System.Collections.Generic.List[object]'
 function Check([string]$Name,[scriptblock]$Body){try{& $Body;$results.Add(@{name=$Name;passed=$true})}catch{$results.Add(@{name=$Name;passed=$false;errorType=$_.Exception.GetType().Name;line=$_.InvocationInfo.ScriptLineNumber})}}
-function Expect-Rejected([scriptblock]$Body){$rejected=$false;try{& $Body}catch{$rejected=$true};if(-not $rejected){throw 'expected refusal'}}
+function Expect-Rejected([scriptblock]$Body){
+ $rejected=$false;$loaded=$null;$disposeError=$null
+ try{$loaded=& $Body}catch{$rejected=$true}
+ if($null -ne $loaded){try{Dispose-Inputs $loaded}catch{$disposeError=$_}}
+ if(-not $rejected){
+  if($null -ne $disposeError){throw 'expected refusal; unexpected successful load could not be disposed'}
+  throw 'expected refusal'
+ }
+}
 function Sha([byte[]]$Bytes){$sha=[Security.Cryptography.SHA256]::Create();try{[BitConverter]::ToString($sha.ComputeHash($Bytes)).Replace('-','').ToLowerInvariant()}finally{$sha.Dispose()}}
 function Write-Private([string]$Path,[byte[]]$Bytes){[IO.File]::WriteAllBytes($Path,$Bytes);$acl=New-Object Security.AccessControl.FileSecurity;$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User;$acl.SetAccessRuleProtection($true,$false);$acl.SetOwner($sid);foreach($id in @($sid.Value,'S-1-5-18','S-1-5-32-544')){$acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule((New-Object Security.Principal.SecurityIdentifier($id)),'FullControl','Allow')))};[IO.File]::SetAccessControl($Path,$acl)}
 function Protect-Directory([string]$Path){$null=[IO.Directory]::CreateDirectory($Path);$acl=New-Object Security.AccessControl.DirectorySecurity;$sid=[Security.Principal.WindowsIdentity]::GetCurrent().User;$acl.SetAccessRuleProtection($true,$false);$acl.SetOwner($sid);foreach($id in @($sid.Value,'S-1-5-18','S-1-5-32-544')){$acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule((New-Object Security.Principal.SecurityIdentifier($id)),'FullControl','ContainerInherit,ObjectInherit','None','Allow')))};[IO.Directory]::SetAccessControl($Path,$acl)}
@@ -32,6 +40,11 @@ $certPath=Join-Path $certs 'production-root-ca.crt';$certRecordPath=Join-Path $c
 function Save-Fixture([string]$Mode='valid'){
  $payload=[ordered]@{schemaVersion=1;environment='production';EXPECTED_SUPABASE_ENVIRONMENT='production';SUPABASE_DB_CONNECTION_MODE='session-pooler';projectRef=$ref;databasePassword=$password;EXPECTED_SUPABASE_POOLER_HOST=$fixturePoolerHost;sslMode='verify-full';source='Owner-entered production dashboard project ID and Session pooler template';ownerConfirmedProduction=$true;certificateSource='Owner-confirmed fresh download from the same production project Database Settings SSL Configuration';recordedAtUtc=[DateTime]::UtcNow.ToString('o');SUPABASE_SSL_ROOT_CERT=$certPath;EXPECTED_SUPABASE_SSL_ROOT_CERT_SHA256=(Sha $cert)}
  if($Mode -eq 'wrong-environment'){$payload.environment='staging'};if($Mode -eq 'wrong-mode'){$payload.SUPABASE_DB_CONNECTION_MODE='direct'};if($Mode -eq 'extra-payload'){$payload.extra='forbidden'};if($Mode -eq 'wrong-certificate-path'){$payload.SUPABASE_SSL_ROOT_CERT=(Join-Path $inputs 'wrong.crt')};if($Mode -eq 'wrong-certificate-hash'){$payload.EXPECTED_SUPABASE_SSL_ROOT_CERT_SHA256=('0'*64)}
+ if($Mode -eq 'empty-password'){$payload.databasePassword=''}
+ if($Mode -eq 'placeholder-password'){$payload.databasePassword='YOUR_PASSWORD'}
+ if($Mode -eq 'nul-password'){$payload.databasePassword=('synthetic'+[char]0+'password')}
+ if($Mode -eq 'cr-password'){$payload.databasePassword=("synthetic`rpassword")}
+ if($Mode -eq 'lf-password'){$payload.databasePassword=("synthetic`npassword")}
  $entropy=[Text.Encoding]::UTF8.GetBytes('hr-masterdata/production/private-inputs/v1');$plain=[Text.Encoding]::UTF8.GetBytes(($payload|ConvertTo-Json -Compress));$blob=[Security.Cryptography.ProtectedData]::Protect($plain,$entropy,[Security.Cryptography.DataProtectionScope]::CurrentUser);[Array]::Clear($plain,0,$plain.Length);[Array]::Clear($entropy,0,$entropy.Length)
  Write-Private $certPath $cert;Write-Private $blobPath $blob
  $certRecord=[ordered]@{schemaVersion=1;purpose='Production TLS root certificate';environment='production';provenance='Owner-confirmed fresh production project dashboard download; identity is retained only inside the encrypted input';operatorConfirmedSource=$true;certificatePath=$certPath;certificateSHA256=(Sha $cert);certificateAuthority=$true;containsPrivateKey=$false;notBeforeUtc='2026-01-01T00:00:00.0000000Z';notAfterUtc='2036-01-01T00:00:00.0000000Z';recordedAtUtc=[DateTime]::UtcNow.ToString('o');aclRestricted=$true;liveProductionTlsVerified=$false;releaseVerificationRequired=$true}
@@ -57,6 +70,11 @@ Check 'extra-payload-field-rejected' {Recreate 'extra-payload';Expect-Rejected {
 Check 'duplicate-payload-key-rejected' {Recreate 'duplicate-payload';Expect-Rejected {Load-Synthetic $root};Recreate}
 Check 'wrong-environment-rejected' {Recreate 'wrong-environment';Expect-Rejected {Load-Synthetic $root};Recreate}
 Check 'wrong-mode-rejected' {Recreate 'wrong-mode';Expect-Rejected {Load-Synthetic $root};Recreate}
+Check 'empty-password-rejected' {Recreate 'empty-password';Expect-Rejected {Load-Synthetic $root};Recreate}
+Check 'placeholder-password-rejected' {Recreate 'placeholder-password';Expect-Rejected {Load-Synthetic $root};Recreate}
+Check 'nul-password-rejected' {Recreate 'nul-password';Expect-Rejected {Load-Synthetic $root};Recreate}
+Check 'cr-password-rejected' {Recreate 'cr-password';Expect-Rejected {Load-Synthetic $root};Recreate}
+Check 'lf-password-rejected' {Recreate 'lf-password';Expect-Rejected {Load-Synthetic $root};Recreate}
 Check 'wrong-certificate-path-rejected' {Recreate 'wrong-certificate-path';Expect-Rejected {Load-Synthetic $root};Recreate}
 Check 'wrong-certificate-hash-rejected' {Recreate 'wrong-certificate-hash';Expect-Rejected {Load-Synthetic $root};Recreate}
 Check 'untrusted-ancestor-writable-rejected' {$acl=[IO.Directory]::GetAccessControl($root);$acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule((New-Object Security.Principal.SecurityIdentifier('S-1-1-0')),'Write','Allow')));[IO.Directory]::SetAccessControl($root,$acl);try{Expect-Rejected {Load-Synthetic $root}}finally{Protect-Directory $root}}
