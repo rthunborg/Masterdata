@@ -65,6 +65,35 @@ const fail = () => {
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
+/**
+ * Binds bytes retained for materialization to the exact dependency receipt
+ * captured before they were read. A later receipt cannot prove that a
+ * transient replacement was not retained.
+ */
+export function assertCapturedProtectedDryRunPapaBytes({
+  dependency,
+  packageJsonBytes,
+  umdBytes,
+} = {}) {
+  if (
+    !dependency ||
+    typeof dependency !== 'object' ||
+    dependency.name !== 'papaparse' ||
+    dependency.version !== '5.5.3' ||
+    dependency.packagePath !== 'node_modules/papaparse/package.json' ||
+    dependency.entryPath !== 'node_modules/papaparse/papaparse.js' ||
+    !SHA256.test(dependency.packageJsonSha256 ?? '') ||
+    !SHA256.test(dependency.entrySha256 ?? '') ||
+    !Buffer.isBuffer(packageJsonBytes) ||
+    !Buffer.isBuffer(umdBytes) ||
+    sha256(packageJsonBytes) !== dependency.packageJsonSha256 ||
+    sha256(umdBytes) !== dependency.entrySha256
+  ) {
+    fail();
+  }
+  return true;
+}
+
 function regularFile(file) {
   const stat = lstatSync(file);
   if (!stat.isFile() || stat.isSymbolicLink()) fail();
@@ -263,6 +292,13 @@ function prepareProtectedDryRunPackageInternal({
   for (const relative of PROTECTED_DRY_RUN_PACKAGE_SOURCE_FILES) {
     bytesByPath.set(relative, sourceBytes(source, relative));
   }
+  assertCapturedProtectedDryRunPapaBytes({
+    dependency: inventory.dependency,
+    packageJsonBytes: bytesByPath.get(
+      'node_modules/papaparse/package.json'
+    ),
+    umdBytes: bytesByPath.get('node_modules/papaparse/papaparse.js'),
+  });
   for (const entry of plan) {
     const bytes = source.contents.get(entry.version);
     if (!Buffer.isBuffer(bytes) || sha256(bytes) !== entry.sha256) fail();

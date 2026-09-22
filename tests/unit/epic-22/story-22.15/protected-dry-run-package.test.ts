@@ -15,6 +15,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   PROTECTED_DRY_RUN_PACKAGE_FIXED_FILE_PATHS,
+  assertCapturedProtectedDryRunPapaBytes,
   prepareProtectedDryRunPackage,
 } from '../../../../src/lib/release/prepare-protected-dry-run-package.mjs';
 import { assertReviewedModuleImports } from '../../../../src/lib/release/protected-runner-inventory.mjs';
@@ -149,6 +150,47 @@ afterEach(() => {
 });
 
 describe('Story 22.15 protected production dry-run package', { timeout: 90_000 }, () => {
+  it('binds each captured PapaParse byte stream to the pre-read approved dependency receipt', () => {
+    const packageJsonBytes = readFileSync(
+      path.join(repositoryRoot, 'node_modules/papaparse/package.json')
+    );
+    const umdBytes = readFileSync(
+      path.join(repositoryRoot, 'node_modules/papaparse/papaparse.js')
+    );
+    const dependency = {
+      name: 'papaparse',
+      version: '5.5.3',
+      packagePath: 'node_modules/papaparse/package.json',
+      packageJsonSha256: sha256(packageJsonBytes),
+      entryPath: 'node_modules/papaparse/papaparse.js',
+      entrySha256: sha256(umdBytes),
+    };
+
+    // The dependency can be restored before the final inventory inspection;
+    // the bytes captured in the intervening window must still be rejected.
+    expect(
+      assertCapturedProtectedDryRunPapaBytes({
+        dependency,
+        packageJsonBytes,
+        umdBytes,
+      })
+    ).toBe(true);
+    expect(() =>
+      assertCapturedProtectedDryRunPapaBytes({
+        dependency,
+        packageJsonBytes: Buffer.concat([packageJsonBytes, Buffer.from('swap')]),
+        umdBytes,
+      })
+    ).toThrow('Protected dry-run package preparation failed');
+    expect(() =>
+      assertCapturedProtectedDryRunPapaBytes({
+        dependency,
+        packageJsonBytes,
+        umdBytes: Buffer.concat([umdBytes, Buffer.from('swap')]),
+      })
+    ).toThrow('Protected dry-run package preparation failed');
+  });
+
   it('materializes a deterministic, non-executable package from the current immutable source', () => {
     const options = fixture();
     const result = prepareProtectedDryRunPackage(options);
