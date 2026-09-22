@@ -420,9 +420,9 @@ protected_toolchain_component_20260922:
   epic_23: on-hold
 
 protected_production_dry_run_component_20260922:
-  status: in-progress-testing
-  final_head: null # No exact final head is claimed before review.
-  test_receipt: 'Implementation 7bc00317e790dc3226367ee7a333b805b9d59be1: Vitest 3763/3763, 337 files, zero skips/failures; Playwright 163 passed, 47 exact classified skips, zero failures/errors; build, TypeScript and zero-error lint passed. Final-head checks/review pending.'
+  status: local-verification-complete
+  final_head: null # Exact reviewed head is recorded by PR #113 checks/review, not self-attested here.
+  test_receipt: 'Test/evidence 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb: Vitest 3769/3769, 337 files, zero skips/failures; implementation-identical 7bc0031 Playwright 163 passed, 47 exact classified skips, zero failures/errors. Exact final-head checks/review are separate merge prerequisites recorded on PR #113.'
   scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'
   external_digest_authority: 'An independently approved package digest is an external trusted-operator boundary; a caller-supplied digest is not approval.'
   evidence: docs/commercial-readiness/evidence/protected-production-dry-run-2026-09-22.md

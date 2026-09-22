@@ -4,7 +4,7 @@
 
 PR #112's preceding protected-toolchain component is complete: reviewed final head `e4ab223` merged as staging `8aec314`, with the required GitHub/Vercel checks and Codex review clean. Its earlier local test receipt remains historical evidence for that component.
 
-PR #113 implementation 7bc00317e790dc3226367ee7a333b805b9d59be1 passed exact full npx vitest run: 3,763/3,763 tests across 337 files, zero skips/failures, exit 0 (182.17s runner; 191575ms orchestration). Exact full npx playwright test passed 163 with 47 individually matched historical skips, zero failures/errors, exit 0 (1248.546564s runner; 1258009ms orchestration). Build, TypeScript and lint passed; lint has zero errors and 296 existing warnings. The 68 new component regressions are included in that full run. Earlier failed fixture runs and the successful pre-correction 37e7e2f runs remain dated history. Final documentation-head CI/Vercel checks and Codex review remain pending. No real private inputs or hosted targets were accessed. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.
+PR #113 production implementation 7bc00317e790dc3226367ee7a333b805b9d59be1 is unchanged at test/evidence head 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb. Exact full npx vitest run at that head passed 3,769/3,769 tests across 337 files, zero skips/failures, exit 0 (167.79s runner; 177299ms orchestration), including all 74 new component regressions. Exact full npx playwright test on the identical production implementation passed 163 with 47 individually matched historical skips, zero failures/errors, exit 0 (1248.546564s runner; 1258009ms orchestration). The later changes contain only Vitest/support tests and documentation; application, migrations, release tooling, Playwright tests/configuration and dependencies are byte-identical. Build, TypeScript and zero-error lint evidence is recorded below. Exact final-head CI/Vercel and Codex review are separate merge prerequisites; their receipts are recorded on PR #113. Synthetic verification accessed no real private inputs or hosted targets. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.
 
 The locally installed production dry-run path is deliberately narrow:
 
@@ -27,7 +27,7 @@ The trusted current user, local Administrators and SYSTEM remain inside the stat
 
 The native fixtures use generated synthetic DPAPI blobs, synthetic certificate bytes, a synthetic project reference and a constrained fake CLI. They must not open the real private input record, certificate, approved project-link record, hosted database, Vercel, or a production deployment. A passing synthetic result only tests the local boundary and failure handling. It cannot prove the real package, the real production profile, migration transaction/history behavior, traffic isolation, data preservation, or a hosted action.
 
-Windows native cases passed locally. Linux CI skips the 33 new Windows-kernel/DPAPI cases; these are not passing evidence. The complete local run has no skips.
+Windows native cases passed locally. Linux CI skips the 39 new Windows-kernel/DPAPI cases; these are not passing evidence. The complete local run has no skips.
 
 ## Remaining gates
 
@@ -41,7 +41,7 @@ Windows native cases passed locally. Linux CI skips the 33 new Windows-kernel/DP
 Story 22.15 remains in-progress, Epic 23 remains on hold, and production remains paused/no-go.
 ## Exact implementation verification
 
-PR #113 implementation 7bc00317e790dc3226367ee7a333b805b9d59be1 passed exact full npx vitest run: 3,763/3,763 tests across 337 files, zero skips/failures, exit 0 (182.17s runner; 191575ms orchestration). Exact full npx playwright test passed 163 with 47 individually matched historical skips, zero failures/errors, exit 0 (1248.546564s runner; 1258009ms orchestration). Build, TypeScript and lint passed; lint has zero errors and 296 existing warnings. The 68 new component regressions are included in that full run. Earlier failed fixture runs and the successful pre-correction 37e7e2f runs remain dated history. Final documentation-head CI/Vercel checks and Codex review remain pending. No real private inputs or hosted targets were accessed. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.
+PR #113 production implementation 7bc00317e790dc3226367ee7a333b805b9d59be1 is unchanged at test/evidence head 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb. Exact full npx vitest run at that head passed 3,769/3,769 tests across 337 files, zero skips/failures, exit 0 (167.79s runner; 177299ms orchestration), including all 74 new component regressions. Exact full npx playwright test on the identical production implementation passed 163 with 47 individually matched historical skips, zero failures/errors, exit 0 (1248.546564s runner; 1258009ms orchestration). The later changes contain only Vitest/support tests and documentation; application, migrations, release tooling, Playwright tests/configuration and dependencies are byte-identical. Build, TypeScript and zero-error lint evidence is recorded below. Exact final-head CI/Vercel and Codex review are separate merge prerequisites; their receipts are recorded on PR #113. Synthetic verification accessed no real private inputs or hosted targets. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.
 
 The selected regression for the captured-byte correction passed before commit (one selected test; eleven tests excluded by the selector, never counted as passes). The full 7bc0031 run independently executed all twelve package tests and all 68 new component tests without skips. A review found that before/after dependency inspection did not bind the retained bytes during a transient replacement. The correction hashes both captured PapaParse files against the approved dependency receipt before materialization; the regression checks each replacement independently and the valid pair. No caller-controlled hook was added.
 
@@ -51,4 +51,14 @@ The managed fixtures retained the reviewed 68-migration-plus-seed baseline, whos
 
 Production audit repeated on the unchanged lockfile: 0 critical/high and 1 accepted UUID moderate, exit 1, existing acceptance through 2026-09-30 only. Development-inclusive audit remains 1 critical, 16 high, 10 moderate, exit 1, the previously documented tooling follow-up; no new waiver or dependency upgrade.
 
-Resource cleanup and final review receipts are recorded separately below after completion.
+Resource cleanup is recorded below. The exact final-head GitHub/Vercel and external Codex review receipts are recorded on PR #113 rather than self-attested by this local evidence.
+
+## Final test-only review follow-up
+
+Six added negative cases exercise empty/placeholder/NUL/CR/LF passwords after valid synthetic DPAPI encryption and integrity capture, plus a nonzero launcher argument with no CLI invocation. An unexpectedly accepted input is disposed before the fixture fails. The final full Vitest evidence above includes these cases; no production behavior was changed. The 7bc0031 full Vitest 3,763/3,763 receipt remains prior implementation evidence in the JSON, and its exact full Playwright result remains scoped to byte-identical application, release and browser-test sources. It was not rerun solely for these test/documentation additions.
+
+## Resource lifecycle and review
+
+All remaining actor-owned test resources received successful Stop requests, followed by successful CloseActor and one successful List inspection. Stop acceptance is not verified shutdown; retained containers, data and fixture files were not deleted. No user-owned resource was adopted or stopped. Redacted acknowledgment receipts are in the companion JSON.
+
+The four local BMAD review layers and five resolved follow-ups are recorded in [the triage receipt](protected-production-dry-run-review-2026-09-22.md). External Codex review and GitHub/Vercel checks must match the exact final PR head before merge; consult PR #113 for those later receipts. This document does not predict their outcomes.
