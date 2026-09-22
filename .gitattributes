@@ -3,3 +3,8 @@ supabase/migrations/20250113000000_add_room_assignment_rpc.sql whitespace=-trail
 supabase/verify/*.sql text eol=lf
 src/lib/release/prepare-forward-subset.mjs text eol=lf
 src/lib/release/launch-private-forward-workspace.mjs text eol=lf
+# Protected packages compare worktree bytes with immutable Git blobs.
+src/lib/release/*.mjs text eol=lf
+src/lib/release/*.cs text eol=lf
+supabase/verify/*.mjs text eol=lf
+supabase/migration-baseline-manifest.json text eol=lf

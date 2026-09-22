@@ -184,5 +184,10 @@
         "durationMs": 312
       }
     ]
-  }
+  },
+  "reviewedFinalHead": "e4ab223",
+  "stagingMerge": "8aec314",
+  "githubVercelChecks": "clean",
+  "codexReview": "clean",
+  "mergeCompleted": true
 }

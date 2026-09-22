@@ -65,3 +65,7 @@ Docker initially lacked its engine pipe in this follow-up. After the owner start
 Reviewbot completed a clean review of 3e191a1 and all three GitHub/Vercel checks passed at that head; the only inline finding is the fixed, outdated P1 on 5dcf6f7. The final documentation commit requires its own checks and review. All five follow-up managed resources received successful Stop acknowledgments (stop_requested, not proof of shutdown); no user-owned resources or saved data were changed. Production stays paused/no-go, Story 22.15 in-progress, Epic 23 on-hold.
 
 Follow-up cleanup: CloseActor and the following single List both succeeded; all five follow-up resources were reported stopped. Saved resources/data were retained. After synchronizing the follow-up documentation, production-readiness-migrations.test.ts passed 29/29 with zero skips/failures, exit 0, 0.906 seconds.
+
+## Merge outcome
+
+The previously open final documentation-head gate is closed. PR #112 reviewed final head `e4ab223` merged as staging `8aec314`; required GitHub/Vercel checks and Codex review were clean. Statements above that describe final review or checks as pending are historical to their dated local verification. This merge completes only the version-only protected-toolchain component. It does not provide private-input admission, target binding, traffic isolation, cleanup, history repair, non-dry-run apply, deployment, or reopening authority.
