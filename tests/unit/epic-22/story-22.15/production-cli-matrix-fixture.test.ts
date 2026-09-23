@@ -68,6 +68,9 @@ describe('Story 22.15 deterministic production CLI matrix fixture', () => {
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('REFERENCES public.users(auth_user_id)');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('omc_date uuid');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('changed_by uuid NOT NULL REFERENCES public.users(id)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('CONSTRAINT user_filters_user_id_name_key UNIQUE (user_id, name)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('CONSTRAINT user_filters_name_check CHECK (char_length(name) <= 50)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('idx_employees_repayment_omc');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('v_room_assignments JSONB');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('FOR UPDATE;');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('Default: next available room');

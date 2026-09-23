@@ -1,4 +1,8 @@
-import { PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS as versions } from '../../src/lib/release/production-bootstrap-admission.mjs';
+import { createHash } from 'node:crypto';
+import {
+  PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS as versions,
+  parseExactProductionBootstrapDryRun,
+} from '../../src/lib/release/production-bootstrap-admission.mjs';
 
 export const CLI_MATRIX_CASES = Object.freeze({
   observed_guard_stop: Object.freeze({
@@ -42,6 +46,30 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const digest = (value) =>
   typeof value === 'string' && /^[a-f0-9]{64}$/u.test(value);
 
+export function verifyPendingMatrixDryRun(output, migrations, history) {
+  if (
+    typeof output !== 'string' ||
+    !Array.isArray(history) ||
+    history.length >= versions.length ||
+    !same(history, versions.slice(0, history.length))
+  ) {
+    throw new Error('Invalid local matrix pending history');
+  }
+  // Reuse the reviewed exact thirteen-file parser, supplying only the already
+  // independently observed prefix. Any extra, missing or reordered child file
+  // still fails that parser. This is labelled suffix proof, not full CLI output.
+  const prefix = migrations
+    .slice(0, history.length)
+    .map((m) => m.file)
+    .join('\n');
+  parseExactProductionBootstrapDryRun(prefix + '\n' + output, migrations);
+  return Object.freeze({
+    kind: 'pending_suffix_dry_run',
+    pendingVersions: versions.slice(history.length),
+    outputSha256: createHash('sha256').update(output).digest('hex'),
+  });
+}
+
 /** Pure interpretation of independently collected facts, never an admission to
  * execute, retry, repair, or continue. No child output or connection data enters
  * the result. Incomplete observations cannot establish transaction semantics. */
@@ -70,7 +98,8 @@ export function classifyCliMatrixResult(caseName, facts) {
     !digest(facts.beforeCurrentSha256) ||
     !digest(facts.afterCurrentSha256) ||
     typeof facts.preservationMatched !== 'boolean' ||
-    typeof facts.currentPostcondition !== 'boolean'
+    typeof facts.currentPostcondition !== 'boolean' ||
+    typeof facts.catalogMatched !== 'boolean'
   ) {
     return result('uncertain_current_file');
   }
@@ -99,6 +128,7 @@ export function classifyCliMatrixResult(caseName, facts) {
     return result(
       facts.guardErrorVersion === spec.target &&
         unchanged &&
+        facts.catalogMatched &&
         facts.guardErrorMatched === true
         ? 'proven_rejected_before_current_effect'
         : 'ambiguous_stop'
@@ -119,10 +149,11 @@ export function classifyCliMatrixResult(caseName, facts) {
   // BEGIN/COMMIT text or from the process exit code.
   if (facts.beforeAlreadySatisfiedPostcondition !== false)
     return result('ambiguous_stop');
-  if (unchanged && !facts.currentPostcondition)
+  if (unchanged && !facts.currentPostcondition && facts.catalogMatched)
     return result('rolled_back_unrecorded_current');
   if (
     !unchanged &&
+    !facts.catalogMatched &&
     facts.currentPostcondition &&
     facts.onlyExpectedCurrentChange === true
   ) {

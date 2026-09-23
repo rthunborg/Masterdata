@@ -184,8 +184,12 @@ CREATE TABLE IF NOT EXISTS public.staffing_needs_changelog (
 CREATE INDEX IF NOT EXISTS idx_staffing_needs_changelog_location_date ON public.staffing_needs_changelog(location, changed_at);
 CREATE TABLE IF NOT EXISTS public.user_filters (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, name text NOT NULL, filters jsonb NOT NULL DEFAULT '[]'::jsonb,
-  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT user_filters_user_id_name_key UNIQUE (user_id, name),
+  CONSTRAINT user_filters_name_check CHECK (char_length(name) <= 50)
 );
+CREATE INDEX IF NOT EXISTS idx_employees_repayment_omc ON public.employees(repayment_needed_omc);
+CREATE INDEX IF NOT EXISTS idx_employees_repayment_pe3 ON public.employees(repayment_needed_pe3);
 CREATE TABLE IF NOT EXISTS public.employee_column_changes (
   id uuid PRIMARY KEY, employee_id uuid NOT NULL REFERENCES public.employees(id), column_name text NOT NULL,
   changed_at timestamptz NOT NULL DEFAULT now(), changed_by uuid,
@@ -193,8 +197,8 @@ CREATE TABLE IF NOT EXISTS public.employee_column_changes (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS employee_column_changes_employee_column_changed_at_key
   ON public.employee_column_changes(employee_id, column_name, changed_at);
-CREATE OR REPLACE FUNCTION public.get_user_role() RETURNS text LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = '' AS $$
-DECLARE value text; BEGIN SELECT role INTO value FROM public.users WHERE auth_user_id=auth.uid() AND is_active=true LIMIT 1; RETURN value; END $$;
+CREATE OR REPLACE FUNCTION public.get_user_role() RETURNS text LANGUAGE plpgsql STABLE SECURITY DEFINER AS $$
+DECLARE value text; BEGIN SELECT role INTO value FROM public.users WHERE auth_user_id=auth.uid() LIMIT 1; RETURN value; END $$;
 -- Exact public initial function source, hash-bound above; this fixture does
 -- not execute the historical migration.
 ${INITIAL_TIMESTAMP_SQL}

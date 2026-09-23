@@ -7,6 +7,16 @@ import {
 } from '../../../support/production-cli-matrix-observer.mjs';
 
 const catalog = {
+  relations: [
+    {
+      table_name: 'staffing_needs',
+      table_kind: 'r',
+      row_security: false,
+      force_row_security: false,
+      owner: 'postgres',
+      table_acl: null,
+    },
+  ],
   columns: [
     {
       table_name: 'column_config',
@@ -184,6 +194,9 @@ describe('production CLI matrix observer projection', () => {
       input.catalog.triggers = {};
     },
     (input) => {
+      input.catalog.relations[0].table_acl = 1;
+    },
+    (input) => {
       input.catalog.privateValue = 'secret';
     },
     (input) => {
@@ -261,7 +274,7 @@ describe('production CLI matrix observer projection', () => {
       'tgrelid::regclass::text table_name'
     );
     expect(MATRIX_CATALOG_SNAPSHOT_SQL.match(/'\[\]'::jsonb/gu)).toHaveLength(
-      6
+      7
     );
     expect(MATRIX_PRESERVATION_SQL).toContain('role_permissions');
     expect(MATRIX_PRESERVATION_SQL).toContain('to_jsonb');
@@ -340,6 +353,27 @@ describe('production CLI matrix observer projection', () => {
     );
     expect(headcount.headcountSha256).not.toBe(baseline.headcountSha256);
     expect(checklist.checklistSha256).not.toBe(baseline.checklistSha256);
+  });
+
+  it('invalidates both non-current target digests when public relation RLS or ACL changes', () => {
+    const rlsChanged = observationInput();
+    rlsChanged.catalog.relations[0].row_security = true;
+    const aclChanged = observationInput();
+    aclChanged.catalog.relations[0].table_acl =
+      '{postgres=arwdDxt/postgres,authenticated=r/postgres}';
+
+    const baseline = projectMatrixObservation(observationInput());
+    const rls = projectMatrixObservation(rlsChanged);
+    const acl = projectMatrixObservation(aclChanged);
+
+    for (const observed of [rls, acl]) {
+      expect(observed.nonCurrentHeadcountSha256).not.toBe(
+        baseline.nonCurrentHeadcountSha256
+      );
+      expect(observed.nonCurrentChecklistSha256).not.toBe(
+        baseline.nonCurrentChecklistSha256
+      );
+    }
   });
 
   it('includes the function referenced by a saved-filter trigger in its digest', () => {

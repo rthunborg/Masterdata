@@ -6,6 +6,11 @@ const hash = (value) =>
 // The local runner returns only this closed projection. It never returns rows,
 // permissions, audit entries, actor mappings, or arbitrary catalog values.
 export const MATRIX_CATALOG_SNAPSHOT_SQL = `SELECT jsonb_build_object(
+ 'relations',coalesce((SELECT jsonb_agg(x ORDER BY x.table_name) FROM
+   (SELECT r.relname table_name,r.relkind table_kind,r.relrowsecurity row_security,
+     r.relforcerowsecurity force_row_security,pg_get_userbyid(r.relowner) owner,r.relacl::text table_acl
+    FROM pg_class r JOIN pg_namespace n ON n.oid=r.relnamespace
+    WHERE n.nspname='public' AND r.relkind IN ('r','p')) x), '[]'::jsonb),
  'columns', coalesce((SELECT jsonb_agg(x ORDER BY x.table_name,x.ordinal_position) FROM
    (SELECT table_name,column_name,ordinal_position,data_type,is_nullable,column_default
     FROM information_schema.columns WHERE table_schema='public') x), '[]'::jsonb),
@@ -55,6 +60,7 @@ export const MATRIX_AGGREGATES_SQL = `SELECT jsonb_build_object(
 ) AS counts;`;
 
 const CATALOG_KEYS = Object.freeze([
+  'relations',
   'columns',
   'constraints',
   'indexes',
@@ -99,6 +105,21 @@ function assertCatalogEntry(kind, entry) {
   if (!isRecord(entry)) throw new Error('Incomplete local matrix catalog');
 
   const valid = {
+    relations:
+      hasExactKeys(entry, [
+        'table_name',
+        'table_kind',
+        'row_security',
+        'force_row_security',
+        'owner',
+        'table_acl',
+      ]) &&
+      isPublicRelationName(entry.table_name) &&
+      ['r', 'p'].includes(entry.table_kind) &&
+      typeof entry.row_security === 'boolean' &&
+      typeof entry.force_row_security === 'boolean' &&
+      typeof entry.owner === 'string' &&
+      isNullableString(entry.table_acl),
     columns:
       hasExactKeys(entry, [
         'table_name',

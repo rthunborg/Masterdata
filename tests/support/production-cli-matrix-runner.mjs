@@ -26,6 +26,7 @@ import {
 import {
   CLI_MATRIX_CASES,
   classifyCliMatrixResult,
+  verifyPendingMatrixDryRun,
 } from './production-cli-matrix-result.mjs';
 import {
   buildHistoryFaultSetup,
@@ -306,11 +307,24 @@ export async function runProductionCliMatrixCase({
       durationMs: Date.now() - started,
       outputSha256: hash(output),
       outputBytes: Buffer.byteLength(output),
+      sourceVersions: source.receipt.migrations
+        .slice(0, count)
+        .map((m) => m.version),
+      lastApplyingVersion:
+        [...output.matchAll(/Applying migration (\d{14})_[^\r\n]+/gu)].at(
+          -1
+        )?.[1] ?? null,
+      sqlStates: [
+        ...new Set(
+          [...output.matchAll(/SQLSTATE ([A-Z0-9]{5})/gu)].map((m) => m[1])
+        ),
+      ],
     });
     if (!dryRun && (child.kind !== 'exit' || child.code !== 0)) terminal = true;
     return { child, output };
   }
   let stage = 'fixture_setup';
+  let fixturePrepared = false;
   try {
     mkdirSync(destination);
     await connected('postgres', (client) =>
@@ -324,6 +338,7 @@ export async function runProductionCliMatrixCase({
       await client.query(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL);
       await client.query(fixture.sql);
     });
+    fixturePrepared = true;
     let hookSetup;
     if (spec.mode === 'reject' || spec.mode === 'timeout') {
       hookSetup = buildHistoryFaultSetup({
@@ -332,6 +347,7 @@ export async function runProductionCliMatrixCase({
       });
       await connected(databaseName, (client) => client.query(hookSetup.sql));
       receipt.hookSetupSha256 = hookSetup.sha256;
+      receipt.historyTableManuallyCreated = true;
     }
     const work = materialize('measured');
     stage = 'initial_observer';
@@ -363,11 +379,7 @@ export async function runProductionCliMatrixCase({
     );
     parseExactProductionBootstrapDryRun(dry.output, source.receipt.migrations);
     need(same(initial, await snapshot()), 'matrix_dry_run_changed_state');
-    if (
-      spec.mode === 'reject' ||
-      spec.mode === 'timeout' ||
-      caseName.startsWith('trigger_')
-    ) {
+    if (spec.mode !== 'success') {
       stage = 'prefix_setup';
       const prefix = await invoke(materialize('prefix', spec.prefix), {
         count: spec.prefix,
@@ -385,6 +397,30 @@ export async function runProductionCliMatrixCase({
     }
     stage = 'before_observer';
     const before = await snapshot();
+    if (spec.mode !== 'success') {
+      need(
+        same(
+          before.history,
+          source.receipt.migrations.slice(0, spec.prefix).map((m) => m.version)
+        ),
+        'matrix_prefix_history'
+      );
+      stage = 'pending_dry_run';
+      const pending = await invoke(work, { dryRun: true });
+      need(
+        pending.child.kind === 'exit' && pending.child.code === 0,
+        'matrix_pending_dry_run'
+      );
+      receipt.pendingDryRun = verifyPendingMatrixDryRun(
+        pending.output,
+        source.receipt.migrations,
+        before.history
+      );
+      need(
+        same(before, await snapshot()),
+        'matrix_pending_dry_run_changed_state'
+      );
+    }
     if (hookSetup)
       receipt.hookBefore = await connected(
         databaseName,
@@ -506,6 +542,7 @@ export async function runProductionCliMatrixCase({
       afterCurrentSha256: after[physicalKey],
       preservationMatched:
         before.preservationSha256 === after.preservationSha256,
+      catalogMatched: before.catalogSha256 === after.catalogSha256,
       currentPostcondition,
       strictCatalogPassed,
       guardErrorMatched: knownGuardError.test(applied.output),
@@ -541,6 +578,13 @@ export async function runProductionCliMatrixCase({
     receipt.failure = /^matrix_[a-z_]+$/u.test(error?.message ?? '')
       ? error.message
       : 'matrix_incomplete_proof';
+    if (fixturePrepared && !receipt.after) {
+      try {
+        receipt.failureObservation = await snapshot();
+      } catch {
+        receipt.failureObservationUnavailable = true;
+      }
+    }
   }
   receipt.finishedAtUtc = new Date().toISOString();
   return receipt;

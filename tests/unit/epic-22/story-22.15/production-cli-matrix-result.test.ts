@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CLI_MATRIX_CASES,
   classifyCliMatrixResult,
+  verifyPendingMatrixDryRun,
 } from '../../../support/production-cli-matrix-result.mjs';
 import { PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS as versions } from '../../../../src/lib/release/production-bootstrap-admission.mjs';
 
@@ -18,6 +19,7 @@ function observed(caseName: keyof typeof CLI_MATRIX_CASES) {
     beforeCurrentSha256: 'a'.repeat(64),
     afterCurrentSha256: 'a'.repeat(64),
     preservationMatched: true,
+    catalogMatched: true,
     currentPostcondition: spec.mode === 'success',
     strictCatalogPassed: true,
     guardErrorVersion: spec.target,
@@ -35,6 +37,53 @@ function observed(caseName: keyof typeof CLI_MATRIX_CASES) {
   };
 }
 
+describe('pending suffix dry-run proof', () => {
+  const migrations = versions.map((version) => ({
+    version,
+    file: `${version}_synthetic.sql`,
+    gitBlob: 'a'.repeat(40),
+    sha256: 'b'.repeat(64),
+  }));
+  it.each([1, 3, 8, 11, 12])(
+    'proves the exact pending suffix after prefix %i',
+    (count) => {
+      const output = migrations
+        .slice(count)
+        .map((m) => m.file)
+        .join('\n');
+      expect(
+        verifyPendingMatrixDryRun(output, migrations, versions.slice(0, count))
+          .pendingVersions
+      ).toEqual(versions.slice(count));
+    }
+  );
+  it.each(['missing', 'extra', 'reordered', 'already_applied'])(
+    'rejects incorrect child listing: %s',
+    (change) => {
+      let files = migrations.slice(3).map((m) => m.file);
+      if (change === 'missing') files = files.slice(1);
+      if (change === 'extra') files.push('20270101000000_unknown.sql');
+      if (change === 'reordered') files.reverse();
+      if (change === 'already_applied') files.unshift(migrations[0].file);
+      expect(() =>
+        verifyPendingMatrixDryRun(
+          files.join('\n'),
+          migrations,
+          versions.slice(0, 3)
+        )
+      ).toThrow();
+    }
+  );
+  it('rejects non-prefix history instead of synthesizing a misleading complete listing', () => {
+    expect(() =>
+      verifyPendingMatrixDryRun('', migrations, [versions[1]])
+    ).toThrow('Invalid local matrix pending history');
+    expect(() => verifyPendingMatrixDryRun('', migrations, versions)).toThrow(
+      'Invalid local matrix pending history'
+    );
+  });
+});
+
 describe('local CLI matrix terminal classification', () => {
   it.each([
     'observed_guard_stop',
@@ -49,6 +98,7 @@ describe('local CLI matrix terminal classification', () => {
       for (const delta of [
         { guardErrorVersion: versions[0] },
         { guardErrorMatched: false },
+        { catalogMatched: false },
         { afterCurrentSha256: 'b'.repeat(64) },
         { history: [] },
         { child: { kind: 'exit', code: 0 } },
@@ -93,10 +143,12 @@ describe('local CLI matrix terminal classification', () => {
           ...observed(name),
           afterCurrentSha256: 'b'.repeat(64),
           currentPostcondition: true,
+          catalogMatched: false,
         }).classification
       ).toBe('committed_unrecorded_current');
       for (const delta of [
         { beforeAlreadySatisfiedPostcondition: true },
+        { catalogMatched: false },
         { currentPostcondition: true },
         { afterCurrentSha256: 'b'.repeat(64) },
         {
