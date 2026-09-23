@@ -1,0 +1,109 @@
+import { describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+import {
+  FORWARD_VERSIONS,
+  MATRIX_FIXTURE_VARIANTS,
+  PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL,
+  SYNTHETIC_AGGREGATES,
+  buildProductionCliMatrixFixture,
+} from '../../../support/production-cli-matrix-fixture.mjs';
+
+describe('Story 22.15 deterministic production CLI matrix fixture', () => {
+  it('declares the exact immutable thirteen-version sequence', () => {
+    expect(FORWARD_VERSIONS).toHaveLength(13);
+    expect(FORWARD_VERSIONS).toEqual([...FORWARD_VERSIONS].sort());
+  });
+
+  it('builds a deterministic observed synthetic profile with the declared orphan boundary', () => {
+    const first = buildProductionCliMatrixFixture();
+    const second = buildProductionCliMatrixFixture();
+    expect(first.sql).toBe(second.sql);
+    expect(first.representation.sqlSha256).toBe(second.representation.sqlSha256);
+    expect(first.representation.aggregates).toMatchObject({
+      ...SYNTHETIC_AGGREGATES, savedFilters: 48, savedFilterOrphans: 48,
+    });
+    expect(first.representation.physicalPredicates.savedFilters).toEqual({
+      total: 48, orphanAuthReferences: 48, emptyNames: 0, overlengthNames: 0,
+    });
+    expect(first.sql).toContain('Synthetic filter 48');
+    expect(first.sql).toContain('synthetic-legacy-actor@example.invalid');
+    expect(first.sql).toContain("'2027-02-01','2027-01-15'");
+    expect(first.sql).toContain("'Trelleborg',8,10");
+    expect(first.sql).toContain("'room_number_shared','number'");
+    expect(first.representation.bootstrapSqlSha256).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('keeps the zero-filter derivative explicit and prevents it from being mistaken for cleanup proof', () => {
+    const fixture = buildProductionCliMatrixFixture({ variant: 'postcleanup_zero_filters' });
+    expect(fixture.representation.aggregates.savedFilters).toBe(0);
+    expect(fixture.sql).toContain('Declared zero-filter synthetic derivative');
+    expect(fixture.sql).not.toContain('INSERT INTO public.user_filters');
+    expect(fixture.representation.coverage.limitations.join(' ')).toContain('semantic acceptance');
+  });
+
+  it('separates the column-absent implicit-history probe from representative variants', () => {
+    const observed = buildProductionCliMatrixFixture({ variant: 'observed_orphans_48' });
+    const implicit = buildProductionCliMatrixFixture({ variant: 'implicit_column_absent' });
+    expect(observed.representation.physicalPredicates.implicitChecklistColumn).toEqual({
+      syntheticChoice: 'present', status: 'present_noop_possible', usableForHistoryClassification: false,
+    });
+    expect(implicit.representation.physicalPredicates.implicitChecklistColumn).toEqual({
+      syntheticChoice: 'absent', status: 'absent_before_apply', usableForHistoryClassification: true, afterApply: 'present_not_null_default_false',
+    });
+    expect(implicit.sql).toContain('DROP COLUMN IF EXISTS is_checklist_item');
+    expect(implicit.representation.coverage.limitations.join(' ')).toContain('not a production-profile representation');
+  });
+
+  it.each(['', 'unknown', 'observed_orphans_49'])(
+    'rejects an unavailable fixture variant: %p',
+    (variant) => expect(() => buildProductionCliMatrixFixture({ variant })).toThrow('Production CLI matrix fixture variant is unavailable'),
+  );
+
+  it('makes fixture scope finite and contains no private loader dependency', () => {
+    const fixture = buildProductionCliMatrixFixture();
+    expect(MATRIX_FIXTURE_VARIANTS).toEqual(['observed_orphans_48', 'postcleanup_zero_filters', 'implicit_column_absent']);
+    expect(fixture.sql).not.toMatch(/load-private|encrypted|production-schema|supabase\.co/i);
+    expect(fixture.representation.coverage.productionRowsRead).toBe(false);
+    expect(fixture.representation.coverage.productionPermissionJsonInferred).toBe(false);
+    expect(fixture.representation.coverage.knownPermissionRows).toEqual(['special_diet', 'diet_details', 'crewing_done']);
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('CREATE TABLE IF NOT EXISTS public.employee_column_changes');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('REFERENCES public.users(auth_user_id)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('omc_date uuid');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('changed_by uuid NOT NULL REFERENCES public.users(id)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('CONSTRAINT user_filters_user_id_name_key UNIQUE (user_id, name)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('CONSTRAINT user_filters_name_check CHECK (char_length(name) <= 50)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('idx_employees_repayment_omc');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('v_room_assignments JSONB');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('FOR UPDATE;');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('Default: next available room');
+  });
+
+  it('reads hash-bound public migration sources independently of the caller cwd', () => {
+    const fixtureModule = pathToFileURL(
+      path.resolve(
+        import.meta.dirname,
+        '../../../support/production-cli-matrix-fixture.mjs'
+      )
+    ).href;
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `import { buildProductionCliMatrixFixture } from ${JSON.stringify(fixtureModule)}; process.stdout.write(buildProductionCliMatrixFixture().representation.bootstrapSqlSha256);`,
+      ],
+      {
+        cwd: path.parse(process.cwd()).root,
+        encoding: 'utf8',
+        windowsHide: true,
+      }
+    );
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe('');
+    expect(result.stdout.trim()).toMatch(/^[a-f0-9]{64}$/u);
+  });
+});
