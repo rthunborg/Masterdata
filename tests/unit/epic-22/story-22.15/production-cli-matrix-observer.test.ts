@@ -77,7 +77,9 @@ const aggregates = {
   employees: 73,
   auditRows: 1025,
   auditNonNullActors: 202,
+  auditDistinctNonNullActors: 1,
   columnConfig: 61,
+  staffingLocations: 2,
   savedFilters: 48,
   savedFilterOrphans: 48,
   savedFilterEmptyNames: 0,
@@ -96,6 +98,12 @@ const observationInput = () => ({
   catalog: structuredClone(catalog),
   preservation: {
     employees: [{ id: 'synthetic-employee', ssn: 'synthetic-only' }],
+    users: [{ id: 'synthetic-user', role: 'hr_admin' }],
+    important_dates: [{ id: 'synthetic-date', deadline_submit: '2027-02-01' }],
+    staffing_needs: [{ id: 'synthetic-need', location: 'Trelleborg' }],
+    staffing_needs_changelog: [
+      { id: 'synthetic-change', location: 'Trelleborg', old_value: 8 },
+    ],
     permissions: [
       [
         'synthetic-config',
@@ -154,6 +162,7 @@ describe('production CLI matrix observer projection', () => {
       'savedFilterSha256',
     ]);
     expect(Object.keys(result.counts).sort()).toEqual([
+      'auditDistinctNonNullActors',
       'auditNonNullActors',
       'auditRows',
       'columnConfig',
@@ -163,6 +172,7 @@ describe('production CLI matrix observer projection', () => {
       'savedFilterOrphans',
       'savedFilterOverlengthNames',
       'savedFilters',
+      'staffingLocations',
       'unmappedActors',
     ]);
     expect(JSON.stringify(result)).not.toContain('public.example()');
@@ -221,6 +231,12 @@ describe('production CLI matrix observer projection', () => {
       input.preservation.audit = [{}];
     },
     (input) => {
+      delete input.preservation.users;
+    },
+    (input) => {
+      input.preservation.staffing_needs_changelog = {};
+    },
+    (input) => {
       input.preservation.permissions = [['id', 'column', 'not-an-object']];
     },
     (input) => {
@@ -251,6 +267,12 @@ describe('production CLI matrix observer projection', () => {
       input.aggregates.auditRows = '1025';
     },
     (input) => {
+      input.aggregates.auditDistinctNonNullActors = '1';
+    },
+    (input) => {
+      delete input.aggregates.staffingLocations;
+    },
+    (input) => {
       input.aggregates.repayment.omcTrue = -1;
     },
     (input) => {
@@ -278,13 +300,17 @@ describe('production CLI matrix observer projection', () => {
     );
     expect(MATRIX_PRESERVATION_SQL).toContain('role_permissions');
     expect(MATRIX_PRESERVATION_SQL).toContain('to_jsonb');
-    expect(MATRIX_PRESERVATION_SQL.match(/'\[\]'::jsonb/gu)).toHaveLength(4);
+    expect(MATRIX_PRESERVATION_SQL.match(/'\[\]'::jsonb/gu)).toHaveLength(8);
   });
 
   it('projects a post-cleanup fixture with no preservation rows', () => {
     const input = observationInput();
     input.preservation = {
       employees: [],
+      users: [],
+      important_dates: [],
+      staffing_needs: [],
+      staffing_needs_changelog: [],
       permissions: [],
       filters: [],
       audit: [],
@@ -295,6 +321,8 @@ describe('production CLI matrix observer projection', () => {
       employees: 0,
       auditRows: 0,
       auditNonNullActors: 0,
+      auditDistinctNonNullActors: 0,
+      staffingLocations: 0,
       savedFilters: 0,
       savedFilterOrphans: 0,
       repayment: {
@@ -383,6 +411,20 @@ describe('production CLI matrix observer projection', () => {
 
     expect(projectMatrixObservation(changed).savedFilterSha256).not.toBe(
       projectMatrixObservation(observationInput()).savedFilterSha256
+    );
+  });
+
+  it.each([
+    ['users', (input) => { input.preservation.users[0].role = 'recruiter'; }],
+    ['important dates', (input) => { input.preservation.important_dates[0].deadline_submit = '2027-03-01'; }],
+    ['staffing needs', (input) => { input.preservation.staffing_needs[0].location = 'Göteborg'; }],
+    ['staffing changelog', (input) => { input.preservation.staffing_needs_changelog[0].old_value = 7; }],
+  ])('changes the preservation digest when seeded %s data changes', (_name, mutate) => {
+    const baseline = projectMatrixObservation(observationInput());
+    const changed = observationInput();
+    mutate(changed);
+    expect(projectMatrixObservation(changed).preservationSha256).not.toBe(
+      baseline.preservationSha256
     );
   });
 });

@@ -194,3 +194,14 @@ Production remains paused/no-go. Story 22.15 remains in-progress and Epic 23 rem
 The four BMAD review layers completed. Trust-boundary suggestions were assessed against the explicit trusted-operator package approval, inherited wrapper verification, held ACL/hash leases and synthetic-only evidence scope. They do not establish an additional authorization gate or a production-ready claim. Story 22.15 remains in-progress.
 
 - [x] [Review][Patch] External Codex P2 on 662cff2: synchronize the canonical next action, BMAD story comment, epic plan and remaining-gate fields with the locally verified dry-run component; retain earlier file-lease limitations as historical.
+
+### Local CLI matrix review findings — 2026-09-23
+
+**Round 1 of 3** — Four BMAD review layers assessed the bounded seven-case component at `b185986a6ec3b019746f7e52c47d657c56b5d313`. Standing owner authorization covers these patches. This component does not change Story 22.15's in-progress status or any production gate.
+
+- [x] [Review][Patch] Commit a repeatable guard-owned local admission path and a required matrix gate; distinguish trusted operator input from fresh resource verification.
+- [x] [Review][Patch] Observe and require every declared fixture aggregate, including distinct audit actors, staffing locations and both repayment distributions.
+- [x] [Review][Patch] Align synthetic room-number column metadata with its integer storage type.
+- [x] [Review][Patch] Preserve synthetic users, dates, staffing needs and staffing changelog data alongside existing employee/filter/permission/audit hashes.
+
+The successful chain necessarily changes catalog objects, so pre/post catalog equality is not a success predicate. Catalog fingerprints cover explicitly enumerated public object groups, not all PostgreSQL infrastructure. Manual history-table setup and the single-actor/zero-filter derivatives are declared fixture choices, not additional production or CLI-bootstrap proofs. Executable hashes in this trusted local test path do not establish the protected production installation boundary.

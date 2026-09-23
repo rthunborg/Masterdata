@@ -5,6 +5,9 @@ const hash = (value) =>
 
 // The local runner returns only this closed projection. It never returns rows,
 // permissions, audit entries, actor mappings, or arbitrary catalog values.
+// Its catalog scope is deliberately limited to public base/partitioned tables
+// and their directly associated public metadata; it is not a universal database
+// catalog proof.
 export const MATRIX_CATALOG_SNAPSHOT_SQL = `SELECT jsonb_build_object(
  'relations',coalesce((SELECT jsonb_agg(x ORDER BY x.table_name) FROM
    (SELECT r.relname table_name,r.relkind table_kind,r.relrowsecurity row_security,
@@ -34,6 +37,10 @@ export const MATRIX_CATALOG_SNAPSHOT_SQL = `SELECT jsonb_build_object(
 
 export const MATRIX_PRESERVATION_SQL = `SELECT jsonb_build_object(
  'employees',coalesce((SELECT jsonb_agg(to_jsonb(e) ORDER BY e.id) FROM public.employees e), '[]'::jsonb),
+ 'users',coalesce((SELECT jsonb_agg(to_jsonb(u) ORDER BY u.id) FROM public.users u), '[]'::jsonb),
+ 'important_dates',coalesce((SELECT jsonb_agg(to_jsonb(d) ORDER BY d.id) FROM public.important_dates d), '[]'::jsonb),
+ 'staffing_needs',coalesce((SELECT jsonb_agg(to_jsonb(s) ORDER BY s.id) FROM public.staffing_needs s), '[]'::jsonb),
+ 'staffing_needs_changelog',coalesce((SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) FROM public.staffing_needs_changelog c), '[]'::jsonb),
  'permissions',coalesce((SELECT jsonb_agg(jsonb_build_array(c.id,c.db_column_name,c.role_permissions) ORDER BY c.id) FROM public.column_config c), '[]'::jsonb),
  'filters',coalesce((SELECT jsonb_agg(to_jsonb(f) ORDER BY f.id) FROM public.user_filters f), '[]'::jsonb),
  'audit',coalesce((SELECT jsonb_agg(jsonb_build_array(c.id,c.employee_id,c.column_name,c.changed_at,
@@ -48,7 +55,9 @@ export const MATRIX_AGGREGATES_SQL = `SELECT jsonb_build_object(
  'employees',(SELECT count(*) FROM public.employees),
  'auditRows',(SELECT count(*) FROM public.employee_column_changes),
  'auditNonNullActors',(SELECT count(*) FROM public.employee_column_changes WHERE changed_by IS NOT NULL),
+ 'auditDistinctNonNullActors',(SELECT count(DISTINCT changed_by) FROM public.employee_column_changes WHERE changed_by IS NOT NULL),
  'columnConfig',(SELECT count(*) FROM public.column_config),
+ 'staffingLocations',(SELECT count(*) FROM public.staffing_needs),
  'savedFilters',(SELECT count(*) FROM public.user_filters),
  'savedFilterOrphans',(SELECT count(*) FROM public.user_filters f WHERE NOT EXISTS(SELECT 1 FROM auth.users a WHERE a.id=f.user_id)),
  'savedFilterEmptyNames',(SELECT count(*) FROM public.user_filters WHERE char_length(name)=0),
@@ -72,7 +81,9 @@ const AGGREGATE_KEYS = Object.freeze([
   'employees',
   'auditRows',
   'auditNonNullActors',
+  'auditDistinctNonNullActors',
   'columnConfig',
+  'staffingLocations',
   'savedFilters',
   'savedFilterOrphans',
   'savedFilterEmptyNames',
@@ -221,12 +232,25 @@ function assertPreservationSnapshot(preservation) {
   if (
     !hasExactKeys(preservation, [
       'employees',
+      'users',
+      'important_dates',
+      'staffing_needs',
+      'staffing_needs_changelog',
       'permissions',
       'filters',
       'audit',
       'unmapped_actors',
     ]) ||
-    !['employees', 'permissions', 'filters', 'audit'].every((key) =>
+    ![
+      'employees',
+      'users',
+      'important_dates',
+      'staffing_needs',
+      'staffing_needs_changelog',
+      'permissions',
+      'filters',
+      'audit',
+    ].every((key) =>
       Array.isArray(preservation[key])
     ) ||
     !isCount(preservation.unmapped_actors)
@@ -235,6 +259,10 @@ function assertPreservationSnapshot(preservation) {
   }
   if (
     !preservation.employees.every(isRecord) ||
+    !preservation.users.every(isRecord) ||
+    !preservation.important_dates.every(isRecord) ||
+    !preservation.staffing_needs.every(isRecord) ||
+    !preservation.staffing_needs_changelog.every(isRecord) ||
     !preservation.filters.every(isRecord) ||
     !preservation.permissions.every(
       (entry) =>
@@ -261,8 +289,10 @@ function projectApprovedCounts(aggregates, preservation) {
     employees: aggregates.employees,
     auditRows: aggregates.auditRows,
     auditNonNullActors: aggregates.auditNonNullActors,
+    auditDistinctNonNullActors: aggregates.auditDistinctNonNullActors,
     unmappedActors: preservation.unmapped_actors,
     columnConfig: aggregates.columnConfig,
+    staffingLocations: aggregates.staffingLocations,
     savedFilters: aggregates.savedFilters,
     savedFilterOrphans: aggregates.savedFilterOrphans,
     savedFilterEmptyNames: aggregates.savedFilterEmptyNames,

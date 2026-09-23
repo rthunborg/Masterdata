@@ -76,6 +76,36 @@ function pinnedTool(tool, version) {
   );
 }
 
+export function assertInitialMatrixObservation(initial, expected) {
+  for (const key of [
+    'employees',
+    'auditRows',
+    'auditNonNullActors',
+    'auditDistinctNonNullActors',
+    'staffingLocations',
+    'columnConfig',
+    'savedFilters',
+    'savedFilterOrphans',
+    'savedFilterEmptyNames',
+    'savedFilterOverlengthNames',
+  ]) {
+    need(initial.counts[key] === expected[key], 'matrix_fixture_aggregates');
+  }
+  need(
+    initial.counts.unmappedActors === 0 && initial.history.length === 0,
+    'matrix_fixture_initial_state'
+  );
+  for (const prefix of ['omc', 'pe3']) {
+    for (const state of ['Null', 'True', 'False']) {
+      need(
+        initial.counts.repayment[prefix + state] ===
+          expected['repayment' + state],
+        'matrix_fixture_repayment'
+      );
+    }
+  }
+}
+
 /** Test-only local runner. The trusted operator supplies a fresh guard-derived
  * binding, not a hosted URL. The server itself must match that binding on every
  * new connection. This API is not a production admission boundary. */
@@ -95,7 +125,9 @@ export async function runProductionCliMatrixCase({
       /^[a-f0-9]{64}$/u.test(guardBinding.expectedSystemIdentifierSha256) &&
       /^[a-f0-9]{64}$/u.test(guardBinding.composeSha256) &&
       typeof guardBinding.resourceId === 'string' &&
-      /^[a-f0-9-]{36}$/u.test(guardBinding.resourceId) &&
+      /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/u.test(
+        guardBinding.resourceId
+      ) &&
       Number.isInteger(guardBinding.port) &&
       guardBinding.port >= 1024 &&
       guardBinding.port <= 65535 &&
@@ -352,25 +384,7 @@ export async function runProductionCliMatrixCase({
     const work = materialize('measured');
     stage = 'initial_observer';
     const initial = await snapshot();
-    for (const key of [
-      'employees',
-      'auditRows',
-      'auditNonNullActors',
-      'columnConfig',
-      'savedFilters',
-      'savedFilterOrphans',
-      'savedFilterEmptyNames',
-      'savedFilterOverlengthNames',
-    ]) {
-      need(
-        initial.counts[key] === fixture.representation.aggregates[key],
-        'matrix_fixture_aggregates'
-      );
-    }
-    need(
-      initial.counts.unmappedActors === 0 && initial.history.length === 0,
-      'matrix_fixture_initial_state'
-    );
+    assertInitialMatrixObservation(initial, fixture.representation.aggregates);
     stage = 'initial_dry_run';
     const dry = await invoke(work, { dryRun: true });
     need(

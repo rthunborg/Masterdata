@@ -1,13 +1,29 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { CLI_MATRIX_CASES } from '../../../support/production-cli-matrix-result.mjs';
 import { runProductionCliMatrixCase } from '../../../support/production-cli-matrix-runner.mjs';
+import {
+  MATRIX_REQUIRED_ENV,
+  requireCompletedMatrixCases,
+  requireMatrixAdmission,
+} from '../../../support/production-cli-matrix-gate.mjs';
 
 // The operator creates this local synthetic admission after a fresh guard List
 // and selected-container identity check. Missing admission is an explicit local
 // service skip, never a passing database/CLI proof.
 const admissionFile = process.env.STORY_2215_CLI_MATRIX_ADMISSION;
+const requiredGate = process.env[MATRIX_REQUIRED_ENV] === 'true';
+const completedCases = new Set<string>();
+
+describe('required local CLI matrix gate admission', () => {
+  it.skipIf(process.env[MATRIX_REQUIRED_ENV] !== 'true')(
+    'rejects a required run without an admission file',
+    () => {
+      expect(() => requireMatrixAdmission(process.env)).not.toThrow();
+    }
+  );
+});
 
 describe
   .skipIf(!admissionFile)
@@ -54,8 +70,16 @@ describe
             expect(receipt.attempts.at(-1)?.child.kind).toBe('timeout');
             expect(receipt.hookAfter?.observed).toBe(true);
           }
+          completedCases.add(caseName);
         },
         120000
       );
     }
+    afterAll(() => {
+      requireCompletedMatrixCases({
+        required: requiredGate,
+        completed: completedCases,
+        expected: Object.keys(CLI_MATRIX_CASES),
+      });
+    });
   });

@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import {
   FORWARD_VERSIONS,
@@ -27,6 +30,9 @@ describe('Story 22.15 deterministic production CLI matrix fixture', () => {
     });
     expect(first.sql).toContain('Synthetic filter 48');
     expect(first.sql).toContain('synthetic-legacy-actor@example.invalid');
+    expect(first.sql).toContain("'2027-02-01','2027-01-15'");
+    expect(first.sql).toContain("'Trelleborg',8,10");
+    expect(first.sql).toContain("'room_number_shared','number'");
     expect(first.representation.bootstrapSqlSha256).toMatch(/^[a-f0-9]{64}$/);
   });
 
@@ -74,5 +80,30 @@ describe('Story 22.15 deterministic production CLI matrix fixture', () => {
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('v_room_assignments JSONB');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('FOR UPDATE;');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('Default: next available room');
+  });
+
+  it('reads hash-bound public migration sources independently of the caller cwd', () => {
+    const fixtureModule = pathToFileURL(
+      path.resolve(
+        import.meta.dirname,
+        '../../../support/production-cli-matrix-fixture.mjs'
+      )
+    ).href;
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `import { buildProductionCliMatrixFixture } from ${JSON.stringify(fixtureModule)}; process.stdout.write(buildProductionCliMatrixFixture().representation.bootstrapSqlSha256);`,
+      ],
+      {
+        cwd: path.parse(process.cwd()).root,
+        encoding: 'utf8',
+        windowsHide: true,
+      }
+    );
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe('');
+    expect(result.stdout.trim()).toMatch(/^[a-f0-9]{64}$/u);
   });
 });

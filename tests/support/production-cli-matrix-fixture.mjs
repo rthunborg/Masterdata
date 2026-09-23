@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Repository-owned input for the local CLI matrix.  It deliberately contains
@@ -22,6 +23,14 @@ export const MATRIX_FIXTURE_VARIANTS = Object.freeze([
 ]);
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+const REPOSITORY_ROOT = resolve(
+  dirname(
+    typeof import.meta.filename === 'string'
+      ? import.meta.filename
+      : fileURLToPath(import.meta.url)
+  ),
+  '../..'
+);
 const normalizedBodyMd5 = (value) => createHash('md5')
   .update(value.trim().replaceAll('\r\n', '\n')).digest('hex');
 const literal = (value) => `'${String(value).replaceAll("'", "''")}'`;
@@ -71,7 +80,7 @@ const CONFIG_COLUMNS = Object.freeze([
 ]);
 
 function publicFebruaryTriggerSource() {
-  const source = readFileSync(resolve('supabase/migrations/20260223000000_add_dietary_columns_to_change_trigger.sql'), 'utf8');
+  const source = readFileSync(resolve(REPOSITORY_ROOT, 'supabase/migrations/20260223000000_add_dietary_columns_to_change_trigger.sql'), 'utf8');
   const match = source.match(/CREATE OR REPLACE FUNCTION track_employee_column_changes\(\)[\s\S]*?\$\$ LANGUAGE plpgsql SECURITY DEFINER;/u);
   if (!match || normalizedBodyMd5(match[0].match(/\$\$([\s\S]*?)\$\$/u)?.[1] ?? '') !== 'f0397dc227d9cdee0f9045dfdd056121') {
     throw new Error('Production CLI matrix public February trigger source is unavailable or changed');
@@ -81,7 +90,7 @@ function publicFebruaryTriggerSource() {
 const FEBRUARY_TRIGGER_SQL = publicFebruaryTriggerSource();
 
 function publicSource(path, expectedSha256) {
-  const source = readFileSync(resolve(path), 'utf8');
+  const source = readFileSync(resolve(REPOSITORY_ROOT, path), 'utf8');
   if (sha256(source) !== expectedSha256) {
     throw new Error('Production CLI matrix public fixture source is unavailable or changed');
   }
@@ -242,7 +251,7 @@ function configRows() {
     let order = index + 1;
     if (['one','isps','photo','origo','mail_lon','bankuppgifter','li','passport','kvitto_c17_18','c17','crewing_done','repayment_needed_omc','repayment_needed_pe3','special_diet','hotel_required','room_number_shared','candidate_confirmed','completed','is_anonymized'].includes(column)) type = 'boolean';
     if (['hire_date','termination_date','stena_date','omc_date','pe3_date'].includes(column)) type = 'date';
-    if (column === 'loneiva') type = 'number';
+    if (column === 'loneiva' || column === 'room_number_shared') type = 'number';
     if (column === 'special_diet' || column === 'diet_details') { permissions = dietaryPermissions; label = column === 'special_diet' ? 'Specialkost' : 'Diet'; order = column === 'special_diet' ? 110 : 111; }
     if (column === 'crewing_done') { permissions = crewingDonePermissions; label = 'Crewing/Done'; order = 140; }
     if (column === 'repayment_needed_omc') { label = 'Återbetalningsskyldig ÖMC'; order = 141; }
@@ -272,6 +281,14 @@ function filters(count) {
   );
 }
 
+function importantDates() {
+  return `(${literal(uuid('important-date/deadlines'))}::uuid,'2026-01-15T12:00:00Z'::timestamptz,'2027-02-01','2027-01-15')`;
+}
+
+function staffingChangelog(appUser) {
+  return `(${literal(uuid('staffing-changelog/trelleborg'))}::uuid,'Trelleborg',8,10,${literal(appUser)}::uuid,'2026-01-16T12:00:00Z'::timestamptz)`;
+}
+
 /**
  * This SQL is a deterministic data/profile layer for a reviewed local
  * bootstrap schema.  It never reads a capture and does not run migrations.
@@ -293,7 +310,9 @@ export function buildProductionCliMatrixFixture({ variant = 'observed_orphans_48
     `INSERT INTO public.users (id,auth_user_id,email,role,is_active) VALUES (${literal(appUser)}::uuid,${literal(legacyAuth)}::uuid,'synthetic-legacy-actor@example.invalid','hr_admin',true);`,
     `INSERT INTO public.employees (id,first_name,surname,ssn,rank,gender,hire_date,repayment_needed_omc,repayment_needed_pe3) VALUES\n${employees().join(',\n')};`,
     `INSERT INTO public.column_config (id,column_name,db_column_name,column_type,role_permissions,is_masterdata,display_order) VALUES\n${configRows().join(',\n')};`,
+    `INSERT INTO public.important_dates (id,updated_at,deadline_submit,deadline_cancel) VALUES ${importantDates()};`,
     `INSERT INTO public.staffing_needs (id,location,headcount_need,updated_by) VALUES (${literal(uuid('staffing/trelleborg'))}::uuid,'Trelleborg',10,${literal(appUser)}::uuid),(${literal(uuid('staffing/goteborg'))}::uuid,'Göteborg',20,${literal(appUser)}::uuid);`,
+    `INSERT INTO public.staffing_needs_changelog (id,location,old_value,new_value,changed_by,changed_at) VALUES ${staffingChangelog(appUser)};`,
     `INSERT INTO public.employee_column_changes (id,employee_id,column_name,changed_at,changed_by) VALUES\n${auditRows().join(',\n')};`,
     orphanCount === 0 ? '-- Declared zero-filter synthetic derivative.' : `INSERT INTO public.user_filters (id,user_id,name,filters) VALUES\n${filters(orphanCount).join(',\n')};`,
     'COMMIT;',
@@ -320,6 +339,7 @@ export function buildProductionCliMatrixFixture({ variant = 'observed_orphans_48
       limitations: Object.freeze([
         'The remaining column_config permission maps, including repayment maps, are declared synthetic.',
         'Representation hashes detect fixture drift only; semantic acceptance requires fresh catalog and physical observations.',
+        'Preservation projections cover the seeded public data rows only and are not a universal catalog or production-data proof.',
         'The observed and post-cleanup variants deliberately choose an existing is_checklist_item column, but this does not establish a production mapping; their implicit history-failure outcome is indeterminate.',
         'implicit_column_absent is a separate synthetic derivative and is not a production-profile representation.',
       ]),
