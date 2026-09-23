@@ -17,6 +17,21 @@ function createFixtureClient() {
   });
 }
 
+function isUnsupportedLocalRealtimeFixtureError(message: string) {
+  const match = /^WebSocket connection to '([^']+)' failed: Error during WebSocket handshake: Unexpected response code: 404$/u.exec(message);
+  const fixtureUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!match || !fixtureUrl) return false;
+  try {
+    const socket = new URL(match[1]);
+    const fixture = new URL(fixtureUrl);
+    return socket.protocol === 'ws:' && socket.host === fixture.host &&
+      socket.pathname === '/realtime/v1/websocket' &&
+      ['localhost', '127.0.0.1'].includes(fixture.hostname);
+  } catch {
+    return false;
+  }
+}
+
 test.describe('Kolumnsynlighet Button Removal', () => {
   let fixtureEmployeeId: string | undefined;
 
@@ -97,16 +112,14 @@ test.describe('Kolumnsynlighet Button Removal', () => {
     // Wait a bit for any errors to appear
     await page.waitForTimeout(1000);
 
-    // Filter out errors related to the removed button
+    // The synthetic loopback fixture has no Realtime service. Keep all other
+    // console errors, including any concerning the removed button, actionable.
     const relevantErrors = errors.filter(
       (error) => 
-        !error.includes('Kolumnsynlighet') && 
-        !error.includes('columnVisibility') &&
-        !error.includes('Failed to load resource') // Ignore network errors
+        !isUnsupportedLocalRealtimeFixtureError(error)
     );
 
-    // Should not have errors related to the removed button
-    expect(relevantErrors.length).toBe(0);
+    expect(relevantErrors).toHaveLength(0);
   });
 
   test('should maintain dashboard functionality without the button', async ({ page }) => {

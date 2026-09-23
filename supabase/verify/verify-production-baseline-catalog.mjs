@@ -218,7 +218,7 @@ export function evaluateCatalogCsv(csv) {
   };
 }
 
-export async function runProductionBaselineCatalogVerifier({
+async function collectProductionBaselineCatalogEvaluation({
   phase,
   workspace = process.cwd(),
   environment = process.env,
@@ -276,7 +276,20 @@ export async function runProductionBaselineCatalogVerifier({
     throw new Error("Catalog query failed before a complete result was returned");
   }
 
-  const evaluation = evaluateCatalogCsv(result.stdout);
+  return evaluateCatalogCsv(result.stdout);
+}
+
+/**
+ * Read-only complete observation for a precisely documented pre-apply profile.
+ * A failed check remains failed; callers must not report this result as a
+ * successful release catalog gate.
+ */
+export async function observeProductionBaselineCatalog(options = {}) {
+  return collectProductionBaselineCatalogEvaluation(options);
+}
+
+export async function runProductionBaselineCatalogVerifier(options = {}) {
+  const evaluation = await collectProductionBaselineCatalogEvaluation(options);
   if (evaluation.failedChecks.length > 0) {
     throw new Error(
       `Catalog verification failed: ${evaluation.failedChecks.join(", ")}`

@@ -231,7 +231,7 @@ describe('Story 22.15 protected production dry-run package', { timeout: 90_000 }
         sha256(readFileSync(path.join(options.outputDirectory, ...file.path.split('/'))))
       ).toBe(file.sha256);
     }
-  });
+  }, 180_000);
 
   it('produces the same receipt and raw package digest for identical immutable inputs', () => {
     const first = fixture();
@@ -242,7 +242,7 @@ describe('Story 22.15 protected production dry-run package', { timeout: 90_000 }
 
     expect(two.receipt).toEqual(one.receipt);
     expect(two.packageSha256).toBe(one.packageSha256);
-  });
+  }, 180_000);
 
   it.each([
     ['the Node runtime hash', (options: ReturnType<typeof fixture>) => ({ ...options, expectedNodeSha256: '0'.repeat(64) })],

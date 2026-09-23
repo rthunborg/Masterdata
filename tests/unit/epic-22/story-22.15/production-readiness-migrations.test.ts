@@ -1043,7 +1043,7 @@ describe('Story 22.15 migration baseline safety', () => {
 
   it("isolates default test probes to this repository's local Supabase ports", () => {
     expect(testSetup).toContain(
-      "NEXT_PUBLIC_SUPABASE_URL = 'http://127.0.0.1:15421'"
+      'NEXT_PUBLIC_SUPABASE_URL = selectLocalSupabaseTestUrl(process.env)'
     );
     expect(testSetup).not.toContain(
       "NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321'"
@@ -1136,7 +1136,10 @@ describe('Story 22.15 migration baseline safety', () => {
       'network restrictions do not cover HTTPS APIs'
     );
     expect(cutoverRunbook).toContain(
-      'fresh production backup -> publication/connection inventory -> technical traffic and Realtime isolation -> history repair'
+      'fresh production backup -> publication/connection inventory -> technical traffic and Realtime isolation with session drain -> separately approved single-transaction cleanup of the exact 48 orphan filters and independent post-cleanup preservation proof -> individually proved and separately approved 55-version history repair'
+    );
+    expect(cutoverRunbook).toContain(
+      'This is a **failed** catalog gate, not an accepted variant or permission to ignore its output'
     );
     expect(cutoverRunbook).toContain('pg_publication_tables');
     expect(cutoverRunbook).toContain('Connected Clients');
