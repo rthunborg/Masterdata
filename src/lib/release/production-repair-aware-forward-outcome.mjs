@@ -1,5 +1,5 @@
 import { PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS } from './production-bootstrap-admission.mjs';
-import { PRODUCTION_HISTORY_REPAIR_VERSIONS } from './production-history-repair-proof.mjs';
+import { PRODUCTION_HISTORY_REPAIR_VERSIONS } from './production-history-repair-baseline.mjs';
 
 const SHA40 = /^[a-f0-9]{40}$/u;
 const SHA256 = /^[a-f0-9]{64}$/u;

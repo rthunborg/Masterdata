@@ -2,7 +2,7 @@ schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
 last_updated: '2026-09-23'
-updated_by: 'PR #114 is incorporated in staging c31227a. Consolidated production-admission implementation 3afb59c passed local gates with classified skips; its exact PR review and production gates remain. Story 22.15 in-progress, Epic 23 on-hold, production paused/no-go.'
+updated_by: 'PR #115 production-admission review corrections passed local full Vitest and exact full Playwright with classified skips; final-head review/checks and hosted production gates remain. Story 22.15 in-progress, Epic 23 on-hold, production paused/no-go.'
 
 current_focus:
   active_epic: 22
@@ -44,7 +44,7 @@ epics:
     status_file: null # Intentionally absent; do not create while on hold.
 
 next_actions:
-  - 'Story 22.15: PR #114 merged into staging c31227a. Fresh read-only production classification confirms 48/48 orphan filters, seven strict catalog failures, absent history, 55 repair candidates and 13 forward executes. Review the current local cleanup, isolation and proof components; they do not authorize hosted writes. Prove five-plane isolation and drain, then separately approve the exact cleanup and history repair after independently evidenced and signed ledger rows. Standing forward-migration authorization applies only after reviewed execution admission. Main merge, deployment and reopening remain separate. Production paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.'
+  - 'Story 22.15: PR #115 final-head review/checks remain before staging merge. Local guarded full Vitest passed 4,029 with 13 classified skips; exact full Playwright passed 163 with 47 classified skips; TypeScript and zero-error lint passed. The unsafe repair-proof assessor was removed; its pinned 55-row source inventory proves no material effects. Production still has 48/48 orphan filters, seven strict catalog failures, absent history, 55 unproved repair candidates and 13 forward executes. Next: merge only after clean final-head review, repeat read-only proofs, prove five-plane isolation and drain, then seek separate cleanup and history-repair approvals after independently evidenced signed ledger rows. Main merge, deployment and reopening remain separate. Production paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.'
   - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
   - 'Story 22.4 is done; standing production-data presentation controls are documented.'
   - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
@@ -188,7 +188,7 @@ protected_toolchain_component_20260922:
 
 protected_production_dry_run_component_20260922:
   status: local-verification-complete
-  next_action: 'Story 22.15: PR #114 merged into staging c31227a. Fresh read-only production classification confirms 48/48 orphan filters, seven strict catalog failures, absent history, 55 repair candidates and 13 forward executes. Review the current local cleanup, isolation and proof components; they do not authorize hosted writes. Prove five-plane isolation and drain, then separately approve the exact cleanup and history repair after independently evidenced and signed ledger rows. Standing forward-migration authorization applies only after reviewed execution admission. Main merge, deployment and reopening remain separate. Production paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'Story 22.15: PR #115 final-head review/checks remain before staging merge. Local guarded full Vitest passed 4,029 with 13 classified skips; exact full Playwright passed 163 with 47 classified skips; TypeScript and zero-error lint passed. The unsafe repair-proof assessor was removed; its pinned 55-row source inventory proves no material effects. Production still has 48/48 orphan filters, seven strict catalog failures, absent history, 55 unproved repair candidates and 13 forward executes. Next: merge only after clean final-head review, repeat read-only proofs, prove five-plane isolation and drain, then seek separate cleanup and history-repair approvals after independently evidenced signed ledger rows. Main merge, deployment and reopening remain separate. Production paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.'
   final_head: null # Exact reviewed head is recorded by PR #113 checks/review, not self-attested here.
   test_receipt: 'Test/evidence 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb: Vitest 3769/3769, 337 files, zero skips/failures; implementation-identical 7bc0031 Playwright 163 passed, 47 exact classified skips, zero failures/errors. Exact final-head checks/review are separate merge prerequisites recorded on PR #113.'
   scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'

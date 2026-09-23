@@ -127,11 +127,13 @@ export function classifyWriterIsolation(output) {
   const unknownPrincipalOrBackendPresent = classification.unknownLoginRoles.count > 0 ||
     classification.sessions.unknownRoleClientBackendCount > 0 || classification.sessions.unknownBackendCount > 0 ||
     classification.replicationSlots.unknownPluginSlotCount > 0 || classification.authCustomHooks.unrecognizedHookPatternCount > 0;
+  const activeSubscriptionPresent = classification.subscriptions.enabledCount > 0;
   return Object.freeze({
     classificationOnly: true,
     exactIsolationProved: false,
     unknownPrincipalOrBackendPresent,
-    requiresOwnerDecision: unknownPrincipalOrBackendPresent,
+    activeSubscriptionPresent,
+    requiresOwnerDecision: unknownPrincipalOrBackendPresent || activeSubscriptionPresent,
     completeAuthConfigurationCoverage: classification.authCustomHooks.fullAuthConfigurationCoverage,
     completeOutboundWriterCoverage: classification.publicWebhookTriggers.fullOutboundWriterCoverage,
   });

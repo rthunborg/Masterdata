@@ -118,9 +118,27 @@ describe('Story 22.15 database writer classification', () => {
       classificationOnly: true,
       exactIsolationProved: false,
       unknownPrincipalOrBackendPresent: true,
+      activeSubscriptionPresent: false,
       requiresOwnerDecision: true,
       completeAuthConfigurationCoverage: false,
       completeOutboundWriterCoverage: false,
+    });
+  });
+
+  it('requires an owner decision for an enabled subscription even without unknown principals or backends', () => {
+    const value = receipt();
+    value.unknownLoginRoles.count = 0;
+    value.sessions.totalClientBackendCount = 4;
+    value.sessions.unknownRoleClientBackendCount = 0;
+    value.sessions.unknownBackendCount = 0;
+    value.subscriptions.totalCount = 1;
+    value.subscriptions.enabledCount = 1;
+
+    expect(classifyWriterIsolation(`${JSON.stringify(value)}\n`)).toMatchObject({
+      unknownPrincipalOrBackendPresent: false,
+      activeSubscriptionPresent: true,
+      requiresOwnerDecision: true,
+      exactIsolationProved: false,
     });
   });
 

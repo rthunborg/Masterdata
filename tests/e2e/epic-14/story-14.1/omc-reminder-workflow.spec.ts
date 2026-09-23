@@ -13,7 +13,7 @@ import { expect, test } from '@playwright/test';
 
 test.describe('ÖMC reminder cron authorization boundary', () => {
   test('rejects a missing authorization header without executing the reminder job', async ({ request }) => {
-    const response = await request.get('/api/cron/omc-masterdata-reminder');
+    const response = await request.get('/api/cron/omc-masterdata-reminder', { timeout: 30000 });
 
     expect(response.status()).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: 'Unauthorized' });

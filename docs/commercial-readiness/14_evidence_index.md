@@ -116,7 +116,7 @@ PR #112 reviewed final head `e4ab223` merged as staging `8aec314`; all required 
 
 ## Consolidated production admission preparation — 2026-09-23
 
-The [current consolidation record](evidence/production-admission-consolidation-2026-09-23.md) records fresh redacted read-only production classification, the corrected 55-repair-before-13-execute order, the seven exact strict catalog failures, 48/48 orphan filters, and incomplete five-plane isolation. It links the current source-bound local components and guarded fixtures. The 55-row ledger remains UNPROVED/unsigned. Production is paused/no-go; Story 22.15 remains in-progress and Epic 23 on hold. Local tests and a draft cleanup are not hosted cleanup, repair, apply or release proof.
+The [current consolidation record](evidence/production-admission-consolidation-2026-09-23.md) records fresh redacted read-only production classification, the corrected 55-repair-before-13-execute order, the seven exact strict catalog failures, 48/48 orphan filters, and incomplete five-plane isolation. It links the guarded local fixtures and the pinned 55-row source inventory; no material-effect proof assessor or repair allowlist is provided. The 55-row ledger remains UNPROVED/unsigned. Production is paused/no-go; Story 22.15 remains in-progress and Epic 23 on hold. Local tests and a draft cleanup are not hosted cleanup, repair, apply or release proof.
 
 ## Protected production dry-run-only component — 2026-09-22
 
