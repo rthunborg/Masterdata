@@ -57,7 +57,7 @@ development_status:
   22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: done
   22-13-remediate-pr-91-security-and-readiness-review-findings: done
   22-14-fix-omc-masterdata-reminder-timing-digest-and-failure-semantics: done
-  22-15-production-readiness-remediation: in-progress # Consolidated read-only production profile and local fixtures prepared; five-plane isolation, cleanup, repair, apply and release gates remain separate.
+  22-15-production-readiness-remediation: in-progress # PR 115 merged and staging 68/68, strict 16/16 re-proved; production isolation, cleanup, repair, apply and release gates remain separate.
   epic-22-retrospective: optional
   epic-23: on-hold # Explicit owner hold; do not activate or create an Epic 23 status artifact.
   # Existing Epic 23 story placeholders remain backlog-only under the epic hold; no active planning is authorized.
@@ -174,7 +174,7 @@ protected_toolchain_component_20260922:
 
 protected_production_dry_run_component_20260922:
   status: local-verification-complete
-  next_action: 'Story 22.15: PR #115 final-head review/checks remain before staging merge. Local guarded full Vitest passed 4,029 with 13 classified skips; exact full Playwright passed 163 with 47 classified skips; TypeScript and zero-error lint passed. The unsafe repair-proof assessor was removed; its pinned 55-row source inventory proves no material effects. Production still has 48/48 orphan filters, seven strict catalog failures, absent history, 55 unproved repair candidates and 13 forward executes. Next: merge only after clean final-head review, repeat read-only proofs, prove five-plane isolation and drain, then seek separate cleanup and history-repair approvals after independently evidenced signed ledger rows. Main merge, deployment and reopening remain separate. Production paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'Story 22.15: reviewed PR #115 head a4f663d merged as staging 3fb3d72 with an identical tree. Fresh post-merge staging read-only proof passed 68/68 history, strict catalog 16/16, the known scoped advisors and unchanged repayment, permission and audit baselines. Production remains paused/no-go with 48 orphan filters, seven strict catalog failures, 55 UNPROVED unsigned repair rows and 13 proposed forward executes. Owner staging application signoff and a maintenance window remain open. Obtain separate approval for any production backup or workflow dispatch, complete and record fresh production-day backup plus prescribed restore verification, and capture private pre-state before the first separately approved hosted isolation change. Under that settings approval, establish and prove five-plane isolation and drain before any cleanup, history repair or migration apply. Seek separate cleanup and history-repair approvals. Main merge, deployment and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
   final_head: null # Exact reviewed head is recorded by PR #113 checks/review, not self-attested here.
   test_receipt: 'Test/evidence 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb: Vitest 3769/3769, 337 files, zero skips/failures; implementation-identical 7bc0031 Playwright 163 passed, 47 exact classified skips, zero failures/errors. Exact final-head checks/review are separate merge prerequisites recorded on PR #113.'
   scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'
