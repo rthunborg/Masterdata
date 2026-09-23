@@ -1,0 +1,22 @@
+{
+  "phase": "audit-post",
+  "commit": "3fb3d72a3a26672d91be1a98a51e964b804fdd02",
+  "capturedAtUtc": "2026-09-23T18:12:27.567Z",
+  "hostedWriteAttempted": false,
+  "manifestSha256": "92cdec724eb3e084997431ec407418d7fbbc41db08d78196dfd39307b74b60fb",
+  "repositoryMigrationCount": 68,
+  "verificationStage": "complete",
+  "toolingTlsAndThreeWayBindingVerified": true,
+  "hostedConnectionAttempted": true,
+  "audit": {
+    "audit_rows": 353,
+    "nonnull_changed_by": 90,
+    "unmapped_changed_by": 0,
+    "canonical_history_hash": "084def93b0dfd29df9076e2d007116ff"
+  },
+  "predecessorComparison": {
+    "matched": true,
+    "interpretation": "v68 pre/post preservation comparison against reviewed staging baseline"
+  },
+  "passed": true
+}

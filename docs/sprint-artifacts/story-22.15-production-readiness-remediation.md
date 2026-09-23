@@ -7,6 +7,10 @@
 
 in-progress
 
+## PR #115 post-merge staging proof — 2026-09-23
+
+Reviewed head `a4f663dd04b43694deeebffcdeaea5d7aba16ec4` merged as staging `3fb3d72a3a26672d91be1a98a51e964b804fdd02` with an identical tree; main remains unchanged. Fresh read-only staging proof passed 68/68 migration history with no pending versions, strict catalog 16/16, the scoped advisor profile, and unchanged repayment, permission and audit baselines. [Redacted receipts](../commercial-readiness/evidence/pr115-postmerge-staging-readonly-proof-2026-09-23.md) and the [consolidated next gates](../commercial-readiness/evidence/production-next-gates-2026-09-23.md) are recorded. Owner staging application verification and a maintenance window remain open. Production still has 48 orphan filters, seven strict catalog failures, 55 `UNPROVED` unsigned repair rows and 13 proposed forward executes. Five-plane isolation, cleanup, repair, main merge, deployment and reopening remain separate gates. Production remains paused/no-go; Story 22.15 remains in-progress and Epic 23 on hold.
+
 ## Consolidated production-admission preparation — 2026-09-23
 
 Staging at `c31227ad68d91c0a471b611811bc618cbf3535a2` incorporates the reviewed PR #114. Fresh read-only production classification confirms absent migration history, 55 proposed repairs followed by 13 forward executes, 48/48 orphaned saved filters, and seven named strict catalog failures (9/16 passed). The pause target still matches the recorded deployment, with production-domain auto-assignment disabled and no active crons. Supabase Edge Functions and known Auth hooks are off, but Realtime, Data API, network access and existing database sessions are not isolated. No hosted write or setting change occurred.
