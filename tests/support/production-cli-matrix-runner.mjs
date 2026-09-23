@@ -129,6 +129,7 @@ export async function runProductionCliMatrixCase({
     PGPASSWORD: guardBinding.password,
     SUPABASE_DB_PASSWORD: guardBinding.password,
     PGDATABASE: databaseName,
+    PGAPPNAME: databaseName + '_cli',
     PGSSLMODE: 'disable',
     PGCONNECT_TIMEOUT: '5',
     PGOPTIONS: '-c statement_timeout=10000 -c lock_timeout=3000',
@@ -351,7 +352,7 @@ export async function runProductionCliMatrixCase({
       );
     }
     need(
-      initial.counts.unmappedAuditActors === 0 && initial.history.length === 0,
+      initial.counts.unmappedActors === 0 && initial.history.length === 0,
       'matrix_fixture_initial_state'
     );
     stage = 'initial_dry_run';
@@ -408,6 +409,19 @@ export async function runProductionCliMatrixCase({
     // bounded settling window, then observe rather than retrying the apply.
     if (spec.mode === 'timeout')
       await new Promise((resolve) => setTimeout(resolve, 10000));
+    if (spec.mode === 'timeout') {
+      receipt.serverSettled = await connected(
+        databaseName,
+        async (client) =>
+          (
+            await client.query(
+              "SELECT NOT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND state IS DISTINCT FROM 'idle') AS settled"
+            )
+          ).rows[0].settled,
+        true
+      );
+      need(receipt.serverSettled === true, 'matrix_server_not_settled');
+    }
     stage = 'after_observer';
     const after = await snapshot();
     receipt.before = before;

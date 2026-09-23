@@ -265,6 +265,44 @@ describe('production CLI matrix observer projection', () => {
     );
     expect(MATRIX_PRESERVATION_SQL).toContain('role_permissions');
     expect(MATRIX_PRESERVATION_SQL).toContain('to_jsonb');
+    expect(MATRIX_PRESERVATION_SQL.match(/'\[\]'::jsonb/gu)).toHaveLength(4);
+  });
+
+  it('projects a post-cleanup fixture with no preservation rows', () => {
+    const input = observationInput();
+    input.preservation = {
+      employees: [],
+      permissions: [],
+      filters: [],
+      audit: [],
+      unmapped_actors: 0,
+    };
+    input.aggregates = {
+      ...input.aggregates,
+      employees: 0,
+      auditRows: 0,
+      auditNonNullActors: 0,
+      savedFilters: 0,
+      savedFilterOrphans: 0,
+      repayment: {
+        omcNull: 0,
+        omcTrue: 0,
+        omcFalse: 0,
+        pe3Null: 0,
+        pe3True: 0,
+        pe3False: 0,
+      },
+    };
+
+    expect(projectMatrixObservation(input)).toMatchObject({
+      complete: true,
+      counts: {
+        employees: 0,
+        auditRows: 0,
+        savedFilters: 0,
+        unmappedActors: 0,
+      },
+    });
   });
 
   it.each([

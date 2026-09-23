@@ -28,13 +28,13 @@ export const MATRIX_CATALOG_SNAPSHOT_SQL = `SELECT jsonb_build_object(
 ) AS state;`;
 
 export const MATRIX_PRESERVATION_SQL = `SELECT jsonb_build_object(
- 'employees',(SELECT jsonb_agg(to_jsonb(e) ORDER BY e.id) FROM public.employees e),
- 'permissions',(SELECT jsonb_agg(jsonb_build_array(c.id,c.db_column_name,c.role_permissions) ORDER BY c.id) FROM public.column_config c),
- 'filters',(SELECT jsonb_agg(to_jsonb(f) ORDER BY f.id) FROM public.user_filters f),
- 'audit',(SELECT jsonb_agg(jsonb_build_array(c.id,c.employee_id,c.column_name,c.changed_at,
+ 'employees',coalesce((SELECT jsonb_agg(to_jsonb(e) ORDER BY e.id) FROM public.employees e), '[]'::jsonb),
+ 'permissions',coalesce((SELECT jsonb_agg(jsonb_build_array(c.id,c.db_column_name,c.role_permissions) ORDER BY c.id) FROM public.column_config c), '[]'::jsonb),
+ 'filters',coalesce((SELECT jsonb_agg(to_jsonb(f) ORDER BY f.id) FROM public.user_filters f), '[]'::jsonb),
+ 'audit',coalesce((SELECT jsonb_agg(jsonb_build_array(c.id,c.employee_id,c.column_name,c.changed_at,
     CASE WHEN c.changed_by IS NULL THEN NULL ELSE
       (SELECT u.id FROM public.users u WHERE u.id=c.changed_by OR u.auth_user_id=c.changed_by) END) ORDER BY c.id)
-    FROM public.employee_column_changes c),
+    FROM public.employee_column_changes c), '[]'::jsonb),
  'unmapped_actors',(SELECT count(*) FROM public.employee_column_changes c WHERE c.changed_by IS NOT NULL
     AND NOT EXISTS(SELECT 1 FROM public.users u WHERE u.id=c.changed_by OR u.auth_user_id=c.changed_by))
 ) AS state;`;

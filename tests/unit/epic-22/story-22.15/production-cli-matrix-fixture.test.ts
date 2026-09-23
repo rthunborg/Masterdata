@@ -66,5 +66,10 @@ describe('Story 22.15 deterministic production CLI matrix fixture', () => {
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('CREATE TABLE IF NOT EXISTS public.employee_column_changes');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('CREATE EXTENSION IF NOT EXISTS pgcrypto');
     expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('REFERENCES public.users(auth_user_id)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('omc_date uuid');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('changed_by uuid NOT NULL REFERENCES public.users(id)');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('v_room_assignments JSONB');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('FOR UPDATE;');
+    expect(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL).toContain('Default: next available room');
   });
 });

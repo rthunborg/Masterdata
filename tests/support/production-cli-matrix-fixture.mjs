@@ -80,6 +80,45 @@ function publicFebruaryTriggerSource() {
 }
 const FEBRUARY_TRIGGER_SQL = publicFebruaryTriggerSource();
 
+function publicSource(path, expectedSha256) {
+  const source = readFileSync(resolve(path), 'utf8');
+  if (sha256(source) !== expectedSha256) {
+    throw new Error('Production CLI matrix public fixture source is unavailable or changed');
+  }
+  return source;
+}
+function extractPublicFunction(source, expression, label) {
+  const match = source.match(expression);
+  if (!match) throw new Error(`Production CLI matrix ${label} source is unavailable or changed`);
+  return match[0];
+}
+const INITIAL_SCHEMA_SOURCE = publicSource(
+  'supabase/migrations/20251027000000_initial_schema.sql',
+  '8fe9902978d1c26acfddd410863951fe89e8baf22e0f3e68f9dec46306d93f44',
+);
+const INITIAL_TIMESTAMP_SQL = extractPublicFunction(
+  INITIAL_SCHEMA_SOURCE,
+  /CREATE OR REPLACE FUNCTION update_updated_at_column\(\)[\s\S]*?\$\$ LANGUAGE plpgsql;/u,
+  'timestamp function',
+);
+if (normalizedBodyMd5(INITIAL_TIMESTAMP_SQL.match(/\$\$([\s\S]*?)\$\$/u)?.[1] ?? '') !== '45b9bb012d6413bfe2a994fcbebcc959') {
+  throw new Error('Production CLI matrix timestamp function body is unavailable or changed');
+}
+const ROOM_FUNCTION_SOURCE = publicSource(
+  'supabase/migrations/20251122150001_add_room_assignment_rpc.sql',
+  '2f71ebd63689e3abc93c2d094596b1aa253920fe6ab8c7855c94a22d62d33fd7',
+);
+const RECALCULATE_ROOMS_SQL = extractPublicFunction(
+  ROOM_FUNCTION_SOURCE,
+  /CREATE OR REPLACE FUNCTION recalculate_rooms_for_date\([\s\S]*?\$\$ LANGUAGE plpgsql;/u,
+  'recalculate rooms function',
+);
+const CALCULATE_ROOM_SQL = extractPublicFunction(
+  ROOM_FUNCTION_SOURCE,
+  /CREATE OR REPLACE FUNCTION calculate_room_number\([\s\S]*?\$\$ LANGUAGE plpgsql;/u,
+  'calculate room function',
+);
+
 const BASE_EMPLOYEE_COLUMNS = new Set([
   'id','first_name','surname','ssn','email','mobile','rank','gender','town_district','hire_date',
   'termination_date','termination_reason','is_terminated','is_archived','comments','created_at','updated_at',
@@ -87,7 +126,7 @@ const BASE_EMPLOYEE_COLUMNS = new Set([
 ]);
 const BOOTSTRAP_EMPLOYEE_COLUMNS = CONFIG_COLUMNS
   .filter((column) => !BASE_EMPLOYEE_COLUMNS.has(column))
-  .map((column) => `  ${column} ${column === 'room_number_shared' || column === 'loneiva' ? 'integer' : ['hire_date','termination_date','stena_date','omc_date','pe3_date'].includes(column) ? 'date' : ['one','isps','photo','origo','mail_lon','bankuppgifter','li','passport','kvitto_c17_18','c17','crewing_done','special_diet','hotel_required','candidate_confirmed','completed','is_anonymized'].includes(column) ? (column === 'special_diet' || column === 'crewing_done' ? 'boolean NOT NULL DEFAULT false' : 'boolean') : 'text'}`).join(',\n');
+  .map((column) => `  ${column} ${column === 'room_number_shared' || column === 'loneiva' ? 'integer' : ['stena_date','omc_date','pe3_date'].includes(column) ? 'uuid' : ['hire_date','termination_date'].includes(column) ? 'date' : ['one','isps','photo','origo','mail_lon','bankuppgifter','li','passport','kvitto_c17_18','c17','crewing_done','special_diet','hotel_required','candidate_confirmed','completed','is_anonymized'].includes(column) ? (column === 'special_diet' || column === 'crewing_done' ? 'boolean NOT NULL DEFAULT false' : 'boolean') : 'text'}`).join(',\n');
 
 // Static, repository-owned bootstrap.  It creates an empty local schema; the
 // fixture data is supplied separately by buildProductionCliMatrixFixture().
@@ -140,7 +179,7 @@ CREATE TABLE IF NOT EXISTS public.staffing_needs (
 );
 CREATE TABLE IF NOT EXISTS public.staffing_needs_changelog (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), location text NOT NULL, old_value integer NOT NULL,
-  new_value integer NOT NULL, changed_by uuid REFERENCES public.users(id), changed_at timestamptz NOT NULL DEFAULT now()
+  new_value integer NOT NULL, changed_by uuid NOT NULL REFERENCES public.users(id), changed_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_staffing_needs_changelog_location_date ON public.staffing_needs_changelog(location, changed_at);
 CREATE TABLE IF NOT EXISTS public.user_filters (
@@ -156,27 +195,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS employee_column_changes_employee_column_change
   ON public.employee_column_changes(employee_id, column_name, changed_at);
 CREATE OR REPLACE FUNCTION public.get_user_role() RETURNS text LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = '' AS $$
 DECLARE value text; BEGIN SELECT role INTO value FROM public.users WHERE auth_user_id=auth.uid() AND is_active=true LIMIT 1; RETURN value; END $$;
-CREATE OR REPLACE FUNCTION public.update_updated_at_column() RETURNS trigger LANGUAGE plpgsql VOLATILE AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$;
+-- Exact public initial function source, hash-bound above; this fixture does
+-- not execute the historical migration.
+${INITIAL_TIMESTAMP_SQL}
 CREATE OR REPLACE FUNCTION public.update_user_filters_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN NEW.updated_at = NOW(); RETURN NEW; END; $$;
 -- Exact public February trigger source, hash-bound above; this fixture does
 -- not execute the historical migration.
 ${FEBRUARY_TRIGGER_SQL}
-CREATE OR REPLACE FUNCTION public.recalculate_rooms_for_date(p_date_id uuid) RETURNS void LANGUAGE plpgsql AS $$
-DECLARE v_room_occupancy jsonb := '{}'::jsonb; BEGIN
-  PERFORM id FROM public.employees WHERE omc_date=p_date_id AND hotel_required=true FOR UPDATE;
-  PERFORM v_room_occupancy; PERFORM room_number_shared FROM public.employees WHERE hotel_required=true;
-END; $$;
-CREATE OR REPLACE FUNCTION public.calculate_room_number(p_date_id uuid,p_rank text,p_gender text) RETURNS integer LANGUAGE plpgsql AS $$
-DECLARE v_room_occupancy jsonb := '{}'::jsonb; BEGIN
-  PERFORM id FROM public.employees WHERE omc_date=p_date_id AND hotel_required=true FOR UPDATE;
-  PERFORM v_room_occupancy; PERFORM room_number_shared FROM public.employees WHERE hotel_required=true; RETURN 1;
-END; $$;
+-- Exact public room assignment definitions, hash-bound above; this fixture
+-- declares the endpoint without replaying the historical migration.
+${RECALCULATE_ROOMS_SQL}
+${CALCULATE_ROOM_SQL}
 GRANT EXECUTE ON FUNCTION public.recalculate_rooms_for_date(uuid), public.calculate_room_number(uuid,text,text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.track_employee_column_changes() TO service_role;
