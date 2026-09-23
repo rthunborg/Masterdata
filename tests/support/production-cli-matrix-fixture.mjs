@@ -49,6 +49,9 @@ export const SYNTHETIC_AGGREGATES = Object.freeze({
   auditDistinctNonNullActors: 1,
   columnConfig: 61,
   staffingLocations: 2,
+  users: 1,
+  importantDates: 1,
+  staffingChangelog: 1,
 });
 
 const canonicalPermissions = Object.freeze({

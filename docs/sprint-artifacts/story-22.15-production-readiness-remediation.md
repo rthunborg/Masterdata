@@ -205,3 +205,14 @@ The four BMAD review layers completed. Trust-boundary suggestions were assessed 
 - [x] [Review][Patch] Preserve synthetic users, dates, staffing needs and staffing changelog data alongside existing employee/filter/permission/audit hashes.
 
 The successful chain necessarily changes catalog objects, so pre/post catalog equality is not a success predicate. Catalog fingerprints cover explicitly enumerated public object groups, not all PostgreSQL infrastructure. Manual history-table setup and the single-actor/zero-filter derivatives are declared fixture choices, not additional production or CLI-bootstrap proofs. Executable hashes in this trusted local test path do not establish the protected production installation boundary.
+
+**Round 2 of 3** — Four focused review layers checked the first-round delta at `dd4ecf14979c964a3f31624130d737ebdc09bc37`.
+
+- [x] [Review][Patch] Require IPv4 loopback admission to match the runner's actual connection target.
+- [x] [Review][Patch] Keep generated admissions outside the immutable source checkout.
+- [x] [Review][Patch] Exercise invalid resource ownership/readiness, ambiguous selection, port mapping, system identity and output paths through native PowerShell validation tests; classify their non-Windows platform skips explicitly.
+- [x] [Review][Patch] Require nonempty declared users/date/staffing-changelog fixture counts before applying any migration.
+
+The guard's supported List response does not contain a Compose configuration digest. Resource selection therefore retains the trusted operator's reviewed Compose admission provenance, while the helper freshly checks ownership, readiness, container port and server identity; the recipe hash is not a daemon configuration attestation. The 15-minute admission freshness limit deliberately fails closed rather than silently renewing a stale admission. These limits do not authorize any hosted target.
+
+Full verification remains pending for the final corrected implementation. The `b185986` full-suite attempt had two timeout failures; its seven matrix cases passed. The `dd4ecf1` attempt was invalidated when review preparation temporarily created an untracked folder in the live source checkout: four matrix cases completed, the remaining three failed the immutable-source prerequisite, and the required completion guard failed. That folder was moved outside the checkout. Neither failed run is reported as a passing release gate.

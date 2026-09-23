@@ -3,6 +3,12 @@
 This is a local, synthetic verification gate. It does not start a service,
 touch hosted systems, authorize a production action, or read a private record.
 A trusted operator must first have a guard-owned Compose resource already active.
+The operator must select it from the reviewed Compose admission record for the
+declared recipe. The supported guard List response has no configuration digest;
+the helper proves current ownership, readiness, selected-container port and
+server identity. It does not independently attest the daemon's complete Compose
+configuration. Guard and Docker paths are trusted local operator inputs, not an
+untrusted executable admission API.
 
 Run the required gate only by constructing a schema-versioned context from the
 latest trusted hook in the current PowerShell session and piping it directly to
@@ -40,9 +46,14 @@ candidate, not values discovered by the helper. The password is synthetic and
 local only. Do not put the context, its password, system identifier, guard
 response, or an invented example ID in logs or source control.
 
+The output directory must be outside the source checkout. Native PowerShell
+tests run on Windows; non-Windows suite runs explicitly skip that platform
+coverage. The required local matrix is still a Windows gate, with no native
+skips accepted in its release evidence.
+
 The PowerShell 5.1 helper calls guard `List`, requires one owned active
 verified Compose resource, finds its selected `db` container by the guard's
-project label, checks the one loopback 5432 mapping, and hashes the system
+project label, checks the one IPv4 loopback 5432 mapping, and hashes the system
 identifier queried inside that container. It writes a local admission file
 under the supplied output directory. The recipe SHA-256 is the caller's
 declared local fixture-recipe hash; it is not a claim about Docker daemon

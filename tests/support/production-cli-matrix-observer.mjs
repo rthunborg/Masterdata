@@ -250,9 +250,7 @@ function assertPreservationSnapshot(preservation) {
       'permissions',
       'filters',
       'audit',
-    ].every((key) =>
-      Array.isArray(preservation[key])
-    ) ||
+    ].every((key) => Array.isArray(preservation[key])) ||
     !isCount(preservation.unmapped_actors)
   ) {
     throw new Error('Incomplete local matrix preservation snapshot');
@@ -293,6 +291,9 @@ function projectApprovedCounts(aggregates, preservation) {
     unmappedActors: preservation.unmapped_actors,
     columnConfig: aggregates.columnConfig,
     staffingLocations: aggregates.staffingLocations,
+    users: preservation.users.length,
+    importantDates: preservation.important_dates.length,
+    staffingChangelog: preservation.staffing_needs_changelog.length,
     savedFilters: aggregates.savedFilters,
     savedFilterOrphans: aggregates.savedFilterOrphans,
     savedFilterEmptyNames: aggregates.savedFilterEmptyNames,

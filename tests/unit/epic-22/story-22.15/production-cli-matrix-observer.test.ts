@@ -143,7 +143,13 @@ describe('production CLI matrix observer projection', () => {
       historyCount: 2,
       headcountPostcondition: true,
       checklistPostcondition: true,
-      counts: { ...aggregates, unmappedActors: 0 },
+      counts: {
+        ...aggregates,
+        unmappedActors: 0,
+        users: 1,
+        importantDates: 1,
+        staffingChangelog: 1,
+      },
     });
     expect(Object.keys(result).sort()).toEqual([
       'catalogSha256',
@@ -161,20 +167,25 @@ describe('production CLI matrix observer projection', () => {
       'preservationSha256',
       'savedFilterSha256',
     ]);
-    expect(Object.keys(result.counts).sort()).toEqual([
-      'auditDistinctNonNullActors',
-      'auditNonNullActors',
-      'auditRows',
-      'columnConfig',
-      'employees',
-      'repayment',
-      'savedFilterEmptyNames',
-      'savedFilterOrphans',
-      'savedFilterOverlengthNames',
-      'savedFilters',
-      'staffingLocations',
-      'unmappedActors',
-    ]);
+    expect(Object.keys(result.counts).sort()).toEqual(
+      [
+        'auditDistinctNonNullActors',
+        'auditNonNullActors',
+        'auditRows',
+        'columnConfig',
+        'employees',
+        'repayment',
+        'savedFilterEmptyNames',
+        'savedFilterOrphans',
+        'savedFilterOverlengthNames',
+        'savedFilters',
+        'staffingLocations',
+        'staffingChangelog',
+        'unmappedActors',
+        'users',
+        'importantDates',
+      ].sort()
+    );
     expect(JSON.stringify(result)).not.toContain('public.example()');
     expect(JSON.stringify(result)).not.toContain('authenticated_users');
     expect(JSON.stringify(result)).not.toContain('synthetic-employee');
@@ -342,6 +353,9 @@ describe('production CLI matrix observer projection', () => {
         auditRows: 0,
         savedFilters: 0,
         unmappedActors: 0,
+        users: 0,
+        importantDates: 0,
+        staffingChangelog: 0,
       },
     });
   });
@@ -415,16 +429,39 @@ describe('production CLI matrix observer projection', () => {
   });
 
   it.each([
-    ['users', (input) => { input.preservation.users[0].role = 'recruiter'; }],
-    ['important dates', (input) => { input.preservation.important_dates[0].deadline_submit = '2027-03-01'; }],
-    ['staffing needs', (input) => { input.preservation.staffing_needs[0].location = 'Göteborg'; }],
-    ['staffing changelog', (input) => { input.preservation.staffing_needs_changelog[0].old_value = 7; }],
-  ])('changes the preservation digest when seeded %s data changes', (_name, mutate) => {
-    const baseline = projectMatrixObservation(observationInput());
-    const changed = observationInput();
-    mutate(changed);
-    expect(projectMatrixObservation(changed).preservationSha256).not.toBe(
-      baseline.preservationSha256
-    );
-  });
+    [
+      'users',
+      (input) => {
+        input.preservation.users[0].role = 'recruiter';
+      },
+    ],
+    [
+      'important dates',
+      (input) => {
+        input.preservation.important_dates[0].deadline_submit = '2027-03-01';
+      },
+    ],
+    [
+      'staffing needs',
+      (input) => {
+        input.preservation.staffing_needs[0].location = 'Göteborg';
+      },
+    ],
+    [
+      'staffing changelog',
+      (input) => {
+        input.preservation.staffing_needs_changelog[0].old_value = 7;
+      },
+    ],
+  ])(
+    'changes the preservation digest when seeded %s data changes',
+    (_name, mutate) => {
+      const baseline = projectMatrixObservation(observationInput());
+      const changed = observationInput();
+      mutate(changed);
+      expect(projectMatrixObservation(changed).preservationSha256).not.toBe(
+        baseline.preservationSha256
+      );
+    }
+  );
 });
