@@ -242,7 +242,8 @@ function closePlainLocalExportList(source, start) {
  * This small scanner rejects JavaScript module syntax outside the fixed graph.
  * It is deliberately not a generic dependency resolver or a semantic parser.
  */
-function importsOf(source) {
+export function inspectReviewedModuleImports(source) {
+  if (typeof source !== 'string') fail();
   const statics = [];
   const dynamics = [];
   let index = 0;
@@ -342,6 +343,21 @@ function importsOf(source) {
   return { statics, dynamics };
 }
 
+export function assertReviewedModuleImports(
+  source,
+  { staticImports, dynamicImports } = {}
+) {
+  if (!Array.isArray(staticImports) || !Array.isArray(dynamicImports) ||
+      [...staticImports, ...dynamicImports].some((value) => typeof value !== 'string')) {
+    fail();
+  }
+  const discovered = inspectReviewedModuleImports(source);
+  if (!same(discovered.statics, staticImports) || !same(discovered.dynamics, dynamicImports)) {
+    fail();
+  }
+  return discovered;
+}
+
 function sourceModule({ root, git, commit, expected }) {
   const entry = git(root, ['ls-tree', commit, '--', expected.path])
     .toString('utf8')
@@ -350,13 +366,7 @@ function sourceModule({ root, git, commit, expected }) {
   if (!match || match[3] !== expected.path) fail();
   const gitBytes = git(root, ['cat-file', 'blob', match[2]]);
   if (!regularFile(path.join(root, expected.path)).equals(gitBytes)) fail();
-  const discovered = importsOf(gitBytes.toString('utf8'));
-  if (
-    !same(discovered.statics, expected.staticImports) ||
-    !same(discovered.dynamics, expected.dynamicImports)
-  ) {
-    fail();
-  }
+  const discovered = assertReviewedModuleImports(gitBytes.toString('utf8'), expected);
   return Object.freeze({
     path: expected.path,
     gitBlob: match[2],
