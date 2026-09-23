@@ -7,8 +7,14 @@ import {
 } from '../../../../src/lib/release/production-platform-config.mjs';
 
 const projectRef = 'abcdefghijklmnopqrst';
+const targetBindingSha256 = 'f'.repeat(64);
 const token = 'synthetic-trusted-token';
 const now = new Date('2026-09-23T12:00:00.000Z');
+const environment = Object.freeze({
+  EXPECTED_SUPABASE_ENVIRONMENT: 'production',
+  EXPECTED_SUPABASE_PROJECT_REF: projectRef,
+  EXPECTED_SUPABASE_TARGET_BINDING_SHA256: targetBindingSha256,
+});
 
 const response = (value, status = 200) =>
   new Response(JSON.stringify(value), {
@@ -28,7 +34,10 @@ const supportedResponses = () => [
 ];
 
 function collect(fetchImpl: typeof fetch) {
-  return collectProductionPlatformConfig({ projectRef, token, fetchImpl, now });
+  return collectProductionPlatformConfig({
+    projectRef, token, fetchImpl, now, workspace: 'C:/synthetic-review',
+    environment, targetVerifier: async () => true,
+  });
 }
 
 describe('Story 22.15 production platform configuration', () => {
@@ -59,6 +68,7 @@ describe('Story 22.15 production platform configuration', () => {
       capturedAtUtc: now.toISOString(),
       collectionSucceeded: true,
       hostedWriteAttempted: false,
+      targetBindingSha256,
       configurations: {
         auth: {
           observed: true,
@@ -255,11 +265,39 @@ describe('Story 22.15 production platform configuration', () => {
       capturedAtUtc: now.toISOString(),
       collectionSucceeded: false,
       hostedWriteAttempted: false,
+      targetBindingSha256: null,
       configurations: {
         auth: { observed: false, httpStatus: null },
         realtime: { observed: false, httpStatus: null },
         postgrest: { observed: false, httpStatus: null },
       },
     });
+  });
+
+  it('rejects a valid but wrong project before any platform read', async () => {
+    const fetchImpl = vi.fn();
+    const targetVerifier = vi.fn(async () => true);
+    const receipt = await collectProductionPlatformConfig({
+      projectRef: 'stagingprojectref000', token, fetchImpl, now,
+      workspace: 'C:/synthetic-review', environment, targetVerifier,
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(receipt).toMatchObject({ collectionSucceeded: false, targetBindingSha256: null });
+  });
+
+  it('requires a successful reviewed target binding before requesting settings', async () => {
+    const fetchImpl = vi.fn();
+    const targetVerifier = vi.fn(async () => false);
+    const receipt = await collectProductionPlatformConfig({
+      projectRef, token, fetchImpl, now,
+      workspace: 'C:/synthetic-review', environment, targetVerifier,
+    });
+    expect(targetVerifier).toHaveBeenCalledOnce();
+    expect(targetVerifier).toHaveBeenCalledWith({
+      workspace: 'C:/synthetic-review', environment,
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(receipt).toMatchObject({ collectionSucceeded: false, targetBindingSha256: null });
   });
 });

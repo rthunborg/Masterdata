@@ -376,6 +376,8 @@ export function assessProductionMaintenanceIsolation(
   if (
     observedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     observedAt.slice(0, -1).some((time) => time > drainFacts.capturedAt) ||
+    realtimeFacts.capturedAt <= platformFacts.capturedAt ||
+    dataApiProbeFacts.capturedAt <= dataApiFacts.capturedAt ||
     drainFacts.capturedAt < databaseFacts.capturedAt
   ) {
     return blocked('isolation_receipt_freshness_or_order_invalid');

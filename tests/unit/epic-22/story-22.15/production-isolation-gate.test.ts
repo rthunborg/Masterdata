@@ -49,6 +49,7 @@ function receipts() {
       realtimeSuspended: true,
     }),
     realtimeProbe: bound('production-realtime-denial-probe', {
+      capturedAtUtc: '2026-09-23T14:00:01.000Z',
       independentFromControlObservation: true,
       connectionAttempted: true,
       connectionDenied: true,
@@ -59,6 +60,7 @@ function receipts() {
       dataApiDisabled: true,
     }),
     dataApiProbe: bound('production-data-api-denial-probe', {
+      capturedAtUtc: '2026-09-23T14:00:01.000Z',
       independentFromControlObservation: true,
       authenticatedWritePathAttempted: true,
       requestDenied: true,
@@ -82,6 +84,7 @@ function receipts() {
       unmanagedWritePathCount: 0,
     }),
     drain: bound('production-database-drain-observation', {
+      capturedAtUtc: '2026-09-23T14:00:02.000Z',
       observedAfterControlObservations: true,
       allApplicableSessionsObserved: true,
       applicableApplicationSessionCount: 0,
@@ -156,8 +159,10 @@ describe('Story 22.15 production maintenance isolation gate', () => {
     ['a mismatched source', (value: ReturnType<typeof receipts>) => { value.network.sourceSha = 'e'.repeat(40); }],
     ['a mismatched role graph', (value: ReturnType<typeof receipts>) => { value.database.databaseRoleGraphSha256 = 'e'.repeat(64); }],
     ['a stale receipt', (value: ReturnType<typeof receipts>) => { value.pause.capturedAtUtc = '2026-09-23T13:54:59.999Z'; }],
-    ['a control observation after the bounded drain', (value: ReturnType<typeof receipts>) => { value.edgeFunctions.capturedAtUtc = '2026-09-23T14:00:00.001Z'; }],
+    ['a control observation after the bounded drain', (value: ReturnType<typeof receipts>) => { value.edgeFunctions.capturedAtUtc = '2026-09-23T14:00:02.001Z'; }],
     ['a drain observed before the database inspection', (value: ReturnType<typeof receipts>) => { value.drain.capturedAtUtc = '2026-09-23T13:59:59.999Z'; }],
+    ['a Realtime denial recorded before Realtime was suspended', (value: ReturnType<typeof receipts>) => { value.realtimeProbe.capturedAtUtc = '2026-09-23T13:59:59.999Z'; }],
+    ['a Data API denial recorded before the Data API was disabled', (value: ReturnType<typeof receipts>) => { value.dataApiProbe.capturedAtUtc = '2026-09-23T13:59:59.999Z'; }],
   ])('blocks %s', (_label, mutate) => {
     const value = receipts();
     mutate(value);

@@ -1,4 +1,7 @@
+import { verifyConfiguredSupabaseTarget } from '../../../supabase/verify/verify-target-binding.mjs';
+
 const PROJECT_REF = /^[a-z0-9]{20}$/u;
+const SHA256 = /^[a-f0-9]{64}$/u;
 const MAX_RESPONSE_BYTES = 256 * 1024;
 const REQUEST_TIMEOUT_MS = 20_000;
 
@@ -182,10 +185,15 @@ function createRequestTimeout() {
   });
 }
 
-function validTrustedInputs(projectRef, token, fetchImpl, now) {
+function validTrustedInputs(projectRef, token, fetchImpl, now, workspace, environment, targetVerifier) {
   return (
     typeof projectRef === 'string' &&
     PROJECT_REF.test(projectRef) &&
+    typeof workspace === 'string' && workspace.length > 0 &&
+    environment?.EXPECTED_SUPABASE_ENVIRONMENT === 'production' &&
+    environment.EXPECTED_SUPABASE_PROJECT_REF === projectRef &&
+    SHA256.test(environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256 ?? '') &&
+    typeof targetVerifier === 'function' &&
     typeof token === 'string' &&
     token.length > 0 &&
     token.length <= 4096 &&
@@ -206,6 +214,9 @@ export async function collectProductionPlatformConfig({
   token,
   fetchImpl,
   now = new Date(),
+  workspace = process.cwd(),
+  environment = process.env,
+  targetVerifier = verifyConfiguredSupabaseTarget,
 } = {}) {
   const configurations = Object.fromEntries(
     ENDPOINTS.map(({ kind }) => [kind, unavailable()])
@@ -219,11 +230,18 @@ export async function collectProductionPlatformConfig({
         : null,
     collectionSucceeded: false,
     hostedWriteAttempted: false,
+    targetBindingSha256: null,
     configurations,
   };
-  if (!validTrustedInputs(projectRef, token, fetchImpl, now)) {
+  if (!validTrustedInputs(projectRef, token, fetchImpl, now, workspace, environment, targetVerifier)) {
     return deepFreeze(receipt);
   }
+  try {
+    if (await targetVerifier({ workspace, environment }) !== true) return deepFreeze(receipt);
+  } catch {
+    return deepFreeze(receipt);
+  }
+  receipt.targetBindingSha256 = environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256;
 
   for (const { kind, path } of ENDPOINTS) {
     let response;
