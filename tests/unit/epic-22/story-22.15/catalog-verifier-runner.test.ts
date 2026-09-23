@@ -7,6 +7,7 @@ import {
   EXPECTED_CATALOG_CHECK_NAMES,
   assertNoPsqlMetaCommands,
   evaluateCatalogCsv,
+  observeProductionBaselineCatalog,
   runProductionBaselineCatalogVerifier,
   verifyApprovedPsqlExecutable,
   verifyApprovedSslRootCertificate,
@@ -232,6 +233,29 @@ describe("Story 22.15 catalog verifier runner", () => {
       })
     ).rejects.toThrow(
       "Catalog verification failed: represented_policy_contracts"
+    );
+  });
+
+  it("can observe the exact failed pre-apply groups without relabeling the strict gate as passed", async () => {
+    const failedChecks = [
+      "dietary_columns_and_permissions",
+      "user_filters_objects",
+      "user_filters_trigger_function_contract",
+      "represented_trigger_contracts",
+      "represented_column_contracts",
+      "represented_function_contracts",
+      "represented_policy_contracts",
+    ];
+    const options = {
+      ...reviewedTooling,
+      environment,
+      phase: "production_pre_apply",
+      spawn: () => ({ error: undefined, status: 0, stdout: catalogCsv(failedChecks) }),
+      targetVerifier: async () => true,
+    };
+    expect(await observeProductionBaselineCatalog(options)).toEqual({ count: 16, failedChecks });
+    await expect(runProductionBaselineCatalogVerifier(options)).rejects.toThrow(
+      `Catalog verification failed: ${failedChecks.join(", ")}`
     );
   });
 

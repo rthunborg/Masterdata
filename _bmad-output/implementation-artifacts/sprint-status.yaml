@@ -57,7 +57,7 @@ development_status:
   22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: done
   22-13-remediate-pr-91-security-and-readiness-review-findings: done
   22-14-fix-omc-masterdata-reminder-timing-digest-and-failure-semantics: done
-  22-15-production-readiness-remediation: in-progress # Protected production dry-run is locally verified; next: production-profile CLI/failure proofs, fresh target admission and isolation. Separate production gates remain.
+  22-15-production-readiness-remediation: in-progress # Consolidated read-only production profile and local fixtures prepared; five-plane isolation, cleanup, repair, apply and release gates remain separate.
   epic-22-retrospective: optional
   epic-23: on-hold # Explicit owner hold; do not activate or create an Epic 23 status artifact.
   # Existing Epic 23 story placeholders remain backlog-only under the epic hold; no active planning is authorized.
@@ -174,7 +174,7 @@ protected_toolchain_component_20260922:
 
 protected_production_dry_run_component_20260922:
   status: local-verification-complete
-  next_action: 'Story 22.15: PR #113 merged as c193235; PR #114 records the locally verified seven-case pinned-CLI matrix at a8634ec58992a8a474f0b16fb48f1d8d00764fd0, with explicitly synthetic fixtures. Complete the exact final-head review/check/merge gate, then collect fresh real-input/target/TLS and preservation proofs and prepare five-plane isolation plus target-write admission. The local matrix does not admit production writes. The 55 repair-ledger rows remain UNPROVED/unsigned, 13 executes are proposed, 48 orphan filters require separate cleanup approval, and seven strict production catalog groups remain unresolved. Isolation/settings, cleanup, history repair, main merge, production deployment and reopening retain separate gates. Production stays paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'Story 22.15: PR #114 merged into staging c31227a. Fresh read-only production classification confirms 48/48 orphan filters, seven strict catalog failures, absent history, 55 repair candidates and 13 forward executes. Review the current local cleanup, isolation and proof components; they do not authorize hosted writes. Prove five-plane isolation and drain, then separately approve the exact cleanup and history repair after independently evidenced and signed ledger rows. Standing forward-migration authorization applies only after reviewed execution admission. Main merge, deployment and reopening remain separate. Production paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.'
   final_head: null # Exact reviewed head is recorded by PR #113 checks/review, not self-attested here.
   test_receipt: 'Test/evidence 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb: Vitest 3769/3769, 337 files, zero skips/failures; implementation-identical 7bc0031 Playwright 163 passed, 47 exact classified skips, zero failures/errors. Exact final-head checks/review are separate merge prerequisites recorded on PR #113.'
   scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'
