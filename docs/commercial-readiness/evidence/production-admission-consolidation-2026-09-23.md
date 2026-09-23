@@ -26,7 +26,7 @@ The final guarded `npx vitest run` passed **4,027 tests, 13 skipped, zero failed
 
 Focused migration/catalog checks passed 49/49, and the three pause/production-guard files passed 45/45. TypeScript exited 0. ESLint exited 0 with zero errors and 296 warnings. The staging-preview build exited 0 in 7.73 seconds using only the verified synthetic loopback Supabase fixture; its earlier missing-environment attempt exited 1 and is not counted. The production dependency audit reports zero high/critical findings and one previously accepted `uuid` moderate finding (audit exit 1). An earlier full Vitest attempt skipped 34 database cases because fixture URLs were absent; a subsequent run failed on an incorrect 68-version template and a UI test that passed on focused rerun. The next attempt timed out one deterministic package-materialization case under load; both materialization cases now have 180-second limits, and the final full run above passed. These failed attempts remain historical, not passing evidence.
 
-All local fixtures are synthetic and guarded. They do not prove hosted cleanup or migration effects. The final implementation commit and documentation-only follow-up identity are recorded below after commit.
+All local fixtures are synthetic and guarded. They do not prove hosted cleanup or migration effects. The exact locally tested implementation commit is `3afb59cab6b0cdd1b3ca2c2a36b0b9336c149a77`; the subsequent evidence-identity amendment changes documentation only. The PR's final head, review and CI must be checked separately before any staging merge.
 
 ## Remaining decisions
 

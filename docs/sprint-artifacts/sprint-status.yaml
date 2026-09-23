@@ -2,7 +2,7 @@ schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
 last_updated: '2026-09-23'
-updated_by: 'PR #114 is incorporated in staging c31227a. The 2026-09-23 consolidated production-admission candidate has fresh read-only classification and guarded local fixtures; review and production gates remain. Story 22.15 in-progress, Epic 23 on-hold, production paused/no-go.'
+updated_by: 'PR #114 is incorporated in staging c31227a. Consolidated production-admission implementation 3afb59c passed local gates with classified skips; its exact PR review and production gates remain. Story 22.15 in-progress, Epic 23 on-hold, production paused/no-go.'
 
 current_focus:
   active_epic: 22

@@ -304,7 +304,7 @@ next_actions:
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
   - 'Historical PR #100 staging v67 was applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Current staging is v68 at 68/68 with no pending versions. Owner staging verification remains open. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 last_updated: '2026-09-23'
-updated_by: 'PR #114 merged as staging c31227a. The consolidated 2026-09-23 read-only production profile and local fixtures are preparation only; production remains paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.'
+updated_by: 'PR #114 merged as staging c31227a. Consolidated production-admission implementation 3afb59c passed local gates with classified skips; PR review and production gates remain. Production paused/no-go, Story 22.15 in-progress, Epic 23 on-hold.'
 
 pr_95_playwright_gate:
   date: 2026-09-09
