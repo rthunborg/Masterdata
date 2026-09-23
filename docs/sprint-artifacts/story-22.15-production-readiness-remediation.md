@@ -215,4 +215,37 @@ The successful chain necessarily changes catalog objects, so pre/post catalog eq
 
 The guard's supported List response does not contain a Compose configuration digest. Resource selection therefore retains the trusted operator's reviewed Compose admission provenance, while the helper freshly checks ownership, readiness, container port and server identity; the recipe hash is not a daemon configuration attestation. The 15-minute admission freshness limit deliberately fails closed rather than silently renewing a stale admission. These limits do not authorize any hosted target.
 
-Full verification remains pending for the final corrected implementation. The `b185986` full-suite attempt had two timeout failures; its seven matrix cases passed. The `dd4ecf1` attempt was invalidated when review preparation temporarily created an untracked folder in the live source checkout: four matrix cases completed, the remaining three failed the immutable-source prerequisite, and the required completion guard failed. That folder was moved outside the checkout. Neither failed run is reported as a passing release gate.
+The final corrected implementation passes the full local gates recorded below. The `b185986` full-suite attempt had two timeout failures; its seven matrix cases passed. The `dd4ecf1` attempt was invalidated when review preparation temporarily created an untracked folder in the live source checkout: four matrix cases completed, the remaining three failed the immutable-source prerequisite, and the required completion guard failed. That folder was moved outside the checkout. Neither failed run is reported as a passing release gate.
+
+## Local CLI matrix execution record — 2026-09-23
+
+PR #113 merged as `c193235efa3bc3a00ad3d78e152e80dec6cf382f` with the reviewed tree unchanged; main remains `822350986f4c023948a7bbf490ddffc371185c4a`. PR #114 implementation `a8634ec58992a8a474f0b16fb48f1d8d00764fd0` passes the local seven-case Supabase CLI 2.115.0 matrix, focused 174/174, full Vitest 3935/3935 with zero skips/failures, and exact full Playwright 163 passed / 47 individually matched historical skips / zero failures or errors. TypeScript, zero-error lint, staging-preview build and the fresh 68-migration-plus-seed strict catalog 16/16 pass. No hosted proof was refreshed in this component. The local result does not establish production-profile mapping, traffic isolation, target-write admission, cleanup or repair authority. Production stays paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.
+
+Full Vitest took 290.39s (299766ms orchestration); Playwright took 1056.230892s (1074212ms orchestration). Its 47 skips exactly match the prior reviewed identities: 9 notification/cron authorization cases and 38 fixture/superseded debt cases, none counted as passes. The full Vitest pass includes 45 unchanged pause-safeguard tests. Four native PowerShell tests are platform-specific skips in non-Windows CI; they all execute locally.
+
+PR #114 final-head checks/review and its reviewed staging merge remain distinct from this implementation evidence. [Matrix receipt, failed attempts and remaining gates](../commercial-readiness/evidence/local-synthetic-cli-matrix-2026-09-23.md).
+
+### Component file list
+
+- `tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts`
+- `tests/support/guarded-postgres-fixture.mjs`
+- `tests/support/prepare-production-cli-matrix-admission.ps1`
+- `tests/support/prepare-production-cli-matrix-admission.regression.ps1`
+- `tests/support/production-cli-matrix-admission.md`
+- `tests/support/production-cli-matrix-fixture.mjs`
+- `tests/support/production-cli-matrix-gate.mjs`
+- `tests/support/production-cli-matrix-hook.mjs`
+- `tests/support/production-cli-matrix-observer.mjs`
+- `tests/support/production-cli-matrix-result.mjs`
+- `tests/support/production-cli-matrix-runner.mjs`
+- `tests/unit/epic-22/story-22.15/guarded-postgres-fixture.test.ts`
+- `tests/unit/epic-22/story-22.15/production-cli-matrix-fixture.test.ts`
+- `tests/unit/epic-22/story-22.15/production-cli-matrix-gate.test.ts`
+- `tests/unit/epic-22/story-22.15/production-cli-matrix-hook.test.ts`
+- `tests/unit/epic-22/story-22.15/production-cli-matrix-observer.test.ts`
+- `tests/unit/epic-22/story-22.15/production-cli-matrix-result.test.ts`
+- `tests/unit/epic-22/story-22.15/production-cli-matrix-runner.test.ts`
+
+The companion evidence, three status YAML files, non-frozen spec note and eight applicable commercial-readiness documents are synchronized in this change.
+
+**Round 3 of 3** — Final automatic review round for the corrected implementation and synchronized evidence. Exact final-head review outcomes are recorded on PR #114; unresolved findings after this round require owner triage. The full suite remains bound to implementation a8634ec58992a8a474f0b16fb48f1d8d00764fd0; subsequent changes are documentation only.
