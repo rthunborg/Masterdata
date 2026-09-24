@@ -110,6 +110,41 @@ describe('Story 22.15 production maintenance isolation gate', () => {
     });
   });
 
+  it('accepts an IPv4-only operator only when IPv6 has no allowance and both non-operator probes are denied', () => {
+    const value = receipts();
+    Object.assign(value.network, {
+      runnerIpv6Only: false,
+      operatorIpv6EgressUnavailable: true,
+      ipv6AllowlistEmpty: true,
+    });
+    expect(assess(value)).toMatchObject({
+      disposition: 'isolation_proved_not_execution_authority',
+    });
+
+    for (const mutation of [
+      { ipv6AllowlistEmpty: false },
+      { operatorIpv6EgressUnavailable: false },
+      { runnerIpv6Only: true },
+      { nonRunnerIpv6ProbeDenied: false },
+      { nonRunnerIpv4ProbeDenied: false },
+      { unrestrictedIpv6: true },
+    ]) {
+      const denied = receipts();
+      Object.assign(denied.network, value.network, mutation);
+      expect(assess(denied)).toMatchObject({
+        disposition: 'blocked_insufficient_isolation_proof',
+        reason: 'required_isolation_receipt_missing_or_invalid',
+      });
+    }
+
+    const missing = receipts();
+    Object.assign(missing.network, value.network);
+    delete (missing.network as Record<string, unknown>).ipv6AllowlistEmpty;
+    expect(assess(missing)).toMatchObject({
+      disposition: 'blocked_insufficient_isolation_proof',
+    });
+  });
+
   it('does not accept caller approval or isolation booleans as a substitute for receipts', () => {
     expect(assessProductionMaintenanceIsolation(
       { isolationPassed: true, productionWriteApproved: true } as never,
