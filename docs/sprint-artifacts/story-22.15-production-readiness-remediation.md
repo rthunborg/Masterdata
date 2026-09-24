@@ -7,6 +7,10 @@
 
 in-progress
 
+## IPv4-only isolation proof preparation — 2026-09-24
+
+The owner confirmed that the restore-tested backup is newer than the last production write and separately approved temporary isolation work. The current operator computer had two matching IPv4 egress observations but no usable IPv6 route; the candidate IPv4 address was saved in encrypted local inputs. The isolation assessor now accepts an exact IPv4-only variant only when IPv6 ingress is denied for everyone and independent non-operator denial probes for both IP families succeed. It retains the prior dual-stack profile and the full pause, API, Realtime, database, and session-drain requirements. This code change does not produce a live isolation receipt or authorize cleanup, history repair, deployment, or reopening. Production remains paused/no-go; Story 22.15 stays in-progress and Epic 23 on hold.
+
 ## PR #117 local validation — 2026-09-24
 
 Implementation `d99b3b7a9f44682896c359058f7569cc66d86dcc` restricts production `--include-all` to the complete 13-version order and adds missing/extra/reordered-version regressions. The guarded synthetic fixture passed strict catalog 16/16. Exact full `npx vitest run` passed 3,999 with 47 classified skips and zero failures; exact full `npx playwright test` passed 163 with 47 individually matched historical skips and zero failures/errors. TypeScript and zero-error lint passed. An earlier Vitest attempt against a different drifted local database failed two catalog-dependent tests and remains failed evidence, not a pass. [Exact local receipt and limits](../commercial-readiness/evidence/pr117-local-validation-2026-09-24.md). Final-head PR checks and review remain open. No hosted mutation or release occurred; production remains paused/no-go, this story in-progress, and Epic 23 on hold.
