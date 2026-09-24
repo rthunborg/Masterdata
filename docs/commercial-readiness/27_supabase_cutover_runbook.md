@@ -442,7 +442,7 @@ The retry must return HTTP `200` and `cleanup_state: completed`. If the first re
 - [x] PR #98 reviewed/merged with approval; fresh pre-apply proof and exact one-version dry run passed; owner authorized required future migration applies and `20260910115024` completed successfully.
 - [x] Current v67 trigger reconciliation reviewed, merged and applied under the standing authorizations at ad9650ccfc8be412447a03847cc7ddfb372f8666; staging shows 67 migrations / 17 policies and 16/16 catalog checks; scoped advisor and audit/repayment/permission-preservation evidence recorded.
 - [x] Separately approved hosted staging fixture/RPC acceptance executed once on 2026-09-12 at ad9650ccfc8be412447a03847cc7ddfb372f8666: 21/21 checks passed, fixtures absent, staffing/aggregates restored and final catalog 16/16. Do not repeat the completed fixture operation.
-- [ ] Owner verified staging.
+- [x] Owner verified the staging application on 2026-09-24; [attestation and limits](evidence/production-owner-cutover-input-2026-09-24.md) recorded. This does not complete any production gate below.
 - [ ] Fresh production inventory matches only the exact reviewed observed profile, including the seven named strict failures; all 55 historical material effects have independent evidence. The strict failures must resolve after forward execution without broadening the catalog contract.
 - [ ] Full isolation and drain hold; the exact 48 orphan filters are removed only under separate cleanup approval, with independent post-commit preservation proof. Any uncertain result stops the sequence for diagnosis.
 - [ ] Complete 55-row production proof ledger signed before the first history repair.
