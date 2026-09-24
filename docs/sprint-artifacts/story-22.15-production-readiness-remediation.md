@@ -7,6 +7,10 @@
 
 in-progress
 
+## PR #117 local validation — 2026-09-24
+
+Implementation `d99b3b7a9f44682896c359058f7569cc66d86dcc` restricts production `--include-all` to the complete 13-version order and adds missing/extra/reordered-version regressions. The guarded synthetic fixture passed strict catalog 16/16. Exact full `npx vitest run` passed 3,999 with 47 classified skips and zero failures; exact full `npx playwright test` passed 163 with 47 individually matched historical skips and zero failures/errors. TypeScript and zero-error lint passed. An earlier Vitest attempt against a different drifted local database failed two catalog-dependent tests and remains failed evidence, not a pass. [Exact local receipt and limits](../commercial-readiness/evidence/pr117-local-validation-2026-09-24.md). Final-head PR checks and review remain open. No hosted mutation or release occurred; production remains paused/no-go, this story in-progress, and Epic 23 on hold.
+
 ## Fresh production read-only refresh — 2026-09-24
 
 The source-pinned production profile again found absent migration history, 48/48 orphan saved filters and the same seven strict pre-apply catalog failures; preservation aggregates matched the prior approved capture. Read-only isolation inventory still found Realtime active, Data API exposure, unrestricted IPv4/IPv6 database ingress and five client backends. A second bounded probe found the cron/pg_net-named workers preloaded and targeting this database but without either extension or its usual job/request table. This supports a conditional current-state classification, not a durable isolation proof; recheck before any hosted mutation. The [redacted evidence](../commercial-readiness/evidence/production-readonly-cutover-refresh-2026-09-24.md) preserves receipt identities and limits. No hosted mutation occurred. Production remains paused/no-go, Story 22.15 in-progress and Epic 23 on hold.
