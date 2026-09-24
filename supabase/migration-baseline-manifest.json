@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "repositoryMigrationCount": 68,
+  "reviewedSupabaseCliVersion": "2.115.0",
+  "catalogVerifier": "supabase/verify/production-baseline-catalog.sql",
+  "restoredMigrationProvenance": {
+    "version": "20250113000000",
+    "sourceCommit": "3784d6f2a33072cab021256431da65d7ac5057cd",
+    "sourceBlob": "02c23b974ba681663dec487d69bd9733986f1cee",
+    "sha256": "1e3ec6aa1ec00b768806743ae4cf07500fe1717efc4c399088cca11a459e003a"
+  },
+  "classifications": {
+    "repair-after-catalog-proof": [
+      "20250113000000",
+      "20251027000000",
+      "20251028000001",
+      "20251028104344",
+      "20251028144051",
+      "20251029000000",
+      "20251029000001",
+      "20251029000002",
+      "20251030000000",
+      "20251031000000",
+      "20251102000000",
+      "20251102000001",
+      "20251102000002",
+      "20251102000003",
+      "20251106000000",
+      "20251106000001",
+      "20251106000002",
+      "20251106000003",
+      "20251106000004",
+      "20251106000005",
+      "20251106000006",
+      "20251107000000",
+      "20251107000001",
+      "20251107000002",
+      "20251107000003",
+      "20251107000004",
+      "20251109102741",
+      "20251109120000",
+      "20251109130000",
+      "20251109140000",
+      "20251109150000",
+      "20251109160000",
+      "20251109200237",
+      "20251109200300",
+      "20251110000000",
+      "20251122130617",
+      "20251122150000",
+      "20251122150001",
+      "20251123000000",
+      "20251209000000",
+      "20251209110000",
+      "20251209120000",
+      "20251209130000",
+      "20251210000000",
+      "20251210000001",
+      "20251210000002",
+      "20251213000000",
+      "20251216000000",
+      "20260130212612",
+      "20260223000000",
+      "20260224000000",
+      "20260313000001",
+      "20260520000000",
+      "20260605151000",
+      "20260607193000"
+    ],
+    "execute": [
+      "20260314000001",
+      "20260314000002",
+      "20260614000000",
+      "20260615000000",
+      "20260709194903",
+      "20260710144000",
+      "20260710150000",
+      "20260831200026",
+      "20260909115242",
+      "20260910094517",
+      "20260910115024",
+      "20260910184840",
+      "20260910184841"
+    ]
+  },
+  "unsafeReplayVersions": {
+    "20250113000000": "The original room RPC version can already be represented alongside its ordered 20251122150001 redefinition.",
+    "20251209110000": "The hosted repayment columns may already be booleans rather than legacy date markers.",
+    "20251209120000": "Replaying the conversion can turn existing false values into true before dropping the represented columns.",
+    "20251213000000": "The historical migration replaces the complete role_permissions JSON and can erase later permissions.",
+    "20260130212612": "The represented user_filters objects are created unconditionally.",
+    "20260313000001": "The represented staffing tables, policies, index, and seed rows are created unconditionally.",
+    "20251102000000": "The represented column configuration columns/indexes must not be recreated or reordered; forward reconciliation adds only the missing timestamp and trigger.",
+    "20260607193000": "The historical repair deletes duplicate audit rows before replacing the function. Forward trigger reconciliation requires the existing valid conflict index and does not replay row cleanup."
+  },
+  "catalogProofExceptions": {
+    "productionHeadcountUpperBound": {
+      "acceptedPreApplyState": "Only production_pre_apply may accept the exact validated headcount_need >= 0 named CHECK with no competing headcount CHECK and zero values outside 0..9999. The missing upper-bound effect is not eligible for history repair; apply the unchanged, never-recorded historical migration before the later forward migrations. Every other production proof remains mandatory.",
+      "requiredPreApplyCounts": {
+        "out_of_range_headcounts": 0
+      },
+      "reconciledByExecuteVersion": "20260314000002"
+    },
+    "productionUserFiltersUpdatePolicy": {
+      "acceptedPreApplyState": "The dated production aliases Users can read own filters, Users can insert own filters, and Users can delete own filters exist; no update policy exists.",
+      "reconciledByExecuteVersion": "20260614000000"
+    },
+    "stagingSavedFilterReconciliation": {
+      "acceptedPreApplyState": "The exact staging representation has filters default []::jsonb, user_filters_user_id_name_key, user_filters_name_check, user_filters_updated_at using update_user_filters_updated_at(), no user_filters foreign keys or standalone indexes, canonical trigger_set_updated_at() absent, and the documented dietary/room ACL extensions only.",
+      "requiredPreApplyCounts": {
+        "orphan_auth_references": 0,
+        "empty_names": 0,
+        "overlength_names": 0
+      },
+      "reconciledByExecuteVersion": "20260909115242"
+    },
+    "stagingRepaymentDefaults": {
+      "acceptedPreApplyState": "The dated staging catalog has both employees.repayment_needed_omc and employees.repayment_needed_pe3 boolean defaults absent; mixed, false, true, or other default states are not accepted.",
+      "reconciledByExecuteVersion": "20260910094517"
+    },
+    "stagingPostApplyAclAndInitplans": {
+      "acceptedPreApplyState": "The exact 65-version staging state has canonical saved filters, room ACLs and repayment defaults; get_user_role() has exactly anon, authenticated and service_role non-owner EXECUTE grants, and the two documented active-caller policies retain direct auth.uid() predicates. Every other final catalog contract remains required.",
+      "requiredCatalogPhase": "staging_reconciliation_pre_apply",
+      "reconciledByExecuteVersion": "20260910115024"
+    },
+    "stagingTriggerReconciliation": {
+      "acceptedPreApplyState": "The exact 66-version staging state lacks column_config.updated_at and its timestamp trigger. The postgres-owned audit trigger retains the reviewed February body and service_role EXECUTE only; the postgres-owned timestamp helper has the canonical body with PUBLIC, anon, authenticated and service_role EXECUTE. The sole changed_by foreign key is employee_column_changes_changed_by_fkey to public.users.auth_user_id, validated, MATCH SIMPLE, ON UPDATE NO ACTION, ON DELETE SET NULL and not deferrable. Every nonnull audit actor must map to an application user; no custom audit-table triggers or rewrite rules are accepted. Forward reconciliation preserves audit rows and timestamps while translating actors to public.users.id and replacing the FK together with the June audit body. Existing employee/date trigger bindings and audit conflict index must match exactly. Other final catalog contracts remain required.",
+      "requiredCatalogPhase": "staging_trigger_reconciliation_pre_apply",
+      "reconciledByExecuteVersion": "20260910184841"
+    },
+    "stagingCanonicalTriggerAclPrerequisite": {
+      "acceptedPreApplyState": "Current staging must already satisfy all strict post_apply checks. The new prerequisite is a no-op on that complete canonical state; no historical trigger migration is replayed. Fresh builds additionally reconcile only the complete canonical Supabase default-ACL pair, leaving the exact old observed profile for its immutable successor.",
+      "requiredCatalogPhase": "post_apply",
+      "reconciledByExecuteVersion": "20260910184840"
+    }
+  },
+  "pendingProductionProofs": {
+    "staffingFunctionSecurityMode": {
+      "observedState": "The observed production update_staffing_need(text, integer, uuid) is SECURITY INVOKER. The immutable migration's SECURITY DEFINER effect is absent, so this version is not eligible for history repair.",
+      "blockedOperation": "A non-dry-run production db push --include-all is blocked while the staffing function's reviewed pre-execute proof is unimplemented.",
+      "requiredImplementation": "Implement and review a fail-closed production pre-execute function profile that proves the exact staffing contract, then prove full production traffic isolation before executing the immutable migration.",
+      "executeVersion": "20260314000001"
+    }
+  },
+  "environmentPlans": {
+    "staging": {
+      "repair-after-catalog-proof": [],
+      "execute": [
+        "20260910184840"
+      ]
+    },
+    "production": {
+      "repair-after-catalog-proof": "classifications.repair-after-catalog-proof",
+      "execute": "classifications.execute"
+    }
+  },
+  "orderedPrerequisites": [
+    {
+      "version": "20260910184840",
+      "beforeVersion": "20260910184841",
+      "cliGeneratedVersion": "20260915164637",
+      "reason": "New forward-only ACL prerequisite ordered before the immutable trigger migration; current staging applies the missing prerequisite after its already-recorded successor using reviewed --include-all. No existing version is changed or repaired."
+    }
+  ]
+}

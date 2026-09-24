@@ -146,11 +146,12 @@ describe("Story 13.7: Export Error Handling Integration", () => {
         body: "invalid json{",
       });
 
-      // The request.json() will throw, which should be caught
       const response = await POST(request);
+      const json = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(createErrorResponse).toHaveBeenCalled();
+      expect(response.status).toBe(400);
+      expect(json.error.code).toBe("INVALID_EXPORT_PAYLOAD");
+      expect(createErrorResponse).not.toHaveBeenCalled();
     });
 
     it("should handle null request body", async () => {
@@ -163,8 +164,11 @@ describe("Story 13.7: Export Error Handling Integration", () => {
       });
 
       const response = await POST(request);
+      const json = await response.json();
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
+      expect(json.error.code).toBe("INVALID_EXPORT_PAYLOAD");
+      expect(createErrorResponse).not.toHaveBeenCalled();
     });
 
     it("should handle request body with wrong data types", async () => {

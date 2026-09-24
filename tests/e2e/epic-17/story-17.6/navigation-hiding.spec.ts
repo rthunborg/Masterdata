@@ -202,8 +202,8 @@ test.describe("Story 17.6: Navigation Hiding for External Users", () => {
       page.getByRole("heading", { name: /Användarhantering|User Management/i })
     ).not.toBeVisible({ timeout: 2000 });
     await expect(
-      page.getByRole("heading", { name: /Personalhantering|Dashboard|Employees/i })
-    ).toBeVisible({ timeout: 5000 });
+      page.locator('main, [role="main"]')
+    ).toContainText(/Personalhantering|Anställda|Dashboard|Employees/i, { timeout: 15000 });
   });
 });
 

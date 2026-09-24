@@ -254,6 +254,90 @@ describe("GET /api/important-dates/available-omc", () => {
     expect(json.data[0].date_value).toBe(`${currentYear}-05-17`);
   });
 
+  it("should include future ÖMC dates in the next calendar year", async () => {
+    vi.setSystemTime(new Date("2026-06-07T12:00:00Z"));
+
+    mockSupabaseClient.auth.getSession.mockResolvedValue({
+      data: { session: { user: { id: mockUsers.hrAdmin.auth_id } } },
+      error: null,
+    });
+
+    mockSupabaseClient.from.mockImplementation((table: string) => {
+      if (table === "users") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: {
+                  id: mockUsers.hrAdmin.id,
+                  email: mockUsers.hrAdmin.email,
+                  role: mockUsers.hrAdmin.role,
+                  is_active: true,
+                  created_at: mockUsers.hrAdmin.created_at,
+                },
+                error: null,
+              }),
+            }),
+          }),
+        };
+      }
+
+      if (table === "important_dates") {
+        const mockChain = {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockResolvedValue({
+            data: [
+              {
+                id: "date-past-current-year",
+                week_number: 10,
+                year: 2026,
+                category: "ÖMC Dates",
+                date_description: "8-9 mars 2026",
+                date_value: "2026-03-08",
+                notes: null,
+                time_value: null,
+                max_spots: 20,
+                remaining_spots: 15,
+                is_active: true,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+              {
+                id: "date-future-next-year",
+                week_number: 10,
+                year: 2027,
+                category: "ÖMC Dates",
+                date_description: "8-9 mars 2027",
+                date_value: "2027-03-08",
+                notes: null,
+                time_value: null,
+                max_spots: 20,
+                remaining_spots: 15,
+                is_active: true,
+                created_at: "2025-01-01T00:00:00Z",
+                updated_at: "2025-01-01T00:00:00Z",
+              },
+            ],
+            error: null,
+          }),
+        };
+        mockChain.eq.mockReturnValue(mockChain);
+        return mockChain;
+      }
+
+      return {};
+    });
+
+    const response = await GET();
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.data).toHaveLength(1);
+    expect(json.data[0].id).toBe("date-future-next-year");
+    expect(json.data[0].date_value).toBe("2027-03-08");
+  });
+
   it("should include Jan 1 current year even if in the past", async () => {
     // This test verifies AC: "Any ÖMC date equal to Jan 1 of the current 
     // calendar year appears even if it is in the past"

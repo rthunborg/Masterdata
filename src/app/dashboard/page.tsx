@@ -23,7 +23,7 @@ import dynamic from "next/dynamic";
 import { FloatingActionButton } from "@/components/dashboard/floating-action-button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEmployeeChanges } from "@/lib/hooks/use-employee-changes";
-import { hasAdminAccess, UserRole, isHRAdmin, canAddEmployee, isExternalParty } from "@/lib/types/user";
+import { UserRole, isHRAdmin, canAddEmployee, isExternalParty } from "@/lib/types/user";
 
 // Lazy load heavy modals for better initial bundle size (Story 12.5: Performance optimization)
 const AddEmployeeModal = dynamic(
@@ -45,7 +45,7 @@ const ImportEmployeesModal = dynamic(
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
-  const { openModal, previewRole } = useUIStore();
+  const { previewRole } = useUIStore();
   const t = useTranslations('dashboard');
   
   // Effective role for UI simulation in preview mode
@@ -188,8 +188,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Check if user has admin access (HR Admin or Recruiter) - actual user role
-  const isAdmin = hasAdminAccess(user?.role as UserRole) || user?.role === UserRole.RECRUITER;
   const isHRAdminUser = isHRAdmin(user?.role as UserRole);
   
   // Effective role checks for UI simulation in preview mode
@@ -232,13 +230,7 @@ export default function DashboardPage() {
               </Button>
             </>
           ) : isExternalPartyEffective ? (
-            <div className="flex gap-2">
-              <Button onClick={() => openModal('addColumn')}>
-                <Plus className="mr-2 h-4 w-4" />
-                {t('actions.addColumn')}
-              </Button>
-              <ManageColumnsDialog />
-            </div>
+            <ManageColumnsDialog />
           ) : null}
         </div>
       </div>

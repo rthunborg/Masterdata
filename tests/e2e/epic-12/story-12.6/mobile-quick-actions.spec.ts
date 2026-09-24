@@ -6,14 +6,41 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { loginAsHRAdmin } from '../../helpers/e2e-helpers';
+import { createEmployeeViaUI, loginAsHRAdmin } from '../../helpers/e2e-helpers';
+
+const mobileViewport = { width: 375, height: 667 };
 
 async function waitForMobileDashboard(page: Page) {
   await expect(page.getByRole('region', { name: /Employee list/i })).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#employee-search')).toBeVisible({ timeout: 15000 });
+}
+
+async function ensureMobileEmployee(page: Page) {
+  const existingCard = page.locator('article[aria-label]').first();
+  const hasExistingCard = await existingCard.isVisible({ timeout: 1500 }).catch(() => false);
+
+  if (!hasExistingCard) {
+    const suffix = Date.now().toString().slice(-6);
+    await createEmployeeViaUI(page, {
+      first_name: `Quick${suffix}`,
+      surname: 'Actions',
+      ssn: `19800101${Date.now().toString().slice(-4)}`,
+      email: `quick.actions.${suffix}@example.com`,
+      mobile: '+46701234567',
+      rank: 'SEV',
+      gender: 'Man',
+    });
+
+    await page.setViewportSize(mobileViewport);
+    await waitForMobileDashboard(page);
+  }
+
   await expect(page.locator('article[aria-label]').first()).toBeVisible({ timeout: 15000 });
 }
 
 async function openCardContextMenu(page: Page) {
+  await ensureMobileEmployee(page);
+
   const employeeCard = page.locator('article[aria-label]').first();
   await expect(employeeCard).toBeVisible();
 
@@ -64,7 +91,7 @@ async function openCardContextMenu(page: Page) {
 test.describe('Mobile Quick Actions (Story 12.6)', () => {
   test.beforeEach(async ({ page }) => {
     // Set mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 });
+    await page.setViewportSize(mobileViewport);
     
     await loginAsHRAdmin(page);
     await waitForMobileDashboard(page);
@@ -93,6 +120,7 @@ test.describe('Mobile Quick Actions (Story 12.6)', () => {
 
   test('[P1] Email link has pre-filled subject', async ({ page }) => {
     // Given: I am viewing an employee card with email
+    await ensureMobileEmployee(page);
     const emailLink = page.locator('a[href^="mailto:"]').first();
     await expect(emailLink).toBeVisible();
 
@@ -106,6 +134,7 @@ test.describe('Mobile Quick Actions (Story 12.6)', () => {
 
   test('[P1] Phone link opens dialer', async ({ page }) => {
     // Given: I am viewing an employee card with phone number
+    await ensureMobileEmployee(page);
     const phoneLink = page.locator('a[href^="tel:"]').first();
     await expect(phoneLink).toBeVisible();
 

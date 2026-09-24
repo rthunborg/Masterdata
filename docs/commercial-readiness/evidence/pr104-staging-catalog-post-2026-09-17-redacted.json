@@ -1,0 +1,14 @@
+{
+  "phase": "catalog-post",
+  "commit": "1cb4b02108183eeec4fa61fa980c99f835933344",
+  "capturedAtUtc": "2026-09-17T13:58:30.565Z",
+  "hostedWriteAttempted": false,
+  "manifestSha256": "92cdec724eb3e084997431ec407418d7fbbc41db08d78196dfd39307b74b60fb",
+  "repositoryMigrationCount": 68,
+  "verificationStage": "complete",
+  "toolingTlsAndThreeWayBindingVerified": true,
+  "hostedConnectionAttempted": true,
+  "checksPassed": 16,
+  "failedChecks": [],
+  "passed": true
+}

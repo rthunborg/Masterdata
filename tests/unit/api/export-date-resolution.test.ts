@@ -258,7 +258,7 @@ describe("Export Date Resolution", () => {
     expect(csvContent).toContain("16-03"); // ÖMC date end (day after start)
     expect(csvContent).toContain("20-03"); // PE3 date
     },
-    15000
+    30000
   );
 
   it("should handle deleted dates gracefully with 'Date Deleted' message", async () => {

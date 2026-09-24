@@ -1,0 +1,35 @@
+{
+  "phase": "production_detail_diagnosis",
+  "capturedAtUtc": "2026-09-16T13:11:09.133Z",
+  "candidateSha": "6874ef20f5b8b3f9a5ac78a582c0ae1d7a580651",
+  "manifestSha256": "d61d5cca0754f60e55dfea9ccfc4a8d4b39d0861aa3df732035fb12f4169ed01",
+  "repositoryMigrationCount": 68,
+  "observedRepairCandidateCount": 56,
+  "observedForwardMigrationCount": 12,
+  "hostedConnectionAttempted": true,
+  "successfulVerifyFullConnection": true,
+  "hostedWriteAttempted": false,
+  "repairProofsSigned": 0,
+  "staffing": {
+    "securityDefiner": false,
+    "historical202603BodyExact": false,
+    "latest202607BodyExact": false,
+    "bodyMd5": "4fd2e46d83d008a31b7c54c8edb474f6",
+    "nonOwnerExecuteGrantCount": 4
+  },
+  "representedColumns": {
+    "matchingCount": 19,
+    "mismatchingLabels": [
+      "employees_repayment_needed_omc",
+      "employees_repayment_needed_pe3",
+      "user_filters_filters"
+    ]
+  },
+  "audit": {
+    "legacyProfileMatch": true,
+    "canonicalProfileMatch": false,
+    "unmappedLegacyActorCount": 0,
+    "unmappedCanonicalActorCount": 202
+  },
+  "durationSeconds": 7.308
+}

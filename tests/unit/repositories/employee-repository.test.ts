@@ -454,6 +454,70 @@ describe("EmployeeRepository", () => {
     });
   });
 
+  describe("getSystemStats", () => {
+    type CountResult = { count: number | null; error: unknown | null };
+
+    const createCountChain = (result: CountResult) => {
+      const chainMock = {
+        select: vi.fn(),
+        eq: vi.fn(),
+        then: vi.fn(
+          (
+            onFulfilled?: (value: CountResult) => unknown,
+            onRejected?: (reason: unknown) => unknown
+          ) => Promise.resolve(result).then(onFulfilled, onRejected)
+        ),
+      };
+
+      chainMock.select.mockReturnValue(chainMock);
+      chainMock.eq.mockReturnValue(chainMock);
+
+      return chainMock;
+    };
+
+    it("excludes archived and terminated employees from total and crewed counts", async () => {
+      const totalQuery = createCountChain({ count: 63, error: null });
+      const crewedQuery = createCountChain({ count: 63, error: null });
+      const mockClient = {
+        from: vi.fn()
+          .mockReturnValueOnce(totalQuery)
+          .mockReturnValueOnce(crewedQuery),
+      };
+
+      vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+
+      const result = await repository.getSystemStats();
+
+      expect(result).toEqual({
+        totalActive: 63,
+        crewedActive: 63,
+        crewedPercent: 100,
+      });
+
+      expect(mockClient.from).toHaveBeenNthCalledWith(1, "employees");
+      expect(mockClient.from).toHaveBeenNthCalledWith(2, "employees");
+
+      expect(totalQuery.select).toHaveBeenCalledWith("id", {
+        count: "exact",
+        head: true,
+      });
+      expect(totalQuery.eq).toHaveBeenCalledWith("is_archived", false);
+      expect(totalQuery.eq).toHaveBeenCalledWith("is_terminated", false);
+      expect(totalQuery.eq).not.toHaveBeenCalledWith(
+        "crewing_done",
+        expect.anything()
+      );
+
+      expect(crewedQuery.select).toHaveBeenCalledWith("id", {
+        count: "exact",
+        head: true,
+      });
+      expect(crewedQuery.eq).toHaveBeenCalledWith("is_archived", false);
+      expect(crewedQuery.eq).toHaveBeenCalledWith("is_terminated", false);
+      expect(crewedQuery.eq).toHaveBeenCalledWith("crewing_done", true);
+    });
+  });
+
   describe("findById", () => {
     it("should return employee by id", async () => {
       const mockEmployee: Employee = {

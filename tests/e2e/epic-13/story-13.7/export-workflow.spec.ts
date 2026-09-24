@@ -11,12 +11,58 @@
  */
 
 import { test, expect, type Page, type Locator } from "@playwright/test";
+import { createClient } from '@supabase/supabase-js';
+import { randomInt, randomUUID } from 'node:crypto';
 import fs from 'fs';
 import { loginAsHRAdmin } from "../../helpers/e2e-helpers";
+import { assertSafeE2EDatabase } from '../../helpers/seed-data';
+
+function createFixtureClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) {
+    throw new Error('Story 13.7 requires the guarded local E2E Supabase configuration.');
+  }
+  assertSafeE2EDatabase();
+  return createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
 
 test.describe("Story 13.7: Export Workflow E2E", () => {
+  let fixtureEmployeeIds: string[] = [];
+
   test.beforeEach(async ({ page }) => {
+    fixtureEmployeeIds = [randomUUID(), randomUUID()];
+    const ssnBase = randomInt(1000, 9999);
+    const { error } = await createFixtureClient().from('employees').insert(
+      fixtureEmployeeIds.map((id, index) => ({
+        id,
+        first_name: 'ExportWorkflow',
+        surname: `E2EFixture${index + 1}`,
+        ssn: `19991231${ssnBase + index}`,
+        email: `export-workflow-${id}@example.test`,
+        rank: 'SEV',
+        gender: 'Man',
+        hire_date: '2025-01-01',
+      }))
+    );
+    if (error) {
+      throw new Error(`Failed to create the Story 13.7 employee fixtures: ${error.message}`);
+    }
     await loginAsHRAdmin(page);
+  });
+
+  test.afterEach(async () => {
+    if (fixtureEmployeeIds.length === 0) return;
+    const { error } = await createFixtureClient()
+      .from('employees')
+      .delete()
+      .in('id', fixtureEmployeeIds);
+    fixtureEmployeeIds = [];
+    if (error) {
+      throw new Error(`Failed to delete the Story 13.7 employee fixtures: ${error.message}`);
+    }
   });
 
   function employeeCheckbox(page: Page, index: number): Locator {

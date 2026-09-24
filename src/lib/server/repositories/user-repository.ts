@@ -86,39 +86,27 @@ export class UserRepository {
     }
   }
 
-  async updateUserStatus(id: string, isActive: boolean): Promise<boolean> {
-    try {
-      const supabase = await this.getSupabaseClient();
-      
-      const { error } = await supabase
-        .from("users")
-        .update({ is_active: isActive })
-        .eq("id", id);
-
-      return !error;
-    } catch {
-      return false;
-    }
-  }
-
   /**
-   * Updates the last_active_at timestamp for a user
+   * Updates the authenticated caller's last_active_at timestamp.
    * Used by middleware for activity tracking
-   * Fire-and-forget pattern - errors are caught silently
+   * Returns false on failure so explicit activity endpoints can report it;
+   * callers such as login may deliberately keep the update non-blocking.
    */
-  async updateLastActive(userId: string): Promise<void> {
+  async updateLastActive(): Promise<boolean> {
     try {
       const supabase = await this.getSupabaseClient();
-      
-      await supabase
-        .from("users")
-        .update({ last_active_at: new Date().toISOString() })
-        .eq("id", userId);
-      
-      // Silently succeed or fail - activity tracking shouldn't break requests
+
+      const { error } = await supabase.rpc("update_own_last_active_at");
+
+      if (error) {
+        console.error("Failed to update user activity:", error);
+        return false;
+      }
+
+      return true;
     } catch (error) {
-      // Log error but don't throw - this is fire-and-forget
       console.error('Failed to update user activity:', error);
+      return false;
     }
   }
 }

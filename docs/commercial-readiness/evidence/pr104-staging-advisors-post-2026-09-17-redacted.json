@@ -1,0 +1,25 @@
+{
+  "phase": "advisors-post",
+  "commit": "1cb4b02108183eeec4fa61fa980c99f835933344",
+  "capturedAtUtc": "2026-09-17T13:58:24.661Z",
+  "hostedWriteAttempted": false,
+  "manifestSha256": "92cdec724eb3e084997431ec407418d7fbbc41db08d78196dfd39307b74b60fb",
+  "repositoryMigrationCount": 68,
+  "verificationStage": "complete",
+  "toolingTlsAndThreeWayBindingVerified": true,
+  "hostedConnectionAttempted": true,
+  "advisors": {
+    "security": {
+      "total": 0,
+      "counts": {}
+    },
+    "performance": {
+      "total": 3,
+      "counts": {
+        "multiple_permissive_policies:WARN": 3
+      }
+    },
+    "scope": "exact reviewed commands; pinned CLI WARN minimum; dated scope limitations retained"
+  },
+  "passed": true
+}
