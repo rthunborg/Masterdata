@@ -214,7 +214,7 @@ function inspectDataApiProbe(value) {
 }
 
 function inspectNetwork(value) {
-  const receipt = inspectBoundReceipt(value, 'production-network-isolation-observation', [
+  const fields = [
     'restrictionStatus',
     'runnerIpv4Only',
     'runnerIpv6Only',
@@ -222,15 +222,29 @@ function inspectNetwork(value) {
     'unrestrictedIpv6',
     'nonRunnerIpv4ProbeDenied',
     'nonRunnerIpv6ProbeDenied',
-  ]);
+  ];
+  // An IPv4-only operator must deny all IPv6 ingress. It must not claim an
+  // operator IPv6 allowance that the runner cannot use or verify.
+  const ipv4Only = Object.hasOwn(value ?? {}, 'operatorIpv6EgressUnavailable');
+  const receipt = inspectBoundReceipt(
+    value,
+    'production-network-isolation-observation',
+    ipv4Only
+      ? [...fields, 'operatorIpv6EgressUnavailable', 'ipv6AllowlistEmpty']
+      : fields
+  );
   return receipt &&
     receipt.restrictionStatus === 'applied' &&
     receipt.runnerIpv4Only === true &&
-    receipt.runnerIpv6Only === true &&
     receipt.unrestrictedIpv4 === false &&
     receipt.unrestrictedIpv6 === false &&
     receipt.nonRunnerIpv4ProbeDenied === true &&
-    receipt.nonRunnerIpv6ProbeDenied === true
+    receipt.nonRunnerIpv6ProbeDenied === true &&
+    (ipv4Only
+      ? receipt.runnerIpv6Only === false &&
+        receipt.operatorIpv6EgressUnavailable === true &&
+        receipt.ipv6AllowlistEmpty === true
+      : receipt.runnerIpv6Only === true)
     ? receipt
     : null;
 }
