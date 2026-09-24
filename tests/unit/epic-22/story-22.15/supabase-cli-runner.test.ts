@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
@@ -755,6 +756,36 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       expect(spawn).not.toHaveBeenCalled();
     }
   );
+
+  it.each([
+    { label: 'a missing late version', mutate: (versions: string[]) => versions.slice(0, -1) },
+    { label: 'a reordered late pair', mutate: (versions: string[]) => {
+      const changed = [...versions];
+      [changed[10], changed[11]] = [changed[11], changed[10]];
+      return changed;
+    } },
+    { label: 'a duplicate late version', mutate: (versions: string[]) => [...versions, versions[12]] },
+    { label: 'an extra version', mutate: (versions: string[]) => [...versions, '20260924120000'] },
+  ])('rejects production include-all with $label even when its first two versions match', async ({ mutate }) => {
+    const manifest = JSON.parse(readFileSync(resolve('supabase', 'migration-baseline-manifest.json'), 'utf8'));
+    const execute = mutate(manifest.classifications.execute);
+    manifest.environmentPlans.production.execute = execute;
+    const spawn = vi.fn();
+    const executableVerifier = vi.fn(() => reviewedCliPath);
+    const targetVerifier = vi.fn();
+
+    await expect(runReviewedSupabaseCli({
+      args: ['db', 'push', REVIEWED_TARGET_FLAG, REVIEWED_ENVIRONMENT_FLAG, 'production', '--dry-run', '--include-all', '--skip-vault'],
+      environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
+      readManifest: () => JSON.stringify(manifest),
+      spawn,
+      executableVerifier,
+      targetVerifier,
+    })).rejects.toThrow('Reviewed migration baseline manifest is unavailable or invalid');
+    expect(executableVerifier).not.toHaveBeenCalled();
+    expect(targetVerifier).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
+  });
 
   it.each([
     { selector: ['--linked'] },

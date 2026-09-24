@@ -21,9 +21,20 @@ const REVIEWED_DATABASE_COMMANDS = new Set([
 ]);
 const MIGRATION_VERSION_PATTERN = /^\d{14}$/u;
 const REVIEWED_ENVIRONMENTS = new Set(['staging', 'production']);
-const PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS = Object.freeze([
+const PRODUCTION_REVIEWED_EXECUTE_VERSIONS = Object.freeze([
   '20260314000001',
   '20260314000002',
+  '20260614000000',
+  '20260615000000',
+  '20260709194903',
+  '20260710144000',
+  '20260710150000',
+  '20260831200026',
+  '20260909115242',
+  '20260910094517',
+  '20260910115024',
+  '20260910184840',
+  '20260910184841',
 ]);
 const PRODUCTION_STAFFING_PRE_EXECUTE_PROOF_BLOCK_MESSAGE =
   'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation';
@@ -213,14 +224,8 @@ function resolveManifestRepairVersions(manifest, reviewedEnvironment) {
 function resolveManifestProductionIncludeAll(manifest) {
   const plan = resolveManifestMigrationPlan(manifest, 'production');
   if (
-    !argumentsEqual(
-      plan.orderedExecuteVersions.slice(
-        0,
-        PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS.length
-      ),
-      PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS
-    ) ||
-    PRODUCTION_OLDER_PENDING_EXECUTE_VERSIONS.some(
+    !argumentsEqual(plan.orderedExecuteVersions, PRODUCTION_REVIEWED_EXECUTE_VERSIONS) ||
+    PRODUCTION_REVIEWED_EXECUTE_VERSIONS.some(
       (version) =>
         !plan.executeVersions.has(version) || plan.repairVersions.has(version)
     )
