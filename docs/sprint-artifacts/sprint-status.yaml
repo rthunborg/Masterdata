@@ -1,8 +1,8 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: '2026-09-23'
-updated_by: 'PR #115 merged as staging 3fb3d72 with the reviewed tree. Fresh post-merge staging proof passed 68/68 history, strict catalog 16/16 and scoped preservation gates. Production gates remain; Story 22.15 in-progress, Epic 23 on-hold, production paused/no-go.'
+last_updated: '2026-09-24'
+updated_by: 'Fresh source-pinned production read-only profile, catalog and isolation proof refreshed. Worker scope narrowed to a conditional pre-write check; production paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.'
 
 current_focus:
   active_epic: 22
@@ -44,7 +44,7 @@ epics:
     status_file: null # Intentionally absent; do not create while on hold.
 
 next_actions:
-  - 'Story 22.15: reviewed PR #115 head a4f663d merged as staging 3fb3d72 with an identical tree. Fresh post-merge staging read-only proof passed 68/68 history, strict catalog 16/16, the known scoped advisors and unchanged repayment, permission and audit baselines. Production remains paused/no-go with 48 orphan filters, seven strict catalog failures, 55 UNPROVED unsigned repair rows and 13 proposed forward executes. Owner staging application signoff and a maintenance window remain open. Obtain separate approval for any production backup or workflow dispatch, complete and record fresh production-day backup plus prescribed restore verification, and capture private pre-state before the first separately approved hosted isolation change. Under that settings approval, establish and prove five-plane isolation and drain before any cleanup, history repair or migration apply. Seek separate cleanup and history-repair approvals. Main merge, deployment and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
+  - 'Story 22.15: reviewed PR #115 head a4f663d merged as staging 3fb3d72 with an identical tree. Fresh post-merge staging read-only proof passed 68/68 history, strict catalog 16/16, the known scoped advisors and unchanged repayment, permission and audit baselines. Production remains paused/no-go with 48 orphan filters, seven strict catalog failures, 55 UNPROVED unsigned repair rows and 13 proposed forward executes. Owner verified the staging application; a calendar maintenance window is waived while production is unused, and Rasmus is rollback owner. Local backup and verified restore are owner-attested without a path or machine receipt; confirm freshness before the first hosted change and capture private pre-state before separately approved isolation. Any additional backup workflow dispatch requires separate authorization. Before requesting that settings approval, bind a fresh pre-write worker extension/table/configuration check and stop on any newly active job/request path; then establish and prove five-plane isolation and drain before any cleanup, history repair or migration apply. Seek separate cleanup and history-repair approvals. Main merge, deployment and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
   - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
   - 'Story 22.4 is done; standing production-data presentation controls are documented.'
   - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
@@ -57,7 +57,7 @@ next_actions:
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings on PR #91 commit 32621fd are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, required real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, exact full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique Story 22.14 tests are evidenced passing without recounting pre-existing Story 22.11 cases. Any further review finding requires human triage. No production, schema, real-recipient cron, deployment, main, or unrelated-file changes occurred. Epic 22 remains in progress for its separate production release gate.'
   - 'Reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344 with an identical reviewed tree. Fresh pinned read-only proof passed 68/68 history, strict catalog 16/16, scoped advisors, and every preservation comparison. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the final-head delta was documentation-only. Production has a proposed 55-repair/13-execute ordering blocked before actual apply; seven strict failures, the unsigned 55-row ledger, and other production gates remain open. Pause status relies on the recorded 2026-09-15 observation. Story 22.15 remains in-progress; Epic 23 remains on-hold.'
-  - 'EPIC 22 COMPLETION GATE (E-010/E-013): staging v68 is applied and verified at 68/68 with no pending/remote-only version and all five post phases passing, including strict catalog 16/16. Historical v67 fixture/RPC acceptance passed 21/21. Owner staging verification, production inventory, ledger, backup, isolation/settings/history-repair and deployment gates remain; preserve the pause and separate main-merge/reopening decisions.'
+  - 'EPIC 22 COMPLETION GATE (E-010/E-013): staging v68 is applied and verified at 68/68 with no pending/remote-only version and all five post phases passing, including strict catalog 16/16. Historical v67 fixture/RPC acceptance passed 21/21. Owner staging verification completed on 2026-09-24; production inventory, ledger, backup freshness, isolation/settings/history-repair and deployment gates remain; preserve the pause and separate main-merge/reopening decisions.'
   - 'Epic 23 is explicitly on hold. Its status file has not been created, and no Epic 23 work may be started or planned into active development without a later explicit owner decision.'
 
 notes:
@@ -86,12 +86,12 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'The v67 fixture/RPC acceptance is historical. Current staging is 68/68 with no pending/remote-only version and all five post-apply phases passing, including strict catalog 16/16. Complete owner staging verification, preserve the production pause, and keep production/main/reopening gates separate. See canonical_trigger_acl_prerequisite_preparation.'
+  next_action: 'The v67 fixture/RPC acceptance is historical. Current staging is 68/68 with no pending/remote-only version and all five post-apply phases passing, including strict catalog 16/16. Owner staging verification completed on 2026-09-24; preserve the production pause, and keep production/main/reopening gates separate. See canonical_trigger_acl_prerequisite_preparation.'
 
 reconciliation_pause_candidate:
   previous_implementation_sha: '5f60e58c9aa9a7e117bc589ec82d0b99a5846839'
   previous_playwright_sha: '2ea1077aec62729303116bb85c49b4c44e98639f'
-  local_verification: 'Final local evidence is retained in dated evidence. PR #100 staging v67 is applied and verified at 67/67; the immutable manifest still records its one-version staging execute plan, which must not be replayed. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification remains open.'
+  local_verification: 'Final local evidence is retained in dated evidence. PR #100 staging v67 is applied and verified at 67/67; the immutable manifest still records its one-version staging execute plan, which must not be replayed. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification was open at that dated checkpoint and completed on 2026-09-24.'
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-and-pause-2026-09-09.md'
 
 custom_preview_correction:
@@ -106,7 +106,7 @@ historical_post_apply_staging_execution:
   pending_versions: []
   post_apply_catalog_checks_passed: 15
   evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-completed-2026-09-10.md'
-  remaining: 'This is historical v67 evidence: no history repair, strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors of 0 security WARN-or-higher and three classified performance WARN, plus the completed 21/21 fixture/RPC acceptance. Current staging is 68/68 after the reviewed v68 execution, with no pending/remote-only version and all five post-apply phases passing. Owner staging verification and production gates remain open; production stays paused, Story 22.15 remains in-progress, and Epic 23 remains on-hold.'
+  remaining: 'This is historical v67 evidence: no history repair, strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors of 0 security WARN-or-higher and three classified performance WARN, plus the completed 21/21 fixture/RPC acceptance. Current staging is 68/68 after the reviewed v68 execution, with no pending/remote-only version and all five post-apply phases passing. Owner staging verification completed on 2026-09-24; production gates remain open; production stays paused, Story 22.15 remains in-progress, and Epic 23 remains on-hold.'
 
 trigger_reconciliation_preparation:
   diagnosis_captured_at: '2026-09-10T18:50:27.989Z'
@@ -120,7 +120,7 @@ trigger_reconciliation_preparation:
   pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
   post_apply_catalog_checks_expected: 16
   tested_implementation_commit: '12e526ff36922a1ff41277bc7cb1ef2f81a2321d' # Historical v67 local implementation evidence; b4bbdb2 remains historical.
-  new_head_verification: "Historical v67 record: PR #100 merged as ad9650ccfc8be412447a03847cc7ddfb372f8666 and its authorized execute completed at 67/67 with strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors, and 21/21 fixture/RPC acceptance. Current staging is 68/68 after PR #102 and authorized v68 execution, with no pending/remote-only version and all five post-apply phases passing. Owner staging verification and production gates remain open; production pause active; Story 22.15 in-progress; Epic 23 on-hold."
+  new_head_verification: "Historical v67 record: PR #100 merged as ad9650ccfc8be412447a03847cc7ddfb372f8666 and its authorized execute completed at 67/67 with strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors, and 21/21 fixture/RPC acceptance. Current staging is 68/68 after PR #102 and authorized v68 execution, with no pending/remote-only version and all five post-apply phases passing. Owner staging verification completed on 2026-09-24; production gates remain open; production pause active; Story 22.15 in-progress; Epic 23 on-hold."
   evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
   status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
 
@@ -136,7 +136,7 @@ canonical_trigger_acl_prerequisite_preparation:
   implementation_commit: '5ec0228ea8605b411d25f2d00911dcf7b62b5b10'
   migration_sql_sha256: 'fd4b331e61e830421516b99cac9eedb0ac55184ce4ae4216e58137012737723a'
   local_verification: 'Full Vitest 3,480/3,480 across 322 files, zero skips/failures, exit 0 (69.28s report / 72.617s wall); focused 89/89 (5.59s); saved-filter plus active-authorization 31/31; live export plus required PostgREST 6/6; TypeScript exit 0; lint 0 errors/296 warnings; clean 68+seed and preserved 66->68 fixtures each strict 16/16 on the working tree subsequently committed.'
-  verification: 'PR #102 final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply are complete. Current staging is 68/68 with all five post-apply phases passing. Remaining gates: owner staging verification and production gates.'
+  verification: 'PR #102 final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply are complete. Current staging is 68/68 with all five post-apply phases passing. Owner staging verification completed on 2026-09-24; remaining gates are production gates.'
   evidence: 'docs/commercial-readiness/evidence/canonical-trigger-acl-prerequisite-2026-09-15.md'
   status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
 
@@ -188,7 +188,7 @@ protected_toolchain_component_20260922:
 
 protected_production_dry_run_component_20260922:
   status: local-verification-complete
-  next_action: 'Story 22.15: reviewed PR #115 head a4f663d merged as staging 3fb3d72 with an identical tree. Fresh post-merge staging read-only proof passed 68/68 history, strict catalog 16/16, the known scoped advisors and unchanged repayment, permission and audit baselines. Production remains paused/no-go with 48 orphan filters, seven strict catalog failures, 55 UNPROVED unsigned repair rows and 13 proposed forward executes. Owner staging application signoff and a maintenance window remain open. Obtain separate approval for any production backup or workflow dispatch, complete and record fresh production-day backup plus prescribed restore verification, and capture private pre-state before the first separately approved hosted isolation change. Under that settings approval, establish and prove five-plane isolation and drain before any cleanup, history repair or migration apply. Seek separate cleanup and history-repair approvals. Main merge, deployment and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'Story 22.15: reviewed PR #115 head a4f663d merged as staging 3fb3d72 with an identical tree. Fresh post-merge staging read-only proof passed 68/68 history, strict catalog 16/16, the known scoped advisors and unchanged repayment, permission and audit baselines. Production remains paused/no-go with 48 orphan filters, seven strict catalog failures, 55 UNPROVED unsigned repair rows and 13 proposed forward executes. Owner verified the staging application; a calendar maintenance window is waived while production is unused, and Rasmus is rollback owner. Local backup and verified restore are owner-attested without a path or machine receipt; confirm freshness before the first hosted change and capture private pre-state before separately approved isolation. Any additional backup workflow dispatch requires separate authorization. Before requesting that settings approval, bind a fresh pre-write worker extension/table/configuration check and stop on any newly active job/request path; then establish and prove five-plane isolation and drain before any cleanup, history repair or migration apply. Seek separate cleanup and history-repair approvals. Main merge, deployment and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
   final_head: null # Exact reviewed head is recorded by PR #113 checks/review, not self-attested here.
   test_receipt: 'Test/evidence 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb: Vitest 3769/3769, 337 files, zero skips/failures; implementation-identical 7bc0031 Playwright 163 passed, 47 exact classified skips, zero failures/errors. Exact final-head checks/review are separate merge prerequisites recorded on PR #113.'
   scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'
@@ -217,3 +217,17 @@ local_cli_matrix_component_20260923:
   skip_identities_unchanged: true
   evidence: docs/commercial-readiness/evidence/local-synthetic-cli-matrix-2026-09-23.md
   remaining_gate: 'Final-head review/check/merge, fresh hosted proof, five-plane isolation, target-write admission and the separately gated production procedure. All 55 repair rows remain UNPROVED/unsigned; 13 executes are proposed; 48 filters need separately approved cleanup; seven production catalog groups remain unresolved.'
+
+pr117_local_validation_20260924:
+  status: locally-verified-review-pending
+  pr: 117
+  tested_implementation: d99b3b7a9f44682896c359058f7569cc66d86dcc
+  story_status: in-progress
+  epic_23_status: on-hold
+  production: paused-no-go
+  fixture_catalog_checks: '16/16'
+  full_vitest: '3999 passed, 47 classified skips, zero failures, exit 0'
+  full_playwright: '163 passed, 47 individually matched historical skips, zero failures/errors, exit 0'
+  first_vitest_attempt: 'Failed: two strict catalog checks against a different drifted local database; not counted as passing evidence.'
+  evidence: docs/commercial-readiness/evidence/pr117-local-validation-2026-09-24.md
+  remaining_gate: 'Final-head checks/review/merge and separate production isolation, cleanup, 55-row material-effect proof/history repair, 13 executes, main merge, deployment and reopening.'
