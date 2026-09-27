@@ -41,11 +41,18 @@ describe('Story 22.15 production history-repair baseline', () => {
   });
 
   it('binds each ledger entry to the raw migration bytes and Git blob', () => {
-    for (const entry of PRODUCTION_HISTORY_REPAIR_BASELINE) {
-      const bytes = readFileSync(join(process.cwd(), 'supabase/migrations', entry.file));
-      expect(createHash('sha256').update(bytes).digest('hex')).toBe(entry.sha256);
-      expect(execFileSync('git', ['hash-object', '--stdin'], { input: bytes, encoding: 'utf8' }).trim())
-        .toBe(entry.gitBlob);
+    const paths = PRODUCTION_HISTORY_REPAIR_BASELINE.map((entry) => `supabase/migrations/${entry.file}`);
+    // One Git invocation hashes every raw file without filters or writing objects.
+    // Preserve the independent Git/SHA-256 checks without 55 process startups.
+    const blobs = execFileSync('git', ['hash-object', '--no-filters', '--stdin-paths'], {
+      input: `${paths.map((path) => JSON.stringify(path)).join('\n')}\n`,
+      encoding: 'utf8',
+    }).trim().split(/\r?\n/u);
+    expect(blobs).toHaveLength(PRODUCTION_HISTORY_REPAIR_BASELINE.length);
+    for (const [index, entry] of PRODUCTION_HISTORY_REPAIR_BASELINE.entries()) {
+      const bytes = readFileSync(join(process.cwd(), paths[index]));
+      expect(createHash('sha256').update(bytes).digest('hex'), entry.file).toBe(entry.sha256);
+      expect(blobs[index], entry.file).toBe(entry.gitBlob);
     }
   });
 

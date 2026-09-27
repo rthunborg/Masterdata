@@ -63,6 +63,7 @@ function receipts() {
       capturedAtUtc: '2026-09-23T14:00:01.000Z',
       independentFromControlObservation: true,
       authenticatedWritePathAttempted: true,
+      denialCause: 'data-api-disabled',
       requestDenied: true,
       writeCommitted: false,
     }),
@@ -100,7 +101,159 @@ function receipts() {
 const assess = (value = receipts(), options = { expectedContext: context(), now }) =>
   assessProductionMaintenanceIsolation(value, options);
 
+function sameComputerReceipts() {
+  const value = receipts();
+  value.network = bound('production-network-exclusion-control-observation', {
+    capturedAtUtc: '2026-09-23T14:00:05.000Z',
+    verificationMethod: 'same-computer-exclusion-control',
+    restrictionStatus: 'applied',
+    operatorIpv4AllowlistCount: 1,
+    operatorIpv4AllowlistMatches: true,
+    ipv6AllowlistCount: 0,
+    operatorIpv6EgressUnavailable: true,
+    ipv6Verification: 'applied-policy-only-no-live-probe',
+    operatorEgressStable: true,
+    managementApiRollbackVerified: true,
+    priorPoolerConnectionSucceeded: true,
+    excludedOperatorConfigApplied: true,
+    excludedIpv4AllowlistCount: 1,
+    excludedIpv4AllowlistMatchesReviewedRule: true,
+    excludedIpv6AllowlistCount: 0,
+    excludedOperatorPoolerConnectionDenied: true,
+    denialCause: 'network-restriction',
+    credentialAndTlsInputsUnchanged: true,
+    restoredOperatorPoolerConnectionSucceeded: true,
+    freshReadOnlyTransactionConfirmed: true,
+    excludedConfigSha256: '1'.repeat(64),
+    finalConfigSha256: '2'.repeat(64),
+    priorPoolerConnectionAtUtc: '2026-09-23T14:00:00.000Z',
+    excludedConfigObservedAtUtc: '2026-09-23T14:00:01.000Z',
+    denialProbeAtUtc: '2026-09-23T14:00:02.000Z',
+    finalConfigObservedAtUtc: '2026-09-23T14:00:03.000Z',
+    admissionProbeAtUtc: '2026-09-23T14:00:04.000Z',
+  }) as unknown as typeof value.network;
+  value.drain.capturedAtUtc = '2026-09-23T14:00:06.000Z';
+  return value;
+}
+
 describe('Story 22.15 production maintenance isolation gate', () => {
+  it.each(['invalid-jwt', 'missing-relation', 'missing-function', 'outage', 'unclassified-timeout', null, undefined])('rejects a Data API denial unrelated to disablement: %s', (denialCause) => {
+    for (const value of [receipts(), sameComputerReceipts()]) {
+      (value.dataApiProbe as Record<string, unknown>).denialCause = denialCause;
+      expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+    }
+    const value = sameComputerReceipts();
+    value.dataApi = bound('production-data-api-disable-management-observation', {
+      managementApiControlObserved: true, dbSchema: '', otherPostgrestSettingsPreserved: true, dataApiDisabled: true,
+    }) as unknown as typeof value.dataApi;
+    (value.dataApiProbe as Record<string, unknown>).denialCause = denialCause;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('accepts the exact Management API equivalent of Data API off only with an independent denial probe', () => {
+    const value = sameComputerReceipts();
+    const management = bound('production-data-api-disable-management-observation', {
+      managementApiControlObserved: true,
+      dbSchema: '',
+      otherPostgrestSettingsPreserved: true,
+      dataApiDisabled: true,
+    });
+    value.dataApi = management as unknown as typeof value.dataApi;
+    expect(assess(value).disposition).toBe('isolation_proved_not_execution_authority');
+    value.dataApiProbe.requestDenied = false;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+    value.dataApiProbe.requestDenied = true;
+    for (const [key, invalid] of [
+      ['managementApiControlObserved', false],
+      ['dbSchema', 'public'],
+      ['dbSchema', ' '],
+      ['dbSchema', null],
+      ['otherPostgrestSettingsPreserved', false],
+      ['dataApiDisabled', false],
+    ] as const) {
+      value.dataApi = { ...management, [key]: invalid } as unknown as typeof value.dataApi;
+      expect(assess(value).disposition, key).toBe('blocked_insufficient_isolation_proof');
+    }
+    for (const key of Object.keys(management)) {
+      value.dataApi = { ...management } as unknown as typeof value.dataApi;
+      delete (value.dataApi as unknown as Record<string, unknown>)[key];
+      expect(assess(value).disposition, key).toBe('blocked_insufficient_isolation_proof');
+    }
+    value.dataApi = { ...management, dashboardControlObserved: true } as unknown as typeof value.dataApi;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('accepts an exact same-computer exclusion/admission control without claiming a live IPv6 probe', () => {
+    expect(assess(sameComputerReceipts())).toMatchObject({
+      disposition: 'isolation_proved_not_execution_authority',
+    });
+  });
+
+  it.each([
+    ['operatorIpv4AllowlistCount', 2],
+    ['operatorIpv4AllowlistMatches', false],
+    ['ipv6AllowlistCount', 1],
+    ['operatorIpv6EgressUnavailable', false],
+    ['ipv6Verification', 'live-probe'],
+    ['operatorEgressStable', false],
+    ['managementApiRollbackVerified', false],
+    ['priorPoolerConnectionSucceeded', false],
+    ['excludedOperatorConfigApplied', false],
+    ['excludedIpv4AllowlistCount', 0],
+    ['excludedIpv4AllowlistCount', 2],
+    ['excludedIpv4AllowlistMatchesReviewedRule', false],
+    ['excludedIpv6AllowlistCount', 1],
+    ['excludedOperatorPoolerConnectionDenied', false],
+    ['denialCause', 'authentication-failure'],
+    ['denialCause', 'unclassified-timeout'],
+    ['credentialAndTlsInputsUnchanged', false],
+    ['restoredOperatorPoolerConnectionSucceeded', false],
+    ['freshReadOnlyTransactionConfirmed', false],
+    ['restrictionStatus', 'stored'],
+    ['verificationMethod', 'owner-attestation'],
+    ['excludedConfigSha256', 'invalid'],
+    ['excludedConfigSha256', ['1'.repeat(64)]],
+    ['finalConfigSha256', ['2'.repeat(64)]],
+    ['finalConfigSha256', '1'.repeat(64)],
+    ['denialProbeAtUtc', '2026-09-23T14:00:01.000Z'],
+    ['finalConfigObservedAtUtc', '2026-09-23T14:00:01.000Z'],
+    ['admissionProbeAtUtc', '2026-09-23T14:00:06.000Z'],
+    ['priorPoolerConnectionAtUtc', 'invalid'],
+    ['priorPoolerConnectionAtUtc', '2026-09-23T14:00:01.000Z'],
+    ['priorPoolerConnectionAtUtc', '2026-09-23T13:54:59.000Z'],
+    ['excludedConfigObservedAtUtc', 'invalid'],
+    ['excludedConfigObservedAtUtc', '2026-09-23T13:54:59.000Z'],
+  ])('rejects incomplete or misordered same-computer evidence: %s', (key, invalidValue) => {
+    const value = sameComputerReceipts();
+    (value.network as unknown as Record<string, unknown>)[key] = invalidValue;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('rejects every missing same-computer field and rejects extra external-probe claims', () => {
+    for (const key of Object.keys(sameComputerReceipts().network)) {
+      const value = sameComputerReceipts();
+      delete (value.network as unknown as Record<string, unknown>)[key];
+      expect(assess(value).disposition, key).toBe('blocked_insufficient_isolation_proof');
+    }
+    const value = sameComputerReceipts();
+    Object.assign(value.network, { nonRunnerIpv6ProbeDenied: true });
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('rejects a same-computer getter without executing it', () => {
+    const value = sameComputerReceipts();
+    Object.defineProperty(value.network, 'verificationMethod', {
+      enumerable: true,
+      get() { throw new Error('getter must not execute'); },
+    });
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+    const hashValue = sameComputerReceipts();
+    Object.assign(hashValue.network, {
+      excludedConfigSha256: { toString() { throw new Error('coercion must not execute'); } },
+    });
+    expect(assess(hashValue).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
   it('accepts only complete independently observed controls and remains non-authorizing', () => {
     expect(assess()).toEqual({
       schemaVersion: 1,

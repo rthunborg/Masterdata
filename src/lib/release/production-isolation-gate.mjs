@@ -186,6 +186,19 @@ function inspectRealtimeProbe(value) {
 }
 
 function inspectDataApi(value) {
+  const managementReceipt = inspectBoundReceipt(value, 'production-data-api-disable-management-observation', [
+    'managementApiControlObserved',
+    'dbSchema',
+    'otherPostgrestSettingsPreserved',
+    'dataApiDisabled',
+  ]);
+  if (
+    managementReceipt &&
+    managementReceipt.managementApiControlObserved === true &&
+    managementReceipt.dbSchema === '' &&
+    managementReceipt.otherPostgrestSettingsPreserved === true &&
+    managementReceipt.dataApiDisabled === true
+  ) return managementReceipt;
   const receipt = inspectBoundReceipt(value, 'production-data-api-disable-observation', [
     'dashboardControlObserved',
     'dataApiDisabled',
@@ -201,19 +214,92 @@ function inspectDataApiProbe(value) {
   const receipt = inspectBoundReceipt(value, 'production-data-api-denial-probe', [
     'independentFromControlObservation',
     'authenticatedWritePathAttempted',
+    'denialCause',
     'requestDenied',
     'writeCommitted',
   ]);
   return receipt &&
     receipt.independentFromControlObservation === true &&
     receipt.authenticatedWritePathAttempted === true &&
+    receipt.denialCause === 'data-api-disabled' &&
     receipt.requestDenied === true &&
     receipt.writeCommitted === false
     ? receipt
     : null;
 }
 
+function inspectSameComputerNetwork(value) {
+  const receipt = inspectBoundReceipt(value, 'production-network-exclusion-control-observation', [
+    'verificationMethod',
+    'restrictionStatus',
+    'operatorIpv4AllowlistCount',
+    'operatorIpv4AllowlistMatches',
+    'ipv6AllowlistCount',
+    'operatorIpv6EgressUnavailable',
+    'ipv6Verification',
+    'operatorEgressStable',
+    'managementApiRollbackVerified',
+    'priorPoolerConnectionSucceeded',
+    'excludedOperatorConfigApplied',
+    'excludedIpv4AllowlistCount',
+    'excludedIpv4AllowlistMatchesReviewedRule',
+    'excludedIpv6AllowlistCount',
+    'excludedOperatorPoolerConnectionDenied',
+    'denialCause',
+    'credentialAndTlsInputsUnchanged',
+    'restoredOperatorPoolerConnectionSucceeded',
+    'freshReadOnlyTransactionConfirmed',
+    'excludedConfigSha256',
+    'finalConfigSha256',
+    'priorPoolerConnectionAtUtc',
+    'excludedConfigObservedAtUtc',
+    'denialProbeAtUtc',
+    'finalConfigObservedAtUtc',
+    'admissionProbeAtUtc',
+  ]);
+  if (!receipt) return null;
+  const evidenceTimes = [
+    receipt.priorPoolerConnectionAtUtc,
+    receipt.excludedConfigObservedAtUtc,
+    receipt.denialProbeAtUtc,
+    receipt.finalConfigObservedAtUtc,
+    receipt.admissionProbeAtUtc,
+  ].map(canonicalUtc);
+  if (
+    receipt.verificationMethod !== 'same-computer-exclusion-control' ||
+    receipt.restrictionStatus !== 'applied' ||
+    receipt.operatorIpv4AllowlistCount !== 1 ||
+    receipt.operatorIpv4AllowlistMatches !== true ||
+    receipt.ipv6AllowlistCount !== 0 ||
+    receipt.operatorIpv6EgressUnavailable !== true ||
+    receipt.ipv6Verification !== 'applied-policy-only-no-live-probe' ||
+    receipt.operatorEgressStable !== true ||
+    receipt.managementApiRollbackVerified !== true ||
+    receipt.priorPoolerConnectionSucceeded !== true ||
+    receipt.excludedOperatorConfigApplied !== true ||
+    receipt.excludedIpv4AllowlistCount !== 1 ||
+    receipt.excludedIpv4AllowlistMatchesReviewedRule !== true ||
+    receipt.excludedIpv6AllowlistCount !== 0 ||
+    receipt.excludedOperatorPoolerConnectionDenied !== true ||
+    receipt.denialCause !== 'network-restriction' ||
+    receipt.credentialAndTlsInputsUnchanged !== true ||
+    receipt.restoredOperatorPoolerConnectionSucceeded !== true ||
+    receipt.freshReadOnlyTransactionConfirmed !== true ||
+    typeof receipt.excludedConfigSha256 !== 'string' ||
+    typeof receipt.finalConfigSha256 !== 'string' ||
+    !SHA256.test(receipt.excludedConfigSha256) ||
+    !SHA256.test(receipt.finalConfigSha256) ||
+    receipt.excludedConfigSha256 === receipt.finalConfigSha256 ||
+    evidenceTimes.some((time) => time === null) ||
+    evidenceTimes.some((time, index) => index > 0 && time <= evidenceTimes[index - 1]) ||
+    evidenceTimes[4] > receipt.capturedAt
+  ) return null;
+  return Object.freeze({ ...receipt, evidenceTimes });
+}
+
 function inspectNetwork(value) {
+  const sameComputer = inspectSameComputerNetwork(value);
+  if (sameComputer) return sameComputer;
   const fields = [
     'restrictionStatus',
     'runnerIpv4Only',
@@ -387,8 +473,10 @@ export function assessProductionMaintenanceIsolation(
     return blocked('isolation_receipt_context_mismatch');
   }
   const observedAt = facts.map((fact) => fact.capturedAt);
+  const networkEvidenceTimes = networkFacts.evidenceTimes ?? [];
   if (
     observedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
+    networkEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     observedAt.slice(0, -1).some((time) => time > drainFacts.capturedAt) ||
     realtimeFacts.capturedAt <= platformFacts.capturedAt ||
     dataApiProbeFacts.capturedAt <= dataApiFacts.capturedAt ||

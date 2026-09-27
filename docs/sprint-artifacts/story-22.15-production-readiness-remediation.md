@@ -7,7 +7,11 @@
 
 in-progress
 
-## IPv4-only isolation proof preparation — 2026-09-24
+## Same-computer isolation preparation — 2026-09-27
+
+The owner confirms stable current-network use and no additional machine. The proposed exact network receipt uses a same-computer exclusion/admission negative control with independent HTTPS Management API restoration, complete applied final operator-only IPv4 rule readback, and zero IPv6 allowances. IPv6 is explicitly configuration evidence without a live denial probe. Prior external-probe shapes and all other isolation requirements remain strict. Final tested implementation `cbed7d9` passes isolation-focused 64/64 and full Vitest 4,044 passed / 47 unchanged classified skips, zero failures. Exact full Playwright passed 163 / 47 identical historical skips on the byte-identical application code. TypeScript and zero-error lint pass; final documentation-head checks and review remain pending. This is preparation only; no hosted setting or database write changed. Story remains in-progress, Epic 23 on hold and production paused/no-go. [Procedure and evidence limits](../commercial-readiness/evidence/production-same-computer-isolation-2026-09-27.md).
+
+## Historical IPv4-only isolation proof preparation — 2026-09-24
 
 The owner confirmed that the restore-tested backup is newer than the last production write and separately approved temporary isolation work. The current operator computer had two matching IPv4 egress observations but no usable IPv6 route; the candidate IPv4 address was saved in encrypted local inputs. The isolation assessor now accepts an exact IPv4-only variant only when IPv6 ingress is denied for everyone and independent non-operator denial probes for both IP families succeed. It retains the prior dual-stack profile and the full pause, API, Realtime, database, and session-drain requirements. This code change does not produce a live isolation receipt or authorize cleanup, history repair, deployment, or reopening. Production remains paused/no-go; Story 22.15 stays in-progress and Epic 23 on hold.
 
