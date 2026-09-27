@@ -239,6 +239,9 @@ function inspectSameComputerNetwork(value) {
     'managementApiRollbackVerified',
     'priorPoolerConnectionSucceeded',
     'excludedOperatorConfigApplied',
+    'excludedIpv4AllowlistCount',
+    'excludedIpv4AllowlistMatchesReviewedRule',
+    'excludedIpv6AllowlistCount',
     'excludedOperatorPoolerConnectionDenied',
     'denialCause',
     'credentialAndTlsInputsUnchanged',
@@ -272,6 +275,9 @@ function inspectSameComputerNetwork(value) {
     receipt.managementApiRollbackVerified !== true ||
     receipt.priorPoolerConnectionSucceeded !== true ||
     receipt.excludedOperatorConfigApplied !== true ||
+    receipt.excludedIpv4AllowlistCount !== 1 ||
+    receipt.excludedIpv4AllowlistMatchesReviewedRule !== true ||
+    receipt.excludedIpv6AllowlistCount !== 0 ||
     receipt.excludedOperatorPoolerConnectionDenied !== true ||
     receipt.denialCause !== 'network-restriction' ||
     receipt.credentialAndTlsInputsUnchanged !== true ||
