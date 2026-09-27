@@ -132,6 +132,39 @@ function sameComputerReceipts() {
 }
 
 describe('Story 22.15 production maintenance isolation gate', () => {
+  it('accepts the exact Management API equivalent of Data API off only with an independent denial probe', () => {
+    const value = sameComputerReceipts();
+    const management = bound('production-data-api-disable-management-observation', {
+      managementApiControlObserved: true,
+      dbSchema: '',
+      otherPostgrestSettingsPreserved: true,
+      dataApiDisabled: true,
+    });
+    value.dataApi = management as unknown as typeof value.dataApi;
+    expect(assess(value).disposition).toBe('isolation_proved_not_execution_authority');
+    value.dataApiProbe.requestDenied = false;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+    value.dataApiProbe.requestDenied = true;
+    for (const [key, invalid] of [
+      ['managementApiControlObserved', false],
+      ['dbSchema', 'public'],
+      ['dbSchema', ' '],
+      ['dbSchema', null],
+      ['otherPostgrestSettingsPreserved', false],
+      ['dataApiDisabled', false],
+    ] as const) {
+      value.dataApi = { ...management, [key]: invalid } as unknown as typeof value.dataApi;
+      expect(assess(value).disposition, key).toBe('blocked_insufficient_isolation_proof');
+    }
+    for (const key of Object.keys(management)) {
+      value.dataApi = { ...management } as unknown as typeof value.dataApi;
+      delete (value.dataApi as unknown as Record<string, unknown>)[key];
+      expect(assess(value).disposition, key).toBe('blocked_insufficient_isolation_proof');
+    }
+    value.dataApi = { ...management, dashboardControlObserved: true } as unknown as typeof value.dataApi;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
   it('accepts an exact same-computer exclusion/admission control without claiming a live IPv6 probe', () => {
     expect(assess(sameComputerReceipts())).toMatchObject({
       disposition: 'isolation_proved_not_execution_authority',

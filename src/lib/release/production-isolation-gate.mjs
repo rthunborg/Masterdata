@@ -186,6 +186,19 @@ function inspectRealtimeProbe(value) {
 }
 
 function inspectDataApi(value) {
+  const managementReceipt = inspectBoundReceipt(value, 'production-data-api-disable-management-observation', [
+    'managementApiControlObserved',
+    'dbSchema',
+    'otherPostgrestSettingsPreserved',
+    'dataApiDisabled',
+  ]);
+  if (
+    managementReceipt &&
+    managementReceipt.managementApiControlObserved === true &&
+    managementReceipt.dbSchema === '' &&
+    managementReceipt.otherPostgrestSettingsPreserved === true &&
+    managementReceipt.dataApiDisabled === true
+  ) return managementReceipt;
   const receipt = inspectBoundReceipt(value, 'production-data-api-disable-observation', [
     'dashboardControlObserved',
     'dataApiDisabled',
