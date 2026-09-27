@@ -262,6 +262,8 @@ function inspectSameComputerNetwork(value) {
     receipt.credentialAndTlsInputsUnchanged !== true ||
     receipt.restoredOperatorPoolerConnectionSucceeded !== true ||
     receipt.freshReadOnlyTransactionConfirmed !== true ||
+    typeof receipt.excludedConfigSha256 !== 'string' ||
+    typeof receipt.finalConfigSha256 !== 'string' ||
     !SHA256.test(receipt.excludedConfigSha256) ||
     !SHA256.test(receipt.finalConfigSha256) ||
     receipt.excludedConfigSha256 === receipt.finalConfigSha256 ||

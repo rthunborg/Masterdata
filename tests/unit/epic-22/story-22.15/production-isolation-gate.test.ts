@@ -157,6 +157,8 @@ describe('Story 22.15 production maintenance isolation gate', () => {
     ['restrictionStatus', 'stored'],
     ['verificationMethod', 'owner-attestation'],
     ['excludedConfigSha256', 'invalid'],
+    ['excludedConfigSha256', ['1'.repeat(64)]],
+    ['finalConfigSha256', ['2'.repeat(64)]],
     ['finalConfigSha256', '1'.repeat(64)],
     ['denialProbeAtUtc', '2026-09-23T14:00:01.000Z'],
     ['finalConfigObservedAtUtc', '2026-09-23T14:00:01.000Z'],
@@ -187,6 +189,11 @@ describe('Story 22.15 production maintenance isolation gate', () => {
       get() { throw new Error('getter must not execute'); },
     });
     expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+    const hashValue = sameComputerReceipts();
+    Object.assign(hashValue.network, {
+      excludedConfigSha256: { toString() { throw new Error('coercion must not execute'); } },
+    });
+    expect(assess(hashValue).disposition).toBe('blocked_insufficient_isolation_proof');
   });
 
   it('accepts only complete independently observed controls and remains non-authorizing', () => {
