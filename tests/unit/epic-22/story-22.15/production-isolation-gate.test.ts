@@ -63,6 +63,7 @@ function receipts() {
       capturedAtUtc: '2026-09-23T14:00:01.000Z',
       independentFromControlObservation: true,
       authenticatedWritePathAttempted: true,
+      denialCause: 'data-api-disabled',
       requestDenied: true,
       writeCommitted: false,
     }),
@@ -136,6 +137,19 @@ function sameComputerReceipts() {
 }
 
 describe('Story 22.15 production maintenance isolation gate', () => {
+  it.each(['invalid-jwt', 'missing-relation', 'missing-function', 'outage', 'unclassified-timeout', null, undefined])('rejects a Data API denial unrelated to disablement: %s', (denialCause) => {
+    for (const value of [receipts(), sameComputerReceipts()]) {
+      (value.dataApiProbe as Record<string, unknown>).denialCause = denialCause;
+      expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+    }
+    const value = sameComputerReceipts();
+    value.dataApi = bound('production-data-api-disable-management-observation', {
+      managementApiControlObserved: true, dbSchema: '', otherPostgrestSettingsPreserved: true, dataApiDisabled: true,
+    }) as unknown as typeof value.dataApi;
+    (value.dataApiProbe as Record<string, unknown>).denialCause = denialCause;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
   it('accepts the exact Management API equivalent of Data API off only with an independent denial probe', () => {
     const value = sameComputerReceipts();
     const management = bound('production-data-api-disable-management-observation', {

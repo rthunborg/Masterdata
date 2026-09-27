@@ -214,12 +214,14 @@ function inspectDataApiProbe(value) {
   const receipt = inspectBoundReceipt(value, 'production-data-api-denial-probe', [
     'independentFromControlObservation',
     'authenticatedWritePathAttempted',
+    'denialCause',
     'requestDenied',
     'writeCommitted',
   ]);
   return receipt &&
     receipt.independentFromControlObservation === true &&
     receipt.authenticatedWritePathAttempted === true &&
+    receipt.denialCause === 'data-api-disabled' &&
     receipt.requestDenied === true &&
     receipt.writeCommitted === false
     ? receipt
