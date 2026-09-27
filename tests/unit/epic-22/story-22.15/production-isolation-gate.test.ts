@@ -122,6 +122,7 @@ function sameComputerReceipts() {
     freshReadOnlyTransactionConfirmed: true,
     excludedConfigSha256: '1'.repeat(64),
     finalConfigSha256: '2'.repeat(64),
+    priorPoolerConnectionAtUtc: '2026-09-23T14:00:00.000Z',
     excludedConfigObservedAtUtc: '2026-09-23T14:00:01.000Z',
     denialProbeAtUtc: '2026-09-23T14:00:02.000Z',
     finalConfigObservedAtUtc: '2026-09-23T14:00:03.000Z',
@@ -196,6 +197,9 @@ describe('Story 22.15 production maintenance isolation gate', () => {
     ['denialProbeAtUtc', '2026-09-23T14:00:01.000Z'],
     ['finalConfigObservedAtUtc', '2026-09-23T14:00:01.000Z'],
     ['admissionProbeAtUtc', '2026-09-23T14:00:06.000Z'],
+    ['priorPoolerConnectionAtUtc', 'invalid'],
+    ['priorPoolerConnectionAtUtc', '2026-09-23T14:00:01.000Z'],
+    ['priorPoolerConnectionAtUtc', '2026-09-23T13:54:59.000Z'],
     ['excludedConfigObservedAtUtc', 'invalid'],
     ['excludedConfigObservedAtUtc', '2026-09-23T13:54:59.000Z'],
   ])('rejects incomplete or misordered same-computer evidence: %s', (key, invalidValue) => {

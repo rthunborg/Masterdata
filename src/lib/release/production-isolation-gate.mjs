@@ -246,6 +246,7 @@ function inspectSameComputerNetwork(value) {
     'freshReadOnlyTransactionConfirmed',
     'excludedConfigSha256',
     'finalConfigSha256',
+    'priorPoolerConnectionAtUtc',
     'excludedConfigObservedAtUtc',
     'denialProbeAtUtc',
     'finalConfigObservedAtUtc',
@@ -253,6 +254,7 @@ function inspectSameComputerNetwork(value) {
   ]);
   if (!receipt) return null;
   const evidenceTimes = [
+    receipt.priorPoolerConnectionAtUtc,
     receipt.excludedConfigObservedAtUtc,
     receipt.denialProbeAtUtc,
     receipt.finalConfigObservedAtUtc,
@@ -282,7 +284,7 @@ function inspectSameComputerNetwork(value) {
     receipt.excludedConfigSha256 === receipt.finalConfigSha256 ||
     evidenceTimes.some((time) => time === null) ||
     evidenceTimes.some((time, index) => index > 0 && time <= evidenceTimes[index - 1]) ||
-    evidenceTimes[3] > receipt.capturedAt
+    evidenceTimes[4] > receipt.capturedAt
   ) return null;
   return Object.freeze({ ...receipt, evidenceTimes });
 }
