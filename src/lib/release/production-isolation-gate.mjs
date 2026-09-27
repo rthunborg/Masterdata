@@ -213,7 +213,68 @@ function inspectDataApiProbe(value) {
     : null;
 }
 
+function inspectSameComputerNetwork(value) {
+  const receipt = inspectBoundReceipt(value, 'production-network-exclusion-control-observation', [
+    'verificationMethod',
+    'restrictionStatus',
+    'operatorIpv4AllowlistCount',
+    'operatorIpv4AllowlistMatches',
+    'ipv6AllowlistCount',
+    'operatorIpv6EgressUnavailable',
+    'ipv6Verification',
+    'operatorEgressStable',
+    'managementApiRollbackVerified',
+    'priorPoolerConnectionSucceeded',
+    'excludedOperatorConfigApplied',
+    'excludedOperatorPoolerConnectionDenied',
+    'denialCause',
+    'credentialAndTlsInputsUnchanged',
+    'restoredOperatorPoolerConnectionSucceeded',
+    'freshReadOnlyTransactionConfirmed',
+    'excludedConfigSha256',
+    'finalConfigSha256',
+    'excludedConfigObservedAtUtc',
+    'denialProbeAtUtc',
+    'finalConfigObservedAtUtc',
+    'admissionProbeAtUtc',
+  ]);
+  if (!receipt) return null;
+  const evidenceTimes = [
+    receipt.excludedConfigObservedAtUtc,
+    receipt.denialProbeAtUtc,
+    receipt.finalConfigObservedAtUtc,
+    receipt.admissionProbeAtUtc,
+  ].map(canonicalUtc);
+  if (
+    receipt.verificationMethod !== 'same-computer-exclusion-control' ||
+    receipt.restrictionStatus !== 'applied' ||
+    receipt.operatorIpv4AllowlistCount !== 1 ||
+    receipt.operatorIpv4AllowlistMatches !== true ||
+    receipt.ipv6AllowlistCount !== 0 ||
+    receipt.operatorIpv6EgressUnavailable !== true ||
+    receipt.ipv6Verification !== 'applied-policy-only-no-live-probe' ||
+    receipt.operatorEgressStable !== true ||
+    receipt.managementApiRollbackVerified !== true ||
+    receipt.priorPoolerConnectionSucceeded !== true ||
+    receipt.excludedOperatorConfigApplied !== true ||
+    receipt.excludedOperatorPoolerConnectionDenied !== true ||
+    receipt.denialCause !== 'network-restriction' ||
+    receipt.credentialAndTlsInputsUnchanged !== true ||
+    receipt.restoredOperatorPoolerConnectionSucceeded !== true ||
+    receipt.freshReadOnlyTransactionConfirmed !== true ||
+    !SHA256.test(receipt.excludedConfigSha256) ||
+    !SHA256.test(receipt.finalConfigSha256) ||
+    receipt.excludedConfigSha256 === receipt.finalConfigSha256 ||
+    evidenceTimes.some((time) => time === null) ||
+    evidenceTimes.some((time, index) => index > 0 && time <= evidenceTimes[index - 1]) ||
+    evidenceTimes[3] > receipt.capturedAt
+  ) return null;
+  return Object.freeze({ ...receipt, evidenceTimes });
+}
+
 function inspectNetwork(value) {
+  const sameComputer = inspectSameComputerNetwork(value);
+  if (sameComputer) return sameComputer;
   const fields = [
     'restrictionStatus',
     'runnerIpv4Only',
@@ -387,8 +448,10 @@ export function assessProductionMaintenanceIsolation(
     return blocked('isolation_receipt_context_mismatch');
   }
   const observedAt = facts.map((fact) => fact.capturedAt);
+  const networkEvidenceTimes = networkFacts.evidenceTimes ?? [];
   if (
     observedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
+    networkEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     observedAt.slice(0, -1).some((time) => time > drainFacts.capturedAt) ||
     realtimeFacts.capturedAt <= platformFacts.capturedAt ||
     dataApiProbeFacts.capturedAt <= dataApiFacts.capturedAt ||
