@@ -85,6 +85,17 @@ function receipts() {
       dashboardControlObserved: true,
       dataApiDisabled: true,
     }),
+    dataApiProbePrerequisite: bound('production-data-api-write-probe-prerequisite', {
+      capturedAtUtc: '2026-09-23T13:59:59.000Z',
+      schema: 'public',
+      relation: 'employees',
+      credentialRole: 'service_role',
+      credentialPreflightPassed: true,
+      authenticatedReadAdmissionPassed: true,
+      relationExists: true,
+      statementTriggerInventoryComplete: true,
+      enabledStatementTriggerCount: 0,
+    }),
     dataApiProbe: bound('production-data-api-denial-probe', {
       capturedAtUtc: '2026-09-23T14:00:01.000Z',
       independentFromControlObservation: true,
@@ -92,6 +103,13 @@ function receipts() {
       denialCause: 'data-api-disabled',
       requestDenied: true,
       writeCommitted: false,
+      requestMethod: 'POST',
+      relation: 'employees',
+      contentProfile: 'public',
+      requestContentType: 'application/json',
+      requestBody: '[]',
+      httpStatus: 406,
+      providerErrorCode: 'PGRST106',
     }),
     network: bound('production-network-isolation-observation', {
       restrictionStatus: 'applied',
@@ -228,6 +246,19 @@ describe('Story 22.15 production maintenance isolation gate', () => {
     expect(assess(evidence).disposition).toBe('isolation_proved_not_execution_authority');
   });
 
+  it('rejects a control-change start equal to the platform readback', () => {
+    const evidence = receipts();
+    evidence.realtimeProbe.controlChangeStartedAtUtc = evidence.platform.capturedAtUtc;
+    expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('rejects a zero-client report window starting exactly at the service disconnect', () => {
+    const evidence = receipts();
+    evidence.realtimeProbe.connectedClientsReportWindowStartedAtUtc =
+      evidence.realtimeProbe.existingConnectionDisconnectedAtUtc;
+    expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
   it('preserves an already-disabled service without inventing an existing-client disconnect', () => {
     const evidence = receipts();
     evidence.realtimePriorState.serviceEnabled = false;
@@ -335,6 +366,69 @@ describe('Story 22.15 production maintenance isolation gate', () => {
     }) as unknown as typeof value.dataApi;
     (value.dataApiProbe as Record<string, unknown>).denialCause = denialCause;
     expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it.each([
+    ['requestMethod', 'GET'],
+    ['requestMethod', 'PATCH'],
+    ['relation', 'missing_relation'],
+    ['contentProfile', 'private'],
+    ['requestContentType', 'text/plain'],
+    ['requestBody', '{}'],
+    ['requestBody', '[{}]'],
+    ['requestBody', []],
+    ['httpStatus', 401],
+    ['httpStatus', 503],
+    ['providerErrorCode', 'PGRST116'],
+    ['providerErrorCode', 'PGRST301'],
+    ['providerErrorCode', 'PGRST205'],
+  ])('rejects a different Data API request or denial: %s', (key, invalid) => {
+    for (const evidence of [receipts(), sameComputerReceipts()]) {
+      (evidence.dataApiProbe as Record<string, unknown>)[key] = invalid;
+      expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+    }
+  });
+
+  it.each([
+    ['schema', 'private'],
+    ['relation', 'missing_relation'],
+    ['credentialRole', 'anon'],
+    ['credentialPreflightPassed', false],
+    ['authenticatedReadAdmissionPassed', false],
+    ['relationExists', false],
+    ['statementTriggerInventoryComplete', false],
+    ['enabledStatementTriggerCount', 1],
+    ['enabledStatementTriggerCount', '0'],
+    ['capturedAtUtc', capturedAtUtc],
+    ['capturedAtUtc', '2026-09-23T14:00:01.000Z'],
+    ['capturedAtUtc', '2026-09-23T13:54:59.000Z'],
+    ['sourceSha', '9'.repeat(40)],
+    ['targetBindingSha256', '9'.repeat(64)],
+    ['isolationPlanSha256', '9'.repeat(64)],
+  ])('rejects missing or incomplete independent Data API prerequisites: %s', (key, invalid) => {
+    const evidence = receipts();
+    (evidence.dataApiProbePrerequisite as Record<string, unknown>)[key] = invalid;
+    expect(assess(evidence).disposition).not.toBe('isolation_proved_not_execution_authority');
+  });
+
+  it('requires closed Data API prerequisite and probe receipts without evaluating getters', () => {
+    for (const receiptName of ['dataApiProbePrerequisite', 'dataApiProbe'] as const) {
+      for (const key of Object.keys(receipts()[receiptName])) {
+        const evidence = receipts();
+        delete (evidence[receiptName] as Record<string, unknown>)[key];
+        expect(assess(evidence).disposition, `${receiptName}.${key}`).not.toBe('isolation_proved_not_execution_authority');
+      }
+      for (const key of Object.keys(receipts()[receiptName])) {
+        const evidence = receipts();
+        Object.defineProperty(evidence[receiptName], key, {
+          enumerable: true, get() { throw new Error('getter must not execute'); },
+        });
+        expect(assess(evidence).disposition, `${receiptName}.${key}`).not.toBe('isolation_proved_not_execution_authority');
+      }
+      const evidence = receipts();
+      Object.assign(evidence[receiptName], { approved: true });
+      expect(assess(evidence).disposition).not.toBe('isolation_proved_not_execution_authority');
+    }
   });
 
   it('accepts the exact Management API equivalent of Data API off only with an independent denial probe', () => {

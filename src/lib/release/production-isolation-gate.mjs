@@ -272,9 +272,9 @@ function inspectRealtimeProbe(value, context, platform, priorState) {
     priorState.capturedAt >= observedConnectionTimes[0] ||
     observedConnectionTimes[0] >= observedConnectionTimes[1] ||
     observedConnectionTimes[1] >= observedConnectionTimes[2] ||
-    observedConnectionTimes[2] > platform.capturedAt ||
+    observedConnectionTimes[2] >= platform.capturedAt ||
     observedConnectionTimes[3] <= observedConnectionTimes[2] ||
-    observedConnectionTimes[3] > reportTimes[0] ||
+    observedConnectionTimes[3] >= reportTimes[0] ||
     reconnectTimes[0] <= observedConnectionTimes[3]
   ) return null;
   // The server can close the probe before the configuration GET finishes.
@@ -309,6 +309,30 @@ function inspectDataApi(value) {
     : null;
 }
 
+function inspectDataApiProbePrerequisite(value) {
+  const receipt = inspectBoundReceipt(value, 'production-data-api-write-probe-prerequisite', [
+    'schema',
+    'relation',
+    'credentialRole',
+    'credentialPreflightPassed',
+    'authenticatedReadAdmissionPassed',
+    'relationExists',
+    'statementTriggerInventoryComplete',
+    'enabledStatementTriggerCount',
+  ]);
+  return receipt &&
+    receipt.schema === 'public' &&
+    receipt.relation === 'employees' &&
+    receipt.credentialRole === 'service_role' &&
+    receipt.credentialPreflightPassed === true &&
+    receipt.authenticatedReadAdmissionPassed === true &&
+    receipt.relationExists === true &&
+    receipt.statementTriggerInventoryComplete === true &&
+    receipt.enabledStatementTriggerCount === 0
+    ? receipt
+    : null;
+}
+
 function inspectDataApiProbe(value) {
   const receipt = inspectBoundReceipt(value, 'production-data-api-denial-probe', [
     'independentFromControlObservation',
@@ -316,13 +340,27 @@ function inspectDataApiProbe(value) {
     'denialCause',
     'requestDenied',
     'writeCommitted',
+    'requestMethod',
+    'relation',
+    'contentProfile',
+    'requestContentType',
+    'requestBody',
+    'httpStatus',
+    'providerErrorCode',
   ]);
   return receipt &&
     receipt.independentFromControlObservation === true &&
     receipt.authenticatedWritePathAttempted === true &&
     receipt.denialCause === 'data-api-disabled' &&
     receipt.requestDenied === true &&
-    receipt.writeCommitted === false
+    receipt.writeCommitted === false &&
+    receipt.requestMethod === 'POST' &&
+    receipt.relation === 'employees' &&
+    receipt.contentProfile === 'public' &&
+    receipt.requestContentType === 'application/json' &&
+    receipt.requestBody === '[]' &&
+    receipt.httpStatus === 406 &&
+    receipt.providerErrorCode === 'PGRST106'
     ? receipt
     : null;
 }
@@ -509,6 +547,7 @@ export function assessProductionMaintenanceIsolation(
       'realtimePriorState',
       'realtimeProbe',
       'dataApi',
+      'dataApiProbePrerequisite',
       'dataApiProbe',
       'network',
       'database',
@@ -527,6 +566,7 @@ export function assessProductionMaintenanceIsolation(
     realtimePriorState,
     realtimeProbe,
     dataApi,
+    dataApiProbePrerequisite,
     dataApiProbe,
     network,
     database,
@@ -553,6 +593,7 @@ export function assessProductionMaintenanceIsolation(
   const realtimePriorFacts = inspectRealtimePriorState(realtimePriorState, context);
   const realtimeFacts = inspectRealtimeProbe(realtimeProbe, context, platformFacts, realtimePriorFacts);
   const dataApiFacts = inspectDataApi(dataApi);
+  const dataApiPrerequisiteFacts = inspectDataApiProbePrerequisite(dataApiProbePrerequisite);
   const dataApiProbeFacts = inspectDataApiProbe(dataApiProbe);
   const networkFacts = inspectNetwork(network);
   const databaseFacts = inspectDatabase(database, context ?? {});
@@ -564,6 +605,7 @@ export function assessProductionMaintenanceIsolation(
     realtimePriorFacts,
     realtimeFacts,
     dataApiFacts,
+    dataApiPrerequisiteFacts,
     dataApiProbeFacts,
     networkFacts,
     databaseFacts,
@@ -584,6 +626,7 @@ export function assessProductionMaintenanceIsolation(
     realtimeEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     observedAt.slice(0, -1).some((time) => time > drainFacts.capturedAt) ||
     realtimeFacts.capturedAt <= platformFacts.capturedAt ||
+    dataApiPrerequisiteFacts.capturedAt >= dataApiFacts.capturedAt ||
     dataApiProbeFacts.capturedAt <= dataApiFacts.capturedAt ||
     drainFacts.capturedAt < databaseFacts.capturedAt
   ) {
