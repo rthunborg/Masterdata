@@ -177,7 +177,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'Complete exact-head checks/review and the authorized staging merge. Refresh backup relevance, source/tool/target/TLS proofs and full isolation before the separately approved exact filter cleanup. Post-cleanup, collect fresh exact-observed managed-principal, staffing-compatibility and full-isolation receipts; use the reviewed protected flow for the exclusive 13-version dry run/apply from absent history under standing reviewed-migration authorization after prerequisites pass. Immediately prove history 13, strict 16/16, canonical 68 and preservation. Owner adoption plus separate repair approval is required for all 55 UNPROVED ledger rows before history 68. Keep production paused; main, deployment and reopening remain separate.'
+  next_action: 'Complete exact-head checks/review and the authorized staging merge. Refresh backup relevance, source/tool/target/TLS proofs and full isolation before the separately approved exact filter cleanup. Bind canonical cleanup completion and collector-session completion to non-overlapping final database/drain collection intervals. Post-cleanup, collect fresh exact-observed managed-principal, staffing-compatibility and full-isolation receipts; use the reviewed protected flow for the exclusive 13-version dry run/apply from absent history under standing reviewed-migration authorization after prerequisites pass. Immediately prove history 13, strict 16/16, canonical 68 and preservation. Owner adoption plus separate repair approval is required for all 55 UNPROVED ledger rows before history 68. Keep production paused; main, deployment and reopening remain separate.'
   local_matrix: 'Final required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -264,3 +264,11 @@ consolidated_cutover_final_local_verification_20260928:
   local_cli_matrix_passed: 8
   remote_exact_head_checks_review_merge: pending
   evidence: docs/commercial-readiness/evidence/production-consolidated-cutover-verification-2026-09-28.md
+
+consolidated_cutover_ordering_correction_20260928:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  reviewed_prior_head: 262df2f02d754c01e75f43e1842f5705b278b81b
+  actionable_finding: final-database-and-drain-must-follow-cleanup-and-completed-collectors
+  final_verification: pending

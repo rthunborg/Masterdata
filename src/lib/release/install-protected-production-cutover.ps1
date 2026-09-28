@@ -54,6 +54,11 @@ try {
  $cleanupRecordBytes=Read-BoundedFile $CleanupRecordPath 65536
  if((Hash-Bytes $staffingBytes) -cne $ExpectedStaffingReceiptSha256 -or (Hash-Bytes $isolationBytes) -cne $ExpectedIsolationReceiptSha256){throw 'evidence'}
  if((Hash-Bytes $preForwardBytes) -cne $ExpectedPreForwardReceiptSha256 -or (Hash-Bytes $backupRecordBytes) -cne $ExpectedBackupRecordSha256 -or (Hash-Bytes $cleanupRecordBytes) -cne $ExpectedCleanupRecordSha256){throw 'review-evidence'}
+ $cleanupRecord=[Text.Encoding]::UTF8.GetString($cleanupRecordBytes)|ConvertFrom-Json
+ if($null -eq $cleanupRecord -or $null -eq $cleanupRecord.PSObject.Properties['completedAtUtc'] -or $cleanupRecord.completedAtUtc -isnot [string] -or $cleanupRecord.completedAtUtc -cnotmatch '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$'){throw 'cleanup-record'}
+ $cleanupCompletedAt=[DateTime]::MinValue
+ $utcStyles=[Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal
+ if(-not [DateTime]::TryParseExact($cleanupRecord.completedAtUtc,'yyyy-MM-ddTHH:mm:ss.fffZ',[Globalization.CultureInfo]::InvariantCulture,$utcStyles,[ref]$cleanupCompletedAt) -or $cleanupCompletedAt.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ',[Globalization.CultureInfo]::InvariantCulture) -cne $cleanupRecord.completedAtUtc){throw 'cleanup-record'}
  $manifestBytes=Read-BoundedFile (Join-Path $PackageDirectory 'toolchain-package.json') 65536
  if((Hash-Bytes $manifestBytes) -cne $ExpectedPackageSha256){throw 'package'}
  $manifest=[Text.Encoding]::UTF8.GetString($manifestBytes)|ConvertFrom-Json

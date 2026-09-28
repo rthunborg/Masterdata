@@ -29,6 +29,22 @@ const proven = () =>
     reason: 'fresh_bound_independent_controls_and_drain_proven',
   });
 
+const orderingBlocked = (reason) =>
+  Object.freeze({
+    schemaVersion: 1,
+    kind: 'production-cutover-receipt-order-assessment',
+    disposition: 'blocked_cutover_receipt_order',
+    reason,
+  });
+
+const orderingProven = () =>
+  Object.freeze({
+    schemaVersion: 1,
+    kind: 'production-cutover-receipt-order-assessment',
+    disposition: 'cutover_receipt_order_proved_not_execution_authority',
+    reason: 'cleanup_precedes_post_cleanup_collectors_database_and_drain',
+  });
+
 const plainObject = (value, keys) => {
   if (
     value === null ||
@@ -76,6 +92,66 @@ const canonicalUtc = (value) => {
     ? milliseconds
     : null;
 };
+
+/**
+ * Binds separately collected post-cleanup evidence into one strict chronology.
+ * This is evidence only and cannot authorize cleanup, repair, apply, or reopen.
+ * Cleanup is deliberately not freshness-limited: fresh post-cleanup collectors
+ * establish the current database state after that completed cleanup record.
+ */
+export function assessProductionCutoverReceiptOrdering({
+  reviewRecords,
+  preForwardObservation,
+  staffingReceipt,
+  isolationReceipts,
+  now = new Date(),
+} = {}) {
+  if (
+    !plainObject(reviewRecords, [
+      'backupRecordSha256',
+      'cleanupRecordSha256',
+      'cleanupCompletedAtUtc',
+    ]) ||
+    !plainObjectWithAllowedKeys(preForwardObservation ?? {}, [
+      ...Object.keys(preForwardObservation ?? {}),
+    ]) ||
+    !plainObjectWithAllowedKeys(staffingReceipt ?? {}, [
+      ...Object.keys(staffingReceipt ?? {}),
+    ]) ||
+    !plainObjectWithAllowedKeys(isolationReceipts ?? {}, [
+      ...Object.keys(isolationReceipts ?? {}),
+    ]) ||
+    !(now instanceof Date) ||
+    Number.isNaN(now.getTime())
+  ) return orderingBlocked('required_cutover_receipt_missing_or_invalid');
+
+  const cleanup = canonicalUtc(reviewRecords.cleanupCompletedAtUtc);
+  const profile = canonicalUtc(preForwardObservation.capturedAtUtc);
+  const staffing = canonicalUtc(staffingReceipt.capturedAtUtc);
+  const databaseStart = canonicalUtc(isolationReceipts.database?.collectionStartedAtUtc);
+  const database = canonicalUtc(isolationReceipts.database?.capturedAtUtc);
+  const drainStart = canonicalUtc(isolationReceipts.drain?.collectionStartedAtUtc);
+  const drain = canonicalUtc(isolationReceipts.drain?.capturedAtUtc);
+  const managedWriter = Object.hasOwn(isolationReceipts.database ?? {}, 'managedWriterObservation')
+    ? canonicalUtc(isolationReceipts.database.managedWriterObservation?.capturedAtUtc)
+    : undefined;
+  if (
+    [cleanup, profile, staffing, databaseStart, database, drainStart, drain].some((time) => time === null) ||
+    managedWriter === null ||
+    [profile, staffing, databaseStart, database, drainStart, drain].some((time) => time > now.getTime()) ||
+    cleanup > now.getTime()
+  ) return orderingBlocked('cutover_receipt_timestamp_missing_noncanonical_or_future');
+  const latestCollector = Math.max(profile, staffing, managedWriter ?? Number.NEGATIVE_INFINITY);
+  if (
+    cleanup >= profile ||
+    cleanup >= staffing ||
+    latestCollector >= databaseStart ||
+    databaseStart > database ||
+    database >= drainStart ||
+    drainStart > drain
+  ) return orderingBlocked('cutover_receipt_order_invalid');
+  return orderingProven();
+}
 
 const nonNegativeInteger = (value) =>
   Number.isSafeInteger(value) && value >= 0 && value <= 1_000_000_000;
@@ -585,6 +661,7 @@ function inspectNetwork(value) {
 
 function inspectDatabase(value, context) {
   const managedProfile = Object.hasOwn(value ?? {}, 'managedWriterObservation');
+  const interval = Object.hasOwn(value ?? {}, 'collectionStartedAtUtc');
   const receipt = inspectBoundReceipt(value, 'production-database-isolation-observation', [
     'databaseRoleGraphSha256',
     'trustedBackendProfileSha256',
@@ -593,12 +670,15 @@ function inspectDatabase(value, context) {
     'unknownBackendCount',
     'unmanagedWritePathCount',
     ...(managedProfile ? ['managedWriterObservation'] : []),
+    ...(interval ? ['collectionStartedAtUtc'] : []),
   ]);
   if (
     !receipt ||
     !SHA256.test(receipt.databaseRoleGraphSha256) ||
     !SHA256.test(receipt.trustedBackendProfileSha256)
   ) return null;
+  const collectionStartedAt = interval ? canonicalUtc(receipt.collectionStartedAtUtc) : undefined;
+  if (interval && (collectionStartedAt === null || collectionStartedAt > receipt.capturedAt)) return null;
   if (managedProfile) {
     const assessed=assessProductionManagedWriterProfiles(receipt.managedWriterObservation, {
       ...context, now:new Date(receipt.capturedAt),
@@ -610,7 +690,7 @@ function inspectDatabase(value, context) {
       receipt.unknownLoginRoleCount===receipt.managedWriterObservation.rawUnknownLoginRoleCount &&
       receipt.unknownBackendCount===receipt.managedWriterObservation.rawUnknownBackendCount &&
       receipt.unknownClientBackendCount===0 && receipt.unmanagedWritePathCount===0
-      ? receipt : null;
+      ? Object.freeze({ ...receipt, collectionStartedAt }) : null;
   }
   return receipt.databaseRoleGraphSha256 === context.databaseRoleGraphSha256 &&
     receipt.trustedBackendProfileSha256 === context.trustedBackendProfileSha256 &&
@@ -618,11 +698,12 @@ function inspectDatabase(value, context) {
     receipt.unknownClientBackendCount === 0 &&
     receipt.unknownBackendCount === 0 &&
     receipt.unmanagedWritePathCount === 0
-    ? receipt
+    ? Object.freeze({ ...receipt, collectionStartedAt })
     : null;
 }
 
 function inspectDrain(value) {
+  const interval = Object.hasOwn(value ?? {}, 'collectionStartedAtUtc');
   const receipt = inspectBoundReceipt(value, 'production-database-drain-observation', [
     'observedAfterControlObservations',
     'allApplicableSessionsObserved',
@@ -636,8 +717,11 @@ function inspectDrain(value) {
     'activeReplicationSlotCount',
     'subscriptionInventoryComplete',
     'enabledSubscriptionCount',
+    ...(interval ? ['collectionStartedAtUtc'] : []),
   ]);
   if (!receipt) return null;
+  const collectionStartedAt = interval ? canonicalUtc(receipt.collectionStartedAtUtc) : undefined;
+  if (interval && (collectionStartedAt === null || collectionStartedAt > receipt.capturedAt)) return null;
   const counts = [
     receipt.applicableApplicationSessionCount,
     receipt.inflightWriteCount,
@@ -661,7 +745,7 @@ function inspectDrain(value) {
     receipt.enabledSubscriptionCount === 0 &&
     receipt.postBarrierWriteAttemptCount > 0 &&
     receipt.postBarrierWriteSuccessCount === 0
-    ? receipt
+    ? Object.freeze({ ...receipt, collectionStartedAt })
     : null;
 }
 
@@ -754,10 +838,13 @@ export function assessProductionMaintenanceIsolation(
     return blocked('isolation_receipt_context_mismatch');
   }
   const observedAt = facts.map((fact) => fact.capturedAt);
+  const intervalStartedAt = [databaseFacts.collectionStartedAt, drainFacts.collectionStartedAt]
+    .filter((time) => time !== undefined);
   const networkEvidenceTimes = networkFacts.evidenceTimes ?? [];
   const realtimeEvidenceTimes = realtimeFacts.evidenceTimes;
   if (
     observedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
+    intervalStartedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     networkEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     realtimeEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     observedAt.slice(0, -1).some((time) => time > drainFacts.capturedAt) ||

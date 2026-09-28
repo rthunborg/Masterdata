@@ -15,6 +15,41 @@ const bool=v=>typeof v==='boolean';
 const countObject=(v,keys)=>exact(v,keys)&&keys.every(k=>count(v[k]));
 const boolObject=(v,keys)=>exact(v,keys)&&keys.every(k=>bool(v[k]));
 
+/** Records the instant after the bounded psql child has returned. */
+export function completedProductionManagedWriterBinding(binding, completedAt = new Date()) {
+  if (!(completedAt instanceof Date) || Number.isNaN(completedAt.getTime())) fail();
+  return {...binding,capturedAtUtc:completedAt.toISOString()};
+}
+
+/** Runs the bounded psql collection before assigning its completion binding. */
+function runBoundedProductionManagedWriterCollection({
+  executable,
+  workspace,
+  environment,
+  sql,
+  binding,
+  spawn = spawnSync,
+  now = () => new Date(),
+} = {}) {
+  if (
+    typeof executable !== 'string' ||
+    typeof workspace !== 'string' ||
+    !environment || typeof environment !== 'object' ||
+    typeof sql !== 'string' ||
+    !binding || typeof binding !== 'object' ||
+    typeof spawn !== 'function' ||
+    typeof now !== 'function'
+  ) fail();
+  const result = spawn(executable,
+    ['--no-psqlrc','--quiet','--tuples-only','--no-align','--set','ON_ERROR_STOP=1','--set','VERBOSITY=terse'],
+    {cwd:workspace,env:environment,input:sql,windowsHide:true,encoding:'utf8',timeout:45000,maxBuffer:MAX_BYTES});
+  if(result?.error||result?.signal!=null||result?.status!==0||typeof result?.stdout!=='string') fail();
+  return Object.freeze({
+    stdout: result.stdout,
+    binding: completedProductionManagedWriterBinding(binding, now()),
+  });
+}
+
 /** Three reviewed SELECTs share one repeatable-read, read-only snapshot. */
 export function buildProductionManagedWriterSql(parts) {
   if(!Array.isArray(parts)||parts.length!==3) fail();
@@ -110,11 +145,14 @@ export async function collectProductionManagedWriters({workspace,binding,environ
       PGHOST:url.hostname,PGPORT:url.port,PGUSER:decodeURIComponent(url.username),PGPASSWORD:decodeURIComponent(url.password),
       PGSSLMODE:'verify-full',PGSSLROOTCERT:certificate,
       PGOPTIONS:'-c default_transaction_read_only=on -c statement_timeout=20000 -c lock_timeout=3000 -c idle_in_transaction_session_timeout=30000'});
-    const capturedAtUtc=new Date().toISOString();let result;
-    try {result=spawnSync(executable,['--no-psqlrc','--quiet','--tuples-only','--no-align','--set','ON_ERROR_STOP=1','--set','VERBOSITY=terse'],
-      {cwd:resolve(workspace),env:child,input:sql,windowsHide:true,encoding:'utf8',timeout:45000,maxBuffer:MAX_BYTES});}
+    let collection;
+    try {collection=runBoundedProductionManagedWriterCollection({
+      executable,workspace:resolve(workspace),environment:child,sql,binding,
+    });}
     finally {for(const key of Object.keys(child))delete child[key];}
-    if(result?.error||result?.signal!=null||result?.status!==0||typeof result?.stdout!=='string') fail();
-    return parseProductionManagedWriterOutputs(result.stdout,{...binding,capturedAtUtc});
+    // This timestamp is the completed read-only collection, after psql and
+    // its transaction/session have returned. It can therefore participate in
+    // the protected cutover's non-overlapping query chronology.
+    return parseProductionManagedWriterOutputs(collection.stdout,collection.binding);
   }catch{fail();}
 }

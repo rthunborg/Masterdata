@@ -136,12 +136,21 @@ function fixture() {
   const link = path.join(linkRoot, 'production-link.txt'); writeFileSync(link, `${projectRef}\n`);
   const { isolationContext, isolationReceipts } = createValidIsolationEvidenceFixture();
   rebaseFixtureTimestamps(isolationReceipts);
+  const profileCompleted = Date.parse(capturedAtUtc);
+  Object.assign(isolationReceipts.database, {
+    collectionStartedAtUtc: new Date(profileCompleted + 1000).toISOString(),
+    capturedAtUtc: new Date(profileCompleted + 2000).toISOString(),
+  });
+  Object.assign(isolationReceipts.drain, {
+    collectionStartedAtUtc: new Date(profileCompleted + 3000).toISOString(),
+    capturedAtUtc: new Date(profileCompleted + 4000).toISOString(),
+  });
   Object.assign(isolationContext, { sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256 });
   for (const receipt of Object.values(isolationReceipts)) Object.assign(receipt, { sourceSha, targetBindingSha256 });
   const evidence = {
     staffing: JSON.stringify(staffingReceipt()),
     isolation: JSON.stringify({ receipts: isolationReceipts, context: isolationContext }),
-    preForward: JSON.stringify(preForwardReceipt()), backup: JSON.stringify({ kind: 'synthetic-backup' }), cleanup: JSON.stringify({ kind: 'synthetic-cleanup' }),
+    preForward: JSON.stringify(preForwardReceipt()), backup: JSON.stringify({ kind: 'synthetic-backup' }), cleanup: JSON.stringify({ kind: 'synthetic-cleanup', completedAtUtc: new Date(profileCompleted - 1000).toISOString() }),
   };
   const evidencePaths: Record<string, string> = {};
   for (const [name, text] of Object.entries(evidence)) { evidencePaths[name] = path.join(evidenceRoot, `${name}.json`); writeFileSync(evidencePaths[name], text); }

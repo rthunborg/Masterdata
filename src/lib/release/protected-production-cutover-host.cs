@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
@@ -48,6 +49,20 @@ namespace HrMasterdata.Release
         static extern bool CloseHandle(IntPtr handle);
 
         static void Require(bool value) { if (!value) throw new InvalidOperationException("Protected bootstrap refused"); }
+
+        // A cleanup completion time is read only from the evidence file that is
+        // already protected by the host's hash-pinned lease; it is never an
+        // installer or command-line argument.
+        static string RequireCanonicalUtc(object value)
+        {
+            string text = value as string;
+            DateTime parsed;
+            Require(text != null && Regex.IsMatch(text, "\\A\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\\z"));
+            Require(DateTime.TryParseExact(text, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out parsed));
+            Require(parsed.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture) == text);
+            return text;
+        }
 
         static void VerifyDirectory(string directory, HashSet<string> directories, Dictionary<string, string> files)
         {
@@ -180,6 +195,7 @@ namespace HrMasterdata.Release
                 string staffingReceipt = File.ReadAllText(Installation.StaffingReceiptPath);
                 string isolationReceipt = File.ReadAllText(Installation.IsolationReceiptPath);
                 string preForwardReceipt = File.ReadAllText(Installation.PreForwardReceiptPath);
+                string cleanupRecord = File.ReadAllText(Installation.CleanupRecordPath);
                 Require(Hash(Installation.StaffingReceiptPath) == Installation.StaffingReceiptSha256 && Hash(Installation.IsolationReceiptPath) == Installation.IsolationReceiptSha256);
                 Require(Hash(Installation.PreForwardReceiptPath) == Installation.PreForwardReceiptSha256 &&
                     Hash(Installation.BackupRecordPath) == Installation.BackupRecordSha256 &&
@@ -219,7 +235,10 @@ namespace HrMasterdata.Release
                 Require(package != null && package.ContainsKey("sourceCommit") && package.ContainsKey("sourceTree") && package.ContainsKey("sourceManifestSha256"));
                 var isolationEvidence = serializer.Deserialize<Dictionary<string, object>>(isolationReceipt);
                 Require(isolationEvidence != null && isolationEvidence.Count == 2 && isolationEvidence.ContainsKey("receipts") && isolationEvidence.ContainsKey("context"));
-                byte[] payload = Encoding.UTF8.GetBytes(serializer.Serialize(new { schemaVersion = 1, operation = "apply-forward-13", nonce = match.Groups[1].Value, workspace = work, environment = environment, sourceSha = package["sourceCommit"], sourceTree = package["sourceTree"], sourceManifestSha256 = package["sourceManifestSha256"], targetBindingSha256 = actualTargetBinding, staffingReceipt = serializer.DeserializeObject(staffingReceipt), isolationReceipts = isolationEvidence["receipts"], isolationContext = isolationEvidence["context"], preForwardObservation = serializer.DeserializeObject(preForwardReceipt), reviewRecords = new { backupRecordSha256 = Installation.BackupRecordSha256, cleanupRecordSha256 = Installation.CleanupRecordSha256 } }));
+                var cleanupEvidence = serializer.Deserialize<Dictionary<string, object>>(cleanupRecord);
+                Require(cleanupEvidence != null && cleanupEvidence.ContainsKey("completedAtUtc"));
+                string cleanupCompletedAtUtc = RequireCanonicalUtc(cleanupEvidence["completedAtUtc"]);
+                byte[] payload = Encoding.UTF8.GetBytes(serializer.Serialize(new { schemaVersion = 1, operation = "apply-forward-13", nonce = match.Groups[1].Value, workspace = work, environment = environment, sourceSha = package["sourceCommit"], sourceTree = package["sourceTree"], sourceManifestSha256 = package["sourceManifestSha256"], targetBindingSha256 = actualTargetBinding, staffingReceipt = serializer.DeserializeObject(staffingReceipt), isolationReceipts = isolationEvidence["receipts"], isolationContext = isolationEvidence["context"], preForwardObservation = serializer.DeserializeObject(preForwardReceipt), reviewRecords = new { backupRecordSha256 = Installation.BackupRecordSha256, cleanupRecordSha256 = Installation.CleanupRecordSha256, cleanupCompletedAtUtc = cleanupCompletedAtUtc } }));
                 byte[] signature;
                 using (var rsa = new RSACryptoServiceProvider())
                 { rsa.PersistKeyInCsp = false; rsa.FromXmlString(Installation.OriginPrivateKey); signature = rsa.SignData(payload, CryptoConfig.MapNameToOID("SHA256")); }

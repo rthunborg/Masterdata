@@ -643,8 +643,10 @@ export function createProtectedProductionCutoverExecutor({ packet, nonce, worksp
       JSON.stringify(Object.keys(fixedRequest).sort()) !== JSON.stringify(keys.sort()) ||
       fixedRequest.preForwardObservation?.profilePhase !== 'post_cleanup' ||
       JSON.stringify(Object.keys(fixedRequest.reviewRecords ?? {}).sort()) !==
-        JSON.stringify(['backupRecordSha256', 'cleanupRecordSha256']) ||
-      !Object.values(fixedRequest.reviewRecords).every(value => typeof value === 'string' && /^[a-f0-9]{64}$/u.test(value)) ||
+        JSON.stringify(['backupRecordSha256', 'cleanupCompletedAtUtc', 'cleanupRecordSha256']) ||
+      !/^[a-f0-9]{64}$/u.test(fixedRequest.reviewRecords?.backupRecordSha256 ?? '') ||
+      !/^[a-f0-9]{64}$/u.test(fixedRequest.reviewRecords?.cleanupRecordSha256 ?? '') ||
+      typeof fixedRequest.reviewRecords?.cleanupCompletedAtUtc !== 'string' ||
       packageRecord.kind !== 'offline-protected-production-cutover-package' || packageRecord.schemaVersion !== 1 ||
       !Array.isArray(packageRecord.plan) ||
       JSON.stringify(packageRecord.plan.map(entry => entry.version)) !== JSON.stringify(bootstrapModule.PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS)) {
@@ -672,6 +674,15 @@ export function createProtectedProductionCutoverExecutor({ packet, nonce, worksp
       isolation.disposition !== 'isolation_proved_not_execution_authority' ||
       observed.disposition !== 'profile_match_not_admission'
     ) throw new Error('Protected production cutover capability is unavailable');
+    const ordering = isolationModule.assessProductionCutoverReceiptOrdering({
+      reviewRecords: fixedRequest.reviewRecords,
+      preForwardObservation: fixedRequest.preForwardObservation,
+      staffingReceipt: fixedRequest.staffingReceipt,
+      isolationReceipts: fixedRequest.isolationReceipts,
+    });
+    if (ordering.disposition !== 'cutover_receipt_order_proved_not_execution_authority') {
+      throw new Error('Protected production cutover capability is unavailable');
+    }
     };
     verifyPrerequisites();
     const args = ['db', 'push', '--reviewed-target', '--reviewed-environment', 'production', '--include-all', '--skip-vault'];

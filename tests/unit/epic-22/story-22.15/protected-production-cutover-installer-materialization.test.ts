@@ -140,9 +140,9 @@ function fixture() {
   });
   const evidenceRoot = path.join(root, 'evidence');
   mkdirSync(evidenceRoot);
-  const makeEvidence = (name: string) => {
+  const makeEvidence = (name: string, value: Record<string, unknown> = { synthetic: true, name }) => {
     const file = path.join(evidenceRoot, name);
-    writeFileSync(file, JSON.stringify({ synthetic: true, name }) + '\n');
+    writeFileSync(file, JSON.stringify(value) + '\n');
     return { path: file, sha256: sha256(readFileSync(file)) };
   };
   const linkPath = path.join(root, 'production-link.txt');
@@ -156,7 +156,9 @@ function fixture() {
     isolation: makeEvidence('isolation.json'),
     preForward: makeEvidence('pre-forward.json'),
     backup: makeEvidence('backup.json'),
-    cleanup: makeEvidence('cleanup.json'),
+    cleanup: makeEvidence('cleanup.json', {
+      synthetic: true, name: 'cleanup.json', completedAtUtc: '2026-09-23T14:04:00.000Z',
+    }),
   };
 }
 
@@ -235,6 +237,21 @@ describe.skipIf(process.platform !== 'win32')(
         privateInputsLoaded: false,
       });
       expect(existsSync(installRoot)).toBe(false);
+
+      writeFileSync(options.cleanup.path, JSON.stringify({ synthetic: true, name: 'cleanup.json' }) + '\n');
+      options.cleanup.sha256 = sha256(readFileSync(options.cleanup.path));
+      const rejectedCleanup = runInstaller(installerArguments(options, options.staffing.sha256));
+      expect(rejectedCleanup.status).toBe(1);
+      expect(rejectedCleanup.receipt).toMatchObject({
+        installed: false,
+        stage: 'package-validation',
+        hostedAccess: false,
+        privateInputsLoaded: false,
+      });
+      writeFileSync(options.cleanup.path, JSON.stringify({
+        synthetic: true, name: 'cleanup.json', completedAtUtc: '2026-09-23T14:04:00.000Z',
+      }) + '\n');
+      options.cleanup.sha256 = sha256(readFileSync(options.cleanup.path));
 
       const installed = runInstaller(installerArguments(options));
       expect(installed.status).toBe(0);

@@ -32,6 +32,10 @@ function request() {
   const { isolationReceipts, isolationContext } = createValidIsolationEvidenceFixture();
   isolationContext.targetBindingSha256 = targetBindingSha256;
   for (const receipt of Object.values(isolationReceipts)) receipt.targetBindingSha256 = targetBindingSha256;
+  isolationReceipts.database.collectionStartedAtUtc = '2026-09-23T14:06:00.000Z';
+  isolationReceipts.database.capturedAtUtc = '2026-09-23T14:06:01.000Z';
+  isolationReceipts.drain.collectionStartedAtUtc = '2026-09-23T14:07:00.000Z';
+  isolationReceipts.drain.capturedAtUtc = '2026-09-23T14:07:01.000Z';
   const preForwardObservation = {
     schemaVersion: 1, kind: 'production-observed-profile', profilePhase: 'post_cleanup',
     capturedAtUtc: '2026-09-23T14:05:00.000Z', sourceSha,
@@ -66,7 +70,10 @@ function request() {
     sourceManifestSha256,
     targetBindingSha256,
     preForwardObservation,
-    reviewRecords: { backupRecordSha256: '3'.repeat(64), cleanupRecordSha256: '4'.repeat(64) },
+    reviewRecords: {
+      backupRecordSha256: '3'.repeat(64), cleanupRecordSha256: '4'.repeat(64),
+      cleanupCompletedAtUtc: '2026-09-23T14:04:00.000Z',
+    },
     staffingReceipt: {
       schemaVersion: 1,
       kind: 'production-staffing-pre-execute-observation',
@@ -156,6 +163,15 @@ describe('Story 22.15 protected production cutover worker packet', () => {
     ['a repair operation', (value: ReturnType<typeof request>) => (value.operation = 'repair-history-55')],
     ['a caller approval flag', (value: ReturnType<typeof request>) => Object.assign(value, { ownerApproved: true })],
     ['an absent backup binding', (value: ReturnType<typeof request>) => Object.assign(value.reviewRecords, { backupRecordSha256: '' })],
+    ['a missing cleanup completion time', (value: ReturnType<typeof request>) => delete value.reviewRecords.cleanupCompletedAtUtc],
+    ['a noncanonical cleanup completion time', (value: ReturnType<typeof request>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23 14:04:00Z')],
+    ['a future cleanup completion time', (value: ReturnType<typeof request>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23T14:11:00.000Z')],
+    ['a profile collected before cleanup completed', (value: ReturnType<typeof request>) => (value.preForwardObservation.capturedAtUtc = '2026-09-23T14:04:00.000Z')],
+    ['a staffing receipt collected before cleanup completed', (value: ReturnType<typeof request>) => (value.staffingReceipt.capturedAtUtc = '2026-09-23T14:03:59.000Z')],
+    ['a final database collection started before the post-cleanup profile completed', (value: ReturnType<typeof request>) => (value.isolationReceipts.database.collectionStartedAtUtc = '2026-09-23T14:05:00.000Z')],
+    ['a final database observation overlapping the drain', (value: ReturnType<typeof request>) => (value.isolationReceipts.drain.collectionStartedAtUtc = '2026-09-23T14:06:01.000Z')],
+    ['a stale final database observation', (value: ReturnType<typeof request>) => (value.isolationReceipts.database.capturedAtUtc = '2026-09-23T13:00:00.000Z')],
+    ['a stale drain observation', (value: ReturnType<typeof request>) => (value.isolationReceipts.drain.capturedAtUtc = '2026-09-23T13:00:00.000Z')],
     ['an uncleaned filter profile', (value: ReturnType<typeof request>) => { value.preForwardObservation.aggregate.saved_filter_data.total_count = 48; }],
     ['a stale full catalog profile', (value: ReturnType<typeof request>) => { value.preForwardObservation.capturedAtUtc = '2026-09-23T13:00:00.000Z'; }],
     ['a known-failure group omitted', (value: ReturnType<typeof request>) => { value.preForwardObservation.strictCatalog.failedChecks.pop(); }],

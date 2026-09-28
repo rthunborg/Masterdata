@@ -1,7 +1,28 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+const { spawnSyncMock } = vi.hoisted(() => ({ spawnSyncMock: vi.fn() }));
+vi.mock('node:child_process', () => ({
+  default: { spawnSync: spawnSyncMock },
+  spawnSync: spawnSyncMock,
+}));
+vi.mock('../../../../supabase/verify/run-reviewed-supabase-cli.mjs', () => ({
+  verifyApprovedSupabaseCliExecutable: vi.fn(),
+}));
+vi.mock('../../../../supabase/verify/verify-production-baseline-catalog.mjs', () => ({
+  verifyApprovedPsqlExecutable: vi.fn(() => 'synthetic-psql'),
+  verifyApprovedSslRootCertificate: vi.fn(() => 'synthetic-ca'),
+}));
+vi.mock('../../../../supabase/verify/verify-target-binding.mjs', () => ({
+  verifyConfiguredSupabaseTarget: vi.fn(async () => {}),
+}));
 
 import { KNOWN_PLATFORM_ROLES, KNOWN_REPLICATION_PLUGINS } from '../../../../src/lib/release/production-database-writer-classification.mjs';
-import { parseProductionManagedWriterOutputs } from '../../../../src/lib/release/collect-production-managed-writers.mjs';
+import { productionTargetBindingSha256 } from '../../../../src/lib/release/production-observed-profile.mjs';
+import {
+  completedProductionManagedWriterBinding,
+  collectProductionManagedWriters,
+  parseProductionManagedWriterOutputs,
+} from '../../../../src/lib/release/collect-production-managed-writers.mjs';
 
 const md5Empty = 'd41d8cd98f00b204e9800998ecf8427e';
 const binding = {
@@ -69,6 +90,64 @@ function output({
 }
 
 describe('managed writer raw-inventory correlation parser', () => {
+  afterEach(() => {
+    spawnSyncMock.mockReset();
+    vi.useRealTimers();
+  });
+  it('binds a long collection to its completion time, never its earlier start', () => {
+    const startedAt = new Date('2026-09-28T12:00:00.000Z');
+    const completedAt = new Date('2026-09-28T12:00:45.000Z');
+    const completed = completedProductionManagedWriterBinding({
+      sourceSha: binding.sourceSha,
+      sourceTree: binding.sourceTree,
+      sourceManifestSha256: binding.sourceManifestSha256,
+      targetBindingSha256: binding.targetBindingSha256,
+    }, completedAt);
+    expect(completed.capturedAtUtc).toBe(completedAt.toISOString());
+    expect(Date.parse(completed.capturedAtUtc)).toBeGreaterThan(Date.parse(startedAt.toISOString()));
+  });
+
+  it('takes the completion timestamp only after the actual bounded psql child returns', async () => {
+    const startedAt = new Date('2026-09-28T12:00:00.000Z');
+    const completedAt = new Date('2026-09-28T12:00:45.000Z');
+    let returned = false;
+    vi.useFakeTimers({ now: startedAt });
+    spawnSyncMock.mockImplementation(() => {
+      expect(returned).toBe(false);
+      returned = true;
+      vi.setSystemTime(completedAt);
+      return { status: 0, stdout: output() };
+    });
+    const originalEnvironment = {
+      EXPECTED_SUPABASE_ENVIRONMENT: process.env.EXPECTED_SUPABASE_ENVIRONMENT,
+      EXPECTED_SUPABASE_PROJECT_REF: process.env.EXPECTED_SUPABASE_PROJECT_REF,
+      SUPABASE_DB_URL: process.env.SUPABASE_DB_URL,
+    };
+    Object.assign(process.env, {
+      EXPECTED_SUPABASE_ENVIRONMENT: 'production',
+      EXPECTED_SUPABASE_PROJECT_REF: 'abcdefghijklmnopqrst',
+      SUPABASE_DB_URL: 'postgresql://synthetic:synthetic@synthetic.example:5432/postgres',
+    });
+    try {
+      const receipt = await collectProductionManagedWriters({
+        workspace: process.cwd(),
+        binding: {
+          sourceSha: binding.sourceSha, sourceTree: binding.sourceTree,
+          sourceManifestSha256: binding.sourceManifestSha256,
+          targetBindingSha256: productionTargetBindingSha256('abcdefghijklmnopqrst'),
+        },
+      });
+      expect(returned).toBe(true);
+      expect(receipt.capturedAtUtc).toBe(completedAt.toISOString());
+      expect(Date.parse(receipt.capturedAtUtc)).toBeGreaterThan(Date.parse(startedAt.toISOString()));
+    } finally {
+      for (const [key, value] of Object.entries(originalEnvironment)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  });
+
   it('retains raw unknown counts only after both same-snapshot subset hashes bind', () => {
     const receipt = parseProductionManagedWriterOutputs(output(), binding);
     expect(receipt).toMatchObject({

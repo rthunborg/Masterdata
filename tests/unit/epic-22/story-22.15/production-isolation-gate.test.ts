@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  assessProductionCutoverReceiptOrdering,
   assessProductionMaintenanceIsolation,
   PRODUCTION_ISOLATION_AUTH_HOOKS,
 } from '../../../../src/lib/release/production-isolation-gate.mjs';
@@ -234,6 +235,79 @@ describe('initial managed-profile accounting in complete isolation',()=>{
       const {evidence,expectedContext}=managedProfileEvidence();expectedContext[key]='0'.repeat(key==='sourceTree'?40:64);
       expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
     }
+  });
+});
+
+describe('Story 22.15 protected cutover cross-receipt ordering', () => {
+  const now = new Date('2026-09-23T14:10:00.000Z');
+  const ordered = () => ({
+    reviewRecords: {
+      backupRecordSha256: '1'.repeat(64), cleanupRecordSha256: '2'.repeat(64),
+      cleanupCompletedAtUtc: '2026-09-23T14:04:00.000Z',
+    },
+    preForwardObservation: { capturedAtUtc: '2026-09-23T14:05:00.000Z' },
+    staffingReceipt: { capturedAtUtc: '2026-09-23T14:05:30.000Z' },
+    isolationReceipts: {
+      database: { collectionStartedAtUtc: '2026-09-23T14:06:00.000Z', capturedAtUtc: '2026-09-23T14:06:01.000Z' },
+      drain: { collectionStartedAtUtc: '2026-09-23T14:07:00.000Z', capturedAtUtc: '2026-09-23T14:07:01.000Z' },
+    },
+    now,
+  });
+
+  it('proves strictly non-overlapping completed post-cleanup collections', () => {
+    expect(assessProductionCutoverReceiptOrdering(ordered())).toMatchObject({
+      disposition: 'cutover_receipt_order_proved_not_execution_authority',
+    });
+  });
+
+  it.each([
+    ['missing cleanup completion', (value: ReturnType<typeof ordered>) => delete value.reviewRecords.cleanupCompletedAtUtc],
+    ['noncanonical cleanup completion', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23 14:04:00Z')],
+    ['future cleanup completion', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23T14:11:00.000Z')],
+    ['cleanup equal to profile completion', (value: ReturnType<typeof ordered>) => (value.preForwardObservation.capturedAtUtc = '2026-09-23T14:04:00.000Z')],
+    ['staffing before cleanup completion', (value: ReturnType<typeof ordered>) => (value.staffingReceipt.capturedAtUtc = '2026-09-23T14:03:59.000Z')],
+    ['database begins before a post-cleanup collector closes', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.database.collectionStartedAtUtc = '2026-09-23T14:05:30.000Z')],
+    ['database collection ends when drain begins', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.drain.collectionStartedAtUtc = '2026-09-23T14:06:01.000Z')],
+    ['database interval is reversed', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.database.collectionStartedAtUtc = '2026-09-23T14:06:02.000Z')],
+    ['drain interval is reversed', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.drain.collectionStartedAtUtc = '2026-09-23T14:07:02.000Z')],
+    ['future final database completion', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.database.capturedAtUtc = '2026-09-23T14:11:00.000Z')],
+    ['future drain completion', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.drain.capturedAtUtc = '2026-09-23T14:11:00.000Z')],
+  ])('rejects %s', (_label, mutate) => {
+    const value = ordered();
+    mutate(value);
+    expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
+      disposition: 'blocked_cutover_receipt_order',
+    });
+  });
+
+  it('waits for an optional managed-writer collector to complete before final database collection', () => {
+    const value = ordered();
+    value.isolationReceipts.database.managedWriterObservation = {
+      capturedAtUtc: '2026-09-23T14:05:45.000Z',
+    };
+    expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
+      disposition: 'cutover_receipt_order_proved_not_execution_authority',
+    });
+    value.isolationReceipts.database.managedWriterObservation.capturedAtUtc = '2026-09-23T14:06:00.000Z';
+    expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
+      disposition: 'blocked_cutover_receipt_order',
+    });
+  });
+});
+
+describe('Story 22.15 interval-bearing isolation receipts', () => {
+  it.each([
+    ['a noncanonical database start', (value: ReturnType<typeof receipts>) => { (value.database as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23 14:00:00Z'; }],
+    ['a future database start', (value: ReturnType<typeof receipts>) => { (value.database as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23T14:11:00.000Z'; }],
+    ['a reversed database interval', (value: ReturnType<typeof receipts>) => { (value.database as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23T14:00:00.001Z'; }],
+    ['a future drain start', (value: ReturnType<typeof receipts>) => { (value.drain as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23T14:11:00.000Z'; }],
+    ['a reversed drain interval', (value: ReturnType<typeof receipts>) => { (value.drain as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23T14:00:02.001Z'; }],
+  ])('does not admit %s', (_label, mutate) => {
+    const value = receipts();
+    mutate(value);
+    expect(assess(value)).toMatchObject({
+      disposition: 'blocked_insufficient_isolation_proof',
+    });
   });
 });
 

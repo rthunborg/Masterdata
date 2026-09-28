@@ -10,6 +10,7 @@ import {
   PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS,
 } from './production-bootstrap-admission.mjs';
 import {
+  assessProductionCutoverReceiptOrdering,
   assessProductionMaintenanceIsolation,
 } from './production-isolation-gate.mjs';
 import { assessProductionObservedProfile, productionTargetBindingSha256 } from './production-observed-profile.mjs';
@@ -61,8 +62,10 @@ export function verifyProtectedCutoverPacket(text, nonce, publicKey) {
     !SHA256.test(request.targetBindingSha256 ?? '')
   ) fail();
   if (productionTargetBindingSha256(request.environment.EXPECTED_SUPABASE_PROJECT_REF) !== request.targetBindingSha256) fail();
-  if (!exact(request.reviewRecords, ['backupRecordSha256', 'cleanupRecordSha256']) ||
-      !Object.values(request.reviewRecords).every((value) => typeof value === 'string' && SHA256.test(value))) fail();
+  if (!exact(request.reviewRecords, ['backupRecordSha256', 'cleanupRecordSha256', 'cleanupCompletedAtUtc']) ||
+      !SHA256.test(request.reviewRecords.backupRecordSha256) ||
+      !SHA256.test(request.reviewRecords.cleanupRecordSha256) ||
+      typeof request.reviewRecords.cleanupCompletedAtUtc !== 'string') fail();
   if (request.preForwardObservation?.profilePhase !== 'post_cleanup') fail();
   try {
     const observed = assessProductionObservedProfile({
@@ -88,6 +91,13 @@ export function verifyProtectedCutoverPacket(text, nonce, publicKey) {
     expectedContext: request.isolationContext,
   });
   if (isolation.disposition !== 'isolation_proved_not_execution_authority') fail();
+  const ordering = assessProductionCutoverReceiptOrdering({
+    reviewRecords: request.reviewRecords,
+    preForwardObservation: request.preForwardObservation,
+    staffingReceipt: request.staffingReceipt,
+    isolationReceipts: request.isolationReceipts,
+  });
+  if (ordering.disposition !== 'cutover_receipt_order_proved_not_execution_authority') fail();
   return request;
 }
 
