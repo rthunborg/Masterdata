@@ -1,0 +1,444 @@
+{
+  "kind": "production-realtime-evidence-preparation",
+  "executable": false,
+  "sourceSha": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+  "testedImplementation": "5191c2fe7cd086011a63c7391b7a61da3d7dc71f",
+  "mainSha": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "hostedWrites": false,
+  "hostedSettingChanges": false,
+  "deployments": false,
+  "production": "paused-no-go",
+  "story": "in-progress",
+  "epic23": "on-hold",
+  "strictCatalog": {
+    "kind": "production-strict-catalog-assessment",
+    "source": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+    "capturedAtUtc": "2026-09-28T08:13:11.619Z",
+    "hostedWriteAttempted": false,
+    "collectionSucceeded": true,
+    "catalogGatePassed": false,
+    "checkCount": 16,
+    "failedChecks": [
+      "dietary_columns_and_permissions",
+      "represented_column_contracts",
+      "represented_function_contracts",
+      "represented_policy_contracts",
+      "represented_trigger_contracts",
+      "user_filters_objects",
+      "user_filters_trigger_function_contract"
+    ],
+    "knownSevenUnchanged": true,
+    "toolingTlsAndTargetVerified": true,
+    "durationMs": 7002
+  },
+  "schemaComparison": {
+    "capturedAtUtc": "2026-09-28T08:14:04.427Z",
+    "matchedGroups": 14,
+    "sha256": "354221aa3186d0050cd87bd0c145ea8947c9820152872f74c9a28b6df16a71fb"
+  },
+  "profile": {
+    "capturedAtUtc": "2026-09-28T08:16:05.067Z",
+    "historyTable": "absent",
+    "aggregateGroupsUnchanged": 7,
+    "sha256": "405c72330d5bf7a592d78f73f31dd34e6002d73fa5d5d1658542b2afe3625940"
+  },
+  "aggregateComparison": {
+    "kind": "approved-aggregate-comparison",
+    "sourceSha": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+    "observedAtUtc": "2026-09-28T08:16:05.067Z",
+    "baselineSha256": "387423ff395ac4437c14d2428f52d39ef9271576260a815f5485036869a3cab7",
+    "groups": {
+      "history": {
+        "priorSha256": "6f255202c32cf03f15fd8d62e3560e3f9d23a92a1a80fe7cf4a63ce0a84c1e94",
+        "currentSha256": "6f255202c32cf03f15fd8d62e3560e3f9d23a92a1a80fe7cf4a63ce0a84c1e94",
+        "matches": true
+      },
+      "staffing_data": {
+        "priorSha256": "f93923b5febde6ddaac511cdb256cb7a4cc3ed88ec3910f71f3633ed252bf760",
+        "currentSha256": "f93923b5febde6ddaac511cdb256cb7a4cc3ed88ec3910f71f3633ed252bf760",
+        "matches": true
+      },
+      "repayment_data": {
+        "priorSha256": "886585e0543603be1f6dee665f1bc853ccaa9a5754ac8a69091b6c18c589f576",
+        "currentSha256": "886585e0543603be1f6dee665f1bc853ccaa9a5754ac8a69091b6c18c589f576",
+        "matches": true
+      },
+      "permission_rows": {
+        "priorSha256": "8bc2f16a371b2976bcbace9b2bddabaf5683a827f762ea606d425259d668d145",
+        "currentSha256": "8bc2f16a371b2976bcbace9b2bddabaf5683a827f762ea606d425259d668d145",
+        "matches": true
+      },
+      "saved_filter_data": {
+        "priorSha256": "a0723f2aee58392da4876d07c7f3c61766bfec2e3862fbe0d08f0da2472df37c",
+        "currentSha256": "a0723f2aee58392da4876d07c7f3c61766bfec2e3862fbe0d08f0da2472df37c",
+        "matches": true
+      },
+      "audit_preservation": {
+        "priorSha256": "cb005cc21fd4c00637f0495966217fbbf876d54e8843ae36d67486c30c40fb13",
+        "currentSha256": "cb005cc21fd4c00637f0495966217fbbf876d54e8843ae36d67486c30c40fb13",
+        "matches": true
+      },
+      "permission_baseline": {
+        "priorSha256": "c52ede4d02dde84cb0d4738d55a5a9b780a39b063c5a098cde60deebdd92b32e",
+        "currentSha256": "c52ede4d02dde84cb0d4738d55a5a9b780a39b063c5a098cde60deebdd92b32e",
+        "matches": true
+      }
+    },
+    "allSevenGroupsMatch": true
+  },
+  "publication": {
+    "netPreloaded": true,
+    "cronPreloaded": true,
+    "publicationCount": 1,
+    "affectedMembership": {
+      "users": false,
+      "employees": false,
+      "user_filters": false,
+      "column_config": false,
+      "staffing_needs": false,
+      "important_dates": false,
+      "employee_column_changes": false,
+      "staffing_needs_changelog": false,
+      "app_user_auth_cleanup_outbox": false
+    },
+    "cronJobTablePresent": false,
+    "pgNetExtensionCount": 0,
+    "publishedTableCount": 0,
+    "cronLaunchActiveJobs": true,
+    "pgCronExtensionCount": 0,
+    "employeesTablePresent": true,
+    "netResponseTablePresent": false,
+    "completeMembershipSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "completePublicationSha256": "6ed49a3851c1737cd50fd4cf47c4890369e09d1f6baaa9edc452d93573359d46",
+    "netDatabaseMatchesConnected": true,
+    "netRequestQueueTablePresent": false,
+    "cronDatabaseMatchesConnected": true,
+    "employeesStatementTriggerCount": 0,
+    "unrecognizedPublishedTableCount": 0
+  },
+  "realtimeAdmission": {
+    "kind": "production-client-probe-readonly-preflight",
+    "source": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+    "capturedAtUtc": "2026-09-28T08:42:51.543Z",
+    "collectionSucceeded": true,
+    "hostedWriteAttempted": false,
+    "isolationProved": false,
+    "legacyProbeRolesVerified": true,
+    "authenticatedDataApiReadAdmission": true,
+    "returnedRowCount": 0,
+    "realtimeConnectionEstablished": true,
+    "metadataOnlyChannelJoined": true,
+    "probeConnectionClosedAfterPreflight": true
+  },
+  "platform": {
+    "auth": {
+      "httpStatus": 200,
+      "observed": true,
+      "hooks": {
+        "hook_custom_access_token_enabled": false,
+        "hook_mfa_verification_attempt_enabled": false,
+        "hook_password_verification_attempt_enabled": false,
+        "hook_send_sms_enabled": false,
+        "hook_send_email_enabled": false,
+        "hook_before_user_created_enabled": false,
+        "hook_after_user_created_enabled": false
+      },
+      "unknownHookCount": 0,
+      "allKnownHooksObserved": true,
+      "enabledKnownHookCount": 0
+    },
+    "realtime": {
+      "httpStatus": 200,
+      "observed": true,
+      "suspend": false,
+      "privateOnly": null
+    },
+    "postgrest": {
+      "httpStatus": 200,
+      "observed": true,
+      "schemaConfigurationObserved": true,
+      "exposedSchemaCount": 2,
+      "publicExposed": true,
+      "graphqlPublicExposed": true,
+      "otherSchemaCount": 0
+    }
+  },
+  "network": {
+    "restrictionsApplied": true,
+    "unrestrictedV4": true,
+    "unrestrictedV6": true,
+    "isolationProved": false
+  },
+  "pause": {
+    "observedAtUtc": "2026-09-28T08:17:34.555Z",
+    "readOnly": true,
+    "cliVersion": "59.11.7",
+    "cliSha256": "2dd6e7c273a24bf4317af867d9b7bacb4db35487b42ea77912e2e7c33fa0c152",
+    "exitCode": 0,
+    "parsed": true,
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "projectIdMatched": true,
+    "productionTargetMatchesRecordedPause": true,
+    "autoAssignCustomDomainsDisabled": true,
+    "cronDefinitionsPresent": true,
+    "activeCronDefinitionCount": 0,
+    "pauseSettingsProof": true
+  },
+  "cliRoleClassification": {
+    "kind": "cli-role-prerequisites-readonly-receipt",
+    "source": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+    "capturedAtUtc": "2026-09-28T08:45:30.422Z",
+    "collectionSucceeded": true,
+    "hostedWriteAttempted": false,
+    "isolationProved": false,
+    "inventory": {
+      "cliInherit": false,
+      "cliCanLogin": true,
+      "cliBypassRls": false,
+      "cliSuperuser": false,
+      "cliPresentCount": 1,
+      "cliPasswordExpired": true,
+      "cliOtherMembershipCount": 0,
+      "completeRoleGraphSha256": "fb3644d86f90d0f1db0e3aad7e79b12f8f6f23ebf454b270bc57a1dbf6438f1f",
+      "cliOwnedPublicObjectCount": 0,
+      "cliPasswordExpirySpecified": true,
+      "cliDirectPostgresMemberCount": 1,
+      "cliCurrentDatabaseSessionCount": 0
+    },
+    "classification": {
+      "classificationOnly": true,
+      "isolationProved": false
+    }
+  },
+  "backendCandidateClassification": {
+    "kind": "platform-candidate-classification-receipt",
+    "source": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+    "capturedAtUtc": "2026-09-28T08:19:52.539Z",
+    "collectionSucceeded": true,
+    "hostedWriteAttempted": false,
+    "isolationProved": false,
+    "inventory": {
+      "backendCount": 2,
+      "cliLoginCount": 1,
+      "cliPresentCount": 1,
+      "pgCronWorkerCount": 0,
+      "pgCronLauncherCount": 1,
+      "pgNetExtensionCount": 0,
+      "pgCronExtensionCount": 0,
+      "cliPostgresMemberCount": 1,
+      "coreLogicalWorkerCount": 0,
+      "pgNetSemverWorkerCount": 1,
+      "coreParallelWorkerCount": 0,
+      "unclassifiedBackendCount": 0,
+      "pgNetRequestQueuePresentCount": 0,
+      "pgNetResponseTablePresentCount": 0,
+      "pgNetVersionMatchedWorkerCount": 0
+    },
+    "classification": {
+      "classificationOnly": true,
+      "isolationProved": false
+    }
+  },
+  "reportAccess": {
+    "kind": "production-realtime-report-readonly-access",
+    "source": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+    "capturedAtUtc": "2026-09-28T08:33:05.825Z",
+    "collectionSucceeded": false,
+    "hostedWriteAttempted": false,
+    "isolationProved": false,
+    "httpStatus": 401,
+    "failure": "realtime_report_access_failed_details_suppressed"
+  },
+  "metrics": {
+    "kind": "production-metrics-readonly-access",
+    "source": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+    "capturedAtUtc": "2026-09-28T08:31:42.666Z",
+    "collectionSucceeded": true,
+    "hostedWriteAttempted": false,
+    "isolationProved": false,
+    "httpStatus": 200,
+    "metricFamilyCount": 288,
+    "realtimeFamilies": [
+      "realtime_postgres_changes_client_subscriptions",
+      "realtime_postgres_changes_total_subscriptions"
+    ],
+    "connectedClientMetricPresent": false
+  },
+  "engine": {
+    "kind": "engine-applicability-readonly-receipt",
+    "source": "7b25f1d6a0c6a35ede2e0afe10afcbf29f789335",
+    "capturedAtUtc": "2026-09-28T08:23:50.612Z",
+    "collectionSucceeded": true,
+    "hostedWriteAttempted": false,
+    "isolationProved": false,
+    "inventory": {
+      "ltreeInstalled": false,
+      "ltreeIndexCount": 0,
+      "pgcryptoInstalled": true,
+      "serverVersionNumber": 170006,
+      "btreeGistFloatIndexCount": 0,
+      "applicationCustomOperatorCount": 0,
+      "applicationCryptoFunctionReferenceCount": 0
+    },
+    "classification": {
+      "classificationOnly": true,
+      "isolationProved": false
+    }
+  },
+  "isolationProved": false,
+  "localTests": {
+    "focused": {
+      "command": "npx vitest run tests/unit/epic-22/story-22.15/production-isolation-gate.test.ts",
+      "passed": 119,
+      "skipped": 0,
+      "failed": 0,
+      "durationSeconds": 0.747,
+      "exitCode": 0
+    },
+    "vitestCompletion": {
+      "kind": "lead-observed-vitest-completion",
+      "sourceSha": "5191c2fe7cd086011a63c7391b7a61da3d7dc71f",
+      "command": "npx vitest run",
+      "nativeExitCode": 0,
+      "exitEvidence": "tool-session-60161-returned-native-exit-0",
+      "receiptCapturedAtUtc": "2026-09-28T09:52:47.470Z",
+      "logLastModifiedAtUtc": "2026-09-28T09:26:00.906Z",
+      "logSha256": "a2c0a97071faec4377a7a8a401715a0ec466c9dd2624c2d06f23eb1b40b2ce48",
+      "passed": 4099,
+      "skipped": 47,
+      "failed": 0,
+      "unhandledErrors": 0,
+      "passedFiles": 349,
+      "skippedFiles": 5,
+      "totalFiles": 354,
+      "totalTests": 4146,
+      "runnerDurationSeconds": 208.36
+    },
+    "browserCompletion": {
+      "kind": "independently-bound-browser-completion",
+      "bindingMethod": "wrapper-log-hash-and-summary-plus-junit-run-interval",
+      "sourceSha": "5191c2fe7cd086011a63c7391b7a61da3d7dc71f",
+      "command": "npx playwright test",
+      "startedAt": "2026-09-28T09:26:35.998Z",
+      "durationMs": 1532914,
+      "childExitCode": 0,
+      "completionObservedAtUtc": "2026-09-28T09:52:47.470Z",
+      "wrapperReceiptSha256": "54af77d13b65c59440668d64498e44a8b370fe2763750d199ae00f6afdecfa65",
+      "logSha256": "797d26406bf2764299d073ccef067fef35c1c337b4d953dfa15d499f1ed2d139",
+      "junitSha256": "47e2bcfef4227ab300e5d813390620b5c7c2a92e209953c188c6ecc0b7a7b105",
+      "junitLastModifiedAtUtc": "2026-09-28T09:52:08.841Z",
+      "junitDurationSeconds": 1520.202199,
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0
+    },
+    "vitest": {
+      "command": "npx vitest run",
+      "passed": 4099,
+      "skipped": 47,
+      "failed": 0,
+      "durationSeconds": 208.36,
+      "exitCode": 0,
+      "logSha256": "a2c0a97071faec4377a7a8a401715a0ec466c9dd2624c2d06f23eb1b40b2ce48"
+    },
+    "playwright": {
+      "command": "npx playwright test",
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0,
+      "durationSeconds": 1520.202199,
+      "wrapperDurationMs": 1532914,
+      "exitCode": 0,
+      "skippedIdentitiesMatch": true,
+      "skippedIdentities": [
+        "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+        "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+        "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should include employee names or &quot;Unassigned&quot; in notification|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+        "PWA Installation E2E › should cache static assets|epic-12\\story-12.4\\pwa-installation.spec.ts",
+        "PWA Installation E2E › should display app in standalone mode when installed|epic-12\\story-12.4\\pwa-installation.spec.ts",
+        "PWA Installation E2E › should handle service worker updates|epic-12\\story-12.4\\pwa-installation.spec.ts",
+        "PWA Installation E2E › should have apple touch icon|epic-12\\story-12.4\\pwa-installation.spec.ts",
+        "PWA Installation E2E › should have manifest.json linked in page head|epic-12\\story-12.4\\pwa-installation.spec.ts",
+        "PWA Installation E2E › should have theme color meta tag|epic-12\\story-12.4\\pwa-installation.spec.ts",
+        "PWA Installation E2E › should register service worker on page load|epic-12\\story-12.4\\pwa-installation.spec.ts",
+        "PWA Installation E2E › should show install prompt when criteria met|epic-12\\story-12.4\\pwa-installation.spec.ts",
+        "Prerequisites &amp; Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+        "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+        "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts",
+        "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13\\story-13.4\\export-selected-employees.spec.ts",
+        "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13\\story-13.4\\export-selected-employees.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+        "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13\\story-13.7\\export-workflow.spec.ts",
+        "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13\\story-13.9\\repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13\\story-13.9\\repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13\\story-13.9\\repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13\\story-13.9\\repayment-field-visibility.spec.ts",
+        "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16\\story-16.5\\field-highlighting.spec.ts",
+        "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16\\story-16.5\\field-highlighting.spec.ts",
+        "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16\\story-16.6\\real-database-highlighting.spec.ts",
+        "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16\\story-16.6\\real-database-highlighting.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17\\story-17.4\\export-external-users.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17\\story-17.4\\export-external-users.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17\\story-17.4\\export-external-users.spec.ts",
+        "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20\\story-20.7\\export-with-filters.spec.ts",
+        "Termination &amp; Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts"
+      ],
+      "junitSha256": "47e2bcfef4227ab300e5d813390620b5c7c2a92e209953c188c6ecc0b7a7b105",
+      "logSha256": "797d26406bf2764299d073ccef067fef35c1c337b4d953dfa15d499f1ed2d139"
+    },
+    "typescript": {
+      "exitCode": 0
+    },
+    "lint": {
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 296
+    },
+    "stagingPreviewBuild": {
+      "exitCode": 0
+    },
+    "retainedFixtureCatalog": {
+      "passed": 16,
+      "failed": 0,
+      "freshCleanChain": false
+    },
+    "supportNodeTests": {
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 177.8394
+    },
+    "completionContractTests": {
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 239.255,
+      "syntheticOnly": true
+    },
+    "dependencyAudit": {
+      "exitCode": 1,
+      "critical": 0,
+      "high": 0,
+      "moderate": 1,
+      "acceptedUntil": "2026-09-30"
+    }
+  }
+}
