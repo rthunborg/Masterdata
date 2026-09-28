@@ -434,6 +434,25 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     expect(spawn).not.toHaveBeenCalled();
   });
 
+  it('does not let a public caller bypass the production apply block with a capability-shaped field', async () => {
+    const spawn = vi.fn();
+    await expect(
+      runReviewedSupabaseCli({
+        args: [
+          'db', 'push', REVIEWED_TARGET_FLAG, REVIEWED_ENVIRONMENT_FLAG,
+          'production', '--include-all', '--skip-vault',
+        ],
+        environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
+        protectedCutoverCapability: true,
+        spawn,
+        executableVerifier: vi.fn(() => reviewedCliPath),
+      })
+    ).rejects.toThrow(
+      'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation'
+    );
+    expect(spawn).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['apply', ['db', 'push', REVIEWED_TARGET_FLAG, '--skip-vault']],
     [

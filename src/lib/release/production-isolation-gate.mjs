@@ -1,3 +1,4 @@
+import {assessProductionManagedWriterProfiles,productionManagedWriterProfileSha256} from './production-managed-writer-profiles.mjs';
 const SHA40 = /^[a-f0-9]{40}$/u;
 const SHA256 = /^[a-f0-9]{64}$/u;
 const MAX_EVIDENCE_AGE_MS = 15 * 60 * 1000;
@@ -83,6 +84,7 @@ const exactFalseMap = (value, keys) =>
   plainObject(value, keys) && keys.every((key) => value[key] === false);
 
 function inspectContext(value) {
+  const managedProfile = Object.hasOwn(value ?? {}, 'sourceTree');
   if (
     !plainObject(value, [
       'sourceSha',
@@ -92,6 +94,7 @@ function inspectContext(value) {
       'trustedBackendProfileSha256',
       'priorRealtimeServiceEnabled',
       'priorRealtimeConfigSha256',
+      ...(managedProfile ? ['sourceTree','sourceManifestSha256'] : []),
     ]) ||
     !SHA40.test(value.sourceSha) ||
     !SHA256.test(value.targetBindingSha256) ||
@@ -100,7 +103,8 @@ function inspectContext(value) {
     !SHA256.test(value.trustedBackendProfileSha256) ||
     typeof value.priorRealtimeServiceEnabled !== 'boolean' ||
     typeof value.priorRealtimeConfigSha256 !== 'string' ||
-    !SHA256.test(value.priorRealtimeConfigSha256)
+    !SHA256.test(value.priorRealtimeConfigSha256) ||
+    (managedProfile && (!SHA40.test(value.sourceTree) || !SHA256.test(value.sourceManifestSha256)))
   ) {
     return null;
   }
@@ -188,7 +192,7 @@ function inspectRealtimePriorState(value, context) {
     : null;
 }
 
-function inspectRealtimeProbe(value, context, platform, priorState) {
+function inspectLegacyRealtimeProbe(value, context, platform, priorState) {
   const receipt = inspectBoundReceipt(value, 'production-realtime-denial-probe', [
     'independentFromControlObservation',
     'connectionAttempted',
@@ -282,6 +286,113 @@ function inspectRealtimeProbe(value, context, platform, priorState) {
   return Object.freeze({
     ...receipt, evidenceTimes: [...observedConnectionTimes, ...reconnectTimes, ...reportTimes],
   });
+}
+
+// This receipt deliberately does not contain a dashboard report count. The
+// reports are delayed monitoring data, whereas the documented project-wide
+// Management API shutdown is the control that closes existing connections.
+function inspectRealtimeShutdownQuiescence(value, context, platform, priorState) {
+  const receipt = inspectBoundReceipt(value, 'production-realtime-shutdown-quiescence-observation', [
+    'independentFromControlObservation',
+    'controlMethod',
+    'priorRealtimeServiceEnabled',
+    'configDisableRequestedAtUtc',
+    'configDisableResponseAtUtc',
+    'configDisableHttpStatus',
+    'configDisabledReadbackAtUtc',
+    'configDisabledReadbackServiceEnabled',
+    'configDisabledReadbackSha256',
+    'shutdownRequestedAtUtc',
+    'shutdownResponseAtUtc',
+    'shutdownHttpStatus',
+    'existingConnectionEstablishedBeforeIsolation',
+    'existingSubscriptionAcknowledgedBeforeIsolation',
+    'existingConnectionDisconnectedByService',
+    'existingConnectionClosedByCaller',
+    'existingConnectionEstablishedAtUtc',
+    'existingSubscriptionAcknowledgedAtUtc',
+    'existingConnectionDisconnectedAtUtc',
+    'reconnectAttemptedAtUtc',
+    'reconnectDeniedAtUtc',
+    'connectionAttempted',
+    'connectionDenied',
+    'writeObserved',
+    'httpStatus',
+    'providerErrorCode',
+    'denialCause',
+  ]);
+  if (!receipt || !context || !platform || !priorState ||
+    receipt.independentFromControlObservation !== true ||
+    receipt.controlMethod !== 'supabase-management-api-realtime-disable-and-shutdown' ||
+    receipt.priorRealtimeServiceEnabled !== context.priorRealtimeServiceEnabled ||
+    receipt.configDisableHttpStatus !== 204 ||
+    receipt.configDisabledReadbackServiceEnabled !== false ||
+    typeof receipt.configDisabledReadbackSha256 !== 'string' ||
+    !SHA256.test(receipt.configDisabledReadbackSha256) ||
+    (context.priorRealtimeServiceEnabled &&
+      receipt.configDisabledReadbackSha256 === context.priorRealtimeConfigSha256) ||
+    receipt.shutdownHttpStatus !== 204 ||
+    receipt.connectionAttempted !== true ||
+    receipt.connectionDenied !== true ||
+    receipt.writeObserved !== false ||
+    receipt.httpStatus !== 403 ||
+    receipt.providerErrorCode !== 'RealtimeDisabledForTenant' ||
+    receipt.denialCause !== 'realtime-disabled-for-tenant' ||
+    receipt.existingConnectionClosedByCaller !== false
+  ) return null;
+
+  const controlTimes = [
+    receipt.configDisableRequestedAtUtc,
+    receipt.configDisableResponseAtUtc,
+    receipt.configDisabledReadbackAtUtc,
+    receipt.shutdownRequestedAtUtc,
+    receipt.shutdownResponseAtUtc,
+    receipt.reconnectAttemptedAtUtc,
+    receipt.reconnectDeniedAtUtc,
+  ].map(canonicalUtc);
+  if (controlTimes.some((time) => time === null) ||
+    controlTimes.some((time, index) => index > 0 && time <= controlTimes[index - 1]) ||
+    priorState.capturedAt >= controlTimes[0] ||
+    platform.capturedAt < controlTimes[2] ||
+    platform.capturedAt >= controlTimes[3] ||
+    controlTimes[6] > receipt.capturedAt
+  ) return null;
+
+  const connectionTimes = [
+    receipt.existingConnectionEstablishedAtUtc,
+    receipt.existingSubscriptionAcknowledgedAtUtc,
+    receipt.existingConnectionDisconnectedAtUtc,
+  ];
+  if (!context.priorRealtimeServiceEnabled) {
+    if (receipt.existingConnectionEstablishedBeforeIsolation !== false ||
+      receipt.existingSubscriptionAcknowledgedBeforeIsolation !== false ||
+      receipt.existingConnectionDisconnectedByService !== false ||
+      connectionTimes.some((time) => time !== null)
+    ) return null;
+    return Object.freeze({ ...receipt, evidenceTimes: controlTimes });
+  }
+
+  const observedConnectionTimes = connectionTimes.map(canonicalUtc);
+  if (receipt.existingConnectionEstablishedBeforeIsolation !== true ||
+    receipt.existingSubscriptionAcknowledgedBeforeIsolation !== true ||
+    receipt.existingConnectionDisconnectedByService !== true ||
+    observedConnectionTimes.some((time) => time === null) ||
+    priorState.capturedAt >= observedConnectionTimes[0] ||
+    observedConnectionTimes[0] >= observedConnectionTimes[1] ||
+    observedConnectionTimes[1] >= controlTimes[0] ||
+    observedConnectionTimes[2] <= controlTimes[0] ||
+    observedConnectionTimes[2] >= controlTimes[5] ||
+    controlTimes[5] <= observedConnectionTimes[2]
+  ) return null;
+  return Object.freeze({
+    ...receipt,
+    evidenceTimes: [...observedConnectionTimes, ...controlTimes],
+  });
+}
+
+function inspectRealtimeProbe(value, context, platform, priorState) {
+  return inspectLegacyRealtimeProbe(value, context, platform, priorState) ??
+    inspectRealtimeShutdownQuiescence(value, context, platform, priorState);
 }
 
 function inspectDataApi(value) {
@@ -473,6 +584,7 @@ function inspectNetwork(value) {
 }
 
 function inspectDatabase(value, context) {
+  const managedProfile = Object.hasOwn(value ?? {}, 'managedWriterObservation');
   const receipt = inspectBoundReceipt(value, 'production-database-isolation-observation', [
     'databaseRoleGraphSha256',
     'trustedBackendProfileSha256',
@@ -480,12 +592,26 @@ function inspectDatabase(value, context) {
     'unknownClientBackendCount',
     'unknownBackendCount',
     'unmanagedWritePathCount',
+    ...(managedProfile ? ['managedWriterObservation'] : []),
   ]);
   if (
     !receipt ||
     !SHA256.test(receipt.databaseRoleGraphSha256) ||
     !SHA256.test(receipt.trustedBackendProfileSha256)
   ) return null;
+  if (managedProfile) {
+    const assessed=assessProductionManagedWriterProfiles(receipt.managedWriterObservation, {
+      ...context, now:new Date(receipt.capturedAt),
+    });
+    return assessed.disposition==='initial_managed_profiles_classified_not_isolation' &&
+      productionManagedWriterProfileSha256(receipt.managedWriterObservation)===context.trustedBackendProfileSha256 &&
+      receipt.databaseRoleGraphSha256===context.databaseRoleGraphSha256 &&
+      receipt.trustedBackendProfileSha256===context.trustedBackendProfileSha256 &&
+      receipt.unknownLoginRoleCount===receipt.managedWriterObservation.rawUnknownLoginRoleCount &&
+      receipt.unknownBackendCount===receipt.managedWriterObservation.rawUnknownBackendCount &&
+      receipt.unknownClientBackendCount===0 && receipt.unmanagedWritePathCount===0
+      ? receipt : null;
+  }
   return receipt.databaseRoleGraphSha256 === context.databaseRoleGraphSha256 &&
     receipt.trustedBackendProfileSha256 === context.trustedBackendProfileSha256 &&
     receipt.unknownLoginRoleCount === 0 &&
@@ -506,6 +632,10 @@ function inspectDrain(value) {
     'existingApplicationSessionCount',
     'postBarrierWriteAttemptCount',
     'postBarrierWriteSuccessCount',
+    'replicationSlotInventoryComplete',
+    'activeReplicationSlotCount',
+    'subscriptionInventoryComplete',
+    'enabledSubscriptionCount',
   ]);
   if (!receipt) return null;
   const counts = [
@@ -515,14 +645,20 @@ function inspectDrain(value) {
     receipt.existingApplicationSessionCount,
     receipt.postBarrierWriteAttemptCount,
     receipt.postBarrierWriteSuccessCount,
+    receipt.activeReplicationSlotCount,
+    receipt.enabledSubscriptionCount,
   ];
   return receipt.observedAfterControlObservations === true &&
     receipt.allApplicableSessionsObserved === true &&
+    receipt.replicationSlotInventoryComplete === true &&
+    receipt.subscriptionInventoryComplete === true &&
     counts.every(nonNegativeInteger) &&
     receipt.applicableApplicationSessionCount === 0 &&
     receipt.inflightWriteCount === 0 &&
     receipt.preparedApplicationWriteCount === 0 &&
     receipt.existingApplicationSessionCount === 0 &&
+    receipt.activeReplicationSlotCount === 0 &&
+    receipt.enabledSubscriptionCount === 0 &&
     receipt.postBarrierWriteAttemptCount > 0 &&
     receipt.postBarrierWriteSuccessCount === 0
     ? receipt

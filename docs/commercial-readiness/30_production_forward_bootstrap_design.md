@@ -1,16 +1,101 @@
-# Production Forward-Bootstrap Design
+# Production Forward-Bootstrap Runbook and Design
 
-> **Superseded sequence — 2026-09-23.** The forward-first proposal below is historical design context, not the current cutover order. Fresh read-only production proof found the migration-history table physically absent. The reviewed 55-row history-repair ledger must therefore be completed and separately authorized **before** an exact thirteen-version dry run or forward apply. The strict `production_pre_apply` catalog currently fails seven named groups; the pre-repair gate requires a fresh, exact observed-state profile and individually proved repair effects without reporting that catalog phase as passed. The strict `post_apply` catalog must still pass all 16 groups. The canonical [cutover runbook](27_supabase_cutover_runbook.md) controls the proposed order. No cleanup, history repair, settings change, migration apply, deployment, main merge or reopening is authorized by this design note; production stays paused.
+> **Current reviewed sequence — 2026-09-28.** This replaces the circular
+> historical “55 repairs before 13 forwards” proposal below. It is an
+> operational plan only: it authorizes no hosted write, cleanup, history
+> repair, settings change, deployment, main merge, or reopening. Production
+> remains paused/no-go. The migration source used for the local rehearsal was
+> the clean, source-pinned commit
+> `88cf3efcf7fdb8cdbfd00d850da6082b0f6fdd65`; a hosted candidate must bind
+> its own reviewed final source identity.
+
+## Current forward-first sequence
+
+The production history table being absent does not require replaying the 55
+older migrations. The reviewed CLI 2.115.0 can create its own history table
+when it applies the isolated, source-only ordered 13-version subset. The
+procedure is intentionally divided into separate gates:
+
+1. Collect fresh read-only production observations. They must bind the
+   admitted observed profile, target identity, and source candidate. The
+   seven strict pre-apply catalog failures and the 48 orphaned saved filters
+   are failures to resolve, never a passed catalog result or an accepted
+   exception.
+2. Complete separately authorized data cleanup when its count-only and
+   preservation prerequisites pass, then prove application, direct-client,
+   Data API, Realtime, database, and job isolation. The existing production
+   pause stays in place throughout; it is not by itself technical isolation.
+3. Materialize a disposable source-only directory containing exactly the
+   immutable 13 execute migrations. Reverify the full source, raw migration
+   bytes, Git blobs, CLI/tool/TLS pins, three-way target binding, and a dry
+   run whose output lists precisely that order. No raw SQL history insert,
+   migration replay, reset, or forward-version repair is permitted.
+4. After the separately reviewed production apply gate, run the normal pinned
+   CLI apply from that directory. The expected CLI behavior is creation of the
+   history table and exactly those 13 forward records.
+5. Immediately collect fresh post-forward proof: exact 13 forward history,
+   strict post-apply catalog 16/16 in the reviewed order, a complete
+   independent canonical 68-migration schema fingerprint, and the complete
+   preservation fingerprint. Any missing, reordered, duplicate, stale, or
+   misbound receipt stops the procedure.
+6. Prepare the 55-row baseline-adoption review. Every row remains `UNPROVED`
+   until the live post-forward receipts support its current-final, source
+   supersession, data-preservation, or seed-state disposition. This is not a
+   claim that the historical migration ran. Historical seed identities are
+   not recreated or assumed present.
+7. Obtain the separate owner adoption decision and the separate exact
+   history-repair approval. Only then may the pinned CLI record the 55 older
+   source-bound versions as applied. Verify the resulting exact 68-version
+   history, strict catalog, canonical fingerprint, and preservation evidence
+   again before any later release decision.
+
+The prior repair-first sequence is retained below only as dated,
+non-executable history. It is superseded because it required material-effect
+proof that itself depends on the post-forward canonical state. This update
+does not weaken the 55-row ledger: it changes when the ledger can be reviewed,
+not what it must prove.
+
+## Local CLI rehearsal — 2026-09-28
+
+The guarded, synthetic local matrix exercised the complete seven-case
+transaction/history set with no hosted access. The required command produced
+**8/8 passing tests**, zero failures and zero skips in **322.92 seconds**
+(321.726 seconds test time). The eighth test enforces required local admission;
+the other seven are the transaction/history cases.
+
+In the successful post-cleanup synthetic case, the pinned CLI applied the
+source-only 13-version subset from an absent migration-history table. It then
+performed **55/55** serial `migration repair --status applied` operations and
+the observer found exactly **68** history versions. The catalog and
+preservation fingerprints before and after the repairs matched. The six
+remaining cases preserved their expected stop classifications, including
+rejected-before-current-effect, committed-but-unrecorded, rolled-back-but-
+unrecorded, and timeout uncertainty. The rehearsal proves local CLI behavior
+for the tested synthetic fixture only. It does not prove production data
+mapping, target admission, isolation, cleanup, any historical execution, or
+authority for a hosted operation.
+
+See [the redacted rehearsal receipt](evidence/production-forward-first-local-rehearsal-2026-09-28.md)
+and its [machine-readable summary](evidence/production-forward-first-local-rehearsal-2026-09-28.json).
+
+## Backup statement
+
+The owner attests that the newest locally stored backup was restore-tested and
+is the rollback source. This is an owner statement, not independently verified
+restore evidence. No backup path, contents, credentials, or records are
+included in this repository.
+
+> **Historical repair-first decision — 2026-09-23.** This snapshot recorded a repair-first proposal after fresh read-only production proof found the migration-history table physically absent. It required the reviewed 55-row history-repair ledger to be completed and separately authorized **before** an exact thirteen-version dry run or forward apply. That order is now superseded by the current 2026-09-28 forward-first proposal above. The dated strict `production_pre_apply` catalog result had seven named failures; its repair-first gate required a fresh exact observed-state profile and individually proved repair effects, without reporting that catalog phase as passed. The strict `post_apply` catalog still required all 16 groups. This historical snapshot does not control current cutover gates; the canonical [cutover runbook](27_supabase_cutover_runbook.md) controls the current proposed order. No cleanup, history repair, settings change, migration apply, deployment, main merge, or reopening is authorized by this design note; production stays paused.
 
 > **Local CLI matrix verification — 2026-09-23.** PR #113 merged as `c193235efa3bc3a00ad3d78e152e80dec6cf382f` with the reviewed tree unchanged; main remains `822350986f4c023948a7bbf490ddffc371185c4a`. PR #114 implementation `a8634ec58992a8a474f0b16fb48f1d8d00764fd0` passes the local seven-case Supabase CLI 2.115.0 matrix, focused 174/174, full Vitest 3935/3935 with zero skips/failures, and exact full Playwright 163 passed / 47 individually matched historical skips / zero failures or errors. TypeScript, zero-error lint, staging-preview build and the fresh 68-migration-plus-seed strict catalog 16/16 pass. No hosted proof was refreshed in this component. The local result does not establish production-profile mapping, traffic isolation, target-write admission, cleanup or repair authority. Production stays paused/no-go; Story 22.15 in-progress; Epic 23 on-hold. The 55-row ledger, 13 proposed executes, 48-filter cleanup and seven strict production failures retain their separate prerequisites. Earlier dated records remain historical evidence. [Detailed receipt and limits](evidence/local-synthetic-cli-matrix-2026-09-23.md).
 
-> **Current post-quiescence evidence — 2026-09-21.** PR #109 reviewed head b827a7b merged as staging 0a8341f with an identical tree; main remains 8223509. On 2026-09-21 the owner-approved entire Supabase Nightly Backup workflow disable completed: disabled_manually, with zero runs in all five nonterminal states. Automated backups, pruning and staging refresh are paused; existing backups were untouched and re-enable needs a separate decision. Fresh staging proof passed 68/68 history, strict catalog 16/16, scoped advisors and unchanged repayment, four permission hashes and audit baseline. Read-only Vercel inspection reconfirmed the recorded production pause target, disabled automatic domain assignment and zero active crons. Fresh production count-only proof still finds 48 orphaned saved filters, zero empty/overlength names; its migration prerequisite fails. Full database isolation and protected bootstrap remain unproved; 55 ledger rows remain UNPROVED/unsigned and 13 executes remain proposed. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold. [Receipt and remaining gates](evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md).
+> **Historical post-quiescence evidence — 2026-09-21.** PR #109 reviewed head b827a7b merged as staging 0a8341f with an identical tree; main remains 8223509. On 2026-09-21 the owner-approved entire Supabase Nightly Backup workflow disable completed: disabled_manually, with zero runs in all five nonterminal states. Automated backups, pruning and staging refresh are paused; existing backups were untouched and re-enable needs a separate decision. Fresh staging proof passed 68/68 history, strict catalog 16/16, scoped advisors and unchanged repayment, four permission hashes and audit baseline. Read-only Vercel inspection reconfirmed the recorded production pause target, disabled automatic domain assignment and zero active crons. Fresh production count-only proof still finds 48 orphaned saved filters, zero empty/overlength names; its migration prerequisite fails. Full database isolation and protected bootstrap remain unproved; 55 ledger rows remain UNPROVED/unsigned and 13 executes remain proposed. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold. [Receipt and remaining gates](evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md).
 
 > **Status — 2026-09-19: non-executable design proposal.** This document records a potential way to establish the production migration baseline without replaying unsafe historical SQL or claiming that missing effects are already present. It authorizes no database, history, setting, deployment, main-merge, or reopening action. Production remains paused.
 
 The current design source is PR #105 staging candidate `51f1adbf9cf3446dd2405bc4bee57cd22a005759`. A future implementation must bind its own final reviewed source SHA/tree; this dated candidate is not a release authorization.
 
-## Problem and proposal boundary
+## Historical problem and proposal boundary — 2026-09-19 snapshot
 
 The dated production observation recorded zero migration-history rows and seven failed strict catalog groups; it was not a refreshed complete proof at this design date. The current source proposes 55 history repairs and 13 forward executions, but normal `db push` cannot reach the later saved-filter reconciliation while the earlier unsafe `20260130212612_create_user_filters.sql` is unrecorded. That historical file must not be replayed over its existing table.
 
@@ -32,7 +117,7 @@ The 13-file source set is the current proposed execute order from `supabase/migr
 12. `20260910184840`
 13. `20260910184841`
 
-## Required reviewed implementation
+## Historical required implementation — superseded proposal
 
 A future code PR must add, test, and review a dedicated forward-bootstrap mode. It must bind an immutable full-repository source SHA/tree and a separate subset manifest containing the ordered file names, raw-byte SHA-256 values, and Git blob identities. The subset manifest must be derived from the immutable source and kept outside the asserted source identity so it is not self-referential.
 
@@ -42,7 +127,7 @@ The mode must create a disposable, access-controlled working copy containing onl
 
 Pinned CLI 2.115.0 must prove its history-recording and transaction behavior for these files before this design can be used; several immutable files contain explicit transaction boundaries. On any failure or uncertain result, stop, preserve redacted output, and inspect the current migration's physical effects and history through fresh connections before a reviewed continuation plan. Do not assume a recorded prefix fully describes physical state, retry automatically, or use history repair to pretend that a forward file applied.
 
-## Preconditions and proof model
+## Historical preconditions and proof model
 
 Before **any** write, including the separately gated cleanup of the 48 saved filters whose owners are absent, complete and prove database, Data API, Realtime, direct-client, and application traffic isolation. The seasonal pause is retained but is not sufficient technical isolation. Isolation must remain active through every forward migration, proof, and any later repair.
 
@@ -50,7 +135,7 @@ The forward subset must first pass against a guarded local fixture that reproduc
 
 After a successful future bootstrap and strict final catalog proof, ledger rows may be signed only as **observed**, **reconstructed**, or **superseded** state-equivalence evidence. Each row must enumerate every material effect of the exact source migration, its precise state-equivalence predicate, independent pre- and post-forward evidence, applicable data-preservation evidence, and any exact ordered later forward lineage that reconstructs or supersedes that effect. Missing historical execution evidence must be stated explicitly. A catalog pass, representation fingerprint, or lexical match alone cannot establish semantic equivalence or sign a row. Any unsupported effect keeps the row UNPROVED. This supports a future history baseline; it does not claim that the historical migration originally executed. The existing 55-row ledger remains entirely unsigned and unproved until that work is complete.
 
-## Gates and ordering
+## Historical gates and ordering — not active next actions
 
 The implementation is proposed as these explicitly ordered, independently reviewed PRs. This scope split is part of PR #107 review; it does not waive the complete bootstrap acceptance gate:
 

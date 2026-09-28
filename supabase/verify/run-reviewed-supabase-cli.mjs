@@ -1,8 +1,8 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, createPublicKey, verify } from 'node:crypto';
 import { readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { verifyApprovedSslRootCertificate } from './verify-production-baseline-catalog.mjs';
 import { verifyConfiguredSupabaseTarget } from './verify-target-binding.mjs';
@@ -416,7 +416,7 @@ export function verifyApprovedSupabaseCliExecutable({
   return resolvedPath;
 }
 
-export async function runReviewedSupabaseCli({
+async function runReviewedSupabaseCliInternal({
   args = process.argv.slice(2),
   workspace = process.cwd(),
   environment = process.env,
@@ -425,6 +425,10 @@ export async function runReviewedSupabaseCli({
   targetVerifier = verifyConfiguredSupabaseTarget,
   rootCertificateVerifier = verifyApprovedSslRootCertificate,
   readManifest = readFileSync,
+  // This value is private to the capability factory below. The public runner
+  // always supplies false and no caller option can override that boundary.
+  protectedCutoverCapability = false,
+  captureProtectedResult = false,
 } = {}) {
   if (
     !Array.isArray(args) ||
@@ -517,7 +521,8 @@ export async function runReviewedSupabaseCli({
     if (
       databaseCommandKey === 'db:push' &&
       approvedIncludeAllEnvironment === 'production' &&
-      !args.includes('--dry-run')
+      !args.includes('--dry-run') &&
+      protectedCutoverCapability !== true
     ) {
       throw new Error(PRODUCTION_STAFFING_PRE_EXECUTE_PROOF_BLOCK_MESSAGE);
     }
@@ -537,8 +542,11 @@ export async function runReviewedSupabaseCli({
   const result = spawn(executable, childArguments, {
     cwd: workspace,
     env: childEnvironment,
-    stdio: 'inherit',
+    stdio: protectedCutoverCapability === true || captureProtectedResult === true ? 'pipe' : 'inherit',
     windowsHide: true,
+    ...(protectedCutoverCapability === true || captureProtectedResult === true
+      ? { encoding: 'utf8', timeout: 90_000, maxBuffer: 1024 * 1024 }
+      : {}),
   });
 
   if (result.error) {
@@ -550,7 +558,143 @@ export async function runReviewedSupabaseCli({
     );
   }
 
-  return result.status;
+  return captureProtectedResult === true ? result : result.status;
+}
+
+/** Public entry point: production non-dry-run apply remains blocked. */
+export async function runReviewedSupabaseCli(options = {}) {
+  return runReviewedSupabaseCliInternal({
+    ...options,
+    protectedCutoverCapability: false,
+    captureProtectedResult: false,
+  });
+}
+
+/**
+ * Internal package seam for a closed, signed protected-cutover worker. This
+ * is intentionally a factory rather than an option on the public runner, so
+ * command-line callers and user-fed JSON cannot set an apply boolean. The
+ * worker still has to validate its host-origin packet before invoking it.
+ */
+export function createProtectedProductionCutoverExecutor({ packet, nonce, workspace } = {}) {
+  let root;
+  if (
+    typeof packet !== 'string' ||
+    !/^[a-f0-9]{64}$/u.test(nonce ?? '') ||
+    typeof workspace !== 'string' ||
+    !path.isAbsolute(workspace)
+  ) {
+    throw new Error('Protected production cutover capability is unavailable');
+  }
+  let envelope;
+  let request;
+  try {
+    root = fileURLToPath(new URL('../../', import.meta.url));
+    envelope = JSON.parse(packet);
+    if (
+      !envelope || typeof envelope !== 'object' || Array.isArray(envelope) ||
+      JSON.stringify(Object.keys(envelope).sort()) !== JSON.stringify(['payload', 'signature']) ||
+      typeof envelope.payload !== 'string' || typeof envelope.signature !== 'string'
+    ) throw new Error();
+    const payload = Buffer.from(envelope.payload, 'base64');
+    const publicKey = createPublicKey({
+      key: JSON.parse(readFileSync(path.join(root, 'bootstrap-origin.json'), 'utf8')),
+      format: 'jwk',
+    });
+    if (!verify('RSA-SHA256', payload, publicKey, Buffer.from(envelope.signature, 'base64'))) throw new Error();
+    request = JSON.parse(payload.toString('utf8'));
+  } catch {
+    throw new Error('Protected production cutover capability is unavailable');
+  }
+  if (
+    !request || typeof request !== 'object' || Array.isArray(request) ||
+    request.schemaVersion !== 1 || request.operation !== 'apply-forward-13' ||
+    request.nonce !== nonce || request.workspace !== workspace ||
+    request.environment?.EXPECTED_SUPABASE_ENVIRONMENT !== 'production'
+  ) {
+    throw new Error('Protected production cutover capability is unavailable');
+  }
+  const fixedRequest = Object.freeze(request);
+  let invoked = false;
+  return async (...options) => {
+    if (options.length !== 0 || invoked) throw new Error('Protected production cutover capability is unavailable');
+    invoked = true;
+    const packageRecord = JSON.parse(readFileSync(path.join(root, 'toolchain-package.json'), 'utf8'));
+    if (
+      packageRecord.sourceCommit !== fixedRequest.sourceSha ||
+      packageRecord.sourceTree !== fixedRequest.sourceTree ||
+      packageRecord.sourceManifestSha256 !== fixedRequest.sourceManifestSha256 ||
+      fixedRequest.isolationContext?.sourceSha !== fixedRequest.sourceSha ||
+      fixedRequest.isolationContext?.targetBindingSha256 !== fixedRequest.targetBindingSha256 ||
+      fixedRequest.isolationContext?.sourceTree !== fixedRequest.sourceTree ||
+      fixedRequest.isolationContext?.sourceManifestSha256 !== fixedRequest.sourceManifestSha256
+    ) throw new Error('Protected production cutover capability is unavailable');
+    const [staffingModule, isolationModule, observedModule, bootstrapModule] = await Promise.all([
+      import('../../src/lib/release/production-staffing-pre-execute-contract.mjs'),
+      import('../../src/lib/release/production-isolation-gate.mjs'),
+      import('../../src/lib/release/production-observed-profile.mjs'),
+      import('../../src/lib/release/production-bootstrap-admission.mjs'),
+    ]);
+    const verifyPrerequisites = () => {
+    const keys = ['schemaVersion', 'operation', 'nonce', 'workspace', 'environment',
+      'sourceSha', 'sourceTree', 'sourceManifestSha256', 'targetBindingSha256',
+      'staffingReceipt', 'isolationReceipts', 'isolationContext', 'preForwardObservation', 'reviewRecords'];
+    if (observedModule.productionTargetBindingSha256(fixedRequest.environment.EXPECTED_SUPABASE_PROJECT_REF) !== fixedRequest.targetBindingSha256 ||
+      JSON.stringify(Object.keys(fixedRequest).sort()) !== JSON.stringify(keys.sort()) ||
+      fixedRequest.preForwardObservation?.profilePhase !== 'post_cleanup' ||
+      JSON.stringify(Object.keys(fixedRequest.reviewRecords ?? {}).sort()) !==
+        JSON.stringify(['backupRecordSha256', 'cleanupRecordSha256']) ||
+      !Object.values(fixedRequest.reviewRecords).every(value => typeof value === 'string' && /^[a-f0-9]{64}$/u.test(value)) ||
+      packageRecord.kind !== 'offline-protected-production-cutover-package' || packageRecord.schemaVersion !== 1 ||
+      !Array.isArray(packageRecord.plan) ||
+      JSON.stringify(packageRecord.plan.map(entry => entry.version)) !== JSON.stringify(bootstrapModule.PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS)) {
+      throw new Error('Protected production cutover capability is unavailable');
+    }
+    const staffing = staffingModule.assessProductionStaffingPreExecuteProof(
+      fixedRequest.staffingReceipt,
+      {
+        sourceSha: fixedRequest.sourceSha,
+        sourceTree: fixedRequest.sourceTree,
+        sourceManifestSha256: fixedRequest.sourceManifestSha256,
+        targetBindingSha256: fixedRequest.targetBindingSha256,
+      }
+    );
+    const isolation = isolationModule.assessProductionMaintenanceIsolation(
+      fixedRequest.isolationReceipts,
+      { expectedContext: fixedRequest.isolationContext }
+    );
+    const observed = observedModule.assessProductionObservedProfile({
+      observation: fixedRequest.preForwardObservation,
+      expectedContext: {sourceSha: fixedRequest.sourceSha, targetBindingSha256: fixedRequest.targetBindingSha256},
+    });
+    if (
+      staffing.disposition !== 'staffing_pre_execute_proved_not_execution_authority' ||
+      isolation.disposition !== 'isolation_proved_not_execution_authority' ||
+      observed.disposition !== 'profile_match_not_admission'
+    ) throw new Error('Protected production cutover capability is unavailable');
+    };
+    verifyPrerequisites();
+    const args = ['db', 'push', '--reviewed-target', '--reviewed-environment', 'production', '--include-all', '--skip-vault'];
+    const dryArgs = ['db', 'push', '--reviewed-target', '--reviewed-environment', 'production', '--dry-run', '--include-all', '--skip-vault'];
+    const dryRun = await runReviewedSupabaseCliInternal({
+      args: dryArgs, workspace,
+      environment: fixedRequest.environment, captureProtectedResult: true,
+    });
+    if (dryRun.status !== 0 || typeof dryRun.stdout !== 'string' || typeof dryRun.stderr !== 'string') {
+      throw new Error('Protected production cutover dry run refused');
+    }
+    bootstrapModule.parseExactProductionBootstrapDryRun(
+      dryRun.stdout + dryRun.stderr, packageRecord.plan
+    );
+    verifyPrerequisites();
+    // Only the signed, installed worker reaches this fixed apply shape. The
+    // public entry point cannot request this capability or supply child options.
+    // A nonzero/uncertain result is never retried and never authorizes repair.
+    return runReviewedSupabaseCliInternal({
+      args, workspace, environment: fixedRequest.environment,
+      protectedCutoverCapability: true,
+    });
+  };
 }
 
 const invokedDirectly =

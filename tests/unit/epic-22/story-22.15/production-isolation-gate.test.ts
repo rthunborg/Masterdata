@@ -4,6 +4,9 @@ import {
   assessProductionMaintenanceIsolation,
   PRODUCTION_ISOLATION_AUTH_HOOKS,
 } from '../../../../src/lib/release/production-isolation-gate.mjs';
+import {productionManagedWriterProfileSha256,PRODUCTION_PRE_FORWARD_CLI_PROFILE,
+  PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,PRODUCTION_PRE_FORWARD_CLI_OBJECTS}
+  from '../../../../src/lib/release/production-managed-writer-profiles.mjs';
 
 const sourceSha = 'a'.repeat(40);
 const targetBindingSha256 = 'b'.repeat(64);
@@ -138,12 +141,101 @@ function receipts() {
       existingApplicationSessionCount: 0,
       postBarrierWriteAttemptCount: 2,
       postBarrierWriteSuccessCount: 0,
+      replicationSlotInventoryComplete: true,
+      activeReplicationSlotCount: 0,
+      subscriptionInventoryComplete: true,
+      enabledSubscriptionCount: 0,
     }),
   };
 }
 
+function shutdownQuiescenceReceipts() {
+  const value = receipts();
+  value.realtimeProbe = bound('production-realtime-shutdown-quiescence-observation', {
+    capturedAtUtc: '2026-09-23T14:00:01.000Z',
+    independentFromControlObservation: true,
+    controlMethod: 'supabase-management-api-realtime-disable-and-shutdown',
+    priorRealtimeServiceEnabled: true,
+    configDisableRequestedAtUtc: '2026-09-23T13:59:58.400Z',
+    configDisableResponseAtUtc: '2026-09-23T13:59:58.500Z',
+    configDisableHttpStatus: 204,
+    configDisabledReadbackAtUtc: '2026-09-23T13:59:58.600Z',
+    configDisabledReadbackServiceEnabled: false,
+    configDisabledReadbackSha256: '9'.repeat(64),
+    shutdownRequestedAtUtc: '2026-09-23T14:00:00.100Z',
+    shutdownResponseAtUtc: '2026-09-23T14:00:00.200Z',
+    shutdownHttpStatus: 204,
+    existingConnectionEstablishedBeforeIsolation: true,
+    existingSubscriptionAcknowledgedBeforeIsolation: true,
+    existingConnectionDisconnectedByService: true,
+    existingConnectionClosedByCaller: false,
+    existingConnectionEstablishedAtUtc: '2026-09-23T13:59:58.000Z',
+    existingSubscriptionAcknowledgedAtUtc: '2026-09-23T13:59:58.200Z',
+    existingConnectionDisconnectedAtUtc: '2026-09-23T13:59:58.700Z',
+    reconnectAttemptedAtUtc: '2026-09-23T14:00:00.500Z',
+    reconnectDeniedAtUtc: '2026-09-23T14:00:00.600Z',
+    connectionAttempted: true,
+    connectionDenied: true,
+    writeObserved: false,
+    httpStatus: 403,
+    providerErrorCode: 'RealtimeDisabledForTenant',
+    denialCause: 'realtime-disabled-for-tenant',
+  }) as unknown as typeof value.realtimeProbe;
+  return value;
+}
+
 const assess = (value = receipts(), options = { expectedContext: context(), now }) =>
   assessProductionMaintenanceIsolation(value, options);
+
+function managedProfileEvidence() {
+  const evidence=receipts();
+  const profile={schemaVersion:1,kind:'production-managed-writer-observation',environment:'production',phase:'pre_forward',
+    sourceSha,sourceTree:'1'.repeat(40),sourceManifestSha256:'2'.repeat(64),targetBindingSha256,capturedAtUtc,
+    cli:{presentCount:1,attributes:{...PRODUCTION_PRE_FORWARD_CLI_PROFILE},memberships:{...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP},
+      database:{connect:true,create:false,temporary:true},schemas:{schemaCount:9,usageCount:1,createCount:0,ownedSchemaCount:0},
+      objects:{...PRODUCTION_PRE_FORWARD_CLI_OBJECTS},activeSessionCount:0,completeNonSecretRoleGraphSha256:databaseRoleGraphSha256},
+    workers:{cronLauncherCount:1,netWorkerCount:1,otherCandidateBackendCount:0,cronPreloaded:true,netPreloaded:true,
+      cronDatabaseMatchesConnected:true,netDatabaseMatchesConnected:true,cronLaunchActiveJobs:true,pgCronExtensionCount:0,
+      pgNetExtensionCount:0,cronJobTablePresent:false,netRequestQueueTablePresent:false,netResponseTablePresent:false},
+    rawUnknownLoginRoleCount:1,rawUnknownBackendCount:2,otherUnknownLoginRoleCount:0,otherUnknownBackendCount:0,
+    correlation:{cliLoginProfileMd5:'f'.repeat(32),rawUnknownLoginProfileMd5:'f'.repeat(32),
+      managedBackendProfileMd5:'a'.repeat(32),rawUnknownBackendProfileMd5:'a'.repeat(32)}};
+  const profileHash=productionManagedWriterProfileSha256(profile);
+  evidence.database=bound('production-database-isolation-observation',{
+    databaseRoleGraphSha256,trustedBackendProfileSha256:profileHash,unknownLoginRoleCount:1,unknownClientBackendCount:0,
+    unknownBackendCount:2,unmanagedWritePathCount:0,managedWriterObservation:profile}) as unknown as typeof evidence.database;
+  const expectedContext={...context(),trustedBackendProfileSha256:profileHash,
+    sourceTree:profile.sourceTree,sourceManifestSha256:profile.sourceManifestSha256};
+  return {evidence,profile,expectedContext};
+}
+describe('initial managed-profile accounting in complete isolation',()=>{
+  it('retains raw unknown totals while requiring exact classified profiles and every other plane',()=>{
+    const {evidence,expectedContext}=managedProfileEvidence();
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('isolation_proved_not_execution_authority');
+    evidence.dataApiProbe.requestDenied=false;
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it.each(['unknownLoginRoleCount','unknownBackendCount','unknownClientBackendCount','unmanagedWritePathCount'])('rejects unaccounted %s',key=>{
+    const {evidence,expectedContext}=managedProfileEvidence();evidence.database[key]++;
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it('rejects forged/stale profile content even when a caller rehashes it',()=>{
+    const {evidence,profile,expectedContext}=managedProfileEvidence();profile.workers.cronJobTablePresent=true;
+    expectedContext.trustedBackendProfileSha256=productionManagedWriterProfileSha256(profile);
+    evidence.database.trustedBackendProfileSha256=expectedContext.trustedBackendProfileSha256;
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+    profile.workers.cronJobTablePresent=false;profile.capturedAtUtc='2026-09-23T13:30:00.000Z';
+    expectedContext.trustedBackendProfileSha256=productionManagedWriterProfileSha256(profile);
+    evidence.database.trustedBackendProfileSha256=expectedContext.trustedBackendProfileSha256;
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it('rejects an otherwise complete proof with a swapped source tree or manifest',()=>{
+    for(const key of ['sourceTree','sourceManifestSha256']){
+      const {evidence,expectedContext}=managedProfileEvidence();expectedContext[key]='0'.repeat(key==='sourceTree'?40:64);
+      expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+    }
+  });
+});
 
 function sameComputerReceipts() {
   const value = receipts();
@@ -181,6 +273,74 @@ function sameComputerReceipts() {
 }
 
 describe('Story 22.15 production maintenance isolation gate', () => {
+  it('accepts the documented project-wide shutdown alternative without a metrics claim', () => {
+    const value = shutdownQuiescenceReceipts();
+    expect(assess(value)).toMatchObject({
+      disposition: 'isolation_proved_not_execution_authority',
+    });
+    expect(value.realtimeProbe).not.toHaveProperty('connectedClientCount');
+    expect(value.realtimeProbe).not.toHaveProperty('connectedClientsReportComplete');
+  });
+
+  it.each([
+    ['an unrecognized control method', 'controlMethod', 'dashboard-chart-zero'],
+    ['a non-successful disable response', 'configDisableHttpStatus', 200],
+    ['a non-successful global shutdown response', 'shutdownHttpStatus', 503],
+    ['a readback that leaves Realtime enabled', 'configDisabledReadbackServiceEnabled', true],
+    ['a readback hash that still matches enabled prior state', 'configDisabledReadbackSha256', 'f'.repeat(64)],
+    ['a caller-closed controlled connection', 'existingConnectionClosedByCaller', true],
+    ['a wrong reconnect cause', 'denialCause', 'authentication-failure'],
+    ['a wrong provider response', 'providerErrorCode', 'Unauthorized'],
+    ['a non-403 reconnect response', 'httpStatus', 401],
+    ['a connection close before disablement', 'existingConnectionDisconnectedAtUtc', '2026-09-23T13:59:58.300Z'],
+    ['a reconnect before global shutdown succeeds', 'reconnectAttemptedAtUtc', '2026-09-23T14:00:00.100Z'],
+  ])('rejects shutdown evidence with %s', (_label, key, invalidValue) => {
+    const value = shutdownQuiescenceReceipts();
+    (value.realtimeProbe as Record<string, unknown>)[key] = invalidValue;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('rejects reports, unknown fields, getters, wrong binding, and stale shutdown evidence', () => {
+    const reportFallback = shutdownQuiescenceReceipts();
+    Object.assign(reportFallback.realtimeProbe, {
+      connectedClientCount: 0,
+      connectedClientsReportComplete: true,
+    });
+    expect(assess(reportFallback).disposition).toBe('blocked_insufficient_isolation_proof');
+
+    const extra = shutdownQuiescenceReceipts();
+    Object.assign(extra.realtimeProbe, { providerClaimsAllConnectionsClosed: true });
+    expect(assess(extra).disposition).toBe('blocked_insufficient_isolation_proof');
+
+    const getter = shutdownQuiescenceReceipts();
+    Object.defineProperty(getter.realtimeProbe, 'shutdownHttpStatus', {
+      enumerable: true,
+      get() { throw new Error('getter must not execute'); },
+    });
+    expect(assess(getter).disposition).toBe('blocked_insufficient_isolation_proof');
+
+    const wrongBinding = shutdownQuiescenceReceipts();
+    wrongBinding.realtimeProbe.sourceSha = 'f'.repeat(40);
+    expect(assess(wrongBinding).reason).toBe('isolation_receipt_context_mismatch');
+
+    const stale = shutdownQuiescenceReceipts();
+    expect(assess(stale, {
+      expectedContext: context(),
+      now: new Date('2026-09-23T14:16:00.000Z'),
+    }).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it.each([
+    ['an incomplete slot inventory', 'replicationSlotInventoryComplete', false],
+    ['an active replication slot', 'activeReplicationSlotCount', 1],
+    ['an incomplete subscription inventory', 'subscriptionInventoryComplete', false],
+    ['an enabled subscription', 'enabledSubscriptionCount', 1],
+  ])('rejects an incomplete database drain with %s', (_label, key, invalidValue) => {
+    const value = shutdownQuiescenceReceipts();
+    (value.drain as unknown as Record<string, unknown>)[key] = invalidValue;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
   it.each([
     ['denialCause', 'authentication-failure'],
     ['denialCause', 'outage'],

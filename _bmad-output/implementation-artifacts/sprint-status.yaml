@@ -172,9 +172,20 @@ protected_toolchain_component_20260922:
   production: paused-no-go
   epic_23: on-hold
 
+consolidated_cutover_proposal_20260928:
+  story_status: 'in-progress'
+  epic_23_status: 'on-hold'
+  staging_pending_versions: []
+  production_status: 'paused-no-go'
+  next_action: 'Post-cleanup, collect fresh exact-observed managed-principal, staffing-compatibility and full-isolation receipts. Then use the reviewed protected flow to dry-run and apply the exclusive 13-version subset from absent history under standing reviewed-migration authorization after prerequisites and final review pass. Immediately prove history 13, strict 16/16, canonical 68 and preservation. Owner adoption plus a separate repair approval is required for the 55 UNPROVED ledger rows before history 68. Keep the pause; main, deployment and reopening remain separate.'
+  local_matrix: 'Guarded synthetic CLI matrix 8/8 passed in 322.92s; success exercised 55 repairs with fixture catalog/preservation unchanged. This is not hosted proof.'
+  isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
+
+# Historical protected-production-dry-run snapshot; its embedded PR #119 next_action is superseded by consolidated_cutover_proposal_20260928.
 protected_production_dry_run_component_20260922:
   status: local-verification-complete
-  next_action: 'Story 22.15: reviewed PR #119 head 6d5a522 merged as staging 7b25f1d with an identical tree; main remains 8223509. Latest dated staging proof is 68/68 with no pending/remote-only versions and strict catalog 16/16; owner staging application verification is complete. Fresh 2026-09-28 production read-only proof retains seven strict catalog failures, 14 unchanged schema groups, seven unchanged aggregate groups, 48 orphan filters, 55 UNPROVED unsigned repair rows and 13 proposed executes. Vercel pause target, disabled automatic domain assignment and zero crons were reconfirmed; no hosted change occurred. Owner attests a restore-tested backup newer than the last write, is rollback owner, and separately approved temporary isolation on this computer and current network. Implementation c75ab10 requires independently bound prior Realtime state, strict event ordering and complete zero-client reporting, plus independent Data API credential/statement-trigger prerequisites and exact POST [] denial; focused 150/150, full Vitest 4130 passed with 47 unchanged classified skips, exact full Playwright 163 passed with 47 identical historical skips, TypeScript, zero-error lint and staging-preview build pass. Final-head checks/review/merge remain pending for this new gate. Complete Dashboard client-report access and login/backend/worker classification before fresh five-plane isolation and drain. Reconfirm all private pre-state, backup relevance, egress, tooling and target/TLS prerequisites before the first hosted change. No additional machine is required. Seek separate cleanup and signed-ledger history-repair approvals; main merge, deployment, control restoration and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
+  historical_pr119_next_action: 'Historical 2026-09-28 snapshot only; superseded by consolidated_cutover_proposal_20260928 below.'
+  historical_next_action: 'Historical snapshot only. PR #120 merged into staging at 88cf3ef; staging was 68/68 with no pending versions. The current next action is consolidated_cutover_proposal_20260928 above. The local guarded CLI matrix 8/8 result is not hosted proof. Story 22.15 remained in-progress; Epic 23 remained on-hold.'
   final_head: null # Exact reviewed head is recorded by PR #113 checks/review, not self-attested here.
   test_receipt: 'Test/evidence 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb: Vitest 3769/3769, 337 files, zero skips/failures; implementation-identical 7bc0031 Playwright 163 passed, 47 exact classified skips, zero failures/errors. Exact final-head checks/review are separate merge prerequisites recorded on PR #113.'
   scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'

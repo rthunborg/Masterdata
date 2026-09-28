@@ -90,6 +90,12 @@ import { pathToFileURL } from 'node:url';
 import { verifyApprovedSslRootCertificate } from './verify-production-baseline-catalog.mjs';
 import { verifyConfiguredSupabaseTarget } from './verify-target-binding.mjs';
 export const wrapper = [spawnSync, createHash, readFileSync, realpathSync, path, pathToFileURL, verifyApprovedSslRootCertificate, verifyConfiguredSupabaseTarget];
+export async function evidenceDependencies() { return Promise.all([
+  import('../../src/lib/release/production-staffing-pre-execute-contract.mjs'),
+  import('../../src/lib/release/production-isolation-gate.mjs'),
+  import('../../src/lib/release/production-observed-profile.mjs'),
+  import('../../src/lib/release/production-bootstrap-admission.mjs'),
+]); }
 `;
 }
 

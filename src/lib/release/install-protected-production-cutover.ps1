@@ -2,7 +2,18 @@ param(
  [Parameter(Mandatory=$true)][string]$PackageDirectory,
  [Parameter(Mandatory=$true)][string]$ExpectedPackageSha256,
  [Parameter(Mandatory=$true)][string]$ApprovedProductionLinkPath,
- [Parameter(Mandatory=$true)][string]$ExpectedProductionLinkSha256
+ [Parameter(Mandatory=$true)][string]$ExpectedProductionLinkSha256,
+ [Parameter(Mandatory=$true)][string]$StaffingReceiptPath,
+ [Parameter(Mandatory=$true)][string]$ExpectedStaffingReceiptSha256,
+ [Parameter(Mandatory=$true)][string]$IsolationReceiptPath,
+ [Parameter(Mandatory=$true)][string]$ExpectedIsolationReceiptSha256,
+ [Parameter(Mandatory=$true)][string]$PreForwardReceiptPath,
+ [Parameter(Mandatory=$true)][string]$ExpectedPreForwardReceiptSha256,
+ [Parameter(Mandatory=$true)][string]$BackupRecordPath,
+ [Parameter(Mandatory=$true)][string]$ExpectedBackupRecordSha256,
+ [Parameter(Mandatory=$true)][string]$CleanupRecordPath,
+ [Parameter(Mandatory=$true)][string]$ExpectedCleanupRecordSha256,
+ [Parameter(Mandatory=$true)][string]$TargetBindingSha256
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
@@ -16,7 +27,9 @@ $compileErrors=@()
 # Installation itself never loads credentials, connects, or runs the launcher.
 try {
  if($PSVersionTable.PSEdition -ne 'Desktop' -or $PSVersionTable.PSVersion.Major -ne 5){throw 'runtime'}
- if($ExpectedPackageSha256 -cnotmatch '^[a-f0-9]{64}$' -or $ExpectedProductionLinkSha256 -cnotmatch '^[a-f0-9]{64}$' -or -not [IO.Path]::IsPathRooted($ApprovedProductionLinkPath)){throw 'digest'}
+ if($ExpectedPackageSha256 -cnotmatch '^[a-f0-9]{64}$' -or $ExpectedProductionLinkSha256 -cnotmatch '^[a-f0-9]{64}$' -or $ExpectedStaffingReceiptSha256 -cnotmatch '^[a-f0-9]{64}$' -or $ExpectedIsolationReceiptSha256 -cnotmatch '^[a-f0-9]{64}$' -or $TargetBindingSha256 -cnotmatch '^[a-f0-9]{64}$' -or -not [IO.Path]::IsPathRooted($ApprovedProductionLinkPath) -or -not [IO.Path]::IsPathRooted($StaffingReceiptPath) -or -not [IO.Path]::IsPathRooted($IsolationReceiptPath)){throw 'digest'}
+ foreach($digest in @($ExpectedPreForwardReceiptSha256,$ExpectedBackupRecordSha256,$ExpectedCleanupRecordSha256)){if($digest -cnotmatch '^[a-f0-9]{64}$'){throw 'review-digest'}}
+ foreach($receiptPath in @($PreForwardReceiptPath,$BackupRecordPath,$CleanupRecordPath)){if(-not [IO.Path]::IsPathRooted($receiptPath)){throw 'review-path'}}
  function Hash-Bytes([byte[]]$Bytes){$h=[Security.Cryptography.SHA256]::Create();try{return ([BitConverter]::ToString($h.ComputeHash($Bytes))).Replace('-','').ToLowerInvariant()}finally{$h.Dispose()}}
  function Read-BoundedFile([string]$Path,[int]$Maximum){
   $full=[IO.Path]::GetFullPath($Path)
@@ -34,11 +47,18 @@ try {
    return ,$bytes
   }finally{$stream.Dispose()}
  }
+ $staffingBytes=Read-BoundedFile $StaffingReceiptPath 65536
+ $isolationBytes=Read-BoundedFile $IsolationReceiptPath 65536
+ $preForwardBytes=Read-BoundedFile $PreForwardReceiptPath 65536
+ $backupRecordBytes=Read-BoundedFile $BackupRecordPath 65536
+ $cleanupRecordBytes=Read-BoundedFile $CleanupRecordPath 65536
+ if((Hash-Bytes $staffingBytes) -cne $ExpectedStaffingReceiptSha256 -or (Hash-Bytes $isolationBytes) -cne $ExpectedIsolationReceiptSha256){throw 'evidence'}
+ if((Hash-Bytes $preForwardBytes) -cne $ExpectedPreForwardReceiptSha256 -or (Hash-Bytes $backupRecordBytes) -cne $ExpectedBackupRecordSha256 -or (Hash-Bytes $cleanupRecordBytes) -cne $ExpectedCleanupRecordSha256){throw 'review-evidence'}
  $manifestBytes=Read-BoundedFile (Join-Path $PackageDirectory 'toolchain-package.json') 65536
  if((Hash-Bytes $manifestBytes) -cne $ExpectedPackageSha256){throw 'package'}
  $manifest=[Text.Encoding]::UTF8.GetString($manifestBytes)|ConvertFrom-Json
  if(($manifest.PSObject.Properties.Name|Sort-Object)-join ',' -cne 'approvalAttested,executable,files,kind,plan,privateMaterialAllowed,schemaVersion,sourceCommit,sourceManifestSha256,sourceTree' -or
-    $manifest.schemaVersion -ne 1 -or $manifest.kind -cne 'offline-protected-dry-run-package' -or
+    $manifest.schemaVersion -ne 1 -or $manifest.kind -cne 'offline-protected-production-cutover-package' -or
     $manifest.executable -cne $false -or $manifest.privateMaterialAllowed -cne $false -or $manifest.approvalAttested -cne $false -or
     $manifest.sourceManifestSha256 -cnotmatch '^[a-f0-9]{64}$' -or
     $manifest.sourceCommit -cnotmatch '^[a-f0-9]{40}$' -or $manifest.sourceTree -cnotmatch '^[a-f0-9]{40}$'){throw 'schema'}
@@ -49,7 +69,7 @@ try {
  $expected=@(
   'runtime/node.exe','runtime/supabase.exe',
   'src/lib/release/protected-file-lease.cs',
-  'src/lib/release/protected-dry-run-host.cs','src/lib/release/protected-dry-run-worker.mjs',
+  'src/lib/release/protected-production-cutover-host.cs','src/lib/release/protected-production-cutover-worker.mjs',
   'src/lib/release/protected-production-inputs.cs','src/lib/release/production-bootstrap-admission.mjs','src/lib/release/production-staffing-pre-execute-contract.mjs','src/lib/release/production-isolation-gate.mjs','src/lib/release/production-managed-writer-profiles.mjs','src/lib/release/production-observed-profile.mjs',
   'supabase/verify/run-reviewed-supabase-cli.mjs','supabase/verify/verify-production-baseline-catalog.mjs',
   'supabase/verify/verify-target-binding.mjs',
@@ -95,7 +115,7 @@ try {
  }
  $stage='materialize'
  $profile=[Environment]::GetFolderPath('UserProfile')
- $root=Join-Path $profile ('.hr-masterdata-toolchain-dryrun-'+$ExpectedPackageSha256)
+ $root=Join-Path $profile ('.hr-masterdata-toolchain-cutover-'+$ExpectedPackageSha256)
  if(Test-Path -LiteralPath $root){throw 'existing'}
  $null=[IO.Directory]::CreateDirectory($root,$acl)
  foreach($entry in $manifest.files){
@@ -114,18 +134,22 @@ try {
  $allFiles=@($manifest.files)+@([pscustomobject]@{path='toolchain-package.json';sha256=$ExpectedPackageSha256},[pscustomobject]@{path='bootstrap-origin.json';sha256=(Hash-Bytes $publicBytes)})
  $rows=@($allFiles|ForEach-Object {'{ @"'+$_.path.Replace('/','\')+'", "'+$_.sha256+'" }'}) -join ",`n"
  $inputRoot=Join-Path $profile '.hr-masterdata-private'
- $plan='namespace HrMasterdata.Release { internal static class Installation { internal const string Root = @"'+$root.Replace('"','""')+'"; internal const string InputRoot = @"'+$inputRoot.Replace('"','""')+'"; internal const string LinkPath = @"'+$ApprovedProductionLinkPath.Replace('"','""')+'"; internal const string LinkSha256 = "'+$ExpectedProductionLinkSha256+'"; internal const string OriginPrivateKey = @"'+$privateKey.Replace('"','""')+'"; internal static readonly System.Collections.Generic.Dictionary<string,string> Files = new System.Collections.Generic.Dictionary<string,string> { '+$rows+' }; } }'
+ $evidenceRoot=[IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($StaffingReceiptPath))
+ if($evidenceRoot -cne [IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($IsolationReceiptPath))){throw 'evidence-root'}
+ foreach($receiptPath in @($PreForwardReceiptPath,$BackupRecordPath,$CleanupRecordPath)){if($evidenceRoot -cne [IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($receiptPath))){throw 'review-root'}}
+ $reviewPlan='internal const string PreForwardReceiptPath = @"'+$PreForwardReceiptPath.Replace('"','""')+'"; internal const string PreForwardReceiptSha256 = "'+$ExpectedPreForwardReceiptSha256+'"; internal const string BackupRecordPath = @"'+$BackupRecordPath.Replace('"','""')+'"; internal const string BackupRecordSha256 = "'+$ExpectedBackupRecordSha256+'"; internal const string CleanupRecordPath = @"'+$CleanupRecordPath.Replace('"','""')+'"; internal const string CleanupRecordSha256 = "'+$ExpectedCleanupRecordSha256+'"; '
+ $plan='namespace HrMasterdata.Release { internal static class Installation { internal const string Root = @"'+$root.Replace('"','""')+'"; internal const string InputRoot = @"'+$inputRoot.Replace('"','""')+'"; internal const string LinkPath = @"'+$ApprovedProductionLinkPath.Replace('"','""')+'"; internal const string LinkSha256 = "'+$ExpectedProductionLinkSha256+'"; internal const string EvidenceRoot = @"'+$evidenceRoot.Replace('"','""')+'"; internal const string StaffingReceiptPath = @"'+$StaffingReceiptPath.Replace('"','""')+'"; internal const string StaffingReceiptSha256 = "'+$ExpectedStaffingReceiptSha256+'"; internal const string IsolationReceiptPath = @"'+$IsolationReceiptPath.Replace('"','""')+'"; internal const string IsolationReceiptSha256 = "'+$ExpectedIsolationReceiptSha256+'"; internal const string TargetBindingSha256 = "'+$TargetBindingSha256+'"; '+$reviewPlan+' internal const string OriginPrivateKey = @"'+$privateKey.Replace('"','""')+'"; internal static readonly System.Collections.Generic.Dictionary<string,string> Files = new System.Collections.Generic.Dictionary<string,string> { '+$rows+' }; } }'
  $code=[Text.Encoding]::UTF8.GetString($contents['src/lib/release/protected-file-lease.cs'])
  # Add-Type compiles trusted, digest-verified in-memory bytes. No package path
  # is passed to the compiler. Its executable output is in the new private root.
- $hostCode=[Text.Encoding]::UTF8.GetString($contents['src/lib/release/protected-dry-run-host.cs'])
+ $hostCode=[Text.Encoding]::UTF8.GetString($contents['src/lib/release/protected-production-cutover-host.cs'])
  $inputsCode=[Text.Encoding]::UTF8.GetString($contents['src/lib/release/protected-production-inputs.cs'])
  # Separate compilation units preserve each file's using directives.
  $stage='compile'
  $provider=New-Object Microsoft.CSharp.CSharpCodeProvider
  $parameters=New-Object CodeDom.Compiler.CompilerParameters
  $parameters.GenerateExecutable=$true;$parameters.GenerateInMemory=$false
- $parameters.OutputAssembly=Join-Path $root 'dry-run.exe'
+ $parameters.OutputAssembly=Join-Path $root 'production-cutover.exe'
  $parameters.CompilerOptions='/optimize+ /platform:x64'
  $null=$parameters.ReferencedAssemblies.Add('System.dll');$null=$parameters.ReferencedAssemblies.Add('System.Core.dll')
  $null=$parameters.ReferencedAssemblies.Add('System.Security.dll');$null=$parameters.ReferencedAssemblies.Add('System.Web.Extensions.dll')
@@ -136,7 +160,7 @@ try {
  Add-Type -TypeDefinition $code
  $files=New-Object 'System.Collections.Generic.Dictionary[string,string]'
  foreach($entry in $allFiles){$files.Add((Join-Path $root $entry.path),$entry.sha256)}
- $exe=Join-Path $root 'dry-run.exe';$exeHash=Hash-Bytes ([IO.File]::ReadAllBytes($exe));$files.Add($exe,$exeHash)
+ $exe=Join-Path $root 'production-cutover.exe';$exeHash=Hash-Bytes ([IO.File]::ReadAllBytes($exe));$files.Add($exe,$exeHash)
  $lease=[HrMasterdata.Release.ProtectedFileLease]::Acquire($root,$files)
  $lease.Dispose()
  [ordered]@{installed=$true;packageSha256=$ExpectedPackageSha256;launcherSha256=$exeHash;hostedAccess=$false;privateInputsLoaded=$false}|ConvertTo-Json -Compress

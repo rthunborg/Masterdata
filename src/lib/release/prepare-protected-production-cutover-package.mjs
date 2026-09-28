@@ -11,15 +11,16 @@ import path from 'node:path';
 import { inspectForwardSource } from './prepare-forward-subset.mjs';
 import {
   assertReviewedModuleImports,
+  inspectProtectedCutoverRunnerModules,
   inspectProtectedRunnerInventory,
 } from './protected-runner-inventory.mjs';
 
 const SHA256 = /^[a-f0-9]{64}$/u;
-const PACKAGE_KIND = 'offline-protected-dry-run-package';
-export const PROTECTED_DRY_RUN_PACKAGE_SOURCE_FILES = Object.freeze([
+const PACKAGE_KIND = 'offline-protected-production-cutover-package';
+export const PROTECTED_PRODUCTION_CUTOVER_PACKAGE_SOURCE_FILES = Object.freeze([
   'src/lib/release/protected-file-lease.cs',
-  'src/lib/release/protected-dry-run-host.cs',
-  'src/lib/release/protected-dry-run-worker.mjs',
+  'src/lib/release/protected-production-cutover-host.cs',
+  'src/lib/release/protected-production-cutover-worker.mjs',
   'src/lib/release/protected-production-inputs.cs',
   'src/lib/release/production-bootstrap-admission.mjs',
   'src/lib/release/production-staffing-pre-execute-contract.mjs',
@@ -33,10 +34,10 @@ export const PROTECTED_DRY_RUN_PACKAGE_SOURCE_FILES = Object.freeze([
   'node_modules/papaparse/papaparse.js',
   'supabase/migration-baseline-manifest.json',
 ]);
-export const PROTECTED_DRY_RUN_PACKAGE_FIXED_FILE_PATHS = Object.freeze([
+export const PROTECTED_PRODUCTION_CUTOVER_PACKAGE_FIXED_FILE_PATHS = Object.freeze([
   'runtime/node.exe',
   'runtime/supabase.exe',
-  ...PROTECTED_DRY_RUN_PACKAGE_SOURCE_FILES,
+  ...PROTECTED_PRODUCTION_CUTOVER_PACKAGE_SOURCE_FILES,
 ]);
 const RECEIPT_KEYS = Object.freeze([
   'schemaVersion',
@@ -50,21 +51,22 @@ const RECEIPT_KEYS = Object.freeze([
   'plan',
   'files',
 ]);
-const DRY_RUN_WORKER_STATIC_IMPORTS = Object.freeze([
+const CUTOVER_WORKER_STATIC_IMPORTS = Object.freeze([
   'node:crypto',
   'node:fs',
-  'node:child_process',
   'node:path',
   'node:url',
-]);
-const DRY_RUN_WORKER_DYNAMIC_IMPORTS = Object.freeze([
+  './production-staffing-pre-execute-contract.mjs',
   './production-bootstrap-admission.mjs',
+  './production-isolation-gate.mjs',
+  './production-observed-profile.mjs',
   '../../../supabase/verify/run-reviewed-supabase-cli.mjs',
 ]);
+const CUTOVER_WORKER_DYNAMIC_IMPORTS = Object.freeze([]);
 const ADMISSION_STATIC_IMPORTS = Object.freeze(['node:crypto']);
 
 const fail = () => {
-  throw new Error('Protected dry-run package preparation failed');
+  throw new Error('Protected production cutover package preparation failed');
 };
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -74,7 +76,7 @@ const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
  * captured before they were read. A later receipt cannot prove that a
  * transient replacement was not retained.
  */
-export function assertCapturedProtectedDryRunPapaBytes({
+export function assertCapturedProtectedProductionCutoverPapaBytes({
   dependency,
   packageJsonBytes,
   umdBytes,
@@ -154,7 +156,7 @@ function assertOutputDirectory(outputDirectory) {
 }
 
 function sourceBytes({ root, git, receipt }, relative) {
-  if (!PROTECTED_DRY_RUN_PACKAGE_SOURCE_FILES.includes(relative)) fail();
+  if (!PROTECTED_PRODUCTION_CUTOVER_PACKAGE_SOURCE_FILES.includes(relative)) fail();
   // PapaParse is an installed, hash-pinned dependency rather than a Git blob.
   // inspectProtectedRunnerInventory validates its exact installed bytes before
   // this read and again during the final source revalidation.
@@ -179,20 +181,33 @@ function assertExactModuleReferences(bytes, staticImports, dynamicImports) {
   assertReviewedModuleImports(source, { staticImports, dynamicImports });
 }
 
-function assertDryRunModuleClosure(bytesByPath) {
+function assertCutoverModuleClosure(bytesByPath) {
   assertExactModuleReferences(
-    bytesByPath.get('src/lib/release/protected-dry-run-worker.mjs'),
-    DRY_RUN_WORKER_STATIC_IMPORTS,
-    DRY_RUN_WORKER_DYNAMIC_IMPORTS
+    bytesByPath.get('src/lib/release/protected-production-cutover-worker.mjs'),
+    CUTOVER_WORKER_STATIC_IMPORTS,
+    CUTOVER_WORKER_DYNAMIC_IMPORTS
   );
   assertExactModuleReferences(
     bytesByPath.get('src/lib/release/production-bootstrap-admission.mjs'),
     ADMISSION_STATIC_IMPORTS,
     []
   );
-  assertExactModuleReferences(bytesByPath.get('src/lib/release/production-staffing-pre-execute-contract.mjs'), [], []);
-  assertExactModuleReferences(bytesByPath.get('src/lib/release/production-isolation-gate.mjs'), ['./production-managed-writer-profiles.mjs'], []);
-  assertExactModuleReferences(bytesByPath.get('src/lib/release/production-managed-writer-profiles.mjs'), ['node:crypto'], []);
+  assertExactModuleReferences(
+    bytesByPath.get('src/lib/release/production-staffing-pre-execute-contract.mjs'),
+    [],
+    []
+  );
+  assertExactModuleReferences(
+    bytesByPath.get('src/lib/release/production-isolation-gate.mjs'),
+    ['./production-managed-writer-profiles.mjs'],
+    []
+  );
+  assertExactModuleReferences(
+    bytesByPath.get('src/lib/release/production-managed-writer-profiles.mjs'),
+    ['node:crypto'],
+    []
+  );
+  assertExactModuleReferences(bytesByPath.get('src/lib/release/production-observed-profile.mjs'), ['node:crypto'], []);
 }
 
 function assertInventoryMatchesSource(inventory, source) {
@@ -219,6 +234,26 @@ function assertInventoryMatchesSource(inventory, source) {
   ) {
     fail();
   }
+}
+
+function assertCutoverInventoryMatchesSource(inventory, source) {
+  if (
+    inventory.schemaVersion !== 1 ||
+    inventory.kind !== 'offline-protected-cutover-runner-modules' ||
+    inventory.executable !== false ||
+    inventory.privateMaterialAllowed !== false ||
+    inventory.approvalAttested !== false ||
+    inventory.sourceCommit !== source.receipt.sourceCommit ||
+    inventory.sourceTree !== source.receipt.sourceTree ||
+    inventory.sourceManifestSha256 !== source.receipt.sourceManifestSha256 ||
+    !same(inventory.modules.map((entry) => entry.path), [
+      'src/lib/release/protected-production-cutover-worker.mjs',
+      'src/lib/release/production-staffing-pre-execute-contract.mjs',
+      'src/lib/release/production-isolation-gate.mjs',
+      'src/lib/release/production-managed-writer-profiles.mjs',
+      'src/lib/release/production-observed-profile.mjs',
+    ])
+  ) fail();
 }
 
 function planFrom(source) {
@@ -267,11 +302,11 @@ function createDirectories(output) {
 
 /**
  * Materializes a non-executable, source-bound package for the later protected
- * production dry-run bootstrap. The package contains no target material or
+ * production cutover bootstrap. The package contains no target material or
  * private inputs, and its digest is an external review input rather than an
  * approval claim.
  */
-function prepareProtectedDryRunPackageInternal({
+function prepareProtectedProductionCutoverPackageInternal({
   outputDirectory,
   nodeExecutable,
   expectedNodeSha256,
@@ -289,17 +324,19 @@ function prepareProtectedDryRunPackageInternal({
   );
   const source = inspectForwardSource(sourceOptions);
   const inventory = inspectProtectedRunnerInventory(sourceOptions);
+  const cutoverInventory = inspectProtectedCutoverRunnerModules(sourceOptions);
   assertInventoryMatchesSource(inventory, source);
+  assertCutoverInventoryMatchesSource(cutoverInventory, source);
   const plan = planFrom(source);
 
   const bytesByPath = new Map([
     ['runtime/node.exe', nodeBytes],
     ['runtime/supabase.exe', supabaseBytes],
   ]);
-  for (const relative of PROTECTED_DRY_RUN_PACKAGE_SOURCE_FILES) {
+  for (const relative of PROTECTED_PRODUCTION_CUTOVER_PACKAGE_SOURCE_FILES) {
     bytesByPath.set(relative, sourceBytes(source, relative));
   }
-  assertCapturedProtectedDryRunPapaBytes({
+  assertCapturedProtectedProductionCutoverPapaBytes({
     dependency: inventory.dependency,
     packageJsonBytes: bytesByPath.get(
       'node_modules/papaparse/package.json'
@@ -311,7 +348,7 @@ function prepareProtectedDryRunPackageInternal({
     if (!Buffer.isBuffer(bytes) || sha256(bytes) !== entry.sha256) fail();
     bytesByPath.set(path.posix.join('supabase/migrations', entry.file), bytes);
   }
-  assertDryRunModuleClosure(bytesByPath);
+  assertCutoverModuleClosure(bytesByPath);
 
   const files = [...bytesByPath].map(([file, bytes]) => ({
     path: file,
@@ -324,7 +361,9 @@ function prepareProtectedDryRunPackageInternal({
   // A second clean, source-bound inspection closes the read/materialize race.
   const finalSource = inspectForwardSource(sourceOptions);
   const finalInventory = inspectProtectedRunnerInventory(sourceOptions);
+  const finalCutoverInventory = inspectProtectedCutoverRunnerModules(sourceOptions);
   assertInventoryMatchesSource(finalInventory, finalSource);
+  assertCutoverInventoryMatchesSource(finalCutoverInventory, finalSource);
   if (
     finalSource.receipt.sourceCommit !== receipt.sourceCommit ||
     finalSource.receipt.sourceTree !== receipt.sourceTree ||
@@ -359,9 +398,9 @@ function prepareProtectedDryRunPackageInternal({
   });
 }
 
-export function prepareProtectedDryRunPackage(options = {}) {
+export function prepareProtectedProductionCutoverPackage(options = {}) {
   try {
-    return prepareProtectedDryRunPackageInternal(options);
+    return prepareProtectedProductionCutoverPackageInternal(options);
   } catch {
     // Source, filesystem and executable diagnostics can include local paths;
     // callers receive only the stable fail-closed package outcome.

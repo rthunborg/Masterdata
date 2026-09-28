@@ -15,6 +15,7 @@ import {
 } from './production-profile-redaction.mjs';
 import {
   assessProductionObservedProfile,
+  productionTargetBindingSha256,
   PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA,
 } from './production-observed-profile.mjs';
 
@@ -404,8 +405,9 @@ export async function collectProductionObservedProfile({
     ) fail();
     const capturedAt = now();
     if (!(capturedAt instanceof Date) || Number.isNaN(capturedAt.getTime())) fail();
-    const targetBindingSha256 = environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256;
-    if (!HASH64.test(targetBindingSha256 ?? '')) fail();
+    const targetBindingSha256 = productionTargetBindingSha256(environment.EXPECTED_SUPABASE_PROJECT_REF);
+    if (environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256 &&
+      environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256 !== targetBindingSha256) fail();
     const observation = Object.freeze({
       schemaVersion: 1,
       kind: 'production-observed-profile',

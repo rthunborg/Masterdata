@@ -1,3 +1,14 @@
+import { createHash } from 'node:crypto';
+
+// A shared, domain-separated identity for the actual privately approved
+// production reference. It is not a credential or an authorization token.
+export function productionTargetBindingSha256(projectRef) {
+  if (typeof projectRef !== 'string' || !/^[a-z0-9]{20}$/u.test(projectRef)) {
+    throw new Error('production_target_binding_invalid');
+  }
+  return createHash('sha256').update('hr-masterdata:production-target:v1:' + projectRef, 'utf8').digest('hex');
+}
+
 const SOURCE_SHA = 'c31227ad68d91c0a471b611811bc618cbf3535a2';
 const HASH40 = /^[a-f0-9]{40}$/u;
 const HASH64 = /^[a-f0-9]{64}$/u;

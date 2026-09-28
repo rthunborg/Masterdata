@@ -1,5 +1,10 @@
 # Evidence Index
 
+> **Current consolidated cutover evidence status — 2026-09-28.** PR #120 is merged into staging at `88cf3ef`; staging remains 68/68 with no pending version. The next production proof package is post-cleanup: exact-observed principal profile, staffing compatibility and complete isolation; then exclusive 13-version dry run/apply from absent history and immediate history-13, strict 16/16, canonical-68 and preservation proof. The 55 `UNPROVED` ledger rows still need owner adoption and a separate repair approval before history 68. The guarded local CLI matrix is 8/8 in 322.92 seconds; its 55-repair success is synthetic fixture evidence and does not establish a hosted result. Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternate semantic proof and does not claim measured zero clients. No hosted production action occurred; pause/no-go remains in force.
+
+> **Status interpretation.** Later entries labelled “Current” are dated evidence snapshots; this consolidated proposal supersedes any conflicting repair-before-13-execute ordering.
+
+> **Historical Realtime proof preparation — 2026-09-28; superseded by the consolidated proposal above.**
 > **Current Realtime proof preparation — 2026-09-28.** Reviewed PR #119 merged as staging `7b25f1d`; main remains `8223509`. Fresh bounded production read-only profile is unchanged: seven strict catalog failures, 48 orphan filters and no migration-history table. Production pause settings were reconfirmed. The proposed gate requires independent prior Realtime state, strict acknowledgment/disconnect/reconnect/report ordering, and an independent Data API write-probe prerequisite with an exact POST [] / 406 PGRST106 denial. Local gates pass at `c75ab10`; final-head checks/review/merge and actual isolation remain open. Dashboard report access and complete login/backend classification are still missing. No hosted write, setting change or production deployment occurred. Story 22.15 in-progress; Epic 23 on-hold; production paused/no-go. [Evidence and limits](evidence/production-realtime-preparation-2026-09-28.md).
 
 

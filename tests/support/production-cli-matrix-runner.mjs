@@ -10,7 +10,11 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import pg from 'pg';
 import { inspectForwardSource } from '../../src/lib/release/prepare-forward-subset.mjs';
-import { parseExactProductionBootstrapDryRun } from '../../src/lib/release/production-bootstrap-admission.mjs';
+import {
+  parseExactProductionBootstrapDryRun,
+  PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS,
+} from '../../src/lib/release/production-bootstrap-admission.mjs';
+import { PRODUCTION_HISTORY_REPAIR_VERSIONS } from '../../src/lib/release/production-history-repair-baseline.mjs';
 import {
   runProductionBaselineCatalogVerifier,
   evaluateCatalogCsv,
@@ -45,6 +49,12 @@ const need = (condition, code) => {
   if (!condition) throw new Error(code);
 };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const COMPLETE_HISTORY_VERSIONS = Object.freeze([
+  ...new Set([
+    ...PRODUCTION_HISTORY_REPAIR_VERSIONS,
+    ...PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS,
+  ]),
+].sort());
 
 function pinnedTool(tool, version) {
   need(
@@ -358,10 +368,39 @@ export async function runProductionCliMatrixCase({
     if (!dryRun && (child.kind !== 'exit' || child.code !== 0)) terminal = true;
     return { child, output };
   }
+  function repairHistory(version) {
+    pinnedTool(cli, '2.115.0');
+    const started = Date.now();
+    const result = spawnSync(cli.executablePath, [
+      'migration', 'repair', '--db-url', url, '--status', 'applied', version,
+    ], {
+      cwd: source.root,
+      env,
+      encoding: 'utf8',
+      windowsHide: true,
+      shell: false,
+      timeout: 30000,
+      maxBuffer: 1024 * 1024,
+    });
+    const output = (result.stdout ?? '') + (result.stderr ?? '');
+    const child = result.error
+      ? { kind: result.error.code === 'ETIMEDOUT' ? 'timeout' : 'error', code: null }
+      : result.signal
+        ? { kind: 'signal', code: null }
+        : { kind: 'exit', code: result.status };
+    return {
+      version,
+      child,
+      durationMs: Date.now() - started,
+      outputSha256: hash(output),
+      outputBytes: Buffer.byteLength(output),
+    };
+  }
   let stage = 'fixture_setup';
   let fixturePrepared = false;
   try {
     mkdirSync(destination);
+    stage = 'fixture_create_database';
     await connected('postgres', (client) =>
       createGuardedFixtureDatabaseWithHash({
         adminClient: client,
@@ -369,8 +408,12 @@ export async function runProductionCliMatrixCase({
         databaseName,
       })
     );
+    stage = 'fixture_bootstrap_schema';
     await connected(databaseName, async (client) => {
       await client.query(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL);
+    });
+    stage = 'fixture_profile_data';
+    await connected(databaseName, async (client) => {
       await client.query(fixture.sql);
     });
     fixturePrepared = true;
@@ -523,6 +566,31 @@ export async function runProductionCliMatrixCase({
       });
       strictCatalogPassed = true;
     }
+    if (
+      caseName === 'postcleanup_success' &&
+      applied.child.kind === 'exit' &&
+      applied.child.code === 0 &&
+      strictCatalogPassed
+    ) {
+      stage = 'measured_history_repair';
+      const repairAttempts = PRODUCTION_HISTORY_REPAIR_VERSIONS.map(repairHistory);
+      need(
+        repairAttempts.every((attempt) => attempt.child.kind === 'exit' && attempt.child.code === 0),
+        'matrix_history_repair_failed'
+      );
+      const afterRepair = await snapshot();
+      need(same(afterRepair.history, COMPLETE_HISTORY_VERSIONS), 'matrix_history_repair_not_exact_68');
+      need(after.catalogSha256 === afterRepair.catalogSha256, 'matrix_history_repair_changed_catalog');
+      need(after.preservationSha256 === afterRepair.preservationSha256, 'matrix_history_repair_changed_preservation');
+      receipt.historyRepair = {
+        kind: 'local-pinned-cli-history-repair',
+        versions: [...PRODUCTION_HISTORY_REPAIR_VERSIONS],
+        attempts: repairAttempts,
+        afterHistory: afterRepair.history,
+        catalogUnchanged: true,
+        preservationUnchanged: true,
+      };
+    }
     const physicalKey =
       spec.mode === 'reject' || spec.mode === 'timeout'
         ? caseName === 'implicit_history_write_failure'
@@ -594,7 +662,9 @@ export async function runProductionCliMatrixCase({
     receipt.failureStage = stage;
     receipt.failure = /^matrix_[a-z_]+$/u.test(error?.message ?? '')
       ? error.message
-      : 'matrix_incomplete_proof';
+      : ['fixture_create_database', 'fixture_bootstrap_schema', 'fixture_profile_data'].includes(stage)
+        ? `matrix_${stage}_failed`
+        : 'matrix_incomplete_proof';
     if (fixturePrepared && !receipt.after) {
       try {
         receipt.failureObservation = await snapshot();

@@ -121,7 +121,7 @@ function cleanSource(workspace, commit, git) {
   }
   if (
     realpathSync(
-      git(root, ['rev-parse', '--show-toplevel']).toString().trim()
+      path.resolve(git(root, ['rev-parse', '--show-toplevel']).toString().trim())
     ) !== root ||
     git(root, ['rev-parse', 'HEAD']).toString().trim() !== commit ||
     git(root, [
