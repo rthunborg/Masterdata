@@ -20,6 +20,7 @@ const context = () => ({
   databaseRoleGraphSha256,
   trustedBackendProfileSha256,
   priorRealtimeServiceEnabled: true,
+  priorRealtimeConfigSha256: 'f'.repeat(64),
 });
 
 const bound = (kind: string, values: Record<string, unknown>) => ({
@@ -49,6 +50,11 @@ function receipts() {
       unknownAuthHookCount: 0,
       realtimeSuspended: true,
     }),
+    realtimePriorState: bound('production-realtime-prior-state-observation', {
+      capturedAtUtc: '2026-09-23T13:59:57.000Z',
+      serviceEnabled: true,
+      configSha256: 'f'.repeat(64),
+    }),
     realtimeProbe: bound('production-realtime-denial-probe', {
       capturedAtUtc: '2026-09-23T14:00:01.000Z',
       independentFromControlObservation: true,
@@ -64,8 +70,11 @@ function receipts() {
       existingConnectionDisconnectedByService: true,
       existingConnectionClosedByCaller: false,
       existingConnectionEstablishedAtUtc: '2026-09-23T13:59:58.000Z',
+      existingSubscriptionAcknowledgedAtUtc: '2026-09-23T13:59:58.500Z',
       controlChangeStartedAtUtc: '2026-09-23T13:59:59.000Z',
       existingConnectionDisconnectedAtUtc: '2026-09-23T14:00:00.250Z',
+      reconnectAttemptedAtUtc: '2026-09-23T14:00:00.700Z',
+      reconnectDeniedAtUtc: '2026-09-23T14:00:00.800Z',
       connectedClientCount: 0,
       connectedClientsReportComplete: true,
       connectedClientsReportWindowStartedAtUtc: '2026-09-23T14:00:00.500Z',
@@ -173,12 +182,25 @@ describe('Story 22.15 production maintenance isolation gate', () => {
     ['connectedClientCount', '0'],
     ['connectedClientsReportComplete', false],
     ['connectedClientsReportWindowStartedAtUtc', '2026-09-23T13:59:59.000Z'],
+    ['connectedClientsReportWindowStartedAtUtc', capturedAtUtc],
     ['connectedClientsReportWindowStartedAtUtc', '2026-09-23T14:00:00.100Z'],
     ['connectedClientsReportWindowEndedAtUtc', '2026-09-23T14:00:00.500Z'],
     ['connectedClientsReportCapturedAtUtc', '2026-09-23T14:00:00.550Z'],
     ['connectedClientsReportCapturedAtUtc', '2026-09-23T14:00:01.100Z'],
     ['existingConnectionEstablishedAtUtc', '2026-09-23T13:54:59.000Z'],
     ['existingConnectionEstablishedAtUtc', '2026-09-23T13:59:59.000Z'],
+    ['existingConnectionEstablishedAtUtc', '2026-09-23T13:59:57.000Z'],
+    ['existingSubscriptionAcknowledgedAtUtc', '2026-09-23T13:59:58.000Z'],
+    ['existingSubscriptionAcknowledgedAtUtc', '2026-09-23T13:59:59.000Z'],
+    ['existingSubscriptionAcknowledgedAtUtc', '2026-09-23T14:00:00.000Z'],
+    ['existingSubscriptionAcknowledgedAtUtc', null],
+    ['reconnectAttemptedAtUtc', capturedAtUtc],
+    ['reconnectAttemptedAtUtc', '2026-09-23T13:59:59.000Z'],
+    ['reconnectAttemptedAtUtc', '2026-09-23T14:00:00.200Z'],
+    ['reconnectAttemptedAtUtc', '2026-09-23T14:00:00.800Z'],
+    ['reconnectDeniedAtUtc', '2026-09-23T14:00:00.700Z'],
+    ['reconnectDeniedAtUtc', '2026-09-23T14:00:01.100Z'],
+    ['reconnectDeniedAtUtc', null],
     ['controlChangeStartedAtUtc', '2026-09-23T14:00:00.100Z'],
     ['existingConnectionDisconnectedAtUtc', '2026-09-23T13:59:58.500Z'],
     ['existingConnectionDisconnectedAtUtc', null],
@@ -208,12 +230,14 @@ describe('Story 22.15 production maintenance isolation gate', () => {
 
   it('preserves an already-disabled service without inventing an existing-client disconnect', () => {
     const evidence = receipts();
+    evidence.realtimePriorState.serviceEnabled = false;
     Object.assign(evidence.realtimeProbe, {
       priorRealtimeServiceEnabled: false,
       existingConnectionEstablishedBeforeIsolation: false,
       existingSubscriptionAcknowledgedBeforeIsolation: false,
       existingConnectionDisconnectedByService: false,
       existingConnectionEstablishedAtUtc: null,
+      existingSubscriptionAcknowledgedAtUtc: null,
       controlChangeStartedAtUtc: null,
       existingConnectionDisconnectedAtUtc: null,
     });
@@ -226,11 +250,65 @@ describe('Story 22.15 production maintenance isolation gate', () => {
       { existingConnectionClosedByCaller: true },
       { controlChangeStartedAtUtc: '2026-09-23T13:59:59.000Z' },
       { existingConnectionEstablishedAtUtc: '2026-09-23T13:59:58.000Z' },
+      { existingSubscriptionAcknowledgedAtUtc: '2026-09-23T13:59:58.500Z' },
       { existingConnectionDisconnectedAtUtc: '2026-09-23T14:00:00.250Z' },
     ]) {
       const changed = { ...evidence, realtimeProbe: { ...evidence.realtimeProbe, ...mutation } };
       expect(assess(changed, options).disposition).toBe('blocked_insufficient_isolation_proof');
     }
+    expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it.each([
+    ['serviceEnabled', false],
+    ['serviceEnabled', undefined],
+    ['configSha256', '0'.repeat(64)],
+    ['configSha256', ['f'.repeat(64)]],
+    ['capturedAtUtc', '2026-09-23T13:54:59.000Z'],
+    ['capturedAtUtc', '2026-09-23T13:59:58.000Z'],
+    ['sourceSha', '0'.repeat(40)],
+    ['targetBindingSha256', '0'.repeat(64)],
+    ['isolationPlanSha256', '0'.repeat(64)],
+  ])('rejects unbound or misordered prior Realtime state: %s', (key, value) => {
+    const evidence = receipts();
+    (evidence.realtimePriorState as Record<string, unknown>)[key] = value;
+    expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('cannot select the already-disabled branch without an independent prior-state observation', () => {
+    const evidence = receipts();
+    Object.assign(evidence.realtimeProbe, {
+      priorRealtimeServiceEnabled: false,
+      existingConnectionEstablishedBeforeIsolation: false,
+      existingSubscriptionAcknowledgedBeforeIsolation: false,
+      existingConnectionDisconnectedByService: false,
+      existingConnectionEstablishedAtUtc: null,
+      existingSubscriptionAcknowledgedAtUtc: null,
+      controlChangeStartedAtUtc: null,
+      existingConnectionDisconnectedAtUtc: null,
+    });
+    const options = { expectedContext: { ...context(), priorRealtimeServiceEnabled: false }, now };
+    expect(assess(evidence, options).disposition).toBe('blocked_insufficient_isolation_proof');
+    evidence.realtimePriorState.serviceEnabled = false;
+    evidence.realtimePriorState.capturedAtUtc = capturedAtUtc;
+    expect(assess(evidence, options).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('requires every prior-state field and rejects extras or getters without executing them', () => {
+    for (const key of Object.keys(receipts().realtimePriorState)) {
+      const evidence = receipts();
+      delete (evidence.realtimePriorState as Record<string, unknown>)[key];
+      expect(assess(evidence).disposition, key).toBe('blocked_insufficient_isolation_proof');
+    }
+    for (const key of ['serviceEnabled', 'configSha256']) {
+      const evidence = receipts();
+      Object.defineProperty(evidence.realtimePriorState, key, {
+        enumerable: true, get() { throw new Error('getter must not execute'); },
+      });
+      expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+    }
+    const evidence = receipts();
+    Object.assign(evidence.realtimePriorState, { approved: true });
     expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
   });
 

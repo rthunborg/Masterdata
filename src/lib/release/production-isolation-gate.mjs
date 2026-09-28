@@ -91,13 +91,16 @@ function inspectContext(value) {
       'databaseRoleGraphSha256',
       'trustedBackendProfileSha256',
       'priorRealtimeServiceEnabled',
+      'priorRealtimeConfigSha256',
     ]) ||
     !SHA40.test(value.sourceSha) ||
     !SHA256.test(value.targetBindingSha256) ||
     !SHA256.test(value.isolationPlanSha256) ||
     !SHA256.test(value.databaseRoleGraphSha256) ||
     !SHA256.test(value.trustedBackendProfileSha256) ||
-    typeof value.priorRealtimeServiceEnabled !== 'boolean'
+    typeof value.priorRealtimeServiceEnabled !== 'boolean' ||
+    typeof value.priorRealtimeConfigSha256 !== 'string' ||
+    !SHA256.test(value.priorRealtimeConfigSha256)
   ) {
     return null;
   }
@@ -171,7 +174,21 @@ function inspectPlatform(value) {
     : null;
 }
 
-function inspectRealtimeProbe(value, context, platform) {
+function inspectRealtimePriorState(value, context) {
+  const receipt = inspectBoundReceipt(value, 'production-realtime-prior-state-observation', [
+    'serviceEnabled',
+    'configSha256',
+  ]);
+  return receipt && context &&
+    receipt.serviceEnabled === context.priorRealtimeServiceEnabled &&
+    typeof receipt.configSha256 === 'string' &&
+    SHA256.test(receipt.configSha256) &&
+    receipt.configSha256 === context.priorRealtimeConfigSha256
+    ? receipt
+    : null;
+}
+
+function inspectRealtimeProbe(value, context, platform, priorState) {
   const receipt = inspectBoundReceipt(value, 'production-realtime-denial-probe', [
     'independentFromControlObservation',
     'connectionAttempted',
@@ -186,15 +203,18 @@ function inspectRealtimeProbe(value, context, platform) {
     'existingConnectionDisconnectedByService',
     'existingConnectionClosedByCaller',
     'existingConnectionEstablishedAtUtc',
+    'existingSubscriptionAcknowledgedAtUtc',
     'controlChangeStartedAtUtc',
     'existingConnectionDisconnectedAtUtc',
+    'reconnectAttemptedAtUtc',
+    'reconnectDeniedAtUtc',
     'connectedClientCount',
     'connectedClientsReportComplete',
     'connectedClientsReportWindowStartedAtUtc',
     'connectedClientsReportWindowEndedAtUtc',
     'connectedClientsReportCapturedAtUtc',
   ]);
-  if (!receipt || !context || !platform ||
+  if (!receipt || !context || !platform || !priorState ||
     receipt.independentFromControlObservation !== true ||
     receipt.connectionAttempted !== true ||
     receipt.connectionDenied !== true ||
@@ -214,14 +234,24 @@ function inspectRealtimeProbe(value, context, platform) {
     receipt.connectedClientsReportCapturedAtUtc,
   ].map(canonicalUtc);
   if (reportTimes.some((time) => time === null) ||
-    reportTimes[0] < platform.capturedAt ||
+    reportTimes[0] <= platform.capturedAt ||
     reportTimes[1] <= reportTimes[0] ||
     reportTimes[2] < reportTimes[1] ||
     reportTimes[2] > receipt.capturedAt
   ) return null;
 
+  const reconnectTimes = [receipt.reconnectAttemptedAtUtc, receipt.reconnectDeniedAtUtc]
+    .map(canonicalUtc);
+  if (reconnectTimes.some((time) => time === null) ||
+    reconnectTimes[0] <= platform.capturedAt ||
+    reconnectTimes[1] <= reconnectTimes[0] ||
+    reconnectTimes[1] > receipt.capturedAt ||
+    priorState.capturedAt >= platform.capturedAt
+  ) return null;
+
   const connectionTimes = [
     receipt.existingConnectionEstablishedAtUtc,
+    receipt.existingSubscriptionAcknowledgedAtUtc,
     receipt.controlChangeStartedAtUtc,
     receipt.existingConnectionDisconnectedAtUtc,
   ];
@@ -231,7 +261,7 @@ function inspectRealtimeProbe(value, context, platform) {
       receipt.existingConnectionDisconnectedByService !== false ||
       connectionTimes.some((time) => time !== null)
     ) return null;
-    return Object.freeze({ ...receipt, evidenceTimes: reportTimes });
+    return Object.freeze({ ...receipt, evidenceTimes: [...reconnectTimes, ...reportTimes] });
   }
 
   const observedConnectionTimes = connectionTimes.map(canonicalUtc);
@@ -239,14 +269,19 @@ function inspectRealtimeProbe(value, context, platform) {
     receipt.existingSubscriptionAcknowledgedBeforeIsolation !== true ||
     receipt.existingConnectionDisconnectedByService !== true ||
     observedConnectionTimes.some((time) => time === null) ||
+    priorState.capturedAt >= observedConnectionTimes[0] ||
     observedConnectionTimes[0] >= observedConnectionTimes[1] ||
-    observedConnectionTimes[1] > platform.capturedAt ||
-    observedConnectionTimes[2] <= observedConnectionTimes[1] ||
-    observedConnectionTimes[2] > reportTimes[0]
+    observedConnectionTimes[1] >= observedConnectionTimes[2] ||
+    observedConnectionTimes[2] > platform.capturedAt ||
+    observedConnectionTimes[3] <= observedConnectionTimes[2] ||
+    observedConnectionTimes[3] > reportTimes[0] ||
+    reconnectTimes[0] <= observedConnectionTimes[3]
   ) return null;
   // The server can close the probe before the configuration GET finishes.
   // Bind the disconnect to the start of the change, not the later readback.
-  return Object.freeze({ ...receipt, evidenceTimes: [...observedConnectionTimes, ...reportTimes] });
+  return Object.freeze({
+    ...receipt, evidenceTimes: [...observedConnectionTimes, ...reconnectTimes, ...reportTimes],
+  });
 }
 
 function inspectDataApi(value) {
@@ -471,6 +506,7 @@ export function assessProductionMaintenanceIsolation(
       'pause',
       'edgeFunctions',
       'platform',
+      'realtimePriorState',
       'realtimeProbe',
       'dataApi',
       'dataApiProbe',
@@ -488,6 +524,7 @@ export function assessProductionMaintenanceIsolation(
     pause,
     edgeFunctions,
     platform,
+    realtimePriorState,
     realtimeProbe,
     dataApi,
     dataApiProbe,
@@ -513,7 +550,8 @@ export function assessProductionMaintenanceIsolation(
   const pauseFacts = inspectPause(pause);
   const edgeFacts = inspectEdgeFunctions(edgeFunctions);
   const platformFacts = inspectPlatform(platform);
-  const realtimeFacts = inspectRealtimeProbe(realtimeProbe, context, platformFacts);
+  const realtimePriorFacts = inspectRealtimePriorState(realtimePriorState, context);
+  const realtimeFacts = inspectRealtimeProbe(realtimeProbe, context, platformFacts, realtimePriorFacts);
   const dataApiFacts = inspectDataApi(dataApi);
   const dataApiProbeFacts = inspectDataApiProbe(dataApiProbe);
   const networkFacts = inspectNetwork(network);
@@ -523,6 +561,7 @@ export function assessProductionMaintenanceIsolation(
     pauseFacts,
     edgeFacts,
     platformFacts,
+    realtimePriorFacts,
     realtimeFacts,
     dataApiFacts,
     dataApiProbeFacts,
