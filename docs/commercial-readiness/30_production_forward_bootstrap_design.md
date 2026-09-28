@@ -1,5 +1,8 @@
 # Production Forward-Bootstrap Runbook and Design
 
+> **Current consolidated verification — 2026-09-28.** PR #121 consolidates the protected production route. Exact full Vitest passed 4349/4349 with zero skips/failures at 49e708ec99a8e74fb268e32d026bffc85bcb4a5c (389.86s). Exact full Playwright passed 163 with 47 individually matched historical skips and zero failures/errors at 2876b7a7915765182602f5cf2c2111df3c317d56 (1288.560973s); the only intervening code change is the reviewed synthetic unit-test loader portability fix, with byte-identical application/release code. The required CLI matrix is 8/8; TypeScript and zero-error lint pass. Build evidence is explicitly scoped to byte-identical application sources from the earlier working-tree build. Earlier failed runs remain recorded. No hosted change is claimed. Production remains paused/no-go, Story 22.15 in-progress and Epic 23 on-hold. [Measured results, source scopes and limits](evidence/production-consolidated-cutover-verification-2026-09-28.md).
+
+
 > **Current reviewed sequence — 2026-09-28.** This replaces the circular
 > historical “55 repairs before 13 forwards” proposal below. It is an
 > operational plan only: it authorizes no hosted write, cleanup, history

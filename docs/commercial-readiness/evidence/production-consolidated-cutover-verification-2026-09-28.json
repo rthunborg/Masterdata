@@ -1,0 +1,503 @@
+{
+  "schemaVersion": 1,
+  "kind": "consolidated-production-cutover-local-verification",
+  "observedOn": "2026-09-28",
+  "testedImplementation": "49e708ec99a8e74fb268e32d026bffc85bcb4a5c",
+  "baseStaging": "88cf3efcf7fdb8cdbfd00d850da6082b0f6fdd65",
+  "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "hostedWrites": false,
+  "hostedSettingChanges": false,
+  "operatorTriggeredDeployments": false,
+  "production": "paused-no-go",
+  "story": "in-progress",
+  "epic23": "on-hold",
+  "githubCiAtImplementation": {
+    "schemaVersion": 1,
+    "kind": "github-ci-cutover-portability-verification",
+    "sourceSha": "49e708ec99a8e74fb268e32d026bffc85bcb4a5c",
+    "runId": 36431123825,
+    "jobId": 108957268343,
+    "conclusion": "success",
+    "nodeRuntime": "20.20.2",
+    "hostedProductionProof": false,
+    "unit": {
+      "passed": 4156,
+      "skipped": 193,
+      "failed": 0,
+      "filesPassed": 346,
+      "filesSkipped": 21,
+      "durationSeconds": 265.9,
+      "skipInventory": [
+        {
+          "file": "tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/inactive-authorization-and-atomic-delete.test.ts",
+          "testCount": 11,
+          "skipped": 11,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/saved-filter-reconciliation.test.ts",
+          "testCount": 20,
+          "skipped": 20,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-handoff.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.14/postgrest-claim-contention.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/direct-database-authorization.test.ts",
+          "testCount": 7,
+          "skipped": 7,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.10/reconciliation-evidence.test.ts",
+          "testCount": 13,
+          "skipped": 13,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/hr-admin-impersonation-export-integration.test.ts",
+          "testCount": 5,
+          "skipped": 5,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-installer-materialization.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+          "testCount": 2,
+          "skipped": 2,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.7/supabase-rls-evidence.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-saved-filter-cleanup-prerequisite.test.ts",
+          "testCount": 6,
+          "skipped": 6,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/production-cli-matrix-gate.test.ts",
+          "testCount": 9,
+          "skipped": 4,
+          "classification": "guarded-local-cli-admission-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/runtime-column-restore.test.ts",
+          "testCount": 3,
+          "skipped": 3,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-native.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/atomic-user-status-transition.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/column-config-checklist-column.test.ts",
+          "testCount": 2,
+          "skipped": 2,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-dry-run-host.test.ts",
+          "testCount": 17,
+          "skipped": 17,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-bootstrap-host.test.ts",
+          "testCount": 26,
+          "skipped": 26,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-file-lease.test.ts",
+          "testCount": 26,
+          "skipped": 26,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-production-inputs.test.ts",
+          "testCount": 22,
+          "skipped": 22,
+          "classification": "windows-native-only"
+        }
+      ]
+    },
+    "integration": {
+      "passed": 827,
+      "skipped": 95,
+      "failed": 0,
+      "filesPassed": 93,
+      "filesSkipped": 14,
+      "durationSeconds": 72.8,
+      "skipInventory": [
+        {
+          "file": "tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/inactive-authorization-and-atomic-delete.test.ts",
+          "testCount": 11,
+          "skipped": 11,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/saved-filter-reconciliation.test.ts",
+          "testCount": 20,
+          "skipped": 20,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.14/postgrest-claim-contention.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/direct-database-authorization.test.ts",
+          "testCount": 7,
+          "skipped": 7,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.10/reconciliation-evidence.test.ts",
+          "testCount": 13,
+          "skipped": 13,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/hr-admin-impersonation-export-integration.test.ts",
+          "testCount": 5,
+          "skipped": 5,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+          "testCount": 2,
+          "skipped": 2,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.7/supabase-rls-evidence.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-saved-filter-cleanup-prerequisite.test.ts",
+          "testCount": 6,
+          "skipped": 6,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/runtime-column-restore.test.ts",
+          "testCount": 3,
+          "skipped": 3,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/atomic-user-status-transition.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/column-config-checklist-column.test.ts",
+          "testCount": 2,
+          "skipped": 2,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        }
+      ]
+    },
+    "limits": [
+      "CI skips are not passes; the guarded local Windows full suite is required separately.",
+      "No CI runtime upgrade or new skip was used to fix the loader mismatch."
+    ]
+  },
+  "vitest": {
+    "command": "npx vitest run",
+    "sourceSha": "49e708ec99a8e74fb268e32d026bffc85bcb4a5c",
+    "passed": 4349,
+    "skipped": 0,
+    "failed": 0,
+    "filesPassed": 367,
+    "exitCode": 0,
+    "durationSeconds": 389.86,
+    "wrapperDurationMs": 399681,
+    "startedAtUtc": "2026-09-28T14:18:59.832Z",
+    "sourceUnchanged": true,
+    "requiredMatrix": true,
+    "requiredDatabaseEvidence": true,
+    "requiredLiveAppEvidence": true,
+    "logSha256": "38b6d7673fed3e2f27b414edd7e0ca510bdae05703ed7c510f4de8e383d02663"
+  },
+  "playwright": {
+    "command": "npx playwright test",
+    "sourceSha": "2876b7a7915765182602f5cf2c2111df3c317d56",
+    "applicationAndReleaseCodeByteIdenticalToTestedImplementation": true,
+    "deltaScope": "one synthetic unit-test loader portability change only",
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "exitCode": 0,
+    "durationSeconds": 1288.560973,
+    "wrapperDurationMs": 1294318,
+    "startedAtUtc": "2026-09-28T13:43:52.657Z",
+    "sourceUnchanged": true,
+    "skippedIdentitiesMatch": true,
+    "skippedIdentities": [
+      "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+      "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+      "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should include employee names or &quot;Unassigned&quot; in notification|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts",
+      "PWA Installation E2E › should cache static assets|epic-12\\story-12.4\\pwa-installation.spec.ts",
+      "PWA Installation E2E › should display app in standalone mode when installed|epic-12\\story-12.4\\pwa-installation.spec.ts",
+      "PWA Installation E2E › should handle service worker updates|epic-12\\story-12.4\\pwa-installation.spec.ts",
+      "PWA Installation E2E › should have apple touch icon|epic-12\\story-12.4\\pwa-installation.spec.ts",
+      "PWA Installation E2E › should have manifest.json linked in page head|epic-12\\story-12.4\\pwa-installation.spec.ts",
+      "PWA Installation E2E › should have theme color meta tag|epic-12\\story-12.4\\pwa-installation.spec.ts",
+      "PWA Installation E2E › should register service worker on page load|epic-12\\story-12.4\\pwa-installation.spec.ts",
+      "PWA Installation E2E › should show install prompt when criteria met|epic-12\\story-12.4\\pwa-installation.spec.ts",
+      "Prerequisites &amp; Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+      "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+      "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts",
+      "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13\\story-13.4\\export-selected-employees.spec.ts",
+      "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13\\story-13.4\\export-selected-employees.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts",
+      "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13\\story-13.7\\export-workflow.spec.ts",
+      "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13\\story-13.9\\repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13\\story-13.9\\repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13\\story-13.9\\repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13\\story-13.9\\repayment-field-visibility.spec.ts",
+      "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16\\story-16.5\\field-highlighting.spec.ts",
+      "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16\\story-16.5\\field-highlighting.spec.ts",
+      "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16\\story-16.6\\real-database-highlighting.spec.ts",
+      "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16\\story-16.6\\real-database-highlighting.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17\\story-17.4\\export-external-users.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17\\story-17.4\\export-external-users.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17\\story-17.4\\export-external-users.spec.ts",
+      "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20\\story-20.7\\export-with-filters.spec.ts",
+      "Termination &amp; Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts"
+    ],
+    "junitSha256": "99b2789b9f7cdbeef2f85b030d8ee0d605499dd8c795a8ded8f084f73b68cf84",
+    "logSha256": "554533d67dd9755b2b057c57ddc8f8f3fa79198638dd9bafdc5932c90f4cf75e"
+  },
+  "matrix": {
+    "reviewedCliVersion": "2.115.0",
+    "passed": 8,
+    "skipped": 0,
+    "failed": 0,
+    "testDurationMs": 386813,
+    "historyInitiallyAbsent": true,
+    "forwardApplies": 13,
+    "historyRepairs": 55,
+    "successfulHistoryRepairChildren": 55,
+    "finalHistoryVersions": 68,
+    "catalogUnchangedAcrossRepair": true,
+    "preservationUnchangedAcrossRepair": true,
+    "successWorktree": {
+      "hasSupabaseConfigToml": false,
+      "hasMigrationManifest": true,
+      "hasSyntheticProjectLink": true,
+      "migrationCount": 13
+    },
+    "syntheticOnly": true
+  },
+  "nativeHandoff": {
+    "actualCompiledHost": true,
+    "actualWorkerAndFactory": true,
+    "syntheticInputLoader": true,
+    "syntheticCli": true,
+    "targetAndTlsLeafStubs": true,
+    "genuinePrivateInputAccess": false,
+    "hostedTargetAccess": false,
+    "covered": [
+      "signed nonce handoff",
+      "exact dry-run and one apply",
+      "validated redacted attempt receipt",
+      "untrusted argument rejection",
+      "tampered evidence rejection",
+      "constrained marker-only synthetic cleanup"
+    ]
+  },
+  "quality": {
+    "typescript": {
+      "exitCode": 0
+    },
+    "lint": {
+      "exitCode": 0,
+      "errors": 0,
+      "warnings": 298
+    },
+    "stagingPreviewBuild": {
+      "exitCode": 0,
+      "durationMs": 39714,
+      "scope": "Earlier working-tree build; application sources are byte-identical to final implementation. Not a clean exact-head build or production deployment."
+    },
+    "pause": {
+      "unitChecksPassed": 45,
+      "pagesCovered": true,
+      "api503Covered": true,
+      "mutations503Covered": true,
+      "jobAndDeploymentConfigurationCovered": true,
+      "staticArtifactFunctions": false,
+      "staticArtifactCronCount": 0,
+      "staticArtifactRouteCount": 5
+    },
+    "dependencyAudit": {
+      "exitCode": 1,
+      "critical": 0,
+      "high": 0,
+      "moderate": 1,
+      "acceptedUntil": "2026-09-30"
+    }
+  },
+  "historicalFailedRuns": [
+    {
+      "sourceSha": "ba51fba2fd4950eca835dbc1be9fa08c1b9988b7",
+      "exitCode": 1,
+      "passed": 4317,
+      "skipped": 25,
+      "failedFiles": 2,
+      "reason": "Missing legacy synthetic package closure and incorrect external post-apply template selection; fixed without changing application checks."
+    },
+    {
+      "sourceSha": "3fc6d3dc18a441d337c925df63dd43140cf25410",
+      "exitCode": 1,
+      "passed": 4347,
+      "skipped": 0,
+      "failed": 2,
+      "failedFiles": 2,
+      "durationSeconds": 412.99,
+      "reason": "Stale rejection-message assertion and offline 68-blob inventory test timeout; exact assertion and narrow bounded 180-second test budget corrected."
+    },
+    {
+      "sourceSha": "2876b7a7915765182602f5cf2c2111df3c317d56",
+      "gitHubRunId": 36429776841,
+      "jobId": 108952664301,
+      "nodeVersion": "20.20.2",
+      "exitCode": 1,
+      "passed": 4145,
+      "skipped": 193,
+      "failed": 11,
+      "durationSeconds": 261.56,
+      "reason": "Synthetic test harness used registerHooks unavailable in CI Node 20. Replaced only the test loader API; all 11 cases retained."
+    }
+  ],
+  "coldCompileFailedRun": {
+    "sourceSha": "49e708ec99a8e74fb268e32d026bffc85bcb4a5c",
+    "command": "npx vitest run",
+    "passed": 4348,
+    "skipped": 0,
+    "failed": 1,
+    "filesPassed": 366,
+    "filesFailed": 1,
+    "durationSeconds": 394.44,
+    "wrapperDurationMs": 400545,
+    "startedAtUtc": "2026-09-28T14:06:41.746Z",
+    "exitCode": 1,
+    "logSha256": "fba48eb8615d667efd5b41db56d543cdb480fc2b0b021ee5606697655d91c585",
+    "reason": "First live export request exceeded the unchanged 10-second timeout while the development server compiled the route. Later exports completed in under half a second. The external local runner now completes bounded unauthenticated route-compilation readiness before launching the same suite. No repository source, request timeout, assertion or skip was changed."
+  },
+  "localRouteCompileReadiness": {
+    "localOnly": true,
+    "sourceSha": "49e708ec99a8e74fb268e32d026bffc85bcb4a5c",
+    "observedAtUtc": "2026-09-28T14:19:08.153Z",
+    "routes": [
+      {
+        "pathname": "/api/auth/login",
+        "unauthenticated": true,
+        "status": 400,
+        "durationMs": 1826
+      },
+      {
+        "pathname": "/api/employees/export",
+        "unauthenticated": true,
+        "status": 401,
+        "durationMs": 3523
+      }
+    ]
+  },
+  "historicalSuccessfulLocalRun": {
+    "sourceSha": "2876b7a7915765182602f5cf2c2111df3c317d56",
+    "command": "npx vitest run",
+    "passed": 4349,
+    "skipped": 0,
+    "failed": 0,
+    "filesPassed": 367,
+    "durationSeconds": 448.4,
+    "wrapperDurationMs": 454827,
+    "exitCode": 0
+  },
+  "limits": [
+    "Local synthetic evidence does not prove a hosted production result or grant write authority.",
+    "The earlier clean 68-file chain and strict 16/16 use byte-identical historical SQL and remain separately scoped evidence.",
+    "Native fixture failures caused by module injection were resolved with the pre-existing toolchain exclusion; no system setting was changed.",
+    "The 55 real ledger rows remain UNPROVED and unsigned.",
+    "Fresh isolation, cleanup and post-forward proof, owner adoption and separate history-repair approval remain mandatory.",
+    "Main merge, deployment and reopening remain separate owner decisions."
+  ]
+}
