@@ -37,15 +37,20 @@ function sandbox() {
   });
   writeFileSync(path.join(root, 'toolchain-package.json'), JSON.stringify({ kind: 'offline-protected-production-cutover-package', schemaVersion: 1, sourceCommit: 'a'.repeat(40), sourceTree: 'b'.repeat(40), sourceManifestSha256: 'c'.repeat(64), plan }));
   writeFileSync(path.join(root, 'hook.mjs'), `
-import { registerHooks } from 'node:module';
-const files=${JSON.stringify(plan.map((entry) => entry.file))}; const OriginalDate=Date; let clock='2026-09-23T14:10:00.000Z';
+import { register } from 'node:module';
+const OriginalDate=Date; let clock='2026-09-23T14:10:00.000Z';
 globalThis.Date=class extends OriginalDate {constructor(...args){super(...(args.length?args:[clock]))}static now(){return new OriginalDate(clock).getTime()}static advanceClock(){clock='2026-09-23T14:30:01.000Z'}};
+register(new URL('./loader.mjs', import.meta.url), import.meta.url);`);
+  // Async load hooks are available in the CI Node 20 runtime as well as the
+  // pinned protected-toolchain runtime. Returned modules execute in the main
+  // realm, sharing the synthetic clock/call log without changing real source.
+  writeFileSync(path.join(root, 'loader.mjs'), `
 const module=(source)=>({format:'module',shortCircuit:true,source});
-registerHooks({load(url,context,next){
+export function load(url,context,next){
  if(url==='node:child_process')return module(\`const files=${JSON.stringify(plan.map((entry) => entry.file))};export function spawnSync(exe,args){globalThis.calls??=[];globalThis.calls.push(args);if(args[0]==='--version')return {status:0,stdout:'2.115.0'+String.fromCharCode(10),stderr:''};if(args.includes('--dry-run')){const mode=process.env.DRY_CASE;const list=mode==='omitted'?files.slice(1):mode==='extra'?[...files,'20990101010101_extra.sql']:files;if(process.env.APPLY_CASE==='stale-after-dry')globalThis.Date.advanceClock();return {status:0,stdout:list.map(file=>\\\`Applying migration \\\${file}\\\`).join(String.fromCharCode(10)),stderr:''}}if(process.env.APPLY_CASE==='nonzero')return {status:1,stdout:'',stderr:'synthetic apply failure'};if(process.env.APPLY_CASE==='timeout')return {error:new Error('synthetic timeout')};return {status:0,stdout:'',stderr:''}}\`);
  if(url.endsWith('/verify-target-binding.mjs'))return module('export async function verifyConfiguredSupabaseTarget(){}');
  if(url.endsWith('/verify-production-baseline-catalog.mjs'))return module('export function verifyApprovedSslRootCertificate(){return "synthetic-ca"}');
- return next(url,context)}});`);
+ return next(url,context)}`);
   const harness = `
 import {createPrivateKey,sign} from 'node:crypto';import {readFileSync} from 'node:fs';
 import {createProtectedProductionCutoverExecutor,runReviewedSupabaseCli} from './supabase/verify/run-reviewed-supabase-cli.mjs';
