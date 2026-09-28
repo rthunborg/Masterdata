@@ -404,6 +404,8 @@ export function verifyApprovedSupabaseCliExecutable({
     encoding: 'utf8',
     env: createSafeVersionEnvironment(environment),
     windowsHide: true,
+    timeout: 10_000,
+    maxBuffer: 64 * 1024,
   });
   if (
     versionResult.error ||
@@ -429,6 +431,11 @@ async function runReviewedSupabaseCliInternal({
   // always supplies false and no caller option can override that boundary.
   protectedCutoverCapability = false,
   captureProtectedResult = false,
+  // Private capability-factory seam. The public wrapper always clears this;
+  // it rechecks time-sensitive evidence after target/TLS preflight and before
+  // the child process can be spawned.
+  beforeSpawn = undefined,
+  onProtectedResult = undefined,
 } = {}) {
   if (
     !Array.isArray(args) ||
@@ -438,6 +445,18 @@ async function runReviewedSupabaseCliInternal({
     )
   ) {
     throw new Error('A valid Supabase CLI command is required');
+  }
+  if (
+    beforeSpawn !== undefined &&
+    (typeof beforeSpawn !== 'function' ||
+      (protectedCutoverCapability !== true && captureProtectedResult !== true))
+  ) {
+    throw new Error('Protected production cutover capability is unavailable');
+  }
+  if (onProtectedResult !== undefined &&
+      (typeof onProtectedResult !== 'function' ||
+       (protectedCutoverCapability !== true && captureProtectedResult !== true))) {
+    throw new Error('Protected production cutover capability is unavailable');
   }
 
   const isStandaloneVersionCommand = argumentsEqual(args, ['--version']);
@@ -539,15 +558,30 @@ async function runReviewedSupabaseCliInternal({
 
   executable ??= executableVerifier({ environment });
 
-  const result = spawn(executable, childArguments, {
+  if (beforeSpawn !== undefined) {
+    await beforeSpawn();
+  }
+
+  const started = process.hrtime.bigint();
+  let result;
+  try {
+  result = spawn(executable, childArguments, {
     cwd: workspace,
     env: childEnvironment,
     stdio: protectedCutoverCapability === true || captureProtectedResult === true ? 'pipe' : 'inherit',
     windowsHide: true,
     ...(protectedCutoverCapability === true || captureProtectedResult === true
-      ? { encoding: 'utf8', timeout: 90_000, maxBuffer: 1024 * 1024 }
+      ? { timeout: 90_000, maxBuffer: 1024 * 1024 }
       : {}),
   });
+  } catch (error) {
+    result = { error, status: null, signal: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) };
+  }
+  // Preserve raw, bounded streams before interpreting errors or exit status.
+  // A timeout or nonzero exit may follow already committed migration files.
+  if (onProtectedResult !== undefined) {
+    onProtectedResult(result, Number((process.hrtime.bigint() - started) / 1_000_000n));
+  }
 
   if (result.error) {
     throw new Error('Reviewed Supabase CLI command could not be started');
@@ -567,6 +601,8 @@ export async function runReviewedSupabaseCli(options = {}) {
     ...options,
     protectedCutoverCapability: false,
     captureProtectedResult: false,
+    beforeSpawn: undefined,
+    onProtectedResult: undefined,
   });
 }
 
@@ -578,6 +614,7 @@ export async function runReviewedSupabaseCli(options = {}) {
  */
 export function createProtectedProductionCutoverExecutor({ packet, nonce, workspace } = {}) {
   let root;
+  let originPublicKey;
   if (
     typeof packet !== 'string' ||
     !/^[a-f0-9]{64}$/u.test(nonce ?? '') ||
@@ -597,11 +634,11 @@ export function createProtectedProductionCutoverExecutor({ packet, nonce, worksp
       typeof envelope.payload !== 'string' || typeof envelope.signature !== 'string'
     ) throw new Error();
     const payload = Buffer.from(envelope.payload, 'base64');
-    const publicKey = createPublicKey({
+    originPublicKey = createPublicKey({
       key: JSON.parse(readFileSync(path.join(root, 'bootstrap-origin.json'), 'utf8')),
       format: 'jwk',
     });
-    if (!verify('RSA-SHA256', payload, publicKey, Buffer.from(envelope.signature, 'base64'))) throw new Error();
+    if (!verify('RSA-SHA256', payload, originPublicKey, Buffer.from(envelope.signature, 'base64'))) throw new Error();
     request = JSON.parse(payload.toString('utf8'));
   } catch {
     throw new Error('Protected production cutover capability is unavailable');
@@ -629,11 +666,12 @@ export function createProtectedProductionCutoverExecutor({ packet, nonce, worksp
       fixedRequest.isolationContext?.sourceTree !== fixedRequest.sourceTree ||
       fixedRequest.isolationContext?.sourceManifestSha256 !== fixedRequest.sourceManifestSha256
     ) throw new Error('Protected production cutover capability is unavailable');
-    const [staffingModule, isolationModule, observedModule, bootstrapModule] = await Promise.all([
+    const [staffingModule, isolationModule, observedModule, bootstrapModule, diagnosticsModule] = await Promise.all([
       import('../../src/lib/release/production-staffing-pre-execute-contract.mjs'),
       import('../../src/lib/release/production-isolation-gate.mjs'),
       import('../../src/lib/release/production-observed-profile.mjs'),
       import('../../src/lib/release/production-bootstrap-admission.mjs'),
+      import('../../src/lib/release/protected-cutover-diagnostics.mjs'),
     ]);
     const verifyPrerequisites = () => {
     const keys = ['schemaVersion', 'operation', 'nonce', 'workspace', 'environment',
@@ -685,26 +723,53 @@ export function createProtectedProductionCutoverExecutor({ packet, nonce, worksp
     }
     };
     verifyPrerequisites();
+    const diagnostics = diagnosticsModule.createProtectedCutoverDiagnosticSink({
+      workspace, publicKey: originPublicKey,
+      context: {
+        sourceSha: fixedRequest.sourceSha, sourceTree: fixedRequest.sourceTree,
+        sourceManifestSha256: fixedRequest.sourceManifestSha256,
+        targetBindingSha256: fixedRequest.targetBindingSha256,
+        nonce, operation: 'apply-forward-13',
+      },
+    });
+    const preserveResult = (phase) => (result, durationMs) => diagnostics.complete(phase, {
+      stdout: Buffer.isBuffer(result.stdout) ? result.stdout : Buffer.from(result.stdout ?? '', 'utf8'),
+      stderr: Buffer.isBuffer(result.stderr) ? result.stderr : Buffer.from(result.stderr ?? '', 'utf8'),
+      status: typeof result.status === 'number' ? result.status : null,
+      signal: typeof result.signal === 'string' ? result.signal : null,
+      errorCode: typeof result.error?.code === 'string' ? result.error.code : (result.error ? 'UNKNOWN' : null),
+      durationMs,
+    });
+    // Reserve both encrypted journals before either CLI attempt. The marker is
+    // durable before the final fresh proof and spawn. Missing completion remains
+    // an unknown database outcome; a retained marker never authorizes a retry.
+    try {
     const args = ['db', 'push', '--reviewed-target', '--reviewed-environment', 'production', '--include-all', '--skip-vault'];
     const dryArgs = ['db', 'push', '--reviewed-target', '--reviewed-environment', 'production', '--dry-run', '--include-all', '--skip-vault'];
     const dryRun = await runReviewedSupabaseCliInternal({
       args: dryArgs, workspace,
       environment: fixedRequest.environment, captureProtectedResult: true,
+      beforeSpawn: () => { diagnostics.start('dry-run'); verifyPrerequisites(); },
+      onProtectedResult: preserveResult('dry-run'),
     });
-    if (dryRun.status !== 0 || typeof dryRun.stdout !== 'string' || typeof dryRun.stderr !== 'string') {
+    if (dryRun.status !== 0 || (!Buffer.isBuffer(dryRun.stdout) && typeof dryRun.stdout !== 'string') ||
+        (!Buffer.isBuffer(dryRun.stderr) && typeof dryRun.stderr !== 'string')) {
       throw new Error('Protected production cutover dry run refused');
     }
     bootstrapModule.parseExactProductionBootstrapDryRun(
-      dryRun.stdout + dryRun.stderr, packageRecord.plan
+      dryRun.stdout.toString('utf8') + dryRun.stderr.toString('utf8'), packageRecord.plan
     );
     verifyPrerequisites();
     // Only the signed, installed worker reaches this fixed apply shape. The
     // public entry point cannot request this capability or supply child options.
     // A nonzero/uncertain result is never retried and never authorizes repair.
-    return runReviewedSupabaseCliInternal({
+    return await runReviewedSupabaseCliInternal({
       args, workspace, environment: fixedRequest.environment,
       protectedCutoverCapability: true,
+      beforeSpawn: () => { diagnostics.start('apply'); verifyPrerequisites(); },
+      onProtectedResult: preserveResult('apply'),
     });
+    } finally { diagnostics.close(); }
   };
 }
 

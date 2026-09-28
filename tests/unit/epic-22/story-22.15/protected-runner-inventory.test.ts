@@ -95,6 +95,7 @@ export async function evidenceDependencies() { return Promise.all([
   import('../../src/lib/release/production-isolation-gate.mjs'),
   import('../../src/lib/release/production-observed-profile.mjs'),
   import('../../src/lib/release/production-bootstrap-admission.mjs'),
+  import('../../src/lib/release/protected-cutover-diagnostics.mjs'),
 ]); }
 `;
 }

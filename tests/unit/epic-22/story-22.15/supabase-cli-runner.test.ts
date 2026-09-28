@@ -49,6 +49,16 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     expect(spawn.mock.calls[0]?.[2]?.env).not.toHaveProperty(
       'SUPABASE_ACCESS_TOKEN'
     );
+    expect(spawn.mock.calls[0]?.[2]).toMatchObject({ timeout: 10_000, maxBuffer: 64 * 1024 });
+  });
+
+  it('rejects a timed-out version probe before accepting its reported version', () => {
+    expect(() => verifyApprovedSupabaseCliExecutable({
+      environment: { SUPABASE_CLI_EXECUTABLE: reviewedCliPath, EXPECTED_SUPABASE_CLI_SHA256: expectedSha256 },
+      readExecutable: () => executable,
+      resolveExecutable: (configuredPath: string) => configuredPath,
+      spawn: () => ({ error: Object.assign(new Error('synthetic timeout'), { code: 'ETIMEDOUT' }), status: null, stdout: `${REVIEWED_SUPABASE_CLI_VERSION}\n` }),
+    })).toThrow('Supabase CLI does not match the reviewed version');
   });
 
   it('rejects a PATH-resolved, missing-hash, hash-mismatched, or wrong-version executable', () => {
@@ -100,6 +110,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     };
     const args = ['projects', 'list'];
     const executableVerifier = vi.fn(() => reviewedCliPath);
+    const untrustedHook = vi.fn(() => { throw new Error('caller hook must not execute'); });
 
     expect(
       await runReviewedSupabaseCli({
@@ -108,9 +119,12 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         environment,
         spawn,
         executableVerifier,
+        beforeSpawn: untrustedHook,
+        onProtectedResult: untrustedHook,
       })
     ).toBe(0);
     expect(executableVerifier).toHaveBeenCalledWith({ environment });
+    expect(untrustedHook).not.toHaveBeenCalled();
     expect(spawn).toHaveBeenCalledWith(reviewedCliPath, args, {
       cwd: resolve('workspace'),
       env: environment,

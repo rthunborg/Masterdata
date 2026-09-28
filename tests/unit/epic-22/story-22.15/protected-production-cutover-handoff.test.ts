@@ -118,6 +118,7 @@ function fixture() {
     'src/lib/release/protected-production-cutover-worker.mjs', 'src/lib/release/production-bootstrap-admission.mjs',
     'src/lib/release/production-staffing-pre-execute-contract.mjs', 'src/lib/release/production-isolation-gate.mjs',
     'src/lib/release/production-managed-writer-profiles.mjs', 'src/lib/release/production-observed-profile.mjs',
+    'src/lib/release/protected-cutover-diagnostics.mjs',
     'supabase/verify/run-reviewed-supabase-cli.mjs', 'supabase/migration-baseline-manifest.json',
   ]) copy(root, file);
   writeFileSync(path.join(root, 'supabase/verify/verify-production-baseline-catalog.mjs'), "export function verifyApprovedSslRootCertificate({environment}={}) { return environment.SUPABASE_SSL_ROOT_CERT; }\n");
@@ -171,7 +172,7 @@ function fixture() {
   const keyResult = spawnSync(windowsPowerShell, ['-NoProfile', '-NonInteractive', '-File', keyScript, privateXml, publicJwk], { encoding: 'utf8', windowsHide: true, timeout: 30_000 });
   expect(keyResult.status, keyResult.stderr).toBe(0);
   const allFiles = [
-    'runtime/node.exe', 'runtime/supabase.exe', 'src/lib/release/protected-file-lease.cs', 'src/lib/release/protected-production-cutover-host.cs', 'src/lib/release/protected-production-cutover-worker.mjs', 'src/lib/release/production-bootstrap-admission.mjs', 'src/lib/release/production-staffing-pre-execute-contract.mjs', 'src/lib/release/production-isolation-gate.mjs', 'src/lib/release/production-managed-writer-profiles.mjs', 'src/lib/release/production-observed-profile.mjs', 'supabase/verify/run-reviewed-supabase-cli.mjs', 'supabase/verify/verify-production-baseline-catalog.mjs', 'supabase/verify/verify-target-binding.mjs', 'supabase/migration-baseline-manifest.json', 'toolchain-package.json', 'bootstrap-origin.json', ...plan.map((entry) => `supabase/migrations/${entry.file}`),
+    'runtime/node.exe', 'runtime/supabase.exe', 'src/lib/release/protected-file-lease.cs', 'src/lib/release/protected-production-cutover-host.cs', 'src/lib/release/protected-production-cutover-worker.mjs', 'src/lib/release/production-bootstrap-admission.mjs', 'src/lib/release/production-staffing-pre-execute-contract.mjs', 'src/lib/release/production-isolation-gate.mjs', 'src/lib/release/production-managed-writer-profiles.mjs', 'src/lib/release/production-observed-profile.mjs', 'src/lib/release/protected-cutover-diagnostics.mjs', 'supabase/verify/run-reviewed-supabase-cli.mjs', 'supabase/verify/verify-production-baseline-catalog.mjs', 'supabase/verify/verify-target-binding.mjs', 'supabase/migration-baseline-manifest.json', 'toolchain-package.json', 'bootstrap-origin.json', ...plan.map((entry) => `supabase/migrations/${entry.file}`),
   ];
   const files = allFiles.map((relative) => ({ relative, sha: sha256(readFileSync(path.join(root, relative))) }));
   const rows = files.map(({ relative, sha }) => `{ @"${relative.replaceAll('/', '\\')}", "${sha}" }`).join(',\n');

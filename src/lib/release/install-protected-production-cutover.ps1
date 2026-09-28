@@ -76,6 +76,7 @@ try {
   'src/lib/release/protected-file-lease.cs',
   'src/lib/release/protected-production-cutover-host.cs','src/lib/release/protected-production-cutover-worker.mjs',
   'src/lib/release/protected-production-inputs.cs','src/lib/release/production-bootstrap-admission.mjs','src/lib/release/production-staffing-pre-execute-contract.mjs','src/lib/release/production-isolation-gate.mjs','src/lib/release/production-managed-writer-profiles.mjs','src/lib/release/production-observed-profile.mjs',
+  'src/lib/release/protected-cutover-diagnostics.mjs',
   'supabase/verify/run-reviewed-supabase-cli.mjs','supabase/verify/verify-production-baseline-catalog.mjs',
   'supabase/verify/verify-target-binding.mjs',
   'node_modules/papaparse/package.json','node_modules/papaparse/papaparse.js','supabase/migration-baseline-manifest.json'

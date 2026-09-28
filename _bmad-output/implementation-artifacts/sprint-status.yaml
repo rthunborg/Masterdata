@@ -275,4 +275,7 @@ consolidated_cutover_ordering_correction_20260928:
   managed_writer_required_for_cutover: true
   managed_writer_interval_after_cleanup: true
   managed_writer_freshness_at_actual_launch: true
+  cli_preflight_freshness_recheck: true
+  encrypted_partial_apply_diagnostics: true
+  diagnostic_recovery_verification: pending
   final_verification: pending

@@ -296,6 +296,17 @@ describe('Story 22.15 protected production cutover package', { timeout: 90_000 }
     expect(() => readdirSync(options.outputDirectory)).toThrow();
   });
 
+  it('rejects a committed diagnostic module with an unapproved dependency before package creation', () => {
+    const options = fixture();
+    const diagnosticModule = path.join(options.workspace, 'src/lib/release/protected-cutover-diagnostics.mjs');
+    writeFileSync(diagnosticModule, readFileSync(diagnosticModule, 'utf8') + "\nimport extra from 'unapproved-package';\n");
+    options.commit = commit(options.workspace);
+    expect(() => prepareProtectedProductionCutoverPackage(options)).toThrow(
+      'Protected production cutover package preparation failed'
+    );
+    expect(() => readdirSync(options.outputDirectory)).toThrow();
+  });
+
   it.each([
     ["a computed import", "const hidden = import('./unapproved.mjs');"],
     ["a side-effect import", "import 'unapproved-package';"],

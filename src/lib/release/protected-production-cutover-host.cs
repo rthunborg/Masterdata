@@ -109,6 +109,30 @@ namespace HrMasterdata.Release
             return acl;
         }
 
+        // Retain recovery material only under the current Windows user's DPAPI
+        // protection. Exact CLI streams stay encrypted in the private work root;
+        // they never become console output or a plaintext recovery log.
+        static string PreserveDiagnosticRecoveryKey(string work)
+        {
+            byte[] plaintext = null, entropy = null, protectedKey = null;
+            try
+            {
+                plaintext = Encoding.UTF8.GetBytes(Installation.OriginPrivateKey);
+                entropy = Encoding.UTF8.GetBytes("hr-masterdata/production/cutover-diagnostics/v1");
+                protectedKey = ProtectedData.Protect(plaintext, entropy, DataProtectionScope.CurrentUser);
+                string file = Path.Combine(work, "diagnostic-recovery-key.v1.dpapi");
+                using (var stream = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                { stream.Write(protectedKey, 0, protectedKey.Length); stream.Flush(true); }
+                return file;
+            }
+            finally
+            {
+                if (plaintext != null) Array.Clear(plaintext, 0, plaintext.Length);
+                if (entropy != null) Array.Clear(entropy, 0, entropy.Length);
+                if (protectedKey != null) Array.Clear(protectedKey, 0, protectedKey.Length);
+            }
+        }
+
         static string RedactedReceipt(string output, string root, JavaScriptSerializer serializer)
         {
             var result = serializer.Deserialize<Dictionary<string, object>>(output);
@@ -225,6 +249,8 @@ namespace HrMasterdata.Release
                 using (var stream = new FileStream(link, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 { byte[] bytes = Encoding.UTF8.GetBytes(reference); stream.Write(bytes, 0, bytes.Length); }
                 workFiles.Add(link, Hash(link));
+                string recoveryKey = PreserveDiagnosticRecoveryKey(work);
+                workFiles.Add(recoveryKey, Hash(recoveryKey));
                 workLease = ProtectedFileLease.Acquire(work, workFiles); CheckInventory(work, workFiles);
                 var environment = new Dictionary<string, string>(inputs.EnvironmentValues);
                 environment.Add("SystemRoot", windows); environment.Add("WINDIR", windows); environment.Add("PATH", Environment.SystemDirectory);

@@ -37,6 +37,7 @@ const MODULES = Object.freeze([
       '../../src/lib/release/production-isolation-gate.mjs',
       '../../src/lib/release/production-observed-profile.mjs',
       '../../src/lib/release/production-bootstrap-admission.mjs',
+      '../../src/lib/release/protected-cutover-diagnostics.mjs',
     ]),
   }),
   Object.freeze({
@@ -93,6 +94,11 @@ const CUTOVER_MODULES = Object.freeze([
   Object.freeze({
     path: 'src/lib/release/production-observed-profile.mjs',
     staticImports: Object.freeze(['node:crypto']),
+    dynamicImports: Object.freeze([]),
+  }),
+  Object.freeze({
+    path: 'src/lib/release/protected-cutover-diagnostics.mjs',
+    staticImports: Object.freeze(['node:crypto', 'node:fs', 'node:path']),
     dynamicImports: Object.freeze([]),
   }),
 ]);

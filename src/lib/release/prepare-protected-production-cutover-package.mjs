@@ -27,6 +27,7 @@ export const PROTECTED_PRODUCTION_CUTOVER_PACKAGE_SOURCE_FILES = Object.freeze([
   'src/lib/release/production-isolation-gate.mjs',
   'src/lib/release/production-managed-writer-profiles.mjs',
   'src/lib/release/production-observed-profile.mjs',
+  'src/lib/release/protected-cutover-diagnostics.mjs',
   'supabase/verify/run-reviewed-supabase-cli.mjs',
   'supabase/verify/verify-production-baseline-catalog.mjs',
   'supabase/verify/verify-target-binding.mjs',
@@ -208,6 +209,7 @@ function assertCutoverModuleClosure(bytesByPath) {
     []
   );
   assertExactModuleReferences(bytesByPath.get('src/lib/release/production-observed-profile.mjs'), ['node:crypto'], []);
+  assertExactModuleReferences(bytesByPath.get('src/lib/release/protected-cutover-diagnostics.mjs'), ['node:crypto', 'node:fs', 'node:path'], []);
 }
 
 function assertInventoryMatchesSource(inventory, source) {
@@ -252,6 +254,7 @@ function assertCutoverInventoryMatchesSource(inventory, source) {
       'src/lib/release/production-isolation-gate.mjs',
       'src/lib/release/production-managed-writer-profiles.mjs',
       'src/lib/release/production-observed-profile.mjs',
+      'src/lib/release/protected-cutover-diagnostics.mjs',
     ])
   ) fail();
 }
