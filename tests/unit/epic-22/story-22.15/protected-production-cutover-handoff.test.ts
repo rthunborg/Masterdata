@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { copyFileSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -27,6 +27,21 @@ function own(root: string) {
   roots.push(resolved);
   ownedRoots.add(resolved);
   return resolved;
+}
+
+function registerMarkedWorkRoot(marker: string) {
+  if (!existsSync(marker)) return null;
+  const markerStat = lstatSync(marker);
+  if (!markerStat.isFile() || markerStat.isSymbolicLink()) throw new Error('refusing an untrusted work-root marker');
+  const profile = path.resolve(process.env.USERPROFILE ?? '');
+  const marked = readFileSync(marker, 'utf8').trim();
+  const resolved = path.resolve(marked);
+  if (!path.isAbsolute(marked) || !/^\.hr-masterdata-cutover-[a-f0-9]{32}$/u.test(path.relative(profile, resolved))) {
+    throw new Error('refusing a work root outside the exact synthetic host namespace');
+  }
+  const rootStat = lstatSync(resolved);
+  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) throw new Error('refusing an untrusted work-root directory');
+  return own(resolved);
 }
 
 function copy(root: string, relative: string) {
@@ -167,6 +182,12 @@ describe.skipIf(process.platform !== 'win32')('Story 22.15 protected production 
     expect(rejectedArguments.status).toBe(1);
     expect(existsSync(callLog)).toBe(false);
     const result = spawnSync(executable, [], { encoding: 'utf8', windowsHide: true, timeout: 120_000 });
+    // The marker was absent before this run and only this fixture's fake CLI
+    // writes it. Register its constrained, non-link root before assertions so
+    // an assertion failure still cleans up this exact synthetic directory.
+    // If the host fails before the CLI marker, retain work for diagnosis; do
+    // not scan or adopt any other directory under the user profile.
+    const workRoot = registerMarkedWorkRoot(workRootMarker);
     expect(result.error).toBeUndefined();
     expect(result.status, result.stderr).toBe(0);
     expect(JSON.parse(result.stdout.trim())).toMatchObject({ kind: 'protected-production-forward-13-attempt', sourceCommit: sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, versions: PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS, authorizesCleanup: false, authorizesRepair: false, authorizesMain: false, authorizesDeployment: false, authorizesReopen: false });
@@ -175,9 +196,7 @@ describe.skipIf(process.platform !== 'win32')('Story 22.15 protected production 
       'db push --include-all --skip-vault --db-url postgresql:///postgres?sslmode=verify-full',
     ]);
     expect(existsSync(inputRoot)).toBe(true);
-    const profile = path.resolve(process.env.USERPROFILE ?? '');
-    const workRoot = path.resolve(readFileSync(workRootMarker, 'utf8').trim());
-    expect(path.relative(profile, workRoot)).toMatch(/^\.hr-masterdata-cutover-[a-f0-9]{32}$/u);
+    if (!workRoot) throw new Error('successful synthetic CLI handoff did not mark its work root');
     const expectedMigrationNames = PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.map((version) => {
       const name = readdirSync(path.join(repository, 'supabase', 'migrations')).find((entry) => entry.startsWith(`${version}_`));
       if (!name) throw new Error(`missing expected migration ${version}`);
@@ -190,7 +209,6 @@ describe.skipIf(process.platform !== 'win32')('Story 22.15 protected production 
     }
     expect(existsSync(path.join(workRoot, 'supabase', '.temp', 'project-ref'))).toBe(true);
     expect(existsSync(path.join(workRoot, 'supabase', 'config.toml'))).toBe(false);
-    own(workRoot);
     const originalPreForward = readFileSync(preForwardPath);
     const callsBeforeTamper = readFileSync(callLog, 'utf8');
     try {

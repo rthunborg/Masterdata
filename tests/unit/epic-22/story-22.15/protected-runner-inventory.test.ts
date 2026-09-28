@@ -245,7 +245,9 @@ describe('Story 22.15 protected runner inventory', { timeout: 60_000 }, () => {
     expect(receipt.modules[1].staticImports).toContain(
       './verify-production-baseline-catalog.mjs'
     );
-  });
+    // This real-manifest case verifies 68 immutable Git blobs. Allow the
+    // bounded offline inventory to finish alongside the full package suites.
+  }, 180_000);
 
   it('keeps a plain local export list outside the dependency graph', () => {
     write(

@@ -88,7 +88,7 @@ describe('Story 22.15 protected production cutover executor', () => {
       ['db', 'push', '--include-all', '--skip-vault', '--db-url', 'postgresql:///postgres?sslmode=verify-full'],
     ]);
     expect(result.calls.some((args: string[]) => args[0] === 'migration' && args[1] === 'repair')).toBe(false);
-    expect(result.publicOutcome).toContain('blocked');
+    expect(result.publicOutcome).toBe('Production --include-all apply requires the installed protected cutover runner and fresh reviewed prerequisites under full production traffic isolation');
   });
 
   it.each(['omitted', 'extra'] as const)('refuses a %s dry-run list without an apply', (kind) => {
