@@ -90,12 +90,14 @@ function inspectContext(value) {
       'isolationPlanSha256',
       'databaseRoleGraphSha256',
       'trustedBackendProfileSha256',
+      'priorRealtimeServiceEnabled',
     ]) ||
     !SHA40.test(value.sourceSha) ||
     !SHA256.test(value.targetBindingSha256) ||
     !SHA256.test(value.isolationPlanSha256) ||
     !SHA256.test(value.databaseRoleGraphSha256) ||
-    !SHA256.test(value.trustedBackendProfileSha256)
+    !SHA256.test(value.trustedBackendProfileSha256) ||
+    typeof value.priorRealtimeServiceEnabled !== 'boolean'
   ) {
     return null;
   }
@@ -169,20 +171,82 @@ function inspectPlatform(value) {
     : null;
 }
 
-function inspectRealtimeProbe(value) {
+function inspectRealtimeProbe(value, context, platform) {
   const receipt = inspectBoundReceipt(value, 'production-realtime-denial-probe', [
     'independentFromControlObservation',
     'connectionAttempted',
     'connectionDenied',
     'writeObserved',
+    'priorRealtimeServiceEnabled',
+    'httpStatus',
+    'providerErrorCode',
+    'denialCause',
+    'existingConnectionEstablishedBeforeIsolation',
+    'existingSubscriptionAcknowledgedBeforeIsolation',
+    'existingConnectionDisconnectedByService',
+    'existingConnectionClosedByCaller',
+    'existingConnectionEstablishedAtUtc',
+    'controlChangeStartedAtUtc',
+    'existingConnectionDisconnectedAtUtc',
+    'connectedClientCount',
+    'connectedClientsReportComplete',
+    'connectedClientsReportWindowStartedAtUtc',
+    'connectedClientsReportWindowEndedAtUtc',
+    'connectedClientsReportCapturedAtUtc',
   ]);
-  return receipt &&
-    receipt.independentFromControlObservation === true &&
-    receipt.connectionAttempted === true &&
-    receipt.connectionDenied === true &&
-    receipt.writeObserved === false
-    ? receipt
-    : null;
+  if (!receipt || !context || !platform ||
+    receipt.independentFromControlObservation !== true ||
+    receipt.connectionAttempted !== true ||
+    receipt.connectionDenied !== true ||
+    receipt.writeObserved !== false ||
+    receipt.httpStatus !== 403 ||
+    receipt.providerErrorCode !== 'RealtimeDisabledForTenant' ||
+    receipt.denialCause !== 'realtime-disabled-for-tenant' ||
+    receipt.priorRealtimeServiceEnabled !== context.priorRealtimeServiceEnabled ||
+    receipt.existingConnectionClosedByCaller !== false ||
+    receipt.connectedClientCount !== 0 ||
+    receipt.connectedClientsReportComplete !== true
+  ) return null;
+
+  const reportTimes = [
+    receipt.connectedClientsReportWindowStartedAtUtc,
+    receipt.connectedClientsReportWindowEndedAtUtc,
+    receipt.connectedClientsReportCapturedAtUtc,
+  ].map(canonicalUtc);
+  if (reportTimes.some((time) => time === null) ||
+    reportTimes[0] < platform.capturedAt ||
+    reportTimes[1] <= reportTimes[0] ||
+    reportTimes[2] < reportTimes[1] ||
+    reportTimes[2] > receipt.capturedAt
+  ) return null;
+
+  const connectionTimes = [
+    receipt.existingConnectionEstablishedAtUtc,
+    receipt.controlChangeStartedAtUtc,
+    receipt.existingConnectionDisconnectedAtUtc,
+  ];
+  if (!context.priorRealtimeServiceEnabled) {
+    if (receipt.existingConnectionEstablishedBeforeIsolation !== false ||
+      receipt.existingSubscriptionAcknowledgedBeforeIsolation !== false ||
+      receipt.existingConnectionDisconnectedByService !== false ||
+      connectionTimes.some((time) => time !== null)
+    ) return null;
+    return Object.freeze({ ...receipt, evidenceTimes: reportTimes });
+  }
+
+  const observedConnectionTimes = connectionTimes.map(canonicalUtc);
+  if (receipt.existingConnectionEstablishedBeforeIsolation !== true ||
+    receipt.existingSubscriptionAcknowledgedBeforeIsolation !== true ||
+    receipt.existingConnectionDisconnectedByService !== true ||
+    observedConnectionTimes.some((time) => time === null) ||
+    observedConnectionTimes[0] >= observedConnectionTimes[1] ||
+    observedConnectionTimes[1] > platform.capturedAt ||
+    observedConnectionTimes[2] <= observedConnectionTimes[1] ||
+    observedConnectionTimes[2] > reportTimes[0]
+  ) return null;
+  // The server can close the probe before the configuration GET finishes.
+  // Bind the disconnect to the start of the change, not the later readback.
+  return Object.freeze({ ...receipt, evidenceTimes: [...observedConnectionTimes, ...reportTimes] });
 }
 
 function inspectDataApi(value) {
@@ -449,7 +513,7 @@ export function assessProductionMaintenanceIsolation(
   const pauseFacts = inspectPause(pause);
   const edgeFacts = inspectEdgeFunctions(edgeFunctions);
   const platformFacts = inspectPlatform(platform);
-  const realtimeFacts = inspectRealtimeProbe(realtimeProbe);
+  const realtimeFacts = inspectRealtimeProbe(realtimeProbe, context, platformFacts);
   const dataApiFacts = inspectDataApi(dataApi);
   const dataApiProbeFacts = inspectDataApiProbe(dataApiProbe);
   const networkFacts = inspectNetwork(network);
@@ -474,9 +538,11 @@ export function assessProductionMaintenanceIsolation(
   }
   const observedAt = facts.map((fact) => fact.capturedAt);
   const networkEvidenceTimes = networkFacts.evidenceTimes ?? [];
+  const realtimeEvidenceTimes = realtimeFacts.evidenceTimes;
   if (
     observedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     networkEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
+    realtimeEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     observedAt.slice(0, -1).some((time) => time > drainFacts.capturedAt) ||
     realtimeFacts.capturedAt <= platformFacts.capturedAt ||
     dataApiProbeFacts.capturedAt <= dataApiFacts.capturedAt ||

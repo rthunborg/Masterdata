@@ -19,6 +19,7 @@ const context = () => ({
   isolationPlanSha256,
   databaseRoleGraphSha256,
   trustedBackendProfileSha256,
+  priorRealtimeServiceEnabled: true,
 });
 
 const bound = (kind: string, values: Record<string, unknown>) => ({
@@ -54,6 +55,22 @@ function receipts() {
       connectionAttempted: true,
       connectionDenied: true,
       writeObserved: false,
+      priorRealtimeServiceEnabled: true,
+      httpStatus: 403,
+      providerErrorCode: 'RealtimeDisabledForTenant',
+      denialCause: 'realtime-disabled-for-tenant',
+      existingConnectionEstablishedBeforeIsolation: true,
+      existingSubscriptionAcknowledgedBeforeIsolation: true,
+      existingConnectionDisconnectedByService: true,
+      existingConnectionClosedByCaller: false,
+      existingConnectionEstablishedAtUtc: '2026-09-23T13:59:58.000Z',
+      controlChangeStartedAtUtc: '2026-09-23T13:59:59.000Z',
+      existingConnectionDisconnectedAtUtc: '2026-09-23T14:00:00.250Z',
+      connectedClientCount: 0,
+      connectedClientsReportComplete: true,
+      connectedClientsReportWindowStartedAtUtc: '2026-09-23T14:00:00.500Z',
+      connectedClientsReportWindowEndedAtUtc: '2026-09-23T14:00:00.600Z',
+      connectedClientsReportCapturedAtUtc: '2026-09-23T14:00:00.900Z',
     }),
     dataApi: bound('production-data-api-disable-observation', {
       dashboardControlObserved: true,
@@ -137,6 +154,98 @@ function sameComputerReceipts() {
 }
 
 describe('Story 22.15 production maintenance isolation gate', () => {
+  it.each([
+    ['denialCause', 'authentication-failure'],
+    ['denialCause', 'outage'],
+    ['denialCause', 'unclassified-timeout'],
+    ['denialCause', undefined],
+    ['httpStatus', 401],
+    ['httpStatus', 503],
+    ['providerErrorCode', 'Unauthorized'],
+    ['providerErrorCode', undefined],
+    ['providerErrorCode', ['RealtimeDisabledForTenant']],
+    ['existingConnectionEstablishedBeforeIsolation', false],
+    ['existingSubscriptionAcknowledgedBeforeIsolation', false],
+    ['existingConnectionDisconnectedByService', false],
+    ['existingConnectionClosedByCaller', true],
+    ['priorRealtimeServiceEnabled', false],
+    ['connectedClientCount', 1],
+    ['connectedClientCount', '0'],
+    ['connectedClientsReportComplete', false],
+    ['connectedClientsReportWindowStartedAtUtc', '2026-09-23T13:59:59.000Z'],
+    ['connectedClientsReportWindowStartedAtUtc', '2026-09-23T14:00:00.100Z'],
+    ['connectedClientsReportWindowEndedAtUtc', '2026-09-23T14:00:00.500Z'],
+    ['connectedClientsReportCapturedAtUtc', '2026-09-23T14:00:00.550Z'],
+    ['connectedClientsReportCapturedAtUtc', '2026-09-23T14:00:01.100Z'],
+    ['existingConnectionEstablishedAtUtc', '2026-09-23T13:54:59.000Z'],
+    ['existingConnectionEstablishedAtUtc', '2026-09-23T13:59:59.000Z'],
+    ['controlChangeStartedAtUtc', '2026-09-23T14:00:00.100Z'],
+    ['existingConnectionDisconnectedAtUtc', '2026-09-23T13:59:58.500Z'],
+    ['existingConnectionDisconnectedAtUtc', null],
+  ])('rejects missing, unrelated or incomplete Realtime proof: %s', (key, value) => {
+    const evidence = receipts();
+    (evidence.realtimeProbe as Record<string, unknown>)[key] = value;
+    expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('does not accept the legacy Realtime boolean-only receipt', () => {
+    const evidence = receipts();
+    evidence.realtimeProbe = bound('production-realtime-denial-probe', {
+      capturedAtUtc: '2026-09-23T14:00:01.000Z', independentFromControlObservation: true,
+      connectionAttempted: true, connectionDenied: true, writeObserved: false,
+    }) as unknown as typeof evidence.realtimeProbe;
+    const oldContext = { ...context() } as Record<string, unknown>;
+    delete oldContext.priorRealtimeServiceEnabled;
+    expect(assessProductionMaintenanceIsolation(evidence, { expectedContext: oldContext, now }).disposition)
+      .toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('accepts a service disconnect after the change starts but before its configuration readback', () => {
+    const evidence = receipts();
+    evidence.realtimeProbe.existingConnectionDisconnectedAtUtc = '2026-09-23T13:59:59.500Z';
+    expect(assess(evidence).disposition).toBe('isolation_proved_not_execution_authority');
+  });
+
+  it('preserves an already-disabled service without inventing an existing-client disconnect', () => {
+    const evidence = receipts();
+    Object.assign(evidence.realtimeProbe, {
+      priorRealtimeServiceEnabled: false,
+      existingConnectionEstablishedBeforeIsolation: false,
+      existingSubscriptionAcknowledgedBeforeIsolation: false,
+      existingConnectionDisconnectedByService: false,
+      existingConnectionEstablishedAtUtc: null,
+      controlChangeStartedAtUtc: null,
+      existingConnectionDisconnectedAtUtc: null,
+    });
+    const options = { expectedContext: { ...context(), priorRealtimeServiceEnabled: false }, now };
+    expect(assess(evidence, options).disposition).toBe('isolation_proved_not_execution_authority');
+    for (const mutation of [
+      { existingConnectionEstablishedBeforeIsolation: true },
+      { existingSubscriptionAcknowledgedBeforeIsolation: true },
+      { existingConnectionDisconnectedByService: true },
+      { existingConnectionClosedByCaller: true },
+      { controlChangeStartedAtUtc: '2026-09-23T13:59:59.000Z' },
+      { existingConnectionEstablishedAtUtc: '2026-09-23T13:59:58.000Z' },
+      { existingConnectionDisconnectedAtUtc: '2026-09-23T14:00:00.250Z' },
+    ]) {
+      const changed = { ...evidence, realtimeProbe: { ...evidence.realtimeProbe, ...mutation } };
+      expect(assess(changed, options).disposition).toBe('blocked_insufficient_isolation_proof');
+    }
+    expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('rejects every missing Realtime proof field and getters without executing them', () => {
+    for (const key of Object.keys(receipts().realtimeProbe)) {
+      const evidence = receipts();
+      delete (evidence.realtimeProbe as Record<string, unknown>)[key];
+      expect(assess(evidence).disposition, key).toBe('blocked_insufficient_isolation_proof');
+    }
+    const evidence = receipts();
+    Object.defineProperty(evidence.realtimeProbe, 'denialCause', {
+      enumerable: true, get() { throw new Error('getter must not execute'); },
+    });
+    expect(assess(evidence).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
   it.each(['invalid-jwt', 'missing-relation', 'missing-function', 'outage', 'unclassified-timeout', null, undefined])('rejects a Data API denial unrelated to disablement: %s', (denialCause) => {
     for (const value of [receipts(), sameComputerReceipts()]) {
       (value.dataApiProbe as Record<string, unknown>).denialCause = denialCause;
