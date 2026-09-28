@@ -90,12 +90,17 @@ function inspectContext(value) {
       'isolationPlanSha256',
       'databaseRoleGraphSha256',
       'trustedBackendProfileSha256',
+      'priorRealtimeServiceEnabled',
+      'priorRealtimeConfigSha256',
     ]) ||
     !SHA40.test(value.sourceSha) ||
     !SHA256.test(value.targetBindingSha256) ||
     !SHA256.test(value.isolationPlanSha256) ||
     !SHA256.test(value.databaseRoleGraphSha256) ||
-    !SHA256.test(value.trustedBackendProfileSha256)
+    !SHA256.test(value.trustedBackendProfileSha256) ||
+    typeof value.priorRealtimeServiceEnabled !== 'boolean' ||
+    typeof value.priorRealtimeConfigSha256 !== 'string' ||
+    !SHA256.test(value.priorRealtimeConfigSha256)
   ) {
     return null;
   }
@@ -169,20 +174,114 @@ function inspectPlatform(value) {
     : null;
 }
 
-function inspectRealtimeProbe(value) {
+function inspectRealtimePriorState(value, context) {
+  const receipt = inspectBoundReceipt(value, 'production-realtime-prior-state-observation', [
+    'serviceEnabled',
+    'configSha256',
+  ]);
+  return receipt && context &&
+    receipt.serviceEnabled === context.priorRealtimeServiceEnabled &&
+    typeof receipt.configSha256 === 'string' &&
+    SHA256.test(receipt.configSha256) &&
+    receipt.configSha256 === context.priorRealtimeConfigSha256
+    ? receipt
+    : null;
+}
+
+function inspectRealtimeProbe(value, context, platform, priorState) {
   const receipt = inspectBoundReceipt(value, 'production-realtime-denial-probe', [
     'independentFromControlObservation',
     'connectionAttempted',
     'connectionDenied',
     'writeObserved',
+    'priorRealtimeServiceEnabled',
+    'httpStatus',
+    'providerErrorCode',
+    'denialCause',
+    'existingConnectionEstablishedBeforeIsolation',
+    'existingSubscriptionAcknowledgedBeforeIsolation',
+    'existingConnectionDisconnectedByService',
+    'existingConnectionClosedByCaller',
+    'existingConnectionEstablishedAtUtc',
+    'existingSubscriptionAcknowledgedAtUtc',
+    'controlChangeStartedAtUtc',
+    'existingConnectionDisconnectedAtUtc',
+    'reconnectAttemptedAtUtc',
+    'reconnectDeniedAtUtc',
+    'connectedClientCount',
+    'connectedClientsReportComplete',
+    'connectedClientsReportWindowStartedAtUtc',
+    'connectedClientsReportWindowEndedAtUtc',
+    'connectedClientsReportCapturedAtUtc',
   ]);
-  return receipt &&
-    receipt.independentFromControlObservation === true &&
-    receipt.connectionAttempted === true &&
-    receipt.connectionDenied === true &&
-    receipt.writeObserved === false
-    ? receipt
-    : null;
+  if (!receipt || !context || !platform || !priorState ||
+    receipt.independentFromControlObservation !== true ||
+    receipt.connectionAttempted !== true ||
+    receipt.connectionDenied !== true ||
+    receipt.writeObserved !== false ||
+    receipt.httpStatus !== 403 ||
+    receipt.providerErrorCode !== 'RealtimeDisabledForTenant' ||
+    receipt.denialCause !== 'realtime-disabled-for-tenant' ||
+    receipt.priorRealtimeServiceEnabled !== context.priorRealtimeServiceEnabled ||
+    receipt.existingConnectionClosedByCaller !== false ||
+    receipt.connectedClientCount !== 0 ||
+    receipt.connectedClientsReportComplete !== true
+  ) return null;
+
+  const reportTimes = [
+    receipt.connectedClientsReportWindowStartedAtUtc,
+    receipt.connectedClientsReportWindowEndedAtUtc,
+    receipt.connectedClientsReportCapturedAtUtc,
+  ].map(canonicalUtc);
+  if (reportTimes.some((time) => time === null) ||
+    reportTimes[0] <= platform.capturedAt ||
+    reportTimes[1] <= reportTimes[0] ||
+    reportTimes[2] < reportTimes[1] ||
+    reportTimes[2] > receipt.capturedAt
+  ) return null;
+
+  const reconnectTimes = [receipt.reconnectAttemptedAtUtc, receipt.reconnectDeniedAtUtc]
+    .map(canonicalUtc);
+  if (reconnectTimes.some((time) => time === null) ||
+    reconnectTimes[0] <= platform.capturedAt ||
+    reconnectTimes[1] <= reconnectTimes[0] ||
+    reconnectTimes[1] > receipt.capturedAt ||
+    priorState.capturedAt >= platform.capturedAt
+  ) return null;
+
+  const connectionTimes = [
+    receipt.existingConnectionEstablishedAtUtc,
+    receipt.existingSubscriptionAcknowledgedAtUtc,
+    receipt.controlChangeStartedAtUtc,
+    receipt.existingConnectionDisconnectedAtUtc,
+  ];
+  if (!context.priorRealtimeServiceEnabled) {
+    if (receipt.existingConnectionEstablishedBeforeIsolation !== false ||
+      receipt.existingSubscriptionAcknowledgedBeforeIsolation !== false ||
+      receipt.existingConnectionDisconnectedByService !== false ||
+      connectionTimes.some((time) => time !== null)
+    ) return null;
+    return Object.freeze({ ...receipt, evidenceTimes: [...reconnectTimes, ...reportTimes] });
+  }
+
+  const observedConnectionTimes = connectionTimes.map(canonicalUtc);
+  if (receipt.existingConnectionEstablishedBeforeIsolation !== true ||
+    receipt.existingSubscriptionAcknowledgedBeforeIsolation !== true ||
+    receipt.existingConnectionDisconnectedByService !== true ||
+    observedConnectionTimes.some((time) => time === null) ||
+    priorState.capturedAt >= observedConnectionTimes[0] ||
+    observedConnectionTimes[0] >= observedConnectionTimes[1] ||
+    observedConnectionTimes[1] >= observedConnectionTimes[2] ||
+    observedConnectionTimes[2] >= platform.capturedAt ||
+    observedConnectionTimes[3] <= observedConnectionTimes[2] ||
+    observedConnectionTimes[3] >= reportTimes[0] ||
+    reconnectTimes[0] <= observedConnectionTimes[3]
+  ) return null;
+  // The server can close the probe before the configuration GET finishes.
+  // Bind the disconnect to the start of the change, not the later readback.
+  return Object.freeze({
+    ...receipt, evidenceTimes: [...observedConnectionTimes, ...reconnectTimes, ...reportTimes],
+  });
 }
 
 function inspectDataApi(value) {
@@ -210,6 +309,30 @@ function inspectDataApi(value) {
     : null;
 }
 
+function inspectDataApiProbePrerequisite(value) {
+  const receipt = inspectBoundReceipt(value, 'production-data-api-write-probe-prerequisite', [
+    'schema',
+    'relation',
+    'credentialRole',
+    'credentialPreflightPassed',
+    'authenticatedReadAdmissionPassed',
+    'relationExists',
+    'statementTriggerInventoryComplete',
+    'enabledStatementTriggerCount',
+  ]);
+  return receipt &&
+    receipt.schema === 'public' &&
+    receipt.relation === 'employees' &&
+    receipt.credentialRole === 'service_role' &&
+    receipt.credentialPreflightPassed === true &&
+    receipt.authenticatedReadAdmissionPassed === true &&
+    receipt.relationExists === true &&
+    receipt.statementTriggerInventoryComplete === true &&
+    receipt.enabledStatementTriggerCount === 0
+    ? receipt
+    : null;
+}
+
 function inspectDataApiProbe(value) {
   const receipt = inspectBoundReceipt(value, 'production-data-api-denial-probe', [
     'independentFromControlObservation',
@@ -217,13 +340,27 @@ function inspectDataApiProbe(value) {
     'denialCause',
     'requestDenied',
     'writeCommitted',
+    'requestMethod',
+    'relation',
+    'contentProfile',
+    'requestContentType',
+    'requestBody',
+    'httpStatus',
+    'providerErrorCode',
   ]);
   return receipt &&
     receipt.independentFromControlObservation === true &&
     receipt.authenticatedWritePathAttempted === true &&
     receipt.denialCause === 'data-api-disabled' &&
     receipt.requestDenied === true &&
-    receipt.writeCommitted === false
+    receipt.writeCommitted === false &&
+    receipt.requestMethod === 'POST' &&
+    receipt.relation === 'employees' &&
+    receipt.contentProfile === 'public' &&
+    receipt.requestContentType === 'application/json' &&
+    receipt.requestBody === '[]' &&
+    receipt.httpStatus === 406 &&
+    receipt.providerErrorCode === 'PGRST106'
     ? receipt
     : null;
 }
@@ -407,8 +544,10 @@ export function assessProductionMaintenanceIsolation(
       'pause',
       'edgeFunctions',
       'platform',
+      'realtimePriorState',
       'realtimeProbe',
       'dataApi',
+      'dataApiProbePrerequisite',
       'dataApiProbe',
       'network',
       'database',
@@ -424,8 +563,10 @@ export function assessProductionMaintenanceIsolation(
     pause,
     edgeFunctions,
     platform,
+    realtimePriorState,
     realtimeProbe,
     dataApi,
+    dataApiProbePrerequisite,
     dataApiProbe,
     network,
     database,
@@ -449,8 +590,10 @@ export function assessProductionMaintenanceIsolation(
   const pauseFacts = inspectPause(pause);
   const edgeFacts = inspectEdgeFunctions(edgeFunctions);
   const platformFacts = inspectPlatform(platform);
-  const realtimeFacts = inspectRealtimeProbe(realtimeProbe);
+  const realtimePriorFacts = inspectRealtimePriorState(realtimePriorState, context);
+  const realtimeFacts = inspectRealtimeProbe(realtimeProbe, context, platformFacts, realtimePriorFacts);
   const dataApiFacts = inspectDataApi(dataApi);
+  const dataApiPrerequisiteFacts = inspectDataApiProbePrerequisite(dataApiProbePrerequisite);
   const dataApiProbeFacts = inspectDataApiProbe(dataApiProbe);
   const networkFacts = inspectNetwork(network);
   const databaseFacts = inspectDatabase(database, context ?? {});
@@ -459,8 +602,10 @@ export function assessProductionMaintenanceIsolation(
     pauseFacts,
     edgeFacts,
     platformFacts,
+    realtimePriorFacts,
     realtimeFacts,
     dataApiFacts,
+    dataApiPrerequisiteFacts,
     dataApiProbeFacts,
     networkFacts,
     databaseFacts,
@@ -474,11 +619,14 @@ export function assessProductionMaintenanceIsolation(
   }
   const observedAt = facts.map((fact) => fact.capturedAt);
   const networkEvidenceTimes = networkFacts.evidenceTimes ?? [];
+  const realtimeEvidenceTimes = realtimeFacts.evidenceTimes;
   if (
     observedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     networkEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
+    realtimeEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     observedAt.slice(0, -1).some((time) => time > drainFacts.capturedAt) ||
     realtimeFacts.capturedAt <= platformFacts.capturedAt ||
+    dataApiPrerequisiteFacts.capturedAt >= dataApiFacts.capturedAt ||
     dataApiProbeFacts.capturedAt <= dataApiFacts.capturedAt ||
     drainFacts.capturedAt < databaseFacts.capturedAt
   ) {
