@@ -1,7 +1,10 @@
 import { createPrivateKey, createPublicKey, generateKeyPairSync, sign } from 'node:crypto';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createValidIsolationEvidenceFixture } from '../../../support/production-isolation-evidence-fixture.mjs';
+import {
+  createValidManagedIsolationEvidenceFixture,
+  rebindManagedIsolationEvidenceFixture,
+} from '../../../support/production-isolation-evidence-fixture.mjs';
 
 import {
   verifyProtectedCutoverPacket,
@@ -29,9 +32,18 @@ beforeEach(() => vi.useFakeTimers({ now: new Date('2026-09-23T14:10:00.000Z') })
 afterEach(() => vi.useRealTimers());
 
 function request() {
-  const { isolationReceipts, isolationContext } = createValidIsolationEvidenceFixture();
-  isolationContext.targetBindingSha256 = targetBindingSha256;
-  for (const receipt of Object.values(isolationReceipts)) receipt.targetBindingSha256 = targetBindingSha256;
+  const fixture = createValidManagedIsolationEvidenceFixture();
+  const { isolationReceipts, isolationContext } = fixture;
+  rebindManagedIsolationEvidenceFixture(fixture, {
+    sourceSha,
+    sourceTree,
+    sourceManifestSha256,
+    targetBindingSha256,
+  });
+  Object.assign(isolationReceipts.database.managedWriterObservation, {
+    collectionStartedAtUtc: '2026-09-23T14:05:10.000Z',
+    capturedAtUtc: '2026-09-23T14:05:30.000Z',
+  });
   isolationReceipts.database.collectionStartedAtUtc = '2026-09-23T14:06:00.000Z';
   isolationReceipts.database.capturedAtUtc = '2026-09-23T14:06:01.000Z';
   isolationReceipts.drain.collectionStartedAtUtc = '2026-09-23T14:07:00.000Z';
@@ -168,6 +180,9 @@ describe('Story 22.15 protected production cutover worker packet', () => {
     ['a future cleanup completion time', (value: ReturnType<typeof request>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23T14:11:00.000Z')],
     ['a profile collected before cleanup completed', (value: ReturnType<typeof request>) => (value.preForwardObservation.capturedAtUtc = '2026-09-23T14:04:00.000Z')],
     ['a staffing receipt collected before cleanup completed', (value: ReturnType<typeof request>) => (value.staffingReceipt.capturedAtUtc = '2026-09-23T14:03:59.000Z')],
+    ['a missing managed-writer classification', (value: ReturnType<typeof request>) => delete value.isolationReceipts.database.managedWriterObservation],
+    ['a managed-writer collection begun before cleanup completed', (value: ReturnType<typeof request>) => (value.isolationReceipts.database.managedWriterObservation.collectionStartedAtUtc = '2026-09-23T14:04:00.000Z')],
+    ['a managed-writer collection overlapping the final database collection', (value: ReturnType<typeof request>) => (value.isolationReceipts.database.managedWriterObservation.capturedAtUtc = '2026-09-23T14:06:00.000Z')],
     ['a final database collection started before the post-cleanup profile completed', (value: ReturnType<typeof request>) => (value.isolationReceipts.database.collectionStartedAtUtc = '2026-09-23T14:05:00.000Z')],
     ['a final database observation overlapping the drain', (value: ReturnType<typeof request>) => (value.isolationReceipts.drain.collectionStartedAtUtc = '2026-09-23T14:06:01.000Z')],
     ['a stale final database observation', (value: ReturnType<typeof request>) => (value.isolationReceipts.database.capturedAtUtc = '2026-09-23T13:00:00.000Z')],

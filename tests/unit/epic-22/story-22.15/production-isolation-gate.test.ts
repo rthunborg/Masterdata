@@ -191,7 +191,7 @@ const assess = (value = receipts(), options = { expectedContext: context(), now 
 function managedProfileEvidence() {
   const evidence=receipts();
   const profile={schemaVersion:1,kind:'production-managed-writer-observation',environment:'production',phase:'pre_forward',
-    sourceSha,sourceTree:'1'.repeat(40),sourceManifestSha256:'2'.repeat(64),targetBindingSha256,capturedAtUtc,
+    sourceSha,sourceTree:'1'.repeat(40),sourceManifestSha256:'2'.repeat(64),targetBindingSha256,collectionStartedAtUtc:'2026-09-23T13:59:59.000Z',capturedAtUtc,
     cli:{presentCount:1,attributes:{...PRODUCTION_PRE_FORWARD_CLI_PROFILE},memberships:{...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP},
       database:{connect:true,create:false,temporary:true},schemas:{schemaCount:9,usageCount:1,createCount:0,ownedSchemaCount:0},
       objects:{...PRODUCTION_PRE_FORWARD_CLI_OBJECTS},activeSessionCount:0,completeNonSecretRoleGraphSha256:databaseRoleGraphSha256},
@@ -230,6 +230,21 @@ describe('initial managed-profile accounting in complete isolation',()=>{
     evidence.database.trustedBackendProfileSha256=expectedContext.trustedBackendProfileSha256;
     expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
   });
+  it('uses actual assessment time and the caller freshness limit for managed collection endpoints',()=>{
+    const {evidence,profile,expectedContext}=managedProfileEvidence();
+    profile.collectionStartedAtUtc='2026-09-23T13:55:00.000Z';profile.capturedAtUtc='2026-09-23T13:55:00.000Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('isolation_proved_not_execution_authority');
+    profile.collectionStartedAtUtc='2026-09-23T13:54:59.999Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+    const shortNow=new Date('2026-09-23T14:00:30.000Z');profile.collectionStartedAtUtc='2026-09-23T13:59:30.000Z';profile.capturedAtUtc='2026-09-23T14:00:00.000Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now:shortNow,maxEvidenceAgeMs:60000}).disposition).toBe('isolation_proved_not_execution_authority');
+    profile.collectionStartedAtUtc='2026-09-23T13:59:29.999Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now:shortNow,maxEvidenceAgeMs:60000}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it('rejects a managed observation captured after its enclosing database observation',()=>{
+    const {evidence,profile,expectedContext}=managedProfileEvidence();profile.collectionStartedAtUtc='2026-09-23T14:00:00.001Z';profile.capturedAtUtc='2026-09-23T14:00:00.001Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
   it('rejects an otherwise complete proof with a swapped source tree or manifest',()=>{
     for(const key of ['sourceTree','sourceManifestSha256']){
       const {evidence,expectedContext}=managedProfileEvidence();expectedContext[key]='0'.repeat(key==='sourceTree'?40:64);
@@ -248,7 +263,7 @@ describe('Story 22.15 protected cutover cross-receipt ordering', () => {
     preForwardObservation: { capturedAtUtc: '2026-09-23T14:05:00.000Z' },
     staffingReceipt: { capturedAtUtc: '2026-09-23T14:05:30.000Z' },
     isolationReceipts: {
-      database: { collectionStartedAtUtc: '2026-09-23T14:06:00.000Z', capturedAtUtc: '2026-09-23T14:06:01.000Z' },
+      database: { collectionStartedAtUtc: '2026-09-23T14:06:00.000Z', capturedAtUtc: '2026-09-23T14:06:01.000Z', managedWriterObservation: { collectionStartedAtUtc: '2026-09-23T14:04:30.000Z', capturedAtUtc: '2026-09-23T14:04:31.000Z' } },
       drain: { collectionStartedAtUtc: '2026-09-23T14:07:00.000Z', capturedAtUtc: '2026-09-23T14:07:01.000Z' },
     },
     now,
@@ -280,15 +295,15 @@ describe('Story 22.15 protected cutover cross-receipt ordering', () => {
     });
   });
 
-  it('waits for an optional managed-writer collector to complete before final database collection', () => {
+  it('requires the managed-writer collector to complete after cleanup and before final database collection', () => {
     const value = ordered();
     value.isolationReceipts.database.managedWriterObservation = {
-      capturedAtUtc: '2026-09-23T14:05:45.000Z',
+      collectionStartedAtUtc: '2026-09-23T14:05:45.000Z', capturedAtUtc: '2026-09-23T14:05:46.000Z',
     };
     expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
       disposition: 'cutover_receipt_order_proved_not_execution_authority',
     });
-    value.isolationReceipts.database.managedWriterObservation.capturedAtUtc = '2026-09-23T14:06:00.000Z';
+    value.isolationReceipts.database.managedWriterObservation.collectionStartedAtUtc = '2026-09-23T14:04:00.000Z';
     expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
       disposition: 'blocked_cutover_receipt_order',
     });

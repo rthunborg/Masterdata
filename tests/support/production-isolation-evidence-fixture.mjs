@@ -1,4 +1,10 @@
 import { PRODUCTION_ISOLATION_AUTH_HOOKS } from '../../src/lib/release/production-isolation-gate.mjs';
+import {
+  PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,
+  PRODUCTION_PRE_FORWARD_CLI_OBJECTS,
+  PRODUCTION_PRE_FORWARD_CLI_PROFILE,
+  productionManagedWriterProfileSha256,
+} from '../../src/lib/release/production-managed-writer-profiles.mjs';
 
 const sourceSha = 'a'.repeat(40);
 const sourceTree = 'b'.repeat(40);
@@ -79,6 +85,85 @@ export function createValidIsolationEvidenceFixture() {
     }),
   };
   return { isolationContext, isolationReceipts };
+}
+
+/**
+ * Test-only protected-cutover fixture. Unlike the legacy complete-isolation
+ * fixture above, this includes the known CLI/cron/net writer profile that a
+ * protected forward must classify and order after cleanup.
+ */
+export function createValidManagedIsolationEvidenceFixture() {
+  const fixture = createValidIsolationEvidenceFixture();
+  const managedWriterObservation = {
+    schemaVersion: 1,
+    kind: 'production-managed-writer-observation',
+    environment: 'production',
+    phase: 'pre_forward',
+    sourceSha,
+    sourceTree,
+    sourceManifestSha256,
+    targetBindingSha256,
+    collectionStartedAtUtc: '2026-09-23T13:59:59.000Z',
+    capturedAtUtc,
+    cli: {
+      presentCount: 1,
+      attributes: { ...PRODUCTION_PRE_FORWARD_CLI_PROFILE },
+      memberships: { ...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP },
+      database: { connect: true, create: false, temporary: true },
+      schemas: { schemaCount: 9, usageCount: 1, createCount: 0, ownedSchemaCount: 0 },
+      objects: { ...PRODUCTION_PRE_FORWARD_CLI_OBJECTS },
+      activeSessionCount: 0,
+      completeNonSecretRoleGraphSha256: databaseRoleGraphSha256,
+    },
+    workers: {
+      cronLauncherCount: 1,
+      netWorkerCount: 1,
+      otherCandidateBackendCount: 0,
+      cronPreloaded: true,
+      netPreloaded: true,
+      cronDatabaseMatchesConnected: true,
+      netDatabaseMatchesConnected: true,
+      cronLaunchActiveJobs: true,
+      pgCronExtensionCount: 0,
+      pgNetExtensionCount: 0,
+      cronJobTablePresent: false,
+      netRequestQueueTablePresent: false,
+      netResponseTablePresent: false,
+    },
+    rawUnknownLoginRoleCount: 1,
+    rawUnknownBackendCount: 2,
+    otherUnknownLoginRoleCount: 0,
+    otherUnknownBackendCount: 0,
+    correlation: {
+      cliLoginProfileMd5: 'f'.repeat(32),
+      rawUnknownLoginProfileMd5: 'f'.repeat(32),
+      managedBackendProfileMd5: 'a'.repeat(32),
+      rawUnknownBackendProfileMd5: 'a'.repeat(32),
+    },
+  };
+  const profileSha256 = productionManagedWriterProfileSha256(managedWriterObservation);
+  Object.assign(fixture.isolationContext, { trustedBackendProfileSha256: profileSha256 });
+  Object.assign(fixture.isolationReceipts.database, {
+    trustedBackendProfileSha256: profileSha256,
+    unknownLoginRoleCount: 1,
+    unknownBackendCount: 2,
+    managedWriterObservation,
+  });
+  return fixture;
+}
+
+/** Rebinds every signed-context field, including the nested managed receipt. */
+export function rebindManagedIsolationEvidenceFixture(fixture, binding) {
+  const { isolationContext, isolationReceipts } = fixture;
+  Object.assign(isolationContext, binding);
+  for (const receipt of Object.values(isolationReceipts)) {
+    Object.assign(receipt, {
+      sourceSha: binding.sourceSha,
+      targetBindingSha256: binding.targetBindingSha256,
+    });
+  }
+  Object.assign(isolationReceipts.database.managedWriterObservation, binding);
+  return fixture;
 }
 
 export const ISOLATION_EVIDENCE_FIXTURE_BINDING = Object.freeze({

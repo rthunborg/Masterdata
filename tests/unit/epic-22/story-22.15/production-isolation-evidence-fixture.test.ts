@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { assessProductionMaintenanceIsolation } from '../../../../src/lib/release/production-isolation-gate.mjs';
 import {
   createValidIsolationEvidenceFixture,
+  createValidManagedIsolationEvidenceFixture,
   ISOLATION_EVIDENCE_FIXTURE_BINDING,
+  rebindManagedIsolationEvidenceFixture,
 } from '../../../support/production-isolation-evidence-fixture.mjs';
 
 describe('synthetic complete isolation evidence fixture', () => {
@@ -32,5 +34,29 @@ describe('synthetic complete isolation evidence fixture', () => {
       expectedContext: isolationContext,
       now: new Date('2026-09-23T14:10:00.000Z'),
     })).toMatchObject({ disposition: 'blocked_insufficient_isolation_proof' });
+  });
+
+  it('provides a complete known managed profile for protected consumers and rebinds its nested identity', () => {
+    const fixture = createValidManagedIsolationEvidenceFixture();
+    const rebound = {
+      sourceSha: '9'.repeat(40),
+      sourceTree: '8'.repeat(40),
+      sourceManifestSha256: '7'.repeat(64),
+      targetBindingSha256: '6'.repeat(64),
+    };
+    rebindManagedIsolationEvidenceFixture(fixture, rebound);
+
+    expect(fixture.isolationReceipts.database).toMatchObject({
+      unknownLoginRoleCount: 1,
+      unknownBackendCount: 2,
+      managedWriterObservation: {
+        ...rebound,
+        collectionStartedAtUtc: '2026-09-23T13:59:59.000Z',
+        capturedAtUtc: '2026-09-23T14:00:00.000Z',
+        cli: { presentCount: 1 },
+        workers: { cronLauncherCount: 1, netWorkerCount: 1 },
+      },
+    });
+    expect(fixture.isolationContext).toMatchObject(rebound);
   });
 });

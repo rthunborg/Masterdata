@@ -47,16 +47,18 @@ export function assessProductionManagedWriterProfiles(receipt, context = {}) {
     ![sourceManifestSha256, targetBindingSha256, databaseRoleGraphSha256].every(v => SHA256.test(v ?? '')))
     return blocked('invalid_binding');
   if (!exact(receipt, ['schemaVersion','kind','environment','phase','sourceSha','sourceTree',
-    'sourceManifestSha256','targetBindingSha256','capturedAtUtc','cli','workers',
+    'sourceManifestSha256','targetBindingSha256','collectionStartedAtUtc','capturedAtUtc','cli','workers',
     'rawUnknownLoginRoleCount','rawUnknownBackendCount','otherUnknownLoginRoleCount',
     'otherUnknownBackendCount','correlation']) || receipt.schemaVersion !== 1 ||
     receipt.kind !== 'production-managed-writer-observation' || receipt.environment !== 'production' ||
     receipt.phase !== 'pre_forward' || receipt.sourceSha !== sourceSha || receipt.sourceTree !== sourceTree ||
     receipt.sourceManifestSha256 !== sourceManifestSha256 || receipt.targetBindingSha256 !== targetBindingSha256)
     return blocked('receipt_binding_mismatch');
+  const startedAt = Date.parse(receipt.collectionStartedAtUtc);
   const time = Date.parse(receipt.capturedAtUtc);
-  if (!Number.isFinite(time) || new Date(time).toISOString() !== receipt.capturedAtUtc ||
-    time > now.getTime() || now.getTime() - time > MAX_AGE_MS) return blocked('stale_observation');
+  if (!Number.isFinite(startedAt) || new Date(startedAt).toISOString() !== receipt.collectionStartedAtUtc ||
+    !Number.isFinite(time) || new Date(time).toISOString() !== receipt.capturedAtUtc ||
+    startedAt > time || [startedAt, time].some(value => value > now.getTime() || now.getTime() - value > MAX_AGE_MS)) return blocked('stale_observation');
   const cli = receipt.cli;
   if (!exact(cli, ['presentCount','attributes','memberships','database','schemas','objects',
     'activeSessionCount','completeNonSecretRoleGraphSha256']) || cli.presentCount !== 1 ||

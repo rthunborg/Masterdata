@@ -12,7 +12,7 @@ const context={sourceSha:'a'.repeat(40),sourceTree:'b'.repeat(40),sourceManifest
 function receipt(){return {
   schemaVersion:1,kind:'production-managed-writer-observation',environment:'production',phase:'pre_forward',
   sourceSha:context.sourceSha,sourceTree:context.sourceTree,sourceManifestSha256:context.sourceManifestSha256,
-  targetBindingSha256:context.targetBindingSha256,capturedAtUtc:'2026-09-28T11:59:00.000Z',
+  targetBindingSha256:context.targetBindingSha256,collectionStartedAtUtc:'2026-09-28T11:58:59.000Z',capturedAtUtc:'2026-09-28T11:59:00.000Z',
   cli:{presentCount:1,attributes:{...PRODUCTION_PRE_FORWARD_CLI_PROFILE},memberships:{...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP},
     database:{connect:true,create:false,temporary:true},schemas:{schemaCount:9,usageCount:1,createCount:0,ownedSchemaCount:0},
     objects:{...PRODUCTION_PRE_FORWARD_CLI_OBJECTS},activeSessionCount:0,completeNonSecretRoleGraphSha256:context.databaseRoleGraphSha256},
@@ -36,6 +36,9 @@ describe('exact initial managed writer profiles',()=>{
   });
   it.each(['2026-09-28T11:44:59.000Z','2026-09-28T12:00:00.001Z','2026-09-28T11:59:00Z'])('rejects stale/future/noncanonical time %s',time=>{
     const v=receipt();v.capturedAtUtc=time;expect(assess(v).disposition).toBe('blocked_unclassified_writer');
+  });
+  it.each(['2026-09-28T11:44:59.999Z','2026-09-28T11:59:00.001Z','2026-09-28T11:58:59Z'])('rejects stale/reversed/noncanonical collection start %s',time=>{
+    const v=receipt();v.collectionStartedAtUtc=time;expect(assess(v).disposition).toBe('blocked_unclassified_writer');
   });
   it.each(Object.keys(PRODUCTION_PRE_FORWARD_CLI_PROFILE))('rejects changed CLI attribute %s',key=>{
     const v=receipt();v.cli.attributes[key]=!v.cli.attributes[key];expect(assess(v).disposition).toBe('blocked_unclassified_writer');

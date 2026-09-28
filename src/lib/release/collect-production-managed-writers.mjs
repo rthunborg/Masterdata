@@ -40,13 +40,14 @@ function runBoundedProductionManagedWriterCollection({
     typeof spawn !== 'function' ||
     typeof now !== 'function'
   ) fail();
+  const collectionStartedAtUtc = now().toISOString();
   const result = spawn(executable,
     ['--no-psqlrc','--quiet','--tuples-only','--no-align','--set','ON_ERROR_STOP=1','--set','VERBOSITY=terse'],
     {cwd:workspace,env:environment,input:sql,windowsHide:true,encoding:'utf8',timeout:45000,maxBuffer:MAX_BYTES});
   if(result?.error||result?.signal!=null||result?.status!==0||typeof result?.stdout!=='string') fail();
   return Object.freeze({
     stdout: result.stdout,
-    binding: completedProductionManagedWriterBinding(binding, now()),
+    binding: completedProductionManagedWriterBinding({ ...binding, collectionStartedAtUtc }, now()),
   });
 }
 
@@ -66,11 +67,11 @@ export function buildProductionManagedWriterSql(parts) {
 }
 
 export function parseProductionManagedWriterOutputs(output,binding) {
-  if(!exact(binding,['sourceSha','sourceTree','sourceManifestSha256','targetBindingSha256','capturedAtUtc'])||
+  if(!exact(binding,['sourceSha','sourceTree','sourceManifestSha256','targetBindingSha256','collectionStartedAtUtc','capturedAtUtc'])||
     ![binding.sourceSha,binding.sourceTree].every(v=>/^[a-f0-9]{40}$/u.test(v??''))||
     ![binding.sourceManifestSha256,binding.targetBindingSha256].every(v=>/^[a-f0-9]{64}$/u.test(v??''))||
-    typeof binding.capturedAtUtc!=='string'||!Number.isFinite(Date.parse(binding.capturedAtUtc))||
-    new Date(binding.capturedAtUtc).toISOString()!==binding.capturedAtUtc)fail();
+    ![binding.collectionStartedAtUtc,binding.capturedAtUtc].every(value=>typeof value==='string'&&Number.isFinite(Date.parse(value))&&new Date(value).toISOString()===value)||
+    Date.parse(binding.collectionStartedAtUtc)>Date.parse(binding.capturedAtUtc))fail();
   if(typeof output!=='string'||Buffer.byteLength(output)>MAX_BYTES) fail();
   const lines=output.split(/\r?\n/u).filter(Boolean);
   if(lines.length!==3) fail();

@@ -28,6 +28,7 @@ const md5Empty = 'd41d8cd98f00b204e9800998ecf8427e';
 const binding = {
   sourceSha: 'a'.repeat(40), sourceTree: 'b'.repeat(40),
   sourceManifestSha256: 'c'.repeat(64), targetBindingSha256: 'd'.repeat(64),
+  collectionStartedAtUtc: '2026-09-28T11:59:59.000Z',
   capturedAtUtc: '2026-09-28T12:00:00.000Z',
 };
 
@@ -138,6 +139,7 @@ describe('managed writer raw-inventory correlation parser', () => {
         },
       });
       expect(returned).toBe(true);
+      expect(receipt.collectionStartedAtUtc).toBe(startedAt.toISOString());
       expect(receipt.capturedAtUtc).toBe(completedAt.toISOString());
       expect(Date.parse(receipt.capturedAtUtc)).toBeGreaterThan(Date.parse(startedAt.toISOString()));
     } finally {
@@ -162,5 +164,15 @@ describe('managed writer raw-inventory correlation parser', () => {
     ['backend subset', output({ rawBackendHash: '0'.repeat(32) })],
   ])('rejects a mismatched %s profile hash before count subtraction', (_label, value) => {
     expect(() => parseProductionManagedWriterOutputs(value, binding)).toThrow('details suppressed');
+  });
+
+  it.each([
+    ['missing start', (value: Record<string, unknown>) => delete value.collectionStartedAtUtc],
+    ['noncanonical start', (value: Record<string, unknown>) => (value.collectionStartedAtUtc = '2026-09-28 11:59:59Z')],
+    ['reversed interval', (value: Record<string, unknown>) => (value.collectionStartedAtUtc = '2026-09-28T12:00:00.001Z')],
+  ])('rejects a %s binding before parsing output', (_label, mutate) => {
+    const value = { ...binding } as Record<string, unknown>;
+    mutate(value);
+    expect(() => parseProductionManagedWriterOutputs(output(), value)).toThrow('details suppressed');
   });
 });

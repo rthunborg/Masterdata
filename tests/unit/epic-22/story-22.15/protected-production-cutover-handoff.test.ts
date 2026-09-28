@@ -4,7 +4,10 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createValidIsolationEvidenceFixture } from '../../../support/production-isolation-evidence-fixture.mjs';
+import {
+  createValidManagedIsolationEvidenceFixture,
+  rebindManagedIsolationEvidenceFixture,
+} from '../../../support/production-isolation-evidence-fixture.mjs';
 import { PRODUCTION_OBSERVED_PROFILE_BASELINE, PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA, productionTargetBindingSha256 } from '../../../../src/lib/release/production-observed-profile.mjs';
 import { PRODUCTION_STAFFING_PRE_EXECUTE_GRANTEES, PRODUCTION_STAFFING_PRE_EXECUTE_INPUT_ARGUMENTS, PRODUCTION_STAFFING_PRE_EXECUTE_OUTPUT_ARGUMENTS, PRODUCTION_STAFFING_PRE_EXECUTE_RETURN_SHAPE, PRODUCTION_STAFFING_PRE_EXECUTE_SIGNATURE } from '../../../../src/lib/release/production-staffing-pre-execute-contract.mjs';
 import { PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS } from '../../../../src/lib/release/production-bootstrap-admission.mjs';
@@ -134,9 +137,14 @@ function fixture() {
   compile(container, path.join(root, 'runtime', 'supabase.exe'), [cliSource]);
   const certificate = path.join(container, 'synthetic-ca.pem'); writeFileSync(certificate, 'synthetic certificate');
   const link = path.join(linkRoot, 'production-link.txt'); writeFileSync(link, `${projectRef}\n`);
-  const { isolationContext, isolationReceipts } = createValidIsolationEvidenceFixture();
+  const managedFixture = createValidManagedIsolationEvidenceFixture();
+  const { isolationContext, isolationReceipts } = managedFixture;
   rebaseFixtureTimestamps(isolationReceipts);
   const profileCompleted = Date.parse(capturedAtUtc);
+  Object.assign(isolationReceipts.database.managedWriterObservation, {
+    collectionStartedAtUtc: new Date(profileCompleted + 250).toISOString(),
+    capturedAtUtc: new Date(profileCompleted + 500).toISOString(),
+  });
   Object.assign(isolationReceipts.database, {
     collectionStartedAtUtc: new Date(profileCompleted + 1000).toISOString(),
     capturedAtUtc: new Date(profileCompleted + 2000).toISOString(),
@@ -145,8 +153,9 @@ function fixture() {
     collectionStartedAtUtc: new Date(profileCompleted + 3000).toISOString(),
     capturedAtUtc: new Date(profileCompleted + 4000).toISOString(),
   });
-  Object.assign(isolationContext, { sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256 });
-  for (const receipt of Object.values(isolationReceipts)) Object.assign(receipt, { sourceSha, targetBindingSha256 });
+  rebindManagedIsolationEvidenceFixture(managedFixture, {
+    sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256,
+  });
   const evidence = {
     staffing: JSON.stringify(staffingReceipt()),
     isolation: JSON.stringify({ receipts: isolationReceipts, context: isolationContext }),
