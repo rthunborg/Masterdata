@@ -88,6 +88,16 @@ See [trigger preparation evidence](../../docs/commercial-readiness/evidence/trig
 
 ## Tasks & Acceptance
 
+### Review Findings — consolidated cutover, 2026-09-28
+
+- [x] [Review][Patch] Rehearse the exact protected CLI command without `--yes`, using piped input/output and the neutral local DSN. The fresh one-case diagnostic passed; all cases remain required in the final full suite.
+- [x] [Review][Patch] Rehearse the protected working directory without `supabase/config.toml`. The fresh pinned CLI success proves the minimal directory can apply the ordered subset.
+- [x] [Review][Patch] Exercise the compiled host, signed nonce packet, working-copy materialization, real worker/factory, and validated receipt in one synthetic native handoff test. The actual handoff and pre-CLI argument/evidence negative gates passed together; genuine private inputs and hosted targets were not accessed.
+- [ ] [Review][Patch] Record final candidate test evidence separately from the earlier source-88cf3ef rehearsal; retain failed runs and distinguish targeted diagnostic skips.
+- [x] [Review][Patch] Correct the current design ordering so technical isolation is proved before any cleanup write.
+
+The four review layers completed. Seven additional claims were dismissed after reading the complete call sites and gates: the attempt receipt is not independent post-forward proof; the review-only adoption helper is not receipt authentication or a signed effect ledger; the public repair wrapper retains separate operator approval prerequisites; immutable staffing transitions remain isolated through their full sequence; unknown provider workers fail closed; and bounded timeout uncertainty forbids automatic retry. No owner decision is inferred from these dispositions. Story 22.15 remains in-progress and Epic 23 on hold.
+
 **Execution:**
 - [x] Restore the original room-assignment migration; add a manifest, read-only catalog verifier, and tests that classify every version exactly once and prohibit unsafe replay.
 - [x] Create one forward migration making `get_user_role()` active-only, active-gating `user_filters`, and providing caller-bound atomic app-user deletion; update middleware/login/admin routes and tests.

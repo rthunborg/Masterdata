@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertInitialMatrixObservation,
+  assertProtectedMatrixCliInvocation,
+  buildProtectedMatrixCliInvocation,
   runProductionCliMatrixCase,
 } from '../../../support/production-cli-matrix-runner.mjs';
 import { SYNTHETIC_AGGREGATES } from '../../../support/production-cli-matrix-fixture.mjs';
@@ -82,6 +84,55 @@ describe('declared initial matrix profile', () => {
         expected
       )
     ).toThrow('matrix_fixture_initial_state');
+  });
+});
+
+describe('successful local protected CLI command shape', () => {
+  it.each([true, false])(
+    'uses the protected %s shape with a neutral local DSN and closed stdin',
+    (dryRun) => {
+      const invocation = buildProtectedMatrixCliInvocation({
+        databaseName: 'cli_matrix_shape',
+        dryRun,
+      });
+      expect(invocation.args).toEqual([
+        'db', 'push',
+        ...(dryRun ? ['--dry-run'] : []),
+        '--include-all', '--skip-vault', '--db-url',
+        'postgresql:///cli_matrix_shape?sslmode=disable',
+      ]);
+      expect(invocation.spawn).toEqual({
+        stdio: 'pipe', encoding: 'utf8', input: '',
+      });
+      expect(invocation.receipt).toMatchObject({
+        hasYes: false,
+        neutralLocalDsn: true,
+        pgEnvironmentSuppliesConnectivity: true,
+        stdin: 'closed_empty',
+        hasSupabaseConfigToml: false,
+        hasMigrationManifest: true,
+      });
+      expect(() =>
+        assertProtectedMatrixCliInvocation(invocation, { dryRun })
+      ).not.toThrow();
+    }
+  );
+
+  it.each([
+    (value) => value.args.push('--yes'),
+    (value) => { value.args[value.args.length - 1] = 'postgresql://postgres@127.0.0.1:5432/matrix?sslmode=disable'; },
+    (value) => { value.spawn.input = 'prompt response'; },
+    (value) => { value.receipt.hasSupabaseConfigToml = true; },
+  ])('rejects a non-protected successful command variant', (mutate) => {
+    const invocation = structuredClone(
+      buildProtectedMatrixCliInvocation({
+        databaseName: 'cli_matrix_shape', dryRun: true,
+      })
+    );
+    mutate(invocation);
+    expect(() =>
+      assertProtectedMatrixCliInvocation(invocation, { dryRun: true })
+    ).toThrow('matrix_protected_command_shape');
   });
 });
 

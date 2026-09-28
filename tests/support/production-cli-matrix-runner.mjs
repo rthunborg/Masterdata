@@ -56,6 +56,68 @@ const COMPLETE_HISTORY_VERSIONS = Object.freeze([
   ]),
 ].sort());
 
+/** The successful local rehearsal mirrors the protected runner's child
+ * command. Its loopback DSN deliberately differs only in TLS mode: the
+ * protected production child uses verify-full with a reviewed CA, while this
+ * guarded fixture has no TLS endpoint. Connectivity remains in the PG env. */
+export function buildProtectedMatrixCliInvocation({ databaseName, dryRun }) {
+  need(
+    typeof databaseName === 'string' && /^[a-z0-9_]+$/u.test(databaseName),
+    'matrix_protected_database_name'
+  );
+  need(typeof dryRun === 'boolean', 'matrix_protected_dry_run');
+  const dsn = `postgresql:///${databaseName}?sslmode=disable`;
+  const args = [
+    'db', 'push',
+    ...(dryRun ? ['--dry-run'] : []),
+    '--include-all', '--skip-vault', '--db-url', dsn,
+  ];
+  return Object.freeze({
+    args: Object.freeze(args),
+    dsn,
+    spawn: Object.freeze({ stdio: 'pipe', encoding: 'utf8', input: '' }),
+    receipt: Object.freeze({
+      normalizedProtectedShape: true,
+      hasDryRun: dryRun,
+      includesAll: true,
+      hasYes: false,
+      neutralLocalDsn: true,
+      tlsMode: 'disable_local_fixture_only',
+      pgEnvironmentSuppliesConnectivity: true,
+      stdio: 'pipe',
+      encoding: 'utf8',
+      stdin: 'closed_empty',
+      hasSupabaseConfigToml: false,
+      hasMigrationManifest: true,
+    }),
+  });
+}
+
+export function assertProtectedMatrixCliInvocation(invocation, { dryRun }) {
+  const expected = buildProtectedMatrixCliInvocation({
+    databaseName: 'cli_matrix_assertion',
+    dryRun,
+  });
+  need(
+    invocation &&
+      Array.isArray(invocation.args) &&
+      invocation.args.length === expected.args.length &&
+      invocation.args.slice(0, -1).every((value, index) => value === expected.args[index]) &&
+      /^postgresql:\/\/\/[a-z0-9_]+\?sslmode=disable$/u.test(invocation.args.at(-1) ?? '') &&
+      invocation.spawn?.stdio === 'pipe' &&
+      invocation.spawn?.encoding === 'utf8' &&
+      invocation.spawn?.input === '' &&
+      invocation.receipt?.normalizedProtectedShape === true &&
+      invocation.receipt?.hasYes === false &&
+      invocation.receipt?.neutralLocalDsn === true &&
+      invocation.receipt?.stdin === 'closed_empty' &&
+      invocation.receipt?.hasSupabaseConfigToml === false &&
+      invocation.receipt?.hasMigrationManifest === true,
+    'matrix_protected_command_shape'
+  );
+  return true;
+}
+
 function pinnedTool(tool, version) {
   need(
     tool &&
@@ -280,11 +342,35 @@ export async function runProductionCliMatrixCase({
     mkdirSync(work);
     mkdirSync(path.join(work, 'supabase'));
     mkdirSync(path.join(work, 'supabase', 'migrations'));
-    writeFileSync(
-      path.join(work, 'supabase', 'config.toml'),
-      'project_id = "synthetic-cli-matrix"\n',
-      { flag: 'wx' }
-    );
+    // The protected host supplies only the thirteen SQL files, manifest and
+    // private link material. The success rehearsal intentionally omits a
+    // config.toml so it proves that same minimal work shape.
+    if (caseName !== 'postcleanup_success')
+      writeFileSync(
+        path.join(work, 'supabase', 'config.toml'),
+        'project_id = "synthetic-cli-matrix"\n',
+        { flag: 'wx' }
+      );
+    else
+      writeFileSync(
+        path.join(work, 'supabase', 'migration-baseline-manifest.json'),
+        readFileSync(path.join(source.root, 'supabase', 'migration-baseline-manifest.json')),
+        { flag: 'wx' }
+      );
+    if (caseName === 'postcleanup_success') {
+      mkdirSync(path.join(work, 'supabase', '.temp'));
+      writeFileSync(
+        path.join(work, 'supabase', '.temp', 'project-ref'),
+        'abcdefghijklmnopqrst',
+        { flag: 'wx' }
+      );
+      receipt.successWorktree = {
+        hasSupabaseConfigToml: false,
+        hasMigrationManifest: true,
+        hasSyntheticProjectLink: true,
+        migrationCount: count,
+      };
+    }
     for (const entry of source.receipt.migrations.slice(0, count))
       writeFileSync(
         path.join(work, 'supabase', 'migrations', entry.file),
@@ -321,13 +407,26 @@ export async function runProductionCliMatrixCase({
       );
     await connected(databaseName, async () => {});
     pinnedTool(cli, '2.115.0');
-    const args = ['db', 'push', '--db-url', url, '--skip-vault', '--yes'];
-    if (dryRun) args.push('--dry-run');
+    const protectedInvocation =
+      caseName === 'postcleanup_success' && count === 13
+        ? buildProtectedMatrixCliInvocation({ databaseName, dryRun })
+        : null;
+    const args = protectedInvocation?.args ?? [
+      'db', 'push', '--db-url', url, '--skip-vault', '--yes',
+      ...(dryRun ? ['--dry-run'] : []),
+    ];
+    if (protectedInvocation) {
+      assertProtectedMatrixCliInvocation(protectedInvocation, { dryRun });
+      receipt.protectedCommandShape ??= [];
+      receipt.protectedCommandShape.push(protectedInvocation.receipt);
+    }
     const started = Date.now();
     const result = spawnSync(cli.executablePath, args, {
       cwd: work,
       env,
-      encoding: 'utf8',
+      stdio: protectedInvocation?.spawn.stdio ?? 'pipe',
+      input: protectedInvocation?.spawn.input,
+      encoding: protectedInvocation?.spawn.encoding ?? 'utf8',
       windowsHide: true,
       shell: false,
       timeout,

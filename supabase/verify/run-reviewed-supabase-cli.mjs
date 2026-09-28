@@ -36,8 +36,8 @@ const PRODUCTION_REVIEWED_EXECUTE_VERSIONS = Object.freeze([
   '20260910184840',
   '20260910184841',
 ]);
-const PRODUCTION_STAFFING_PRE_EXECUTE_PROOF_BLOCK_MESSAGE =
-  'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation';
+const PRODUCTION_PROTECTED_APPLY_REQUIRED_MESSAGE =
+  'Production --include-all apply requires the installed protected cutover runner and fresh reviewed prerequisites under full production traffic isolation';
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
 const SAFE_VERSION_ENVIRONMENT_KEYS = [
@@ -524,7 +524,7 @@ async function runReviewedSupabaseCliInternal({
       !args.includes('--dry-run') &&
       protectedCutoverCapability !== true
     ) {
-      throw new Error(PRODUCTION_STAFFING_PRE_EXECUTE_PROOF_BLOCK_MESSAGE);
+      throw new Error(PRODUCTION_PROTECTED_APPLY_REQUIRED_MESSAGE);
     }
     executable = executableVerifier({ environment });
     await targetVerifier({ workspace, environment });

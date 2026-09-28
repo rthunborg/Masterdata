@@ -21,10 +21,13 @@ procedure is intentionally divided into separate gates:
    seven strict pre-apply catalog failures and the 48 orphaned saved filters
    are failures to resolve, never a passed catalog result or an accepted
    exception.
-2. Complete separately authorized data cleanup when its count-only and
-   preservation prerequisites pass, then prove application, direct-client,
-   Data API, Realtime, database, and job isolation. The existing production
-   pause stays in place throughout; it is not by itself technical isolation.
+2. Prove application, direct-client, Data API, Realtime, database, and job
+   isolation before any write. Complete separately authorized data cleanup
+   only when its count-only and preservation prerequisites pass, then collect
+   fresh post-cleanup observations and isolation proof. Hold isolation through
+   the forwards, verification, and any separately authorized repairs. The
+   existing production pause stays in place throughout; it is not by itself
+   technical isolation.
 3. Materialize a disposable source-only directory containing exactly the
    immutable 13 execute migrations. Reverify the full source, raw migration
    bytes, Git blobs, CLI/tool/TLS pins, three-way target binding, and a dry

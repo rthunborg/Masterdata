@@ -73,6 +73,42 @@ describe
             expect(receipt.hookAfter?.observed).toBe(true);
           }
           if (caseName === 'postcleanup_success') {
+            expect(receipt.successWorktree).toEqual({
+              hasSupabaseConfigToml: false,
+              hasMigrationManifest: true,
+              hasSyntheticProjectLink: true,
+              migrationCount: 13,
+            });
+            expect(receipt.protectedCommandShape).toEqual([
+              expect.objectContaining({
+                normalizedProtectedShape: true,
+                hasDryRun: true,
+                includesAll: true,
+                hasYes: false,
+                neutralLocalDsn: true,
+                tlsMode: 'disable_local_fixture_only',
+                pgEnvironmentSuppliesConnectivity: true,
+                stdio: 'pipe',
+                encoding: 'utf8',
+                stdin: 'closed_empty',
+                hasSupabaseConfigToml: false,
+                hasMigrationManifest: true,
+              }),
+              expect.objectContaining({
+                normalizedProtectedShape: true,
+                hasDryRun: false,
+                includesAll: true,
+                hasYes: false,
+                neutralLocalDsn: true,
+                tlsMode: 'disable_local_fixture_only',
+                pgEnvironmentSuppliesConnectivity: true,
+                stdio: 'pipe',
+                encoding: 'utf8',
+                stdin: 'closed_empty',
+                hasSupabaseConfigToml: false,
+                hasMigrationManifest: true,
+              }),
+            ]);
             expect(receipt.historyRepair?.versions).toEqual(PRODUCTION_HISTORY_REPAIR_VERSIONS);
             expect(receipt.historyRepair?.attempts).toHaveLength(55);
             expect(receipt.historyRepair?.attempts.every((attempt: { child: { kind: string; code: number } }) =>

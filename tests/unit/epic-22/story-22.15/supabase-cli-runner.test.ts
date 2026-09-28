@@ -427,7 +427,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         targetVerifier,
       })
     ).rejects.toThrow(
-      'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation'
+      'Production --include-all apply requires the installed protected cutover runner and fresh reviewed prerequisites under full production traffic isolation'
     );
     expect(executableVerifier).not.toHaveBeenCalled();
     expect(targetVerifier).not.toHaveBeenCalled();
@@ -448,7 +448,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         executableVerifier: vi.fn(() => reviewedCliPath),
       })
     ).rejects.toThrow(
-      'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation'
+      'Production --include-all apply requires the installed protected cutover runner and fresh reviewed prerequisites under full production traffic isolation'
     );
     expect(spawn).not.toHaveBeenCalled();
   });
