@@ -341,7 +341,7 @@ consolidated_cutover_packet_deadline_correction_20260929:
   latest_failed_full_skipped: 0
   latest_failed_full_files: 371
   latest_failed_full_exit_code: 1
-  current_full_gate: pending-clean-source-verification-and-final-review
+  current_full_gate: historical-superseded-by-collector-interval-complete-verification-and-current-head-review
 
 
 consolidated_cutover_collector_interval_correction_20260929:
