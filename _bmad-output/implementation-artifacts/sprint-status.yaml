@@ -177,7 +177,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'Current observed-permission projection and proven-literal correction is in progress. Collector-interval evidence at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e is historical and does not cover the current source. Do not claim focused or complete-suite success. Preserve the five non-admitting native attempts, including compact d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03 and PostgreSQL-jsonb 643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8. Complete the real parser/projection and proven-literal regressions, including the guarded read-only PostgreSQL serialization oracle. A CI no-fixture skip is non-passing; the required local fixture flag must run. Then complete full unit/browser gates, TypeScript, zero-error lint, build, exact-head review, CI and the authorized staging merge. Refresh source/tool/target/TLS and prove full isolation before separately approved cleanup; repair, apply, main, deployment and reopening remain separate. Keep production paused.'
+  next_action: 'Current implementation 00fd3081982ce41918f8656f21bd64c923cde901 is in progress and passed fresh root-bound local gates: focused PostgreSQL-oracle 77/77 across five files with zero failures/skips (0.918s report; 1501ms wrapper; inherited byte-identically from verified-run-2); full Vitest 4516/4516 across 372 files with zero skips/failures, required matrix 8/8 and exit 0 (1424.46s report; 1433510ms wrapper); Playwright 163 passed, 47 individually matched historical skips, zero failures/errors and exit 0 (1033.8720819999999s report; 1037487ms wrapper); build exit 0 in 19460ms; TypeScript exit 0 in 13096ms; ESLint exit 0 with zero errors and 304 warnings in 39017ms. Documentation-head review, CI, and authorized staging merge remain pending. Preserve 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e as historical evidence; preserve the five non-admitting native attempts, including compact d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03 and PostgreSQL-jsonb 643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8. After a reviewed staging merge, collect fresh read-only source/tool/target/TLS, observed-profile, staffing, and managed-principal evidence. Cleanup, repair, apply, main, deployment, and reopening remain separate; keep production paused/no-go.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -328,17 +328,17 @@ consolidated_cutover_packet_deadline_correction_20260929:
   latest_failed_full_skipped: 0
   latest_failed_full_files: 371
   latest_failed_full_exit_code: 1
-  current_full_gate: historical-188-collector-interval-evidence-current-projection-and-literal-gates-pending
+  current_full_gate: historical-superseded-by-current-00fd-local-gates-documentation-review-ci-authorized-staging-merge-pending
 
 
 consolidated_cutover_collector_interval_correction_20260929:
   story_status: in-progress
   epic_23_status: on-hold
   production_status: paused-no-go
-  verification: historical-local-passed-reviewed-staging-merge-complete
-  current_full_gate: historical-188-full-local-evidence-current-projection-and-literal-gates-pending
-  final_head_review: clean-at-e3e2c7e194964177d13462bc2b73c4fd5af6198c
-  reviewed_staging_merge: 3c6dd2fc24d8686787a95289eb00e50e9a753694
+  verification: historical-188-local-passed-reviewed-staging-merge-complete-current-00fd-documentation-review-ci-authorized-staging-merge-pending
+  current_full_gate: historical-superseded-by-current-00fd-local-gates-documentation-review-ci-authorized-staging-merge-pending
+  final_head_review: historical-e3e2c7e194964177d13462bc2b73c4fd5af6198c-current-00fd-documentation-review-ci-authorized-staging-merge-pending
+  reviewed_staging_merge: historical-3c6dd2fc24d8686787a95289eb00e50e9a753694-current-00fd-authorized-staging-merge-pending
   hosted_writes: false
   previous_source: 5a27d77cd04dae9fef90e8f94adb8432636f0b4c
   staffing_collection_start_required: true
