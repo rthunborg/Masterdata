@@ -289,7 +289,7 @@ risks:
     severity: 'high'
     mitigation: 'Position as working pilot candidate only and complete P0 stories first.'
 next_actions:
-  - 'Measured collector-interval local gates passed at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e; complete final-documentation-head CI/review and the authorized staging merge. Refresh backup relevance, source/tool/target/TLS proofs and full isolation before the separately approved exact filter cleanup. Require complete staffing, full-profile and managed-writer intervals to start strictly after cleanup and finish before final database collection, with start-based freshness checked at launch. Bind canonical cleanup start/completion, reviewed collector source and query bytes, and collector-session completion to non-overlapping final database/drain collection intervals. Post-cleanup, collect fresh exact-observed managed-principal, staffing-compatibility and full-isolation receipts; use the reviewed protected flow for the exclusive 13-version dry run/apply from absent history under standing reviewed-migration authorization after prerequisites pass. Immediately prove history 13, strict 16/16, canonical 68 and preservation. Owner adoption plus separate repair approval is required for all 55 UNPROVED ledger rows before history 68. Keep production paused; main, deployment and reopening remain separate.'
+  - 'Current observed-permission projection and proven-literal correction is in progress. Collector-interval evidence at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e is historical and does not cover the current source. Do not claim focused or complete-suite success. Preserve the five non-admitting native attempts, including compact d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03 and PostgreSQL-jsonb 643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8. Complete the real parser/projection and proven-literal regressions, including the guarded read-only PostgreSQL serialization oracle. A CI no-fixture skip is non-passing; the required local fixture flag must run. Then complete full unit/browser gates, TypeScript, zero-error lint, build, exact-head review, CI and the authorized staging merge. Refresh source/tool/target/TLS and prove full isolation before separately approved cleanup; repair, apply, main, deployment and reopening remain separate. Keep production paused.'
   - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
   - 'Story 22.3 is done; keep its dependency advisory evidence current if audit output changes.'
   - 'Story 22.4 is done; standing production-data presentation controls are documented.'
@@ -425,7 +425,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'Measured collector-interval local gates passed at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e; complete final-documentation-head CI/review and the authorized staging merge. Refresh backup relevance, source/tool/target/TLS proofs and full isolation before the separately approved exact filter cleanup. Require complete staffing, full-profile and managed-writer intervals to start strictly after cleanup and finish before final database collection, with start-based freshness checked at launch. Bind canonical cleanup start/completion, reviewed collector source and query bytes, and collector-session completion to non-overlapping final database/drain collection intervals. Post-cleanup, collect fresh exact-observed managed-principal, staffing-compatibility and full-isolation receipts; use the reviewed protected flow for the exclusive 13-version dry run/apply from absent history under standing reviewed-migration authorization after prerequisites pass. Immediately prove history 13, strict 16/16, canonical 68 and preservation. Owner adoption plus separate repair approval is required for all 55 UNPROVED ledger rows before history 68. Keep production paused; main, deployment and reopening remain separate.'
+  next_action: 'Current observed-permission projection and proven-literal correction is in progress. Collector-interval evidence at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e is historical and does not cover the current source. Do not claim focused or complete-suite success. Preserve the five non-admitting native attempts, including compact d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03 and PostgreSQL-jsonb 643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8. Complete the real parser/projection and proven-literal regressions, including the guarded read-only PostgreSQL serialization oracle. A CI no-fixture skip is non-passing; the required local fixture flag must run. Then complete full unit/browser gates, TypeScript, zero-error lint, build, exact-head review, CI and the authorized staging merge. Refresh source/tool/target/TLS and prove full isolation before separately approved cleanup; repair, apply, main, deployment and reopening remain separate. Keep production paused.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -575,16 +575,17 @@ consolidated_cutover_packet_deadline_correction_20260929:
   latest_failed_full_skipped: 0
   latest_failed_full_files: 371
   latest_failed_full_exit_code: 1
-  current_full_gate: historical-superseded-by-collector-interval-complete-verification-and-current-head-review
+  current_full_gate: historical-188-collector-interval-evidence-current-projection-and-literal-gates-pending
 
 
 consolidated_cutover_collector_interval_correction_20260929:
   story_status: in-progress
   epic_23_status: on-hold
   production_status: paused-no-go
-  verification: local-passed-final-head-review-pending
-  current_full_gate: full-local-passed-final-documentation-head-review-pending
-  final_head_review: pending
+  verification: historical-local-passed-reviewed-staging-merge-complete
+  current_full_gate: historical-188-full-local-evidence-current-projection-and-literal-gates-pending
+  final_head_review: clean-at-e3e2c7e194964177d13462bc2b73c4fd5af6198c
+  reviewed_staging_merge: 3c6dd2fc24d8686787a95289eb00e50e9a753694
   hosted_writes: false
   previous_source: 5a27d77cd04dae9fef90e8f94adb8432636f0b4c
   staffing_collection_start_required: true
@@ -600,7 +601,7 @@ consolidated_cutover_collector_interval_correction_20260929:
   interrupted_completed_files_reported: 95
   interrupted_completed_tests_reported: 1028
   interrupted_accepted_as_passing_gate: false
-  note: 'Collector interval correction passed complete local gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e; Final14, Final15, interrupted Final16 and failed Final17 browser remain historical non-passing evidence; Final18 is the same-source browser retry after an owned local credential refresh. Final documentation-head review/checks and staging merge remain pending.'
+  note: 'Collector-interval gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e remain historical. The current projection and proven-literal correction has no accepted focused/full-suite result; the five native observations are non-admitting, and fresh tests/gates/review/CI/authorized staging merge remain pending.'
   tested_implementation: 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e
   verification_receipt: docs/commercial-readiness/evidence/production-cutover-collector-interval-verification-2026-09-29.json
   vitest_passed: 4502

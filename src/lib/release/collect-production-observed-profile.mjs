@@ -57,6 +57,8 @@ const fail = () => {
   throw new Error('Production observed-profile collection refused; details suppressed');
 };
 const hash = (value) => createHash('sha256').update(value).digest('hex');
+const HASH32 = /^[a-f0-9]{32}$/u;
+const HASH64 = /^[a-f0-9]{64}$/u;
 
 const isPlainData = (value) => {
   if (value === null || typeof value !== 'object') return true;
@@ -87,6 +89,49 @@ const exactKeys = (value, keys) =>
   Object.values(Object.getOwnPropertyDescriptors(value)).every(
     (descriptor) => descriptor.enumerable && Object.hasOwn(descriptor, 'value')
   );
+
+// This deliberately formats only the already-redacted two-hash rows emitted
+// by production-observed-aggregate.sql. PostgreSQL jsonb renders the shorter
+// known key first and puts spaces after colons and commas; JSON.stringify does
+// neither, so it must never be used for this historical fingerprint.
+export function summarizeObservedPermissionBaseline(aggregate) {
+  const baselineKeys = [
+    'row_count', 'distinct_column_count', 'null_column_count',
+    'nonobject_permissions_count', 'rows',
+  ];
+  const rowKeys = ['column_name_md5', 'role_permissions_sha256'];
+  if (!isPlainData(aggregate) || !exactKeys(aggregate, [
+    'history', 'saved_filter_data', 'audit_preservation', 'repayment_data',
+    'permission_rows', 'permission_baseline', 'staffing_data',
+  ]) || !exactKeys(aggregate.permission_baseline, baselineKeys)) fail();
+
+  const baseline = aggregate.permission_baseline;
+  if (!Number.isSafeInteger(baseline.row_count) || baseline.row_count < 0 ||
+    !Number.isSafeInteger(baseline.distinct_column_count) || baseline.distinct_column_count < 0 ||
+    !Number.isSafeInteger(baseline.null_column_count) || baseline.null_column_count < 0 ||
+    !Number.isSafeInteger(baseline.nonobject_permissions_count) || baseline.nonobject_permissions_count < 0 ||
+    !Array.isArray(baseline.rows) || baseline.rows.length !== baseline.row_count ||
+    baseline.null_column_count > baseline.row_count ||
+    baseline.distinct_column_count > baseline.row_count - baseline.null_column_count) fail();
+
+  const postgresJsonbText = `[${baseline.rows.map((row) => {
+    if (!exactKeys(row, rowKeys) || typeof row.column_name_md5 !== 'string' ||
+      typeof row.role_permissions_sha256 !== 'string' ||
+      !HASH32.test(row.column_name_md5) || !HASH64.test(row.role_permissions_sha256)) fail();
+    return `{\"column_name_md5\": \"${row.column_name_md5}\", \"role_permissions_sha256\": \"${row.role_permissions_sha256}\"}`;
+  }).join(', ')}]`;
+
+  return Object.freeze({
+    ...aggregate,
+    permission_baseline: Object.freeze({
+      row_count: baseline.row_count,
+      distinct_column_count: baseline.distinct_column_count,
+      null_column_count: baseline.null_column_count,
+      nonobject_permissions_count: baseline.nonobject_permissions_count,
+      rows_sha256: hash(postgresJsonbText),
+    }),
+  });
+}
 
 function assertReadOnlySql(sql, { markerRequired }) {
   if (typeof sql !== 'string' || Buffer.byteLength(sql, 'utf8') > MAX_OUTPUT_BYTES) fail();
@@ -450,7 +495,7 @@ export async function collectProductionObservedProfile({
       baselineSourceSha: PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA,
       targetBindingSha256,
       schemaGroups,
-      aggregate: aggregateResult.aggregate,
+      aggregate: summarizeObservedPermissionBaseline(aggregateResult.aggregate),
       strictCatalog: Object.freeze({ checkCount: strict.count, failedChecks: strict.failedChecks }),
     });
     const assessment = assessProductionObservedProfile({

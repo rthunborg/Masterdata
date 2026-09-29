@@ -150,7 +150,7 @@ const BASELINE = deepFreeze({
       "null_column_count": 0,
       "distinct_column_count": 61,
       "nonobject_permissions_count": 0,
-      "rows_sha256": "f0ed65806763de0eb6653583b5d2dcf86f3c3a8c75cc5d2b070ca301bb5625b1"
+      "rows_sha256": "643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8"
     }
   },
   "strictCatalog": {
