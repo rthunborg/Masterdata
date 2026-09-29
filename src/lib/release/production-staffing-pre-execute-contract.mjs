@@ -100,6 +100,7 @@ export function assessProductionStaffingPreExecuteProof(
     'sourceTree',
     'sourceManifestSha256',
     'targetBindingSha256',
+    'collectionStartedAtUtc',
     'capturedAtUtc',
     'routine',
     'dependencies',
@@ -117,10 +118,12 @@ export function assessProductionStaffingPreExecuteProof(
   ) return stopped('source_or_target_mismatch');
 
   const capturedAt = canonicalUtc(receipt.capturedAtUtc);
+  const collectionStartedAt = canonicalUtc(receipt.collectionStartedAtUtc);
   if (
-    capturedAt === null ||
+    collectionStartedAt === null || capturedAt === null ||
+    collectionStartedAt > capturedAt ||
     capturedAt > now.getTime() ||
-    now.getTime() - capturedAt > maxEvidenceAgeMs
+    now.getTime() - collectionStartedAt > maxEvidenceAgeMs
   ) return stopped('evidence_time_invalid');
 
   if (!exactKeys(receipt.routine, [
@@ -215,6 +218,7 @@ export function assessProductionStaffingPreExecuteProof(
     kind: 'production-staffing-pre-execute-assessment',
     disposition: 'staffing_pre_execute_proved_not_execution_authority',
     reason: 'fresh_replacement_compatibility_and_acl_contract_proven',
+    collectionStartedAtUtc: new Date(collectionStartedAt).toISOString(),
     capturedAtUtc: new Date(capturedAt).toISOString(),
     sourceSha,
     sourceTree,

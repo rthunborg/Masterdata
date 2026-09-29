@@ -50,6 +50,7 @@ function request() {
   isolationReceipts.drain.capturedAtUtc = '2026-09-23T14:07:01.000Z';
   const preForwardObservation = {
     schemaVersion: 1, kind: 'production-observed-profile', profilePhase: 'post_cleanup',
+    collectionStartedAtUtc: '2026-09-23T14:04:45.000Z',
     capturedAtUtc: '2026-09-23T14:05:00.000Z', sourceSha,
     baselineSourceSha: PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA, targetBindingSha256,
     ...structuredClone(PRODUCTION_OBSERVED_PROFILE_BASELINE),
@@ -95,6 +96,7 @@ function request() {
       sourceTree,
       sourceManifestSha256,
       targetBindingSha256,
+      collectionStartedAtUtc: '2026-09-23T14:04:45.000Z',
       capturedAtUtc: '2026-09-23T14:05:00.000Z',
       routine: {
         signature: PRODUCTION_STAFFING_PRE_EXECUTE_SIGNATURE,
@@ -183,6 +185,10 @@ describe('Story 22.15 protected production cutover worker packet', () => {
     ['a future cleanup completion time', (value: ReturnType<typeof request>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23T14:11:00.000Z')],
     ['a profile collected before cleanup completed', (value: ReturnType<typeof request>) => (value.preForwardObservation.capturedAtUtc = '2026-09-23T14:04:00.000Z')],
     ['a staffing receipt collected before cleanup completed', (value: ReturnType<typeof request>) => (value.staffingReceipt.capturedAtUtc = '2026-09-23T14:03:59.000Z')],
+    ['a profile starting before cleanup and completing afterward', (value: ReturnType<typeof request>) => (value.preForwardObservation.collectionStartedAtUtc = '2026-09-23T14:03:59.999Z')],
+    ['staffing starting before cleanup and completing afterward', (value: ReturnType<typeof request>) => (value.staffingReceipt.collectionStartedAtUtc = '2026-09-23T14:03:59.999Z')],
+    ['a profile starting when cleanup completes', (value: ReturnType<typeof request>) => (value.preForwardObservation.collectionStartedAtUtc = '2026-09-23T14:04:00.000Z')],
+    ['staffing starting when cleanup completes', (value: ReturnType<typeof request>) => (value.staffingReceipt.collectionStartedAtUtc = '2026-09-23T14:04:00.000Z')],
     ['a missing managed-writer classification', (value: ReturnType<typeof request>) => delete value.isolationReceipts.database.managedWriterObservation],
     ['a managed-writer collection begun before cleanup completed', (value: ReturnType<typeof request>) => (value.isolationReceipts.database.managedWriterObservation.collectionStartedAtUtc = '2026-09-23T14:04:00.000Z')],
     ['a managed-writer collection overlapping the final database collection', (value: ReturnType<typeof request>) => (value.isolationReceipts.database.managedWriterObservation.capturedAtUtc = '2026-09-23T14:06:00.000Z')],

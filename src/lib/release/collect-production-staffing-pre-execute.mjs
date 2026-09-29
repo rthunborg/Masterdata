@@ -113,8 +113,12 @@ export async function collectProductionStaffingPreExecute({
       PGOPTIONS: '-c default_transaction_read_only=on -c statement_timeout=20000 -c lock_timeout=3000 -c idle_in_transaction_session_timeout=30000',
     });
     let result;
+    let collectionStartedAtMs;
     try {
       bound.recheck();
+      const collectionStartedAt = now();
+      if (!(collectionStartedAt instanceof Date) || Number.isNaN(collectionStartedAt.getTime())) fail();
+      collectionStartedAtMs = collectionStartedAt.getTime();
       result = spawnSync(executable, [
         '--no-psqlrc', '--quiet', '--tuples-only', '--no-align',
         '--set', 'ON_ERROR_STOP=1', '--set', 'VERBOSITY=terse',
@@ -127,7 +131,7 @@ export async function collectProductionStaffingPreExecute({
     }
     if (result?.error || result?.signal != null || result?.status !== 0 || typeof result?.stdout !== 'string') fail();
     const capturedAt = now();
-    if (!(capturedAt instanceof Date) || Number.isNaN(capturedAt.getTime())) fail();
+    if (!(capturedAt instanceof Date) || Number.isNaN(capturedAt.getTime()) || capturedAt.getTime() < collectionStartedAtMs) fail();
     const observation = Object.freeze({
       schemaVersion: 1,
       kind: 'production-staffing-pre-execute-observation',
@@ -136,6 +140,7 @@ export async function collectProductionStaffingPreExecute({
       sourceTree: bound.source.sourceTree,
       sourceManifestSha256: bound.source.sourceManifestSha256,
       targetBindingSha256,
+      collectionStartedAtUtc: new Date(collectionStartedAtMs).toISOString(),
       capturedAtUtc: capturedAt.toISOString(),
       ...parseProjection(result.stdout),
     });

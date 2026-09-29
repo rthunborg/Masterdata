@@ -194,7 +194,7 @@ const same = (actual, expected) => {
 const fail = (code) => { throw new Error(code); };
 
 function validateObservation(observation) {
-  if (!exactKeys(observation, ['schemaVersion', 'kind', 'profilePhase', 'capturedAtUtc', 'sourceSha', 'baselineSourceSha', 'targetBindingSha256', 'schemaGroups', 'aggregate', 'strictCatalog'])) {
+  if (!exactKeys(observation, ['schemaVersion', 'kind', 'profilePhase', 'collectionStartedAtUtc', 'capturedAtUtc', 'sourceSha', 'baselineSourceSha', 'targetBindingSha256', 'schemaGroups', 'aggregate', 'strictCatalog'])) {
     fail('production_observed_profile_shape_invalid');
   }
   if (observation.schemaVersion !== 1 || observation.kind !== 'production-observed-profile'
@@ -221,10 +221,13 @@ function validateObservation(observation) {
     fail('production_observed_profile_baseline_mismatch');
   }
   const capturedAt = Date.parse(observation.capturedAtUtc);
-  if (!Number.isFinite(capturedAt) || new Date(capturedAt).toISOString() !== observation.capturedAtUtc) {
+  const collectionStartedAt = Date.parse(observation.collectionStartedAtUtc);
+  if (!Number.isFinite(capturedAt) || new Date(capturedAt).toISOString() !== observation.capturedAtUtc ||
+    !Number.isFinite(collectionStartedAt) || new Date(collectionStartedAt).toISOString() !== observation.collectionStartedAtUtc ||
+    collectionStartedAt > capturedAt) {
     fail('production_observed_profile_timestamp_invalid');
   }
-  return capturedAt;
+  return { collectionStartedAt, capturedAt };
 }
 
 /**
@@ -241,11 +244,11 @@ export function assessProductionObservedProfile({ observation, expectedContext, 
     || !HASH40.test(expectedContext.sourceSha) || !HASH64.test(expectedContext.targetBindingSha256)) {
     fail('production_observed_profile_context_invalid');
   }
-  const capturedAt = validateObservation(observation);
+  const { collectionStartedAt, capturedAt } = validateObservation(observation);
   if (observation.sourceSha !== expectedContext.sourceSha || observation.targetBindingSha256 !== expectedContext.targetBindingSha256) {
     fail('production_observed_profile_context_mismatch');
   }
-  if (capturedAt > now.getTime() || now.getTime() - capturedAt > maxEvidenceAgeMs) {
+  if (capturedAt > now.getTime() || now.getTime() - collectionStartedAt > maxEvidenceAgeMs) {
     fail('production_observed_profile_stale_or_future');
   }
   return freeze({
@@ -253,6 +256,7 @@ export function assessProductionObservedProfile({ observation, expectedContext, 
     kind: 'production-observed-profile-assessment',
     disposition: 'profile_match_not_admission',
     sourceSha: observation.sourceSha,
+    collectionStartedAtUtc: observation.collectionStartedAtUtc,
     observedAtUtc: observation.capturedAtUtc,
     targetBindingSha256: observation.targetBindingSha256,
     blockers: freeze(['historical_effect_not_proven', 'semantic_equivalence_not_proven', 'production_apply_not_authorized']),

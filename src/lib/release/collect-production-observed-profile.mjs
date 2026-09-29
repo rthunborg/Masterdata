@@ -407,6 +407,9 @@ export async function collectProductionObservedProfile({
     const invocation = buildInvocation({ executable, environment, certificate });
 
     bound.recheck();
+    const collectionStartedAt = now();
+    if (!(collectionStartedAt instanceof Date) || Number.isNaN(collectionStartedAt.getTime())) fail();
+    const collectionStartedAtMs = collectionStartedAt.getTime();
     let schemaResult = spawnSyncProcess(executable, invocation.args, {
       cwd: bound.workspace, env: invocation.environment, input: schemaSql,
       encoding: 'utf8', windowsHide: true, timeout: TIMEOUT_MS,
@@ -433,7 +436,7 @@ export async function collectProductionObservedProfile({
       !strict.failedChecks.every((value) => typeof value === 'string')
     ) fail();
     const capturedAt = now();
-    if (!(capturedAt instanceof Date) || Number.isNaN(capturedAt.getTime())) fail();
+    if (!(capturedAt instanceof Date) || Number.isNaN(capturedAt.getTime()) || capturedAt.getTime() < collectionStartedAtMs) fail();
     const targetBindingSha256 = productionTargetBindingSha256(environment.EXPECTED_SUPABASE_PROJECT_REF);
     if (environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256 &&
       environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256 !== targetBindingSha256) fail();
@@ -441,6 +444,7 @@ export async function collectProductionObservedProfile({
       schemaVersion: 1,
       kind: 'production-observed-profile',
       profilePhase,
+      collectionStartedAtUtc: new Date(collectionStartedAtMs).toISOString(),
       capturedAtUtc: capturedAt.toISOString(),
       sourceSha: sourceFacts.sourceSha,
       baselineSourceSha: PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA,

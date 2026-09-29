@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { EventEmitter } from 'node:events';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -17,11 +18,13 @@ import {
   splitObservedProfileAggregateSql,
   sourceBoundObservedCatalogSpawn,
 } from '../../../../src/lib/release/collect-production-observed-profile.mjs';
+import * as redaction from '../../../../src/lib/release/production-profile-redaction.mjs';
+import * as profile from '../../../../src/lib/release/production-observed-profile.mjs';
 
 const hash = (value: unknown) =>
   createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
 function schemaCapture() {
   const arrays = Object.fromEntries([
@@ -167,6 +170,54 @@ describe('Story 22.15 observed-profile collector primitives', () => {
       spawnSyncProcess,
     })).rejects.toThrow('details suppressed');
     expect(noTarget).not.toHaveBeenCalled();
+  });
+
+  it('records one start before schema collection and closes it after aggregate and catalog collection', async () => {
+    vi.stubEnv('EXPECTED_SUPABASE_ENVIRONMENT', 'production');
+    vi.stubEnv('SUPABASE_DB_CONNECTION_MODE', 'session-pooler');
+    vi.stubEnv('EXPECTED_SUPABASE_PROJECT_REF', 'abcdefghijklmnopqrst');
+    vi.stubEnv('SUPABASE_DB_URL', 'postgresql://postgres.synthetic:synthetic@pooler.invalid:5432/postgres');
+    const source = { sourceSha: 'a'.repeat(40), sourceTree: 'b'.repeat(40), sourceManifestSha256: 'c'.repeat(64) };
+    const sourceOptions = { commit: source.sourceSha, gitExecutable: 'C:\\reviewed-git.exe', expectedGitSha256: 'd'.repeat(64) };
+    mocks.sourceBinding.mockReturnValue({ workspace: resolve('.'), source, sql: Object.fromEntries([
+      'src/lib/release/production-observed-schema.sql', 'src/lib/release/production-observed-aggregate.sql', 'supabase/verify/production-baseline-catalog.sql',
+    ].map(path => [path, readFileSync(resolve(path), 'utf8')])), recheck: vi.fn(() => true) });
+    // Catalog/profile semantics have independent strict contract tests. These
+    // seams isolate the collector's real query/clock ordering without a DB.
+    vi.spyOn(redaction, 'parseOneRedactedJsonLine').mockImplementation((_text, phase) => phase === 'catalog' ? {} : { history: { table_exists: false } });
+    vi.spyOn(redaction, 'catalogPrerequisites').mockReturnValue({ satisfied: true, branch: 'absent' });
+    const assess = vi.spyOn(profile, 'assessProductionObservedProfile').mockReturnValue({ disposition: 'profile_match_not_admission' });
+    const events: string[] = [];
+    const start = new Date('2026-09-28T11:59:00.000Z'), completion = new Date('2026-09-28T12:00:00.000Z');
+    const clock = vi.fn(() => { events.push(events.includes('schema') ? 'completed' : 'started'); return events.includes('schema') ? completion : start; });
+    const schemaSpawn = vi.fn(() => { events.push('schema'); return { status: 0, stdout: JSON.stringify(schemaCapture()) }; });
+    const aggregateSpawn = vi.fn(() => {
+      events.push('aggregate-open');
+      const child = new EventEmitter() as EventEmitter & Record<string, unknown>;
+      const stdout = new EventEmitter() as EventEmitter & { setEncoding: (encoding: string) => void };
+      stdout.setEncoding = () => {};
+      const stdin = new EventEmitter() as EventEmitter & { write: (sql: string) => void; end: () => void };
+      stdin.write = () => { events.push('aggregate-query'); queueMicrotask(() => stdout.emit('data', '{}\n')); };
+      stdin.end = () => { events.push('aggregate-closed'); queueMicrotask(() => child.emit('close', 0)); };
+      Object.assign(child, { stdout, stdin, stderr: new EventEmitter(), kill: vi.fn() });
+      return child;
+    });
+    const catalogObserver = vi.fn(async () => { events.push('catalog'); return { count: 16, failedChecks: [] }; });
+    const options = { source, sourceOptions, profilePhase: 'post_cleanup', now: clock,
+      targetVerifier: vi.fn(async () => ({})), psqlVerifier: () => 'reviewed-psql', rootCertificateVerifier: () => 'reviewed-ca',
+      spawnSyncProcess: schemaSpawn, spawnProcess: aggregateSpawn, catalogObserver };
+    const receipt = await collectProductionObservedProfile(options);
+    expect(events).toEqual(['started', 'schema', 'aggregate-open', 'aggregate-query', 'aggregate-query', 'aggregate-closed', 'catalog', 'completed']);
+    expect(clock).toHaveBeenCalledTimes(2);
+    expect(receipt.observation).toMatchObject({ collectionStartedAtUtc: start.toISOString(), capturedAtUtc: completion.toISOString() });
+    expect(assess).toHaveBeenCalledWith(expect.objectContaining({ observation: receipt.observation, now: completion }));
+    schemaSpawn.mockClear();
+    await expect(collectProductionObservedProfile({ ...options, now: () => new Date(NaN) })).rejects.toThrow('details suppressed');
+    expect(schemaSpawn).not.toHaveBeenCalled();
+    assess.mockClear();
+    const backwards = vi.fn().mockReturnValueOnce(completion).mockReturnValueOnce(start);
+    await expect(collectProductionObservedProfile({ ...options, now: backwards })).rejects.toThrow('details suppressed');
+    expect(assess).not.toHaveBeenCalled();
   });
 });
 

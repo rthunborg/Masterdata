@@ -100,6 +100,7 @@ describe.sequential.skipIf(!admission)('Story 22.15 guarded local staffing pre-e
       }
     }
     async function observation() {
+      const collectionStartedAtUtc = new Date().toISOString();
       const result = await query(database, staffingSql);
       const parts = Array.isArray(result) ? result : [result];
       const rows = parts.flatMap((part) => Array.isArray(part.rows) ? part.rows : []);
@@ -111,7 +112,7 @@ describe.sequential.skipIf(!admission)('Story 22.15 guarded local staffing pre-e
         result: assessProductionStaffingPreExecuteProof({
           schemaVersion: 1, kind: 'production-staffing-pre-execute-observation', environment: 'production',
           sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256,
-          capturedAtUtc: now.toISOString(), ...parsed,
+          collectionStartedAtUtc, capturedAtUtc: now.toISOString(), ...parsed,
         }, { sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, now }),
         raw: parsed,
       };

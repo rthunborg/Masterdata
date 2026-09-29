@@ -272,8 +272,8 @@ describe('Story 22.15 protected cutover cross-receipt ordering', () => {
       cleanupStartedAtUtc: '2026-09-23T14:04:00.000Z',
       cleanupCompletedAtUtc: '2026-09-23T14:04:30.000Z',
     },
-    preForwardObservation: { capturedAtUtc: '2026-09-23T14:05:00.000Z' },
-    staffingReceipt: { capturedAtUtc: '2026-09-23T14:05:30.000Z' },
+    preForwardObservation: { collectionStartedAtUtc: '2026-09-23T14:04:45.000Z', capturedAtUtc: '2026-09-23T14:05:00.000Z' },
+    staffingReceipt: { collectionStartedAtUtc: '2026-09-23T14:05:10.000Z', capturedAtUtc: '2026-09-23T14:05:30.000Z' },
     isolationReceipts: {
       ...initialReceipts(),
       database: { collectionStartedAtUtc: '2026-09-23T14:06:00.000Z', capturedAtUtc: '2026-09-23T14:06:01.000Z', managedWriterObservation: { collectionStartedAtUtc: '2026-09-23T14:04:45.000Z', capturedAtUtc: '2026-09-23T14:04:46.000Z' } },
@@ -338,6 +338,16 @@ describe('Story 22.15 protected cutover cross-receipt ordering', () => {
     expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
       disposition: 'blocked_cutover_receipt_order',
     });
+  });
+
+  it.each(['preForwardObservation', 'staffingReceipt'] as const)('rejects an invalid %s start even when completion is post-cleanup', (key) => {
+    for (const start of [undefined, '2026-09-23 14:04:45Z', '2026-09-23T14:04:29.999Z', '2026-09-23T14:04:30.000Z', '2026-09-23T14:05:30.001Z', '2026-09-23T14:11:00.000Z']) {
+      const value = ordered();
+      const receipt = value[key] as { collectionStartedAtUtc?: string; capturedAtUtc: string };
+      if (start === undefined) delete receipt.collectionStartedAtUtc;
+      else receipt.collectionStartedAtUtc = start;
+      expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({ disposition: 'blocked_cutover_receipt_order' });
+    }
   });
 });
 

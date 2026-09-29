@@ -132,6 +132,28 @@ describe('Story 22.15 protected production staffing pre-execute collector', () =
     expect(mocks.spawn).not.toHaveBeenCalled();
   });
 
+  it('records the collection start before the query and completion after it', async () => {
+    const start = new Date('2026-09-28T11:59:00.000Z');
+    const clock = vi.fn().mockReturnValueOnce(start).mockReturnValueOnce(capturedAt);
+    const receipt = await collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: clock });
+    expect(clock).toHaveBeenCalledTimes(2);
+    expect(clock.mock.invocationCallOrder[0]).toBeLessThan(mocks.spawn.mock.invocationCallOrder[0]);
+    expect(mocks.spawn.mock.invocationCallOrder[0]).toBeLessThan(clock.mock.invocationCallOrder[1]);
+    expect(receipt.observation).toMatchObject({ collectionStartedAtUtc: start.toISOString(), capturedAtUtc: capturedAt.toISOString() });
+    expect(receipt.assessment.disposition).toBe('staffing_pre_execute_proved_not_execution_authority');
+  });
+
+  it('rejects an invalid start before opening a database process', async () => {
+    await expect(collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: () => new Date(NaN) })).rejects.toThrow('details suppressed');
+    expect(mocks.spawn).not.toHaveBeenCalled();
+  });
+
+  it('rejects a backwards clock instead of publishing a reversed interval', async () => {
+    const clock = vi.fn().mockReturnValueOnce(capturedAt).mockReturnValueOnce(new Date(capturedAt.getTime() - 1));
+    await expect(collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: clock })).rejects.toThrow('details suppressed');
+    expect(mocks.spawn).toHaveBeenCalledOnce();
+  });
+
   it.each([
     { status: 1, stdout: 'private-row', stderr: 'private-error' },
     { status: null, error: new Error('secret-timeout') },

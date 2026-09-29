@@ -26,6 +26,7 @@ function receipt() {
     sourceTree,
     sourceManifestSha256,
     targetBindingSha256,
+    collectionStartedAtUtc: '2026-09-28T11:54:59.000Z',
     capturedAtUtc: '2026-09-28T11:55:00.000Z',
     routine: {
       signature: PRODUCTION_STAFFING_PRE_EXECUTE_SIGNATURE,
@@ -137,6 +138,11 @@ describe('Story 22.15 production staffing pre-execute contract', () => {
   });
 
   it.each([
+    ['a missing collection start', (value: ReturnType<typeof receipt>) => delete (value as Partial<ReturnType<typeof receipt>>).collectionStartedAtUtc, 'source_or_target_mismatch'],
+    ['a noncanonical collection start', (value: ReturnType<typeof receipt>) => (value.collectionStartedAtUtc = '2026-09-28 11:54:59Z'), 'evidence_time_invalid'],
+    ['a reversed collection interval', (value: ReturnType<typeof receipt>) => (value.collectionStartedAtUtc = '2026-09-28T11:55:00.001Z'), 'evidence_time_invalid'],
+    ['a future collection start', (value: ReturnType<typeof receipt>) => (value.collectionStartedAtUtc = '2026-09-28T12:00:00.001Z'), 'evidence_time_invalid'],
+    ['a stale start with fresh completion', (value: ReturnType<typeof receipt>) => (value.collectionStartedAtUtc = '2026-09-28T11:44:59.999Z'), 'evidence_time_invalid'],
     ['a stale receipt', (value: ReturnType<typeof receipt>) => (value.capturedAtUtc = '2026-09-28T11:44:59.999Z'), 'evidence_time_invalid'],
     ['a target mismatch', (value: ReturnType<typeof receipt>) => (value.targetBindingSha256 = '9'.repeat(64)), 'source_or_target_mismatch'],
     ['an unreviewed receipt field', (value: ReturnType<typeof receipt>) => Object.assign(value, { bodySemanticsProven: true }), 'source_or_target_mismatch'],

@@ -55,7 +55,7 @@ function copy(root: string, relative: string) {
 
 function staffingReceipt(receiptCapturedAtUtc = capturedAtUtc) {
   return {
-    schemaVersion: 1, kind: 'production-staffing-pre-execute-observation', environment: 'production', sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, capturedAtUtc: receiptCapturedAtUtc,
+    schemaVersion: 1, kind: 'production-staffing-pre-execute-observation', environment: 'production', sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, collectionStartedAtUtc: receiptCapturedAtUtc, capturedAtUtc: receiptCapturedAtUtc,
     routine: { signature: PRODUCTION_STAFFING_PRE_EXECUTE_SIGNATURE, exactOverloadCount: 1, owner: 'postgres', language: 'plpgsql', kind: 'function', securityDefiner: false, config: null, nonOwnerExecuteGrantees: [...PRODUCTION_STAFFING_PRE_EXECUTE_GRANTEES], nonOwnerExecuteGrantOptions: false, nonExecuteAclPrivileges: false, returnShape: PRODUCTION_STAFFING_PRE_EXECUTE_RETURN_SHAPE, inputArguments: PRODUCTION_STAFFING_PRE_EXECUTE_INPUT_ARGUMENTS.map((value) => ({ ...value })), outputArguments: PRODUCTION_STAFFING_PRE_EXECUTE_OUTPUT_ARGUMENTS.map((value) => ({ ...value })), volatility: 'volatile', parallel: 'unsafe', strict: false, leakproof: false },
     dependencies: {
       staffingNeedsColumns: [{ name: 'id', type: 'uuid', nullable: false, default: 'gen_random_uuid()' }, { name: 'location', type: 'text', nullable: false, default: null }, { name: 'headcount_need', type: 'integer', nullable: false, default: '0' }, { name: 'updated_at', type: 'timestamp with time zone', nullable: false, default: 'now()' }, { name: 'updated_by', type: 'uuid', nullable: true, default: null }],
@@ -66,7 +66,7 @@ function staffingReceipt(receiptCapturedAtUtc = capturedAtUtc) {
 }
 
 function preForwardReceipt(receiptCapturedAtUtc = capturedAtUtc) {
-  const value = { schemaVersion: 1, kind: 'production-observed-profile', profilePhase: 'post_cleanup', capturedAtUtc: receiptCapturedAtUtc, sourceSha, baselineSourceSha: PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA, targetBindingSha256, ...structuredClone(PRODUCTION_OBSERVED_PROFILE_BASELINE) };
+  const value = { schemaVersion: 1, kind: 'production-observed-profile', profilePhase: 'post_cleanup', collectionStartedAtUtc: receiptCapturedAtUtc, capturedAtUtc: receiptCapturedAtUtc, sourceSha, baselineSourceSha: PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA, targetBindingSha256, ...structuredClone(PRODUCTION_OBSERVED_PROFILE_BASELINE) };
   Object.assign(value.aggregate.saved_filter_data, { total_count: 0, orphan_auth_reference_count: 0, row_identity_sha256: '4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945' });
   return value;
 }

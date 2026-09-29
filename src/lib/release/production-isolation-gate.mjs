@@ -145,7 +145,9 @@ export function assessProductionCutoverReceiptOrdering({
   const cleanupStarted = canonicalUtc(reviewRecords.cleanupStartedAtUtc);
   const cleanup = canonicalUtc(reviewRecords.cleanupCompletedAtUtc);
   const profile = canonicalUtc(preForwardObservation.capturedAtUtc);
+  const profileStart = canonicalUtc(preForwardObservation.collectionStartedAtUtc);
   const staffing = canonicalUtc(staffingReceipt.capturedAtUtc);
+  const staffingStart = canonicalUtc(staffingReceipt.collectionStartedAtUtc);
   const databaseStart = canonicalUtc(isolationReceipts.database?.collectionStartedAtUtc);
   const database = canonicalUtc(isolationReceipts.database?.capturedAtUtc);
   const drainStart = canonicalUtc(isolationReceipts.drain?.collectionStartedAtUtc);
@@ -158,8 +160,8 @@ export function assessProductionCutoverReceiptOrdering({
   const managedWriterStart = canonicalUtc(isolationReceipts.database.managedWriterObservation?.collectionStartedAtUtc);
   const managedWriter = canonicalUtc(isolationReceipts.database.managedWriterObservation?.capturedAtUtc);
   if (
-    [cleanupStarted, cleanup, profile, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain, ...initialIsolationCompletions].some((time) => time === null) ||
-    [profile, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain].some((time) => time > now.getTime()) ||
+    [cleanupStarted, cleanup, profileStart, profile, staffingStart, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain, ...initialIsolationCompletions].some((time) => time === null) ||
+    [profileStart, profile, staffingStart, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain].some((time) => time > now.getTime()) ||
     initialIsolationCompletions.some((time) => time > now.getTime()) ||
     cleanupStarted > now.getTime() ||
     cleanup > now.getTime()
@@ -168,7 +170,8 @@ export function assessProductionCutoverReceiptOrdering({
   if (
     cleanupStarted > cleanup ||
     initialIsolationCompletions.some((time) => time >= cleanupStarted) ||
-    cleanup >= profile ||
+    profileStart > profile || staffingStart > staffing ||
+    cleanup >= profileStart || cleanup >= staffingStart ||
     cleanup >= staffing ||
     cleanup >= managedWriterStart ||
     managedWriterStart > managedWriter ||
