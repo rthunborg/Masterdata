@@ -70,6 +70,17 @@ describe
           expect(receipt.productionAdmission).toBe(false);
           if (caseName === 'explicit_history_write_timeout') {
             expect(receipt.attempts.at(-1)?.child.kind).toBe('timeout');
+            expect(receipt.timeoutFaultObservation).toEqual({
+              armed: true,
+              complete: true,
+              observed: true,
+              targetVersion: PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS[1],
+              firingCount: 1,
+            });
+            expect(receipt.attempts.at(-1)?.timeoutCancellation).toMatchObject({
+              afterObservedHook: true,
+              delayMs: 1500,
+            });
             expect(receipt.hookAfter?.observed).toBe(true);
           }
           if (caseName === 'postcleanup_success') {

@@ -37,6 +37,7 @@ import {
   HISTORY_FAULT_OBSERVER_SQL,
   interpretHistoryFaultObservation,
 } from './production-cli-matrix-hook.mjs';
+import { runTimeoutAfterObservedHistoryFault } from './production-cli-matrix-timeout.mjs';
 import {
   MATRIX_CATALOG_SNAPSHOT_SQL,
   MATRIX_PRESERVATION_SQL,
@@ -463,6 +464,57 @@ export async function runProductionCliMatrixCase({
     if (!dryRun && (child.kind !== 'exit' || child.code !== 0)) terminal = true;
     return { child, output };
   }
+  async function invokeAfterObservedTimeoutFault(work, { observeHook, targetVersion }) {
+    need(!terminal, 'matrix_terminal_no_continuation');
+    need(
+      same(inspectForwardSource(sourceOptions).receipt, source.receipt),
+      'matrix_source_changed'
+    );
+    need(
+      same(
+        readdirSync(path.join(work, 'supabase', 'migrations')).sort(),
+        source.receipt.migrations.map((m) => m.file).sort()
+      ),
+      'matrix_subset_changed'
+    );
+    for (const m of source.receipt.migrations)
+      need(
+        hash(readFileSync(path.join(work, 'supabase', 'migrations', m.file))) === m.sha256,
+        'matrix_subset_bytes'
+      );
+    await connected(databaseName, async () => {});
+    pinnedTool(cli, '2.115.0');
+    const timed = await runTimeoutAfterObservedHistoryFault({
+      executable: cli.executablePath,
+      args: ['db', 'push', '--db-url', url, '--skip-vault', '--yes'],
+      options: {
+        cwd: work,
+        env,
+        encoding: 'utf8',
+        input: '',
+      },
+      targetVersion,
+      observeHook,
+    });
+    receipt.timeoutFaultObservation = timed.observedHook;
+    receipt.attempts.push({
+      purpose: 'measured_apply',
+      child: timed.child,
+      durationMs: timed.durationMs,
+      outputSha256: hash(timed.output),
+      outputBytes: timed.outputBytes,
+      sourceVersions: source.receipt.migrations.map((m) => m.version),
+      lastApplyingVersion:
+        [...timed.output.matchAll(/Applying migration (\d{14})_[^\r\n]+/gu)].at(-1)?.[1] ?? null,
+      sqlStates: [
+        ...new Set(
+          [...timed.output.matchAll(/SQLSTATE ([A-Z0-9]{5})/gu)].map((m) => m[1])
+        ),
+      ],
+      timeoutCancellation: timed.cancellation,
+    });
+    return { child: timed.child, output: timed.output };
+  }
   function repairHistory(version) {
     pinnedTool(cli, '2.115.0');
     const started = Date.now();
@@ -592,9 +644,19 @@ export async function runProductionCliMatrixCase({
         'matrix_hook_not_armed'
       );
     stage = 'measured_apply';
-    const applied = await invoke(work, {
-      timeout: spec.mode === 'timeout' ? 1500 : 60000,
-    });
+    const applied = spec.mode === 'timeout'
+      ? await invokeAfterObservedTimeoutFault(work, {
+          targetVersion: hookSetup.targetVersion,
+          observeHook: () => connected(
+            databaseName,
+            async (client) => interpretHistoryFaultObservation(
+              hookSetup,
+              (await client.query(HISTORY_FAULT_OBSERVER_SQL)).rows
+            ),
+            true
+          ),
+        })
+      : await invoke(work, { timeout: 60000 });
     terminal = true;
     // The injected server sleep is bounded at eight seconds. Give it a fixed
     // bounded settling window, then observe rather than retrying the apply.

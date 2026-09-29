@@ -282,4 +282,9 @@ consolidated_cutover_ordering_correction_20260928:
   diagnostic_recovery_verification: pending
   collector_source_binding_verification: pending
   cli_profile_verification: pending
+  local_timeout_fixture_verification: pending
+  latest_failed_full_source: 1ea4843ec58ee81fad94e3e39b360bb0ff7c3ef8
+  latest_failed_full_passed: 4430
+  latest_failed_full_failed: 2
+  latest_failed_full_unexecuted_native_tests: 17
   final_verification: pending
