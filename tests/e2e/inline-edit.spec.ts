@@ -42,34 +42,11 @@ async function tableCellByColumn(page: Page, row: Locator, label: RegExp) {
 async function openInlineSelect(page: Page, cell: Locator, label: RegExp) {
     const editor = cell.getByRole('gridcell', { name: label }).first();
     await expect(editor).toBeVisible({ timeout: 10000 });
-
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-        await editor.scrollIntoViewIfNeeded();
-        await editor.click({ force: attempt > 0 });
-
-        const trigger = cell.getByRole('combobox').first();
-        if (await trigger.waitFor({ state: 'visible', timeout: 3000 }).then(() => true).catch(() => false)) {
-            const listbox = page.getByRole('listbox').first();
-            if (await listbox.waitFor({ state: 'visible', timeout: 1000 }).then(() => true).catch(() => false)) {
-                return listbox;
-            }
-
-            const isExpanded = (await trigger.getAttribute('aria-expanded').catch(() => null)) === 'true';
-            if (!isExpanded) {
-                await trigger.click({ force: true });
-            }
-            await expect(listbox).toBeVisible({ timeout: 10000 });
-            return listbox;
-        }
-
-        const alreadyOpen = page.getByRole('listbox').first();
-        if (await alreadyOpen.waitFor({ state: 'visible', timeout: 1000 }).then(() => true).catch(() => false)) {
-            return alreadyOpen;
-        }
-
-        await editor.press('Enter').catch(() => {});
-    }
-
+    await editor.scrollIntoViewIfNeeded();
+    await editor.click();
+    // EditableCell opens Select after the editor mounts. Once its modal list
+    // opens, Radix hides the surrounding trigger from accessibility queries;
+    // clicking that trigger races the auto-open and can wait forever.
     const listbox = page.getByRole('listbox').first();
     await expect(listbox).toBeVisible({ timeout: 10000 });
     return listbox;

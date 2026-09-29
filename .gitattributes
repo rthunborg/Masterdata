@@ -5,6 +5,10 @@ src/lib/release/prepare-forward-subset.mjs text eol=lf
 src/lib/release/launch-private-forward-workspace.mjs text eol=lf
 # Protected packages compare worktree bytes with immutable Git blobs.
 src/lib/release/*.mjs text eol=lf
+src/lib/release/*.sql text eol=lf
 src/lib/release/*.cs text eol=lf
 supabase/verify/*.mjs text eol=lf
 supabase/migration-baseline-manifest.json text eol=lf
+# Collector source checks also pin dependency declaration bytes.
+package.json text eol=lf
+pnpm-lock.yaml text eol=lf

@@ -22,6 +22,10 @@ export const PROTECTED_DRY_RUN_PACKAGE_SOURCE_FILES = Object.freeze([
   'src/lib/release/protected-dry-run-worker.mjs',
   'src/lib/release/protected-production-inputs.cs',
   'src/lib/release/production-bootstrap-admission.mjs',
+  'src/lib/release/production-staffing-pre-execute-contract.mjs',
+  'src/lib/release/production-isolation-gate.mjs',
+  'src/lib/release/production-managed-writer-profiles.mjs',
+  'src/lib/release/production-observed-profile.mjs',
   'supabase/verify/run-reviewed-supabase-cli.mjs',
   'supabase/verify/verify-production-baseline-catalog.mjs',
   'supabase/verify/verify-target-binding.mjs',
@@ -186,6 +190,9 @@ function assertDryRunModuleClosure(bytesByPath) {
     ADMISSION_STATIC_IMPORTS,
     []
   );
+  assertExactModuleReferences(bytesByPath.get('src/lib/release/production-staffing-pre-execute-contract.mjs'), [], []);
+  assertExactModuleReferences(bytesByPath.get('src/lib/release/production-isolation-gate.mjs'), ['./production-managed-writer-profiles.mjs'], []);
+  assertExactModuleReferences(bytesByPath.get('src/lib/release/production-managed-writer-profiles.mjs'), ['node:crypto'], []);
 }
 
 function assertInventoryMatchesSource(inventory, source) {

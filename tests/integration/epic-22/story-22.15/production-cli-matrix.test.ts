@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { CLI_MATRIX_CASES } from '../../../support/production-cli-matrix-result.mjs';
+import { PRODUCTION_HISTORY_REPAIR_VERSIONS } from '../../../../src/lib/release/production-history-repair-baseline.mjs';
+import { PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS } from '../../../../src/lib/release/production-bootstrap-admission.mjs';
 import { runProductionCliMatrixCase } from '../../../support/production-cli-matrix-runner.mjs';
 import {
   MATRIX_REQUIRED_ENV,
@@ -68,7 +70,69 @@ describe
           expect(receipt.productionAdmission).toBe(false);
           if (caseName === 'explicit_history_write_timeout') {
             expect(receipt.attempts.at(-1)?.child.kind).toBe('timeout');
+            expect(receipt.timeoutFaultObservation).toEqual({
+              armed: true,
+              complete: true,
+              observed: true,
+              targetVersion: PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS[1],
+              firingCount: 1,
+            });
+            expect(receipt.attempts.at(-1)?.timeoutCancellation).toMatchObject({
+              afterObservedHook: true,
+              delayMs: 1500,
+            });
             expect(receipt.hookAfter?.observed).toBe(true);
+          }
+          if (caseName === 'postcleanup_success') {
+            expect(receipt.successWorktree).toEqual({
+              hasSupabaseConfigToml: false,
+              hasMigrationManifest: true,
+              hasSyntheticProjectLink: true,
+              migrationCount: 13,
+            });
+            expect(receipt.protectedCommandShape).toEqual([
+              expect.objectContaining({
+                normalizedProtectedShape: true,
+                hasDryRun: true,
+                includesAll: true,
+                hasYes: false,
+                neutralLocalDsn: true,
+                tlsMode: 'disable_local_fixture_only',
+                pgEnvironmentSuppliesConnectivity: true,
+                stdio: 'pipe',
+                encoding: 'utf8',
+                stdin: 'closed_empty',
+                hasSupabaseConfigToml: false,
+                hasMigrationManifest: true,
+              }),
+              expect.objectContaining({
+                normalizedProtectedShape: true,
+                hasDryRun: false,
+                includesAll: true,
+                hasYes: false,
+                neutralLocalDsn: true,
+                tlsMode: 'disable_local_fixture_only',
+                pgEnvironmentSuppliesConnectivity: true,
+                stdio: 'pipe',
+                encoding: 'utf8',
+                stdin: 'closed_empty',
+                hasSupabaseConfigToml: false,
+                hasMigrationManifest: true,
+              }),
+            ]);
+            expect(receipt.historyRepair?.versions).toEqual(PRODUCTION_HISTORY_REPAIR_VERSIONS);
+            expect(receipt.historyRepair?.attempts).toHaveLength(55);
+            expect(receipt.historyRepair?.attempts.every((attempt: { child: { kind: string; code: number } }) =>
+              attempt.child.kind === 'exit' && attempt.child.code === 0
+            )).toBe(true);
+            expect(receipt.historyRepair?.afterHistory).toEqual([
+              ...new Set([
+                ...PRODUCTION_HISTORY_REPAIR_VERSIONS,
+                ...PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS,
+              ]),
+            ].sort());
+            expect(receipt.historyRepair?.catalogUnchanged).toBe(true);
+            expect(receipt.historyRepair?.preservationUnchanged).toBe(true);
           }
           completedCases.add(caseName);
         },

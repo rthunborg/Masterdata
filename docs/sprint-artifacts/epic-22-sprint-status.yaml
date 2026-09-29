@@ -289,7 +289,7 @@ risks:
     severity: 'high'
     mitigation: 'Position as working pilot candidate only and complete P0 stories first.'
 next_actions:
-  - 'Story 22.15: reviewed PR #119 head 6d5a522 merged as staging 7b25f1d with an identical tree; main remains 8223509. Latest dated staging proof is 68/68 with no pending/remote-only versions and strict catalog 16/16; owner staging application verification is complete. Fresh 2026-09-28 production read-only proof retains seven strict catalog failures, 14 unchanged schema groups, seven unchanged aggregate groups, 48 orphan filters, 55 UNPROVED unsigned repair rows and 13 proposed executes. Vercel pause target, disabled automatic domain assignment and zero crons were reconfirmed; no hosted change occurred. Owner attests a restore-tested backup newer than the last write, is rollback owner, and separately approved temporary isolation on this computer and current network. Implementation c75ab10 requires independently bound prior Realtime state, strict event ordering and complete zero-client reporting, plus independent Data API credential/statement-trigger prerequisites and exact POST [] denial; focused 150/150, full Vitest 4130 passed with 47 unchanged classified skips, exact full Playwright 163 passed with 47 identical historical skips, TypeScript, zero-error lint and staging-preview build pass. Final-head checks/review/merge remain pending for this new gate. Complete Dashboard client-report access and login/backend/worker classification before fresh five-plane isolation and drain. Reconfirm all private pre-state, backup relevance, egress, tooling and target/TLS prerequisites before the first hosted change. No additional machine is required. Seek separate cleanup and signed-ledger history-repair approvals; main merge, deployment, control restoration and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
+  - 'Measured collector-interval local gates passed at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e; complete final-documentation-head CI/review and the authorized staging merge. Refresh backup relevance, source/tool/target/TLS proofs and full isolation before the separately approved exact filter cleanup. Require complete staffing, full-profile and managed-writer intervals to start strictly after cleanup and finish before final database collection, with start-based freshness checked at launch. Bind canonical cleanup start/completion, reviewed collector source and query bytes, and collector-session completion to non-overlapping final database/drain collection intervals. Post-cleanup, collect fresh exact-observed managed-principal, staffing-compatibility and full-isolation receipts; use the reviewed protected flow for the exclusive 13-version dry run/apply from absent history under standing reviewed-migration authorization after prerequisites pass. Immediately prove history 13, strict 16/16, canonical 68 and preservation. Owner adoption plus separate repair approval is required for all 55 UNPROVED ledger rows before history 68. Keep production paused; main, deployment and reopening remain separate.'
   - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
   - 'Story 22.3 is done; keep its dependency advisory evidence current if audit output changes.'
   - 'Story 22.4 is done; standing production-data presentation controls are documented.'
@@ -304,7 +304,7 @@ next_actions:
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
   - 'Historical PR #100 staging v67 was applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Current staging is v68 at 68/68 with no pending versions. Owner staging verification was open at that dated checkpoint and completed on 2026-09-24. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 last_updated: '2026-09-28'
-updated_by: 'Updated Realtime/Data API evidence gates and exact local reruns; production remains paused/no-go, Story 22.15 in-progress and Epic 23 on-hold.'
+updated_by: 'Final PR #121 local verification synchronized; Story 22.15 in-progress, Epic 23 on-hold and production paused/no-go.'
 
 pr_95_playwright_gate:
   date: 2026-09-09
@@ -420,9 +420,19 @@ protected_toolchain_component_20260922:
   production: paused-no-go
   epic_23: on-hold
 
+consolidated_cutover_proposal_20260928:
+  story_status: 'in-progress'
+  epic_23_status: 'on-hold'
+  staging_pending_versions: []
+  production_status: 'paused-no-go'
+  next_action: 'Measured collector-interval local gates passed at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e; complete final-documentation-head CI/review and the authorized staging merge. Refresh backup relevance, source/tool/target/TLS proofs and full isolation before the separately approved exact filter cleanup. Require complete staffing, full-profile and managed-writer intervals to start strictly after cleanup and finish before final database collection, with start-based freshness checked at launch. Bind canonical cleanup start/completion, reviewed collector source and query bytes, and collector-session completion to non-overlapping final database/drain collection intervals. Post-cleanup, collect fresh exact-observed managed-principal, staffing-compatibility and full-isolation receipts; use the reviewed protected flow for the exclusive 13-version dry run/apply from absent history under standing reviewed-migration authorization after prerequisites pass. Immediately prove history 13, strict 16/16, canonical 68 and preservation. Owner adoption plus separate repair approval is required for all 55 UNPROVED ledger rows before history 68. Keep production paused; main, deployment and reopening remain separate.'
+  local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
+  isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
+
+# Historical protected-production-dry-run snapshot; its embedded PR #119 next_action is superseded by consolidated_cutover_proposal_20260928.
 protected_production_dry_run_component_20260922:
   status: local-verification-complete
-  next_action: 'Story 22.15: reviewed PR #119 head 6d5a522 merged as staging 7b25f1d with an identical tree; main remains 8223509. Latest dated staging proof is 68/68 with no pending/remote-only versions and strict catalog 16/16; owner staging application verification is complete. Fresh 2026-09-28 production read-only proof retains seven strict catalog failures, 14 unchanged schema groups, seven unchanged aggregate groups, 48 orphan filters, 55 UNPROVED unsigned repair rows and 13 proposed executes. Vercel pause target, disabled automatic domain assignment and zero crons were reconfirmed; no hosted change occurred. Owner attests a restore-tested backup newer than the last write, is rollback owner, and separately approved temporary isolation on this computer and current network. Implementation c75ab10 requires independently bound prior Realtime state, strict event ordering and complete zero-client reporting, plus independent Data API credential/statement-trigger prerequisites and exact POST [] denial; focused 150/150, full Vitest 4130 passed with 47 unchanged classified skips, exact full Playwright 163 passed with 47 identical historical skips, TypeScript, zero-error lint and staging-preview build pass. Final-head checks/review/merge remain pending for this new gate. Complete Dashboard client-report access and login/backend/worker classification before fresh five-plane isolation and drain. Reconfirm all private pre-state, backup relevance, egress, tooling and target/TLS prerequisites before the first hosted change. No additional machine is required. Seek separate cleanup and signed-ledger history-repair approvals; main merge, deployment, control restoration and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
+  historical_pr119_next_action: 'Story 22.15: reviewed PR #119 head 6d5a522 merged as staging 7b25f1d with an identical tree; main remains 8223509. Latest dated staging proof is 68/68 with no pending/remote-only versions and strict catalog 16/16; owner staging application verification is complete. Fresh 2026-09-28 production read-only proof retains seven strict catalog failures, 14 unchanged schema groups, seven unchanged aggregate groups, 48 orphan filters, 55 UNPROVED unsigned repair rows and 13 proposed executes. Vercel pause target, disabled automatic domain assignment and zero crons were reconfirmed; no hosted change occurred. Owner attests a restore-tested backup newer than the last write, is rollback owner, and separately approved temporary isolation on this computer and current network. Implementation c75ab10 requires independently bound prior Realtime state, strict event ordering and complete zero-client reporting, plus independent Data API credential/statement-trigger prerequisites and exact POST [] denial; focused 150/150, full Vitest 4130 passed with 47 unchanged classified skips, exact full Playwright 163 passed with 47 identical historical skips, TypeScript, zero-error lint and staging-preview build pass. Final-head checks/review/merge remain pending for this new gate. Complete Dashboard client-report access and login/backend/worker classification before fresh five-plane isolation and drain. Reconfirm all private pre-state, backup relevance, egress, tooling and target/TLS prerequisites before the first hosted change. No additional machine is required. Seek separate cleanup and signed-ledger history-repair approvals; main merge, deployment, control restoration and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
   final_head: null # Exact reviewed head is recorded by PR #113 checks/review, not self-attested here.
   test_receipt: 'Test/evidence 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb: Vitest 3769/3769, 337 files, zero skips/failures; implementation-identical 7bc0031 Playwright 163 passed, 47 exact classified skips, zero failures/errors. Exact final-head checks/review are separate merge prerequisites recorded on PR #113.'
   scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'
@@ -482,3 +492,122 @@ realtime_evidence_component_20260928:
   hosted_settings_changed: false
   isolation_proved: false
   evidence: docs/commercial-readiness/evidence/production-realtime-preparation-2026-09-28.md
+
+# Historical 49e708/2876b7 candidate verification; locally superseded by the ordering-correction component below.
+consolidated_cutover_final_local_verification_20260928:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  staging_pending_versions: []
+  tested_implementation: 49e708ec99a8e74fb268e32d026bffc85bcb4a5c
+  playwright_source: 2876b7a7915765182602f5cf2c2111df3c317d56
+  vitest_passed: 4349
+  vitest_skipped: 0
+  vitest_failed: 0
+  playwright_passed: 163
+  playwright_skipped: 47
+  playwright_failed: 0
+  playwright_errors: 0
+  playwright_skips_match_historical: true
+  local_cli_matrix_passed: 8
+  remote_exact_head_checks_review_merge: pending
+  evidence: docs/commercial-readiness/evidence/production-consolidated-cutover-verification-2026-09-28.md
+
+consolidated_cutover_ordering_correction_20260928:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  reviewed_prior_head: 262df2f02d754c01e75f43e1842f5705b278b81b
+  actionable_finding: final-database-and-drain-must-follow-cleanup-and-completed-collectors
+  additional_reviewed_heads: [0cb2eabbcf01fb02791774d137006378a632656b, 302eef0fc1d459c85c2260ec1f18d5725cc1d0b2]
+  managed_writer_required_for_cutover: true
+  managed_writer_interval_after_cleanup: true
+  managed_writer_freshness_at_actual_launch: true
+  cli_preflight_freshness_recheck: true
+  encrypted_partial_apply_diagnostics: true
+  isolation_precedes_cleanup_start: true
+  host_timeout_headroom_verification: local-passed
+  diagnostic_recovery_verification: local-passed
+  collector_source_binding_verification: local-passed
+  cli_profile_verification: local-passed
+  local_timeout_fixture_verification: local-passed
+  latest_failed_full_source: 1ea4843ec58ee81fad94e3e39b360bb0ff7c3ef8
+  latest_failed_full_passed: 4430
+  latest_failed_full_failed: 2
+  latest_failed_full_unexecuted_native_tests: 17
+  final_verification: local-passed-final-head-review-pending
+  tested_implementation: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  vitest_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  build_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  playwright_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  verification_receipt: docs/commercial-readiness/evidence/production-cutover-ordering-verification-2026-09-29.json
+  vitest_passed: 4465
+  vitest_skipped: 0
+  vitest_failed: 0
+  vitest_duration_seconds: 863.04
+  playwright_passed: 163
+  playwright_skipped: 47
+  playwright_failed: 0
+  playwright_errors: 0
+  playwright_duration_seconds: 1339.960638
+  hosted_writes: false
+
+consolidated_cutover_packet_deadline_correction_20260929:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  previous_tested_implementation: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  preparation_timeout_milliseconds: 60000
+  packet_timeout_milliseconds: 10000
+  worker_lifetime_milliseconds: 360000
+  record_scope: historical
+  superseded_by: consolidated_cutover_collector_interval_correction_20260929
+  covered_by_tested_implementation: 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e
+  covered_by_verification_receipt: docs/commercial-readiness/evidence/production-cutover-collector-interval-verification-2026-09-29.json
+  verification: historical-superseded-by-current-complete-gates
+  final_head_review: superseded-by-current-documentation-head-review
+  hosted_writes: false
+  note: 'Historical packet-deadline preparation and failed-run record; complete local gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e cover this correction. The current collector-interval component owns final-documentation-head CI/review; 1a5aa619 remains historical.'
+  historical_ordering_receipt_scope: 'Successful at 1a5aa619 only; it does not verify the later substantive 0e014f3a host/worker packet-deadline correction.'
+  latest_failed_clean_source: 0e014f3a8ad921b10758f186ee3afeba2601e895
+  latest_failed_full_passed: 4475
+  latest_failed_full_failed: 3
+  latest_failed_full_skipped: 0
+  latest_failed_full_files: 371
+  latest_failed_full_exit_code: 1
+  current_full_gate: historical-superseded-by-collector-interval-complete-verification-and-current-head-review
+
+
+consolidated_cutover_collector_interval_correction_20260929:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  verification: local-passed-final-head-review-pending
+  current_full_gate: full-local-passed-final-documentation-head-review-pending
+  final_head_review: pending
+  hosted_writes: false
+  previous_source: 5a27d77cd04dae9fef90e8f94adb8432636f0b4c
+  staffing_collection_start_required: true
+  profile_collection_start_required: true
+  cleanup_before_collector_start: true
+  full_interval_freshness_required: true
+  focused_pure_passed: 311
+  focused_native_passed: 36
+  focused_skipped: 0
+  focused_failed: 0
+  focused_clean_commit_proof: false
+  interrupted_previous_full_run: true
+  interrupted_completed_files_reported: 95
+  interrupted_completed_tests_reported: 1028
+  interrupted_accepted_as_passing_gate: false
+  note: 'Collector interval correction passed complete local gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e; Final14, Final15, interrupted Final16 and failed Final17 browser remain historical non-passing evidence; Final18 is the same-source browser retry after an owned local credential refresh. Final documentation-head review/checks and staging merge remain pending.'
+  tested_implementation: 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e
+  verification_receipt: docs/commercial-readiness/evidence/production-cutover-collector-interval-verification-2026-09-29.json
+  vitest_passed: 4502
+  vitest_skipped: 0
+  vitest_failed: 0
+  playwright_passed: 163
+  playwright_skipped: 47
+  playwright_failed: 0
+  playwright_errors: 0
+  ci_conclusion: success

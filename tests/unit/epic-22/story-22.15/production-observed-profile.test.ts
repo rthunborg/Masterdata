@@ -17,6 +17,7 @@ function observation() {
     schemaVersion: 1,
     kind: 'production-observed-profile',
     profilePhase: 'pre_cleanup',
+    collectionStartedAtUtc: '2026-09-23T12:48:11.473Z',
     capturedAtUtc,
     sourceSha: finalSourceSha,
     baselineSourceSha: PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA,
@@ -43,6 +44,7 @@ describe('Story 22.15 production observed profile', () => {
       kind: 'production-observed-profile-assessment',
       disposition: 'profile_match_not_admission',
       sourceSha: finalSourceSha,
+      collectionStartedAtUtc: '2026-09-23T12:48:11.473Z',
       observedAtUtc: capturedAtUtc,
       targetBindingSha256,
       blockers: [
@@ -134,6 +136,7 @@ describe('Story 22.15 production observed profile', () => {
 
   it('rejects stale and future receipts under the fixed fifteen-minute maximum', () => {
     const stale = observation();
+    stale.collectionStartedAtUtc = '2026-09-23T12:43:11.472Z';
     stale.capturedAtUtc = '2026-09-23T12:43:12.472Z';
     expect(() => assess(stale)).toThrow('production_observed_profile_stale_or_future');
 
@@ -167,5 +170,17 @@ describe('Story 22.15 production observed profile', () => {
       } as unknown as { sourceSha: string; targetBindingSha256: string },
       now,
     })).toThrow('production_observed_profile_context_invalid');
+  });
+
+  it.each([
+    ['missing start', (value: ReturnType<typeof observation>) => delete (value as Partial<ReturnType<typeof observation>>).collectionStartedAtUtc, 'production_observed_profile_shape_invalid'],
+    ['noncanonical start', (value: ReturnType<typeof observation>) => (value.collectionStartedAtUtc = '2026-09-23 12:48:11Z'), 'production_observed_profile_timestamp_invalid'],
+    ['reversed interval', (value: ReturnType<typeof observation>) => (value.collectionStartedAtUtc = '2026-09-23T12:48:12.474Z'), 'production_observed_profile_timestamp_invalid'],
+    ['future start', (value: ReturnType<typeof observation>) => (value.collectionStartedAtUtc = '2026-09-23T12:58:12.474Z'), 'production_observed_profile_timestamp_invalid'],
+    ['stale start with fresh completion', (value: ReturnType<typeof observation>) => (value.collectionStartedAtUtc = '2026-09-23T12:43:12.472Z'), 'production_observed_profile_stale_or_future'],
+  ])('rejects %s across the whole collection interval', (_label, mutate, failure) => {
+    const value = observation();
+    mutate(value);
+    expect(() => assess(value)).toThrow(failure);
   });
 });

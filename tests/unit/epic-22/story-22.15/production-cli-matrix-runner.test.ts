@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertInitialMatrixObservation,
+  assertProtectedMatrixCliInvocation,
+  buildProtectedMatrixCliInvocation,
+  buildPinnedMatrixToolEnvironment,
   runProductionCliMatrixCase,
 } from '../../../support/production-cli-matrix-runner.mjs';
 import { SYNTHETIC_AGGREGATES } from '../../../support/production-cli-matrix-fixture.mjs';
@@ -15,6 +18,27 @@ const binding = {
   password: 'c'.repeat(32),
   observedAtUtc: new Date().toISOString(),
 };
+
+describe('deterministic pinned CLI profile', () => {
+  it('overrides an ambient profile without inheriting routing or credentials', () => {
+    const environment = buildPinnedMatrixToolEnvironment({
+      SystemRoot: 'synthetic-system-root',
+      SUPABASE_PROFILE: 'missing-local-profile',
+      SUPABASE_ACCESS_TOKEN: 'secret-canary',
+      SUPABASE_API_HOST: 'unreviewed-api-canary',
+      USERPROFILE: 'unreviewed-profile-directory',
+      PGHOST: 'unreviewed-database-canary',
+      PGPASSWORD: 'secret-canary',
+    });
+    expect(environment).toEqual({
+      SystemRoot: 'synthetic-system-root', SUPABASE_PROFILE: 'supabase',
+    });
+  });
+
+  it('uses the built-in vendor profile when no home or profile is available', () => {
+    expect(buildPinnedMatrixToolEnvironment({})).toEqual({ SUPABASE_PROFILE: 'supabase' });
+  });
+});
 
 describe('declared initial matrix profile', () => {
   const expected = {
@@ -82,6 +106,55 @@ describe('declared initial matrix profile', () => {
         expected
       )
     ).toThrow('matrix_fixture_initial_state');
+  });
+});
+
+describe('successful local protected CLI command shape', () => {
+  it.each([true, false])(
+    'uses the protected %s shape with a neutral local DSN and closed stdin',
+    (dryRun) => {
+      const invocation = buildProtectedMatrixCliInvocation({
+        databaseName: 'cli_matrix_shape',
+        dryRun,
+      });
+      expect(invocation.args).toEqual([
+        'db', 'push',
+        ...(dryRun ? ['--dry-run'] : []),
+        '--include-all', '--skip-vault', '--db-url',
+        'postgresql:///cli_matrix_shape?sslmode=disable',
+      ]);
+      expect(invocation.spawn).toEqual({
+        stdio: 'pipe', encoding: 'utf8', input: '',
+      });
+      expect(invocation.receipt).toMatchObject({
+        hasYes: false,
+        neutralLocalDsn: true,
+        pgEnvironmentSuppliesConnectivity: true,
+        stdin: 'closed_empty',
+        hasSupabaseConfigToml: false,
+        hasMigrationManifest: true,
+      });
+      expect(() =>
+        assertProtectedMatrixCliInvocation(invocation, { dryRun })
+      ).not.toThrow();
+    }
+  );
+
+  it.each([
+    (value) => value.args.push('--yes'),
+    (value) => { value.args[value.args.length - 1] = 'postgresql://postgres@127.0.0.1:5432/matrix?sslmode=disable'; },
+    (value) => { value.spawn.input = 'prompt response'; },
+    (value) => { value.receipt.hasSupabaseConfigToml = true; },
+  ])('rejects a non-protected successful command variant', (mutate) => {
+    const invocation = structuredClone(
+      buildProtectedMatrixCliInvocation({
+        databaseName: 'cli_matrix_shape', dryRun: true,
+      })
+    );
+    mutate(invocation);
+    expect(() =>
+      assertProtectedMatrixCliInvocation(invocation, { dryRun: true })
+    ).toThrow('matrix_protected_command_shape');
   });
 });
 

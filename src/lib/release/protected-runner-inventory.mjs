@@ -32,7 +32,13 @@ const MODULES = Object.freeze([
       './verify-production-baseline-catalog.mjs',
       './verify-target-binding.mjs',
     ]),
-    dynamicImports: Object.freeze([]),
+    dynamicImports: Object.freeze([
+      '../../src/lib/release/production-staffing-pre-execute-contract.mjs',
+      '../../src/lib/release/production-isolation-gate.mjs',
+      '../../src/lib/release/production-observed-profile.mjs',
+      '../../src/lib/release/production-bootstrap-admission.mjs',
+      '../../src/lib/release/protected-cutover-diagnostics.mjs',
+    ]),
   }),
   Object.freeze({
     path: 'supabase/verify/verify-production-baseline-catalog.mjs',
@@ -50,6 +56,49 @@ const MODULES = Object.freeze([
   Object.freeze({
     path: 'supabase/verify/verify-target-binding.mjs',
     staticImports: Object.freeze(['node:fs/promises', 'node:path', 'node:url']),
+    dynamicImports: Object.freeze([]),
+  }),
+]);
+
+// This second closure is intentionally separate from the legacy bootstrap
+// inventory. A cutover package must opt into it explicitly; adding the writer
+// to the older receipt would silently change the dry-run package contract.
+const CUTOVER_MODULES = Object.freeze([
+  Object.freeze({
+    path: 'src/lib/release/protected-production-cutover-worker.mjs',
+    staticImports: Object.freeze([
+      'node:crypto', 'node:fs', 'node:path', 'node:url',
+      './production-staffing-pre-execute-contract.mjs',
+      './production-bootstrap-admission.mjs',
+      './production-isolation-gate.mjs',
+      './production-observed-profile.mjs',
+      '../../../supabase/verify/run-reviewed-supabase-cli.mjs',
+    ]),
+    dynamicImports: Object.freeze([]),
+  }),
+  Object.freeze({
+    path: 'src/lib/release/production-staffing-pre-execute-contract.mjs',
+    staticImports: Object.freeze([]),
+    dynamicImports: Object.freeze([]),
+  }),
+  Object.freeze({
+    path: 'src/lib/release/production-isolation-gate.mjs',
+    staticImports: Object.freeze(['./production-managed-writer-profiles.mjs']),
+    dynamicImports: Object.freeze([]),
+  }),
+  Object.freeze({
+    path: 'src/lib/release/production-managed-writer-profiles.mjs',
+    staticImports: Object.freeze(['node:crypto']),
+    dynamicImports: Object.freeze([]),
+  }),
+  Object.freeze({
+    path: 'src/lib/release/production-observed-profile.mjs',
+    staticImports: Object.freeze(['node:crypto']),
+    dynamicImports: Object.freeze([]),
+  }),
+  Object.freeze({
+    path: 'src/lib/release/protected-cutover-diagnostics.mjs',
+    staticImports: Object.freeze(['node:crypto', 'node:fs', 'node:path']),
     dynamicImports: Object.freeze([]),
   }),
 ]);
@@ -537,5 +586,37 @@ export function inspectProtectedRunnerInventory(options = {}) {
     lockfile,
     modules,
     dependency,
+  });
+}
+
+/**
+ * Read-only closure inventory for the separately installed cutover writer.
+ * It deliberately returns no executable, target, approval, or private-input
+ * authority. Package preparation binds its source identity again before copy.
+ */
+export function inspectProtectedCutoverRunnerModules(options = {}) {
+  const first = inspectForwardSource(options);
+  const modules = CUTOVER_MODULES.map((expected) => sourceModule({
+    root: first.root,
+    git: first.git,
+    commit: options.commit,
+    expected,
+  }));
+  const final = inspectForwardSource(options).receipt;
+  if (
+    first.receipt.sourceCommit !== final.sourceCommit ||
+    first.receipt.sourceTree !== final.sourceTree ||
+    first.receipt.sourceManifestSha256 !== final.sourceManifestSha256
+  ) fail();
+  return Object.freeze({
+    schemaVersion: 1,
+    kind: 'offline-protected-cutover-runner-modules',
+    executable: false,
+    privateMaterialAllowed: false,
+    approvalAttested: false,
+    sourceCommit: first.receipt.sourceCommit,
+    sourceTree: first.receipt.sourceTree,
+    sourceManifestSha256: first.receipt.sourceManifestSha256,
+    modules: Object.freeze(modules),
   });
 }

@@ -10,7 +10,11 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import pg from 'pg';
 import { inspectForwardSource } from '../../src/lib/release/prepare-forward-subset.mjs';
-import { parseExactProductionBootstrapDryRun } from '../../src/lib/release/production-bootstrap-admission.mjs';
+import {
+  parseExactProductionBootstrapDryRun,
+  PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS,
+} from '../../src/lib/release/production-bootstrap-admission.mjs';
+import { PRODUCTION_HISTORY_REPAIR_VERSIONS } from '../../src/lib/release/production-history-repair-baseline.mjs';
 import {
   runProductionBaselineCatalogVerifier,
   evaluateCatalogCsv,
@@ -33,6 +37,7 @@ import {
   HISTORY_FAULT_OBSERVER_SQL,
   interpretHistoryFaultObservation,
 } from './production-cli-matrix-hook.mjs';
+import { runTimeoutAfterObservedHistoryFault } from './production-cli-matrix-timeout.mjs';
 import {
   MATRIX_CATALOG_SNAPSHOT_SQL,
   MATRIX_PRESERVATION_SQL,
@@ -45,6 +50,81 @@ const need = (condition, code) => {
   if (!condition) throw new Error(code);
 };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const COMPLETE_HISTORY_VERSIONS = Object.freeze([
+  ...new Set([
+    ...PRODUCTION_HISTORY_REPAIR_VERSIONS,
+    ...PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS,
+  ]),
+].sort());
+
+/** The successful local rehearsal mirrors the protected runner's child
+ * command. Its loopback DSN deliberately differs only in TLS mode: the
+ * protected production child uses verify-full with a reviewed CA, while this
+ * guarded fixture has no TLS endpoint. Connectivity remains in the PG env. */
+export function buildProtectedMatrixCliInvocation({ databaseName, dryRun }) {
+  need(
+    typeof databaseName === 'string' && /^[a-z0-9_]+$/u.test(databaseName),
+    'matrix_protected_database_name'
+  );
+  need(typeof dryRun === 'boolean', 'matrix_protected_dry_run');
+  const dsn = `postgresql:///${databaseName}?sslmode=disable`;
+  const args = [
+    'db', 'push',
+    ...(dryRun ? ['--dry-run'] : []),
+    '--include-all', '--skip-vault', '--db-url', dsn,
+  ];
+  return Object.freeze({
+    args: Object.freeze(args),
+    dsn,
+    spawn: Object.freeze({ stdio: 'pipe', encoding: 'utf8', input: '' }),
+    receipt: Object.freeze({
+      normalizedProtectedShape: true,
+      hasDryRun: dryRun,
+      includesAll: true,
+      hasYes: false,
+      neutralLocalDsn: true,
+      tlsMode: 'disable_local_fixture_only',
+      pgEnvironmentSuppliesConnectivity: true,
+      stdio: 'pipe',
+      encoding: 'utf8',
+      stdin: 'closed_empty',
+      hasSupabaseConfigToml: false,
+      hasMigrationManifest: true,
+    }),
+  });
+}
+
+export function assertProtectedMatrixCliInvocation(invocation, { dryRun }) {
+  const expected = buildProtectedMatrixCliInvocation({
+    databaseName: 'cli_matrix_assertion',
+    dryRun,
+  });
+  need(
+    invocation &&
+      Array.isArray(invocation.args) &&
+      invocation.args.length === expected.args.length &&
+      invocation.args.slice(0, -1).every((value, index) => value === expected.args[index]) &&
+      /^postgresql:\/\/\/[a-z0-9_]+\?sslmode=disable$/u.test(invocation.args.at(-1) ?? '') &&
+      invocation.spawn?.stdio === 'pipe' &&
+      invocation.spawn?.encoding === 'utf8' &&
+      invocation.spawn?.input === '' &&
+      invocation.receipt?.normalizedProtectedShape === true &&
+      invocation.receipt?.hasYes === false &&
+      invocation.receipt?.neutralLocalDsn === true &&
+      invocation.receipt?.stdin === 'closed_empty' &&
+      invocation.receipt?.hasSupabaseConfigToml === false &&
+      invocation.receipt?.hasMigrationManifest === true,
+    'matrix_protected_command_shape'
+  );
+  return true;
+}
+
+export function buildPinnedMatrixToolEnvironment(environment = process.env) {
+  const env = { SUPABASE_PROFILE: 'supabase' };
+  for (const key of ['SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'COMSPEC', 'PATHEXT'])
+    if (typeof environment[key] === 'string') env[key] = environment[key];
+  return env;
+}
 
 function pinnedTool(tool, version) {
   need(
@@ -59,9 +139,7 @@ function pinnedTool(tool, version) {
       hash(readFileSync(tool.executablePath)) === tool.sha256,
     'matrix_tool_hash'
   );
-  const env = {};
-  for (const key of ['SystemRoot', 'WINDIR', 'TEMP', 'TMP'])
-    if (process.env[key]) env[key] = process.env[key];
+  const env = buildPinnedMatrixToolEnvironment();
   const result = spawnSync(tool.executablePath, ['--version'], {
     env,
     encoding: 'utf8',
@@ -148,16 +226,7 @@ export async function runProductionCliMatrixCase({
   const databaseName = 'cli_matrix_' + randomBytes(12).toString('hex');
   const expectedSystemIdentifierSha256 =
     guardBinding.expectedSystemIdentifierSha256;
-  const env = {};
-  for (const key of [
-    'SystemRoot',
-    'WINDIR',
-    'TEMP',
-    'TMP',
-    'COMSPEC',
-    'PATHEXT',
-  ])
-    if (process.env[key]) env[key] = process.env[key];
+  const env = buildPinnedMatrixToolEnvironment();
   Object.assign(env, {
     PGHOST: '127.0.0.1',
     PGPORT: String(guardBinding.port),
@@ -270,11 +339,35 @@ export async function runProductionCliMatrixCase({
     mkdirSync(work);
     mkdirSync(path.join(work, 'supabase'));
     mkdirSync(path.join(work, 'supabase', 'migrations'));
-    writeFileSync(
-      path.join(work, 'supabase', 'config.toml'),
-      'project_id = "synthetic-cli-matrix"\n',
-      { flag: 'wx' }
-    );
+    // The protected host supplies only the thirteen SQL files, manifest and
+    // private link material. The success rehearsal intentionally omits a
+    // config.toml so it proves that same minimal work shape.
+    if (caseName !== 'postcleanup_success')
+      writeFileSync(
+        path.join(work, 'supabase', 'config.toml'),
+        'project_id = "synthetic-cli-matrix"\n',
+        { flag: 'wx' }
+      );
+    else
+      writeFileSync(
+        path.join(work, 'supabase', 'migration-baseline-manifest.json'),
+        readFileSync(path.join(source.root, 'supabase', 'migration-baseline-manifest.json')),
+        { flag: 'wx' }
+      );
+    if (caseName === 'postcleanup_success') {
+      mkdirSync(path.join(work, 'supabase', '.temp'));
+      writeFileSync(
+        path.join(work, 'supabase', '.temp', 'project-ref'),
+        'abcdefghijklmnopqrst',
+        { flag: 'wx' }
+      );
+      receipt.successWorktree = {
+        hasSupabaseConfigToml: false,
+        hasMigrationManifest: true,
+        hasSyntheticProjectLink: true,
+        migrationCount: count,
+      };
+    }
     for (const entry of source.receipt.migrations.slice(0, count))
       writeFileSync(
         path.join(work, 'supabase', 'migrations', entry.file),
@@ -311,13 +404,26 @@ export async function runProductionCliMatrixCase({
       );
     await connected(databaseName, async () => {});
     pinnedTool(cli, '2.115.0');
-    const args = ['db', 'push', '--db-url', url, '--skip-vault', '--yes'];
-    if (dryRun) args.push('--dry-run');
+    const protectedInvocation =
+      caseName === 'postcleanup_success' && count === 13
+        ? buildProtectedMatrixCliInvocation({ databaseName, dryRun })
+        : null;
+    const args = protectedInvocation?.args ?? [
+      'db', 'push', '--db-url', url, '--skip-vault', '--yes',
+      ...(dryRun ? ['--dry-run'] : []),
+    ];
+    if (protectedInvocation) {
+      assertProtectedMatrixCliInvocation(protectedInvocation, { dryRun });
+      receipt.protectedCommandShape ??= [];
+      receipt.protectedCommandShape.push(protectedInvocation.receipt);
+    }
     const started = Date.now();
     const result = spawnSync(cli.executablePath, args, {
       cwd: work,
       env,
-      encoding: 'utf8',
+      stdio: protectedInvocation?.spawn.stdio ?? 'pipe',
+      input: protectedInvocation?.spawn.input,
+      encoding: protectedInvocation?.spawn.encoding ?? 'utf8',
       windowsHide: true,
       shell: false,
       timeout,
@@ -358,10 +464,90 @@ export async function runProductionCliMatrixCase({
     if (!dryRun && (child.kind !== 'exit' || child.code !== 0)) terminal = true;
     return { child, output };
   }
+  async function invokeAfterObservedTimeoutFault(work, { observeHook, targetVersion }) {
+    need(!terminal, 'matrix_terminal_no_continuation');
+    need(
+      same(inspectForwardSource(sourceOptions).receipt, source.receipt),
+      'matrix_source_changed'
+    );
+    need(
+      same(
+        readdirSync(path.join(work, 'supabase', 'migrations')).sort(),
+        source.receipt.migrations.map((m) => m.file).sort()
+      ),
+      'matrix_subset_changed'
+    );
+    for (const m of source.receipt.migrations)
+      need(
+        hash(readFileSync(path.join(work, 'supabase', 'migrations', m.file))) === m.sha256,
+        'matrix_subset_bytes'
+      );
+    await connected(databaseName, async () => {});
+    pinnedTool(cli, '2.115.0');
+    const timed = await runTimeoutAfterObservedHistoryFault({
+      executable: cli.executablePath,
+      args: ['db', 'push', '--db-url', url, '--skip-vault', '--yes'],
+      options: {
+        cwd: work,
+        env,
+        encoding: 'utf8',
+        input: '',
+      },
+      targetVersion,
+      observeHook,
+    });
+    receipt.timeoutFaultObservation = timed.observedHook;
+    receipt.attempts.push({
+      purpose: 'measured_apply',
+      child: timed.child,
+      durationMs: timed.durationMs,
+      outputSha256: hash(timed.output),
+      outputBytes: timed.outputBytes,
+      sourceVersions: source.receipt.migrations.map((m) => m.version),
+      lastApplyingVersion:
+        [...timed.output.matchAll(/Applying migration (\d{14})_[^\r\n]+/gu)].at(-1)?.[1] ?? null,
+      sqlStates: [
+        ...new Set(
+          [...timed.output.matchAll(/SQLSTATE ([A-Z0-9]{5})/gu)].map((m) => m[1])
+        ),
+      ],
+      timeoutCancellation: timed.cancellation,
+    });
+    return { child: timed.child, output: timed.output };
+  }
+  function repairHistory(version) {
+    pinnedTool(cli, '2.115.0');
+    const started = Date.now();
+    const result = spawnSync(cli.executablePath, [
+      'migration', 'repair', '--db-url', url, '--status', 'applied', version,
+    ], {
+      cwd: source.root,
+      env,
+      encoding: 'utf8',
+      windowsHide: true,
+      shell: false,
+      timeout: 30000,
+      maxBuffer: 1024 * 1024,
+    });
+    const output = (result.stdout ?? '') + (result.stderr ?? '');
+    const child = result.error
+      ? { kind: result.error.code === 'ETIMEDOUT' ? 'timeout' : 'error', code: null }
+      : result.signal
+        ? { kind: 'signal', code: null }
+        : { kind: 'exit', code: result.status };
+    return {
+      version,
+      child,
+      durationMs: Date.now() - started,
+      outputSha256: hash(output),
+      outputBytes: Buffer.byteLength(output),
+    };
+  }
   let stage = 'fixture_setup';
   let fixturePrepared = false;
   try {
     mkdirSync(destination);
+    stage = 'fixture_create_database';
     await connected('postgres', (client) =>
       createGuardedFixtureDatabaseWithHash({
         adminClient: client,
@@ -369,8 +555,12 @@ export async function runProductionCliMatrixCase({
         databaseName,
       })
     );
+    stage = 'fixture_bootstrap_schema';
     await connected(databaseName, async (client) => {
       await client.query(PRODUCTION_CLI_MATRIX_BOOTSTRAP_SQL);
+    });
+    stage = 'fixture_profile_data';
+    await connected(databaseName, async (client) => {
       await client.query(fixture.sql);
     });
     fixturePrepared = true;
@@ -454,9 +644,19 @@ export async function runProductionCliMatrixCase({
         'matrix_hook_not_armed'
       );
     stage = 'measured_apply';
-    const applied = await invoke(work, {
-      timeout: spec.mode === 'timeout' ? 1500 : 60000,
-    });
+    const applied = spec.mode === 'timeout'
+      ? await invokeAfterObservedTimeoutFault(work, {
+          targetVersion: hookSetup.targetVersion,
+          observeHook: () => connected(
+            databaseName,
+            async (client) => interpretHistoryFaultObservation(
+              hookSetup,
+              (await client.query(HISTORY_FAULT_OBSERVER_SQL)).rows
+            ),
+            true
+          ),
+        })
+      : await invoke(work, { timeout: 60000 });
     terminal = true;
     // The injected server sleep is bounded at eight seconds. Give it a fixed
     // bounded settling window, then observe rather than retrying the apply.
@@ -522,6 +722,31 @@ export async function runProductionCliMatrixCase({
         },
       });
       strictCatalogPassed = true;
+    }
+    if (
+      caseName === 'postcleanup_success' &&
+      applied.child.kind === 'exit' &&
+      applied.child.code === 0 &&
+      strictCatalogPassed
+    ) {
+      stage = 'measured_history_repair';
+      const repairAttempts = PRODUCTION_HISTORY_REPAIR_VERSIONS.map(repairHistory);
+      need(
+        repairAttempts.every((attempt) => attempt.child.kind === 'exit' && attempt.child.code === 0),
+        'matrix_history_repair_failed'
+      );
+      const afterRepair = await snapshot();
+      need(same(afterRepair.history, COMPLETE_HISTORY_VERSIONS), 'matrix_history_repair_not_exact_68');
+      need(after.catalogSha256 === afterRepair.catalogSha256, 'matrix_history_repair_changed_catalog');
+      need(after.preservationSha256 === afterRepair.preservationSha256, 'matrix_history_repair_changed_preservation');
+      receipt.historyRepair = {
+        kind: 'local-pinned-cli-history-repair',
+        versions: [...PRODUCTION_HISTORY_REPAIR_VERSIONS],
+        attempts: repairAttempts,
+        afterHistory: afterRepair.history,
+        catalogUnchanged: true,
+        preservationUnchanged: true,
+      };
     }
     const physicalKey =
       spec.mode === 'reject' || spec.mode === 'timeout'
@@ -594,7 +819,9 @@ export async function runProductionCliMatrixCase({
     receipt.failureStage = stage;
     receipt.failure = /^matrix_[a-z_]+$/u.test(error?.message ?? '')
       ? error.message
-      : 'matrix_incomplete_proof';
+      : ['fixture_create_database', 'fixture_bootstrap_schema', 'fixture_profile_data'].includes(stage)
+        ? `matrix_${stage}_failed`
+        : 'matrix_incomplete_proof';
     if (fixturePrepared && !receipt.after) {
       try {
         receipt.failureObservation = await snapshot();

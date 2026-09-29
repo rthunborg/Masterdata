@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  assessProductionCutoverReceiptOrdering,
   assessProductionMaintenanceIsolation,
   PRODUCTION_ISOLATION_AUTH_HOOKS,
 } from '../../../../src/lib/release/production-isolation-gate.mjs';
+import {productionManagedWriterProfileSha256,PRODUCTION_PRE_FORWARD_CLI_PROFILE,
+  PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,PRODUCTION_PRE_FORWARD_CLI_OBJECTS}
+  from '../../../../src/lib/release/production-managed-writer-profiles.mjs';
 
 const sourceSha = 'a'.repeat(40);
 const targetBindingSha256 = 'b'.repeat(64);
@@ -138,12 +142,230 @@ function receipts() {
       existingApplicationSessionCount: 0,
       postBarrierWriteAttemptCount: 2,
       postBarrierWriteSuccessCount: 0,
+      replicationSlotInventoryComplete: true,
+      activeReplicationSlotCount: 0,
+      subscriptionInventoryComplete: true,
+      enabledSubscriptionCount: 0,
     }),
   };
 }
 
+function shutdownQuiescenceReceipts() {
+  const value = receipts();
+  value.realtimeProbe = bound('production-realtime-shutdown-quiescence-observation', {
+    capturedAtUtc: '2026-09-23T14:00:01.000Z',
+    independentFromControlObservation: true,
+    controlMethod: 'supabase-management-api-realtime-disable-and-shutdown',
+    priorRealtimeServiceEnabled: true,
+    configDisableRequestedAtUtc: '2026-09-23T13:59:58.400Z',
+    configDisableResponseAtUtc: '2026-09-23T13:59:58.500Z',
+    configDisableHttpStatus: 204,
+    configDisabledReadbackAtUtc: '2026-09-23T13:59:58.600Z',
+    configDisabledReadbackServiceEnabled: false,
+    configDisabledReadbackSha256: '9'.repeat(64),
+    shutdownRequestedAtUtc: '2026-09-23T14:00:00.100Z',
+    shutdownResponseAtUtc: '2026-09-23T14:00:00.200Z',
+    shutdownHttpStatus: 204,
+    existingConnectionEstablishedBeforeIsolation: true,
+    existingSubscriptionAcknowledgedBeforeIsolation: true,
+    existingConnectionDisconnectedByService: true,
+    existingConnectionClosedByCaller: false,
+    existingConnectionEstablishedAtUtc: '2026-09-23T13:59:58.000Z',
+    existingSubscriptionAcknowledgedAtUtc: '2026-09-23T13:59:58.200Z',
+    existingConnectionDisconnectedAtUtc: '2026-09-23T13:59:58.700Z',
+    reconnectAttemptedAtUtc: '2026-09-23T14:00:00.500Z',
+    reconnectDeniedAtUtc: '2026-09-23T14:00:00.600Z',
+    connectionAttempted: true,
+    connectionDenied: true,
+    writeObserved: false,
+    httpStatus: 403,
+    providerErrorCode: 'RealtimeDisabledForTenant',
+    denialCause: 'realtime-disabled-for-tenant',
+  }) as unknown as typeof value.realtimeProbe;
+  return value;
+}
+
 const assess = (value = receipts(), options = { expectedContext: context(), now }) =>
   assessProductionMaintenanceIsolation(value, options);
+
+function managedProfileEvidence() {
+  const evidence=receipts();
+  const profile={schemaVersion:1,kind:'production-managed-writer-observation',environment:'production',phase:'pre_forward',
+    sourceSha,sourceTree:'1'.repeat(40),sourceManifestSha256:'2'.repeat(64),targetBindingSha256,collectionStartedAtUtc:'2026-09-23T13:59:59.000Z',capturedAtUtc,
+    cli:{presentCount:1,attributes:{...PRODUCTION_PRE_FORWARD_CLI_PROFILE},memberships:{...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP},
+      database:{connect:true,create:false,temporary:true},schemas:{schemaCount:9,usageCount:1,createCount:0,ownedSchemaCount:0},
+      objects:{...PRODUCTION_PRE_FORWARD_CLI_OBJECTS},activeSessionCount:0,completeNonSecretRoleGraphSha256:databaseRoleGraphSha256},
+    workers:{cronLauncherCount:1,netWorkerCount:1,otherCandidateBackendCount:0,cronPreloaded:true,netPreloaded:true,
+      cronDatabaseMatchesConnected:true,netDatabaseMatchesConnected:true,cronLaunchActiveJobs:true,pgCronExtensionCount:0,
+      pgNetExtensionCount:0,cronJobTablePresent:false,netRequestQueueTablePresent:false,netResponseTablePresent:false},
+    rawUnknownLoginRoleCount:1,rawUnknownBackendCount:2,otherUnknownLoginRoleCount:0,otherUnknownBackendCount:0,
+    correlation:{cliLoginProfileMd5:'f'.repeat(32),rawUnknownLoginProfileMd5:'f'.repeat(32),
+      managedBackendProfileMd5:'a'.repeat(32),rawUnknownBackendProfileMd5:'a'.repeat(32)}};
+  const profileHash=productionManagedWriterProfileSha256(profile);
+  evidence.database=bound('production-database-isolation-observation',{
+    databaseRoleGraphSha256,trustedBackendProfileSha256:profileHash,unknownLoginRoleCount:1,unknownClientBackendCount:0,
+    unknownBackendCount:2,unmanagedWritePathCount:0,managedWriterObservation:profile}) as unknown as typeof evidence.database;
+  const expectedContext={...context(),trustedBackendProfileSha256:profileHash,
+    sourceTree:profile.sourceTree,sourceManifestSha256:profile.sourceManifestSha256};
+  return {evidence,profile,expectedContext};
+}
+describe('initial managed-profile accounting in complete isolation',()=>{
+  it('retains raw unknown totals while requiring exact classified profiles and every other plane',()=>{
+    const {evidence,expectedContext}=managedProfileEvidence();
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('isolation_proved_not_execution_authority');
+    evidence.dataApiProbe.requestDenied=false;
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it.each(['unknownLoginRoleCount','unknownBackendCount','unknownClientBackendCount','unmanagedWritePathCount'])('rejects unaccounted %s',key=>{
+    const {evidence,expectedContext}=managedProfileEvidence();evidence.database[key]++;
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it('rejects forged/stale profile content even when a caller rehashes it',()=>{
+    const {evidence,profile,expectedContext}=managedProfileEvidence();profile.workers.cronJobTablePresent=true;
+    expectedContext.trustedBackendProfileSha256=productionManagedWriterProfileSha256(profile);
+    evidence.database.trustedBackendProfileSha256=expectedContext.trustedBackendProfileSha256;
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+    profile.workers.cronJobTablePresent=false;profile.capturedAtUtc='2026-09-23T13:30:00.000Z';
+    expectedContext.trustedBackendProfileSha256=productionManagedWriterProfileSha256(profile);
+    evidence.database.trustedBackendProfileSha256=expectedContext.trustedBackendProfileSha256;
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it('uses actual assessment time and the caller freshness limit for managed collection endpoints',()=>{
+    const {evidence,profile,expectedContext}=managedProfileEvidence();
+    profile.collectionStartedAtUtc='2026-09-23T13:55:00.000Z';profile.capturedAtUtc='2026-09-23T13:55:00.000Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('isolation_proved_not_execution_authority');
+    profile.collectionStartedAtUtc='2026-09-23T13:54:59.999Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+    const shortNow=new Date('2026-09-23T14:00:30.000Z');profile.collectionStartedAtUtc='2026-09-23T13:59:30.000Z';profile.capturedAtUtc='2026-09-23T14:00:00.000Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now:shortNow,maxEvidenceAgeMs:60000}).disposition).toBe('isolation_proved_not_execution_authority');
+    profile.collectionStartedAtUtc='2026-09-23T13:59:29.999Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now:shortNow,maxEvidenceAgeMs:60000}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it('rejects a managed observation captured after its enclosing database observation',()=>{
+    const {evidence,profile,expectedContext}=managedProfileEvidence();profile.collectionStartedAtUtc='2026-09-23T14:00:00.001Z';profile.capturedAtUtc='2026-09-23T14:00:00.001Z';
+    expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+  it('rejects an otherwise complete proof with a swapped source tree or manifest',()=>{
+    for(const key of ['sourceTree','sourceManifestSha256']){
+      const {evidence,expectedContext}=managedProfileEvidence();expectedContext[key]='0'.repeat(key==='sourceTree'?40:64);
+      expect(assessProductionMaintenanceIsolation(evidence,{expectedContext,now}).disposition).toBe('blocked_insufficient_isolation_proof');
+    }
+  });
+});
+
+describe('Story 22.15 protected cutover cross-receipt ordering', () => {
+  const now = new Date('2026-09-23T14:10:00.000Z');
+  const initialReceipts = () => ({
+    pause: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    edgeFunctions: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    platform: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    realtimePriorState: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    realtimeProbe: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    dataApi: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    dataApiProbePrerequisite: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    dataApiProbe: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    network: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+  });
+  const ordered = () => ({
+    reviewRecords: {
+      backupRecordSha256: '1'.repeat(64), cleanupRecordSha256: '2'.repeat(64),
+      cleanupStartedAtUtc: '2026-09-23T14:04:00.000Z',
+      cleanupCompletedAtUtc: '2026-09-23T14:04:30.000Z',
+    },
+    preForwardObservation: { collectionStartedAtUtc: '2026-09-23T14:04:45.000Z', capturedAtUtc: '2026-09-23T14:05:00.000Z' },
+    staffingReceipt: { collectionStartedAtUtc: '2026-09-23T14:05:10.000Z', capturedAtUtc: '2026-09-23T14:05:30.000Z' },
+    isolationReceipts: {
+      ...initialReceipts(),
+      database: { collectionStartedAtUtc: '2026-09-23T14:06:00.000Z', capturedAtUtc: '2026-09-23T14:06:01.000Z', managedWriterObservation: { collectionStartedAtUtc: '2026-09-23T14:04:45.000Z', capturedAtUtc: '2026-09-23T14:04:46.000Z' } },
+      drain: { collectionStartedAtUtc: '2026-09-23T14:07:00.000Z', capturedAtUtc: '2026-09-23T14:07:01.000Z' },
+    },
+    now,
+  });
+
+  it('proves strictly non-overlapping completed post-cleanup collections', () => {
+    expect(assessProductionCutoverReceiptOrdering(ordered())).toMatchObject({
+      disposition: 'cutover_receipt_order_proved_not_execution_authority',
+    });
+  });
+
+  it.each([
+    ['missing cleanup start', (value: ReturnType<typeof ordered>) => delete value.reviewRecords.cleanupStartedAtUtc],
+    ['noncanonical cleanup start', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupStartedAtUtc = '2026-09-23 14:04:00Z')],
+    ['cleanup starts after completion', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupStartedAtUtc = '2026-09-23T14:04:31.000Z')],
+    ['missing cleanup completion', (value: ReturnType<typeof ordered>) => delete value.reviewRecords.cleanupCompletedAtUtc],
+    ['noncanonical cleanup completion', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23 14:04:00Z')],
+    ['future cleanup completion', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23T14:11:00.000Z')],
+    ['cleanup equal to profile completion', (value: ReturnType<typeof ordered>) => (value.preForwardObservation.capturedAtUtc = '2026-09-23T14:04:00.000Z')],
+    ['staffing before cleanup completion', (value: ReturnType<typeof ordered>) => (value.staffingReceipt.capturedAtUtc = '2026-09-23T14:03:59.000Z')],
+    ['database begins before a post-cleanup collector closes', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.database.collectionStartedAtUtc = '2026-09-23T14:05:30.000Z')],
+    ['database collection ends when drain begins', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.drain.collectionStartedAtUtc = '2026-09-23T14:06:01.000Z')],
+    ['database interval is reversed', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.database.collectionStartedAtUtc = '2026-09-23T14:06:02.000Z')],
+    ['drain interval is reversed', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.drain.collectionStartedAtUtc = '2026-09-23T14:07:02.000Z')],
+    ['future final database completion', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.database.capturedAtUtc = '2026-09-23T14:11:00.000Z')],
+    ['future drain completion', (value: ReturnType<typeof ordered>) => (value.isolationReceipts.drain.capturedAtUtc = '2026-09-23T14:11:00.000Z')],
+  ])('rejects %s', (_label, mutate) => {
+    const value = ordered();
+    mutate(value);
+    expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
+      disposition: 'blocked_cutover_receipt_order',
+    });
+  });
+
+  it.each([
+    'pause', 'edgeFunctions', 'platform', 'realtimePriorState', 'realtimeProbe',
+    'dataApiProbePrerequisite', 'dataApi', 'dataApiProbe', 'network',
+  ])('rejects missing, noncanonical, equal, or post-start %s completion', (key) => {
+    for (const capturedAtUtc of [undefined, '2026-09-23 14:03:00Z', '2026-09-23T14:04:00.000Z', '2026-09-23T14:04:01.000Z']) {
+      const value = ordered();
+      const receipt = (value.isolationReceipts as Record<string, { capturedAtUtc?: string }>)[key];
+      if (capturedAtUtc === undefined) delete receipt.capturedAtUtc;
+      else receipt.capturedAtUtc = capturedAtUtc;
+      expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
+        disposition: 'blocked_cutover_receipt_order',
+      });
+    }
+  });
+
+  it('requires the managed-writer collector to complete after cleanup and before final database collection', () => {
+    const value = ordered();
+    value.isolationReceipts.database.managedWriterObservation = {
+      collectionStartedAtUtc: '2026-09-23T14:05:45.000Z', capturedAtUtc: '2026-09-23T14:05:46.000Z',
+    };
+    expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
+      disposition: 'cutover_receipt_order_proved_not_execution_authority',
+    });
+    value.isolationReceipts.database.managedWriterObservation.collectionStartedAtUtc = '2026-09-23T14:04:30.000Z';
+    expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
+      disposition: 'blocked_cutover_receipt_order',
+    });
+  });
+
+  it.each(['preForwardObservation', 'staffingReceipt'] as const)('rejects an invalid %s start even when completion is post-cleanup', (key) => {
+    for (const start of [undefined, '2026-09-23 14:04:45Z', '2026-09-23T14:04:29.999Z', '2026-09-23T14:04:30.000Z', '2026-09-23T14:05:30.001Z', '2026-09-23T14:11:00.000Z']) {
+      const value = ordered();
+      const receipt = value[key] as { collectionStartedAtUtc?: string; capturedAtUtc: string };
+      if (start === undefined) delete receipt.collectionStartedAtUtc;
+      else receipt.collectionStartedAtUtc = start;
+      expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({ disposition: 'blocked_cutover_receipt_order' });
+    }
+  });
+});
+
+describe('Story 22.15 interval-bearing isolation receipts', () => {
+  it.each([
+    ['a noncanonical database start', (value: ReturnType<typeof receipts>) => { (value.database as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23 14:00:00Z'; }],
+    ['a future database start', (value: ReturnType<typeof receipts>) => { (value.database as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23T14:11:00.000Z'; }],
+    ['a reversed database interval', (value: ReturnType<typeof receipts>) => { (value.database as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23T14:00:00.001Z'; }],
+    ['a future drain start', (value: ReturnType<typeof receipts>) => { (value.drain as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23T14:11:00.000Z'; }],
+    ['a reversed drain interval', (value: ReturnType<typeof receipts>) => { (value.drain as Record<string, unknown>).collectionStartedAtUtc = '2026-09-23T14:00:02.001Z'; }],
+  ])('does not admit %s', (_label, mutate) => {
+    const value = receipts();
+    mutate(value);
+    expect(assess(value)).toMatchObject({
+      disposition: 'blocked_insufficient_isolation_proof',
+    });
+  });
+});
 
 function sameComputerReceipts() {
   const value = receipts();
@@ -181,6 +403,74 @@ function sameComputerReceipts() {
 }
 
 describe('Story 22.15 production maintenance isolation gate', () => {
+  it('accepts the documented project-wide shutdown alternative without a metrics claim', () => {
+    const value = shutdownQuiescenceReceipts();
+    expect(assess(value)).toMatchObject({
+      disposition: 'isolation_proved_not_execution_authority',
+    });
+    expect(value.realtimeProbe).not.toHaveProperty('connectedClientCount');
+    expect(value.realtimeProbe).not.toHaveProperty('connectedClientsReportComplete');
+  });
+
+  it.each([
+    ['an unrecognized control method', 'controlMethod', 'dashboard-chart-zero'],
+    ['a non-successful disable response', 'configDisableHttpStatus', 200],
+    ['a non-successful global shutdown response', 'shutdownHttpStatus', 503],
+    ['a readback that leaves Realtime enabled', 'configDisabledReadbackServiceEnabled', true],
+    ['a readback hash that still matches enabled prior state', 'configDisabledReadbackSha256', 'f'.repeat(64)],
+    ['a caller-closed controlled connection', 'existingConnectionClosedByCaller', true],
+    ['a wrong reconnect cause', 'denialCause', 'authentication-failure'],
+    ['a wrong provider response', 'providerErrorCode', 'Unauthorized'],
+    ['a non-403 reconnect response', 'httpStatus', 401],
+    ['a connection close before disablement', 'existingConnectionDisconnectedAtUtc', '2026-09-23T13:59:58.300Z'],
+    ['a reconnect before global shutdown succeeds', 'reconnectAttemptedAtUtc', '2026-09-23T14:00:00.100Z'],
+  ])('rejects shutdown evidence with %s', (_label, key, invalidValue) => {
+    const value = shutdownQuiescenceReceipts();
+    (value.realtimeProbe as Record<string, unknown>)[key] = invalidValue;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it('rejects reports, unknown fields, getters, wrong binding, and stale shutdown evidence', () => {
+    const reportFallback = shutdownQuiescenceReceipts();
+    Object.assign(reportFallback.realtimeProbe, {
+      connectedClientCount: 0,
+      connectedClientsReportComplete: true,
+    });
+    expect(assess(reportFallback).disposition).toBe('blocked_insufficient_isolation_proof');
+
+    const extra = shutdownQuiescenceReceipts();
+    Object.assign(extra.realtimeProbe, { providerClaimsAllConnectionsClosed: true });
+    expect(assess(extra).disposition).toBe('blocked_insufficient_isolation_proof');
+
+    const getter = shutdownQuiescenceReceipts();
+    Object.defineProperty(getter.realtimeProbe, 'shutdownHttpStatus', {
+      enumerable: true,
+      get() { throw new Error('getter must not execute'); },
+    });
+    expect(assess(getter).disposition).toBe('blocked_insufficient_isolation_proof');
+
+    const wrongBinding = shutdownQuiescenceReceipts();
+    wrongBinding.realtimeProbe.sourceSha = 'f'.repeat(40);
+    expect(assess(wrongBinding).reason).toBe('isolation_receipt_context_mismatch');
+
+    const stale = shutdownQuiescenceReceipts();
+    expect(assess(stale, {
+      expectedContext: context(),
+      now: new Date('2026-09-23T14:16:00.000Z'),
+    }).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
+  it.each([
+    ['an incomplete slot inventory', 'replicationSlotInventoryComplete', false],
+    ['an active replication slot', 'activeReplicationSlotCount', 1],
+    ['an incomplete subscription inventory', 'subscriptionInventoryComplete', false],
+    ['an enabled subscription', 'enabledSubscriptionCount', 1],
+  ])('rejects an incomplete database drain with %s', (_label, key, invalidValue) => {
+    const value = shutdownQuiescenceReceipts();
+    (value.drain as unknown as Record<string, unknown>)[key] = invalidValue;
+    expect(assess(value).disposition).toBe('blocked_insufficient_isolation_proof');
+  });
+
   it.each([
     ['denialCause', 'authentication-failure'],
     ['denialCause', 'outage'],

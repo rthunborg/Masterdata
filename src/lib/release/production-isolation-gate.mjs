@@ -1,6 +1,25 @@
+import {assessProductionManagedWriterProfiles,productionManagedWriterProfileSha256} from './production-managed-writer-profiles.mjs';
 const SHA40 = /^[a-f0-9]{40}$/u;
 const SHA256 = /^[a-f0-9]{64}$/u;
 const MAX_EVIDENCE_AGE_MS = 15 * 60 * 1000;
+
+const CUTOVER_ISOLATION_RECEIPT_KEYS = Object.freeze([
+  'pause',
+  'edgeFunctions',
+  'platform',
+  'realtimePriorState',
+  'realtimeProbe',
+  'dataApi',
+  'dataApiProbePrerequisite',
+  'dataApiProbe',
+  'network',
+  'database',
+  'drain',
+]);
+
+const INITIAL_ISOLATION_RECEIPT_KEYS = Object.freeze(
+  CUTOVER_ISOLATION_RECEIPT_KEYS.slice(0, -2)
+);
 
 export const PRODUCTION_ISOLATION_AUTH_HOOKS = Object.freeze([
   'hook_custom_access_token_enabled',
@@ -26,6 +45,22 @@ const proven = () =>
     kind: 'production-maintenance-isolation-assessment',
     disposition: 'isolation_proved_not_execution_authority',
     reason: 'fresh_bound_independent_controls_and_drain_proven',
+  });
+
+const orderingBlocked = (reason) =>
+  Object.freeze({
+    schemaVersion: 1,
+    kind: 'production-cutover-receipt-order-assessment',
+    disposition: 'blocked_cutover_receipt_order',
+    reason,
+  });
+
+const orderingProven = () =>
+  Object.freeze({
+    schemaVersion: 1,
+    kind: 'production-cutover-receipt-order-assessment',
+    disposition: 'cutover_receipt_order_proved_not_execution_authority',
+    reason: 'cleanup_precedes_post_cleanup_collectors_database_and_drain',
   });
 
 const plainObject = (value, keys) => {
@@ -76,6 +111,79 @@ const canonicalUtc = (value) => {
     : null;
 };
 
+/**
+ * Binds separately collected post-cleanup evidence into one strict chronology.
+ * This is evidence only and cannot authorize cleanup, repair, apply, or reopen.
+ * Cleanup is deliberately not freshness-limited: fresh post-cleanup collectors
+ * establish the current database state after that completed cleanup record.
+ */
+export function assessProductionCutoverReceiptOrdering({
+  reviewRecords,
+  preForwardObservation,
+  staffingReceipt,
+  isolationReceipts,
+  now = new Date(),
+} = {}) {
+  if (
+    !plainObject(reviewRecords, [
+      'backupRecordSha256',
+      'cleanupRecordSha256',
+      'cleanupStartedAtUtc',
+      'cleanupCompletedAtUtc',
+    ]) ||
+    !plainObjectWithAllowedKeys(preForwardObservation ?? {}, [
+      ...Object.keys(preForwardObservation ?? {}),
+    ]) ||
+    !plainObjectWithAllowedKeys(staffingReceipt ?? {}, [
+      ...Object.keys(staffingReceipt ?? {}),
+    ]) ||
+    !plainObject(isolationReceipts, CUTOVER_ISOLATION_RECEIPT_KEYS) ||
+    !(now instanceof Date) ||
+    Number.isNaN(now.getTime())
+  ) return orderingBlocked('required_cutover_receipt_missing_or_invalid');
+
+  const cleanupStarted = canonicalUtc(reviewRecords.cleanupStartedAtUtc);
+  const cleanup = canonicalUtc(reviewRecords.cleanupCompletedAtUtc);
+  const profile = canonicalUtc(preForwardObservation.capturedAtUtc);
+  const profileStart = canonicalUtc(preForwardObservation.collectionStartedAtUtc);
+  const staffing = canonicalUtc(staffingReceipt.capturedAtUtc);
+  const staffingStart = canonicalUtc(staffingReceipt.collectionStartedAtUtc);
+  const databaseStart = canonicalUtc(isolationReceipts.database?.collectionStartedAtUtc);
+  const database = canonicalUtc(isolationReceipts.database?.capturedAtUtc);
+  const drainStart = canonicalUtc(isolationReceipts.drain?.collectionStartedAtUtc);
+  const drain = canonicalUtc(isolationReceipts.drain?.capturedAtUtc);
+  const initialIsolationCompletions = INITIAL_ISOLATION_RECEIPT_KEYS
+    .map((key) => canonicalUtc(isolationReceipts[key]?.capturedAtUtc));
+  if (!Object.hasOwn(isolationReceipts.database ?? {}, 'managedWriterObservation')) {
+    return orderingBlocked('required_managed_writer_observation_missing');
+  }
+  const managedWriterStart = canonicalUtc(isolationReceipts.database.managedWriterObservation?.collectionStartedAtUtc);
+  const managedWriter = canonicalUtc(isolationReceipts.database.managedWriterObservation?.capturedAtUtc);
+  if (
+    [cleanupStarted, cleanup, profileStart, profile, staffingStart, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain, ...initialIsolationCompletions].some((time) => time === null) ||
+    [profileStart, profile, staffingStart, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain].some((time) => time > now.getTime()) ||
+    initialIsolationCompletions.some((time) => time > now.getTime()) ||
+    cleanupStarted > now.getTime() ||
+    cleanup > now.getTime()
+  ) return orderingBlocked('cutover_receipt_timestamp_missing_noncanonical_or_future');
+  const latestCollector = Math.max(profile, staffing);
+  if (
+    cleanupStarted > cleanup ||
+    initialIsolationCompletions.some((time) => time >= cleanupStarted) ||
+    profileStart > profile || staffingStart > staffing ||
+    cleanup >= profileStart || cleanup >= staffingStart ||
+    cleanup >= staffing ||
+    cleanup >= managedWriterStart ||
+    managedWriterStart > managedWriter ||
+    managedWriter >= databaseStart ||
+    latestCollector >= databaseStart ||
+    databaseStart > database ||
+    database >= drainStart ||
+    drainStart > drain
+  ) return orderingBlocked('cutover_receipt_order_invalid');
+  return orderingProven();
+}
+
 const nonNegativeInteger = (value) =>
   Number.isSafeInteger(value) && value >= 0 && value <= 1_000_000_000;
 
@@ -83,6 +191,7 @@ const exactFalseMap = (value, keys) =>
   plainObject(value, keys) && keys.every((key) => value[key] === false);
 
 function inspectContext(value) {
+  const managedProfile = Object.hasOwn(value ?? {}, 'sourceTree');
   if (
     !plainObject(value, [
       'sourceSha',
@@ -92,6 +201,7 @@ function inspectContext(value) {
       'trustedBackendProfileSha256',
       'priorRealtimeServiceEnabled',
       'priorRealtimeConfigSha256',
+      ...(managedProfile ? ['sourceTree','sourceManifestSha256'] : []),
     ]) ||
     !SHA40.test(value.sourceSha) ||
     !SHA256.test(value.targetBindingSha256) ||
@@ -100,7 +210,8 @@ function inspectContext(value) {
     !SHA256.test(value.trustedBackendProfileSha256) ||
     typeof value.priorRealtimeServiceEnabled !== 'boolean' ||
     typeof value.priorRealtimeConfigSha256 !== 'string' ||
-    !SHA256.test(value.priorRealtimeConfigSha256)
+    !SHA256.test(value.priorRealtimeConfigSha256) ||
+    (managedProfile && (!SHA40.test(value.sourceTree) || !SHA256.test(value.sourceManifestSha256)))
   ) {
     return null;
   }
@@ -188,7 +299,7 @@ function inspectRealtimePriorState(value, context) {
     : null;
 }
 
-function inspectRealtimeProbe(value, context, platform, priorState) {
+function inspectLegacyRealtimeProbe(value, context, platform, priorState) {
   const receipt = inspectBoundReceipt(value, 'production-realtime-denial-probe', [
     'independentFromControlObservation',
     'connectionAttempted',
@@ -282,6 +393,113 @@ function inspectRealtimeProbe(value, context, platform, priorState) {
   return Object.freeze({
     ...receipt, evidenceTimes: [...observedConnectionTimes, ...reconnectTimes, ...reportTimes],
   });
+}
+
+// This receipt deliberately does not contain a dashboard report count. The
+// reports are delayed monitoring data, whereas the documented project-wide
+// Management API shutdown is the control that closes existing connections.
+function inspectRealtimeShutdownQuiescence(value, context, platform, priorState) {
+  const receipt = inspectBoundReceipt(value, 'production-realtime-shutdown-quiescence-observation', [
+    'independentFromControlObservation',
+    'controlMethod',
+    'priorRealtimeServiceEnabled',
+    'configDisableRequestedAtUtc',
+    'configDisableResponseAtUtc',
+    'configDisableHttpStatus',
+    'configDisabledReadbackAtUtc',
+    'configDisabledReadbackServiceEnabled',
+    'configDisabledReadbackSha256',
+    'shutdownRequestedAtUtc',
+    'shutdownResponseAtUtc',
+    'shutdownHttpStatus',
+    'existingConnectionEstablishedBeforeIsolation',
+    'existingSubscriptionAcknowledgedBeforeIsolation',
+    'existingConnectionDisconnectedByService',
+    'existingConnectionClosedByCaller',
+    'existingConnectionEstablishedAtUtc',
+    'existingSubscriptionAcknowledgedAtUtc',
+    'existingConnectionDisconnectedAtUtc',
+    'reconnectAttemptedAtUtc',
+    'reconnectDeniedAtUtc',
+    'connectionAttempted',
+    'connectionDenied',
+    'writeObserved',
+    'httpStatus',
+    'providerErrorCode',
+    'denialCause',
+  ]);
+  if (!receipt || !context || !platform || !priorState ||
+    receipt.independentFromControlObservation !== true ||
+    receipt.controlMethod !== 'supabase-management-api-realtime-disable-and-shutdown' ||
+    receipt.priorRealtimeServiceEnabled !== context.priorRealtimeServiceEnabled ||
+    receipt.configDisableHttpStatus !== 204 ||
+    receipt.configDisabledReadbackServiceEnabled !== false ||
+    typeof receipt.configDisabledReadbackSha256 !== 'string' ||
+    !SHA256.test(receipt.configDisabledReadbackSha256) ||
+    (context.priorRealtimeServiceEnabled &&
+      receipt.configDisabledReadbackSha256 === context.priorRealtimeConfigSha256) ||
+    receipt.shutdownHttpStatus !== 204 ||
+    receipt.connectionAttempted !== true ||
+    receipt.connectionDenied !== true ||
+    receipt.writeObserved !== false ||
+    receipt.httpStatus !== 403 ||
+    receipt.providerErrorCode !== 'RealtimeDisabledForTenant' ||
+    receipt.denialCause !== 'realtime-disabled-for-tenant' ||
+    receipt.existingConnectionClosedByCaller !== false
+  ) return null;
+
+  const controlTimes = [
+    receipt.configDisableRequestedAtUtc,
+    receipt.configDisableResponseAtUtc,
+    receipt.configDisabledReadbackAtUtc,
+    receipt.shutdownRequestedAtUtc,
+    receipt.shutdownResponseAtUtc,
+    receipt.reconnectAttemptedAtUtc,
+    receipt.reconnectDeniedAtUtc,
+  ].map(canonicalUtc);
+  if (controlTimes.some((time) => time === null) ||
+    controlTimes.some((time, index) => index > 0 && time <= controlTimes[index - 1]) ||
+    priorState.capturedAt >= controlTimes[0] ||
+    platform.capturedAt < controlTimes[2] ||
+    platform.capturedAt >= controlTimes[3] ||
+    controlTimes[6] > receipt.capturedAt
+  ) return null;
+
+  const connectionTimes = [
+    receipt.existingConnectionEstablishedAtUtc,
+    receipt.existingSubscriptionAcknowledgedAtUtc,
+    receipt.existingConnectionDisconnectedAtUtc,
+  ];
+  if (!context.priorRealtimeServiceEnabled) {
+    if (receipt.existingConnectionEstablishedBeforeIsolation !== false ||
+      receipt.existingSubscriptionAcknowledgedBeforeIsolation !== false ||
+      receipt.existingConnectionDisconnectedByService !== false ||
+      connectionTimes.some((time) => time !== null)
+    ) return null;
+    return Object.freeze({ ...receipt, evidenceTimes: controlTimes });
+  }
+
+  const observedConnectionTimes = connectionTimes.map(canonicalUtc);
+  if (receipt.existingConnectionEstablishedBeforeIsolation !== true ||
+    receipt.existingSubscriptionAcknowledgedBeforeIsolation !== true ||
+    receipt.existingConnectionDisconnectedByService !== true ||
+    observedConnectionTimes.some((time) => time === null) ||
+    priorState.capturedAt >= observedConnectionTimes[0] ||
+    observedConnectionTimes[0] >= observedConnectionTimes[1] ||
+    observedConnectionTimes[1] >= controlTimes[0] ||
+    observedConnectionTimes[2] <= controlTimes[0] ||
+    observedConnectionTimes[2] >= controlTimes[5] ||
+    controlTimes[5] <= observedConnectionTimes[2]
+  ) return null;
+  return Object.freeze({
+    ...receipt,
+    evidenceTimes: [...observedConnectionTimes, ...controlTimes],
+  });
+}
+
+function inspectRealtimeProbe(value, context, platform, priorState) {
+  return inspectLegacyRealtimeProbe(value, context, platform, priorState) ??
+    inspectRealtimeShutdownQuiescence(value, context, platform, priorState);
 }
 
 function inspectDataApi(value) {
@@ -472,7 +690,9 @@ function inspectNetwork(value) {
     : null;
 }
 
-function inspectDatabase(value, context) {
+function inspectDatabase(value, context, now) {
+  const managedProfile = Object.hasOwn(value ?? {}, 'managedWriterObservation');
+  const interval = Object.hasOwn(value ?? {}, 'collectionStartedAtUtc');
   const receipt = inspectBoundReceipt(value, 'production-database-isolation-observation', [
     'databaseRoleGraphSha256',
     'trustedBackendProfileSha256',
@@ -480,23 +700,44 @@ function inspectDatabase(value, context) {
     'unknownClientBackendCount',
     'unknownBackendCount',
     'unmanagedWritePathCount',
+    ...(managedProfile ? ['managedWriterObservation'] : []),
+    ...(interval ? ['collectionStartedAtUtc'] : []),
   ]);
   if (
     !receipt ||
     !SHA256.test(receipt.databaseRoleGraphSha256) ||
     !SHA256.test(receipt.trustedBackendProfileSha256)
   ) return null;
+  const collectionStartedAt = interval ? canonicalUtc(receipt.collectionStartedAtUtc) : undefined;
+  if (interval && (collectionStartedAt === null || collectionStartedAt > receipt.capturedAt)) return null;
+  if (managedProfile) {
+    const assessed=assessProductionManagedWriterProfiles(receipt.managedWriterObservation, {
+      ...context, now,
+    });
+    return assessed.disposition==='initial_managed_profiles_classified_not_isolation' &&
+      canonicalUtc(receipt.managedWriterObservation.capturedAtUtc) <= receipt.capturedAt &&
+      productionManagedWriterProfileSha256(receipt.managedWriterObservation)===context.trustedBackendProfileSha256 &&
+      receipt.databaseRoleGraphSha256===context.databaseRoleGraphSha256 &&
+      receipt.trustedBackendProfileSha256===context.trustedBackendProfileSha256 &&
+      receipt.unknownLoginRoleCount===receipt.managedWriterObservation.rawUnknownLoginRoleCount &&
+      receipt.unknownBackendCount===receipt.managedWriterObservation.rawUnknownBackendCount &&
+      receipt.unknownClientBackendCount===0 && receipt.unmanagedWritePathCount===0
+      ? Object.freeze({ ...receipt, collectionStartedAt,
+        managedWriterStartedAt: canonicalUtc(receipt.managedWriterObservation.collectionStartedAtUtc),
+        managedWriterCapturedAt: canonicalUtc(receipt.managedWriterObservation.capturedAtUtc) }) : null;
+  }
   return receipt.databaseRoleGraphSha256 === context.databaseRoleGraphSha256 &&
     receipt.trustedBackendProfileSha256 === context.trustedBackendProfileSha256 &&
     receipt.unknownLoginRoleCount === 0 &&
     receipt.unknownClientBackendCount === 0 &&
     receipt.unknownBackendCount === 0 &&
     receipt.unmanagedWritePathCount === 0
-    ? receipt
+    ? Object.freeze({ ...receipt, collectionStartedAt })
     : null;
 }
 
 function inspectDrain(value) {
+  const interval = Object.hasOwn(value ?? {}, 'collectionStartedAtUtc');
   const receipt = inspectBoundReceipt(value, 'production-database-drain-observation', [
     'observedAfterControlObservations',
     'allApplicableSessionsObserved',
@@ -506,8 +747,15 @@ function inspectDrain(value) {
     'existingApplicationSessionCount',
     'postBarrierWriteAttemptCount',
     'postBarrierWriteSuccessCount',
+    'replicationSlotInventoryComplete',
+    'activeReplicationSlotCount',
+    'subscriptionInventoryComplete',
+    'enabledSubscriptionCount',
+    ...(interval ? ['collectionStartedAtUtc'] : []),
   ]);
   if (!receipt) return null;
+  const collectionStartedAt = interval ? canonicalUtc(receipt.collectionStartedAtUtc) : undefined;
+  if (interval && (collectionStartedAt === null || collectionStartedAt > receipt.capturedAt)) return null;
   const counts = [
     receipt.applicableApplicationSessionCount,
     receipt.inflightWriteCount,
@@ -515,17 +763,23 @@ function inspectDrain(value) {
     receipt.existingApplicationSessionCount,
     receipt.postBarrierWriteAttemptCount,
     receipt.postBarrierWriteSuccessCount,
+    receipt.activeReplicationSlotCount,
+    receipt.enabledSubscriptionCount,
   ];
   return receipt.observedAfterControlObservations === true &&
     receipt.allApplicableSessionsObserved === true &&
+    receipt.replicationSlotInventoryComplete === true &&
+    receipt.subscriptionInventoryComplete === true &&
     counts.every(nonNegativeInteger) &&
     receipt.applicableApplicationSessionCount === 0 &&
     receipt.inflightWriteCount === 0 &&
     receipt.preparedApplicationWriteCount === 0 &&
     receipt.existingApplicationSessionCount === 0 &&
+    receipt.activeReplicationSlotCount === 0 &&
+    receipt.enabledSubscriptionCount === 0 &&
     receipt.postBarrierWriteAttemptCount > 0 &&
     receipt.postBarrierWriteSuccessCount === 0
-    ? receipt
+    ? Object.freeze({ ...receipt, collectionStartedAt })
     : null;
 }
 
@@ -596,7 +850,7 @@ export function assessProductionMaintenanceIsolation(
   const dataApiPrerequisiteFacts = inspectDataApiProbePrerequisite(dataApiProbePrerequisite);
   const dataApiProbeFacts = inspectDataApiProbe(dataApiProbe);
   const networkFacts = inspectNetwork(network);
-  const databaseFacts = inspectDatabase(database, context ?? {});
+  const databaseFacts = inspectDatabase(database, context ?? {}, now);
   const drainFacts = inspectDrain(drain);
   const facts = [
     pauseFacts,
@@ -618,10 +872,16 @@ export function assessProductionMaintenanceIsolation(
     return blocked('isolation_receipt_context_mismatch');
   }
   const observedAt = facts.map((fact) => fact.capturedAt);
+  const intervalStartedAt = [databaseFacts.collectionStartedAt, drainFacts.collectionStartedAt]
+    .filter((time) => time !== undefined);
+  const managedWriterTimes = [databaseFacts.managedWriterStartedAt, databaseFacts.managedWriterCapturedAt]
+    .filter((time) => time !== undefined);
   const networkEvidenceTimes = networkFacts.evidenceTimes ?? [];
   const realtimeEvidenceTimes = realtimeFacts.evidenceTimes;
   if (
     observedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
+    intervalStartedAt.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
+    managedWriterTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     networkEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     realtimeEvidenceTimes.some((time) => time > now.getTime() || now.getTime() - time > maxEvidenceAgeMs) ||
     observedAt.slice(0, -1).some((time) => time > drainFacts.capturedAt) ||

@@ -33,6 +33,8 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       SUPABASE_CLI_EXECUTABLE: reviewedCliPath,
       EXPECTED_SUPABASE_CLI_SHA256: expectedSha256,
       SUPABASE_ACCESS_TOKEN: 'must-not-reach-version-probe',
+      SUPABASE_PROFILE: 'missing-local-profile',
+      SUPABASE_API_HOST: 'unreviewed-api-canary',
     };
 
     expect(
@@ -49,6 +51,17 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     expect(spawn.mock.calls[0]?.[2]?.env).not.toHaveProperty(
       'SUPABASE_ACCESS_TOKEN'
     );
+    expect(spawn.mock.calls[0]?.[2]?.env).toEqual({ SUPABASE_PROFILE: 'supabase' });
+    expect(spawn.mock.calls[0]?.[2]).toMatchObject({ timeout: 10_000, maxBuffer: 64 * 1024 });
+  });
+
+  it('rejects a timed-out version probe before accepting its reported version', () => {
+    expect(() => verifyApprovedSupabaseCliExecutable({
+      environment: { SUPABASE_CLI_EXECUTABLE: reviewedCliPath, EXPECTED_SUPABASE_CLI_SHA256: expectedSha256 },
+      readExecutable: () => executable,
+      resolveExecutable: (configuredPath: string) => configuredPath,
+      spawn: () => ({ error: Object.assign(new Error('synthetic timeout'), { code: 'ETIMEDOUT' }), status: null, stdout: `${REVIEWED_SUPABASE_CLI_VERSION}\n` }),
+    })).toThrow('Supabase CLI does not match the reviewed version');
   });
 
   it('rejects a PATH-resolved, missing-hash, hash-mismatched, or wrong-version executable', () => {
@@ -100,6 +113,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     };
     const args = ['projects', 'list'];
     const executableVerifier = vi.fn(() => reviewedCliPath);
+    const untrustedHook = vi.fn(() => { throw new Error('caller hook must not execute'); });
 
     expect(
       await runReviewedSupabaseCli({
@@ -108,9 +122,12 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         environment,
         spawn,
         executableVerifier,
+        beforeSpawn: untrustedHook,
+        onProtectedResult: untrustedHook,
       })
     ).toBe(0);
     expect(executableVerifier).toHaveBeenCalledWith({ environment });
+    expect(untrustedHook).not.toHaveBeenCalled();
     expect(spawn).toHaveBeenCalledWith(reviewedCliPath, args, {
       cwd: resolve('workspace'),
       env: environment,
@@ -179,6 +196,8 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         SUPABASE_DB_URL: databaseUrl,
         SUPABASE_ACCESS_TOKEN: 'must-not-reach-database-command',
         SUPABASE_DB_PASSWORD: 'must-not-reach-database-command',
+        SUPABASE_PROFILE: 'missing-local-profile',
+        SUPABASE_API_HOST: 'unreviewed-api-canary',
         PGHOST: 'ambient-host-must-not-survive',
         PGSSLMODE: 'disable',
         PGSERVICE: 'ambient-service-must-not-survive',
@@ -222,6 +241,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         expect(childArguments.join(' ')).not.toContain(privateValue);
       }
       expect(childEnvironment).toMatchObject({
+        SUPABASE_PROFILE: 'supabase',
         PGAPPNAME: 'hr-masterdata-reviewed-supabase-cli',
         PGCONNECT_TIMEOUT: '10',
         PGDATABASE: 'postgres',
@@ -237,6 +257,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         'EXPECTED_SUPABASE_PROJECT_REF',
         'PGSERVICE',
         'SUPABASE_ACCESS_TOKEN',
+        'SUPABASE_API_HOST',
         'SUPABASE_CLI_EXECUTABLE',
         'SUPABASE_DB_CONNECTION_MODE',
         'SUPABASE_DB_PASSWORD',
@@ -427,10 +448,29 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         targetVerifier,
       })
     ).rejects.toThrow(
-      'Production --include-all apply is blocked until the reviewed staffing pre-execute function proof is implemented and passes under full production traffic isolation'
+      'Production --include-all apply requires the installed protected cutover runner and fresh reviewed prerequisites under full production traffic isolation'
     );
     expect(executableVerifier).not.toHaveBeenCalled();
     expect(targetVerifier).not.toHaveBeenCalled();
+    expect(spawn).not.toHaveBeenCalled();
+  });
+
+  it('does not let a public caller bypass the production apply block with a capability-shaped field', async () => {
+    const spawn = vi.fn();
+    await expect(
+      runReviewedSupabaseCli({
+        args: [
+          'db', 'push', REVIEWED_TARGET_FLAG, REVIEWED_ENVIRONMENT_FLAG,
+          'production', '--include-all', '--skip-vault',
+        ],
+        environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production' },
+        protectedCutoverCapability: true,
+        spawn,
+        executableVerifier: vi.fn(() => reviewedCliPath),
+      })
+    ).rejects.toThrow(
+      'Production --include-all apply requires the installed protected cutover runner and fresh reviewed prerequisites under full production traffic isolation'
+    );
     expect(spawn).not.toHaveBeenCalled();
   });
 

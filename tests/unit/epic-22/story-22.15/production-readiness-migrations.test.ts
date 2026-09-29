@@ -227,10 +227,10 @@ describe('Story 22.15 migration baseline safety', () => {
     ).toContain("immutable migration's SECURITY DEFINER effect is absent");
     expect(
       manifest.pendingProductionProofs.staffingFunctionSecurityMode.blockedOperation
-    ).toContain('non-dry-run production db push --include-all is blocked');
+    ).toContain('Public production non-dry-run db push remains blocked');
     expect(
       manifest.pendingProductionProofs.staffingFunctionSecurityMode.requiredImplementation
-    ).toContain('fail-closed production pre-execute function profile');
+    ).toContain('live fresh production proof and final review remain pending');
     expect(manifest.pendingProductionProofs.staffingFunctionSecurityMode.executeVersion).toBe(
       '20260314000001'
     );
@@ -431,13 +431,13 @@ describe('Story 22.15 migration baseline safety', () => {
 
   it('keeps the duplicated runbook repair/apply lists aligned with the manifest', () => {
     const repairBlock = cutoverRunbook.match(
-      /readonly -a PRODUCTION_REPAIR_VERSIONS=\(\s*([\s\S]*?)\n\)/
+      /<!-- PRODUCTION_BASELINE_ADOPTION_VERSIONS:BEGIN -->([\s\S]*?)<!-- PRODUCTION_BASELINE_ADOPTION_VERSIONS:END -->/
     )?.[1];
     const stagingApplyBlock = cutoverRunbook.match(
       /The dry run must list exactly this one apply:([\s\S]*?)Stop unless the dry run is exactly/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /After the 55 repairs, the dry run must list exactly these thirteen versions:([\s\S]*?)```bash/
+      /Before any history repair, the exclusive-subset dry run must list exactly these thirteen versions:([\s\S]*?)The installed host/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -451,27 +451,18 @@ describe('Story 22.15 migration baseline safety', () => {
       manifest.classifications.execute
     );
     expect(cutoverRunbook).toContain('set -euo pipefail');
-    expect(cutoverRunbook).toContain(
-      'if ! node supabase/verify/run-reviewed-supabase-cli.mjs migration repair --status applied "$version" --reviewed-target --reviewed-environment production; then'
-    );
+    expect(cutoverRunbook).not.toContain('readonly -a PRODUCTION_REPAIR_VERSIONS');
+    expect(cutoverRunbook).not.toContain('for version in "${PRODUCTION_REPAIR_VERSIONS[@]}"');
     expect(cutoverRunbook).toContain(
       'node supabase/verify/run-reviewed-supabase-cli.mjs migration list --reviewed-target'
     );
 
-    const productionRepairLoop = cutoverRunbook.match(
-      /for version in "\$\{PRODUCTION_REPAIR_VERSIONS\[@\]\}"; do([\s\S]*?)done/
-    )?.[1];
-    expect(productionRepairLoop).toBeDefined();
-    expect(
-      productionRepairLoop?.indexOf('verify-target-binding.mjs')
-    ).toBeGreaterThanOrEqual(0);
-    expect(
-      productionRepairLoop?.indexOf('verify-target-binding.mjs')
-    ).toBeLessThan(
-      productionRepairLoop?.indexOf(
-        'run-reviewed-supabase-cli.mjs migration repair'
-      ) ?? -1
-    );
+    const sequence = cutoverRunbook.match(/## Non-negotiable sequence([\s\S]*?)## Shared pre-flight/)?.[1] ?? '';
+    expect(sequence.indexOf('6. Attempt the 13 forward applies')).toBeGreaterThan(0);
+    expect(sequence.indexOf('6. Attempt the 13 forward applies')).toBeLessThan(sequence.indexOf('7. Independently verify exact 13-version history'));
+    expect(sequence.indexOf('7. Independently verify exact 13-version history')).toBeLessThan(sequence.indexOf('8. Prepare the source-pinned 55-row baseline-adoption ledger'));
+    expect(sequence.indexOf('8. Prepare the source-pinned 55-row baseline-adoption ledger')).toBeLessThan(sequence.indexOf('9. Obtain separate explicit authorization'));
+    expect(cutoverRunbook).toContain('Rebind before every command; stop on the first failure');
   });
 
   it('restores the original immutable room-assignment migration byte-for-byte', () => {
@@ -1058,7 +1049,7 @@ describe('Story 22.15 migration baseline safety', () => {
       `Supabase CLI version **\`${manifest.reviewedSupabaseCliVersion}\`**`
     );
     expect(cutoverRunbook).toContain(
-      `${manifest.classifications['repair-after-catalog-proof'].length}-row proof ledger`
+      `${manifest.classifications['repair-after-catalog-proof'].length}-row source/lineage baseline-adoption ledger`
     );
     expect(cutoverRunbook).toContain('--dry-run --skip-vault');
     expect(cutoverRunbook).toContain('EXPECTED_SUPABASE_PROJECT_REF');
@@ -1136,10 +1127,10 @@ describe('Story 22.15 migration baseline safety', () => {
       'network restrictions do not cover HTTPS APIs'
     );
     expect(cutoverRunbook).toContain(
-      'fresh production backup -> publication/connection inventory -> technical traffic and Realtime isolation with session drain -> separately approved single-transaction cleanup of the exact 48 orphan filters and independent post-cleanup preservation proof -> individually proved and separately approved 55-version history repair'
+      'protected exclusive 13-file dry run/apply -> independent history13, strict16/canonical/preservation proof -> owner-adopted 55-row ledger and separately approved history repair'
     );
     expect(cutoverRunbook).toContain(
-      'This is a **failed** catalog gate, not an accepted variant or permission to ignore its output'
+      'do not relabel this diagnostic as passed'
     );
     expect(cutoverRunbook).toContain('pg_publication_tables');
     expect(cutoverRunbook).toContain('Connected Clients');
@@ -1155,18 +1146,18 @@ describe('Story 22.15 migration baseline safety', () => {
       'fresh WebSocket/subscription reconnect is rejected'
     );
     expect(cutoverRunbook).toContain(
-      'Record the full immutable commit SHA'
+      'Pin the clean reviewed candidate'
     );
     expect(cutoverRunbook).toContain(
       'If isolation cannot be proven, the production cutover is NO-GO'
     );
     expect(cutoverRunbook).toContain(
-      'Restore database settings only under separate explicit approval'
+      'Restore only separately authorized prior database/API/Realtime controls'
     );
-    expect(cutoverRunbook).toContain('Application smoke runs against staging');
+    expect(cutoverRunbook).toContain('Application smoke runs against the exact staging candidate');
     expect(cutoverRunbook).not.toContain('operator-only application bypass');
     expect(cutoverRunbook).toContain(
-      'verify direct-role/database behavior and run application smoke against the exact staging candidate'
+      'Application smoke runs against the exact staging candidate'
     );
     expect(cutoverRunbook).toContain(
       'restore only the separately approved prior **Enable Realtime service** state'
@@ -1176,7 +1167,7 @@ describe('Story 22.15 migration baseline safety', () => {
     );
     expect(cutoverRunbook).toContain('Retain the existing production pause');
     expect(cutoverRunbook).toContain(
-      'production application deployment is blocked by the committed pause lock'
+      'The committed lock currently refuses production application builds'
     );
     expect(cutoverRunbook).not.toContain(
       'deploy the exact reviewed immutable candidate SHA'
