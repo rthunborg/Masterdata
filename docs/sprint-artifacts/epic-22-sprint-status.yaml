@@ -426,7 +426,7 @@ consolidated_cutover_proposal_20260928:
   staging_pending_versions: []
   production_status: 'paused-no-go'
   next_action: 'Complete exact-head checks/review and the authorized staging merge. Refresh backup relevance, source/tool/target/TLS proofs and full isolation before the separately approved exact filter cleanup. Require the complete managed-writer interval strictly after cleanup and before final database collection, fresh at launch. Bind canonical cleanup start/completion, reviewed collector source and query bytes, and collector-session completion to non-overlapping final database/drain collection intervals. Post-cleanup, collect fresh exact-observed managed-principal, staffing-compatibility and full-isolation receipts; use the reviewed protected flow for the exclusive 13-version dry run/apply from absent history under standing reviewed-migration authorization after prerequisites pass. Immediately prove history 13, strict 16/16, canonical 68 and preservation. Owner adoption plus separate repair approval is required for all 55 UNPROVED ledger rows before history 68. Keep production paused; main, deployment and reopening remain separate.'
-  local_matrix: 'Final required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
+  local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
 # Historical protected-production-dry-run snapshot; its embedded PR #119 next_action is superseded by consolidated_cutover_proposal_20260928.
@@ -493,6 +493,7 @@ realtime_evidence_component_20260928:
   isolation_proved: false
   evidence: docs/commercial-readiness/evidence/production-realtime-preparation-2026-09-28.md
 
+# Historical 49e708/2876b7 candidate verification; locally superseded by the ordering-correction component below.
 consolidated_cutover_final_local_verification_20260928:
   story_status: in-progress
   epic_23_status: on-hold
@@ -525,13 +526,41 @@ consolidated_cutover_ordering_correction_20260928:
   cli_preflight_freshness_recheck: true
   encrypted_partial_apply_diagnostics: true
   isolation_precedes_cleanup_start: true
-  host_timeout_headroom_verification: pending
-  diagnostic_recovery_verification: pending
-  collector_source_binding_verification: pending
-  cli_profile_verification: pending
-  local_timeout_fixture_verification: pending
+  host_timeout_headroom_verification: local-passed
+  diagnostic_recovery_verification: local-passed
+  collector_source_binding_verification: local-passed
+  cli_profile_verification: local-passed
+  local_timeout_fixture_verification: local-passed
   latest_failed_full_source: 1ea4843ec58ee81fad94e3e39b360bb0ff7c3ef8
   latest_failed_full_passed: 4430
   latest_failed_full_failed: 2
   latest_failed_full_unexecuted_native_tests: 17
-  final_verification: pending
+  final_verification: local-passed-final-head-review-pending
+  tested_implementation: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  vitest_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  build_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  playwright_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  verification_receipt: docs/commercial-readiness/evidence/production-cutover-ordering-verification-2026-09-29.json
+  vitest_passed: 4465
+  vitest_skipped: 0
+  vitest_failed: 0
+  vitest_duration_seconds: 863.04
+  playwright_passed: 163
+  playwright_skipped: 47
+  playwright_failed: 0
+  playwright_errors: 0
+  playwright_duration_seconds: 1339.960638
+  hosted_writes: false
+
+consolidated_cutover_packet_deadline_correction_20260929:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  previous_tested_implementation: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  preparation_timeout_milliseconds: 60000
+  packet_timeout_milliseconds: 10000
+  worker_lifetime_milliseconds: 360000
+  verification: pending
+  final_head_review: pending
+  hosted_writes: false
+  note: 'Prior complete ordering gates remain bound to 1a5aa619; the later packet-deadline correction requires its own clean-source verification and final review.'

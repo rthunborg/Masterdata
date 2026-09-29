@@ -20,23 +20,34 @@ namespace HrMasterdata.Release
     // Current owner, Administrators, SYSTEM and the Windows runtime are trusted.
     internal static class ProtectedProductionCutoverHost
     {
-        // The worker's ready/input protocol is each bounded at 10 seconds. Each
-        // of its two fixed CLI attempts can spend 10 seconds on --version and
-        // 90 seconds in the CLI. The 60-second headroom covers the host's
-        // leased evidence and input checks, worker prerequisite rechecks,
-        // target/TLS checks, journal setup and startup work. Therefore:
-        // 10 + 10 + 2 * (10 + 90) + 2 + 60 = 282 seconds. The six-minute
-        // outer deadline leaves 78 seconds of additional margin without
-        // weakening either per-attempt timeout or the fail-closed no-retry rule.
+        // Ready and packet transmission each have a 10-second bound. The
+        // worker separately allows at most 60 seconds for the verified host
+        // to prepare before sending the first packet byte. Its two fixed CLI
+        // attempts each have a 10-second version and 90-second invocation
+        // bound: 10 + 60 + 10 + 2 * (10 + 90) + 2 = 282 seconds.
+        // The shared six-minute lifetime includes preparation and terminal
+        // drains, leaving 78 seconds for prerequisite checks and journal work.
+        // None of the per-attempt limits or no-retry rules are relaxed.
         const int WorkerReadyTimeoutMilliseconds = 10000;
         const int WorkerInputTimeoutMilliseconds = 10000;
         const int ReviewedCliVersionTimeoutMilliseconds = 10000;
         const int ReviewedCliInvocationTimeoutMilliseconds = 90000;
         const int ProtectedCliAttemptCount = 2;
         const int TerminalStreamDrainTimeoutMilliseconds = 1000;
-        const int PreflightAndJournalHeadroomMilliseconds = 60000;
+        const int HostPreparationTimeoutMilliseconds = 60000;
         const int OuterWorkerDeadlineMilliseconds = 360000;
         const int BoundedTerminationTimeoutMilliseconds = 5000;
+
+        static int RemainingWorkerMilliseconds(long elapsedMilliseconds)
+        {
+            Require(elapsedMilliseconds >= 0 && elapsedMilliseconds < OuterWorkerDeadlineMilliseconds);
+            return OuterWorkerDeadlineMilliseconds - (int)elapsedMilliseconds;
+        }
+
+        static void RequireTimelyPreparation(long elapsedMilliseconds)
+        {
+            Require(elapsedMilliseconds >= 0 && elapsedMilliseconds < HostPreparationTimeoutMilliseconds);
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         struct BasicLimits
@@ -210,11 +221,13 @@ namespace HrMasterdata.Release
                 start.EnvironmentVariables["SystemRoot"] = windows;
                 start.EnvironmentVariables["WINDIR"] = windows;
                 start.EnvironmentVariables["PATH"] = Environment.SystemDirectory;
+                var workerLifetime = Stopwatch.StartNew();
                 child = Process.Start(start);
                 Require(child != null && AssignProcessToJobObject(job, child.Handle));
                 var ready = child.StandardOutput.ReadLineAsync(); Require(ready.Wait(WorkerReadyTimeoutMilliseconds));
                 Match match = Regex.Match(ready.Result ?? "", "\\A\\{\"kind\":\"protected-production-cutover-ready\",\"nonce\":\"([a-f0-9]{64})\"\\}\\z");
                 Require(match.Success);
+                var preparation = Stopwatch.StartNew();
                 foreach (ProcessModule module in child.Modules)
                     Require(files.ContainsKey(module.FileName) || module.FileName.StartsWith(Environment.SystemDirectory + "\\", StringComparison.OrdinalIgnoreCase));
 
@@ -290,10 +303,15 @@ namespace HrMasterdata.Release
                 byte[] signature;
                 using (var rsa = new RSACryptoServiceProvider())
                 { rsa.PersistKeyInCsp = false; rsa.FromXmlString(Installation.OriginPrivateKey); signature = rsa.SignData(payload, CryptoConfig.MapNameToOID("SHA256")); }
-                child.StandardInput.Write(serializer.Serialize(new { payload = Convert.ToBase64String(payload), signature = Convert.ToBase64String(signature) }));
+                string envelope = serializer.Serialize(new { payload = Convert.ToBase64String(payload), signature = Convert.ToBase64String(signature) });
+                RequireTimelyPreparation(preparation.ElapsedMilliseconds);
+                RemainingWorkerMilliseconds(workerLifetime.ElapsedMilliseconds);
+                child.StandardInput.Write(envelope);
                 child.StandardInput.Close(); Array.Clear(payload, 0, payload.Length);
                 var output = child.StandardOutput.ReadToEndAsync(); var errors = child.StandardError.ReadToEndAsync();
-                Require(child.WaitForExit(OuterWorkerDeadlineMilliseconds) && output.Wait(TerminalStreamDrainTimeoutMilliseconds) && errors.Wait(TerminalStreamDrainTimeoutMilliseconds));
+                Require(child.WaitForExit(RemainingWorkerMilliseconds(workerLifetime.ElapsedMilliseconds)) &&
+                    output.Wait(Math.Min(TerminalStreamDrainTimeoutMilliseconds, RemainingWorkerMilliseconds(workerLifetime.ElapsedMilliseconds))) &&
+                    errors.Wait(Math.Min(TerminalStreamDrainTimeoutMilliseconds, RemainingWorkerMilliseconds(workerLifetime.ElapsedMilliseconds))));
                 Require(child.ExitCode == 0 && errors.Result.Length == 0 && output.Result.Length < 4096);
                 Console.WriteLine(RedactedReceipt(output.Result, root, serializer)); return 0;
             }

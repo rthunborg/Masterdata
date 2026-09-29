@@ -27,10 +27,99 @@ const ENVIRONMENT_KEYS = [
 ];
 const SHA40 = /^[a-f0-9]{40}$/u;
 const SHA256 = /^[a-f0-9]{64}$/u;
+export const PROTECTED_CUTOVER_PREPARATION_TIMEOUT_MS = 60_000;
+export const PROTECTED_CUTOVER_PACKET_TIMEOUT_MS = 10_000;
+export const PROTECTED_CUTOVER_PACKET_MAX_BYTES = 65_536;
 const fail = () => { throw new Error('Protected production cutover refused'); };
 const exact = (value, keys) => value && !Array.isArray(value) &&
   typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype &&
   JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...keys].sort());
+
+function checkedElapsed(startedAt, limit, now) {
+  const current = now();
+  if (!Number.isFinite(current) || !Number.isFinite(startedAt) || current < startedAt || current - startedAt >= limit) fail();
+  return current;
+}
+
+export function readProtectedCutoverPacket(input, {
+  now = Date.now,
+  setTimer = setTimeout,
+  clearTimer = clearTimeout,
+} = {}) {
+  if (!input || typeof input.on !== 'function' || typeof input.removeListener !== 'function' ||
+      typeof input.pause !== 'function' || typeof input.resume !== 'function' || typeof input.destroy !== 'function') fail();
+  let preparationStartedAt;
+  try { preparationStartedAt = now(); } catch {
+    try { input.destroy(); } catch { }
+    fail();
+  }
+  if (!Number.isFinite(preparationStartedAt)) {
+    try { input.destroy(); } catch { }
+    fail();
+  }
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let preparationTimer;
+    let packetTimer;
+    let packetStartedAt;
+    let totalBytes = 0;
+    const chunks = [];
+
+    const cleanup = () => {
+      if (preparationTimer !== undefined) clearTimer(preparationTimer);
+      if (packetTimer !== undefined) clearTimer(packetTimer);
+      input.removeListener('data', onData);
+      input.removeListener('end', onEnd);
+      input.removeListener('error', onError);
+      input.removeListener('close', onClose);
+    };
+    const rejectInput = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      try { input.destroy(); } catch { }
+      reject(new Error('Protected production cutover refused'));
+    };
+    const resolveInput = (text) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      input.pause();
+      resolve(text);
+    };
+    const onData = (chunk) => {
+      try {
+        const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        if (bytes.length === 0) return;
+        if (packetStartedAt === undefined) {
+          packetStartedAt = checkedElapsed(preparationStartedAt, PROTECTED_CUTOVER_PREPARATION_TIMEOUT_MS, now);
+          clearTimer(preparationTimer);
+          preparationTimer = undefined;
+          packetTimer = setTimer(rejectInput, PROTECTED_CUTOVER_PACKET_TIMEOUT_MS);
+        }
+        totalBytes += bytes.length;
+        if (totalBytes > PROTECTED_CUTOVER_PACKET_MAX_BYTES) fail();
+        chunks.push(bytes);
+      } catch { rejectInput(); }
+    };
+    const onEnd = () => {
+      try {
+        if (packetStartedAt === undefined) fail();
+        checkedElapsed(packetStartedAt, PROTECTED_CUTOVER_PACKET_TIMEOUT_MS, now);
+        resolveInput(Buffer.concat(chunks, totalBytes).toString('utf8'));
+      } catch { rejectInput(); }
+    };
+    const onError = () => rejectInput();
+    const onClose = () => rejectInput();
+
+    preparationTimer = setTimer(rejectInput, PROTECTED_CUTOVER_PREPARATION_TIMEOUT_MS);
+    input.on('data', onData);
+    input.once('end', onEnd);
+    input.once('error', onError);
+    input.once('close', onClose);
+    input.resume();
+  });
+}
 
 export function verifyProtectedCutoverPacket(text, nonce, publicKey) {
   if (typeof text !== 'string' || Buffer.byteLength(text) > 65536) fail();
@@ -102,24 +191,28 @@ export function verifyProtectedCutoverPacket(text, nonce, publicKey) {
   return request;
 }
 
-async function main() {
-  if (process.argv.length !== 2) fail();
-  const root = fileURLToPath(new URL('../../../', import.meta.url));
-  const nonce = randomBytes(32).toString('hex');
-  process.stdout.write(JSON.stringify({ kind: 'protected-production-cutover-ready', nonce }) + '\n');
-  let text = '';
-  const timer = setTimeout(() => process.exit(1), 10000);
-  for await (const chunk of process.stdin) {
-    text += chunk.toString('utf8');
-    if (Buffer.byteLength(text) > 65536) fail();
-  }
-  clearTimeout(timer);
-  const publicKey = createPublicKey({
-    key: JSON.parse(readFileSync(path.join(root, 'bootstrap-origin.json'), 'utf8')),
+export async function runProtectedProductionCutoverWorker({
+  input = process.stdin,
+  output = process.stdout,
+  argv = process.argv,
+  root = fileURLToPath(new URL('../../../', import.meta.url)),
+  randomBytesFn = randomBytes,
+  readFile = readFileSync,
+  publicKeyFactory = createPublicKey,
+  verifyPacket = verifyProtectedCutoverPacket,
+  executorFactory = createProtectedProductionCutoverExecutor,
+  readPacket = readProtectedCutoverPacket,
+} = {}) {
+  if (!Array.isArray(argv) || argv.length !== 2) fail();
+  const nonce = randomBytesFn(32).toString('hex');
+  output.write(JSON.stringify({ kind: 'protected-production-cutover-ready', nonce }) + '\n');
+  const text = await readPacket(input);
+  const publicKey = publicKeyFactory({
+    key: JSON.parse(readFile(path.join(root, 'bootstrap-origin.json'), 'utf8')),
     format: 'jwk',
   });
-  const request = verifyProtectedCutoverPacket(text, nonce, publicKey);
-  const pkg = JSON.parse(readFileSync(path.join(root, 'toolchain-package.json'), 'utf8'));
+  const request = verifyPacket(text, nonce, publicKey);
+  const pkg = JSON.parse(readFile(path.join(root, 'toolchain-package.json'), 'utf8'));
   if (
     pkg.kind !== 'offline-protected-production-cutover-package' ||
     pkg.schemaVersion !== 1 ||
@@ -130,7 +223,7 @@ async function main() {
     JSON.stringify(pkg.plan.map((entry) => entry.version)) !== JSON.stringify(PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS)
   ) fail();
 
-  const run = createProtectedProductionCutoverExecutor({
+  const run = executorFactory({
     packet: text,
     nonce,
     workspace: request.workspace,
@@ -138,10 +231,10 @@ async function main() {
   // Revalidate immediately before the irrevocable child spawn. A signed
   // packet is evidence, not a reusable authority token: freshness and every
   // source/target/isolation/staffing predicate are checked again.
-  verifyProtectedCutoverPacket(text, nonce, publicKey);
+  verifyPacket(text, nonce, publicKey);
   const status = await run();
   if (status !== 0) fail();
-  process.stdout.write(JSON.stringify({
+  output.write(JSON.stringify({
     schemaVersion: 1,
     kind: 'protected-production-forward-13-attempt',
     sourceCommit: pkg.sourceCommit,
@@ -158,7 +251,7 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch(() => {
+  runProtectedProductionCutoverWorker().catch(() => {
     process.stderr.write('Protected production cutover did not complete; database outcome requires read-only diagnosis. No automatic retry or repair.\n');
     process.exitCode = 1;
   });

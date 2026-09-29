@@ -9,6 +9,10 @@ import {
   createProtectedCutoverDiagnosticSink,
   readProtectedCutoverDiagnosticContext,
 } from '../../../../src/lib/release/protected-cutover-diagnostics.mjs';
+import {
+  PROTECTED_CUTOVER_PREPARATION_TIMEOUT_MS,
+  PROTECTED_CUTOVER_PACKET_TIMEOUT_MS,
+} from '../../../../src/lib/release/protected-production-cutover-worker.mjs';
 
 function removeOwnedTemporaryRoot(root: string, prefix: string) {
   const temporaryRoot = path.resolve(tmpdir());
@@ -29,7 +33,6 @@ const windowsPowerShell = path.join(process.env.WINDIR ?? 'C:/Windows', 'System3
 describe('Story 22.15 protected production cutover host bounds', () => {
   it('leaves explicit finite headroom beyond all nested protected worker bounds', () => {
     const source = readFileSync(path.join(process.cwd(), 'src/lib/release/protected-production-cutover-host.cs'), 'utf8');
-    const worker = readFileSync(path.join(process.cwd(), 'src/lib/release/protected-production-cutover-worker.mjs'), 'utf8');
     const runner = readFileSync(path.join(process.cwd(), 'supabase/verify/run-reviewed-supabase-cli.mjs'), 'utf8');
     const constant = (name: string) => {
       const match = source.match(new RegExp(`const int ${name} = ([\\d_]+);`, 'u'));
@@ -42,21 +45,22 @@ describe('Story 22.15 protected production cutover host bounds', () => {
     const cli = constant('ReviewedCliInvocationTimeoutMilliseconds');
     const attempts = constant('ProtectedCliAttemptCount');
     const drain = constant('TerminalStreamDrainTimeoutMilliseconds');
-    const preflightAndJournal = constant('PreflightAndJournalHeadroomMilliseconds');
+    const preparation = constant('HostPreparationTimeoutMilliseconds');
     const outer = constant('OuterWorkerDeadlineMilliseconds');
 
-    const workerInput = Number(worker.match(/setTimeout\(\(\) => process\.exit\(1\), ([\d_]+)\)/u)![1].replaceAll('_', ''));
     const runnerVersion = Number(runner.match(/timeout: ([\d_]+),\s*\n\s*maxBuffer: 64 \* 1024/u)![1].replaceAll('_', ''));
     const runnerProtectedCli = Number(runner.match(/\? \{ timeout: ([\d_]+), maxBuffer: 1024 \* 1024 \}/u)![1].replaceAll('_', ''));
 
-    expect(workerInput).toBe(input);
+    expect(PROTECTED_CUTOVER_PACKET_TIMEOUT_MS).toBe(input);
+    expect(PROTECTED_CUTOVER_PREPARATION_TIMEOUT_MS).toBe(preparation);
     expect(runnerVersion).toBe(version);
     expect(runnerProtectedCli).toBe(cli);
-    const maximumNestedDuration = ready + input + attempts * (version + cli) + 2 * drain + preflightAndJournal;
+    const maximumNestedDuration = ready + preparation + input + attempts * (version + cli) + 2 * drain;
     expect(maximumNestedDuration).toBe(282_000);
     expect(outer).toBe(360_000);
     expect(outer - maximumNestedDuration).toBeGreaterThanOrEqual(60_000);
-    expect(source).toContain('child.WaitForExit(OuterWorkerDeadlineMilliseconds)');
+    expect(source).toContain('child.WaitForExit(RemainingWorkerMilliseconds(workerLifetime.ElapsedMilliseconds))');
+    expect(source).not.toContain('child.WaitForExit(OuterWorkerDeadlineMilliseconds)');
     expect(source).toContain('child.WaitForExit(BoundedTerminationTimeoutMilliseconds)');
   });
 
@@ -99,7 +103,23 @@ try{
  $sources=@('protected-file-lease.cs','protected-production-cutover-host.cs','protected-production-inputs.cs','installation.cs')|ForEach-Object {[IO.File]::ReadAllText((Join-Path $FixtureRoot $_))}
  $result=$provider.CompileAssemblyFromSource($parameters,[string[]]$sources)
  if($result.Errors.HasErrors){@{compiled=$false;errors=@($result.Errors|ForEach-Object {$_.ErrorNumber+':'+$_.Line})}|ConvertTo-Json -Compress;exit 1}
- @{compiled=$true;launcherInvoked=$false;privateInputsLoaded=$false;hostedAccess=$false}|ConvertTo-Json -Compress
+ $assembly=[Reflection.Assembly]::LoadFrom($parameters.OutputAssembly)
+ $hostType=$assembly.GetType('HrMasterdata.Release.ProtectedProductionCutoverHost',$true)
+ $remaining=$hostType.GetMethod('RemainingWorkerMilliseconds',[Reflection.BindingFlags]'NonPublic,Static')
+ $prepare=$hostType.GetMethod('RequireTimelyPreparation',[Reflection.BindingFlags]'NonPublic,Static')
+ if($null -eq $remaining -or $null -eq $prepare){throw 'deadline_method_missing'}
+ $remainingCases=@(0L,11000L,70000L,359999L)
+ $remainingValues=@($remainingCases|ForEach-Object {$remaining.Invoke($null,@([object][long]$_))})
+ foreach($invalid in @(-1L,360000L,360001L)){
+  $rejected=$false;try{[void]$remaining.Invoke($null,@([object][long]$invalid))}catch{$rejected=$true}
+  if(-not $rejected){throw 'worker_lifetime_boundary_accepted'}
+ }
+ foreach($valid in @(0L,11000L,59999L)){[void]$prepare.Invoke($null,@([object][long]$valid))}
+ foreach($invalid in @(-1L,60000L,60001L)){
+  $rejected=$false;try{[void]$prepare.Invoke($null,@([object][long]$invalid))}catch{$rejected=$true}
+  if(-not $rejected){throw 'preparation_boundary_accepted'}
+ }
+ @{compiled=$true;launcherInvoked=$false;privateInputsLoaded=$false;hostedAccess=$false;remainingMilliseconds=$remainingValues;deadlineBoundariesRejected=$true;preparationBoundariesRejected=$true}|ConvertTo-Json -Compress
 }finally{$provider.Dispose()}
 `;
       const scriptPath=path.join(root,'compile.ps1');writeFileSync(scriptPath,script);
@@ -107,7 +127,7 @@ try{
       const result=spawnSync(ps,['-NoProfile','-NonInteractive','-File',scriptPath,root],{encoding:'utf8',windowsHide:true,timeout:30_000});
       expect(result.error).toBeUndefined();
       expect(result.status,result.stdout).toBe(0);
-      expect(JSON.parse(result.stdout.trim())).toEqual({compiled:true,launcherInvoked:false,privateInputsLoaded:false,hostedAccess:false});
+      expect(JSON.parse(result.stdout.trim())).toEqual({compiled:true,launcherInvoked:false,privateInputsLoaded:false,hostedAccess:false,remainingMilliseconds:[360000,349000,290000,1],deadlineBoundariesRejected:true,preparationBoundariesRejected:true});
     } finally {
       removeOwnedTemporaryRoot(root, 'hr-cutover-compile-');
     }

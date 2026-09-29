@@ -98,7 +98,8 @@ function privateDirectories(buildRoot: string, directories: string[]) {
   expect(result.status, result.stderr).toBe(0);
 }
 
-function fixture() {
+function fixture(inputLoadDelayMilliseconds = 0) {
+  if (!Number.isSafeInteger(inputLoadDelayMilliseconds) || inputLoadDelayMilliseconds < 0 || inputLoadDelayMilliseconds >= 60_000) throw new Error('synthetic preparation delay invalid');
   const profile = process.env.USERPROFILE;
   if (!profile || !path.isAbsolute(profile)) throw new Error('test user profile is unavailable');
   const container = mkdtempSync(path.join(profile, '.hr-masterdata-handoff-build-'));
@@ -181,6 +182,7 @@ function fixture() {
   const rows = files.map(({ relative, sha }) => `{ @"${relative.replaceAll('/', '\\')}", "${sha}" }`).join(',\n');
   const inputs = path.join(container, 'synthetic-inputs.cs');
   writeFileSync(inputs, `using System;using System.Collections.Generic;namespace HrMasterdata.Release { internal sealed class ProductionInputs:IDisposable { public IDictionary<string,string> EnvironmentValues {get;private set;} ProductionInputs(){EnvironmentValues=new Dictionary<string,string>{{"EXPECTED_SUPABASE_ENVIRONMENT","production"},{"EXPECTED_SUPABASE_PROJECT_REF","${projectRef}"},{"SUPABASE_DB_CONNECTION_MODE","session-pooler"},{"EXPECTED_SUPABASE_POOLER_HOST","synthetic.pooler"},{"SUPABASE_DB_URL","postgresql://postgres.${projectRef}:synthetic@synthetic.pooler:5432/postgres?sslmode=verify-full"},{"SUPABASE_SSL_ROOT_CERT",@"${certificate}"},{"EXPECTED_SUPABASE_SSL_ROOT_CERT_SHA256","${sha256(readFileSync(certificate))}"}};} internal static ProductionInputs Load(string root){if(!String.Equals(root,@"${inputRoot}",StringComparison.Ordinal)||!System.IO.Directory.Exists(root))throw new InvalidOperationException();return new ProductionInputs();} public void Dispose(){EnvironmentValues.Clear();} } }`);
+  writeFileSync(inputs, readFileSync(inputs, 'utf8').replace('return new ProductionInputs();', `System.Threading.Thread.Sleep(${inputLoadDelayMilliseconds});return new ProductionInputs();`));
   const install = path.join(container, 'installation.cs');
   const get = (name: string) => sha256(readFileSync(evidencePaths[name]));
   writeFileSync(install, `namespace HrMasterdata.Release { internal static class Installation { internal const string Root=@"${root}";internal const string InputRoot=@"${inputRoot}";internal const string LinkPath=@"${link}";internal const string LinkSha256="${sha256(readFileSync(link))}";internal const string EvidenceRoot=@"${evidenceRoot}";internal const string StaffingReceiptPath=@"${evidencePaths.staffing}";internal const string StaffingReceiptSha256="${get('staffing')}";internal const string IsolationReceiptPath=@"${evidencePaths.isolation}";internal const string IsolationReceiptSha256="${get('isolation')}";internal const string PreForwardReceiptPath=@"${evidencePaths.preForward}";internal const string PreForwardReceiptSha256="${get('preForward')}";internal const string BackupRecordPath=@"${evidencePaths.backup}";internal const string BackupRecordSha256="${get('backup')}";internal const string CleanupRecordPath=@"${evidencePaths.cleanup}";internal const string CleanupRecordSha256="${get('cleanup')}";internal const string TargetBindingSha256="${targetBindingSha256}";internal const string OriginPrivateKey=@"${readFileSync(privateXml,'utf8').replaceAll('"','""')}";internal static readonly System.Collections.Generic.Dictionary<string,string> Files=new System.Collections.Generic.Dictionary<string,string>{${rows}}; } }`);
@@ -195,8 +197,10 @@ afterEach(() => roots.splice(0).forEach((root) => {
 }));
 
 describe.skipIf(process.platform !== 'win32')('Story 22.15 protected production cutover native handoff', () => {
-  it('runs the compiled host through the real worker and fixed protected dry-run/apply protocol without private inputs or a network target', () => {
-    const { root, callLog, workRootMarker, inputRoot, preForwardPath } = fixture();
+  it('completes an eleven-second post-ready preparation through the real worker without private inputs or a network target', () => {
+    // This synthetic input load happens after nonce-ready. It must exceed the
+    // unchanged ten-second packet limit without consuming transmission time.
+    const { root, callLog, workRootMarker, inputRoot, preForwardPath } = fixture(11_000);
     const executable = path.join(root, 'production-cutover.exe');
     expect(existsSync(workRootMarker)).toBe(false);
     const rejectedArguments = spawnSync(executable, ['--untrusted'], { encoding: 'utf8', windowsHide: true, timeout: 30_000 });
