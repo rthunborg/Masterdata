@@ -681,9 +681,10 @@ export function createProtectedProductionCutoverExecutor({ packet, nonce, worksp
       JSON.stringify(Object.keys(fixedRequest).sort()) !== JSON.stringify(keys.sort()) ||
       fixedRequest.preForwardObservation?.profilePhase !== 'post_cleanup' ||
       JSON.stringify(Object.keys(fixedRequest.reviewRecords ?? {}).sort()) !==
-        JSON.stringify(['backupRecordSha256', 'cleanupCompletedAtUtc', 'cleanupRecordSha256']) ||
+        JSON.stringify(['backupRecordSha256', 'cleanupCompletedAtUtc', 'cleanupRecordSha256', 'cleanupStartedAtUtc']) ||
       !/^[a-f0-9]{64}$/u.test(fixedRequest.reviewRecords?.backupRecordSha256 ?? '') ||
       !/^[a-f0-9]{64}$/u.test(fixedRequest.reviewRecords?.cleanupRecordSha256 ?? '') ||
+      typeof fixedRequest.reviewRecords?.cleanupStartedAtUtc !== 'string' ||
       typeof fixedRequest.reviewRecords?.cleanupCompletedAtUtc !== 'string' ||
       packageRecord.kind !== 'offline-protected-production-cutover-package' || packageRecord.schemaVersion !== 1 ||
       !Array.isArray(packageRecord.plan) ||

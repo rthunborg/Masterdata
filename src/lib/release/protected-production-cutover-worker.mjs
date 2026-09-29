@@ -62,9 +62,10 @@ export function verifyProtectedCutoverPacket(text, nonce, publicKey) {
     !SHA256.test(request.targetBindingSha256 ?? '')
   ) fail();
   if (productionTargetBindingSha256(request.environment.EXPECTED_SUPABASE_PROJECT_REF) !== request.targetBindingSha256) fail();
-  if (!exact(request.reviewRecords, ['backupRecordSha256', 'cleanupRecordSha256', 'cleanupCompletedAtUtc']) ||
+  if (!exact(request.reviewRecords, ['backupRecordSha256', 'cleanupRecordSha256', 'cleanupStartedAtUtc', 'cleanupCompletedAtUtc']) ||
       !SHA256.test(request.reviewRecords.backupRecordSha256) ||
       !SHA256.test(request.reviewRecords.cleanupRecordSha256) ||
+      typeof request.reviewRecords.cleanupStartedAtUtc !== 'string' ||
       typeof request.reviewRecords.cleanupCompletedAtUtc !== 'string') fail();
   if (request.preForwardObservation?.profilePhase !== 'post_cleanup') fail();
   try {

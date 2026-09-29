@@ -26,6 +26,50 @@ function removeOwnedTemporaryRoot(root: string, prefix: string) {
 const csharpVerbatim = (value: string) => `@"${value.replaceAll('"', '""')}"`;
 const windowsPowerShell = path.join(process.env.WINDIR ?? 'C:/Windows', 'System32/WindowsPowerShell/v1.0/powershell.exe');
 
+describe('Story 22.15 protected production cutover host bounds', () => {
+  it('leaves explicit finite headroom beyond all nested protected worker bounds', () => {
+    const source = readFileSync(path.join(process.cwd(), 'src/lib/release/protected-production-cutover-host.cs'), 'utf8');
+    const worker = readFileSync(path.join(process.cwd(), 'src/lib/release/protected-production-cutover-worker.mjs'), 'utf8');
+    const runner = readFileSync(path.join(process.cwd(), 'supabase/verify/run-reviewed-supabase-cli.mjs'), 'utf8');
+    const constant = (name: string) => {
+      const match = source.match(new RegExp(`const int ${name} = ([\\d_]+);`, 'u'));
+      expect(match, `${name} must be an explicit host bound`).not.toBeNull();
+      return Number(match![1].replaceAll('_', ''));
+    };
+    const ready = constant('WorkerReadyTimeoutMilliseconds');
+    const input = constant('WorkerInputTimeoutMilliseconds');
+    const version = constant('ReviewedCliVersionTimeoutMilliseconds');
+    const cli = constant('ReviewedCliInvocationTimeoutMilliseconds');
+    const attempts = constant('ProtectedCliAttemptCount');
+    const drain = constant('TerminalStreamDrainTimeoutMilliseconds');
+    const preflightAndJournal = constant('PreflightAndJournalHeadroomMilliseconds');
+    const outer = constant('OuterWorkerDeadlineMilliseconds');
+
+    const workerInput = Number(worker.match(/setTimeout\(\(\) => process\.exit\(1\), ([\d_]+)\)/u)![1].replaceAll('_', ''));
+    const runnerVersion = Number(runner.match(/timeout: ([\d_]+),\s*\n\s*maxBuffer: 64 \* 1024/u)![1].replaceAll('_', ''));
+    const runnerProtectedCli = Number(runner.match(/\? \{ timeout: ([\d_]+), maxBuffer: 1024 \* 1024 \}/u)![1].replaceAll('_', ''));
+
+    expect(workerInput).toBe(input);
+    expect(runnerVersion).toBe(version);
+    expect(runnerProtectedCli).toBe(cli);
+    const maximumNestedDuration = ready + input + attempts * (version + cli) + 2 * drain + preflightAndJournal;
+    expect(maximumNestedDuration).toBe(282_000);
+    expect(outer).toBe(360_000);
+    expect(outer - maximumNestedDuration).toBeGreaterThanOrEqual(60_000);
+    expect(source).toContain('child.WaitForExit(OuterWorkerDeadlineMilliseconds)');
+    expect(source).toContain('child.WaitForExit(BoundedTerminationTimeoutMilliseconds)');
+  });
+
+  it('derives the signed cleanup interval only from the leased cleanup record', () => {
+    const source = readFileSync(path.join(process.cwd(), 'src/lib/release/protected-production-cutover-host.cs'), 'utf8');
+    expect(source).toContain('cleanupEvidence.ContainsKey("startedAtUtc") && cleanupEvidence.ContainsKey("completedAtUtc")');
+    expect(source).toContain('string cleanupStartedAtUtc = RequireCanonicalUtc(cleanupEvidence["startedAtUtc"], out cleanupStartedAt);');
+    expect(source).toContain('Require(cleanupStartedAt <= cleanupCompletedAt);');
+    expect(source).toContain('cleanupStartedAtUtc = cleanupStartedAtUtc, cleanupCompletedAtUtc = cleanupCompletedAtUtc');
+    expect(source).not.toContain('Installation.CleanupStartedAtUtc');
+  });
+});
+
 // Compilation never invokes the resulting host, decrypts inputs or connects.
 describe.skipIf(process.platform !== 'win32')('Story 22.15 Windows cutover host compilation', () => {
   it('compiles the actual host, inputs and file lease with every installed binding', () => {

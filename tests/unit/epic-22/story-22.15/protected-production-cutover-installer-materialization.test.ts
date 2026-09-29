@@ -157,7 +157,7 @@ function fixture() {
     preForward: makeEvidence('pre-forward.json'),
     backup: makeEvidence('backup.json'),
     cleanup: makeEvidence('cleanup.json', {
-      synthetic: true, name: 'cleanup.json', completedAtUtc: '2026-09-23T14:04:00.000Z',
+      synthetic: true, name: 'cleanup.json', startedAtUtc: '2026-09-23T14:03:00.000Z', completedAtUtc: '2026-09-23T14:04:00.000Z',
     }),
   };
 }
@@ -248,13 +248,27 @@ describe.skipIf(process.platform !== 'win32')(
         hostedAccess: false,
         privateInputsLoaded: false,
       });
+      for (const cleanup of [
+        { completedAtUtc: '2026-09-23T14:04:00.000Z' },
+        { startedAtUtc: '2026-09-23T14:03:00.000Z' },
+        { startedAtUtc: '2026-09-23 14:03:00Z', completedAtUtc: '2026-09-23T14:04:00.000Z' },
+        { startedAtUtc: 123, completedAtUtc: '2026-09-23T14:04:00.000Z' },
+        { startedAtUtc: '2026-09-23T14:05:00.000Z', completedAtUtc: '2026-09-23T14:04:00.000Z' },
+      ]) {
+        writeFileSync(options.cleanup.path, JSON.stringify(cleanup) + '\n');
+        options.cleanup.sha256 = sha256(readFileSync(options.cleanup.path));
+        const refused = runInstaller(installerArguments(options));
+        expect(refused.status).toBe(1);
+        expect(refused.receipt).toMatchObject({ installed: false, stage: 'package-validation', hostedAccess: false, privateInputsLoaded: false });
+        expect(existsSync(installRoot)).toBe(false);
+      }
       writeFileSync(options.cleanup.path, JSON.stringify({
-        synthetic: true, name: 'cleanup.json', completedAtUtc: '2026-09-23T14:04:00.000Z',
+        synthetic: true, name: 'cleanup.json', startedAtUtc: '2026-09-23T14:03:00.000Z', completedAtUtc: '2026-09-23T14:04:00.000Z',
       }) + '\n');
       options.cleanup.sha256 = sha256(readFileSync(options.cleanup.path));
 
       const installed = runInstaller(installerArguments(options));
-      expect(installed.status).toBe(0);
+      expect(installed.status, JSON.stringify(installed.receipt)).toBe(0);
       expect(installed.receipt).toMatchObject({
         installed: true,
         packageSha256: options.packageResult.packageSha256,

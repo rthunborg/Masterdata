@@ -255,15 +255,28 @@ describe('initial managed-profile accounting in complete isolation',()=>{
 
 describe('Story 22.15 protected cutover cross-receipt ordering', () => {
   const now = new Date('2026-09-23T14:10:00.000Z');
+  const initialReceipts = () => ({
+    pause: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    edgeFunctions: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    platform: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    realtimePriorState: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    realtimeProbe: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    dataApi: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    dataApiProbePrerequisite: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    dataApiProbe: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+    network: { capturedAtUtc: '2026-09-23T14:03:00.000Z' },
+  });
   const ordered = () => ({
     reviewRecords: {
       backupRecordSha256: '1'.repeat(64), cleanupRecordSha256: '2'.repeat(64),
-      cleanupCompletedAtUtc: '2026-09-23T14:04:00.000Z',
+      cleanupStartedAtUtc: '2026-09-23T14:04:00.000Z',
+      cleanupCompletedAtUtc: '2026-09-23T14:04:30.000Z',
     },
     preForwardObservation: { capturedAtUtc: '2026-09-23T14:05:00.000Z' },
     staffingReceipt: { capturedAtUtc: '2026-09-23T14:05:30.000Z' },
     isolationReceipts: {
-      database: { collectionStartedAtUtc: '2026-09-23T14:06:00.000Z', capturedAtUtc: '2026-09-23T14:06:01.000Z', managedWriterObservation: { collectionStartedAtUtc: '2026-09-23T14:04:30.000Z', capturedAtUtc: '2026-09-23T14:04:31.000Z' } },
+      ...initialReceipts(),
+      database: { collectionStartedAtUtc: '2026-09-23T14:06:00.000Z', capturedAtUtc: '2026-09-23T14:06:01.000Z', managedWriterObservation: { collectionStartedAtUtc: '2026-09-23T14:04:45.000Z', capturedAtUtc: '2026-09-23T14:04:46.000Z' } },
       drain: { collectionStartedAtUtc: '2026-09-23T14:07:00.000Z', capturedAtUtc: '2026-09-23T14:07:01.000Z' },
     },
     now,
@@ -276,6 +289,9 @@ describe('Story 22.15 protected cutover cross-receipt ordering', () => {
   });
 
   it.each([
+    ['missing cleanup start', (value: ReturnType<typeof ordered>) => delete value.reviewRecords.cleanupStartedAtUtc],
+    ['noncanonical cleanup start', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupStartedAtUtc = '2026-09-23 14:04:00Z')],
+    ['cleanup starts after completion', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupStartedAtUtc = '2026-09-23T14:04:31.000Z')],
     ['missing cleanup completion', (value: ReturnType<typeof ordered>) => delete value.reviewRecords.cleanupCompletedAtUtc],
     ['noncanonical cleanup completion', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23 14:04:00Z')],
     ['future cleanup completion', (value: ReturnType<typeof ordered>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23T14:11:00.000Z')],
@@ -295,6 +311,21 @@ describe('Story 22.15 protected cutover cross-receipt ordering', () => {
     });
   });
 
+  it.each([
+    'pause', 'edgeFunctions', 'platform', 'realtimePriorState', 'realtimeProbe',
+    'dataApiProbePrerequisite', 'dataApi', 'dataApiProbe', 'network',
+  ])('rejects missing, noncanonical, equal, or post-start %s completion', (key) => {
+    for (const capturedAtUtc of [undefined, '2026-09-23 14:03:00Z', '2026-09-23T14:04:00.000Z', '2026-09-23T14:04:01.000Z']) {
+      const value = ordered();
+      const receipt = (value.isolationReceipts as Record<string, { capturedAtUtc?: string }>)[key];
+      if (capturedAtUtc === undefined) delete receipt.capturedAtUtc;
+      else receipt.capturedAtUtc = capturedAtUtc;
+      expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
+        disposition: 'blocked_cutover_receipt_order',
+      });
+    }
+  });
+
   it('requires the managed-writer collector to complete after cleanup and before final database collection', () => {
     const value = ordered();
     value.isolationReceipts.database.managedWriterObservation = {
@@ -303,7 +334,7 @@ describe('Story 22.15 protected cutover cross-receipt ordering', () => {
     expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
       disposition: 'cutover_receipt_order_proved_not_execution_authority',
     });
-    value.isolationReceipts.database.managedWriterObservation.collectionStartedAtUtc = '2026-09-23T14:04:00.000Z';
+    value.isolationReceipts.database.managedWriterObservation.collectionStartedAtUtc = '2026-09-23T14:04:30.000Z';
     expect(assessProductionCutoverReceiptOrdering(value)).toMatchObject({
       disposition: 'blocked_cutover_receipt_order',
     });

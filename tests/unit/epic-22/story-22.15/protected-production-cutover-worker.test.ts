@@ -84,6 +84,7 @@ function request() {
     preForwardObservation,
     reviewRecords: {
       backupRecordSha256: '3'.repeat(64), cleanupRecordSha256: '4'.repeat(64),
+      cleanupStartedAtUtc: '2026-09-23T14:04:00.000Z',
       cleanupCompletedAtUtc: '2026-09-23T14:04:00.000Z',
     },
     staffingReceipt: {
@@ -175,6 +176,8 @@ describe('Story 22.15 protected production cutover worker packet', () => {
     ['a repair operation', (value: ReturnType<typeof request>) => (value.operation = 'repair-history-55')],
     ['a caller approval flag', (value: ReturnType<typeof request>) => Object.assign(value, { ownerApproved: true })],
     ['an absent backup binding', (value: ReturnType<typeof request>) => Object.assign(value.reviewRecords, { backupRecordSha256: '' })],
+    ['a missing cleanup start time', (value: ReturnType<typeof request>) => delete value.reviewRecords.cleanupStartedAtUtc],
+    ['an initial isolation control completed when cleanup starts', (value: ReturnType<typeof request>) => (value.isolationReceipts.pause.capturedAtUtc = '2026-09-23T14:04:00.000Z')],
     ['a missing cleanup completion time', (value: ReturnType<typeof request>) => delete value.reviewRecords.cleanupCompletedAtUtc],
     ['a noncanonical cleanup completion time', (value: ReturnType<typeof request>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23 14:04:00Z')],
     ['a future cleanup completion time', (value: ReturnType<typeof request>) => (value.reviewRecords.cleanupCompletedAtUtc = '2026-09-23T14:11:00.000Z')],

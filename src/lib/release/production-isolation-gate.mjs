@@ -3,6 +3,24 @@ const SHA40 = /^[a-f0-9]{40}$/u;
 const SHA256 = /^[a-f0-9]{64}$/u;
 const MAX_EVIDENCE_AGE_MS = 15 * 60 * 1000;
 
+const CUTOVER_ISOLATION_RECEIPT_KEYS = Object.freeze([
+  'pause',
+  'edgeFunctions',
+  'platform',
+  'realtimePriorState',
+  'realtimeProbe',
+  'dataApi',
+  'dataApiProbePrerequisite',
+  'dataApiProbe',
+  'network',
+  'database',
+  'drain',
+]);
+
+const INITIAL_ISOLATION_RECEIPT_KEYS = Object.freeze(
+  CUTOVER_ISOLATION_RECEIPT_KEYS.slice(0, -2)
+);
+
 export const PRODUCTION_ISOLATION_AUTH_HOOKS = Object.freeze([
   'hook_custom_access_token_enabled',
   'hook_mfa_verification_attempt_enabled',
@@ -110,6 +128,7 @@ export function assessProductionCutoverReceiptOrdering({
     !plainObject(reviewRecords, [
       'backupRecordSha256',
       'cleanupRecordSha256',
+      'cleanupStartedAtUtc',
       'cleanupCompletedAtUtc',
     ]) ||
     !plainObjectWithAllowedKeys(preForwardObservation ?? {}, [
@@ -118,13 +137,12 @@ export function assessProductionCutoverReceiptOrdering({
     !plainObjectWithAllowedKeys(staffingReceipt ?? {}, [
       ...Object.keys(staffingReceipt ?? {}),
     ]) ||
-    !plainObjectWithAllowedKeys(isolationReceipts ?? {}, [
-      ...Object.keys(isolationReceipts ?? {}),
-    ]) ||
+    !plainObject(isolationReceipts, CUTOVER_ISOLATION_RECEIPT_KEYS) ||
     !(now instanceof Date) ||
     Number.isNaN(now.getTime())
   ) return orderingBlocked('required_cutover_receipt_missing_or_invalid');
 
+  const cleanupStarted = canonicalUtc(reviewRecords.cleanupStartedAtUtc);
   const cleanup = canonicalUtc(reviewRecords.cleanupCompletedAtUtc);
   const profile = canonicalUtc(preForwardObservation.capturedAtUtc);
   const staffing = canonicalUtc(staffingReceipt.capturedAtUtc);
@@ -132,18 +150,24 @@ export function assessProductionCutoverReceiptOrdering({
   const database = canonicalUtc(isolationReceipts.database?.capturedAtUtc);
   const drainStart = canonicalUtc(isolationReceipts.drain?.collectionStartedAtUtc);
   const drain = canonicalUtc(isolationReceipts.drain?.capturedAtUtc);
+  const initialIsolationCompletions = INITIAL_ISOLATION_RECEIPT_KEYS
+    .map((key) => canonicalUtc(isolationReceipts[key]?.capturedAtUtc));
   if (!Object.hasOwn(isolationReceipts.database ?? {}, 'managedWriterObservation')) {
     return orderingBlocked('required_managed_writer_observation_missing');
   }
   const managedWriterStart = canonicalUtc(isolationReceipts.database.managedWriterObservation?.collectionStartedAtUtc);
   const managedWriter = canonicalUtc(isolationReceipts.database.managedWriterObservation?.capturedAtUtc);
   if (
-    [cleanup, profile, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain].some((time) => time === null) ||
+    [cleanupStarted, cleanup, profile, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain, ...initialIsolationCompletions].some((time) => time === null) ||
     [profile, staffing, managedWriterStart, managedWriter, databaseStart, database, drainStart, drain].some((time) => time > now.getTime()) ||
+    initialIsolationCompletions.some((time) => time > now.getTime()) ||
+    cleanupStarted > now.getTime() ||
     cleanup > now.getTime()
   ) return orderingBlocked('cutover_receipt_timestamp_missing_noncanonical_or_future');
   const latestCollector = Math.max(profile, staffing);
   if (
+    cleanupStarted > cleanup ||
+    initialIsolationCompletions.some((time) => time >= cleanupStarted) ||
     cleanup >= profile ||
     cleanup >= staffing ||
     cleanup >= managedWriterStart ||

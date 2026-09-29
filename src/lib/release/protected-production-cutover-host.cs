@@ -20,6 +20,24 @@ namespace HrMasterdata.Release
     // Current owner, Administrators, SYSTEM and the Windows runtime are trusted.
     internal static class ProtectedProductionCutoverHost
     {
+        // The worker's ready/input protocol is each bounded at 10 seconds. Each
+        // of its two fixed CLI attempts can spend 10 seconds on --version and
+        // 90 seconds in the CLI. The 60-second headroom covers the host's
+        // leased evidence and input checks, worker prerequisite rechecks,
+        // target/TLS checks, journal setup and startup work. Therefore:
+        // 10 + 10 + 2 * (10 + 90) + 2 + 60 = 282 seconds. The six-minute
+        // outer deadline leaves 78 seconds of additional margin without
+        // weakening either per-attempt timeout or the fail-closed no-retry rule.
+        const int WorkerReadyTimeoutMilliseconds = 10000;
+        const int WorkerInputTimeoutMilliseconds = 10000;
+        const int ReviewedCliVersionTimeoutMilliseconds = 10000;
+        const int ReviewedCliInvocationTimeoutMilliseconds = 90000;
+        const int ProtectedCliAttemptCount = 2;
+        const int TerminalStreamDrainTimeoutMilliseconds = 1000;
+        const int PreflightAndJournalHeadroomMilliseconds = 60000;
+        const int OuterWorkerDeadlineMilliseconds = 360000;
+        const int BoundedTerminationTimeoutMilliseconds = 5000;
+
         [StructLayout(LayoutKind.Sequential)]
         struct BasicLimits
         {
@@ -50,13 +68,12 @@ namespace HrMasterdata.Release
 
         static void Require(bool value) { if (!value) throw new InvalidOperationException("Protected bootstrap refused"); }
 
-        // A cleanup completion time is read only from the evidence file that is
-        // already protected by the host's hash-pinned lease; it is never an
-        // installer or command-line argument.
-        static string RequireCanonicalUtc(object value)
+        // A cleanup interval is read only from the evidence file that is already
+        // protected by the host's hash-pinned lease; it is never an installer or
+        // command-line argument.
+        static string RequireCanonicalUtc(object value, out DateTime parsed)
         {
             string text = value as string;
-            DateTime parsed;
             Require(text != null && Regex.IsMatch(text, "\\A\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\\z"));
             Require(DateTime.TryParseExact(text, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out parsed));
@@ -195,7 +212,7 @@ namespace HrMasterdata.Release
                 start.EnvironmentVariables["PATH"] = Environment.SystemDirectory;
                 child = Process.Start(start);
                 Require(child != null && AssignProcessToJobObject(job, child.Handle));
-                var ready = child.StandardOutput.ReadLineAsync(); Require(ready.Wait(10000));
+                var ready = child.StandardOutput.ReadLineAsync(); Require(ready.Wait(WorkerReadyTimeoutMilliseconds));
                 Match match = Regex.Match(ready.Result ?? "", "\\A\\{\"kind\":\"protected-production-cutover-ready\",\"nonce\":\"([a-f0-9]{64})\"\\}\\z");
                 Require(match.Success);
                 foreach (ProcessModule module in child.Modules)
@@ -262,16 +279,21 @@ namespace HrMasterdata.Release
                 var isolationEvidence = serializer.Deserialize<Dictionary<string, object>>(isolationReceipt);
                 Require(isolationEvidence != null && isolationEvidence.Count == 2 && isolationEvidence.ContainsKey("receipts") && isolationEvidence.ContainsKey("context"));
                 var cleanupEvidence = serializer.Deserialize<Dictionary<string, object>>(cleanupRecord);
-                Require(cleanupEvidence != null && cleanupEvidence.ContainsKey("completedAtUtc"));
-                string cleanupCompletedAtUtc = RequireCanonicalUtc(cleanupEvidence["completedAtUtc"]);
-                byte[] payload = Encoding.UTF8.GetBytes(serializer.Serialize(new { schemaVersion = 1, operation = "apply-forward-13", nonce = match.Groups[1].Value, workspace = work, environment = environment, sourceSha = package["sourceCommit"], sourceTree = package["sourceTree"], sourceManifestSha256 = package["sourceManifestSha256"], targetBindingSha256 = actualTargetBinding, staffingReceipt = serializer.DeserializeObject(staffingReceipt), isolationReceipts = isolationEvidence["receipts"], isolationContext = isolationEvidence["context"], preForwardObservation = serializer.DeserializeObject(preForwardReceipt), reviewRecords = new { backupRecordSha256 = Installation.BackupRecordSha256, cleanupRecordSha256 = Installation.CleanupRecordSha256, cleanupCompletedAtUtc = cleanupCompletedAtUtc } }));
+                Require(cleanupEvidence != null && cleanupEvidence.ContainsKey("startedAtUtc") && cleanupEvidence.ContainsKey("completedAtUtc"));
+                DateTime cleanupStartedAt, cleanupCompletedAt;
+                // Both timestamps come only from the already hash-leased cleanup
+                // record. No installer or caller value can override this interval.
+                string cleanupStartedAtUtc = RequireCanonicalUtc(cleanupEvidence["startedAtUtc"], out cleanupStartedAt);
+                string cleanupCompletedAtUtc = RequireCanonicalUtc(cleanupEvidence["completedAtUtc"], out cleanupCompletedAt);
+                Require(cleanupStartedAt <= cleanupCompletedAt);
+                byte[] payload = Encoding.UTF8.GetBytes(serializer.Serialize(new { schemaVersion = 1, operation = "apply-forward-13", nonce = match.Groups[1].Value, workspace = work, environment = environment, sourceSha = package["sourceCommit"], sourceTree = package["sourceTree"], sourceManifestSha256 = package["sourceManifestSha256"], targetBindingSha256 = actualTargetBinding, staffingReceipt = serializer.DeserializeObject(staffingReceipt), isolationReceipts = isolationEvidence["receipts"], isolationContext = isolationEvidence["context"], preForwardObservation = serializer.DeserializeObject(preForwardReceipt), reviewRecords = new { backupRecordSha256 = Installation.BackupRecordSha256, cleanupRecordSha256 = Installation.CleanupRecordSha256, cleanupStartedAtUtc = cleanupStartedAtUtc, cleanupCompletedAtUtc = cleanupCompletedAtUtc } }));
                 byte[] signature;
                 using (var rsa = new RSACryptoServiceProvider())
                 { rsa.PersistKeyInCsp = false; rsa.FromXmlString(Installation.OriginPrivateKey); signature = rsa.SignData(payload, CryptoConfig.MapNameToOID("SHA256")); }
                 child.StandardInput.Write(serializer.Serialize(new { payload = Convert.ToBase64String(payload), signature = Convert.ToBase64String(signature) }));
                 child.StandardInput.Close(); Array.Clear(payload, 0, payload.Length);
                 var output = child.StandardOutput.ReadToEndAsync(); var errors = child.StandardError.ReadToEndAsync();
-                Require(child.WaitForExit(200000) && output.Wait(1000) && errors.Wait(1000));
+                Require(child.WaitForExit(OuterWorkerDeadlineMilliseconds) && output.Wait(TerminalStreamDrainTimeoutMilliseconds) && errors.Wait(TerminalStreamDrainTimeoutMilliseconds));
                 Require(child.ExitCode == 0 && errors.Result.Length == 0 && output.Result.Length < 4096);
                 Console.WriteLine(RedactedReceipt(output.Result, root, serializer)); return 0;
             }
@@ -281,7 +303,7 @@ namespace HrMasterdata.Release
             {
                 if (job != IntPtr.Zero) CloseHandle(job);
                 if (child != null)
-                { try { if (!child.HasExited) { child.Kill(); child.WaitForExit(5000); } } catch { } child.Dispose(); }
+                { try { if (!child.HasExited) { child.Kill(); child.WaitForExit(BoundedTerminationTimeoutMilliseconds); } } catch { } child.Dispose(); }
                 if (workLease != null) workLease.Dispose();
                 if (evidenceLease != null) evidenceLease.Dispose();
                 if (linkLease != null) linkLease.Dispose();
