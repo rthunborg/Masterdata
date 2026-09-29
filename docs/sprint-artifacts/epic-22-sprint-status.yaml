@@ -564,3 +564,11 @@ consolidated_cutover_packet_deadline_correction_20260929:
   final_head_review: pending
   hosted_writes: false
   note: 'Prior complete ordering gates remain bound to 1a5aa619; the later packet-deadline correction requires its own clean-source verification and final review.'
+  historical_ordering_receipt_scope: 'Successful at 1a5aa619 only; it does not verify the later substantive 0e014f3a host/worker packet-deadline correction.'
+  latest_failed_clean_source: 0e014f3a8ad921b10758f186ee3afeba2601e895
+  latest_failed_full_passed: 4475
+  latest_failed_full_failed: 3
+  latest_failed_full_skipped: 0
+  latest_failed_full_files: 371
+  latest_failed_full_exit_code: 1
+  current_full_gate: pending-clean-source-verification-and-final-review
