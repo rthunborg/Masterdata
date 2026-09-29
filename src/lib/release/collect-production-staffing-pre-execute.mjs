@@ -1,17 +1,29 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath, URL as NodeURL } from 'node:url';
-import { isAbsolute, resolve } from 'node:path';
+import { URL as NodeURL } from 'node:url';
+import { isAbsolute } from 'node:path';
 
 import {
   assessProductionStaffingPreExecuteProof,
 } from './production-staffing-pre-execute-contract.mjs';
+import { bindProductionCollectorSource } from './production-collector-source-binding.mjs';
 import { productionTargetBindingSha256 } from './production-observed-profile.mjs';
 
-const SQL_FILE = fileURLToPath(new NodeURL('./production-staffing-pre-execute.sql', import.meta.url));
-const SHA40 = /^[a-f0-9]{40}$/u;
-const SHA256 = /^[a-f0-9]{64}$/u;
+const MODULE_RELATIVE = 'src/lib/release/collect-production-staffing-pre-execute.mjs';
+const SQL_RELATIVE = 'src/lib/release/production-staffing-pre-execute.sql';
+const SOURCE_RELATIVES = Object.freeze([
+  MODULE_RELATIVE,
+  SQL_RELATIVE,
+  'src/lib/release/production-collector-source-binding.mjs',
+  'src/lib/release/prepare-forward-subset.mjs',
+  'src/lib/release/production-staffing-pre-execute-contract.mjs',
+  'src/lib/release/production-observed-profile.mjs',
+  'supabase/migration-baseline-manifest.json',
+  'package.json',
+  'pnpm-lock.yaml',
+  'supabase/verify/run-reviewed-supabase-cli.mjs',
+  'supabase/verify/verify-production-baseline-catalog.mjs',
+  'supabase/verify/verify-target-binding.mjs',
+]);
 const MAX_BYTES = 65_536;
 const fail = () => { throw new Error('Production staffing pre-execute observation refused; details suppressed'); };
 
@@ -48,14 +60,6 @@ function parseProjection(output) {
   return value;
 }
 
-function verifiedSource(source, sql) {
-  if (!plainObject(source, ['sourceSha', 'sourceTree', 'sourceManifestSha256', 'sqlSha256']) ||
-    !SHA40.test(source.sourceSha) || !SHA40.test(source.sourceTree) ||
-    !SHA256.test(source.sourceManifestSha256) || !SHA256.test(source.sqlSha256) ||
-    createHash('sha256').update(sql, 'utf8').digest('hex') !== source.sqlSha256) fail();
-  return source;
-}
-
 /**
  * Collects only the catalog profile needed before the first staffing RPC
  * replacement. It is read-only and never admits a migration execution.
@@ -63,6 +67,7 @@ function verifiedSource(source, sql) {
 export async function collectProductionStaffingPreExecute({
   workspace,
   source,
+  sourceOptions,
   environment = process.env,
   now = () => new Date(),
 } = {}) {
@@ -70,9 +75,17 @@ export async function collectProductionStaffingPreExecute({
     environment.EXPECTED_SUPABASE_ENVIRONMENT !== 'production' ||
     environment.SUPABASE_DB_CONNECTION_MODE !== 'session-pooler' || typeof now !== 'function') fail();
   try {
-    const sql = readFileSync(SQL_FILE, 'utf8');
+    const bound = bindProductionCollectorSource({
+      workspace,
+      source,
+      sourceOptions,
+      moduleUrl: import.meta.url,
+      moduleRelative: MODULE_RELATIVE,
+      sourceRelatives: SOURCE_RELATIVES,
+      sqlRelatives: [SQL_RELATIVE],
+    });
+    const sql = bound.sql[SQL_RELATIVE];
     assertProductionStaffingPreExecuteSql(sql);
-    const verified = verifiedSource(source, sql);
     const targetBindingSha256 = productionTargetBindingSha256(environment.EXPECTED_SUPABASE_PROJECT_REF);
     if (environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256 &&
       environment.EXPECTED_SUPABASE_TARGET_BINDING_SHA256 !== targetBindingSha256) fail();
@@ -84,7 +97,7 @@ export async function collectProductionStaffingPreExecute({
     verifyApprovedSupabaseCliExecutable();
     const executable = catalog.verifyApprovedPsqlExecutable();
     const certificate = catalog.verifyApprovedSslRootCertificate();
-    await target.verifyConfiguredSupabaseTarget({ workspace: resolve(workspace), environment });
+    await target.verifyConfiguredSupabaseTarget({ workspace: bound.workspace, environment });
     const url = new NodeURL(environment.SUPABASE_DB_URL);
     if (!['postgres:', 'postgresql:'].includes(url.protocol) || !url.hostname || !url.port ||
       !url.username || !url.password || url.pathname !== '/postgres') fail();
@@ -101,11 +114,12 @@ export async function collectProductionStaffingPreExecute({
     });
     let result;
     try {
+      bound.recheck();
       result = spawnSync(executable, [
         '--no-psqlrc', '--quiet', '--tuples-only', '--no-align',
         '--set', 'ON_ERROR_STOP=1', '--set', 'VERBOSITY=terse',
       ], {
-        cwd: resolve(workspace), env: childEnvironment, input: sql, windowsHide: true,
+        cwd: bound.workspace, env: childEnvironment, input: sql, windowsHide: true,
         encoding: 'utf8', timeout: 45_000, maxBuffer: MAX_BYTES,
       });
     } finally {
@@ -118,17 +132,17 @@ export async function collectProductionStaffingPreExecute({
       schemaVersion: 1,
       kind: 'production-staffing-pre-execute-observation',
       environment: 'production',
-      sourceSha: verified.sourceSha,
-      sourceTree: verified.sourceTree,
-      sourceManifestSha256: verified.sourceManifestSha256,
+      sourceSha: bound.source.sourceSha,
+      sourceTree: bound.source.sourceTree,
+      sourceManifestSha256: bound.source.sourceManifestSha256,
       targetBindingSha256,
       capturedAtUtc: capturedAt.toISOString(),
       ...parseProjection(result.stdout),
     });
     const assessment = assessProductionStaffingPreExecuteProof(observation, {
-      sourceSha: verified.sourceSha,
-      sourceTree: verified.sourceTree,
-      sourceManifestSha256: verified.sourceManifestSha256,
+      sourceSha: bound.source.sourceSha,
+      sourceTree: bound.source.sourceTree,
+      sourceManifestSha256: bound.source.sourceManifestSha256,
       targetBindingSha256,
       now: capturedAt,
     });

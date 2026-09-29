@@ -3,6 +3,7 @@ import {
   assertInitialMatrixObservation,
   assertProtectedMatrixCliInvocation,
   buildProtectedMatrixCliInvocation,
+  buildPinnedMatrixToolEnvironment,
   runProductionCliMatrixCase,
 } from '../../../support/production-cli-matrix-runner.mjs';
 import { SYNTHETIC_AGGREGATES } from '../../../support/production-cli-matrix-fixture.mjs';
@@ -17,6 +18,27 @@ const binding = {
   password: 'c'.repeat(32),
   observedAtUtc: new Date().toISOString(),
 };
+
+describe('deterministic pinned CLI profile', () => {
+  it('overrides an ambient profile without inheriting routing or credentials', () => {
+    const environment = buildPinnedMatrixToolEnvironment({
+      SystemRoot: 'synthetic-system-root',
+      SUPABASE_PROFILE: 'missing-local-profile',
+      SUPABASE_ACCESS_TOKEN: 'secret-canary',
+      SUPABASE_API_HOST: 'unreviewed-api-canary',
+      USERPROFILE: 'unreviewed-profile-directory',
+      PGHOST: 'unreviewed-database-canary',
+      PGPASSWORD: 'secret-canary',
+    });
+    expect(environment).toEqual({
+      SystemRoot: 'synthetic-system-root', SUPABASE_PROFILE: 'supabase',
+    });
+  });
+
+  it('uses the built-in vendor profile when no home or profile is available', () => {
+    expect(buildPinnedMatrixToolEnvironment({})).toEqual({ SUPABASE_PROFILE: 'supabase' });
+  });
+});
 
 describe('declared initial matrix profile', () => {
   const expected = {

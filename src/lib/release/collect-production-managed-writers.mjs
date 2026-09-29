@@ -1,11 +1,30 @@
-import {readFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
-import {fileURLToPath} from 'node:url';
-import {isAbsolute,resolve} from 'node:path';
+import {isAbsolute} from 'node:path';
 import {assertDatabaseWriterClassificationSql,parseDatabaseWriterClassification} from './production-database-writer-classification.mjs';
+import {bindProductionCollectorSource} from './production-collector-source-binding.mjs';
 import { productionTargetBindingSha256 } from './production-observed-profile.mjs';
 
 const MAX_BYTES=65536;
+const MODULE_RELATIVE='src/lib/release/collect-production-managed-writers.mjs';
+const SQL_RELATIVES=Object.freeze([
+  'src/lib/release/production-cli-principal-profile.sql',
+  'src/lib/release/production-managed-worker-profile.sql',
+  'src/lib/release/production-database-writer-classification.sql',
+]);
+const SOURCE_RELATIVES=Object.freeze([
+  MODULE_RELATIVE,
+  ...SQL_RELATIVES,
+  'src/lib/release/production-collector-source-binding.mjs',
+  'src/lib/release/prepare-forward-subset.mjs',
+  'src/lib/release/production-database-writer-classification.mjs',
+  'src/lib/release/production-observed-profile.mjs',
+  'supabase/migration-baseline-manifest.json',
+  'package.json',
+  'pnpm-lock.yaml',
+  'supabase/verify/run-reviewed-supabase-cli.mjs',
+  'supabase/verify/verify-production-baseline-catalog.mjs',
+  'supabase/verify/verify-target-binding.mjs',
+]);
 const fail=()=>{throw new Error('Production managed writer observation refused; details suppressed');};
 const exact=(v,keys)=>v!==null&&typeof v==='object'&&!Array.isArray(v)&&
   Object.getPrototypeOf(v)===Object.prototype&&Object.getOwnPropertySymbols(v).length===0&&
@@ -121,11 +140,14 @@ export function parseProductionManagedWriterOutputs(output,binding) {
 }
 
 /** Caller-provided data is never a hosted proof: tool, target and TLS are checked here. */
-export async function collectProductionManagedWriters({workspace,binding,environment=process.env}={}) {
+export async function collectProductionManagedWriters({workspace,binding,sourceOptions,environment=process.env}={}) {
   if(typeof workspace!=='string'||!isAbsolute(workspace)||environment!==process.env||
     environment.EXPECTED_SUPABASE_ENVIRONMENT!=='production'||
     !exact(binding,['sourceSha','sourceTree','sourceManifestSha256','targetBindingSha256'])) fail();
   try {
+    const bound=bindProductionCollectorSource({workspace,source:{sourceSha:binding.sourceSha,sourceTree:binding.sourceTree,
+      sourceManifestSha256:binding.sourceManifestSha256},sourceOptions,moduleUrl:import.meta.url,
+      moduleRelative:MODULE_RELATIVE,sourceRelatives:SOURCE_RELATIVES,sqlRelatives:SQL_RELATIVES});
     if(binding.targetBindingSha256 !== productionTargetBindingSha256(environment.EXPECTED_SUPABASE_PROJECT_REF)) fail();
     const [cli,catalog,target]=await Promise.all([
       import('../../../supabase/verify/run-reviewed-supabase-cli.mjs'),
@@ -134,9 +156,8 @@ export async function collectProductionManagedWriters({workspace,binding,environ
     cli.verifyApprovedSupabaseCliExecutable();
     const executable=catalog.verifyApprovedPsqlExecutable();
     const certificate=catalog.verifyApprovedSslRootCertificate();
-    await target.verifyConfiguredSupabaseTarget({workspace:resolve(workspace),environment});
-    const parts=['production-cli-principal-profile.sql','production-managed-worker-profile.sql','production-database-writer-classification.sql']
-      .map(name=>readFileSync(fileURLToPath(new URL(name,import.meta.url)),'utf8'));
+    await target.verifyConfiguredSupabaseTarget({workspace:bound.workspace,environment});
+    const parts=SQL_RELATIVES.map(relative=>bound.sql[relative]);
     const sql=buildProductionManagedWriterSql(parts);
     const url=new URL(environment.SUPABASE_DB_URL);
     if(!['postgres:','postgresql:'].includes(url.protocol)||!url.hostname||!url.port||!url.username||!url.password||url.pathname!=='/postgres') fail();
@@ -147,8 +168,8 @@ export async function collectProductionManagedWriters({workspace,binding,environ
       PGSSLMODE:'verify-full',PGSSLROOTCERT:certificate,
       PGOPTIONS:'-c default_transaction_read_only=on -c statement_timeout=20000 -c lock_timeout=3000 -c idle_in_transaction_session_timeout=30000'});
     let collection;
-    try {collection=runBoundedProductionManagedWriterCollection({
-      executable,workspace:resolve(workspace),environment:child,sql,binding,
+    try {bound.recheck();collection=runBoundedProductionManagedWriterCollection({
+      executable,workspace:bound.workspace,environment:child,sql,binding,
     });}
     finally {for(const key of Object.keys(child))delete child[key];}
     // This timestamp is the completed read-only collection, after psql and

@@ -56,7 +56,10 @@ const SAFE_VERSION_ENVIRONMENT_KEYS = [
 ];
 
 function createSafeVersionEnvironment(environment) {
-  const childEnvironment = {};
+  // Pin the public vendor platform. Without this explicit profile, CLI 2.115.0
+  // can consult an ambient saved profile even when user-home variables are absent.
+  // Application staging/production selection remains in the reviewed PG target.
+  const childEnvironment = { SUPABASE_PROFILE: 'supabase' };
   for (const key of SAFE_VERSION_ENVIRONMENT_KEYS) {
     if (typeof environment[key] === 'string') {
       childEnvironment[key] = environment[key];

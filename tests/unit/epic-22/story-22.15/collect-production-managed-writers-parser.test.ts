@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const { spawnSyncMock } = vi.hoisted(() => ({ spawnSyncMock: vi.fn() }));
+const { spawnSyncMock, sourceBindingMock } = vi.hoisted(() => ({ spawnSyncMock: vi.fn(), sourceBindingMock: vi.fn() }));
+vi.mock('../../../../src/lib/release/production-collector-source-binding.mjs', () => ({
+  bindProductionCollectorSource: sourceBindingMock,
+}));
 vi.mock('node:child_process', () => ({
   default: { spawnSync: spawnSyncMock },
   spawnSync: spawnSyncMock,
@@ -93,6 +98,8 @@ function output({
 describe('managed writer raw-inventory correlation parser', () => {
   afterEach(() => {
     spawnSyncMock.mockReset();
+    sourceBindingMock.mockReset();
+    vi.unstubAllEnvs();
     vi.useRealTimers();
   });
   it('binds a long collection to its completion time, never its earlier start', () => {
@@ -112,6 +119,12 @@ describe('managed writer raw-inventory correlation parser', () => {
     const startedAt = new Date('2026-09-28T12:00:00.000Z');
     const completedAt = new Date('2026-09-28T12:00:45.000Z');
     let returned = false;
+    const recheck = vi.fn(() => true);
+    sourceBindingMock.mockReturnValue({
+      workspace: process.cwd(), recheck,
+      sql: Object.fromEntries(['production-cli-principal-profile.sql', 'production-managed-worker-profile.sql', 'production-database-writer-classification.sql']
+        .map(name => ['src/lib/release/' + name, readFileSync(resolve('src/lib/release', name), 'utf8')])),
+    });
     vi.useFakeTimers({ now: startedAt });
     spawnSyncMock.mockImplementation(() => {
       expect(returned).toBe(false);
@@ -132,6 +145,7 @@ describe('managed writer raw-inventory correlation parser', () => {
     try {
       const receipt = await collectProductionManagedWriters({
         workspace: process.cwd(),
+        sourceOptions: { commit: binding.sourceSha, gitExecutable: resolve('synthetic-git'), expectedGitSha256: 'e'.repeat(64) },
         binding: {
           sourceSha: binding.sourceSha, sourceTree: binding.sourceTree,
           sourceManifestSha256: binding.sourceManifestSha256,
@@ -139,6 +153,8 @@ describe('managed writer raw-inventory correlation parser', () => {
         },
       });
       expect(returned).toBe(true);
+      expect(recheck).toHaveBeenCalledOnce();
+      expect(recheck.mock.invocationCallOrder[0]).toBeLessThan(spawnSyncMock.mock.invocationCallOrder[0]);
       expect(receipt.collectionStartedAtUtc).toBe(startedAt.toISOString());
       expect(receipt.capturedAtUtc).toBe(completedAt.toISOString());
       expect(Date.parse(receipt.capturedAtUtc)).toBeGreaterThan(Date.parse(startedAt.toISOString()));
@@ -148,6 +164,22 @@ describe('managed writer raw-inventory correlation parser', () => {
         else process.env[key] = value;
       }
     }
+  });
+
+  it('refuses source mutation after preflight before a managed-writer psql process', async () => {
+    vi.stubEnv('EXPECTED_SUPABASE_ENVIRONMENT', 'production');
+    vi.stubEnv('EXPECTED_SUPABASE_PROJECT_REF', 'abcdefghijklmnopqrst');
+    vi.stubEnv('SUPABASE_DB_URL', 'postgresql://synthetic:synthetic@synthetic.example:5432/postgres');
+    sourceBindingMock.mockReturnValue({
+      workspace: process.cwd(), recheck: () => { throw new Error('source mutation'); },
+      sql: Object.fromEntries(['production-cli-principal-profile.sql', 'production-managed-worker-profile.sql', 'production-database-writer-classification.sql']
+        .map(name => ['src/lib/release/' + name, readFileSync(resolve('src/lib/release', name), 'utf8')])),
+    });
+    await expect(collectProductionManagedWriters({
+      workspace: process.cwd(), sourceOptions: { commit: binding.sourceSha, gitExecutable: resolve('synthetic-git'), expectedGitSha256: 'e'.repeat(64) },
+      binding: { sourceSha: binding.sourceSha, sourceTree: binding.sourceTree, sourceManifestSha256: binding.sourceManifestSha256, targetBindingSha256: productionTargetBindingSha256('abcdefghijklmnopqrst') },
+    })).rejects.toThrow('details suppressed');
+    expect(spawnSyncMock).not.toHaveBeenCalled();
   });
 
   it('retains raw unknown counts only after both same-snapshot subset hashes bind', () => {

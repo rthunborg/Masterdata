@@ -1,7 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath, URL as NodeURL } from 'node:url';
+import { resolve } from 'node:path';
 
 import {
   observeProductionBaselineCatalog,
@@ -18,19 +17,31 @@ import {
   productionTargetBindingSha256,
   PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA,
 } from './production-observed-profile.mjs';
+import { bindProductionCollectorSource } from './production-collector-source-binding.mjs';
 
-const SCHEMA_SQL_PATH = fileURLToPath(
-  new NodeURL('./production-observed-schema.sql', import.meta.url)
-);
-const AGGREGATE_SQL_PATH = fileURLToPath(
-  new NodeURL('./production-observed-aggregate.sql', import.meta.url)
-);
+const MODULE_RELATIVE = 'src/lib/release/collect-production-observed-profile.mjs';
+const SCHEMA_SQL_RELATIVE = 'src/lib/release/production-observed-schema.sql';
+const AGGREGATE_SQL_RELATIVE = 'src/lib/release/production-observed-aggregate.sql';
+const CATALOG_SQL_RELATIVE = 'supabase/verify/production-baseline-catalog.sql';
+const SOURCE_RELATIVES = Object.freeze([
+  MODULE_RELATIVE,
+  SCHEMA_SQL_RELATIVE,
+  AGGREGATE_SQL_RELATIVE,
+  CATALOG_SQL_RELATIVE,
+  'src/lib/release/production-collector-source-binding.mjs',
+  'src/lib/release/prepare-forward-subset.mjs',
+  'src/lib/release/production-profile-redaction.mjs',
+  'src/lib/release/production-observed-profile.mjs',
+  'supabase/migration-baseline-manifest.json',
+  'package.json',
+  'pnpm-lock.yaml',
+  'supabase/verify/verify-production-baseline-catalog.mjs',
+  'supabase/verify/verify-target-binding.mjs',
+]);
 const MARKER = '-- This second result';
 const MAX_OUTPUT_BYTES = 1024 * 1024;
 const MAX_SESSION_OUTPUT_BYTES = 65_536;
 const TIMEOUT_MS = 45_000;
-const HASH40 = /^[a-f0-9]{40}$/u;
-const HASH64 = /^[a-f0-9]{64}$/u;
 const SAFE_ENVIRONMENT_KEYS = Object.freeze([
   'COMSPEC', 'LANG', 'LC_ALL', 'PATH', 'Path', 'PATHEXT', 'SYSTEMROOT',
   'SystemRoot', 'TEMP', 'TMP', 'TZ', 'WINDIR',
@@ -143,18 +154,6 @@ export function redactObservedProfileSchema(output) {
       count: Array.isArray(capture[key]) ? capture[key].length : null,
     }),
   ])));
-}
-
-function assertSource(source, schemaSql, aggregateSql) {
-  if (
-    !exactKeys(source, ['sourceSha', 'schemaSqlSha256', 'aggregateSqlSha256']) ||
-    !HASH40.test(source.sourceSha) ||
-    !HASH64.test(source.schemaSqlSha256) ||
-    !HASH64.test(source.aggregateSqlSha256) ||
-    hash(schemaSql) !== source.schemaSqlSha256 ||
-    hash(aggregateSql) !== source.aggregateSqlSha256
-  ) fail();
-  return Object.freeze({ ...source });
 }
 
 function createPsqlEnvironment(environment, databaseUrl, certificate) {
@@ -346,9 +345,27 @@ export async function runTwoPhaseObservedProfileAggregate({ session, firstSql, s
  * remains a non-admitting profile assessment; it has no repair, cleanup, or
  * migration-apply authority.
  */
+/** Keeps the immutable verifier/evaluator while replacing its live file read
+ * with the collector's initially verified Git buffer at the process boundary. */
+export function sourceBoundObservedCatalogSpawn({ bound, catalogSql, spawnSyncProcess = spawnSync }) {
+  const catalogPath = resolve(bound.workspace, CATALOG_SQL_RELATIVE);
+  const catalogArgs = Object.freeze([
+    '--no-psqlrc', '--quiet', '--csv', '--set', 'ON_ERROR_STOP=1', '--set',
+    'catalog_phase=production_pre_apply', '--file', catalogPath,
+  ]);
+  return (executable, args, options) => {
+    if (JSON.stringify(args) !== JSON.stringify(catalogArgs) || options?.cwd !== bound.workspace) fail();
+    bound.recheck();
+    return spawnSyncProcess(executable, args.slice(0, -2), {
+      ...options, input: catalogSql, timeout: TIMEOUT_MS, maxBuffer: MAX_OUTPUT_BYTES,
+    });
+  };
+}
+
 export async function collectProductionObservedProfile({
   workspace = process.cwd(),
   source,
+  sourceOptions,
   profilePhase = 'pre_cleanup',
   environment = process.env,
   now = () => new Date(),
@@ -358,7 +375,6 @@ export async function collectProductionObservedProfile({
   psqlVerifier = verifyApprovedPsqlExecutable,
   rootCertificateVerifier = verifyApprovedSslRootCertificate,
   catalogObserver = observeProductionBaselineCatalog,
-  readSql = readFileSync,
 } = {}) {
   if (
     environment !== process.env ||
@@ -370,18 +386,29 @@ export async function collectProductionObservedProfile({
   let schemaSql;
   let aggregateSql;
   try {
-    schemaSql = readSql(SCHEMA_SQL_PATH, 'utf8');
-    aggregateSql = readSql(AGGREGATE_SQL_PATH, 'utf8');
+    const bound = bindProductionCollectorSource({
+      workspace,
+      source,
+      sourceOptions,
+      moduleUrl: import.meta.url,
+      moduleRelative: MODULE_RELATIVE,
+      sourceRelatives: SOURCE_RELATIVES,
+      sqlRelatives: [SCHEMA_SQL_RELATIVE, AGGREGATE_SQL_RELATIVE, CATALOG_SQL_RELATIVE],
+    });
+    schemaSql = bound.sql[SCHEMA_SQL_RELATIVE];
+    aggregateSql = bound.sql[AGGREGATE_SQL_RELATIVE];
+    const catalogSql = bound.sql[CATALOG_SQL_RELATIVE];
     assertObservedProfileSchemaSql(schemaSql);
     const aggregateSqlParts = splitObservedProfileAggregateSql(aggregateSql);
-    const sourceFacts = assertSource(source, schemaSql, aggregateSql);
-    await targetVerifier({ workspace, environment });
+    const sourceFacts = bound.source;
+    await targetVerifier({ workspace: bound.workspace, environment });
     const executable = psqlVerifier({ environment });
     const certificate = rootCertificateVerifier({ environment });
     const invocation = buildInvocation({ executable, environment, certificate });
 
+    bound.recheck();
     let schemaResult = spawnSyncProcess(executable, invocation.args, {
-      cwd: workspace, env: invocation.environment, input: schemaSql,
+      cwd: bound.workspace, env: invocation.environment, input: schemaSql,
       encoding: 'utf8', windowsHide: true, timeout: TIMEOUT_MS,
       maxBuffer: MAX_OUTPUT_BYTES,
     });
@@ -389,6 +416,7 @@ export async function collectProductionObservedProfile({
     const schemaGroups = redactObservedProfileSchema(schemaResult.stdout);
     schemaResult = null;
 
+    bound.recheck();
     const session = openBoundedObservedProfileSession(invocation, { spawnProcess });
     const aggregateResult = await runTwoPhaseObservedProfileAggregate({
       session,
@@ -397,7 +425,8 @@ export async function collectProductionObservedProfile({
     });
     if (!aggregateResult.aggregateIssued || aggregateResult.aggregate === null) fail();
     const strict = await catalogObserver({
-      phase: 'production_pre_apply', workspace, environment,
+      phase: 'production_pre_apply', workspace: bound.workspace, environment,
+      spawn: sourceBoundObservedCatalogSpawn({ bound, catalogSql, spawnSyncProcess }),
     });
     if (
       !strict || !Number.isSafeInteger(strict.count) || !Array.isArray(strict.failedChecks) ||

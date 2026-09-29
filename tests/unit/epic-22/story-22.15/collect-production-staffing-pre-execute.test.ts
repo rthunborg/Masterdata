@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const mocks = vi.hoisted(() => ({
-  cli: vi.fn(), psql: vi.fn(), certificate: vi.fn(), target: vi.fn(), spawn: vi.fn(),
+  cli: vi.fn(), psql: vi.fn(), certificate: vi.fn(), target: vi.fn(), spawn: vi.fn(), sourceBinding: vi.fn(),
 }));
 vi.mock('node:child_process', () => ({ spawnSync: mocks.spawn, default: { spawnSync: mocks.spawn } }));
 vi.mock('../../../../supabase/verify/run-reviewed-supabase-cli.mjs', () => ({ verifyApprovedSupabaseCliExecutable: mocks.cli }));
@@ -13,6 +12,7 @@ vi.mock('../../../../supabase/verify/verify-production-baseline-catalog.mjs', ()
   verifyApprovedSslRootCertificate: mocks.certificate,
 }));
 vi.mock('../../../../supabase/verify/verify-target-binding.mjs', () => ({ verifyConfiguredSupabaseTarget: mocks.target }));
+vi.mock('../../../../src/lib/release/production-collector-source-binding.mjs', () => ({ bindProductionCollectorSource: mocks.sourceBinding }));
 
 import {
   assertProductionStaffingPreExecuteSql,
@@ -27,8 +27,8 @@ const source = Object.freeze({
   sourceSha: 'a'.repeat(40),
   sourceTree: 'b'.repeat(40),
   sourceManifestSha256: 'c'.repeat(64),
-  sqlSha256: createHash('sha256').update(sql, 'utf8').digest('hex'),
 });
+const sourceOptions = Object.freeze({ commit: source.sourceSha, gitExecutable: 'C:\\reviewed-git.exe', expectedGitSha256: 'd'.repeat(64) });
 
 function projection() {
   return {
@@ -88,6 +88,12 @@ describe('Story 22.15 protected production staffing pre-execute collector', () =
     mocks.psql.mockReturnValue('reviewed-psql');
     mocks.certificate.mockReturnValue('reviewed-ca');
     mocks.target.mockResolvedValue({});
+    mocks.sourceBinding.mockImplementation(({ source: claims }) => ({
+      workspace,
+      source: claims,
+      sql: { 'src/lib/release/production-staffing-pre-execute.sql': sql },
+      recheck: vi.fn(() => true),
+    }));
     mocks.spawn.mockImplementation((_executable, args, options) => {
       captured = { args: [...args], options, env: { ...options.env } };
       return { status: 0, stdout: `${JSON.stringify(projection())}\n`, stderr: '' };
@@ -96,11 +102,12 @@ describe('Story 22.15 protected production staffing pre-execute collector', () =
   afterEach(() => vi.unstubAllEnvs());
 
   it('verifies tools, target, TLS, source bytes, and a rollback-only projection before exposing the strict observation', async () => {
-    const receipt = await collectProductionStaffingPreExecute({ workspace, source, now: () => capturedAt });
+    const receipt = await collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: () => capturedAt });
     expect(mocks.cli).toHaveBeenCalledOnce();
     expect(mocks.psql).toHaveBeenCalledOnce();
     expect(mocks.certificate).toHaveBeenCalledOnce();
     expect(mocks.target).toHaveBeenCalledWith({ workspace, environment: process.env });
+    expect(mocks.sourceBinding).toHaveBeenCalledWith(expect.objectContaining({ workspace, source, sourceOptions }));
     expect(mocks.target.mock.invocationCallOrder[0]).toBeLessThan(mocks.spawn.mock.invocationCallOrder[0]);
     expect(captured.args.join(' ')).not.toMatch(/password|pooler/);
     expect(captured.options.input).toMatch(/BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY/);
@@ -120,7 +127,7 @@ describe('Story 22.15 protected production staffing pre-execute collector', () =
 
   it.each(['cli', 'psql', 'certificate', 'target'] as const)('rejects %s verification failure before spawn without relaying details', async kind => {
     mocks[kind].mockImplementation(() => { throw new Error('private-host-and-secret'); });
-    await expect(collectProductionStaffingPreExecute({ workspace, source, now: () => capturedAt }))
+    await expect(collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: () => capturedAt }))
       .rejects.toThrow('Production staffing pre-execute observation refused; details suppressed');
     expect(mocks.spawn).not.toHaveBeenCalled();
   });
@@ -132,36 +139,28 @@ describe('Story 22.15 protected production staffing pre-execute collector', () =
     { status: 0, signal: 'SIGTERM', stdout: 'not-a-completed-observation' },
   ])('rejects incomplete subprocess results', async result => {
     mocks.spawn.mockReturnValue(result);
-    await expect(collectProductionStaffingPreExecute({ workspace, source, now: () => capturedAt })).rejects.toThrow('details suppressed');
+    await expect(collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: () => capturedAt })).rejects.toThrow('details suppressed');
   });
 
   it('does not convert a deficient routine into an execution permission', async () => {
     const value = projection();
     value.routine.securityDefiner = true;
     mocks.spawn.mockReturnValue({ status: 0, stdout: JSON.stringify(value) });
-    const receipt = await collectProductionStaffingPreExecute({ workspace, source, now: () => capturedAt });
+    const receipt = await collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: () => capturedAt });
     expect(receipt.assessment).toMatchObject({
       disposition: 'blocked_insufficient_staffing_pre_execute_proof', reason: 'routine_contract_not_proven',
     });
   });
 
-  it.each([
-    ['an extra projection field', () => ({ ...projection(), rawFunctionDefinition: 'not-admitted' })],
-    ['a changed source-byte hash', () => ({ ...source, sqlSha256: 'e'.repeat(64) })],
-  ])('rejects %s without accepting raw output', async (_label, invalid) => {
-    if (_label === 'an extra projection field') {
-      mocks.spawn.mockReturnValue({ status: 0, stdout: JSON.stringify(invalid()) });
-      await expect(collectProductionStaffingPreExecute({ workspace, source, now: () => capturedAt })).rejects.toThrow('details suppressed');
-    } else {
-      await expect(collectProductionStaffingPreExecute({ workspace, source: invalid(), now: () => capturedAt })).rejects.toThrow('details suppressed');
-      expect(mocks.spawn).not.toHaveBeenCalled();
-    }
+  it('rejects an extra projection field without accepting raw output', async () => {
+    mocks.spawn.mockReturnValue({ status: 0, stdout: JSON.stringify({ ...projection(), rawFunctionDefinition: 'not-admitted' }) });
+    await expect(collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: () => capturedAt })).rejects.toThrow('details suppressed');
   });
 
   it('rejects a caller-provided environment and a non-session-pooler mode before spawn', async () => {
-    await expect(collectProductionStaffingPreExecute({ workspace, source, environment: { ...process.env }, now: () => capturedAt })).rejects.toThrow('details suppressed');
+    await expect(collectProductionStaffingPreExecute({ workspace, source, sourceOptions, environment: { ...process.env }, now: () => capturedAt })).rejects.toThrow('details suppressed');
     vi.stubEnv('SUPABASE_DB_CONNECTION_MODE', 'direct');
-    await expect(collectProductionStaffingPreExecute({ workspace, source, now: () => capturedAt })).rejects.toThrow('details suppressed');
+    await expect(collectProductionStaffingPreExecute({ workspace, source, sourceOptions, now: () => capturedAt })).rejects.toThrow('details suppressed');
     expect(mocks.spawn).not.toHaveBeenCalled();
   });
 

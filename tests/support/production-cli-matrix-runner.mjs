@@ -118,6 +118,13 @@ export function assertProtectedMatrixCliInvocation(invocation, { dryRun }) {
   return true;
 }
 
+export function buildPinnedMatrixToolEnvironment(environment = process.env) {
+  const env = { SUPABASE_PROFILE: 'supabase' };
+  for (const key of ['SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'COMSPEC', 'PATHEXT'])
+    if (typeof environment[key] === 'string') env[key] = environment[key];
+  return env;
+}
+
 function pinnedTool(tool, version) {
   need(
     tool &&
@@ -131,9 +138,7 @@ function pinnedTool(tool, version) {
       hash(readFileSync(tool.executablePath)) === tool.sha256,
     'matrix_tool_hash'
   );
-  const env = {};
-  for (const key of ['SystemRoot', 'WINDIR', 'TEMP', 'TMP'])
-    if (process.env[key]) env[key] = process.env[key];
+  const env = buildPinnedMatrixToolEnvironment();
   const result = spawnSync(tool.executablePath, ['--version'], {
     env,
     encoding: 'utf8',
@@ -220,16 +225,7 @@ export async function runProductionCliMatrixCase({
   const databaseName = 'cli_matrix_' + randomBytes(12).toString('hex');
   const expectedSystemIdentifierSha256 =
     guardBinding.expectedSystemIdentifierSha256;
-  const env = {};
-  for (const key of [
-    'SystemRoot',
-    'WINDIR',
-    'TEMP',
-    'TMP',
-    'COMSPEC',
-    'PATHEXT',
-  ])
-    if (process.env[key]) env[key] = process.env[key];
+  const env = buildPinnedMatrixToolEnvironment();
   Object.assign(env, {
     PGHOST: '127.0.0.1',
     PGPORT: String(guardBinding.port),

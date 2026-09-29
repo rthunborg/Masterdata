@@ -33,6 +33,8 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
       SUPABASE_CLI_EXECUTABLE: reviewedCliPath,
       EXPECTED_SUPABASE_CLI_SHA256: expectedSha256,
       SUPABASE_ACCESS_TOKEN: 'must-not-reach-version-probe',
+      SUPABASE_PROFILE: 'missing-local-profile',
+      SUPABASE_API_HOST: 'unreviewed-api-canary',
     };
 
     expect(
@@ -49,6 +51,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
     expect(spawn.mock.calls[0]?.[2]?.env).not.toHaveProperty(
       'SUPABASE_ACCESS_TOKEN'
     );
+    expect(spawn.mock.calls[0]?.[2]?.env).toEqual({ SUPABASE_PROFILE: 'supabase' });
     expect(spawn.mock.calls[0]?.[2]).toMatchObject({ timeout: 10_000, maxBuffer: 64 * 1024 });
   });
 
@@ -193,6 +196,8 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         SUPABASE_DB_URL: databaseUrl,
         SUPABASE_ACCESS_TOKEN: 'must-not-reach-database-command',
         SUPABASE_DB_PASSWORD: 'must-not-reach-database-command',
+        SUPABASE_PROFILE: 'missing-local-profile',
+        SUPABASE_API_HOST: 'unreviewed-api-canary',
         PGHOST: 'ambient-host-must-not-survive',
         PGSSLMODE: 'disable',
         PGSERVICE: 'ambient-service-must-not-survive',
@@ -236,6 +241,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         expect(childArguments.join(' ')).not.toContain(privateValue);
       }
       expect(childEnvironment).toMatchObject({
+        SUPABASE_PROFILE: 'supabase',
         PGAPPNAME: 'hr-masterdata-reviewed-supabase-cli',
         PGCONNECT_TIMEOUT: '10',
         PGDATABASE: 'postgres',
@@ -251,6 +257,7 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         'EXPECTED_SUPABASE_PROJECT_REF',
         'PGSERVICE',
         'SUPABASE_ACCESS_TOKEN',
+        'SUPABASE_API_HOST',
         'SUPABASE_CLI_EXECUTABLE',
         'SUPABASE_DB_CONNECTION_MODE',
         'SUPABASE_DB_PASSWORD',
