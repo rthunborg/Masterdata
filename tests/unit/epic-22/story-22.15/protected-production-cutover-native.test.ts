@@ -157,7 +157,7 @@ try {
 
       const context = {
         sourceSha: 'a'.repeat(40), sourceTree: 'b'.repeat(40), sourceManifestSha256: 'c'.repeat(64),
-        targetBindingSha256: 'd'.repeat(64), nonce: 'e'.repeat(64), operation: 'apply-forward-13',
+        targetBindingSha256: 'd'.repeat(64), nonce: 'e'.repeat(64), operation: 'apply-forward-14',
       };
       const work = path.join(root, 'private-work');
       mkdirSync(work);

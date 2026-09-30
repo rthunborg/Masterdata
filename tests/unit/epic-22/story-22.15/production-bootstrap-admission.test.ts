@@ -70,12 +70,29 @@ function observedState(now = new Date('2026-09-20T12:00:00.000Z')) {
 }
 
 describe('Story 22.15 production forward-bootstrap admission', () => {
-  it('requires the complete immutable 13-version source identity', () => {
-    expect(validateProductionBootstrapSource(source()).migrations).toHaveLength(13);
+  it('requires the complete immutable 14-version source identity', () => {
+    expect(validateProductionBootstrapSource(source()).migrations).toHaveLength(14);
 
     const reordered = source();
     reordered.migrations.reverse();
     expect(() => validateProductionBootstrapSource(reordered)).toThrow(
+      'Production bootstrap source identity is unavailable or invalid'
+    );
+
+    const missing = source();
+    missing.migrations.pop();
+    expect(() => validateProductionBootstrapSource(missing)).toThrow(
+      'Production bootstrap source identity is unavailable or invalid'
+    );
+
+    const extra = source();
+    extra.migrations.push({
+      version: '20260930120000',
+      file: '20260930120000_unreviewed_extra.sql',
+      gitBlob: 'f'.repeat(40),
+      sha256: 'f'.repeat(64),
+    });
+    expect(() => validateProductionBootstrapSource(extra)).toThrow(
       'Production bootstrap source identity is unavailable or invalid'
     );
 
@@ -120,7 +137,7 @@ describe('Story 22.15 production forward-bootstrap admission', () => {
     ).toThrow('Production bootstrap subset is unavailable or invalid');
   });
 
-  it('requires exactly the ordered thirteen versions in dry-run output', () => {
+  it('requires exactly the ordered fourteen versions in dry-run output', () => {
     const parsed = parseExactProductionBootstrapDryRun(exactDryRun(), migrations());
     expect(parsed.versions).toEqual(PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS);
     expect(parsed.files).toEqual(migrations().map((entry) => entry.file));

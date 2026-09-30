@@ -22,6 +22,11 @@ export const PRODUCTION_STAFFING_PRE_EXECUTE_OUTPUT_ARGUMENTS = Object.freeze([
   Object.freeze({ mode: 'OUT', name: 'new_value', type: 'integer' }),
 ]);
 
+export const PRODUCTION_STAFFING_NEEDS_UPDATED_BY_FK_NAME =
+  'staffing_needs_updated_by_fkey';
+export const PRODUCTION_STAFFING_UPDATED_BY_FK_RECONCILIATION_VERSION =
+  '20260930091123';
+
 const exactKeys = (value, keys) =>
   value !== null &&
   typeof value === 'object' &&
@@ -47,6 +52,34 @@ const exactObjectArray = (value, expected) =>
       entry[key] === expectedValue
     )
   );
+
+const exactStaffingNeedsUpdatedByForeignKey = (value, onDelete) =>
+  exactKeys(value, [
+    'foreignKeyCount',
+    'name',
+    'sourceColumn',
+    'referencedSchema',
+    'referencedTable',
+    'referencedColumn',
+    'onDelete',
+    'onUpdate',
+    'matchType',
+    'validated',
+    'deferrable',
+    'initiallyDeferred',
+  ]) &&
+  value.foreignKeyCount === 1 &&
+  value.name === PRODUCTION_STAFFING_NEEDS_UPDATED_BY_FK_NAME &&
+  value.sourceColumn === 'updated_by' &&
+  value.referencedSchema === 'public' &&
+  value.referencedTable === 'users' &&
+  value.referencedColumn === 'id' &&
+  value.onDelete === onDelete &&
+  value.onUpdate === 'NO ACTION' &&
+  value.matchType === 'SIMPLE' &&
+  value.validated === true &&
+  value.deferrable === false &&
+  value.initiallyDeferred === false;
 
 const canonicalUtc = (value) => {
   if (typeof value !== 'string') return null;
@@ -100,6 +133,7 @@ export function assessProductionStaffingPreExecuteProof(
     'sourceTree',
     'sourceManifestSha256',
     'targetBindingSha256',
+    'reconciliationExecuteVersion',
     'collectionStartedAtUtc',
     'capturedAtUtc',
     'routine',
@@ -114,7 +148,9 @@ export function assessProductionStaffingPreExecuteProof(
     receipt.sourceSha !== sourceSha ||
     receipt.sourceTree !== sourceTree ||
     receipt.sourceManifestSha256 !== sourceManifestSha256 ||
-    receipt.targetBindingSha256 !== targetBindingSha256
+    receipt.targetBindingSha256 !== targetBindingSha256 ||
+    receipt.reconciliationExecuteVersion !==
+      PRODUCTION_STAFFING_UPDATED_BY_FK_RECONCILIATION_VERSION
   ) return stopped('source_or_target_mismatch');
 
   const capturedAt = canonicalUtc(receipt.capturedAtUtc);
@@ -175,10 +211,14 @@ export function assessProductionStaffingPreExecuteProof(
     'staffingNeedsLocationCheck',
     'staffingNeedsHeadcountCheck',
     'staffingNeedsUpdatedByUsersForeignKey',
+    'staffingNeedsUpdatedByUsersForeignKeyProfile',
     'staffingChangelogPrimaryKey',
     'staffingChangelogChangedByUsersForeignKey',
     'bothTablesRlsEnabled',
     'outOfRangeHeadcountCount',
+    'nonNullUpdatedByCount',
+    'orphanPublicUsersCount',
+    'orphanAuthUsersCount',
   ]) ||
     !exactObjectArray(receipt.dependencies.staffingNeedsColumns, [
       { name: 'id', type: 'uuid', nullable: false, default: 'gen_random_uuid()' },
@@ -200,13 +240,35 @@ export function assessProductionStaffingPreExecuteProof(
       'staffingNeedsLocationUnique',
       'staffingNeedsLocationCheck',
       'staffingNeedsHeadcountCheck',
-      'staffingNeedsUpdatedByUsersForeignKey',
       'staffingChangelogPrimaryKey',
       'staffingChangelogChangedByUsersForeignKey',
       'bothTablesRlsEnabled',
     ].every((key) => receipt.dependencies[key] === true) ||
     receipt.dependencies.outOfRangeHeadcountCount !== 0
   ) return stopped('dependency_contract_not_proven');
+
+  const foreignKey = receipt.dependencies.staffingNeedsUpdatedByUsersForeignKeyProfile;
+  const canonicalForeignKey =
+    receipt.dependencies.staffingNeedsUpdatedByUsersForeignKey === true &&
+    exactStaffingNeedsUpdatedByForeignKey(foreignKey, 'NO ACTION');
+  const capturedSetNullForeignKey =
+    receipt.dependencies.staffingNeedsUpdatedByUsersForeignKey === false &&
+    exactStaffingNeedsUpdatedByForeignKey(foreignKey, 'SET NULL') &&
+    receipt.dependencies.nonNullUpdatedByCount === 0 &&
+    receipt.dependencies.orphanPublicUsersCount === 0 &&
+    receipt.dependencies.orphanAuthUsersCount === 0;
+  if (!canonicalForeignKey && !capturedSetNullForeignKey) {
+    return stopped('staffing_updated_by_foreign_key_not_reconcilable');
+  }
+
+  if (
+    !Number.isSafeInteger(receipt.dependencies.nonNullUpdatedByCount) ||
+    receipt.dependencies.nonNullUpdatedByCount < 0 ||
+    !Number.isSafeInteger(receipt.dependencies.orphanPublicUsersCount) ||
+    receipt.dependencies.orphanPublicUsersCount < 0 ||
+    !Number.isSafeInteger(receipt.dependencies.orphanAuthUsersCount) ||
+    receipt.dependencies.orphanAuthUsersCount < 0
+  ) return stopped('staffing_updated_by_actor_counts_invalid');
 
   if (!exactKeys(receipt.bodyProvenance, ['kind', 'sha256']) ||
     receipt.bodyProvenance.kind !== 'non_admitted_sha256' ||
@@ -217,13 +279,17 @@ export function assessProductionStaffingPreExecuteProof(
     schemaVersion: 1,
     kind: 'production-staffing-pre-execute-assessment',
     disposition: 'staffing_pre_execute_proved_not_execution_authority',
-    reason: 'fresh_replacement_compatibility_and_acl_contract_proven',
+    reason: canonicalForeignKey
+      ? 'fresh_canonical_staffing_fk_and_replacement_compatibility_proven'
+      : 'fresh_captured_staffing_fk_reconciliation_prerequisites_proven',
     collectionStartedAtUtc: new Date(collectionStartedAt).toISOString(),
     capturedAtUtc: new Date(capturedAt).toISOString(),
     sourceSha,
     sourceTree,
     sourceManifestSha256,
     targetBindingSha256,
+    reconciliationExecuteVersion:
+      PRODUCTION_STAFFING_UPDATED_BY_FK_RECONCILIATION_VERSION,
     bodyProvenanceSha256: receipt.bodyProvenance.sha256,
   });
 }

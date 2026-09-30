@@ -6,7 +6,7 @@ import { Client } from "pg";
 
 import { validateNonProductionSupabaseEnvironment } from "@/lib/env/non-production-supabase-guard";
 
-const LATEST_EPIC_22_MIGRATION_VERSION = "20260831200026";
+const LATEST_EPIC_22_MIGRATION_VERSION = "20260930091123";
 const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost", "::1"]);
 
 export interface ParsedSupabaseConfig {

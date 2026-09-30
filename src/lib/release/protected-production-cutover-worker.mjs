@@ -138,7 +138,7 @@ export function verifyProtectedCutoverPacket(text, nonce, publicKey) {
     'preForwardObservation', 'reviewRecords',
   ]) ||
     request.schemaVersion !== 1 ||
-    request.operation !== 'apply-forward-13' ||
+    request.operation !== 'apply-forward-14' ||
     request.nonce !== nonce ||
     !SHA256.test(nonce) ||
     typeof request.workspace !== 'string' || !path.isAbsolute(request.workspace) ||
@@ -236,7 +236,7 @@ export async function runProtectedProductionCutoverWorker({
   if (status !== 0) fail();
   output.write(JSON.stringify({
     schemaVersion: 1,
-    kind: 'protected-production-forward-13-attempt',
+    kind: 'protected-production-forward-14-attempt',
     sourceCommit: pkg.sourceCommit,
     sourceTree: pkg.sourceTree,
     sourceManifestSha256: pkg.sourceManifestSha256,

@@ -21,7 +21,7 @@ const context = () => ({
   sourceManifestSha256: 'c'.repeat(64),
   targetBindingSha256: 'd'.repeat(64),
   nonce: 'e'.repeat(64),
-  operation: 'apply-forward-13',
+  operation: 'apply-forward-14',
 });
 const result = (overrides = {}) => ({
   stdout: Buffer.from([0, 0xff, 0x41, 0x0a]),

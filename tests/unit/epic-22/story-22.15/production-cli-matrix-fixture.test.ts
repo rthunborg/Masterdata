@@ -12,9 +12,10 @@ import {
 } from '../../../support/production-cli-matrix-fixture.mjs';
 
 describe('Story 22.15 deterministic production CLI matrix fixture', () => {
-  it('declares the exact immutable thirteen-version sequence', () => {
-    expect(FORWARD_VERSIONS).toHaveLength(13);
+  it('declares the exact fourteen-version sequence including the staffing FK reconciliation', () => {
+    expect(FORWARD_VERSIONS).toHaveLength(14);
     expect(FORWARD_VERSIONS).toEqual([...FORWARD_VERSIONS].sort());
+    expect(FORWARD_VERSIONS.at(-1)).toBe('20260930091123');
   });
 
   it('builds a deterministic observed synthetic profile with the declared orphan boundary', () => {
@@ -33,6 +34,10 @@ describe('Story 22.15 deterministic production CLI matrix fixture', () => {
     expect(first.sql).toContain("'2027-02-01','2027-01-15'");
     expect(first.sql).toContain("'Trelleborg',8,10");
     expect(first.sql).toContain("'room_number_shared','number'");
+    expect(first.representation.physicalPredicates.staffingActorForeignKey).toEqual({
+      deleteAction: 'SET NULL', updateAction: 'NO ACTION', nonNullActors: 0,
+      reconciliationVersion: '20260930091123',
+    });
     expect(first.representation.bootstrapSqlSha256).toMatch(/^[a-f0-9]{64}$/);
   });
 

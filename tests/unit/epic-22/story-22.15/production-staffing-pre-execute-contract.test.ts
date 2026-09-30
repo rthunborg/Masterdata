@@ -9,6 +9,7 @@ import {
   PRODUCTION_STAFFING_PRE_EXECUTE_OUTPUT_ARGUMENTS,
   PRODUCTION_STAFFING_PRE_EXECUTE_RETURN_SHAPE,
   PRODUCTION_STAFFING_PRE_EXECUTE_SIGNATURE,
+  PRODUCTION_STAFFING_UPDATED_BY_FK_RECONCILIATION_VERSION,
 } from '../../../../src/lib/release/production-staffing-pre-execute-contract.mjs';
 
 const sourceSha = 'a'.repeat(40);
@@ -26,6 +27,8 @@ function receipt() {
     sourceTree,
     sourceManifestSha256,
     targetBindingSha256,
+    reconciliationExecuteVersion:
+      PRODUCTION_STAFFING_UPDATED_BY_FK_RECONCILIATION_VERSION,
     collectionStartedAtUtc: '2026-09-28T11:54:59.000Z',
     capturedAtUtc: '2026-09-28T11:55:00.000Z',
     routine: {
@@ -68,10 +71,27 @@ function receipt() {
       staffingNeedsLocationCheck: true,
       staffingNeedsHeadcountCheck: true,
       staffingNeedsUpdatedByUsersForeignKey: true,
+      staffingNeedsUpdatedByUsersForeignKeyProfile: {
+        foreignKeyCount: 1,
+        name: 'staffing_needs_updated_by_fkey',
+        sourceColumn: 'updated_by',
+        referencedSchema: 'public',
+        referencedTable: 'users',
+        referencedColumn: 'id',
+        onDelete: 'NO ACTION',
+        onUpdate: 'NO ACTION',
+        matchType: 'SIMPLE',
+        validated: true,
+        deferrable: false,
+        initiallyDeferred: false,
+      },
       staffingChangelogPrimaryKey: true,
       staffingChangelogChangedByUsersForeignKey: true,
       bothTablesRlsEnabled: true,
       outOfRangeHeadcountCount: 0,
+      nonNullUpdatedByCount: 0,
+      orphanPublicUsersCount: 0,
+      orphanAuthUsersCount: 0,
     },
     bodyProvenance: { kind: 'non_admitted_sha256', sha256: '0'.repeat(64) },
   };
@@ -99,7 +119,7 @@ describe('Story 22.15 production staffing pre-execute contract', () => {
     const result = assess();
     expect(result).toMatchObject({
       disposition: 'staffing_pre_execute_proved_not_execution_authority',
-      reason: 'fresh_replacement_compatibility_and_acl_contract_proven',
+      reason: 'fresh_canonical_staffing_fk_and_replacement_compatibility_proven',
       bodyProvenanceSha256: '0'.repeat(64),
     });
     expect(Object.keys(result)).not.toContain('bodySemanticsProven');
@@ -135,6 +155,33 @@ describe('Story 22.15 production staffing pre-execute contract', () => {
     expect(assess(second).disposition).toBe(
       'staffing_pre_execute_proved_not_execution_authority'
     );
+  });
+
+  it('accepts only the captured SET NULL prerequisite when it has no actors or orphans', () => {
+    const value = receipt();
+    value.dependencies.staffingNeedsUpdatedByUsersForeignKey = false;
+    value.dependencies.staffingNeedsUpdatedByUsersForeignKeyProfile.onDelete = 'SET NULL';
+
+    expect(assess(value)).toMatchObject({
+      disposition: 'staffing_pre_execute_proved_not_execution_authority',
+      reason: 'fresh_captured_staffing_fk_reconciliation_prerequisites_proven',
+    });
+  });
+
+  it.each([
+    ['a non-null actor', (value: ReturnType<typeof receipt>) => (value.dependencies.nonNullUpdatedByCount = 1)],
+    ['a public-user orphan', (value: ReturnType<typeof receipt>) => (value.dependencies.orphanPublicUsersCount = 1)],
+    ['an auth-user orphan', (value: ReturnType<typeof receipt>) => (value.dependencies.orphanAuthUsersCount = 1)],
+    ['an extra foreign key', (value: ReturnType<typeof receipt>) => (value.dependencies.staffingNeedsUpdatedByUsersForeignKeyProfile.foreignKeyCount = 2)],
+  ])('rejects captured SET NULL with %s', (_label, mutate) => {
+    const value = receipt();
+    value.dependencies.staffingNeedsUpdatedByUsersForeignKey = false;
+    value.dependencies.staffingNeedsUpdatedByUsersForeignKeyProfile.onDelete = 'SET NULL';
+    mutate(value);
+    expect(assess(value)).toMatchObject({
+      disposition: 'blocked_insufficient_staffing_pre_execute_proof',
+      reason: 'staffing_updated_by_foreign_key_not_reconcilable',
+    });
   });
 
   it.each([

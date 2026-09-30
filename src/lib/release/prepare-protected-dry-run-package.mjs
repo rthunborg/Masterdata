@@ -9,6 +9,7 @@ import {
 import path from 'node:path';
 
 import { inspectForwardSource } from './prepare-forward-subset.mjs';
+import { PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS } from './production-bootstrap-admission.mjs';
 import {
   assertReviewedModuleImports,
   inspectProtectedRunnerInventory,
@@ -223,7 +224,12 @@ function assertInventoryMatchesSource(inventory, source) {
 
 function planFrom(source) {
   const plan = source.receipt.migrations.map((entry) => ({ ...entry }));
-  if (plan.length !== 13 || new Set(plan.map((entry) => entry.version)).size !== 13) {
+  if (
+    !same(plan.map((entry) => entry.version), PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS) ||
+    plan.length !== PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length ||
+    new Set(plan.map((entry) => entry.version)).size !==
+      PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length
+  ) {
     fail();
   }
   return plan;

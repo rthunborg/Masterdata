@@ -30,7 +30,7 @@ const verified = () =>
     schemaVersion: 1,
     kind: 'production-repair-aware-forward-outcome',
     disposition: 'verified_complete_not_authority',
-    reason: 'fresh_exact_55_repair_history_and_68_total_history_proven',
+    reason: 'fresh_exact_55_repair_history_and_69_total_history_proven',
   });
 
 const plainObject = (value, keys) => {
@@ -226,7 +226,7 @@ export function classifyProductionRepairAwareForwardOutcome(
     !sameVersions(beforeFacts.history.versions, PRODUCTION_REPAIRED_HISTORY_VERSIONS)
   ) return stopped('before_history_not_exact_55_repair_set');
   if (!sameVersions(afterFacts.history.versions, PRODUCTION_COMPLETE_HISTORY_VERSIONS)) {
-    return stopped('after_history_not_exact_68_complete_set');
+    return stopped('after_history_not_exact_69_complete_set');
   }
   if (attemptFacts.child.kind !== 'exit') return stopped('child_outcome_indeterminate');
   if (attemptFacts.child.code !== 0) return stopped('attempt_exit_not_success');

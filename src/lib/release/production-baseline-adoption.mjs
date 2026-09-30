@@ -4,6 +4,8 @@ import {
 } from './production-history-repair-baseline.mjs';
 import { PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS } from './production-bootstrap-admission.mjs';
 
+const PRODUCTION_COMPLETE_HISTORY_COUNT =
+  PRODUCTION_HISTORY_REPAIR_VERSIONS.length + PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length;
 const SHA256 = /^[a-f0-9]{64}$/u;
 const GIT_SHA = /^[a-f0-9]{40}$/u;
 const MAX_EVIDENCE_AGE_MS = 15 * 60 * 1000;
@@ -233,7 +235,7 @@ export function prepareProductionBaselineAdoptionReview({
   const binding = { sourceCommit, targetBindingSha256 };
   const missing = [];
   if (!exactVersions(forwardHistory?.versions)) {
-    missing.push('forward_history_not_exactly_13');
+    missing.push(`forward_history_not_exactly_${PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length}`);
   } else {
     const reason = evidenceReason(forwardHistory, 'independent-production-post-forward-history', binding, now, [
       'schemaVersion', 'kind', 'sha256', 'sourceCommit', 'targetBindingSha256', 'capturedAtUtc', 'versions',
@@ -259,8 +261,8 @@ export function prepareProductionBaselineAdoptionReview({
     const reason = evidenceReason(receipt, kind, binding, now, keys);
     if (reason) missing.push(`${name}_${reason}`);
   }
-  if (canonicalFingerprint?.coverage !== 'complete-canonical-68-source-migrations') {
-    missing.push('canonical_schema_fingerprint_not_complete_68_source_coverage');
+  if (canonicalFingerprint?.coverage !== `complete-canonical-${PRODUCTION_COMPLETE_HISTORY_COUNT}-source-migrations`) {
+    missing.push(`canonical_schema_fingerprint_not_complete_${PRODUCTION_COMPLETE_HISTORY_COUNT}_source_coverage`);
   }
   if (preservationFingerprint?.scope !== 'all-ledger-data-effects-and-seed-states') {
     missing.push('preservation_fingerprint_scope_incomplete');

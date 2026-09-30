@@ -66,15 +66,15 @@ const assess = (value = {}) => classifyProductionRepairAwareForwardOutcome({
 }, { now });
 
 describe('Story 22.15 repair-aware production forward outcome', () => {
-  it('accepts only the exact 55 repair history followed by the full 68-version result', () => {
+  it('accepts only the exact 55 repair history followed by the full 69-version result', () => {
     expect(PRODUCTION_REPAIRED_HISTORY_VERSIONS).toHaveLength(55);
-    expect(PRODUCTION_REPAIRED_FORWARD_VERSIONS).toHaveLength(13);
-    expect(PRODUCTION_COMPLETE_HISTORY_VERSIONS).toHaveLength(68);
+    expect(PRODUCTION_REPAIRED_FORWARD_VERSIONS).toHaveLength(14);
+    expect(PRODUCTION_COMPLETE_HISTORY_VERSIONS).toHaveLength(69);
     expect(assess()).toEqual({
       schemaVersion: 1,
       kind: 'production-repair-aware-forward-outcome',
       disposition: 'verified_complete_not_authority',
-      reason: 'fresh_exact_55_repair_history_and_68_total_history_proven',
+      reason: 'fresh_exact_55_repair_history_and_69_total_history_proven',
     });
   });
 
@@ -105,7 +105,7 @@ describe('Story 22.15 repair-aware production forward outcome', () => {
   ])('stops %s', (_label, versions) => {
     expect(assess({ after: after(versions) })).toMatchObject({
       disposition: 'stopped_needs_diagnosis',
-      reason: 'after_history_not_exact_68_complete_set',
+      reason: 'after_history_not_exact_69_complete_set',
     });
   });
 

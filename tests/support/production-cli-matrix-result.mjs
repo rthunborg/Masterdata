@@ -11,7 +11,7 @@ export const CLI_MATRIX_CASES = Object.freeze({
     mode: 'guard',
   }),
   postcleanup_success: Object.freeze({
-    prefix: 13,
+    prefix: versions.length,
     target: null,
     mode: 'success',
   }),
@@ -55,7 +55,7 @@ export function verifyPendingMatrixDryRun(output, migrations, history) {
   ) {
     throw new Error('Invalid local matrix pending history');
   }
-  // Reuse the reviewed exact thirteen-file parser, supplying only the already
+  // Reuse the reviewed exact fixed-file parser, supplying only the already
   // independently observed prefix. Any extra, missing or reordered child file
   // still fails that parser. This is labelled suffix proof, not full CLI output.
   const prefix = migrations

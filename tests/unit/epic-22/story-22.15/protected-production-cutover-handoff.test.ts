@@ -55,12 +55,14 @@ function copy(root: string, relative: string) {
 
 function staffingReceipt(receiptCapturedAtUtc = capturedAtUtc) {
   return {
-    schemaVersion: 1, kind: 'production-staffing-pre-execute-observation', environment: 'production', sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, collectionStartedAtUtc: receiptCapturedAtUtc, capturedAtUtc: receiptCapturedAtUtc,
+    schemaVersion: 1, kind: 'production-staffing-pre-execute-observation', environment: 'production', sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, reconciliationExecuteVersion: '20260930091123', collectionStartedAtUtc: receiptCapturedAtUtc, capturedAtUtc: receiptCapturedAtUtc,
     routine: { signature: PRODUCTION_STAFFING_PRE_EXECUTE_SIGNATURE, exactOverloadCount: 1, owner: 'postgres', language: 'plpgsql', kind: 'function', securityDefiner: false, config: null, nonOwnerExecuteGrantees: [...PRODUCTION_STAFFING_PRE_EXECUTE_GRANTEES], nonOwnerExecuteGrantOptions: false, nonExecuteAclPrivileges: false, returnShape: PRODUCTION_STAFFING_PRE_EXECUTE_RETURN_SHAPE, inputArguments: PRODUCTION_STAFFING_PRE_EXECUTE_INPUT_ARGUMENTS.map((value) => ({ ...value })), outputArguments: PRODUCTION_STAFFING_PRE_EXECUTE_OUTPUT_ARGUMENTS.map((value) => ({ ...value })), volatility: 'volatile', parallel: 'unsafe', strict: false, leakproof: false },
     dependencies: {
       staffingNeedsColumns: [{ name: 'id', type: 'uuid', nullable: false, default: 'gen_random_uuid()' }, { name: 'location', type: 'text', nullable: false, default: null }, { name: 'headcount_need', type: 'integer', nullable: false, default: '0' }, { name: 'updated_at', type: 'timestamp with time zone', nullable: false, default: 'now()' }, { name: 'updated_by', type: 'uuid', nullable: true, default: null }],
       staffingChangelogColumns: [{ name: 'id', type: 'uuid', nullable: false, default: 'gen_random_uuid()' }, { name: 'location', type: 'text', nullable: false, default: null }, { name: 'old_value', type: 'integer', nullable: false, default: null }, { name: 'new_value', type: 'integer', nullable: false, default: null }, { name: 'changed_by', type: 'uuid', nullable: false, default: null }, { name: 'changed_at', type: 'timestamp with time zone', nullable: false, default: 'now()' }],
-      staffingNeedsPrimaryKey: true, staffingNeedsLocationUnique: true, staffingNeedsLocationCheck: true, staffingNeedsHeadcountCheck: true, staffingNeedsUpdatedByUsersForeignKey: true, staffingChangelogPrimaryKey: true, staffingChangelogChangedByUsersForeignKey: true, bothTablesRlsEnabled: true, outOfRangeHeadcountCount: 0,
+      staffingNeedsPrimaryKey: true, staffingNeedsLocationUnique: true, staffingNeedsLocationCheck: true, staffingNeedsHeadcountCheck: true, staffingNeedsUpdatedByUsersForeignKey: true,
+      staffingNeedsUpdatedByUsersForeignKeyProfile: { foreignKeyCount: 1, name: 'staffing_needs_updated_by_fkey', sourceColumn: 'updated_by', referencedSchema: 'public', referencedTable: 'users', referencedColumn: 'id', onDelete: 'NO ACTION', onUpdate: 'NO ACTION', matchType: 'SIMPLE', validated: true, deferrable: false, initiallyDeferred: false },
+      staffingChangelogPrimaryKey: true, staffingChangelogChangedByUsersForeignKey: true, bothTablesRlsEnabled: true, outOfRangeHeadcountCount: 0, nonNullUpdatedByCount: 0, orphanPublicUsersCount: 0, orphanAuthUsersCount: 0,
     }, bodyProvenance: { kind: 'non_admitted_sha256', sha256: '1'.repeat(64) },
   };
 }
@@ -216,7 +218,7 @@ describe.skipIf(process.platform !== 'win32')('Story 22.15 protected production 
     const workRoot = registerMarkedWorkRoot(workRootMarker);
     expect(result.error).toBeUndefined();
     expect(result.status, result.stderr).toBe(0);
-    expect(JSON.parse(result.stdout.trim())).toMatchObject({ kind: 'protected-production-forward-13-attempt', sourceCommit: sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, versions: PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS, authorizesCleanup: false, authorizesRepair: false, authorizesMain: false, authorizesDeployment: false, authorizesReopen: false });
+    expect(JSON.parse(result.stdout.trim())).toMatchObject({ kind: 'protected-production-forward-14-attempt', sourceCommit: sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, versions: PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS, authorizesCleanup: false, authorizesRepair: false, authorizesMain: false, authorizesDeployment: false, authorizesReopen: false });
     expect(readFileSync(callLog, 'utf8').trim().split(/\r?\n/u)).toEqual([
       'db push --dry-run --include-all --skip-vault --db-url postgresql:///postgres?sslmode=verify-full',
       'db push --include-all --skip-vault --db-url postgresql:///postgres?sslmode=verify-full',

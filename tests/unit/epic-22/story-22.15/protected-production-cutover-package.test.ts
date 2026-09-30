@@ -31,6 +31,14 @@ const expectedGitSha256 = sha256(readFileSync(gitExecutable));
 const repositoryRoot = path.resolve('.');
 const temporaryRoots: string[] = [];
 
+type PackageManifest = {
+  repositoryMigrationCount: number;
+  classifications: {
+    execute: string[];
+    'repair-after-catalog-proof': string[];
+  };
+};
+
 function git(workspace: string, ...args: string[]) {
   const result = spawnSync(gitExecutable, ['-C', workspace, ...args], {
     encoding: 'utf8',
@@ -135,6 +143,21 @@ function fixture() {
   };
 }
 
+function alterExecutePlan(
+  options: ReturnType<typeof fixture>,
+  alter: (manifest: PackageManifest, workspace: string) => void
+) {
+  const manifestPath = path.join(
+    options.workspace,
+    'supabase/migration-baseline-manifest.json'
+  );
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as PackageManifest;
+  alter(manifest, options.workspace);
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  options.commit = commit(options.workspace);
+  return options;
+}
+
 function allFiles(root: string, relative = ''): string[] {
   const directory = path.join(root, relative);
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -213,6 +236,7 @@ describe('Story 22.15 protected production cutover package', { timeout: 90_000 }
     expect(result.receipt.plan.map((entry) => entry.version)).toEqual(
       PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS
     );
+    expect(result.receipt.plan).toHaveLength(14);
     expect(result.receipt.files.map((entry) => entry.path)).toEqual([
       ...PROTECTED_PRODUCTION_CUTOVER_PACKAGE_FIXED_FILE_PATHS,
       ...result.receipt.plan.map(
@@ -280,6 +304,41 @@ describe('Story 22.15 protected production cutover package', { timeout: 90_000 }
     ).toThrow('Protected production cutover package preparation failed');
     expect(() => readdirSync(options.outputDirectory)).toThrow();
   });
+
+  it.each([
+    [
+      'a missing forward migration',
+      (manifest: PackageManifest) => {
+        const removed = manifest.classifications.execute.pop();
+        manifest.classifications['repair-after-catalog-proof'].push(removed);
+        manifest.classifications['repair-after-catalog-proof'].sort();
+      },
+    ],
+    [
+      'a reordered forward migration',
+      (manifest: PackageManifest) => {
+        manifest.classifications.execute.reverse();
+      },
+    ],
+    [
+      'an extra forward migration',
+      (manifest: PackageManifest, workspace: string) => {
+        const extra = '20260930120000';
+        manifest.classifications.execute.push(extra);
+        manifest.repositoryMigrationCount += 1;
+        writeFileSync(
+          path.join(workspace, 'supabase/migrations/20260930120000_unreviewed_extra.sql'),
+          '-- test-only extra forward migration\n'
+        );
+      },
+    ],
+  ])('rejects %s before package materialization', (_label, alter) => {
+    const options = alterExecutePlan(fixture(), alter);
+    expect(() => prepareProtectedProductionCutoverPackage(options)).toThrow(
+      'Protected production cutover package preparation failed'
+    );
+    expect(() => readdirSync(options.outputDirectory)).toThrow();
+  }, 180_000);
 
   it('rejects a committed dry-run worker with an unapproved dependency', () => {
     const options = fixture();

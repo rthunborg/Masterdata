@@ -5,7 +5,7 @@ import path from 'node:path';
 const DIRECTORY = 'cutover-diagnostics.v1';
 const CONTEXT_FILE = 'context.json';
 const PHASES = Object.freeze(['dry-run', 'apply']);
-const OPERATION = 'apply-forward-13';
+const OPERATION = 'apply-forward-14';
 const MAX_JOURNAL_BYTES = 8 * 1024 * 1024;
 const MAX_RESULT_BYTES = 2 * 1024 * 1024;
 const SHA40 = /^[a-f0-9]{40}$/u;

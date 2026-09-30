@@ -172,7 +172,7 @@ describe("Epic 22 Supabase test environment", () => {
 
     await expect(
       assertEpic22DatabaseFingerprint({ query })
-    ).rejects.toThrow(/20260831200026.*hr-masterdata/i);
+    ).rejects.toThrow(/20260930091123.*hr-masterdata/i);
   });
 
   it("prefers an explicit in-process local service-role key without .env.test", () => {
@@ -237,7 +237,7 @@ describe("Epic 22 Supabase test environment", () => {
 
   it("accepts a database with the Story 22.15 migration fingerprint", async () => {
     const query = vi.fn().mockResolvedValue({
-      rows: [{ version: "20260831200026" }],
+      rows: [{ version: "20260930091123" }],
     });
 
     await expect(

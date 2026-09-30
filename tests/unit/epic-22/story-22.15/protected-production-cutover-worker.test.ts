@@ -61,7 +61,7 @@ function request() {
     '4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945';
   return {
     schemaVersion: 1,
-    operation: 'apply-forward-13',
+    operation: 'apply-forward-14',
     nonce,
     workspace: process.cwd(),
     environment: {
@@ -96,6 +96,7 @@ function request() {
       sourceTree,
       sourceManifestSha256,
       targetBindingSha256,
+      reconciliationExecuteVersion: '20260930091123',
       collectionStartedAtUtc: '2026-09-23T14:04:45.000Z',
       capturedAtUtc: '2026-09-23T14:05:00.000Z',
       routine: {
@@ -138,10 +139,27 @@ function request() {
         staffingNeedsLocationCheck: true,
         staffingNeedsHeadcountCheck: true,
         staffingNeedsUpdatedByUsersForeignKey: true,
+        staffingNeedsUpdatedByUsersForeignKeyProfile: {
+          foreignKeyCount: 1,
+          name: 'staffing_needs_updated_by_fkey',
+          sourceColumn: 'updated_by',
+          referencedSchema: 'public',
+          referencedTable: 'users',
+          referencedColumn: 'id',
+          onDelete: 'NO ACTION',
+          onUpdate: 'NO ACTION',
+          matchType: 'SIMPLE',
+          validated: true,
+          deferrable: false,
+          initiallyDeferred: false,
+        },
         staffingChangelogPrimaryKey: true,
         staffingChangelogChangedByUsersForeignKey: true,
         bothTablesRlsEnabled: true,
         outOfRangeHeadcountCount: 0,
+        nonNullUpdatedByCount: 0,
+        orphanPublicUsersCount: 0,
+        orphanAuthUsersCount: 0,
       },
       bodyProvenance: { kind: 'non_admitted_sha256', sha256: '1'.repeat(64) },
     },
@@ -169,7 +187,7 @@ describe('Story 22.15 protected production cutover worker packet', () => {
 
   it('accepts a signed exact packet only with the complete fresh isolation receipt set', () => {
     expect(verifyProtectedCutoverPacket(envelope(), nonce, publicKey)).toMatchObject({
-      operation: 'apply-forward-13', targetBindingSha256,
+      operation: 'apply-forward-14', targetBindingSha256,
     });
   });
 

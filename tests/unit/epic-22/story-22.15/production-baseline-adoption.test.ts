@@ -40,7 +40,7 @@ const validPacket = () => ({
   },
   canonicalFingerprint: {
     ...receipt('independent-production-canonical-schema-fingerprint', 'c'.repeat(64)),
-    coverage: 'complete-canonical-68-source-migrations',
+    coverage: 'complete-canonical-69-source-migrations',
   },
   preservationFingerprint: {
     ...receipt('independent-production-preservation-fingerprint', 'd'.repeat(64)),
@@ -102,13 +102,13 @@ describe('Story 22.15 production baseline adoption ledger', () => {
 
     const noForward = validPacket();
     noForward.forwardHistory.versions = PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.slice(1);
-    expect(prepareProductionBaselineAdoptionReview(noForward).missing).toContain('forward_history_not_exactly_13');
+    expect(prepareProductionBaselineAdoptionReview(noForward).missing).toContain('forward_history_not_exactly_14');
     const reorderedForward = validPacket();
     reorderedForward.forwardHistory.versions.reverse();
-    expect(prepareProductionBaselineAdoptionReview(reorderedForward).missing).toContain('forward_history_not_exactly_13');
+    expect(prepareProductionBaselineAdoptionReview(reorderedForward).missing).toContain('forward_history_not_exactly_14');
     const duplicateForward = validPacket();
     duplicateForward.forwardHistory.versions[1] = duplicateForward.forwardHistory.versions[0];
-    expect(prepareProductionBaselineAdoptionReview(duplicateForward).missing).toContain('forward_history_not_exactly_13');
+    expect(prepareProductionBaselineAdoptionReview(duplicateForward).missing).toContain('forward_history_not_exactly_14');
     const no16 = validPacket();
     no16.strictPost.checkCount = 15;
     expect(prepareProductionBaselineAdoptionReview(no16).missing).toContain('strict_post_apply_16_of_16_not_proven');
@@ -141,7 +141,7 @@ describe('Story 22.15 production baseline adoption ledger', () => {
     expect(prepareProductionBaselineAdoptionReview(badScope).missing).toContain('preservation_fingerprint_scope_incomplete');
     const badCoverage = validPacket();
     badCoverage.canonicalFingerprint.coverage = 'nine-of-sixteen';
-    expect(prepareProductionBaselineAdoptionReview(badCoverage).missing).toContain('canonical_schema_fingerprint_not_complete_68_source_coverage');
+    expect(prepareProductionBaselineAdoptionReview(badCoverage).missing).toContain('canonical_schema_fingerprint_not_complete_69_source_coverage');
     const sourceTargetSwap = validPacket();
     sourceTargetSwap.forwardHistory.sourceCommit = '1'.repeat(40);
     expect(prepareProductionBaselineAdoptionReview(sourceTargetSwap).missing).toContain('forward_history_binding_mismatch');

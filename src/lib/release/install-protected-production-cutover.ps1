@@ -73,8 +73,8 @@ try {
     $manifest.sourceManifestSha256 -cnotmatch '^[a-f0-9]{64}$' -or
     $manifest.sourceCommit -cnotmatch '^[a-f0-9]{40}$' -or $manifest.sourceTree -cnotmatch '^[a-f0-9]{40}$'){throw 'schema'}
  if($manifest.executable -isnot [bool] -or $manifest.privateMaterialAllowed -isnot [bool] -or $manifest.approvalAttested -isnot [bool] -or $manifest.schemaVersion -isnot [int]){throw 'schema-types'}
- $versions=@('20260314000001','20260314000002','20260614000000','20260615000000','20260709194903','20260710144000','20260710150000','20260831200026','20260909115242','20260910094517','20260910115024','20260910184840','20260910184841')
- if(@($manifest.plan).Count -ne 13 -or (@($manifest.plan|ForEach-Object {$_.version}) -join '|') -cne ($versions -join '|')){throw 'plan'}
+ $versions=@('20260314000001','20260314000002','20260614000000','20260615000000','20260709194903','20260710144000','20260710150000','20260831200026','20260909115242','20260910094517','20260910115024','20260910184840','20260910184841','20260930091123')
+ if(@($manifest.plan).Count -ne 14 -or (@($manifest.plan|ForEach-Object {$_.version}) -join '|') -cne ($versions -join '|')){throw 'plan'}
  foreach($entry in $manifest.plan){if(($entry.PSObject.Properties.Name|Sort-Object)-join ',' -cne 'file,gitBlob,sha256,version' -or $entry.file -cnotmatch ('^'+$entry.version+'_[a-z0-9_]+\.sql$') -or $entry.gitBlob -cnotmatch '^[a-f0-9]{40}$' -or $entry.sha256 -cnotmatch '^[a-f0-9]{64}$'){throw 'plan-entry'}}
  $expected=@(
   'runtime/node.exe','runtime/supabase.exe',

@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: '2026-09-28'
+# last_updated: '2026-09-30'
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -177,7 +177,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'Current implementation 00fd3081982ce41918f8656f21bd64c923cde901 is in progress and passed fresh root-bound local gates: focused PostgreSQL-oracle 77/77 across five files with zero failures/skips (0.918s report; 1501ms wrapper; inherited byte-identically from verified-run-2); full Vitest 4516/4516 across 372 files with zero skips/failures, required matrix 8/8 and exit 0 (1424.46s report; 1433510ms wrapper); Playwright 163 passed, 47 individually matched historical skips, zero failures/errors and exit 0 (1033.8720819999999s report; 1037487ms wrapper); build exit 0 in 19460ms; TypeScript exit 0 in 13096ms; ESLint exit 0 with zero errors and 304 warnings in 39017ms. Documentation-head review, CI, and authorized staging merge remain pending. Preserve 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e as historical evidence; preserve the five non-admitting native attempts, including compact d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03 and PostgreSQL-jsonb 643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8. After a reviewed staging merge, collect fresh read-only source/tool/target/TLS, observed-profile, staffing, and managed-principal evidence. Cleanup, repair, apply, main, deployment, and reopening remain separate; keep production paused/no-go.'
+  next_action: 'Reviewed PR #122 head 79c1cd37e5e0d4e674bd92abb67efe0edb279cc7 merged into staging 5f69f47f904b9c004b4c6bda217165a4359b3ac6 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Fresh read-only production proof matches the observed profile but does not admit execution: history absent, seven strict catalog failures, staffing FK DELETE SET NULL versus canonical NO ACTION, two staffing rows with zero actors/orphans, 48 orphan filters and 55 unsigned UNPROVED repair rows. Draft 20260930091123 normalizes only the staffing FK; candidate plan is 14 forwards then separately adopted/authorized 55 repairs, final69, while hosted staging remains last verified68/68. Pre-v4 draft focused verification was 83/83, zero skips/failures; full suites, clean69 chain and final review/CI remain pending. The owner approved and root applied the exact v4 local safety-control patch; fresh Vercel read-only proof confirms the current pause target, disabled automatic assignment and zero active crons. Complete implementation/local gates/review, then use standing authorization for the clean-reviewed staging merge and migration after fresh prerequisites. Full isolation, filter cleanup, adoption/history repair, main, deployment and reopening retain their separate gates. Production paused/no-go; Story22.15 in-progress; Epic23 on-hold.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -328,17 +328,17 @@ consolidated_cutover_packet_deadline_correction_20260929:
   latest_failed_full_skipped: 0
   latest_failed_full_files: 371
   latest_failed_full_exit_code: 1
-  current_full_gate: historical-superseded-by-current-00fd-local-gates-documentation-review-ci-authorized-staging-merge-pending
+  current_full_gate: historical-pr122-complete-new-staffing-fk-full-gates-pending
 
 
 consolidated_cutover_collector_interval_correction_20260929:
   story_status: in-progress
   epic_23_status: on-hold
   production_status: paused-no-go
-  verification: historical-188-local-passed-reviewed-staging-merge-complete-current-00fd-documentation-review-ci-authorized-staging-merge-pending
-  current_full_gate: historical-superseded-by-current-00fd-local-gates-documentation-review-ci-authorized-staging-merge-pending
-  final_head_review: historical-e3e2c7e194964177d13462bc2b73c4fd5af6198c-current-00fd-documentation-review-ci-authorized-staging-merge-pending
-  reviewed_staging_merge: historical-3c6dd2fc24d8686787a95289eb00e50e9a753694-current-00fd-authorized-staging-merge-pending
+  verification: historical-188-and-pr122-local-gates-review-ci-staging-merge-complete
+  current_full_gate: historical-pr122-complete-new-staffing-fk-full-gates-pending
+  final_head_review: pr122-clean-final-head-79c1cd37e5e0d4e674bd92abb67efe0edb279cc7
+  reviewed_staging_merge: pr122-5f69f47f904b9c004b4c6bda217165a4359b3ac6
   hosted_writes: false
   previous_source: 5a27d77cd04dae9fef90e8f94adb8432636f0b4c
   staffing_collection_start_required: true
@@ -354,7 +354,7 @@ consolidated_cutover_collector_interval_correction_20260929:
   interrupted_completed_files_reported: 95
   interrupted_completed_tests_reported: 1028
   interrupted_accepted_as_passing_gate: false
-  note: 'Collector-interval gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e remain historical. The current projection and proven-literal correction has no accepted focused/full-suite result; the five native observations are non-admitting, and fresh tests/gates/review/CI/authorized staging merge remain pending.'
+  note: 'Collector-interval gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e remain historical. PR #122 projection/literal local gates, final review/CI and staging merge are complete. The five earlier native attempts remain historical non-admitting observations. The new staffing-FK draft has focused83/83; full gates and final review/CI remain pending.'
   tested_implementation: 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e
   verification_receipt: docs/commercial-readiness/evidence/production-cutover-collector-interval-verification-2026-09-29.json
   vitest_passed: 4502
@@ -365,3 +365,35 @@ consolidated_cutover_collector_interval_correction_20260929:
   playwright_failed: 0
   playwright_errors: 0
   ci_conclusion: success
+
+production_staffing_fk_preparation_20260930:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  merged_staging: 5f69f47f904b9c004b4c6bda217165a4359b3ac6
+  reviewed_pr122_head: 79c1cd37e5e0d4e674bd92abb67efe0edb279cc7
+  hosted_staging_last_verified_history: '68/68'
+  proposed_repository_migration_count: 69
+  proposed_staging_execute: ['20260930091123']
+  production_forward_count: 14
+  unchanged_repair_count: 55
+  repair_ledger: UNPROVED-unsigned
+  observed_staffing_fk_delete_action: SET-NULL
+  canonical_staffing_fk_delete_action: NO-ACTION
+  staffing_rows: 2
+  staffing_nonnull_actors: 0
+  staffing_public_orphans: 0
+  staffing_auth_orphans: 0
+  staffing_row_cleanup_required_for_capture: false
+  saved_filter_orphans: 48
+  strict_catalog_failed_groups: 7
+  draft_focused_passed: 83
+  draft_focused_failed: 0
+  draft_focused_skipped: 0
+  draft_focused_exit_code: 0
+  clean_source_release_evidence: false
+  protected_controls: v4-owner-approved-and-applied-local-only
+  vercel_inspection: fresh-readonly-pause-target-matches-autoassignment-disabled-zero-active-crons
+  full_gates_review_ci: pending
+  hosted_writes: false
+  evidence: docs/commercial-readiness/evidence/production-staffing-fk-preparation-2026-09-30.md
