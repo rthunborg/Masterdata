@@ -186,16 +186,20 @@ function normalizedFunctionBodyMd5(sql: string, functionName: string) {
 }
 
 describe('Story 22.15 migration baseline safety', () => {
-  it('keeps the tracked BMAD acceptance plan aligned with the production manifest', () => {
+  it('aligns the current BMAD plan while preserving the archived acceptance snapshot', () => {
     const spec = readFileSync(
       resolve(root, '_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md'),
       'utf8'
     );
     const acceptance = spec.match(/\*\*Acceptance Criteria:\*\*([\s\S]*?)## Spec Change Log/)?.[1];
     expect(acceptance).toBeDefined();
-    expect(acceptance).toMatch(new RegExp(
-      `${manifest.classifications['repair-after-catalog-proof'].length} repair(?: candidates|s) plus ${manifest.classifications.execute.length} (?:applies|executes)`
-    ));
+    // The frozen acceptance snapshot retains its original 13-forward plan.
+    expect(acceptance).toContain('55 repair candidates plus 13 executes');
+    const currentPlan = spec.match(/^> \*\*Current staffing FK preparation[^\r\n]+/m)?.[0];
+    expect(currentPlan).toBeDefined();
+    expect(currentPlan).toContain(
+      `${manifest.repositoryMigrationCount} migrations, ${manifest.classifications.execute.length} forwards and ${manifest.classifications['repair-after-catalog-proof'].length} unchanged repairs`
+    );
   });
   it('classifies every repository migration exactly once', () => {
     const repositoryVersions = readdirSync(migrationDir)
@@ -230,7 +234,7 @@ describe('Story 22.15 migration baseline safety', () => {
     ).toContain('Public production non-dry-run db push remains blocked');
     expect(
       manifest.pendingProductionProofs.staffingFunctionSecurityMode.requiredImplementation
-    ).toContain('live fresh production proof and final review remain pending');
+    ).toContain('final revised-source proof and review remain pending');
     expect(manifest.pendingProductionProofs.staffingFunctionSecurityMode.executeVersion).toBe(
       '20260314000001'
     );
