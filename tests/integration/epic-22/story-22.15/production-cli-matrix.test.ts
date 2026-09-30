@@ -88,7 +88,7 @@ describe
               hasSupabaseConfigToml: false,
               hasMigrationManifest: true,
               hasSyntheticProjectLink: true,
-              migrationCount: 13,
+              migrationCount: 14,
             });
             expect(receipt.protectedCommandShape).toEqual([
               expect.objectContaining({
