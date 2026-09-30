@@ -36,7 +36,7 @@ export const PRODUCTION_FILTER_CLEANUP_EXPECTED = Object.freeze({
       distinctColumnCount: 61,
       nullColumnCount: 0,
       nonobjectPermissionsCount: 0,
-      rowsSha256: 'f0ed65806763de0eb6653583b5d2dcf86f3c3a8c75cc5d2b070ca301bb5625b1',
+      rowsSha256: '643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8',
     }),
     staffingOutOfRangeCount: 0,
   }),
@@ -275,7 +275,7 @@ COMMIT;
 `.trimStart();
 
 export const PRODUCTION_FILTER_CLEANUP_DRAFT_SQL_SHA256 =
-  '39d3505a06402761b58480bbf608f9f52771d33dc28d9d09babf6e5cfa6941a2';
+  'dc2522077981fd51502b4ad5b5d2fb7b043da28fb73d59156a3ee8766c44ef16';
 
 const expectedReceipt = Object.freeze({
   schemaVersion: 1,

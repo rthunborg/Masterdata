@@ -39,6 +39,13 @@ function assess(value = observation(), context = {
 
 describe('Story 22.15 production observed profile', () => {
   it('accepts only the exact redacted baseline and remains non-admitting', () => {
+    expect(PRODUCTION_OBSERVED_PROFILE_BASELINE.aggregate.permission_baseline).toEqual({
+      row_count: 61,
+      null_column_count: 0,
+      distinct_column_count: 61,
+      nonobject_permissions_count: 0,
+      rows_sha256: '643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8',
+    });
     expect(assess()).toEqual({
       schemaVersion: 1,
       kind: 'production-observed-profile-assessment',
@@ -78,6 +85,9 @@ describe('Story 22.15 production observed profile', () => {
     }],
     ['a changed all-61 permission fingerprint', (value: ReturnType<typeof observation>) => {
       value.aggregate.permission_baseline.rows_sha256 = '0'.repeat(64);
+    }],
+    ['the superseded all-61 permission fingerprint', (value: ReturnType<typeof observation>) => {
+      value.aggregate.permission_baseline.rows_sha256 = 'f0ed65806763de0eb6653583b5d2dcf86f3c3a8c75cc5d2b070ca301bb5625b1';
     }],
     ['a changed audit preservation hash', (value: ReturnType<typeof observation>) => {
       value.aggregate.audit_preservation.stable_fields_sha256 = '0'.repeat(64);

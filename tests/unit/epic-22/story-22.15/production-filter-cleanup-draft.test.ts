@@ -21,7 +21,8 @@ const nestedRecord = (value: Record<string, unknown>, key: string) =>
 
 describe('Story 22.15 production filter cleanup draft', () => {
   it('hash-binds the fixed two-phase SQL source', () => {
-    expect(PRODUCTION_FILTER_CLEANUP_DRAFT_SQL_SHA256).toMatch(/^[a-f0-9]{64}$/u);
+    expect(PRODUCTION_FILTER_CLEANUP_DRAFT_SQL_SHA256)
+      .toBe('dc2522077981fd51502b4ad5b5d2fb7b043da28fb73d59156a3ee8766c44ef16');
     expect(verifyProductionFilterCleanupDraftSource()).toBe(true);
     expect(() => verifyProductionFilterCleanupDraftSource(`${PRODUCTION_FILTER_CLEANUP_DRAFT_SQL}-- drift`))
       .toThrow('production_filter_cleanup_source_integrity_invalid');
@@ -48,6 +49,14 @@ describe('Story 22.15 production filter cleanup draft', () => {
     expect(PRODUCTION_FILTER_CLEANUP_DRAFT_SQL).toContain('story_2215_filter_cleanup_delete_count_drift');
     expect(PRODUCTION_FILTER_CLEANUP_DRAFT_SQL).toContain("count(*) FILTER (WHERE db_column_name IS NULL)::bigint");
     expect(PRODUCTION_FILTER_CLEANUP_DRAFT_SQL).toContain("coalesce(jsonb_typeof(role_permissions), 'null') <> 'object'");
+    expect(PRODUCTION_FILTER_CLEANUP_EXPECTED.preservation.permissionBaseline.rowsSha256)
+      .toBe('643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8');
+    expect(PRODUCTION_FILTER_CLEANUP_DRAFT_SQL).toContain(
+      "ORDER BY source.db_column_name NULLS FIRST, source.role_permissions::text NULLS FIRST)::text"
+    );
+    expect(PRODUCTION_FILTER_CLEANUP_DRAFT_SQL).not.toContain(
+      'f0ed65806763de0eb6653583b5d2dcf86f3c3a8c75cc5d2b070ca301bb5625b1'
+    );
   });
 
   it('commits the single cleanup transaction before independently proving a zero-filter postcondition and preservation aggregates', () => {
@@ -85,6 +94,10 @@ describe('Story 22.15 production filter cleanup draft', () => {
     ['a remaining orphan after the committed transaction', (value: Record<string, unknown>) => { nestedRecord(value, 'postCleanup').orphanAuthReferenceCount = 1; }],
     ['a changed orphan identity', (value: Record<string, unknown>) => { nestedRecord(value, 'preCleanup').rowIdentitySha256 = '0'.repeat(64); }],
     ['a preservation change', (value: Record<string, unknown>) => { nestedRecord(nestedRecord(value, 'preservation'), 'audit').rowCount = 1024; }],
+    ['the superseded permission fingerprint', (value: Record<string, unknown>) => {
+      nestedRecord(nestedRecord(value, 'preservation'), 'permissionBaseline').rowsSha256 =
+        'f0ed65806763de0eb6653583b5d2dcf86f3c3a8c75cc5d2b070ca301bb5625b1';
+    }],
     ['an unexpected receipt field', (value: Record<string, unknown>) => { value.authorized = true; }],
   ])('rejects %s', (_label, mutate) => {
     const value = JSON.parse(receipt());
