@@ -99,7 +99,7 @@ Final independent review and final-head GitHub/Vercel checks are pending. The ow
   [20260930091123_reconcile_staffing_updated_by_foreign_key.sql:8](../../supabase/migrations/20260930091123_reconcile_staffing_updated_by_foreign_key.sql#L8)
 
 - Require canonical metadata in every strict catalog phase.
-  [production-baseline-catalog.sql:1665](../../supabase/verify/production-baseline-catalog.sql#L1665)
+  [production-baseline-catalog.sql:1672](../../supabase/verify/production-baseline-catalog.sql#L1672)
 
 **Source-bound admission and release safeguards**
 
@@ -118,7 +118,7 @@ Final independent review and final-head GitHub/Vercel checks are pending. The ow
   [production-staffing-pre-execute-local-sql.test.ts:278](../../tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts#L278)
 
 - Reject known metadata drift in every strict phase.
-  [post-apply-reconciliation.test.ts:1921](../../tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts#L1921)
+  [post-apply-reconciliation.test.ts:1926](../../tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts#L1926)
 
 - Assess exact tests, source bindings, classified skips and remaining gates.
   [production-staffing-fk-verification-2026-09-30.md:1](../../docs/commercial-readiness/evidence/production-staffing-fk-verification-2026-09-30.md#L1)
