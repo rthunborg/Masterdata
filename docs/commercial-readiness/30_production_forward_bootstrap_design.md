@@ -108,15 +108,15 @@ included in this repository.
 
 > **Status — 2026-09-19: non-executable design proposal.** This document records a potential way to establish the production migration baseline without replaying unsafe historical SQL or claiming that missing effects are already present. It authorizes no database, history, setting, deployment, main-merge, or reopening action. Production remains paused.
 
-The current design source is PR #105 staging candidate `51f1adbf9cf3446dd2405bc4bee57cd22a005759`. A future implementation must bind its own final reviewed source SHA/tree; this dated candidate is not a release authorization.
+The historical design source was PR #105 staging candidate `51f1adbf9cf3446dd2405bc4bee57cd22a005759`. A future implementation must bind its own final reviewed source SHA/tree; this dated candidate is not a release authorization.
 
 ## Historical problem and proposal boundary — 2026-09-19 snapshot
 
-The dated production observation recorded zero migration-history rows and seven failed strict catalog groups; it was not a refreshed complete proof at this design date. The current source proposes 55 history repairs and 14 forward executions, but normal `db push` cannot reach the later saved-filter reconciliation while the earlier unsafe `20260130212612_create_user_filters.sql` is unrecorded. That historical file must not be replayed over its existing table.
+The dated production observation recorded zero migration-history rows and seven failed strict catalog groups; it was not a refreshed complete proof at this design date. At this dated checkpoint, the source proposed 55 history repairs and 13 forward executions, but normal `db push` cannot reach the later saved-filter reconciliation while the earlier unsafe `20260130212612_create_user_filters.sql` is unrecorded. That historical file must not be replayed over its existing table.
 
 The proposed alternative is **forward-first bootstrapping**. It is not yet a safe or approved procedure. It would run only the existing 13 execute migrations through the normal reviewed Supabase CLI, from a separately materialized migration directory. It never runs raw `psql` DDL, manually inserts migration history, marks a forward version as repaired, or recreates weaker legacy policies solely to satisfy a ledger row.
 
-The 13-file source set is the current proposed execute order from `supabase/migration-baseline-manifest.json`. A later reviewed reconciliation may change that proposal:
+The historical 13-file source set was the proposed execute order from `supabase/migration-baseline-manifest.json`. A later reviewed reconciliation may change that proposal:
 
 1. `20260314000001`
 2. `20260314000002`
