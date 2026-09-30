@@ -195,11 +195,13 @@ describe('Story 22.15 migration baseline safety', () => {
     expect(acceptance).toBeDefined();
     // The frozen acceptance snapshot retains its original 13-forward plan.
     expect(acceptance).toContain('55 repair candidates plus 13 executes');
-    const currentPlan = spec.match(/^> \*\*Current staffing FK preparation[^\r\n]+/m)?.[0];
+    const currentPlan = spec.match(/^> \*\*Current staging v69 merge, single-forward apply, and post-proof[^\r\n]+/m)?.[0];
     expect(currentPlan).toBeDefined();
     expect(currentPlan).toContain(
       `${manifest.repositoryMigrationCount} migrations, ${manifest.classifications.execute.length} forwards and ${manifest.classifications['repair-after-catalog-proof'].length} unchanged repairs`
     );
+    expect(currentPlan).toContain('PR #123 reviewed head');
+    expect(currentPlan).toContain('69/69 with no pending or remote-only version');
   });
   it('classifies every repository migration exactly once', () => {
     const repositoryVersions = readdirSync(migrationDir)
