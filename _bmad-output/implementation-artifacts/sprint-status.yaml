@@ -175,7 +175,7 @@ protected_toolchain_component_20260922:
 consolidated_cutover_proposal_20260928:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
-  staging_pending_versions: []
+  staging_pending_versions: ['20260930091123']
   production_status: 'paused-no-go'
   next_action: 'Current clean local candidate eff0bd4e5bbcdf3e7217efd0b1b068cee2d86913 passed focused 222/222, fixture prerequisite 12/12, exact full Vitest 4544/4544 across 372 files with zero skips/failures, clean69 strict catalog 16/16, TypeScript, zero-error lint, build, portable pause verification, and exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors. The prior e50 full-Vitest failure is retained as non-admitting historical evidence: expired local fixture JWTs plus synthetic 13-count and fixture-history assumptions were corrected. Final independent review and final-head GitHub/Vercel checks remain pending. Staging is last verified68/68 with only 20260930091123 pending after fresh reviewed prerequisites. Production stays paused/no-go; Story22.15 in-progress; Epic23 on-hold. Full isolation, filter cleanup, signed repair proof, main, deployment and reopening remain separate gates.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'

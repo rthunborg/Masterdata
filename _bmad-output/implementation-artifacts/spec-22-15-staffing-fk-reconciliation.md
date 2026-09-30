@@ -87,3 +87,38 @@ Clean tested implementation eff0bd4e5bbcdf3e7217efd0b1b068cee2d86913 passed focu
 ## Review gate
 
 Final independent review and final-head GitHub/Vercel checks are pending. The owner requirement retains status in-progress, including this supplemental specification, throughout preparation; the BMAD review step does not transition Story 22.15 to in-review. Epic 23 remains on-hold and production paused/no-go. This local result grants no hosted execution or release authority. Hosted staging is last verified 68/68 with only 20260930091123 pending fresh reviewed prerequisites.
+
+## Suggested Review Order
+
+**Migration and strict proof**
+
+- Review the captured mismatch and exact new forward lineage.
+  [migration-baseline-manifest.json:145](../../supabase/migration-baseline-manifest.json#L145)
+
+- Lock prerequisites before the atomic constraint-only reconciliation.
+  [20260930091123_reconcile_staffing_updated_by_foreign_key.sql:8](../../supabase/migrations/20260930091123_reconcile_staffing_updated_by_foreign_key.sql#L8)
+
+- Require canonical metadata in every strict catalog phase.
+  [production-baseline-catalog.sql:1665](../../supabase/verify/production-baseline-catalog.sql#L1665)
+
+**Source-bound admission and release safeguards**
+
+- Observe only the exact captured alternative; grant no execution authority.
+  [production-staffing-pre-execute-contract.mjs:251](../../src/lib/release/production-staffing-pre-execute-contract.mjs#L251)
+
+- Append one version to the fixed reviewed forward vector.
+  [production-bootstrap-admission.mjs:3](../../src/lib/release/production-bootstrap-admission.mjs#L3)
+
+- Retain the blocked public production-apply entry point.
+  [run-reviewed-supabase-cli.mjs:602](../../supabase/verify/run-reviewed-supabase-cli.mjs#L602)
+
+**Regression and evidence**
+
+- Exercise captured-state reconciliation and rejection using real PostgreSQL.
+  [production-staffing-pre-execute-local-sql.test.ts:278](../../tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts#L278)
+
+- Reject known metadata drift in every strict phase.
+  [post-apply-reconciliation.test.ts:1921](../../tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts#L1921)
+
+- Assess exact tests, source bindings, classified skips and remaining gates.
+  [production-staffing-fk-verification-2026-09-30.md:1](../../docs/commercial-readiness/evidence/production-staffing-fk-verification-2026-09-30.md#L1)
