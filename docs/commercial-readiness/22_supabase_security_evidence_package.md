@@ -27,7 +27,7 @@
 
 > **Historical offline component review — 2026-09-19 (PR #107 subsequently merged).** PR #107 proposes the source-only preparer as a separately reviewed component. Tested implementation `01abdf7` passes full Vitest 3,519/3,519 with zero skips and exact Playwright 163 passed / 47 classified skips / zero failures or errors, plus TypeScript, zero-error lint and named staging preview build. The prior `856c933` receipts remain historical evidence. Final-head review was pending at that dated snapshot and subsequently passed before PR #107 merged. This does not enable hosted execution or satisfy production-profile, CLI transaction/history, isolation, cleanup or repair gates. [Evidence and limitations](evidence/forward-subset-preparation-2026-09-19.md).
 
-> **Historical forward-bootstrap design pointer — 2026-09-19; superseded.** The materialized 13-file subset rehearsal remains local evidence, but its dated order is superseded by the current 14-forward-before-repair plan after fresh proof found no production history table. Trigger compatibility and all production gates remain open. [Earlier design](30_production_forward_bootstrap_design.md).
+> **Historical forward-bootstrap design pointer — 2026-09-19; superseded.** The materialized 13-file subset rehearsal remains local evidence, but its dated order is superseded. After independently proved isolation/drain and separately approved cleanup, the current sequence is 14 forwards, strict 16/16 and canonical-69 preservation proof, owner-ledger adoption, then separately approved 55-version history repair. Fresh proof found no production history table. Trigger compatibility and all production gates remain open. [Earlier design](30_production_forward_bootstrap_design.md).
 
 > **Historical staging evidence — 2026-09-17; superseded by PR #123 v69.** Reviewed PR #104 merged as staging `1cb4b02108183eeec4fa61fa980c99f835933344`; fresh pinned read-only proof passed 68/68 history, strict catalog 16/16, scoped advisors, and preservation comparisons. Production evidence remains provisional and no-go. [Receipt](evidence/pr104-post-merge-staging-proof-2026-09-17.md).
 
@@ -156,7 +156,7 @@ Story 22.15 retains six justified authenticated SECURITY DEFINER entry points: a
 
 ## Migration History
 
-- Historical plans progressed through 63–67 versions. Current staging is 69/69 after PR #123, with strict catalog 16/16 and preservation proofs. Production remains paused; its 55-repair/14-execute plan still requires strict proof, cleanup, isolation and separate non-migration approvals. Fresh production history is absent and strict production_pre_apply fails seven of 16 groups; the 55-row material-effect ledger remains unsigned.
+- Historical plans progressed through 63–67 versions. Current staging is 69/69 after PR #123, with strict catalog 16/16 and preservation proofs. Production remains paused; after independently proved isolation/drain and separately approved cleanup, the current sequence is 14 forwards, strict 16/16 and canonical-69 preservation proof, owner-ledger adoption, then separately approved 55-version history repair. Fresh production history is absent and strict production_pre_apply fails seven of 16 groups; the 55-row material-effect ledger remains unsigned.
 
 ## SSL, Network Restrictions, And PITR Posture
 
