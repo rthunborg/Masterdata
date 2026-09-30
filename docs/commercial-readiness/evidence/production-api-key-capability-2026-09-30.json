@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "kind": "production-api-key-capability-readonly",
+  "sourceSha": "c492c927224ed5a8f133c58b6fac2531c03e474b",
+  "sourceTree": "fce08211756d8f5b296b4bea2c8c95acd34482e8",
+  "sourceManifestSha256": "72817587a929e19ae507c9e806f2151f214d63465df8496258edde9f26ccc0f4",
+  "targetBindingSha256": "e42e2c64b3a5265f2686aa27133b5f3f717616c10b2b552b65ac89733756030d",
+  "capturedAtUtc": "2026-09-30T17:55:25.829Z",
+  "managementApiKeysRead": true,
+  "legacyAnonCapabilityVerified": true,
+  "legacyServiceRoleCapabilityVerified": true,
+  "hostedWriteAttempted": false,
+  "plaintextPersisted": false,
+  "readinessAssessed": false,
+  "observationPersisted": true
+}
