@@ -13,7 +13,7 @@ export const FORWARD_VERSIONS = Object.freeze([
   '20260615000000', '20260709194903', '20260710144000',
   '20260710150000', '20260831200026', '20260909115242',
   '20260910094517', '20260910115024', '20260910184840',
-  '20260910184841',
+  '20260910184841', '20260930091123',
 ]);
 
 export const MATRIX_FIXTURE_VARIANTS = Object.freeze([
@@ -314,7 +314,9 @@ export function buildProductionCliMatrixFixture({ variant = 'observed_orphans_48
     `INSERT INTO public.employees (id,first_name,surname,ssn,rank,gender,hire_date,repayment_needed_omc,repayment_needed_pe3) VALUES\n${employees().join(',\n')};`,
     `INSERT INTO public.column_config (id,column_name,db_column_name,column_type,role_permissions,is_masterdata,display_order) VALUES\n${configRows().join(',\n')};`,
     `INSERT INTO public.important_dates (id,updated_at,deadline_submit,deadline_cancel) VALUES ${importantDates()};`,
-    `INSERT INTO public.staffing_needs (id,location,headcount_need,updated_by) VALUES (${literal(uuid('staffing/trelleborg'))}::uuid,'Trelleborg',10,${literal(appUser)}::uuid),(${literal(uuid('staffing/goteborg'))}::uuid,'Göteborg',20,${literal(appUser)}::uuid);`,
+    'ALTER TABLE public.staffing_needs DROP CONSTRAINT staffing_needs_updated_by_fkey;',
+    'ALTER TABLE public.staffing_needs ADD CONSTRAINT staffing_needs_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id) ON DELETE SET NULL;',
+    `INSERT INTO public.staffing_needs (id,location,headcount_need,updated_by) VALUES (${literal(uuid('staffing/trelleborg'))}::uuid,'Trelleborg',10,NULL),(${literal(uuid('staffing/goteborg'))}::uuid,'Göteborg',20,NULL);`,
     `INSERT INTO public.staffing_needs_changelog (id,location,old_value,new_value,changed_by,changed_at) VALUES ${staffingChangelog(appUser)};`,
     `INSERT INTO public.employee_column_changes (id,employee_id,column_name,changed_at,changed_by) VALUES\n${auditRows().join(',\n')};`,
     orphanCount === 0 ? '-- Declared zero-filter synthetic derivative.' : `INSERT INTO public.user_filters (id,user_id,name,filters) VALUES\n${filters(orphanCount).join(',\n')};`,
@@ -322,6 +324,7 @@ export function buildProductionCliMatrixFixture({ variant = 'observed_orphans_48
   ].join('\n');
   const physicalPredicates = Object.freeze({
     savedFilters: { total: orphanCount, orphanAuthReferences: orphanCount, emptyNames: 0, overlengthNames: 0 },
+    staffingActorForeignKey: { deleteAction: 'SET NULL', updateAction: 'NO ACTION', nonNullActors: 0, reconciliationVersion: '20260930091123' },
     implicitChecklistColumn: columnPresent
       ? { syntheticChoice: 'present', status: 'present_noop_possible', usableForHistoryClassification: false }
       : { syntheticChoice: 'absent', status: 'absent_before_apply', usableForHistoryClassification: true, afterApply: 'present_not_null_default_false' },

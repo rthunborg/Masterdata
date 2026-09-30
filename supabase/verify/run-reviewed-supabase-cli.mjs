@@ -35,6 +35,7 @@ const PRODUCTION_REVIEWED_EXECUTE_VERSIONS = Object.freeze([
   '20260910115024',
   '20260910184840',
   '20260910184841',
+  '20260930091123',
 ]);
 const PRODUCTION_PROTECTED_APPLY_REQUIRED_MESSAGE =
   'Production --include-all apply requires the installed protected cutover runner and fresh reviewed prerequisites under full production traffic isolation';
@@ -648,7 +649,7 @@ export function createProtectedProductionCutoverExecutor({ packet, nonce, worksp
   }
   if (
     !request || typeof request !== 'object' || Array.isArray(request) ||
-    request.schemaVersion !== 1 || request.operation !== 'apply-forward-13' ||
+    request.schemaVersion !== 1 || request.operation !== 'apply-forward-14' ||
     request.nonce !== nonce || request.workspace !== workspace ||
     request.environment?.EXPECTED_SUPABASE_ENVIRONMENT !== 'production'
   ) {
@@ -733,7 +734,7 @@ export function createProtectedProductionCutoverExecutor({ packet, nonce, worksp
         sourceSha: fixedRequest.sourceSha, sourceTree: fixedRequest.sourceTree,
         sourceManifestSha256: fixedRequest.sourceManifestSha256,
         targetBindingSha256: fixedRequest.targetBindingSha256,
-        nonce, operation: 'apply-forward-13',
+        nonce, operation: 'apply-forward-14',
       },
     });
     const preserveResult = (phase) => (result, durationMs) => diagnostics.complete(phase, {

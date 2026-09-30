@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "repositoryMigrationCount": 68,
+  "repositoryMigrationCount": 69,
   "reviewedSupabaseCliVersion": "2.115.0",
   "catalogVerifier": "supabase/verify/production-baseline-catalog.sql",
   "restoredMigrationProvenance": {
@@ -80,7 +80,8 @@
       "20260910094517",
       "20260910115024",
       "20260910184840",
-      "20260910184841"
+      "20260910184841",
+      "20260930091123"
     ]
   },
   "unsafeReplayVersions": {
@@ -137,16 +138,26 @@
   "pendingProductionProofs": {
     "staffingFunctionSecurityMode": {
       "observedState": "The observed production update_staffing_need(text, integer, uuid) is SECURITY INVOKER. The immutable migration's SECURITY DEFINER effect is absent, so this version is not eligible for history repair.",
-      "blockedOperation": "Public production non-dry-run db push remains blocked. Only a reviewed installed protected13-file path may attempt apply after exact staffing replacement compatibility, post-cleanup observed profile, full isolation and source/target/tool/TLS/review-record proofs pass.",
-      "requiredImplementation": "The exact replacement-compatibility collector is implemented locally; live fresh production proof and final review remain pending. Its invoker body is provenance only, never semantic equivalence or an accepted catalog exception. Strict final16/16 and canonical/preservation evidence are required after13 applies and before55 baseline-adoption repairs.",
+      "blockedOperation": "Public production non-dry-run db push remains blocked. Only a reviewed installed protected 14-file path may attempt apply after exact staffing replacement compatibility, post-cleanup observed profile, full isolation and source/target/tool/TLS/review-record proofs pass.",
+      "requiredImplementation": "The replacement-compatibility collector is implemented locally. Fresh production proof at the merged PR122 source is blocked by the separately documented staffing FK mismatch; final revised-source proof and review remain pending. The invoker body is provenance only, never semantic equivalence or an accepted catalog exception. Strict final 16/16 and canonical/preservation evidence are required after 14 applies and before 55 baseline-adoption repairs.",
       "executeVersion": "20260314000001"
+    },
+    "staffingUpdatedByForeignKey": {
+      "observedState": "The redacted production observation captured one exact named, single-column, validated, nondeferrable public.staffing_needs(updated_by) to public.users(id) FK with MATCH SIMPLE and ON UPDATE NO ACTION, but ON DELETE SET NULL.",
+      "requiredReconciliationVersion": "20260930091123",
+      "requiredCapturedCounts": {
+        "non_null_updated_by": 0,
+        "orphan_public_users": 0,
+        "orphan_auth_users": 0
+      },
+      "requiredImplementation": "The source-bound observation may identify this captured profile only as the prerequisite for the exact forward reconciliation version. It is not strict catalog acceptance, execution authority, or a history-repair disposition. Every strict catalog phase must retain canonical ON DELETE NO ACTION proof."
     }
   },
   "environmentPlans": {
     "staging": {
       "repair-after-catalog-proof": [],
       "execute": [
-        "20260910184840"
+        "20260930091123"
       ]
     },
     "production": {
@@ -159,22 +170,22 @@
       "version": "20260910184840",
       "beforeVersion": "20260910184841",
       "cliGeneratedVersion": "20260915164637",
-      "reason": "New forward-only ACL prerequisite ordered before the immutable trigger migration; current staging applies the missing prerequisite after its already-recorded successor using reviewed --include-all. No existing version is changed or repaired."
+      "reason": "Historical completed ACL prerequisite ordered before its immutable trigger successor. Staging applied the missing prerequisite once under the reviewed include-all gate and is verified through v68. Preserve that historical gate; the later staffing FK reconciliation uses ordinary chronological db push. No existing version is changed or repaired."
     }
   ],
   "productionCutoverOrdering": {
     "schemaVersion": 1,
     "status": "proposed-pending-final-review-and-live-proof",
     "forwardSource": "classifications.execute",
-    "forwardWorkingDirectory": "exclusive-reviewed-13-file-subset",
+    "forwardWorkingDirectory": "exclusive-reviewed-14-file-subset",
     "historyInitially": "absent",
-    "intermediateHistoryCount": 13,
+    "intermediateHistoryCount": 14,
     "requiredPostForwardCatalogPhase": "post_apply",
     "requiredPostForwardCatalogCheckCount": 16,
     "baselineAdoptionSource": "src/lib/release/production-baseline-adoption.mjs",
     "repairSource": "classifications.repair-after-catalog-proof",
     "repairRequiresSeparateOwnerAdoptionAndAuthorization": true,
-    "finalHistoryCount": 68,
+    "finalHistoryCount": 69,
     "productionPause": "retained-until-separate-owner-reopening"
   }
 }

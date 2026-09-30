@@ -1669,6 +1669,25 @@ catalog_checks(check_name, passed, observed) AS (
               END
             ) IS TRUE
           )
+          AND (
+            SELECT count(*) = 1
+              AND bool_and(constraints.conname =
+                'staffing_needs_updated_by_fkey')
+              AND bool_and(constraints.conkey = ARRAY[5]::smallint[])
+              AND bool_and(constraints.confrelid =
+                to_regclass('public.users'))
+              AND bool_and(constraints.confkey = ARRAY[1]::smallint[])
+              AND bool_and(constraints.confupdtype = 'a')
+              AND bool_and(constraints.confdeltype = 'a')
+              AND bool_and(constraints.confmatchtype = 's')
+              AND bool_and(constraints.convalidated)
+              AND bool_and(NOT constraints.condeferrable)
+              AND bool_and(NOT constraints.condeferred)
+            FROM pg_constraint AS constraints
+            WHERE constraints.conrelid =
+                to_regclass('public.staffing_needs')
+              AND constraints.contype = 'f'
+          )
         FROM (
           VALUES
             ('employees', 'repayment_needed_omc', 'boolean', 'YES', 'false'),

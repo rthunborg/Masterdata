@@ -1,0 +1,337 @@
+{
+  "schemaVersion": 1,
+  "kind": "production-staffing-fk-draft-preparation",
+  "date": "2026-09-30",
+  "readinessAssessed": false,
+  "hostedWriteAttempted": false,
+  "storyStatus": "in-progress",
+  "epic23Status": "on-hold",
+  "productionStatus": "paused-no-go",
+  "mergedSource": {
+    "commit": "5f69f47f904b9c004b4c6bda217165a4359b3ac6",
+    "reviewedHead": "79c1cd37e5e0d4e674bd92abb67efe0edb279cc7",
+    "tree": "a9d63a81c7cb2b93a17147f015bc8a72212a8dc7",
+    "manifestSha256": "2ede7b0622104a565e2522de948e36e2fef7ea988a3c12eabaa3e6be7cab41fb",
+    "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+    "priorStaging": "3c6dd2fc24d8686787a95289eb00e50e9a753694"
+  },
+  "sourceCollectors": {
+    "receiptSha256": "3cf12111980c8372491f54dbaf7165ef8fab1a28f66fd520d423ea8dbef633bf",
+    "completedCollectors": 3,
+    "nativeExitCode": 0,
+    "observedProfileDisposition": "profile_match_not_admission",
+    "staffingDisposition": "blocked_insufficient_staffing_pre_execute_proof",
+    "staffingReason": "dependency_contract_not_proven",
+    "strictCatalogChecks": 16,
+    "strictCatalogFailures": [
+      "dietary_columns_and_permissions",
+      "represented_column_contracts",
+      "represented_function_contracts",
+      "represented_policy_contracts",
+      "represented_trigger_contracts",
+      "user_filters_objects",
+      "user_filters_trigger_function_contract"
+    ],
+    "historyTablePresent": false,
+    "historyRowCount": null
+  },
+  "capturedApprovedAggregates": {
+    "savedFilters": {
+      "count": 48,
+      "orphanAuthReferences": 48,
+      "emptyNames": 0,
+      "overlengthNames": 0,
+      "identitySha256": "b25b25ff02eaf7fa052b857e2b3865ef6945052629fd1743315ed25346d8db9b"
+    },
+    "repayment": {
+      "omc": {
+        "null": 70,
+        "true": 2,
+        "false": 1
+      },
+      "pe3": {
+        "null": 70,
+        "true": 2,
+        "false": 1
+      }
+    },
+    "permissions": {
+      "rows": 61,
+      "distinctColumns": 61,
+      "nullColumnNames": 0,
+      "nonObjectValues": 0,
+      "sha256": "643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8"
+    },
+    "audit": {
+      "rows": 1025,
+      "nonNullActors": 202,
+      "legacyUnmappedActors": 0,
+      "canonicalUnmappedActors": 202,
+      "stableSha256": "1986bd7d3a71299e73486332f895020acf2a865790a8eb7683c7affc8e58d593"
+    }
+  },
+  "staffingDiagnosis": {
+    "receiptSha256": "e5d44a47949bf8afd77ba31cc3e4bf65a219789d733d87114f410e3a671e9c6a",
+    "querySha256": "e2226f3a103f9679ba82fd8124109ce09980c990b5dc50098900b00f55b25e97",
+    "startedAtUtc": "2026-09-30T08:56:24.344Z",
+    "capturedAtUtc": "2026-09-30T08:56:24.974Z",
+    "counts": {
+      "staffing_row_count": 2,
+      "nonnull_updated_by_count": 0,
+      "orphan_public_users_count": 0,
+      "orphan_auth_users_count": 0,
+      "foreign_key_delete_no_action_count": 0,
+      "foreign_key_delete_restrict_count": 0,
+      "foreign_key_delete_cascade_count": 0,
+      "foreign_key_delete_set_null_count": 1,
+      "foreign_key_delete_set_default_count": 0,
+      "foreign_key_delete_unknown_count": 0,
+      "foreign_key_update_no_action_count": 1,
+      "foreign_key_update_restrict_count": 0,
+      "foreign_key_update_cascade_count": 0,
+      "foreign_key_update_set_null_count": 0,
+      "foreign_key_update_set_default_count": 0,
+      "foreign_key_update_unknown_count": 0,
+      "foreign_key_expected_name_count": 1,
+      "foreign_key_expected_single_column_mapping_count": 1,
+      "foreign_key_count": 1,
+      "foreign_key_public_target_count": 1,
+      "foreign_key_auth_target_count": 0,
+      "foreign_key_other_target_count": 0,
+      "foreign_key_unvalidated_count": 0,
+      "foreign_key_deferrable_count": 0,
+      "foreign_key_nondefault_action_count": 1,
+      "foreign_key_exact_public_contract_count": 0
+    },
+    "deleteAction": "SET NULL",
+    "updateAction": "NO ACTION",
+    "noStaffingRowCleanupRequiredForCapturedState": true
+  },
+  "draftPlan": {
+    "existingMigrationsUnchanged": 68,
+    "repositoryMigrationCount": 69,
+    "stagingActualRecorded": 68,
+    "stagingProposedExecute": [
+      "20260930091123"
+    ],
+    "productionForwardCount": 14,
+    "repairCount": 55,
+    "repairLedgerDisposition": "UNPROVED_UNSIGNED",
+    "reconciliationVersion": "20260930091123",
+    "reconciliationSha256": "e059d40217fd5763841224c3e0e3f6e5bb739bbb4c623140eb65864f4752e67b",
+    "strictCatalogRequired": "canonical-NO-ACTION-in-every-phase",
+    "protectedControlEdits": "owner-approved-v4-applied-local-only",
+    "protectedControlProposalSha256": "23dc7f3305d196af8f7ef8af0d74f7539e92ad3cf37f7172c48cb8d019925b4a",
+    "staffingRowsModified": false,
+    "protectedControlProposal": "proposed-production-safety-control-v4.patch",
+    "protectedControlApproval": {
+      "date": "2026-09-30",
+      "scope": "exact-local-v4-diff-only",
+      "hostedAuthority": false
+    }
+  },
+  "draftVerification": {
+    "releaseEvidence": false,
+    "uncommittedSource": true,
+    "attempts": [
+      {
+        "receiptSha256": "9a7d067c789acd29a9a30f5362a6132f7a40bd7c719fe4df79bc0c695fb81033",
+        "kind": "draft-staffing-fk-focused-verification",
+        "sourceHead": "5f69f47f904b9c004b4c6bda217165a4359b3ac6",
+        "sourceWasUncommitted": true,
+        "releaseEvidence": false,
+        "command": "npx vitest run tests/unit/epic-22/story-22.15/production-staffing-pre-execute-contract.test.ts tests/unit/epic-22/story-22.15/collect-production-staffing-pre-execute.test.ts tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+        "startedAtUtc": "2026-09-30T09:27:18.212Z",
+        "durationMs": 19557,
+        "childExitCode": 1,
+        "errorCode": null,
+        "codeFingerprintSha256": "01eef5e08980110ec1efd343ce2839f2af2f5a47ebd8a240161e1b531199ec82",
+        "codeUnchanged": true,
+        "passed": false,
+        "testsPassed": null,
+        "filesPassed": null,
+        "skipped": null,
+        "logSha256": "f8b5063065e9e1408dae3a1e6cd1ca0cbc9471bed8877b3e9f0d67fa725c57ec",
+        "localOnly": true,
+        "hostedAccess": false
+      },
+      {
+        "receiptSha256": "cffd13e46c639cda598b0c23d321401eb321bbad56ff79338cf19a99d311f436",
+        "kind": "draft-staffing-fk-focused-verification",
+        "sourceHead": "5f69f47f904b9c004b4c6bda217165a4359b3ac6",
+        "sourceWasUncommitted": true,
+        "releaseEvidence": false,
+        "command": "npx vitest run tests/unit/epic-22/story-22.15/production-staffing-pre-execute-contract.test.ts tests/unit/epic-22/story-22.15/collect-production-staffing-pre-execute.test.ts tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+        "startedAtUtc": "2026-09-30T09:28:43.493Z",
+        "durationMs": 4383,
+        "childExitCode": 0,
+        "errorCode": null,
+        "codeFingerprintSha256": "ffd9c2e0000fb560d16e7d6fca8fe2777c01a600ab4033dcce34ea89bec8a64f",
+        "codeUnchanged": true,
+        "passed": true,
+        "testsPassed": 44,
+        "filesPassed": 3,
+        "skipped": 0,
+        "logSha256": "95f91d0ba32eea978d534f6380361c7b6122b61cf2d231a7714ce001a7e38613",
+        "localOnly": true,
+        "hostedAccess": false
+      },
+      {
+        "receiptSha256": "8b6df50a3a948d74c6a8bce3a9c0f855b46f309aff1b179e1bb9c3e3f8fd237c",
+        "kind": "draft-staffing-fk-focused-verification",
+        "sourceHead": "5f69f47f904b9c004b4c6bda217165a4359b3ac6",
+        "sourceWasUncommitted": true,
+        "releaseEvidence": false,
+        "command": "npx vitest run tests/unit/epic-22/story-22.15/production-staffing-pre-execute-contract.test.ts tests/unit/epic-22/story-22.15/collect-production-staffing-pre-execute.test.ts tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+        "startedAtUtc": "2026-09-30T09:36:46.749Z",
+        "durationMs": 5893,
+        "childExitCode": 0,
+        "errorCode": null,
+        "codeFingerprintSha256": "3fc1f92996a4a75eb61d9eecefaf9b9b057c6b715752b026aec5d2d88c0c4f06",
+        "codeUnchanged": true,
+        "passed": true,
+        "testsPassed": 60,
+        "filesPassed": 3,
+        "skipped": 0,
+        "logSha256": "afce604aa6919723c3d34bc8f98d4264ae0059200fc151e416176337480d9dd1",
+        "localOnly": true,
+        "hostedAccess": false
+      },
+      {
+        "receiptSha256": "d1283cb3b29374e968964d109c00af1d4998bb11e71e6c7b328c7f0f5fc1383b",
+        "kind": "draft-staffing-fk-expanded-verification",
+        "sourceHead": "5f69f47f904b9c004b4c6bda217165a4359b3ac6",
+        "sourceWasUncommitted": true,
+        "releaseEvidence": false,
+        "command": "npx vitest run tests/unit/epic-22/story-22.15/production-staffing-pre-execute-contract.test.ts tests/unit/epic-22/story-22.15/collect-production-staffing-pre-execute.test.ts tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts tests/unit/epic-22/story-22.15/production-cli-matrix-fixture.test.ts tests/unit/epic-22/story-22.15/production-repair-aware-forward-outcome.test.ts",
+        "startedAtUtc": "2026-09-30T09:47:14.407Z",
+        "durationMs": 7701,
+        "childExitCode": 0,
+        "errorCode": null,
+        "codeFingerprintSha256": "05dfdf7e6ee54f263c2f9db775f9710e6a06f8233f33892d2ce45850e59a1b5b",
+        "codeUnchanged": true,
+        "passed": true,
+        "testsPassed": 83,
+        "filesPassed": 5,
+        "skipped": 0,
+        "logSha256": "d64e19e7b51e52dd0f25032106c7f00b694f96baba9121ed915d0a4a0526b84c",
+        "localOnly": true,
+        "hostedAccess": false
+      }
+    ],
+    "fullVitest": "pending",
+    "exactFullPlaywright": "pending",
+    "clean69MigrationChain": "pending",
+    "finalReviewAndCi": "pending",
+    "quality": {
+      "receiptSha256": "37d99f6f9268edba726c795faad34b093e4fbb6f409fcc67e306a7b84e013eda",
+      "kind": "draft-staffing-fk-quality-verification",
+      "sourceHead": "5f69f47f904b9c004b4c6bda217165a4359b3ac6",
+      "uncommittedDraft": true,
+      "releaseEvidence": false,
+      "codeFingerprintSha256": "b35e1acafcd2469e55308e543c5b07190bffabaa4ed9c27be1ddbb5811456844",
+      "codeUnchanged": true,
+      "checks": [
+        {
+          "label": "typescript",
+          "command": "npx tsc --noEmit",
+          "exitCode": 0,
+          "errorCode": null,
+          "durationMs": 22172,
+          "errors": null,
+          "warnings": null,
+          "logSha256": "2840e63069c808678a9c9fb6b1d51c5faea6bb4296d3105f81e8dcf30d4b467d"
+        },
+        {
+          "label": "lint",
+          "command": "npx eslint .",
+          "exitCode": 0,
+          "errorCode": null,
+          "durationMs": 70259,
+          "errors": 0,
+          "warnings": 304,
+          "logSha256": "4c57f1e23d30196f5f50c698dd6a3ac2abcb668c2ef4f4862a58e98d4559dc37"
+        }
+      ],
+      "hostedAccess": false
+    },
+    "documentationStartFailure": {
+      "nativeExitCode": 1,
+      "reason": "yaml-module-absent-in-isolated-checkout",
+      "checksExecuted": false,
+      "dependencyInstalled": false
+    },
+    "documentationCheck": {
+      "kind": "draft-staffing-documentation-check",
+      "sourceHead": "5f69f47f904b9c004b4c6bda217165a4359b3ac6",
+      "uncommittedDraft": true,
+      "releaseEvidence": false,
+      "yamlFilesParsed": 3,
+      "canonicalNextActionCopies": 5,
+      "storyStatus": "in-progress",
+      "epic23Status": "on-hold",
+      "productionStatus": "paused-no-go",
+      "immutableMigrationGitBlobs": 68,
+      "rawWorkingMigrationByteMatches": 68,
+      "frozenSpecUnchanged": true,
+      "unapprovedControlsUnchanged": 8,
+      "activeVersionListsMatch": true,
+      "approvedAggregatesMatchSourceReceipt": true,
+      "evidenceReadinessNotClaimed": true,
+      "hostedAccess": false
+    },
+    "scope": "Pre-v4 uncommitted draft results only; final clean-source implementation gates remain pending"
+  },
+  "vercel": {
+    "currentInspection": "fresh-readonly-pause-confirmed",
+    "requestsSent": 2,
+    "settingsChanged": false,
+    "ownerLoginConfirmationPending": false,
+    "inspectorSha256": "04a765ebc8defb0a432ff7b1f844110ddece778571d2fab62ea0dd4d0c37e770",
+    "receiptSha256": "109733760cfd4a794d360be23370e108844cf134b4ad45e96a423e8a39a72df6",
+    "observation": {
+      "schemaVersion": 1,
+      "kind": "current-vercel-pause-readonly-inspection",
+      "startedAtUtc": "2026-09-30T13:05:10.222Z",
+      "completedAtUtc": "2026-09-30T13:05:11.771Z",
+      "transport": "integrity-pinned Node built-in HTTPS; exactly two GET requests; no CLI, refresh, redirects, telemetry or update check",
+      "nodeVersion": "v24.19.0",
+      "nodeSha256": "3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237",
+      "privateDeploymentRecordSha256": "6d73889f5659d1396a0f89a125a077b476357f1b617e064a94b86ad838995c42",
+      "repositoryBound": true,
+      "pauseDeploymentIdSha256": "8893b239490e082f61f98f9c018bc20e4f8ec26ad6a8ccc212b401f9254bff13",
+      "currentProductionTargetIdSha256": "8893b239490e082f61f98f9c018bc20e4f8ec26ad6a8ccc212b401f9254bff13",
+      "currentProductionTargetMatchesPause": true,
+      "autoAssignCustomDomains": false,
+      "activeCronDefinitions": 0,
+      "deploymentCronDefinitions": null,
+      "deploymentFunctions": null,
+      "pauseReady": true,
+      "pauseTarget": "production",
+      "projectCronShapeKeys": [
+        "updatedAt",
+        "deploymentId",
+        "definitions"
+      ],
+      "deploymentMetadataKeys": [
+        "readyState",
+        "target",
+        "builds",
+        "functions",
+        "projectSettings",
+        "routes"
+      ],
+      "hostedSettingsChanged": false,
+      "deploymentsPerformed": false,
+      "hostedDatabaseAccess": false,
+      "readinessAssessed": false
+    },
+    "priorAttempt": {
+      "passed": false,
+      "stage": "existing-owner-authentication",
+      "requestsSent": 0,
+      "diagnosis": "prior credential location retained expired record; fresh login found at current standard CLI location",
+      "credentialValuesEmitted": false
+    }
+  }
+}

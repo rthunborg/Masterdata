@@ -246,9 +246,10 @@ stories:
     started_date: 2026-08-31
     completed_date: null
     blockers:
+      - 'Current 2026-09-30 verification: clean candidate eff0bd4 passed focused222/222, fixture12/12, fullVitest4544/4544 zero skips/failures, clean69 catalog16/16, TypeScript, zero-error lint, build and Playwright163/47/zero failures. Final review/CI and separate production gates remain pending; staging remains last verified68/68 with 20260930091123 pending.'
       - 'PR #102 reviewed head 841794efd9377f719a2262cfd1b2f633780c8a56 passed final Reviewbot comment 5686075592 and all three checks, then merged under standing authorization as staging 3e41b35c269d606545b766d1445d1e361e92f88c; its tree matches the reviewed head, main is unchanged, and no unexpected intervening commit occurred. Six fresh pre-proofs, exact one-file reviewed dry run, and authorized v68 20260910184840 apply passed. Immediate staging history is 68/68 with no pending/remote-only version; all five post phases pass, including strict catalog 16/16 and preserved advisor/aggregate/permission-hash/audit baselines. Owner staging verification was open at that dated checkpoint and completed on 2026-09-24; production stays paused.'
-      - 'Historical local results remain dated evidence. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the PR #104 final-head delta was documentation-only. Independently reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344; fresh pinned read-only proof passed 68/68 history, strict 16/16, scoped advisors, and preservation comparisons. Production has a proposed 55-repair/13-execute ordering blocked before actual apply. Seven strict catalog failures, the unsigned 55-row ledger, cleanup, isolation/settings, repair, deployment and reopening gates remain open.'
-    notes: 'Historical PR #105 record: PR #100 v67 is historical evidence. Reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344; fresh pinned read-only proof passed 68/68 history, strict 16/16, scoped advisors, and preservation comparisons. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the final-head delta was documentation-only. This documentation change builds on PR #105 merge 51f1adbf9cf3446dd2405bc4bee57cd22a005759 and adds a non-executable forward-bootstrap design: the dated 13-file subset is a proposal, not an accepted production profile or apply proof. It requires a production-profile fixture, transaction/history behavior proof, complete write isolation, strict final proof, and per-effect unsigned-ledger lineage before any later action. Owner application verification completed on 2026-09-24; seven strict production failures remain open. Pause status relies on the recorded 2026-09-15 observation; Story 22.15 remains in-progress and Epic 23 remains on-hold. Historical PR #111 component at staging baseline 1860472 after reviewed PR #110: 26 native Windows protected file-lease cases passed within focused 53/53 in 5.19 seconds; Linux skips are explicitly non-passing. Full Vitest later passed 3,651/3,651 across 331 files with zero skips/failures (117.28 seconds reported; 127.701 seconds wrapper); the two earlier failed full attempts remain dated evidence. Exact Playwright passed 163 tests with 47 classified skips and zero failures/errors; the staging-preview build passed. A retained local fixture passed strict catalog 16/16; no fresh clean migration chain is claimed. See docs/commercial-readiness/evidence/protected-file-lease-component-2026-09-21.md. Historical file-lease snapshot: trusted installation/origin, module closure and runner integration were still open at that stage. The later protected-toolchain and dry-run records below supersede those local implementation gaps; production-profile, traffic-isolation and target-write admission remain open. The 55 ledger rows are UNPROVED/unsigned, 13 executes are proposed, 48 orphan filters need separate approved cleanup, and seven dated strict production failures remain open.'
+      - 'Historical local results remain dated evidence. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the PR #104 final-head delta was documentation-only. Independently reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344; fresh pinned read-only proof passed 68/68 history, strict 16/16, scoped advisors, and preservation comparisons. At that historical PR104 checkpoint, production had a proposed55-repair/13-execute ordering; the current candidate is14 forwards followed by separately adopted55 repairs. Seven strict catalog failures, the unsigned 55-row ledger, cleanup, isolation/settings, repair, deployment and reopening gates remain open.'
+    notes: 'Historical PR #105 record: PR #100 v67 is historical evidence. Reviewed PR #104 merged as staging 1cb4b02108183eeec4fa61fa980c99f835933344; fresh pinned read-only proof passed 68/68 history, strict 16/16, scoped advisors, and preservation comparisons. Exact local implementation commit 5f9b07dd6b914bc69af4029bd2bc14d87bb25961 passed full Vitest 3,485/3,485 and Playwright 163 passed/47 classified skips/zero failures or errors; the final-head delta was documentation-only. This documentation change builds on PR #105 merge 51f1adbf9cf3446dd2405bc4bee57cd22a005759 and adds a non-executable forward-bootstrap design: the dated 13-file subset is a proposal, not an accepted production profile or apply proof. It requires a production-profile fixture, transaction/history behavior proof, complete write isolation, strict final proof, and per-effect unsigned-ledger lineage before any later action. Owner application verification completed on 2026-09-24; seven strict production failures remain open. Pause status relies on the recorded 2026-09-15 observation; Story 22.15 remains in-progress and Epic 23 remains on-hold. Historical PR #111 component at staging baseline 1860472 after reviewed PR #110: 26 native Windows protected file-lease cases passed within focused 53/53 in 5.19 seconds; Linux skips are explicitly non-passing. Full Vitest later passed 3,651/3,651 across 331 files with zero skips/failures (117.28 seconds reported; 127.701 seconds wrapper); the two earlier failed full attempts remain dated evidence. Exact Playwright passed 163 tests with 47 classified skips and zero failures/errors; the staging-preview build passed. A retained local fixture passed strict catalog 16/16; no fresh clean migration chain is claimed. See docs/commercial-readiness/evidence/protected-file-lease-component-2026-09-21.md. Historical file-lease snapshot: trusted installation/origin, module closure and runner integration were still open at that stage. The later protected-toolchain and dry-run records below supersede those local implementation gaps; production-profile, traffic-isolation and target-write admission remain open. At that historical checkpoint,55 ledger rows were UNPROVED/unsigned and13 executes were proposed. The current14-forward proposal,48 orphan filters and seven strict failures remain open; all55 adoption/repair decisions are still unsigned.'
 
 progress_summary:
   total_stories: 15
@@ -289,7 +290,7 @@ risks:
     severity: 'high'
     mitigation: 'Position as working pilot candidate only and complete P0 stories first.'
 next_actions:
-  - 'Current implementation 00fd3081982ce41918f8656f21bd64c923cde901 is in progress and passed fresh root-bound local gates: focused PostgreSQL-oracle 77/77 across five files with zero failures/skips (0.918s report; 1501ms wrapper; inherited byte-identically from verified-run-2); full Vitest 4516/4516 across 372 files with zero skips/failures, required matrix 8/8 and exit 0 (1424.46s report; 1433510ms wrapper); Playwright 163 passed, 47 individually matched historical skips, zero failures/errors and exit 0 (1033.8720819999999s report; 1037487ms wrapper); build exit 0 in 19460ms; TypeScript exit 0 in 13096ms; ESLint exit 0 with zero errors and 304 warnings in 39017ms. Documentation-head review, CI, and authorized staging merge remain pending. Preserve 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e as historical evidence; preserve the five non-admitting native attempts, including compact d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03 and PostgreSQL-jsonb 643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8. After a reviewed staging merge, collect fresh read-only source/tool/target/TLS, observed-profile, staffing, and managed-principal evidence. Cleanup, repair, apply, main, deployment, and reopening remain separate; keep production paused/no-go.'
+  - 'Current clean local candidate eff0bd4e5bbcdf3e7217efd0b1b068cee2d86913 passed focused 222/222, fixture prerequisite 12/12, exact full Vitest 4544/4544 across 372 files with zero skips/failures, clean69 strict catalog 16/16, TypeScript, zero-error lint, build, portable pause verification, and exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors. The prior e50 full-Vitest failure is retained as non-admitting historical evidence: expired local fixture JWTs plus synthetic 13-count and fixture-history assumptions were corrected. Final independent review and final-head GitHub/Vercel checks remain pending. Staging is last verified68/68 with only 20260930091123 pending after fresh reviewed prerequisites. Production stays paused/no-go; Story22.15 in-progress; Epic23 on-hold. Full isolation, filter cleanup, signed repair proof, main, deployment and reopening remain separate gates.'
   - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
   - 'Story 22.3 is done; keep its dependency advisory evidence current if audit output changes.'
   - 'Story 22.4 is done; standing production-data presentation controls are documented.'
@@ -303,8 +304,8 @@ next_actions:
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
   - 'Historical PR #100 staging v67 was applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Current staging is v68 at 68/68 with no pending versions. Owner staging verification was open at that dated checkpoint and completed on 2026-09-24. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
-last_updated: '2026-09-28'
-updated_by: 'Final PR #121 local verification synchronized; Story 22.15 in-progress, Epic 23 on-hold and production paused/no-go.'
+last_updated: '2026-09-30'
+updated_by: 'Candidate eff0bd4 local gates synchronized; final independent review and final-head checks pending.'
 
 pr_95_playwright_gate:
   date: 2026-09-09
@@ -318,7 +319,7 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'The v67 fixture/RPC acceptance is historical. Current staging is 68/68 with no pending/remote-only version and all five post-apply phases passing, including strict catalog 16/16. Owner staging verification completed on 2026-09-24; preserve the production pause, and keep production/main/reopening gates separate.'
+  next_action: 'The v67 fixture/RPC acceptance is historical. Last hosted staging proof is the dated v68/68 result: no pending or remote-only version and all five post phases passed, including strict catalog 16/16. The current repository candidate contains 69 migrations, so forward 20260930091123 remains pending staging application after fresh reviewed prerequisites. Preserve the production pause and keep production, main and reopening gates separate.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -423,9 +424,9 @@ protected_toolchain_component_20260922:
 consolidated_cutover_proposal_20260928:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
-  staging_pending_versions: []
+  staging_pending_versions: ['20260930091123']
   production_status: 'paused-no-go'
-  next_action: 'Current implementation 00fd3081982ce41918f8656f21bd64c923cde901 is in progress and passed fresh root-bound local gates: focused PostgreSQL-oracle 77/77 across five files with zero failures/skips (0.918s report; 1501ms wrapper; inherited byte-identically from verified-run-2); full Vitest 4516/4516 across 372 files with zero skips/failures, required matrix 8/8 and exit 0 (1424.46s report; 1433510ms wrapper); Playwright 163 passed, 47 individually matched historical skips, zero failures/errors and exit 0 (1033.8720819999999s report; 1037487ms wrapper); build exit 0 in 19460ms; TypeScript exit 0 in 13096ms; ESLint exit 0 with zero errors and 304 warnings in 39017ms. Documentation-head review, CI, and authorized staging merge remain pending. Preserve 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e as historical evidence; preserve the five non-admitting native attempts, including compact d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03 and PostgreSQL-jsonb 643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8. After a reviewed staging merge, collect fresh read-only source/tool/target/TLS, observed-profile, staffing, and managed-principal evidence. Cleanup, repair, apply, main, deployment, and reopening remain separate; keep production paused/no-go.'
+  next_action: 'Current clean local candidate eff0bd4e5bbcdf3e7217efd0b1b068cee2d86913 passed focused 222/222, fixture prerequisite 12/12, exact full Vitest 4544/4544 across 372 files with zero skips/failures, clean69 strict catalog 16/16, TypeScript, zero-error lint, build, portable pause verification, and exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors. The prior e50 full-Vitest failure is retained as non-admitting historical evidence: expired local fixture JWTs plus synthetic 13-count and fixture-history assumptions were corrected. Final independent review and final-head GitHub/Vercel checks remain pending. Staging is last verified68/68 with only 20260930091123 pending after fresh reviewed prerequisites. Production stays paused/no-go; Story22.15 in-progress; Epic23 on-hold. Full isolation, filter cleanup, signed repair proof, main, deployment and reopening remain separate gates.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -575,17 +576,17 @@ consolidated_cutover_packet_deadline_correction_20260929:
   latest_failed_full_skipped: 0
   latest_failed_full_files: 371
   latest_failed_full_exit_code: 1
-  current_full_gate: historical-superseded-by-current-00fd-local-gates-documentation-review-ci-authorized-staging-merge-pending
+  current_full_gate: historical-pr122-complete-new-staffing-fk-full-gates-pending
 
 
 consolidated_cutover_collector_interval_correction_20260929:
   story_status: in-progress
   epic_23_status: on-hold
   production_status: paused-no-go
-  verification: historical-188-local-passed-reviewed-staging-merge-complete-current-00fd-documentation-review-ci-authorized-staging-merge-pending
-  current_full_gate: historical-superseded-by-current-00fd-local-gates-documentation-review-ci-authorized-staging-merge-pending
-  final_head_review: historical-e3e2c7e194964177d13462bc2b73c4fd5af6198c-current-00fd-documentation-review-ci-authorized-staging-merge-pending
-  reviewed_staging_merge: historical-3c6dd2fc24d8686787a95289eb00e50e9a753694-current-00fd-authorized-staging-merge-pending
+  verification: historical-188-and-pr122-local-gates-review-ci-staging-merge-complete
+  current_full_gate: historical-pr122-complete-new-staffing-fk-full-gates-pending
+  final_head_review: pr122-clean-final-head-79c1cd37e5e0d4e674bd92abb67efe0edb279cc7
+  reviewed_staging_merge: pr122-5f69f47f904b9c004b4c6bda217165a4359b3ac6
   hosted_writes: false
   previous_source: 5a27d77cd04dae9fef90e8f94adb8432636f0b4c
   staffing_collection_start_required: true
@@ -601,7 +602,7 @@ consolidated_cutover_collector_interval_correction_20260929:
   interrupted_completed_files_reported: 95
   interrupted_completed_tests_reported: 1028
   interrupted_accepted_as_passing_gate: false
-  note: 'Collector-interval gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e remain historical. The current projection and proven-literal correction has no accepted focused/full-suite result; the five native observations are non-admitting, and fresh tests/gates/review/CI/authorized staging merge remain pending.'
+  note: 'Collector-interval gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e remain historical. The e50 failed local run is retained as non-admitting evidence; clean candidate eff0bd4 completed its local focused/full/fixture/quality/build/Playwright gates. Final independent review and final-head checks remain pending.'
   tested_implementation: 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e
   verification_receipt: docs/commercial-readiness/evidence/production-cutover-collector-interval-verification-2026-09-29.json
   vitest_passed: 4502
@@ -612,3 +613,35 @@ consolidated_cutover_collector_interval_correction_20260929:
   playwright_failed: 0
   playwright_errors: 0
   ci_conclusion: success
+
+production_staffing_fk_preparation_20260930:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  merged_staging: 5f69f47f904b9c004b4c6bda217165a4359b3ac6
+  reviewed_pr122_head: 79c1cd37e5e0d4e674bd92abb67efe0edb279cc7
+  hosted_staging_last_verified_history: '68/68'
+  proposed_repository_migration_count: 69
+  proposed_staging_execute: ['20260930091123']
+  production_forward_count: 14
+  unchanged_repair_count: 55
+  repair_ledger: UNPROVED-unsigned
+  observed_staffing_fk_delete_action: SET-NULL
+  canonical_staffing_fk_delete_action: NO-ACTION
+  staffing_rows: 2
+  staffing_nonnull_actors: 0
+  staffing_public_orphans: 0
+  staffing_auth_orphans: 0
+  staffing_row_cleanup_required_for_capture: false
+  saved_filter_orphans: 48
+  strict_catalog_failed_groups: 7
+  draft_focused_passed: 83
+  draft_focused_failed: 0
+  draft_focused_skipped: 0
+  draft_focused_exit_code: 0
+  clean_source_release_evidence: false
+  protected_controls: v4-owner-approved-and-applied-local-only
+  vercel_inspection: fresh-readonly-pause-target-matches-autoassignment-disabled-zero-active-crons
+  full_gates_review_ci: pending
+  hosted_writes: false
+  evidence: docs/commercial-readiness/evidence/production-staffing-fk-preparation-2026-09-30.md

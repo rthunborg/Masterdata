@@ -4,6 +4,7 @@ import { isAbsolute } from 'node:path';
 
 import {
   assessProductionStaffingPreExecuteProof,
+  PRODUCTION_STAFFING_UPDATED_BY_FK_RECONCILIATION_VERSION,
 } from './production-staffing-pre-execute-contract.mjs';
 import { bindProductionCollectorSource } from './production-collector-source-binding.mjs';
 import { productionTargetBindingSha256 } from './production-observed-profile.mjs';
@@ -140,6 +141,8 @@ export async function collectProductionStaffingPreExecute({
       sourceTree: bound.source.sourceTree,
       sourceManifestSha256: bound.source.sourceManifestSha256,
       targetBindingSha256,
+      reconciliationExecuteVersion:
+        PRODUCTION_STAFFING_UPDATED_BY_FK_RECONCILIATION_VERSION,
       collectionStartedAtUtc: new Date(collectionStartedAtMs).toISOString(),
       capturedAtUtc: capturedAt.toISOString(),
       ...parseProjection(result.stdout),

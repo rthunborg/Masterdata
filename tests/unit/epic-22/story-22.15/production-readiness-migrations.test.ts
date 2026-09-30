@@ -186,16 +186,20 @@ function normalizedFunctionBodyMd5(sql: string, functionName: string) {
 }
 
 describe('Story 22.15 migration baseline safety', () => {
-  it('keeps the tracked BMAD acceptance plan aligned with the production manifest', () => {
+  it('aligns the current BMAD plan while preserving the archived acceptance snapshot', () => {
     const spec = readFileSync(
       resolve(root, '_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md'),
       'utf8'
     );
     const acceptance = spec.match(/\*\*Acceptance Criteria:\*\*([\s\S]*?)## Spec Change Log/)?.[1];
     expect(acceptance).toBeDefined();
-    expect(acceptance).toMatch(new RegExp(
-      `${manifest.classifications['repair-after-catalog-proof'].length} repair(?: candidates|s) plus ${manifest.classifications.execute.length} (?:applies|executes)`
-    ));
+    // The frozen acceptance snapshot retains its original 13-forward plan.
+    expect(acceptance).toContain('55 repair candidates plus 13 executes');
+    const currentPlan = spec.match(/^> \*\*Current staffing FK preparation[^\r\n]+/m)?.[0];
+    expect(currentPlan).toBeDefined();
+    expect(currentPlan).toContain(
+      `${manifest.repositoryMigrationCount} migrations, ${manifest.classifications.execute.length} forwards and ${manifest.classifications['repair-after-catalog-proof'].length} unchanged repairs`
+    );
   });
   it('classifies every repository migration exactly once', () => {
     const repositoryVersions = readdirSync(migrationDir)
@@ -206,13 +210,13 @@ describe('Story 22.15 migration baseline safety', () => {
     const execute = manifest.classifications.execute;
     const classified = [...repair, ...execute];
 
-    expect(repositoryVersions).toHaveLength(68);
-    expect(manifest.repositoryMigrationCount).toBe(68);
+    expect(repositoryVersions).toHaveLength(69);
+    expect(manifest.repositoryMigrationCount).toBe(69);
     expect(manifest.reviewedSupabaseCliVersion).toBe('2.115.0');
     expect(new Set(classified).size).toBe(classified.length);
     expect([...classified].sort()).toEqual(repositoryVersions);
     expect(repair).toHaveLength(55);
-    expect(execute).toHaveLength(13);
+    expect(execute).toHaveLength(14);
     expect(repair).not.toContain('20260314000001');
     expect(repair).not.toContain('20260314000002');
     expect(execute.slice(0, 2)).toEqual([
@@ -230,7 +234,7 @@ describe('Story 22.15 migration baseline safety', () => {
     ).toContain('Public production non-dry-run db push remains blocked');
     expect(
       manifest.pendingProductionProofs.staffingFunctionSecurityMode.requiredImplementation
-    ).toContain('live fresh production proof and final review remain pending');
+    ).toContain('final revised-source proof and review remain pending');
     expect(manifest.pendingProductionProofs.staffingFunctionSecurityMode.executeVersion).toBe(
       '20260314000001'
     );
@@ -257,7 +261,7 @@ describe('Story 22.15 migration baseline safety', () => {
       manifest.environmentPlans.staging['repair-after-catalog-proof']
     ).toEqual([]);
     expect(manifest.environmentPlans.staging.execute).toEqual([
-      '20260910184840',
+      '20260930091123',
     ]);
     expect(manifest.environmentPlans.production).toEqual({
       'repair-after-catalog-proof':
@@ -281,9 +285,10 @@ describe('Story 22.15 migration baseline safety', () => {
       '20260910115024',
       '20260910184840',
       '20260910184841',
+      '20260930091123',
     ]);
     expect(manifest.environmentPlans.staging.execute).toEqual([
-      '20260910184840',
+      '20260930091123',
     ]);
   });
 
@@ -434,10 +439,10 @@ describe('Story 22.15 migration baseline safety', () => {
       /<!-- PRODUCTION_BASELINE_ADOPTION_VERSIONS:BEGIN -->([\s\S]*?)<!-- PRODUCTION_BASELINE_ADOPTION_VERSIONS:END -->/
     )?.[1];
     const stagingApplyBlock = cutoverRunbook.match(
-      /The dry run must list exactly this one apply:([\s\S]*?)Stop unless the dry run is exactly/
+      /<!-- STAGING_STAFFING_FK_FORWARD:BEGIN -->([\s\S]*?)<!-- STAGING_STAFFING_FK_FORWARD:END -->/
     )?.[1];
     const productionApplyBlock = cutoverRunbook.match(
-      /Before any history repair, the exclusive-subset dry run must list exactly these thirteen versions:([\s\S]*?)The installed host/
+      /Before any history repair, the exclusive-subset dry run must list exactly these fourteen versions:([\s\S]*?)The installed host/
     )?.[1];
 
     expect(repairBlock).toBeDefined();
@@ -458,9 +463,9 @@ describe('Story 22.15 migration baseline safety', () => {
     );
 
     const sequence = cutoverRunbook.match(/## Non-negotiable sequence([\s\S]*?)## Shared pre-flight/)?.[1] ?? '';
-    expect(sequence.indexOf('6. Attempt the 13 forward applies')).toBeGreaterThan(0);
-    expect(sequence.indexOf('6. Attempt the 13 forward applies')).toBeLessThan(sequence.indexOf('7. Independently verify exact 13-version history'));
-    expect(sequence.indexOf('7. Independently verify exact 13-version history')).toBeLessThan(sequence.indexOf('8. Prepare the source-pinned 55-row baseline-adoption ledger'));
+    expect(sequence.indexOf('6. Attempt the 14 forward applies')).toBeGreaterThan(0);
+    expect(sequence.indexOf('6. Attempt the 14 forward applies')).toBeLessThan(sequence.indexOf('7. Independently verify exact 14-version history'));
+    expect(sequence.indexOf('7. Independently verify exact 14-version history')).toBeLessThan(sequence.indexOf('8. Prepare the source-pinned 55-row baseline-adoption ledger'));
     expect(sequence.indexOf('8. Prepare the source-pinned 55-row baseline-adoption ledger')).toBeLessThan(sequence.indexOf('9. Obtain separate explicit authorization'));
     expect(cutoverRunbook).toContain('Rebind before every command; stop on the first failure');
   });
@@ -1127,7 +1132,7 @@ describe('Story 22.15 migration baseline safety', () => {
       'network restrictions do not cover HTTPS APIs'
     );
     expect(cutoverRunbook).toContain(
-      'protected exclusive 13-file dry run/apply -> independent history13, strict16/canonical/preservation proof -> owner-adopted 55-row ledger and separately approved history repair'
+      'protected exclusive 14-file dry run/apply -> independent history14, strict16/canonical/preservation proof -> owner-adopted 55-row ledger and separately approved history repair'
     );
     expect(cutoverRunbook).toContain(
       'do not relabel this diagnostic as passed'

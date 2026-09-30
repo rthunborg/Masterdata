@@ -106,13 +106,30 @@ dependency_profile AS (
     (SELECT count(*) = 1 FROM constraints, expected WHERE conrelid = needs_oid AND contype = 'f' AND conkey = ARRAY[5]::smallint[]
       AND conname = 'staffing_needs_updated_by_fkey' AND confrelid = users_oid AND confkey = ARRAY[1]::smallint[]
       AND confdeltype = 'a' AND confupdtype = 'a' AND confmatchtype = 's' AND NOT condeferrable AND NOT condeferred AND convalidated) AS needs_updated_by_fk,
+    (SELECT jsonb_build_object(
+      'foreignKeyCount', count(*)::integer,
+      'name', CASE WHEN count(*) = 1 AND bool_and(conname = 'staffing_needs_updated_by_fkey') THEN 'staffing_needs_updated_by_fkey' ELSE '<unexpected>' END,
+      'sourceColumn', CASE WHEN count(*) = 1 AND bool_and(conkey = ARRAY[5]::smallint[]) THEN 'updated_by' ELSE '<unexpected>' END,
+      'referencedSchema', CASE WHEN count(*) = 1 AND bool_and(confrelid = users_oid) THEN 'public' ELSE '<unexpected>' END,
+      'referencedTable', CASE WHEN count(*) = 1 AND bool_and(confrelid = users_oid) THEN 'users' ELSE '<unexpected>' END,
+      'referencedColumn', CASE WHEN count(*) = 1 AND bool_and(confkey = ARRAY[1]::smallint[]) THEN 'id' ELSE '<unexpected>' END,
+      'onDelete', CASE WHEN count(*) = 1 THEN CASE WHEN bool_and(confdeltype = 'a') THEN 'NO ACTION' WHEN bool_and(confdeltype = 'n') THEN 'SET NULL' WHEN bool_and(confdeltype = 'r') THEN 'RESTRICT' WHEN bool_and(confdeltype = 'c') THEN 'CASCADE' WHEN bool_and(confdeltype = 'd') THEN 'SET DEFAULT' ELSE '<unexpected>' END ELSE '<unexpected>' END,
+      'onUpdate', CASE WHEN count(*) = 1 THEN CASE WHEN bool_and(confupdtype = 'a') THEN 'NO ACTION' WHEN bool_and(confupdtype = 'n') THEN 'SET NULL' WHEN bool_and(confupdtype = 'r') THEN 'RESTRICT' WHEN bool_and(confupdtype = 'c') THEN 'CASCADE' WHEN bool_and(confupdtype = 'd') THEN 'SET DEFAULT' ELSE '<unexpected>' END ELSE '<unexpected>' END,
+      'matchType', CASE WHEN count(*) = 1 AND bool_and(confmatchtype = 's') THEN 'SIMPLE' ELSE '<unexpected>' END,
+      'validated', coalesce(bool_and(convalidated), false),
+      'deferrable', coalesce(bool_or(condeferrable), true),
+      'initiallyDeferred', coalesce(bool_or(condeferred), true)
+    ) FROM constraints, expected WHERE conrelid = needs_oid AND contype = 'f') AS needs_updated_by_fk_profile,
     (SELECT count(*) = 1 FROM constraints, expected WHERE conrelid = changelog_oid AND contype = 'p' AND conname = 'staffing_needs_changelog_pkey' AND conkey = ARRAY[1]::smallint[] AND convalidated) AS changelog_pk,
     (SELECT count(*) = 1 FROM constraints, expected WHERE conrelid = changelog_oid AND contype = 'f' AND conkey = ARRAY[5]::smallint[]
       AND conname = 'staffing_needs_changelog_changed_by_fkey' AND confrelid = users_oid AND confkey = ARRAY[1]::smallint[]
       AND confdeltype = 'a' AND confupdtype = 'a' AND confmatchtype = 's' AND NOT condeferrable AND NOT condeferred AND convalidated) AS changelog_changed_by_fk,
     (SELECT coalesce(bool_and(relation_row.relrowsecurity), false) FROM pg_class AS relation_row, expected
       WHERE relation_row.oid IN (needs_oid, changelog_oid)) AS both_rls_enabled,
-    (SELECT count(*)::bigint FROM public.staffing_needs WHERE headcount_need < 0 OR headcount_need > 9999) AS out_of_range_count
+    (SELECT count(*)::bigint FROM public.staffing_needs WHERE headcount_need < 0 OR headcount_need > 9999) AS out_of_range_count,
+    (SELECT count(*)::bigint FROM public.staffing_needs WHERE updated_by IS NOT NULL) AS nonnull_updated_by_count,
+    (SELECT count(*)::bigint FROM public.staffing_needs AS needs WHERE needs.updated_by IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.users AS users WHERE users.id = needs.updated_by)) AS orphan_public_users_count,
+    (SELECT count(*)::bigint FROM public.staffing_needs AS needs WHERE needs.updated_by IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.users AS users JOIN auth.users AS auth_users ON auth_users.id = users.auth_user_id WHERE users.id = needs.updated_by)) AS orphan_auth_users_count
   FROM expected
 )
 SELECT jsonb_build_object(
@@ -143,10 +160,14 @@ SELECT jsonb_build_object(
     'staffingNeedsLocationCheck', needs_location_check,
     'staffingNeedsHeadcountCheck', needs_headcount_check,
     'staffingNeedsUpdatedByUsersForeignKey', needs_updated_by_fk,
+    'staffingNeedsUpdatedByUsersForeignKeyProfile', needs_updated_by_fk_profile,
     'staffingChangelogPrimaryKey', changelog_pk,
     'staffingChangelogChangedByUsersForeignKey', changelog_changed_by_fk,
     'bothTablesRlsEnabled', both_rls_enabled,
-    'outOfRangeHeadcountCount', out_of_range_count
+    'outOfRangeHeadcountCount', out_of_range_count,
+    'nonNullUpdatedByCount', nonnull_updated_by_count,
+    'orphanPublicUsersCount', orphan_public_users_count,
+    'orphanAuthUsersCount', orphan_auth_users_count
   ),
   'bodyProvenance', jsonb_build_object(
     'kind', 'non_admitted_sha256',

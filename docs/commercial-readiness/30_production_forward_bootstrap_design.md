@@ -1,6 +1,9 @@
 # Production Forward-Bootstrap Runbook and Design
 
-> **Current observed-permission projection and literal correction — 2026-09-29.** Current implementation `00fd3081982ce41918f8656f21bd64c923cde901` passed fresh root-bound local gates: the focused PostgreSQL-oracle batch passed 77/77 across five files with zero failures/skips (started 2026-09-29T15:20:32.822Z; 0.918s report; 1501ms wrapper; receipt/log inherited byte-identically from verified-run-2); full Vitest passed 4516/4516 across 372 files with zero skips/failures, required matrix 8/8 and exit 0 (1424.46s report; 1433510ms wrapper); Playwright passed 163 with 47 individually matched historical skips, zero failures/errors, 210 cases and exit 0 (1033.8720819999999s report; 1037487ms wrapper); build exited 0 in 19460ms; TypeScript exited 0 in 13096ms; and ESLint exited 0 with zero errors and 304 warnings in 39017ms. [Published verification](evidence/production-observed-permission-verification-2026-09-29.md) is redacted and local-only. Exact-head documentation review, CI, and authorized staging merge remain pending. The collector-interval evidence at clean source `188bcf64f9c9dcbb5791a5bd636583a83ba8e64e` remains historical. Five fresh read-only native collector attempts exited 1 without an accepted profile; attempts 1–3 were non-admitting failures, attempt 4 retained compact JSON.stringify candidate `d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03` as historical failed evidence, and attempt 5 retained the exact PostgreSQL-jsonb candidate `643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8`. The separate three-GET platform inventory remains limited to `readinessAssessed=false` and `privateOnly=UNKNOWN`, with no action authority. [Fingerprint correction evidence](evidence/production-observed-permission-fingerprint-correction-2026-09-29.md) retains immutable provenance and diagnostic chronology. Story 22.15 remains in-progress, Epic 23 on-hold, and production paused/no-go; cleanup, repair, apply, main, deployment, and reopening retain separate gates.
+> **Current staffing FK preparation and verification - 2026-09-30.** The candidate plan is 69 migrations, 14 forwards and 55 unchanged repairs. Clean local candidate `eff0bd4e5bbcdf3e7217efd0b1b068cee2d86913` passed focused verification 222/222, refreshed local fixture prerequisite verification 12/12, exact `npx vitest run` 4,544/4,544 across 372 files with zero skips/failures, a clean 69-migration local SQL fixture with strict catalog 16/16, TypeScript, zero-error lint, and the local staging-preview build. Exact `npx playwright test` passed 163 with 47 individually matched historical skips and zero failures/errors. The report duration was 1,048.319612 seconds; skips are not counted as passes. The portable pause artifact verified page handling, API/mutation 503 behavior, zero functions/crons, and refused forced-production builds. The current two-GET Vercel observation still records the pause target, disabled automatic assignment and zero active crons. Final independent review and final-head GitHub/Vercel checks remain pending. Hosted staging remains last verified 68/68, with forward `20260930091123` pending fresh reviewed staging prerequisites. Production remains paused/no-go; Story 22.15 is in-progress and Epic 23 is on-hold. [Final local evidence](evidence/production-staffing-fk-verification-2026-09-30.md).
+
+
+> **Historical PR #122 local verification — 2026-09-29; review and merge completed 2026-09-30.** Tested implementation `00fd3081982ce41918f8656f21bd64c923cde901` passed fresh root-bound local gates: the focused PostgreSQL-oracle batch passed 77/77 across five files with zero failures/skips (started 2026-09-29T15:20:32.822Z; 0.918s report; 1501ms wrapper; receipt/log inherited byte-identically from verified-run-2); full Vitest passed 4516/4516 across 372 files with zero skips/failures, required matrix 8/8 and exit 0 (1424.46s report; 1433510ms wrapper); Playwright passed 163 with 47 individually matched historical skips, zero failures/errors, 210 cases and exit 0 (1033.8720819999999s report; 1037487ms wrapper); build exited 0 in 19460ms; TypeScript exited 0 in 13096ms; and ESLint exited 0 with zero errors and 304 warnings in 39017ms. [Published verification](evidence/production-observed-permission-verification-2026-09-29.md) is redacted and local-only. Final head `79c1cd37e5e0d4e674bd92abb67efe0edb279cc7` subsequently passed clean review/CI and merged into staging `5f69f47f904b9c004b4c6bda217165a4359b3ac6`; the new staffing-FK draft requires its own gates. The collector-interval evidence at clean source `188bcf64f9c9dcbb5791a5bd636583a83ba8e64e` remains historical. Five fresh read-only native collector attempts exited 1 without an accepted profile; attempts 1–3 were non-admitting failures, attempt 4 retained compact JSON.stringify candidate `d617d5d1235f3fa3cb12b0eba95120496eb272fa4d9253d6f30d068318b9eb03` as historical failed evidence, and attempt 5 retained the exact PostgreSQL-jsonb candidate `643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8`. The separate three-GET platform inventory remains limited to `readinessAssessed=false` and `privateOnly=UNKNOWN`, with no action authority. [Fingerprint correction evidence](evidence/production-observed-permission-fingerprint-correction-2026-09-29.md) retains immutable provenance and diagnostic chronology. Story 22.15 remains in-progress, Epic 23 on-hold, and production paused/no-go; cleanup, repair, apply, main, deployment, and reopening retain separate gates.
 
 > **Historical ordering correction verification — 2026-09-29.** The PR #121 chronology and protected CLI correction is locally verified at `1a5aa61937e34fa577a317afca4bca9bca64bf9a`: hash-leased cleanup start/completion with every initial control and independent probe before cleanup start, bounded host deadline headroom, required complete managed-writer profile and post-cleanup interval, actual-launch freshness under the caller age limit, non-overlapping final database/drain collection, reviewed Git repository-source/query/declaration binding for all three collectors with external runtime integrity still separately required, the pinned built-in vendor CLI profile, independently synchronized synthetic fault cancellation with bounded worker concurrency, an actual-clock recheck after all CLI preflight and journal flush, and encrypted partial-apply diagnostics with tested Windows DPAPI recovery. Full Vitest passed 4465/4465, zero skips/failures (863.04s); exact full Playwright passed 163 cases / 47 individually matched historical skips / zero failures/errors (1339.960638s); both exit 0 on this clean, unchanged source. TypeScript, zero-error lint (300 warnings), the staging-preview build and implementation CI passed. [Ordering verification](evidence/production-cutover-ordering-verification-2026-09-29.md) preserves earlier failures/successes with their actual source scope and hashes. Final documentation-head checks/review and staging merge remain pending; this evidence grants no hosted action authority. Production stays paused/no-go, Story 22.15 in-progress and Epic 23 on-hold. This successful receipt is historical evidence limited to `1a5aa61937e34fa577a317afca4bca9bca64bf9a`; it does not verify the later substantive host/worker packet-deadline correction at `0e014f3a8ad921b10758f186ee3afeba2601e895`.
 
@@ -9,7 +12,7 @@
 > **Historical candidate verification — 2026-09-28; superseded by ordering correction.** PR #121 consolidates the protected production route. Exact full Vitest passed 4349/4349 with zero skips/failures at 49e708ec99a8e74fb268e32d026bffc85bcb4a5c (389.86s). Exact full Playwright passed 163 with 47 individually matched historical skips and zero failures/errors at 2876b7a7915765182602f5cf2c2111df3c317d56 (1288.560973s); the only intervening code change is the reviewed synthetic unit-test loader portability fix, with byte-identical application/release code. The required CLI matrix is 8/8; TypeScript and zero-error lint pass. Build evidence is explicitly scoped to byte-identical application sources from the earlier working-tree build. Earlier failed runs remain recorded. No hosted change is claimed. Production remains paused/no-go, Story 22.15 in-progress and Epic 23 on-hold. [Measured results, source scopes and limits](evidence/production-consolidated-cutover-verification-2026-09-28.md).
 
 
-> **Current reviewed sequence — 2026-09-28.** This replaces the circular
+> **Historical reviewed sequence - 2026-09-28.** This is the prior 13-forward/68-canonical candidate checkpoint, superseded by the 14-forward/69 revision below. It replaced the circular
 > historical “55 repairs before 13 forwards” proposal below. It is an
 > operational plan only: it authorizes no hosted write, cleanup, history
 > repair, settings change, deployment, main merge, or reopening. Production
@@ -18,11 +21,11 @@
 > `88cf3efcf7fdb8cdbfd00d850da6082b0f6fdd65`; a hosted candidate must bind
 > its own reviewed final source identity.
 
-## Current forward-first sequence
+## Forward-first sequence — revised candidate 2026-09-30
 
 The production history table being absent does not require replaying the 55
 older migrations. The reviewed CLI 2.115.0 can create its own history table
-when it applies the isolated, source-only ordered 13-version subset. The
+when it applies the isolated, source-only ordered 14-version subset. The
 procedure is intentionally divided into separate gates:
 
 1. Collect fresh read-only production observations. They must bind the
@@ -38,16 +41,16 @@ procedure is intentionally divided into separate gates:
    existing production pause stays in place throughout; it is not by itself
    technical isolation.
 3. Materialize a disposable source-only directory containing exactly the
-   immutable 13 execute migrations. Reverify the full source, raw migration
+   immutable 14 execute migrations. Reverify the full source, raw migration
    bytes, Git blobs, CLI/tool/TLS pins, three-way target binding, and a dry
    run whose output lists precisely that order. No raw SQL history insert,
    migration replay, reset, or forward-version repair is permitted.
 4. After the separately reviewed production apply gate, run the normal pinned
    CLI apply from that directory. The expected CLI behavior is creation of the
-   history table and exactly those 13 forward records.
-5. Immediately collect fresh post-forward proof: exact 13 forward history,
+   history table and exactly those 14 forward records.
+5. Immediately collect fresh post-forward proof: exact 14 forward history,
    strict post-apply catalog 16/16 in the reviewed order, a complete
-   independent canonical 68-migration schema fingerprint, and the complete
+   independent canonical 69-migration schema fingerprint, and the complete
    preservation fingerprint. Any missing, reordered, duplicate, stale, or
    misbound receipt stops the procedure.
 6. Prepare the 55-row baseline-adoption review. Every row remains `UNPROVED`
@@ -57,7 +60,7 @@ procedure is intentionally divided into separate gates:
    not recreated or assumed present.
 7. Obtain the separate owner adoption decision and the separate exact
    history-repair approval. Only then may the pinned CLI record the 55 older
-   source-bound versions as applied. Verify the resulting exact 68-version
+   source-bound versions as applied. Verify the resulting exact 69-version
    history, strict catalog, canonical fingerprint, and preservation evidence
    again before any later release decision.
 

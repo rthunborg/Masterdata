@@ -390,6 +390,17 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
         PGSERVICE: 'ambient-service-must-not-survive',
         UNRELATED_PARENT_SECRET: 'must-not-reach-production-push',
       };
+      const historicalStagingV68Manifest = JSON.stringify({
+        environmentPlans: {
+          staging: {
+            'repair-after-catalog-proof': [],
+            execute: ['20260910184840'],
+          },
+        },
+        orderedPrerequisites: [
+          { version: '20260910184840', beforeVersion: '20260910184841' },
+        ],
+      });
 
       await expect(
         runReviewedSupabaseCli({
@@ -400,6 +411,12 @@ describe('Story 22.15 reviewed Supabase CLI runner', () => {
           executableVerifier: () => reviewedCliPath,
           targetVerifier,
           rootCertificateVerifier,
+          // This include-all shape is retained as historical v68 coverage.
+          // The active staging plan has the later normal forward migration.
+          readManifest:
+            targetEnvironment === 'staging'
+              ? () => historicalStagingV68Manifest
+              : undefined,
         })
       ).resolves.toBe(0);
 

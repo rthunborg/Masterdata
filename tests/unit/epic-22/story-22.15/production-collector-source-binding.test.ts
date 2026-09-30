@@ -39,8 +39,10 @@ function projection() {
       staffingNeedsColumns: [{ name: 'id', type: 'uuid', nullable: false, default: 'gen_random_uuid()' }, { name: 'location', type: 'text', nullable: false, default: null }, { name: 'headcount_need', type: 'integer', nullable: false, default: '0' }, { name: 'updated_at', type: 'timestamp with time zone', nullable: false, default: 'now()' }, { name: 'updated_by', type: 'uuid', nullable: true, default: null }],
       staffingChangelogColumns: [{ name: 'id', type: 'uuid', nullable: false, default: 'gen_random_uuid()' }, { name: 'location', type: 'text', nullable: false, default: null }, { name: 'old_value', type: 'integer', nullable: false, default: null }, { name: 'new_value', type: 'integer', nullable: false, default: null }, { name: 'changed_by', type: 'uuid', nullable: false, default: null }, { name: 'changed_at', type: 'timestamp with time zone', nullable: false, default: 'now()' }],
       staffingNeedsPrimaryKey: true, staffingNeedsLocationUnique: true, staffingNeedsLocationCheck: true, staffingNeedsHeadcountCheck: true,
-      staffingNeedsUpdatedByUsersForeignKey: true, staffingChangelogPrimaryKey: true, staffingChangelogChangedByUsersForeignKey: true,
-      bothTablesRlsEnabled: true, outOfRangeHeadcountCount: 0,
+      staffingNeedsUpdatedByUsersForeignKey: true,
+      staffingNeedsUpdatedByUsersForeignKeyProfile: { foreignKeyCount: 1, name: 'staffing_needs_updated_by_fkey', sourceColumn: 'updated_by', referencedSchema: 'public', referencedTable: 'users', referencedColumn: 'id', onDelete: 'NO ACTION', onUpdate: 'NO ACTION', matchType: 'SIMPLE', validated: true, deferrable: false, initiallyDeferred: false },
+      staffingChangelogPrimaryKey: true, staffingChangelogChangedByUsersForeignKey: true,
+      bothTablesRlsEnabled: true, outOfRangeHeadcountCount: 0, nonNullUpdatedByCount: 0, orphanPublicUsersCount: 0, orphanAuthUsersCount: 0,
     },
     bodyProvenance: { kind: 'non_admitted_sha256', sha256: '0'.repeat(64) },
   };

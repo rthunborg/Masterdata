@@ -1922,5 +1922,103 @@ describe.skipIf(!fixtureUrl)(
 
       await expectCatalogPasses('post_apply');
     });
+
+    it('requires the canonical staffing actor foreign key in every strict catalog phase', async () => {
+      await applyCorrection();
+      await applyTriggerCorrection();
+
+      const strictPhases = [
+        'production_pre_apply',
+        'staging_pre_apply',
+        'staging_reconciliation_pre_apply',
+        'staging_trigger_reconciliation_pre_apply',
+        'post_apply',
+      ];
+      const representedColumnsPass = async (phase: string) =>
+        (await readCatalog(phase, false)).find(
+          (row) => row.check_name === 'represented_column_contracts'
+        )?.passed;
+      const variants = [
+        {
+          name: 'SET NULL delete action',
+          sql: `ALTER TABLE public.staffing_needs
+              ADD CONSTRAINT staffing_needs_updated_by_fkey
+              FOREIGN KEY (updated_by) REFERENCES public.users(id) ON DELETE SET NULL`,
+        },
+        {
+          name: 'wrong constraint name',
+          sql: `ALTER TABLE public.staffing_needs
+              ADD CONSTRAINT unrelated_actor_fk
+              FOREIGN KEY (updated_by) REFERENCES public.users(id)`,
+        },
+        {
+          name: 'wrong referenced table',
+          sql: `ALTER TABLE public.staffing_needs
+              ADD CONSTRAINT staffing_needs_updated_by_fkey
+              FOREIGN KEY (updated_by) REFERENCES auth.users(id)`,
+        },
+        {
+          name: 'composite actor mapping',
+          sql: `ALTER TABLE public.users ADD CONSTRAINT post_apply_actor_pair UNIQUE (id, auth_user_id);
+              ALTER TABLE public.staffing_needs
+              ADD CONSTRAINT staffing_needs_updated_by_fkey
+              FOREIGN KEY (updated_by, id)
+              REFERENCES public.users(id, auth_user_id)`,
+        },
+        {
+          name: 'competing actor foreign key',
+          sql: `ALTER TABLE public.staffing_needs
+              ADD CONSTRAINT staffing_needs_updated_by_fkey
+              FOREIGN KEY (updated_by) REFERENCES public.users(id);
+              ALTER TABLE public.staffing_needs
+              ADD CONSTRAINT post_apply_extra_actor_fk
+              FOREIGN KEY (updated_by) REFERENCES public.users(id)`,
+        },
+        {
+          name: 'unvalidated actor foreign key',
+          sql: `ALTER TABLE public.staffing_needs
+              ADD CONSTRAINT staffing_needs_updated_by_fkey
+              FOREIGN KEY (updated_by) REFERENCES public.users(id) NOT VALID`,
+        },
+        {
+          name: 'deferrable actor foreign key',
+          sql: `ALTER TABLE public.staffing_needs
+              ADD CONSTRAINT staffing_needs_updated_by_fkey
+              FOREIGN KEY (updated_by) REFERENCES public.users(id) DEFERRABLE`,
+        },
+      ];
+
+      for (const phase of strictPhases) {
+        await fixtureClient.query('BEGIN');
+        try {
+          if (phase === 'staging_pre_apply') {
+            await fixtureClient.query(`
+              ALTER TABLE public.user_filters
+                ALTER COLUMN filters SET DEFAULT '[]'::jsonb;
+              ALTER TABLE public.employees
+                ALTER COLUMN repayment_needed_omc DROP DEFAULT,
+                ALTER COLUMN repayment_needed_pe3 DROP DEFAULT;
+            `);
+          }
+          expect(await representedColumnsPass(phase), `canonical FK in ${phase}`).toBe(true);
+
+          for (const [index, variant] of variants.entries()) {
+            const savepoint = `staffing_fk_variant_${index}`;
+            await fixtureClient.query(`SAVEPOINT ${savepoint}`);
+            await fixtureClient.query(
+              'ALTER TABLE public.staffing_needs DROP CONSTRAINT staffing_needs_updated_by_fkey'
+            );
+            await fixtureClient.query(variant.sql);
+            expect(
+              await representedColumnsPass(phase),
+              `${variant.name} in ${phase}`
+            ).toBe(false);
+            await fixtureClient.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+          }
+        } finally {
+          await fixtureClient.query('ROLLBACK');
+        }
+      }
+    }, 120_000);
   }
 );

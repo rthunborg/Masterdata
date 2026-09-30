@@ -67,9 +67,11 @@ function projection() {
       ],
       staffingNeedsPrimaryKey: true, staffingNeedsLocationUnique: true,
       staffingNeedsLocationCheck: true, staffingNeedsHeadcountCheck: true,
-      staffingNeedsUpdatedByUsersForeignKey: true, staffingChangelogPrimaryKey: true,
+      staffingNeedsUpdatedByUsersForeignKey: true,
+      staffingNeedsUpdatedByUsersForeignKeyProfile: { foreignKeyCount: 1, name: 'staffing_needs_updated_by_fkey', sourceColumn: 'updated_by', referencedSchema: 'public', referencedTable: 'users', referencedColumn: 'id', onDelete: 'NO ACTION', onUpdate: 'NO ACTION', matchType: 'SIMPLE', validated: true, deferrable: false, initiallyDeferred: false },
+      staffingChangelogPrimaryKey: true,
       staffingChangelogChangedByUsersForeignKey: true, bothTablesRlsEnabled: true,
-      outOfRangeHeadcountCount: 0,
+      outOfRangeHeadcountCount: 0, nonNullUpdatedByCount: 0, orphanPublicUsersCount: 0, orphanAuthUsersCount: 0,
     },
     bodyProvenance: { kind: 'non_admitted_sha256', sha256: '0'.repeat(64) },
   };

@@ -36,6 +36,10 @@ const reconciliationMigrationSources = [
   "supabase/migrations/20260910094517_reconcile_repayment_defaults.sql",
   "supabase/migrations/20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql",
 ].map((filename) => readFileSync(filename, "utf8"));
+const staffingForeignKeyReconciliationMigrationSource = readFileSync(
+  "supabase/migrations/20260930091123_reconcile_staffing_updated_by_foreign_key.sql",
+  "utf8"
+);
 const localParitySeedSource = readFileSync("supabase/seed.sql", "utf8");
 const reconciliationFixtureDatabaseName = `story_2215_post_apply_${randomUUID()
   .replaceAll("-", "")
@@ -62,9 +66,9 @@ async function createGuardedPostApplyFixture() {
   try {
     await fixtureClient.connect();
     // The root-owned template is a schema fixture, not a Supabase CLI target.
-    // Record only the pre-existing Story 22.15 fingerprint on this disposable
-    // clone when it is absent, then apply the new migration without touching
-    // either shared local Supabase or hosted migration history.
+    // Record the existing pre-reconciliation marker on this disposable clone,
+    // then execute and record the current forward reconciliation locally.
+    // Neither shared local Supabase nor hosted migration history is changed.
     await fixtureClient.query(`
       CREATE SCHEMA IF NOT EXISTS supabase_migrations;
       CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (
@@ -77,6 +81,12 @@ async function createGuardedPostApplyFixture() {
     for (const source of reconciliationMigrationSources) {
       await fixtureClient.query(source);
     }
+    await fixtureClient.query(staffingForeignKeyReconciliationMigrationSource);
+    await fixtureClient.query(`
+      INSERT INTO supabase_migrations.schema_migrations (version)
+      VALUES ('20260930091123')
+      ON CONFLICT (version) DO NOTHING;
+    `);
     // This mirrors the local-only Supabase reset parity grants. It is applied
     // only to the disposable clone so authenticated RLS evidence can execute;
     // migrations remain the sole staged/hosted schema change mechanism.

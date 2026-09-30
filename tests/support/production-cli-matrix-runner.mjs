@@ -334,12 +334,12 @@ export async function runProductionCliMatrixCase({
     attempts: [],
   };
   let terminal = false;
-  function materialize(label, count = 13) {
+  function materialize(label, count = PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length) {
     const work = path.join(destination, label);
     mkdirSync(work);
     mkdirSync(path.join(work, 'supabase'));
     mkdirSync(path.join(work, 'supabase', 'migrations'));
-    // The protected host supplies only the thirteen SQL files, manifest and
+    // The protected host supplies only the exact forward SQL files, manifest and
     // private link material. The success rehearsal intentionally omits a
     // config.toml so it proves that same minimal work shape.
     if (caseName !== 'postcleanup_success')
@@ -378,7 +378,7 @@ export async function runProductionCliMatrixCase({
   }
   async function invoke(
     work,
-    { dryRun = false, timeout = 60000, count = 13 } = {}
+    { dryRun = false, timeout = 60000, count = PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length } = {}
   ) {
     need(!terminal, 'matrix_terminal_no_continuation');
     need(
@@ -405,7 +405,7 @@ export async function runProductionCliMatrixCase({
     await connected(databaseName, async () => {});
     pinnedTool(cli, '2.115.0');
     const protectedInvocation =
-      caseName === 'postcleanup_success' && count === 13
+      caseName === 'postcleanup_success' && count === PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length
         ? buildProtectedMatrixCliInvocation({ databaseName, dryRun })
         : null;
     const args = protectedInvocation?.args ?? [
@@ -441,7 +441,7 @@ export async function runProductionCliMatrixCase({
     receipt.attempts.push({
       purpose: dryRun
         ? 'dry_run'
-        : count === 13
+        : count === PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS.length
           ? 'measured_apply'
           : 'fixture_prefix_apply',
       child,
@@ -736,7 +736,7 @@ export async function runProductionCliMatrixCase({
         'matrix_history_repair_failed'
       );
       const afterRepair = await snapshot();
-      need(same(afterRepair.history, COMPLETE_HISTORY_VERSIONS), 'matrix_history_repair_not_exact_68');
+      need(same(afterRepair.history, COMPLETE_HISTORY_VERSIONS), 'matrix_history_repair_not_exact_69');
       need(after.catalogSha256 === afterRepair.catalogSha256, 'matrix_history_repair_changed_catalog');
       need(after.preservationSha256 === afterRepair.preservationSha256, 'matrix_history_repair_changed_preservation');
       receipt.historyRepair = {

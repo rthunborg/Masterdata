@@ -109,7 +109,7 @@ namespace HrMasterdata.Release
             foreach (string key in new[] { "sourceCommit", "sourceTree", "sourceManifestSha256" }) Require((string)result[key] == (string)package[key]);
             Require((string)result["packageSha256"] == Hash(Path.Combine(root, "toolchain-package.json")));
             var versions = result["versions"] as IEnumerable; Require(versions != null && !(versions is string));
-            string[] expected = { "20260314000001", "20260314000002", "20260614000000", "20260615000000", "20260709194903", "20260710144000", "20260710150000", "20260831200026", "20260909115242", "20260910094517", "20260910115024", "20260910184840", "20260910184841" };
+            string[] expected = { "20260314000001", "20260314000002", "20260614000000", "20260615000000", "20260709194903", "20260710144000", "20260710150000", "20260831200026", "20260909115242", "20260910094517", "20260910115024", "20260910184840", "20260910184841", "20260930091123" };
             int index = 0;
             foreach (object value in versions) { Require(index < expected.Length && value is string && (string)value == expected[index]); index++; }
             Require(index == expected.Length);
@@ -185,7 +185,7 @@ namespace HrMasterdata.Release
                     Directory.CreateDirectory(Path.GetDirectoryName(target));
                     File.Copy(Path.Combine(root, item.Key), target, false); workFiles.Add(target, item.Value);
                 }
-                Require(workFiles.Count == 14);
+                Require(workFiles.Count == 15);
                 string link = Path.Combine(work, "supabase", ".temp", "project-ref");
                 Directory.CreateDirectory(Path.GetDirectoryName(link));
                 using (var stream = new FileStream(link, FileMode.CreateNew, FileAccess.Write, FileShare.None))

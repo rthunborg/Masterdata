@@ -167,14 +167,14 @@ namespace HrMasterdata.Release
             string[] keys = { "schemaVersion", "kind", "sourceCommit", "sourceTree", "sourceManifestSha256", "targetBindingSha256", "versions", "authorizesCleanup", "authorizesRepair", "authorizesMain", "authorizesDeployment", "authorizesReopen" };
             Require(result != null && result.Count == keys.Length);
             foreach (string key in keys) Require(result.ContainsKey(key));
-            Require(result["schemaVersion"] is int && (int)result["schemaVersion"] == 1 && (string)result["kind"] == "protected-production-forward-13-attempt");
+            Require(result["schemaVersion"] is int && (int)result["schemaVersion"] == 1 && (string)result["kind"] == "protected-production-forward-14-attempt");
             foreach (string key in new[] { "sourceCommit", "sourceTree", "sourceManifestSha256", "targetBindingSha256" })
                 Require(result[key] is string && Regex.IsMatch((string)result[key], key == "sourceCommit" || key == "sourceTree" ? "\\A[a-f0-9]{40}\\z" : "\\A[a-f0-9]{64}\\z"));
             foreach (string key in new[] { "authorizesCleanup", "authorizesRepair", "authorizesMain", "authorizesDeployment", "authorizesReopen" }) Require(result[key] is bool && !(bool)result[key]);
             var package = serializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(Path.Combine(root, "toolchain-package.json")));
             foreach (string key in new[] { "sourceCommit", "sourceTree", "sourceManifestSha256" }) Require((string)result[key] == (string)package[key]);
             var versions = result["versions"] as IEnumerable; Require(versions != null && !(versions is string));
-            string[] expected = { "20260314000001", "20260314000002", "20260614000000", "20260615000000", "20260709194903", "20260710144000", "20260710150000", "20260831200026", "20260909115242", "20260910094517", "20260910115024", "20260910184840", "20260910184841" };
+            string[] expected = { "20260314000001", "20260314000002", "20260614000000", "20260615000000", "20260709194903", "20260710144000", "20260710150000", "20260831200026", "20260909115242", "20260910094517", "20260910115024", "20260910184840", "20260910184841", "20260930091123" };
             int index = 0;
             foreach (object value in versions) { Require(index < expected.Length && value is string && (string)value == expected[index]); index++; }
             Require(index == expected.Length);
@@ -273,7 +273,7 @@ namespace HrMasterdata.Release
                     Directory.CreateDirectory(Path.GetDirectoryName(target));
                     File.Copy(Path.Combine(root, item.Key), target, false); workFiles.Add(target, item.Value);
                 }
-                Require(workFiles.Count == 14);
+                Require(workFiles.Count == 15);
                 string link = Path.Combine(work, "supabase", ".temp", "project-ref");
                 Directory.CreateDirectory(Path.GetDirectoryName(link));
                 using (var stream = new FileStream(link, FileMode.CreateNew, FileAccess.Write, FileShare.None))
@@ -299,7 +299,7 @@ namespace HrMasterdata.Release
                 string cleanupStartedAtUtc = RequireCanonicalUtc(cleanupEvidence["startedAtUtc"], out cleanupStartedAt);
                 string cleanupCompletedAtUtc = RequireCanonicalUtc(cleanupEvidence["completedAtUtc"], out cleanupCompletedAt);
                 Require(cleanupStartedAt <= cleanupCompletedAt);
-                byte[] payload = Encoding.UTF8.GetBytes(serializer.Serialize(new { schemaVersion = 1, operation = "apply-forward-13", nonce = match.Groups[1].Value, workspace = work, environment = environment, sourceSha = package["sourceCommit"], sourceTree = package["sourceTree"], sourceManifestSha256 = package["sourceManifestSha256"], targetBindingSha256 = actualTargetBinding, staffingReceipt = serializer.DeserializeObject(staffingReceipt), isolationReceipts = isolationEvidence["receipts"], isolationContext = isolationEvidence["context"], preForwardObservation = serializer.DeserializeObject(preForwardReceipt), reviewRecords = new { backupRecordSha256 = Installation.BackupRecordSha256, cleanupRecordSha256 = Installation.CleanupRecordSha256, cleanupStartedAtUtc = cleanupStartedAtUtc, cleanupCompletedAtUtc = cleanupCompletedAtUtc } }));
+                byte[] payload = Encoding.UTF8.GetBytes(serializer.Serialize(new { schemaVersion = 1, operation = "apply-forward-14", nonce = match.Groups[1].Value, workspace = work, environment = environment, sourceSha = package["sourceCommit"], sourceTree = package["sourceTree"], sourceManifestSha256 = package["sourceManifestSha256"], targetBindingSha256 = actualTargetBinding, staffingReceipt = serializer.DeserializeObject(staffingReceipt), isolationReceipts = isolationEvidence["receipts"], isolationContext = isolationEvidence["context"], preForwardObservation = serializer.DeserializeObject(preForwardReceipt), reviewRecords = new { backupRecordSha256 = Installation.BackupRecordSha256, cleanupRecordSha256 = Installation.CleanupRecordSha256, cleanupStartedAtUtc = cleanupStartedAtUtc, cleanupCompletedAtUtc = cleanupCompletedAtUtc } }));
                 byte[] signature;
                 using (var rsa = new RSACryptoServiceProvider())
                 { rsa.PersistKeyInCsp = false; rsa.FromXmlString(Installation.OriginPrivateKey); signature = rsa.SignData(payload, CryptoConfig.MapNameToOID("SHA256")); }
