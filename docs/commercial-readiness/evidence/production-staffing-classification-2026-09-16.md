@@ -4,7 +4,7 @@ Status: **NO-GO.** Story 22.15 remains in-progress and Epic 23 remains on hold. 
 
 ## Immutable candidate and scope
 
-The current staging candidate is `1cb4b02108183eeec4fa61fa980c99f835933344`. It merged independently reviewed PR #104 head `0f8f8c15c371782f5115c1a57da124d8e664aeb6`; the merge tree matches the reviewed tree. Fresh post-merge read-only staging proof passed 68/68 history, strict catalog 16/16, and all scoped preservation comparisons. Main remains `822350986f4c023948a7bbf490ddffc371185c4a`. [Receipt](pr104-post-merge-staging-proof-2026-09-17.md).
+At this dated checkpoint, the staging candidate was `1cb4b02108183eeec4fa61fa980c99f835933344`; it is superseded by the PR #123 v69 proof. It merged independently reviewed PR #104 head `0f8f8c15c371782f5115c1a57da124d8e664aeb6`; the merge tree matches the reviewed tree. Fresh post-merge read-only staging proof passed 68/68 history, strict catalog 16/16, and all scoped preservation comparisons. Main remains `822350986f4c023948a7bbf490ddffc371185c4a`. [Receipt](pr104-post-merge-staging-proof-2026-09-17.md).
 
 This record describes the production migration-history classification and its fail-closed CLI validation. The current wrapper permits the exact production dry run but intentionally rejects every production non-dry-run `db push` before executable, target, or TLS access. No migration SQL, catalog verifier behavior, production database, hosted setting, deployment, main branch, or production pause was changed. Final-head review and remote checks passed; the production gates remain pending.
 
@@ -12,7 +12,7 @@ This record describes the production migration-history classification and its fa
 
 The 2026-09-16 redacted production diagnosis observed `public.update_staffing_need(text, integer, uuid)` as `SECURITY INVOKER`. Immutable migration `20260314000001_add_update_staffing_need_rpc.sql` declares `SECURITY DEFINER`, so that migration's material effect is absent and cannot be repaired into production history.
 
-`20260314000001` is therefore the first of the proposed **13 forward executes**, followed by `20260314000002_add_headcount_upper_bound.sql`. The latter remains execute-only because the exact lower-only `headcount_need >= 0` constraint is represented, while its upper-bound effect is not. The current plan is **55 repair candidates plus 13 executes**; it is not an executable production apply procedure.
+`20260314000001` is therefore the first of the proposed **13 forward executes**, followed by `20260314000002_add_headcount_upper_bound.sql`. The latter remains execute-only because the exact lower-only `headcount_need >= 0` constraint is represented, while its upper-bound effect is not. At that dated checkpoint, the plan was **55 repair candidates plus 13 executes**; it is not an executable production apply procedure.
 
 This creates no accepted pre-apply catalog exception and does not relax the strict catalog. Before the staffing execute, a reviewed fail-closed per-function proof must bind the exact signature, owner, language, security mode, pinned settings, body predicates, and non-owner `EXECUTE` grants including grant options. The legacy definer interval remains fully isolated; no application, Data API, direct-database, Realtime, scheduled-job, worker, or external-consumer path may be restored during it. A partial apply stops the window with no automatic retry.
 

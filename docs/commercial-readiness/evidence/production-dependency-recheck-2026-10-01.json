@@ -1,0 +1,158 @@
+{
+  "kind": "production-dependency-advisory-paths",
+  "capturedAtUtc": "2026-10-01T07:55:38.0924485Z",
+  "source": "c492c927224ed5a8f133c58b6fac2531c03e474b",
+  "exitCode": 1,
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 6,
+    "high": 6,
+    "critical": 1
+  },
+  "advisories": [
+    {
+      "id": "GHSA-w5hq-g745-h8pq",
+      "package": "uuid",
+      "severity": "moderate",
+      "title": "uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided",
+      "affected": "<11.1.1",
+      "patched": ">=11.1.1",
+      "paths": [
+        ".>exceljs>uuid"
+      ]
+    },
+    {
+      "id": "GHSA-6vj9-mwq6-2f5v",
+      "package": "nodemailer",
+      "severity": "moderate",
+      "title": "Nodemailer: Process-global DNS cache reuses TLS `servername` across transports, enabling cross-tenant SMTP credential disclosure",
+      "affected": ">=5.0.0 <10.0.2",
+      "patched": ">=10.0.2",
+      "paths": [
+        ".>nodemailer"
+      ]
+    },
+    {
+      "id": "GHSA-8vvx-rff5-p5rq",
+      "package": "nodemailer",
+      "severity": "moderate",
+      "title": "Nodemailer: Nested structured recipient arrays bypass the parser depth limit and cause stack exhaustion DoS",
+      "affected": "<10.0.2",
+      "patched": ">=10.0.2",
+      "paths": [
+        ".>nodemailer"
+      ]
+    },
+    {
+      "id": "GHSA-q2hr-2g5m-vwhr",
+      "package": "brace-expansion",
+      "severity": "moderate",
+      "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+      "affected": "<1.1.21",
+      "patched": ">=1.1.21",
+      "paths": [
+        ".>exceljs>archiver>archiver-utils>glob>minimatch>brace-expansion"
+      ]
+    },
+    {
+      "id": "GHSA-q2hr-2g5m-vwhr",
+      "package": "brace-expansion",
+      "severity": "moderate",
+      "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+      "affected": ">=2.0.0 <2.1.7",
+      "patched": ">=2.1.7",
+      "paths": [
+        ".>exceljs>archiver>readdir-glob>minimatch>brace-expansion"
+      ]
+    },
+    {
+      "id": "GHSA-qhr7-859c-m2p7",
+      "package": "brace-expansion",
+      "severity": "high",
+      "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+      "affected": "<1.1.20",
+      "patched": ">=1.1.20",
+      "paths": [
+        ".>exceljs>archiver>archiver-utils>glob>minimatch>brace-expansion"
+      ]
+    },
+    {
+      "id": "GHSA-qhr7-859c-m2p7",
+      "package": "brace-expansion",
+      "severity": "high",
+      "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+      "affected": ">=2.0.0 <2.1.6",
+      "patched": ">=2.1.6",
+      "paths": [
+        ".>exceljs>archiver>readdir-glob>minimatch>brace-expansion"
+      ]
+    },
+    {
+      "id": "GHSA-6j4f-fj2g-mc7p",
+      "package": "brace-expansion",
+      "severity": "high",
+      "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+      "affected": "<1.1.19",
+      "patched": ">=1.1.19",
+      "paths": [
+        ".>exceljs>archiver>archiver-utils>glob>minimatch>brace-expansion"
+      ]
+    },
+    {
+      "id": "GHSA-6j4f-fj2g-mc7p",
+      "package": "brace-expansion",
+      "severity": "high",
+      "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+      "affected": ">=2.0.0 <2.1.5",
+      "patched": ">=2.1.5",
+      "paths": [
+        ".>exceljs>archiver>readdir-glob>minimatch>brace-expansion"
+      ]
+    },
+    {
+      "id": "GHSA-g57g-f23g-4646",
+      "package": "nodemailer",
+      "severity": "moderate",
+      "title": "Nodemailer: Quoted local-part can produce malformed envelope recipient through RFC 5322 comment parsing",
+      "affected": ">=9.1.0 <10.0.9",
+      "patched": ">=10.0.9",
+      "paths": [
+        ".>nodemailer"
+      ]
+    },
+    {
+      "id": "GHSA-v53p-9fqp-m79j",
+      "package": "nodemailer",
+      "severity": "high",
+      "title": "Nodemailer: Quadratic backtracking in the addressparser free-text fallback allows remote denial of service",
+      "affected": "<=10.0.5",
+      "patched": ">=10.0.6",
+      "paths": [
+        ".>nodemailer"
+      ]
+    },
+    {
+      "id": "GHSA-vcvr-r3jv-pc5j",
+      "package": "next",
+      "severity": "critical",
+      "title": "Next.js: Remote Code Execution in next/og ImageResponse",
+      "affected": ">=16.2.0 <16.3.6",
+      "patched": ">=16.3.6",
+      "paths": [
+        ".>next"
+      ]
+    },
+    {
+      "id": "GHSA-prgh-xp8r-p3m5",
+      "package": "nodemailer",
+      "severity": "high",
+      "title": "Nodemailer addressparser: O(n^2) on comment-joined addresses enables a remote DoS (reachable via mailparser)",
+      "affected": ">=9.1.0 <=10.0.4",
+      "patched": ">=10.0.5",
+      "paths": [
+        ".>nodemailer"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "current-vercel-pause-readonly-inspection",
+  "startedAtUtc": "2026-10-01T08:08:08.325Z",
+  "completedAtUtc": "2026-10-01T08:08:09.750Z",
+  "transport": "integrity-pinned Node built-in HTTPS; exactly two GET requests; no CLI, refresh, redirects, telemetry or update check",
+  "nodeVersion": "v24.19.0",
+  "nodeSha256": "3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237",
+  "privateDeploymentRecordSha256": "6d73889f5659d1396a0f89a125a077b476357f1b617e064a94b86ad838995c42",
+  "repositoryBound": true,
+  "pauseDeploymentIdSha256": "8893b239490e082f61f98f9c018bc20e4f8ec26ad6a8ccc212b401f9254bff13",
+  "currentProductionTargetIdSha256": "8893b239490e082f61f98f9c018bc20e4f8ec26ad6a8ccc212b401f9254bff13",
+  "currentProductionTargetMatchesPause": true,
+  "autoAssignCustomDomains": false,
+  "activeCronDefinitions": 0,
+  "deploymentCronDefinitions": null,
+  "deploymentFunctions": null,
+  "pauseReady": true,
+  "pauseTarget": "production",
+  "projectCronShapeKeys": [
+    "updatedAt",
+    "deploymentId",
+    "definitions"
+  ],
+  "deploymentMetadataKeys": [
+    "readyState",
+    "target",
+    "builds",
+    "functions",
+    "projectSettings",
+    "routes"
+  ],
+  "hostedSettingsChanged": false,
+  "deploymentsPerformed": false,
+  "hostedDatabaseAccess": false,
+  "readinessAssessed": false
+}

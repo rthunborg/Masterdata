@@ -63,4 +63,4 @@ Exact `npx playwright test` on that commit passed **163**, skipped **47**, faile
 
 After the browser run, strict local `post_apply` remained **16/16** and the dashboard-fixture cleanup aggregate was zero at `2026-09-15T18:36:20.102Z`. Test-resource Stop requests were accepted through Windows PowerShell 5.1; saved synthetic state is retained, and no CloseActor completion is claimed while the actor remains open. The fresh pre-merge fetch remains at staging `a85f65ef882b85a035ae16183dcb95f39bbab810` and main `822350986f4c023948a7bbf490ddffc371185c4a`, with no intervening commits.
 
-The preceding pre-merge details are historical. Current staging execution is complete at 68/68. Owner staging verification and production gates remain next steps; no production result is claimed.
+The preceding pre-merge details are historical. Current staging execution is complete at 69/69 after the PR #123 forward. Production gates remain next steps; no production result is claimed.

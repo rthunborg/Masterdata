@@ -1,0 +1,152 @@
+{
+  "kind": "staging_v69_pr123_merge_apply_post_proof",
+  "reviewedHead": "540f020449902d9bb9384baa9ed53eac09d19671",
+  "reviewbotCleanAtUtc": "2026-09-30T16:11:39Z",
+  "githubVercelChecks": {
+    "count": 3,
+    "allGreen": true
+  },
+  "stagingMerge": {
+    "sha": "c492c927224ed5a8f133c58b6fac2531c03e474b",
+    "reviewedTreeExact": true
+  },
+  "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "manifestSha256": "72817587a929e19ae507c9e806f2151f214d63465df8496258edde9f26ccc0f4",
+  "migration": {
+    "version": "20260930091123",
+    "file": "20260930091123_reconcile_staffing_updated_by_foreign_key.sql",
+    "sqlSha256": "e059d40217fd5763841224c3e0e3f6e5bb739bbb4c623140eb65864f4752e67b",
+    "stagingRepairs": []
+  },
+  "preflight": {
+    "passed": true,
+    "localHistoryCount": 69,
+    "remoteHistoryCount": 68,
+    "pendingVersions": [
+      "20260930091123"
+    ],
+    "strictCatalog": {
+      "phase": "post_apply",
+      "passed": 16,
+      "failed": []
+    },
+    "staffing": {
+      "rows": 2,
+      "nonnullActors": 2,
+      "publicOrphans": 0,
+      "authOrphans": 0,
+      "orderedHash": "690be408c49fe8d4c01cabb86fba9a79"
+    }
+  },
+  "dryRun": {
+    "capturedAtUtc": "2026-09-30T16:35:06.555Z",
+    "nativeExitCode": 0,
+    "passed": true,
+    "exactSingleVersion": "20260930091123",
+    "rawOutputSha256": "bcaa022cfe3b559336ad1415c2d4f3b9b89a0ca066fee7fcf3794c10205b94a5",
+    "hostedWriteAttempted": false
+  },
+  "apply": {
+    "capturedAtUtc": "2026-09-30T16:37:41.431Z",
+    "nativeExitCode": 0,
+    "passed": true,
+    "rawOutputSha256": "806ffafc03e93257a6c7932484071a7f64d8f90c0fff4208118950c89f893d57",
+    "hostedWriteAttempted": true,
+    "completionTimeClaim": "not-recorded",
+    "completedByHistoryProofAtUtc": "2026-09-30T16:38:21.817Z"
+  },
+  "postApply": {
+    "passed": true,
+    "historyAtUtc": "2026-09-30T16:38:21.817Z",
+    "historyCount": 69,
+    "pendingVersions": [],
+    "remoteOnlyVersions": [],
+    "staffingAtUtc": "2026-09-30T16:38:31.681Z",
+    "staffingExactPreflightMatch": true,
+    "advisorAtUtc": "2026-09-30T16:38:38.060Z",
+    "securityWarnOrHigher": 0,
+    "knownPerformanceWarnings": 3,
+    "aggregateAtUtc": "2026-09-30T16:38:48.278Z",
+    "auditAtUtc": "2026-09-30T16:38:54.919Z",
+    "auditRows": 354,
+    "auditNonnullActors": 91,
+    "auditUnmappedActors": 0,
+    "auditHash": "bcd635f1b6219fcf5c7f063dfa0b3b37",
+    "strictCatalogAtUtc": "2026-09-30T16:39:01.644Z",
+    "strictCatalogPassed": 16,
+    "strictCatalogFailed": []
+  },
+  "storyStatus": "in-progress",
+  "epic23Status": "on-hold",
+  "productionStatus": "paused-no-go",
+  "limitations": [
+    "Apply receipt capture time is not a write-completion timestamp.",
+    "No production database write, deployment, or hosted setting change occurred.",
+    "Vercel deployment functions and cron metadata were unenumerated."
+  ],
+  "vercelPauseReadOnly": {
+    "startedAtUtc": "2026-09-30T16:53:44.024Z",
+    "endedAtUtc": "2026-09-30T16:53:46.090Z",
+    "recordedPauseTargetMatch": true,
+    "productionState": "READY",
+    "automaticAssignmentEnabled": false,
+    "activeCronDefinitions": 0,
+    "deploymentFunctionsAndCronMetadata": "UNENUMERATED"
+  },
+  "productionReadOnlyClassification": {
+    "observedStartedAtUtc": "2026-09-30T16:53:08.073Z",
+    "observedCompletedAtUtc": "2026-09-30T16:53:21.89Z",
+    "source": "c492c927224ed5a8f133c58b6fac2531c03e474b",
+    "assessment": "profile_match_not_admission",
+    "strictCatalog": {
+      "expectedFailures": 7,
+      "checks": 16,
+      "matched": true
+    },
+    "staffing": {
+      "technicalPrerequisites": "proved-not-execution-authority",
+      "nonnullActors": 0,
+      "publicOrphans": 0,
+      "authOrphans": 0
+    },
+    "managedProfiles": {
+      "unknownLogin": 1,
+      "unknownBackend": 2,
+      "otherUnknownLogin": 0,
+      "otherUnknownBackend": 0,
+      "isolationOrAdmissionProved": false
+    },
+    "aggregates": {
+      "migrationHistoryTable": "absent",
+      "orphanedFilters": 48,
+      "emptyOrOverlengthFilterNames": 0,
+      "auditRows": 1025,
+      "legacyMappedActors": 202,
+      "repayment": {
+        "eachField": {
+          "null": 70,
+          "true": 2,
+          "false": 1,
+          "total": 73
+        }
+      },
+      "permissionBaselineEntries": 61,
+      "permissionBaselineHash": "643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8"
+    },
+    "hostedWriteAttempted": false,
+    "threeCollectorWindowCompletedAtUtc": "2026-09-30T16:54:20.143Z"
+  },
+  "receiptSha256": {
+    "v69-forward-preflight-admission-redacted.json": "5813defd36b6d39b57b4aca0ded1196e0ace47321182f4d982050cd391db01bf",
+    "v69-forward-dry-run-redacted.json": "47db4b9a6cbbd1a4e3978fbd18400c0467899c5ff21d3042076541b757068d55",
+    "v69-forward-apply-redacted.json": "09fd5a2acf804258b3e5ee03cbb5b5c7ced937a9233244dd82d909f41624c34a",
+    "v69-migration-post-redacted.json": "cae2ebd680bb38a33a6e0a1739803d30038bef057bf4f4107f2dd163c7a4eaa6",
+    "v69-staffing-post-redacted.json": "a79b4e46064c2667dc3cacad21fa361733cf8344216a091ed00eacc3d373e3ca",
+    "v69-advisors-post-redacted.json": "4e06c19e3c0abe7eef18a9d1457d73848ac51c592ae721cbe920cb3a03a946a0",
+    "v69-aggregates-post-redacted.json": "94799cbb15d848cb1c94311c9b56f0f8d8f72997cbcc4fc7a349459268c2c79f",
+    "v69-audit-post-redacted.json": "d1c8de9122812c2251a058485241f939264aaab5f4c62679a31b39e8131599f0",
+    "v69-catalog-post-redacted.json": "f8218cf4d0db27b2e83f8b6672608b3172e76051ed1d15c789a0a30cc57dc8a5",
+    "current-vercel-pause-https-redacted.json": "11c5f9572daf191223222ef3b784445b22c11278dde51a9ae5009d8d69e5544d",
+    "production-source-collectors-redacted.json": "102a680adc4bddcc4bb49d104bf611ce56661156c25f751c6173d9df3f4a54c6"
+  }
+}

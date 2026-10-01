@@ -1,6 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from "@testing-library/user-event";
 import { AddImportantDateModal } from "@/components/dashboard/add-important-date-modal";
@@ -222,6 +222,11 @@ describe("AddImportantDateModal", () => {
           onSuccess={mockOnSuccess}
         />
       );
+
+      // Select the fixture year explicitly; the season default changes in October.
+      const yearInput = screen.getByLabelText(/år/i);
+      fireEvent.change(yearInput, { target: { value: "2026" } });
+      expect(yearInput).toHaveValue(2026);
 
       // Fill out the form
       const weekInput = screen.getByLabelText(/veckonummer/i);
