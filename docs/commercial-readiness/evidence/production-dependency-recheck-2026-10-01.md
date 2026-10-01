@@ -9,3 +9,15 @@ The earlier 0-critical/0-high/one-moderate audit remains dated evidence. Its UUI
 Staging's separately recorded 69/69 database history and strict catalog 16/16 remain valid dated database evidence. Production remains paused/no-go; Story 22.15 in-progress and Epic 23 on hold. Resolve this dependency gate before application release; isolation, separately approved cleanup, 14 reviewed forwards, strict canonical-69 preservation, owner ledger adoption, separately approved 55-version history repair, main, deployment and reopening remain distinct gates. Any later candidate change requires renewed source/package binding. The current offline package remains unapproved and uninstalled.
 
 The first audit-capture wrapper failed to produce an accepted aggregate record; it is not passing evidence. A direct existing pnpm executable invocation then parsed the provider response, and the independent detailed capture above confirmed the counts. Only the accepted redacted records supply this conclusion.
+
+## Production pause recheck
+
+A separate integrity-pinned two-GET Vercel inspection at 2026-10-01T08:08:08.325Z through 08:08:09.750Z confirms the recorded pause target still matches production and is READY, automatic production-domain assignment is disabled, and active cron definitions are empty. [Redacted receipt](production-pause-readonly-2026-10-01.json). Deployment functions and deployment cron metadata remain unenumerated/null; these are not zero-count proofs. No settings, deployment or database operation occurred in this inspection.
+
+The initial attempt stopped locally because the existing authentication record had expired; no hosted request was made by that failed attempt. The already reviewed Vercel CLI 61.0.0 byte hash was verified, a read-only whoami check refreshed the existing login with account output suppressed, and the bounded inspector then passed. No fresh sign-in or pasted credential was requested.
+
+## Evidence follow-up verification
+
+CI on evidence head 4bb92416852bb5579c02d8d7596cb7620ad2717b failed: 4,330 passed, two failed, 212 skipped across 372 files (270.88s; exit 1). One failure required restoring the historical August audit link. The other was a deterministic October season-year rollover in the submission test: its 2026 fixture did not select a year and inherited the application's now-correct 2027 default. The follow-up explicitly selects 2026 without changing application behavior, assertions, timeouts or skips.
+
+The three affected files then passed locally: 49/49, zero skips/failures, exit 0, 8.64s. An earlier clear-and-type fixture attempt failed because clearing the controlled input restores the default; it is not passing evidence. The final fixture uses the complete change event already used by the existing year-field tests. Application, dependency, migration, manifest and release-tool sources remain unchanged. This focused result does not replace the separately recorded full-suite implementation evidence or exact revised-head CI/review gates.
