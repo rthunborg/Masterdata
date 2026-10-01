@@ -1,5 +1,7 @@
 # Commercial Readiness Documentation Index
 
+> **Current dependency release blocker — 2026-10-01.** The unchanged staging lockfile now fails the production-scoped audit: 1 critical, 6 high and 6 moderate findings, exit 1. The prior UUID acceptance expired on 2026-09-30 and is not renewed. The earlier 0-critical/high audit and prepared offline migration package do not establish application release admission. No dependency or hosted change occurred. Production remains paused/no-go; Story 22.15 in-progress; Epic 23 on hold. [Counts, affected paths and limits](evidence/production-dependency-recheck-2026-10-01.md).
+
 Prepared: 2026-06-03
 Updated: 2026-09-30 — PR #123 reviewed head `540f020449902d9bb9384baa9ed53eac09d19671` merged as staging `c492c927224ed5a8f133c58b6fac2531c03e474b` with an exact reviewed tree. Fresh bound preflight, exact one-file forward apply, immediate 69/69 history, strict catalog 16/16, and preservation proofs passed. A fresh read-only Vercel inspection reconfirmed the recorded pause target, disabled automatic assignment, and zero active cron definitions; production gates remain open.
 

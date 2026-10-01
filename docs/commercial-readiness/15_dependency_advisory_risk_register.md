@@ -1,16 +1,18 @@
 # Dependency Advisory Risk Register
 
+> **Current dependency release blocker — 2026-10-01.** The unchanged staging lockfile now fails the production-scoped audit: 1 critical, 6 high and 6 moderate findings, exit 1. The prior UUID acceptance expired on 2026-09-30 and is not renewed. The earlier 0-critical/high audit and prepared offline migration package do not establish application release admission. No dependency or hosted change occurred. Production remains paused/no-go; Story 22.15 in-progress; Epic 23 on hold. [Counts, affected paths and limits](evidence/production-dependency-recheck-2026-10-01.md).
+
 Prepared: 2026-08-31 (Story 22.15 refresh)
 
 Revalidated: 2026-09-10 — narrow remediation returns to the accepted residual threshold; fresh local gates passed; result-only-documentation-head checks open
 
 Source evidence: `docs/commercial-readiness/evidence/dependency-audit-2026-08-31.md`
 
-## Development-inclusive audit follow-up — 2026-09-15
+## Historical development-inclusive audit follow-up — 2026-09-15
 
 The exact production-scoped `pnpm audit --prod --json` remains **0 critical / 0 high / 1 accepted UUID moderate**, exit `1` solely for the existing time-bounded UUID acceptance. The broader `pnpm audit --json` separately returned exit `1` with **1 critical / 16 high / 10 moderate**, including the dev-only Vitest UI advisory `GHSA-5xrq-8626-4rwp`. This is a development-tooling follow-up for review and an explicitly scoped remediation decision; Vitest UI is not launched as a production runtime component. It does not widen the production residual acceptance, waive a release gate, or authorize an unreviewed dependency upgrade. See [the current ACL-prerequisite verification record](evidence/canonical-trigger-acl-prerequisite-2026-09-15.md).
 
-## Current release gate — 2026-09-10
+## Historical release gate — 2026-09-10; superseded by the October 1 failure
 
 The 2026-09-09 failure remains historical evidence: **0 critical / 3 high / 3 moderate / 0 low**, exit 1. A narrow compatible patch on 2026-09-10 updates Nodemailer `9.1.0`→`9.1.1`, Sharp `0.35.3`→`0.35.4`, and the compatible workspace floors for Browserslist `4.28.7`, baseline-browser-mapping `2.11.0`, and Sharp `0.35.4`. The post-patch `pnpm audit --prod --json` result is **0 critical / 0 high / 1 moderate / 0 low**, exit 1 solely for the existing `exceljs`→`uuid 8.3.2` (`GHSA-w5hq-g745-h8pq`) residual. Its existing acceptance ends 2026-09-30; no new waiver was added and no incompatible UUID major override was used. Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Story 22.15 remains in-progress and Epic 23 remains on hold. This result-only documentation commit must receive fresh CI, Vercel, and Reviewbot verification after push; those future checks are open. Hosted repair/apply, staging/main merges, production deployment/settings, and reopening remain separately owner-gated. See [dated remediation evidence](evidence/staging-reconciliation-and-pause-2026-09-09.md#dependency-remediation-evidence--2026-09-10).
 
@@ -43,7 +45,7 @@ Batch 3's local verification scope is complete. The 47 Playwright skips are not 
 
 | Package | Severity | Affected path | Reason not fixed | Owner | Review date | Compensating control | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `uuid 8.3.2` (`GHSA-w5hq-g745-h8pq`) | Moderate | `.>exceljs>uuid` | `exceljs 4.4.0` requires `uuid ^8.3.0`; forcing `uuid >=11.1.1` is an unsupported major transitive override. | Technical owner | 2026-09-30 | ExcelJS is used only for authenticated server-side XLSX export. The application does not expose UUID v3/v5/v6 buffer/offset APIs to user input. Recheck for an ExcelJS release with a patched UUID range or select a replacement before the review date. | Time-bounded acceptance for controlled production readiness; not an enterprise waiver. |
+| `uuid 8.3.2` (`GHSA-w5hq-g745-h8pq`) | Moderate | `.>exceljs>uuid` | `exceljs 4.4.0` requires `uuid ^8.3.0`; forcing `uuid >=11.1.1` is an unsupported major transitive override. | Technical owner | 2026-09-30 | ExcelJS is used only for authenticated server-side XLSX export. The application does not expose UUID v3/v5/v6 buffer/offset APIs to user input. Recheck for an ExcelJS release with a patched UUID range or select a replacement before the review date. | Acceptance expired 2026-09-30; no renewal. Prior acceptance was limited to controlled production readiness and was not an enterprise waiver. |
 
 Historical 2026-09-01 conclusion: Nodemailer was `9.1.0`. The 2026-09-10 narrow patch raises it to `9.1.1`; its types remain aligned and the non-network compatibility test remains the compatibility evidence.
 

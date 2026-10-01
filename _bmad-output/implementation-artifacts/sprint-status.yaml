@@ -177,7 +177,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'PR #123 reviewed head 540f020449902d9bb9384baa9ed53eac09d19671 passed Reviewbot and all three GitHub/Vercel checks, then merged as staging c492c927224ed5a8f133c58b6fac2531c03e474b with an exact reviewed tree. Fresh staging preflight was 69 local/68 remote with only 20260930091123 pending; its exact one-file dry run passed and the staging apply returned native exit 0. Immediate history proves 69/69 with no pending or remote-only version by 2026-09-30T16:38:21.817Z; six post phases passed, including strict catalog 16/16 and unchanged staffing, advisor, aggregate, permission-hash and audit baselines. Fresh production read-only classification matches the original seven strict failures and proves only staffing technical prerequisites, not isolation or admission. Next: isolation and target admission, separately approved 48-filter cleanup, fresh post-cleanup proof, 14 forwards, strict canonical-69 proof, 55-row adoption/repair review, main, deployment and reopening decisions. Production stays paused/no-go; Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #123 reviewed head 540f020449902d9bb9384baa9ed53eac09d19671 passed Reviewbot and all three GitHub/Vercel checks, then merged as staging c492c927224ed5a8f133c58b6fac2531c03e474b with an exact reviewed tree. Fresh staging preflight was 69 local/68 remote with only 20260930091123 pending; its exact one-file dry run passed and the staging apply returned native exit 0. Immediate history proves 69/69 with no pending or remote-only version by 2026-09-30T16:38:21.817Z; six post phases passed, including strict catalog 16/16 and unchanged staffing, advisor, aggregate, permission-hash and audit baselines. Fresh production read-only classification matches the original seven strict failures and proves only staffing technical prerequisites, not isolation or admission. Next: isolation and target admission, separately approved 48-filter cleanup, fresh post-cleanup proof, 14 forwards, strict canonical-69 proof, 55-row adoption/repair review, main, deployment and reopening decisions. Production stays paused/no-go; Story 22.15 in-progress; Epic 23 on-hold. The October 1 production audit fails with 1 critical, 6 high and 6 moderate findings; the prior UUID acceptance expired. Resolve the dependency gate before application release; no waiver or package approval is supplied.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -410,3 +410,17 @@ current_pr123_staging_completion_20260930:
   story_status: in-progress
   epic_23_status: on-hold
   evidence: docs/commercial-readiness/evidence/staging-v69-pr123-merge-apply-proof-2026-09-30.md
+
+current_dependency_release_blocker_20261001:
+  source_staging: c492c927224ed5a8f133c58b6fac2531c03e474b
+  production_scoped_audit_exit: 1
+  critical: 1
+  high: 6
+  moderate: 6
+  prior_uuid_acceptance: expired-2026-09-30-not-renewed
+  release_gate: failed
+  dependency_changes_performed: false
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/production-dependency-recheck-2026-10-01.md
