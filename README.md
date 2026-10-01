@@ -210,8 +210,8 @@ Since the original README, the project has added or substantially improved:
 
 ### Prerequisites
 
-- Node.js 20+
-- pnpm 10+
+- Node.js >=20.9.0
+- pnpm 10.19.0 (the version pinned in `package.json`)
 - Git
 - Supabase project credentials
 - Docker Desktop with WSL2 (optional) — for the local Supabase stack and local SMTP capture
@@ -221,7 +221,7 @@ Since the original README, the project has added or substantially improved:
 ```bash
 git clone <repo-url>
 cd hr-masterdata
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
 ### Configure Environment
