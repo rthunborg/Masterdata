@@ -3,7 +3,7 @@ import fs from "node:fs";
 import http from "node:http";
 import { describe, expect, it, vi } from "vitest";
 
-describe("Story 22.15 Nodemailer 9 compatibility", () => {
+describe("Story 22.15 Nodemailer 10 compatibility", () => {
   it.each([
     ["blocked-mail-fixture.txt", "EFILEACCESS"],
     ["http://127.0.0.1:1/blocked-mail-fixture", "EURLACCESS"],
@@ -39,7 +39,7 @@ describe("Story 22.15 Nodemailer 9 compatibility", () => {
     const transport = nodemailer.createTransport({ jsonTransport: true });
     const result = await transport.sendMail({
       from: "HR Masterdata <noreply@example.test>",
-      to: ["owner@example.test"],
+      to: "owner@example.test, payroll@example.test",
       subject: "ÖMC masterdata-påminnelse",
       text: "Testmeddelande utan extern leverans",
       html: "<p>Testmeddelande utan extern leverans</p>",
@@ -52,6 +52,7 @@ describe("Story 22.15 Nodemailer 9 compatibility", () => {
     expect(message.subject).toBe("ÖMC masterdata-påminnelse");
     expect(message.to).toEqual([
       expect.objectContaining({ address: "owner@example.test" }),
+      expect.objectContaining({ address: "payroll@example.test" }),
     ]);
   });
 });
