@@ -56,7 +56,7 @@ next_actions:
   - 'Story 22.10 is done. Phase A staging reconciliation remains dated 2026-06-14 (57 migrations / 19 policies); Story 22.13 resolved the historical local Playwright contradiction on 2026-07-09 with exact full npx playwright test: 162 passed / 53 skipped / 0 failed, EXIT:0. Phase B production cutover (runbook 27; R-010/R-023/R-020) remains the Epic 22 release gate.'
   - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings on PR #91 commit 32621fd are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, required real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, exact full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique Story 22.14 tests are evidenced passing without recounting pre-existing Story 22.11 cases. Any further review finding requires human triage. No production, schema, real-recipient cron, deployment, main, or unrelated-file changes occurred. Epic 22 remains in progress for its separate production release gate.'
-  - 'Current PR #123 reviewed head 540f020449902d9bb9384baa9ed53eac09d19671 merged as staging c492c927224ed5a8f133c58b6fac2531c03e474b with an exact reviewed tree. Staging is 69/69 with no pending or remote-only version, strict catalog 16/16 and preservation proof. After independently proved isolation/drain and separately approved 48-filter cleanup, execute 14 reviewed forwards under standing authorization; prove strict 16/16 and canonical-69 preservation, then obtain owner ledger adoption and separately approve 55-version history repair. Before any main/application deployment or reopening decision, resolve B-003/R-002: the current production audit fails with 1 critical, 6 high and 6 moderate findings; the prior UUID acceptance expired and no waiver is granted. Production remains paused/no-go; main, deployment and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+  - 'PR #125 candidate 3f26418027590609ed3ed7b88b38376d62efd489 has the current zero-finding production audit, renewed source/package binding, focused compatibility and quality evidence, full Vitest 4547/0/0 across 373 files in 858.06s, full Playwright 163 passed/47 exact historical skips/0 failed/0 errors in 1357.77634s, and a renewed pause safeguard. The failed 471c22f full-Vitest result remains historical failed evidence only. Passing local evidence grants no package, hosted, release, main, deployment, or reopening approval. Final-head review and required PR checks must be recorded for the exact merge candidate. Production remains paused/no-go. The remaining independent gates are controller/isolation and drain, separately approved 48-filter cleanup, 14 forwards, strict 16/16 and canonical-69 preservation, owner-ledger adoption and separately approved 55-version repair, followed by separate main, deployment, and reopening approvals. Story 22.15 in-progress; Epic 23 on-hold.'
   - 'EPIC 22 COMPLETION GATE (E-010/E-013): Last hosted staging proof is the PR #123 v69/69 result with no pending or remote-only version and all six post phases passed, including strict catalog 16/16. Preserve the production pause and keep production, main and reopening gates separate. Historical v67 fixture/RPC acceptance passed 21/21. Production inventory, ledger, backup freshness, isolation/settings/history-repair and deployment gates remain.'
   - 'Epic 23 is explicitly on hold. Its status file has not been created, and no Epic 23 work may be started or planned into active development without a later explicit owner decision.'
 
@@ -86,7 +86,7 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'PR #123 reviewed head 540f020449902d9bb9384baa9ed53eac09d19671 passed Reviewbot and all three GitHub/Vercel checks, then merged as staging c492c927224ed5a8f133c58b6fac2531c03e474b with an exact reviewed tree. Fresh staging preflight was 69 local/68 remote with only 20260930091123 pending; its exact one-file dry run passed and the staging apply returned native exit 0. Immediate history proves 69/69 with no pending or remote-only version by 2026-09-30T16:38:21.817Z; six post phases passed, including strict catalog 16/16 and unchanged staffing, advisor, aggregate, permission-hash and audit baselines. Fresh production read-only classification matches the original seven strict failures and proves only staffing technical prerequisites, not isolation or admission. Next: isolation and target admission, separately approved 48-filter cleanup, fresh post-cleanup proof, 14 forwards, strict canonical-69 proof, 55-row adoption/repair review, main, deployment and reopening decisions. Production stays paused/no-go; Story 22.15 in-progress; Epic 23 on-hold. The October 1 production audit fails with 1 critical, 6 high and 6 moderate findings; the prior UUID acceptance expired. Resolve the dependency gate before application release; no waiver or package approval is supplied.'
+  next_action: 'PR #125 candidate 3f26418027590609ed3ed7b88b38376d62efd489 has a fresh zero-finding production audit bound to renewed source/package identity, focused compatibility and quality evidence, full Vitest 4547 passed / 0 skipped / 0 failed across 373 files in 858.06s, and full Playwright 163 passed / 47 exact historical skips / 0 failed / 0 errors in 1357.77634s. The renewed pause safeguard is recorded in the same receipt. The failed 471c22f Vitest run remains historical failed evidence only. Passing local evidence grants no package, hosted, release, main, deployment, or reopening approval. A final-head review and required PR checks must be recorded for the exact merge candidate. Production remains paused/no-go. The independent gates remain controller/isolation and drain, separately approved 48-filter cleanup, 14 forwards, strict 16/16 and canonical-69 preservation, owner-ledger adoption and separately approved 55-version repair, then separate main, deployment, and reopening approvals. Story 22.15 in-progress; Epic 23 on-hold.'
 
 reconciliation_pause_candidate:
   previous_implementation_sha: '5f60e58c9aa9a7e117bc589ec82d0b99a5846839'
@@ -191,7 +191,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'PR #123 reviewed head 540f020449902d9bb9384baa9ed53eac09d19671 passed Reviewbot and all three GitHub/Vercel checks, then merged as staging c492c927224ed5a8f133c58b6fac2531c03e474b with an exact reviewed tree. Fresh staging preflight was 69 local/68 remote with only 20260930091123 pending; its exact one-file dry run passed and the staging apply returned native exit 0. Immediate history proves 69/69 with no pending or remote-only version by 2026-09-30T16:38:21.817Z; six post phases passed, including strict catalog 16/16 and unchanged staffing, advisor, aggregate, permission-hash and audit baselines. Fresh production read-only classification matches the original seven strict failures and proves only staffing technical prerequisites, not isolation or admission. Next: isolation and target admission, separately approved 48-filter cleanup, fresh post-cleanup proof, 14 forwards, strict canonical-69 proof, 55-row adoption/repair review, main, deployment and reopening decisions. Production stays paused/no-go; Story 22.15 in-progress; Epic 23 on-hold. The October 1 production audit fails with 1 critical, 6 high and 6 moderate findings; the prior UUID acceptance expired. Resolve the dependency gate before application release; no waiver or package approval is supplied.'
+  next_action: 'PR #125 candidate 3f26418027590609ed3ed7b88b38376d62efd489 has a fresh zero-finding production audit bound to renewed source/package identity, focused compatibility and quality evidence, full Vitest 4547 passed / 0 skipped / 0 failed across 373 files in 858.06s, and full Playwright 163 passed / 47 exact historical skips / 0 failed / 0 errors in 1357.77634s. The renewed pause safeguard is recorded in the same receipt. The failed 471c22f Vitest run remains historical failed evidence only. Passing local evidence grants no package, hosted, release, main, deployment, or reopening approval. A final-head review and required PR checks must be recorded for the exact merge candidate. Production remains paused/no-go. The independent gates remain controller/isolation and drain, separately approved 48-filter cleanup, 14 forwards, strict 16/16 and canonical-69 preservation, owner-ledger adoption and separately approved 55-version repair, then separate main, deployment, and reopening approvals. Story 22.15 in-progress; Epic 23 on-hold.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -425,15 +425,43 @@ current_pr123_staging_completion_20260930:
   evidence: docs/commercial-readiness/evidence/staging-v69-pr123-merge-apply-proof-2026-09-30.md
 
 current_dependency_release_blocker_20261001:
-  source_staging: c492c927224ed5a8f133c58b6fac2531c03e474b
-  production_scoped_audit_exit: 1
-  critical: 1
-  high: 6
-  moderate: 6
-  prior_uuid_acceptance: expired-2026-09-30-not-renewed
-  release_gate: failed
-  dependency_changes_performed: false
+  failed_audit_history:
+    source_staging: c492c927224ed5a8f133c58b6fac2531c03e474b
+    production_scoped_audit_exit: 1
+    critical: 1
+    high: 6
+    moderate: 6
+    prior_uuid_acceptance: expired-2026-09-30-not-renewed
+    disposition: historical-not-current
+  remediation_candidate:
+    source: 3f26418027590609ed3ed7b88b38376d62efd489
+    next_package_set: '16.3.3-to-16.3.6'
+    nodemailer: '9.1.1-to-10.0.13-with-bundled-types'
+    removed_types_package: '@types/nodemailer'
+    brace_expansion_floors: ['1.1.21', '2.1.7']
+    exceljs: '4.4.0-exact-local-node-crypto-randomUUID-patch'
+    exceljs_uuid_override: 'exceljs@4.4.0>uuid:-'
+    browser_dist_imports: unsupported-separate-remediation
+  current_production_scoped_audit:
+    identity: '3fde634990024f0848ba640645b2e931b50951253abf646b87e8d3df00b7786a'
+    package_source_identity: 'b2b787870b3fddd0e8bb10d9c3354038a8ed422e49c21d138547be04d0622fb7'
+    exit: 0
+    critical: 0
+    high: 0
+    moderate: 0
+    low: 0
+    informational: 0
+    production_dependencies: 280
+  focused_compatibility: { passed: 12, skipped: 0, failed: 0, duration_seconds: 54.29, identity: '3f26418027590609ed3ed7b88b38376d62efd489' }
+  frozen_install_exit: 0
+  typescript_exit: 0
+  lint_errors: 0
+  lint_warnings: 304
+  full_vitest: { passed: 4547, failed: 0, skipped: 0, files: '373/0/373', errors: 0, duration_seconds: 858.06, command: 'npx vitest run', identity: '3f26418027590609ed3ed7b88b38376d62efd489', receipt_sha256: 'bf13329ff9eb667f29a385a829eb6360766234bdbc70d26fa8138290b0af0d3e', skip_identity: 'empty', skip_classification: 'No skipped tests in this current full run.' }
+  full_playwright: { passed: 163, failed: 0, skipped: 47, files: '33/0/41', errors: 0, duration_seconds: 1357.77634, command: 'npx playwright test', identity: '3f26418027590609ed3ed7b88b38376d62efd489', receipt_sha256: '4a96e698154744bbb7283fc8e74ff568794b177d9a48dee92b1efb52ea865a34', skip_identity: 'f9ced59b8f1ac2e178f833e49e1353841479ed937f6de5c0aa2b654398b135de', skip_classification: '47 individually unchanged historical skips; not counted as passes. Complete identity/status/duration multiset checked against raw log and JUnit; skipped identities matched dated 2026-09-28 receipt.' }
+  dependency_advisory_gate: passed-current-audit-and-full-local-suites-final-head-review-and-merge-record-required
   production: paused-no-go
   story_22_15: in-progress
   epic_23: on-hold
-  evidence: docs/commercial-readiness/evidence/production-dependency-recheck-2026-10-01.md
+  hosted_changes: false
+  evidence: docs/commercial-readiness/evidence/production-dependency-remediation-2026-10-01.md
