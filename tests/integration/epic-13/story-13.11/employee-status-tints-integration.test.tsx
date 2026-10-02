@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderWithI18n } from '@/../tests/utils/i18n-test-wrapper';
 import { EmployeeTable } from '@/components/dashboard/employee-table';
@@ -163,6 +163,16 @@ describe('Story 13.11: Employee Status Visual Indicators (Integration)', () => {
     });
   });
 
+  afterEach(async () => {
+    // Unmount observers before cancelling/clearing queries, then drain queued
+    // notifications while this file still owns its JSDOM window.
+    await act(async () => {
+      cleanup();
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+    });
+  });
   const renderWithQueryClient = (component: React.ReactElement) => {
     return renderWithI18n(
       <QueryClientProvider client={queryClient}>
