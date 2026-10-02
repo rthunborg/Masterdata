@@ -339,6 +339,7 @@ describe('Story 22.15 production temporary isolation controls', () => {
       const pending = runProductionTemporaryIsolationControls({ context, admission, adapters: adapter, now: syntheticClock });
       const rejected = expect(pending).rejects.toMatchObject({ code: PRODUCTION_TEMPORARY_ISOLATION_UNCERTAIN });
       await vi.advanceTimersByTimeAsync(19_999);
+      expect(adapter.readNetworkRestrictions).toHaveBeenCalledTimes(20);
       expect(adapter.managementRequest.mock.calls.filter(([request]) => request.path === 'network-restrictions/apply')).toHaveLength(1);
       await vi.advanceTimersByTimeAsync(1);
       await rejected;

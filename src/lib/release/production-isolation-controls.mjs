@@ -160,7 +160,7 @@ const pollDelay = (signal, { setTimer, clearTimer }) => new Promise((resolve, re
 
 const waitForExactNetworkApplied = (adapter, context, ipv4, previousConfigs, timers) =>
   bounded(async ({ signal }) => {
-    while (!signal.aborted) {
+    for (let poll = 0; poll < 20 && !signal.aborted; poll++) {
       // One controller/deadline covers all sequential reads and delays. A
       // pending GET must settle after abort before any recovery POST begins.
       const value = await adapter({ context, signal });
@@ -256,8 +256,6 @@ export async function runProductionTemporaryIsolationControls({
 
   let exclusionAttempted = false;
   let operatorRestored = false;
-  let exclusionReadback;
-  let finalReadback;
   let exclusionProbe;
   try {
     // The endpoint can apply a request before a malformed response or timeout
@@ -270,7 +268,7 @@ export async function runProductionTemporaryIsolationControls({
       timeoutMs: PRODUCTION_ISOLATION_CONTROL_TIMEOUT_MS,
     });
     if (!isNetworkAccepted(exclusionControl)) fail();
-    exclusionReadback = await waitForExactNetworkApplied(adapters.readNetworkRestrictions,
+    await waitForExactNetworkApplied(adapters.readNetworkRestrictions,
       context, admission.exclusionIpv4Cidr, [priorNetworkConfig], { setTimer, clearTimer });
     exclusionProbe = await invoke(adapters.probeExcludedOperatorPooler, { context });
     if (!validExclusionProbe(exclusionProbe)) fail();
@@ -282,7 +280,7 @@ export async function runProductionTemporaryIsolationControls({
         timeoutMs: PRODUCTION_ISOLATION_CONTROL_TIMEOUT_MS,
       });
       if (!isNetworkAccepted(operatorControl)) fail();
-      finalReadback = await waitForExactNetworkApplied(adapters.readNetworkRestrictions,
+      await waitForExactNetworkApplied(adapters.readNetworkRestrictions,
         context, admission.operatorIpv4Cidr,
         [priorNetworkConfig, { dbAllowedCidrs: [admission.exclusionIpv4Cidr], dbAllowedCidrsV6: [] }],
         { setTimer, clearTimer });

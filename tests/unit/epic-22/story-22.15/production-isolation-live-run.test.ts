@@ -7,7 +7,7 @@ const sourceSha = 'a'.repeat(40), targetBindingSha256 = 'b'.repeat(64), isolatio
 const context = { sourceSha, sourceTree: 'd'.repeat(40), sourceManifestSha256: 'e'.repeat(64),
   targetBindingSha256, isolationPlanSha256, databaseRoleGraphSha256: 'f'.repeat(64),
   trustedBackendProfileSha256: '1'.repeat(64), priorRealtimeServiceEnabled: true, priorRealtimeConfigSha256: '2'.repeat(64) };
-function fixture() {
+function fixture(polls: string[] = []) {
   const order: string[] = []; let pooler = 0; let ingress: unknown = null;
   const request = { workspace: process.cwd(), environment: { EXPECTED_SUPABASE_ENVIRONMENT: 'production',
     EXPECTED_SUPABASE_PROJECT_REF: 'p'.repeat(20), SYNTHETIC_ENV_RESTORE_TEST: 'temporary' },
@@ -49,7 +49,7 @@ function fixture() {
         order.push('prior-capture'); await host.establishRealtimeSubscription({ priorRealtimeConfig: { suspend: false },
           priorStateCapturedAtUtc: new Date().toISOString() });
         return { auth: { syntheticSecret: 'must-not-return' }, realtime: { suspend: false },
-          postgrest: { db_schema: 'public', preserved: true }, networkRestrictions: {} };
+          postgrest: { db_schema: 'public', preserved: true }, networkRestrictions: { dbAllowedCidrs: [], dbAllowedCidrsV6: [] } };
       },
       sealPriorState: host.sealPriorState, dataApiPrerequisite: host.dataApiPrerequisite,
       managementRequest: async ({ method, path, body }: { method: string; path: string; body: unknown }) => {
@@ -59,7 +59,11 @@ function fixture() {
         if (path === 'network-restrictions/apply') { ingress = body; return { status: 201, body: { status: 'stored' } }; }
         return { status: 204, body: {} };
       },
-      readNetworkRestrictions: async () => ({ status: 'applied', ...(ingress as object) }),
+      readNetworkRestrictions: async () => {
+        const status = polls.shift() ?? 'applied';
+        return status === 'prior' ? { status: 'applied', dbAllowedCidrs: [], dbAllowedCidrsV6: [] } :
+          { status, ...(ingress as object) };
+      },
       probeExcludedOperatorPooler: host.probeExcludedOperatorPooler, probeOperatorPooler: host.probeOperatorPooler,
     },
     getControlJournal: () => ({ realtime: { configDisableRequestedAtUtc: new Date().toISOString(),
@@ -84,6 +88,27 @@ describe('fixed live isolation orchestration', () => {
     expect(f.order.at(-1)).toBe('caller-cleanup-after-proof');
     expect(JSON.stringify(result)).not.toMatch(/must-not-return|synthetic-management|synthetic-service|203\.0\.113/);
     expect(f.session.close).toHaveBeenCalledTimes(1);
+  });
+  it('retains repeated stored and stale applied polls with exact profile-match evidence', async () => {
+    vi.useFakeTimers();
+    try {
+      const f = fixture(['prior', 'stored', 'stored', 'applied', 'stored', 'applied']);
+      const pending = runFixedProductionIsolationLive(f);
+      await vi.runAllTimersAsync();
+      const result = await pending;
+      expect(result.observations.networkReadbacks.map((value: { restrictionStatus: string }) => value.restrictionStatus))
+        .toEqual(['applied', 'stored', 'stored', 'applied', 'stored', 'applied']);
+      expect(result.observations.networkReadbacks[0]).toMatchObject({ requestedConfigurationMatched: false,
+        previousConfigurationMatched: true, ipv4AllowlistCount: 0, ipv6AllowlistCount: 0 });
+      expect(result.observations.networkReadbacks.slice(1).every((value: { requestedConfigurationMatched: boolean }) => value.requestedConfigurationMatched)).toBe(true);
+      expect(result.observations.networkReadbacks[1].appliedConfigurationSha256)
+        .toBe(result.observations.networkReadbacks[2].appliedConfigurationSha256);
+      expect(result.observations.networkReadbacks[3].appliedConfigurationSha256)
+        .not.toBe(result.observations.networkReadbacks[5].appliedConfigurationSha256);
+      expect(result.observations.poolerProbes).toHaveLength(3);
+      expect(f.order.filter(value => value === 'POST:network-restrictions/apply')).toHaveLength(2);
+      expect(JSON.stringify(result)).not.toMatch(/synthetic-management|synthetic-service|203\.0\.113/);
+    } finally { vi.useRealTimers(); }
   });
   it('refuses a prior pooler failure before seal or any control request', async () => {
     const f = fixture(); f.modules.probes.probeProductionSessionPoolerReadOnly.mockResolvedValueOnce({

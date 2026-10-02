@@ -36,6 +36,9 @@ export async function runFixedProductionIsolationLive({ request, modules, sealPr
   let session = null; let realtimePriorState = null; let platformReadback = null;
   let established = null; let prerequisite = null; let realtimeDisabledSha = null;
   const poolerProbes = []; const networkReadbacks = [];
+  let priorNetworkConfig = null; let requestedNetworkConfig = null;
+  const sameNetworkConfig = (left, right) => left && right &&
+    digest([left.dbAllowedCidrs, left.dbAllowedCidrsV6]) === digest([right.dbAllowedCidrs, right.dbAllowedCidrsV6]);
   try {
     const queryOptions = { workspace: request.workspace, binding: binding(context),
       sourceOptions: runtime.sourceOptions, environment: process.env };
@@ -90,7 +93,15 @@ export async function runFixedProductionIsolationLive({ request, modules, sealPr
       },
     });
     const adapters = { ...bundle.adapters };
+    adapters.capturePriorState = async argument => {
+      const prior = await bundle.adapters.capturePriorState(argument);
+      priorNetworkConfig = prior.networkRestrictions.config ?? prior.networkRestrictions;
+      return prior;
+    };
     adapters.managementRequest = async argument => {
+      if (argument.method === 'POST' && argument.path === 'network-restrictions/apply') {
+        requestedNetworkConfig = argument.body;
+      }
       const response = await bundle.adapters.managementRequest(argument);
       if (argument.method === 'GET' && argument.path === 'config/realtime') {
         realtimeDisabledSha = digest(platform.redactProductionPlatformConfig('realtime', response.body));
@@ -100,7 +111,11 @@ export async function runFixedProductionIsolationLive({ request, modules, sealPr
     adapters.readNetworkRestrictions = async argument => {
       const response = await bundle.adapters.readNetworkRestrictions(argument);
       networkReadbacks.push({ capturedAtUtc: now().toISOString(), appliedConfigurationSha256: digest(response),
-        restrictionStatus: response.status, ipv4AllowlistCount: response.dbAllowedCidrs.length,
+        restrictionStatus: response.status,
+        requestedConfigurationMatched: Boolean(sameNetworkConfig(response, requestedNetworkConfig)),
+        previousConfigurationMatched: Boolean(sameNetworkConfig(response, priorNetworkConfig) ||
+          sameNetworkConfig(response, { dbAllowedCidrs: [runtime.controlAdmission.exclusionIpv4Cidr], dbAllowedCidrsV6: [] })),
+        ipv4AllowlistCount: response.dbAllowedCidrs.length,
         ipv6AllowlistCount: response.dbAllowedCidrsV6.length });
       return response;
     };

@@ -36,7 +36,9 @@ describe.skipIf(process.platform !== 'win32')('protected production isolation ho
   it('compiles the actual selector-free entry and bounded core with an explicit generated Installation contract', () => {
     const fixture = mkdtempSync(path.join(tmpdir(), 'hr-isolation-host-compile-'));
     try {
-      const sha40 = 'a'.repeat(40), sha256 = 'b'.repeat(64), plan = 'c'.repeat(64), at = '2026-10-02T12:00:00.000Z';
+      const sha40 = 'a'.repeat(40), sha256 = 'b'.repeat(64), plan = 'c'.repeat(64);
+      const stamp = (milliseconds: number) => new Date(Date.UTC(2026, 9, 2, 12, 0, 0, milliseconds)).toISOString();
+      const at = stamp(0);
       const receipt = {
         kind: 'protected-production-isolation-complete', controlEvidenceOnly: true,
         controls: { schemaVersion: 1, sourceSha: sha40, targetBindingSha256: sha256, isolationPlanSha256: plan, capturedAtUtc: at,
@@ -56,12 +58,93 @@ describe.skipIf(process.platform !== 'win32')('protected production isolation ho
           networkReadbacks: [{ capturedAtUtc: at, appliedConfigurationSha256: sha256, restrictionStatus: 'applied', ipv4AllowlistCount: 1, ipv6AllowlistCount: 0 }],
           databaseDrainAggregate: { collectionStartedAtUtc: at, capturedAtUtc: at, summary: { allApplicableSessionsObserved: true, applicableApplicationSessionCount: 0, inflightWriteCount: 0, preparedApplicationWriteCount: 0, existingApplicationSessionCount: 0, replicationSlotInventoryComplete: true, activeReplicationSlotCount: 0, subscriptionInventoryComplete: true, enabledSubscriptionCount: 0 } } },
       };
-      const methods = ['GET', 'GET', 'GET', 'GET', 'PATCH', 'GET', 'PATCH', 'GET', 'POST', 'POST', 'GET', 'POST', 'GET'];
-      const paths = ['config/auth', 'config/realtime', 'postgrest', 'network-restrictions', 'postgrest', 'postgrest', 'config/realtime', 'config/realtime', 'config/realtime/shutdown', 'network-restrictions/apply', 'network-restrictions', 'network-restrictions/apply', 'network-restrictions'];
-      receipt.journal.requests = methods.map((method, index) => ({ method, path: paths[index], requestedAtUtc: at, responseAtUtc: at }));
-      const priorPooler = receipt.observations.poolerProbes[0];
-      receipt.observations.poolerProbes = [priorPooler, { ...priorPooler, outcome: 'denied_network_restriction', freshReadOnlyTransactionConfirmed: false }, { ...priorPooler }];
-      receipt.observations.networkReadbacks.push({ ...receipt.observations.networkReadbacks[0], appliedConfigurationSha256: 'f'.repeat(64) });
+      const request = (method: string, path: string, milliseconds: number) => ({
+        method, path, requestedAtUtc: stamp(milliseconds), responseAtUtc: stamp(milliseconds + 1),
+      });
+      const fixedMethods = ['GET', 'GET', 'GET', 'GET', 'PATCH', 'GET', 'PATCH', 'GET', 'POST'];
+      const fixedPaths = ['config/auth', 'config/realtime', 'postgrest', 'network-restrictions', 'postgrest', 'postgrest', 'config/realtime', 'config/realtime', 'config/realtime/shutdown'];
+      const firstApplyAt = 1_000;
+      const firstPolls = [1_100, 1_200, 1_300];
+      const secondApplyAt = 1_400;
+      const secondPolls = [1_500, 1_600];
+      receipt.journal.requests = [
+        ...fixedMethods.map((method, index) => request(method, fixedPaths[index], 100 + index * 100)),
+        request('POST', 'network-restrictions/apply', firstApplyAt),
+        ...firstPolls.map(milliseconds => request('GET', 'network-restrictions', milliseconds)),
+        request('POST', 'network-restrictions/apply', secondApplyAt),
+        ...secondPolls.map(milliseconds => request('GET', 'network-restrictions', milliseconds)),
+      ];
+      receipt.journal.realtime = {
+        existingSessionEstablished: true,
+        configDisableRequestedAtUtc: stamp(700), configDisableResponseAtUtc: stamp(701),
+        configDisabledReadbackAtUtc: stamp(801), independentPlatformReadbackCompleted: true,
+        shutdownRequestedAtUtc: stamp(900), shutdownResponseAtUtc: stamp(901),
+      };
+      Object.assign(receipt.observations.realtimeShutdownQuiescence, {
+        configDisableRequestedAtUtc: stamp(700), configDisableResponseAtUtc: stamp(701),
+        configDisabledReadbackAtUtc: stamp(801), shutdownRequestedAtUtc: stamp(900), shutdownResponseAtUtc: stamp(901),
+      });
+      receipt.controls.capturedAtUtc = stamp(1_700);
+      receipt.controls.network.capturedAtUtc = stamp(1_700);
+      const priorPooler = { ...receipt.observations.poolerProbes[0], capturedAtUtc: stamp(50) };
+      receipt.observations.poolerProbes = [
+        priorPooler,
+        { ...priorPooler, capturedAtUtc: stamp(1_350), outcome: 'denied_network_restriction', freshReadOnlyTransactionConfirmed: false },
+        { ...priorPooler, capturedAtUtc: stamp(1_650) },
+      ];
+      const readback = (milliseconds: number, hash: string, restrictionStatus: string, requestedConfigurationMatched: boolean, previousConfigurationMatched: boolean, ipv4AllowlistCount: number, ipv6AllowlistCount: number) => ({
+        capturedAtUtc: stamp(milliseconds + 2), appliedConfigurationSha256: hash, restrictionStatus,
+        requestedConfigurationMatched, previousConfigurationMatched, ipv4AllowlistCount, ipv6AllowlistCount,
+      });
+      receipt.observations.networkReadbacks = [
+        readback(firstPolls[0], 'd'.repeat(64), 'stored', true, false, 1, 0),
+        // A prior policy can legitimately have broad/multiple IPv4 and IPv6 entries
+        // while provider propagation is still returning the stale applied profile.
+        readback(firstPolls[1], 'e'.repeat(64), 'applied', false, true, 2, 1),
+        readback(firstPolls[2], 'f'.repeat(64), 'applied', true, false, 1, 0),
+        readback(secondPolls[0], '1'.repeat(64), 'stored', true, false, 1, 0),
+        readback(secondPolls[1], '2'.repeat(64), 'applied', true, false, 1, 0),
+      ];
+      // Preserve the original fast path: a single settled readback for each
+      // non-retried POST remains a valid bounded receipt.
+      const immediateApplied = JSON.parse(JSON.stringify(receipt)) as typeof receipt;
+      immediateApplied.journal.requests = [
+        ...fixedMethods.map((method, index) => request(method, fixedPaths[index], 100 + index * 100)),
+        request('POST', 'network-restrictions/apply', 1_000),
+        request('GET', 'network-restrictions', 1_100),
+        request('POST', 'network-restrictions/apply', 1_200),
+        request('GET', 'network-restrictions', 1_300),
+      ];
+      immediateApplied.observations.networkReadbacks = [
+        readback(1_100, '3'.repeat(64), 'applied', true, false, 1, 0),
+        readback(1_300, '4'.repeat(64), 'applied', true, false, 1, 0),
+      ];
+      immediateApplied.observations.poolerProbes[1].capturedAtUtc = stamp(1_150);
+      immediateApplied.observations.poolerProbes[2].capturedAtUtc = stamp(1_350);
+      immediateApplied.controls.capturedAtUtc = stamp(1_400);
+      immediateApplied.controls.network.capturedAtUtc = stamp(1_400);
+
+      // Exercise the strict maximum: exactly 20 sequential first-phase GETs,
+      // then a separate settled operator phase. The only final profiles are
+      // the exact requested 1-v4/0-v6 configurations.
+      const exactTwentyPolls = JSON.parse(JSON.stringify(receipt)) as typeof receipt;
+      const firstTwentyPolls = Array.from({ length: 20 }, (_, index) => 1_100 + index * 10);
+      exactTwentyPolls.journal.requests = [
+        ...fixedMethods.map((method, index) => request(method, fixedPaths[index], 100 + index * 100)),
+        request('POST', 'network-restrictions/apply', 1_000),
+        ...firstTwentyPolls.map(milliseconds => request('GET', 'network-restrictions', milliseconds)),
+        request('POST', 'network-restrictions/apply', 1_300),
+        request('GET', 'network-restrictions', 1_310),
+      ];
+      exactTwentyPolls.observations.networkReadbacks = [
+        ...firstTwentyPolls.map((milliseconds, index) => readback(milliseconds, index === 19 ? '6'.repeat(64) : '7'.repeat(64),
+          index === 19 ? 'applied' : 'stored', true, false, 1, 0)),
+        readback(1_310, '5'.repeat(64), 'applied', true, false, 1, 0),
+      ];
+      exactTwentyPolls.observations.poolerProbes[1].capturedAtUtc = stamp(1_295);
+      exactTwentyPolls.observations.poolerProbes[2].capturedAtUtc = stamp(1_320);
+      exactTwentyPolls.controls.capturedAtUtc = stamp(1_330);
+      exactTwentyPolls.controls.network.capturedAtUtc = stamp(1_330);
       const negatives: { id: string; valueJson: string }[] = [];
       function altered(id: string, location: string, value: unknown, remove = false) {
         const variant = JSON.parse(JSON.stringify(receipt)) as Record<string, unknown>;
@@ -93,9 +176,50 @@ describe.skipIf(process.platform !== 'win32')('protected production isolation ho
       altered('pooler-partial-sequence', 'observations.poolerProbes', [priorPooler]);
       altered('readback-partial-sequence', 'observations.networkReadbacks', [receipt.observations.networkReadbacks[0]]);
       altered('pooler-missing-denial', 'observations.poolerProbes.1.outcome', 'succeeded');
-      altered('duplicated-network-config', 'observations.networkReadbacks.1.appliedConfigurationSha256', sha256);
+      altered('duplicated-final-network-config', 'observations.networkReadbacks.4.appliedConfigurationSha256', 'f'.repeat(64));
+      altered('malformed-network-configuration-hash', 'observations.networkReadbacks.4.appliedConfigurationSha256', 'not-a-sha256');
+      altered('stored-previous-only', 'observations.networkReadbacks.0.requestedConfigurationMatched', false);
+      altered('stored-requested-broad-ipv4', 'observations.networkReadbacks.0.ipv4AllowlistCount', 2);
+      altered('stored-requested-ipv6-present', 'observations.networkReadbacks.0.ipv6AllowlistCount', 1);
+      altered('unmatched-intermediate-profile', 'observations.networkReadbacks.1.previousConfigurationMatched', false);
+      altered('final-previous-only', 'observations.networkReadbacks.2.requestedConfigurationMatched', false);
+      altered('final-not-applied', 'observations.networkReadbacks.4.restrictionStatus', 'stored');
+      altered('final-broad-profile', 'observations.networkReadbacks.4.ipv4AllowlistCount', 2);
+      altered('network-readback-before-response', 'observations.networkReadbacks.0.capturedAtUtc', stamp(1_100));
+      altered('excluded-probe-before-first-final-readback', 'observations.poolerProbes.1.capturedAtUtc', stamp(1_300));
+      altered('operator-probe-before-final-readback', 'observations.poolerProbes.2.capturedAtUtc', stamp(1_600));
+      const inconsistentRequestedHash = JSON.parse(JSON.stringify(exactTwentyPolls)) as typeof receipt;
+      inconsistentRequestedHash.observations.networkReadbacks[1].appliedConfigurationSha256 = '8'.repeat(64);
+      negatives.push({ id: 'same-phase-requested-hash-mismatch', valueJson: JSON.stringify(inconsistentRequestedHash) });
+      const tooManyPolls = JSON.parse(JSON.stringify(receipt)) as typeof receipt;
+      const secondPostIndex = tooManyPolls.journal.requests.findIndex((entry, index) => index > 9 && entry.method === 'POST');
+      const extraPolls = Array.from({ length: 18 }, (_, index) => request('GET', 'network-restrictions', 1_310 + index * 10));
+      tooManyPolls.journal.requests.splice(secondPostIndex, 0, ...extraPolls);
+      tooManyPolls.observations.networkReadbacks.splice(3, 0, ...extraPolls.map((entry, index) => ({
+        capturedAtUtc: stamp(1_312 + index * 10), appliedConfigurationSha256: String(index % 9).repeat(64),
+        restrictionStatus: index === 17 ? 'applied' : 'stored', requestedConfigurationMatched: true, previousConfigurationMatched: false,
+        ipv4AllowlistCount: 1, ipv6AllowlistCount: 0,
+      })));
+      tooManyPolls.observations.networkReadbacks[2].restrictionStatus = 'stored';
+      tooManyPolls.journal.requests[secondPostIndex + extraPolls.length] = request('POST', 'network-restrictions/apply', 1_600);
+      tooManyPolls.journal.requests[secondPostIndex + extraPolls.length + 1] = request('GET', 'network-restrictions', 1_700);
+      tooManyPolls.journal.requests[secondPostIndex + extraPolls.length + 2] = request('GET', 'network-restrictions', 1_800);
+      tooManyPolls.observations.networkReadbacks[21].capturedAtUtc = stamp(1_702);
+      tooManyPolls.observations.networkReadbacks[22].capturedAtUtc = stamp(1_802);
+      tooManyPolls.observations.poolerProbes[1].capturedAtUtc = stamp(1_500);
+      tooManyPolls.observations.poolerProbes[2].capturedAtUtc = stamp(1_850);
+      tooManyPolls.controls.network.capturedAtUtc = stamp(1_900);
+      negatives.push({ id: 'first-poll-phase-over-20', valueJson: JSON.stringify(tooManyPolls) });
+      const reorderedPoll = JSON.parse(JSON.stringify(receipt)) as typeof receipt;
+      [reorderedPoll.journal.requests[10], reorderedPoll.journal.requests[11]] = [reorderedPoll.journal.requests[11], reorderedPoll.journal.requests[10]];
+      negatives.push({ id: 'poll-order', valueJson: JSON.stringify(reorderedPoll) });
       writeFileSync(path.join(fixture, 'negative-receipts.json'), JSON.stringify(negatives));
+      writeFileSync(path.join(fixture, 'negative-count.txt'), String(negatives.length));
+      const expectedNegativeCases = negatives.length;
 
+      writeFileSync(path.join(fixture, 'positive-receipts.json'), JSON.stringify([
+        receipt, immediateApplied, exactTwentyPolls,
+      ]));
       writeFileSync(path.join(fixture, 'receipt.json'), JSON.stringify(receipt));
       for (const name of ['protected-file-lease.cs', 'protected-production-inputs.cs', 'production-isolation-private-runtime.cs', 'protected-production-isolation-host.cs', 'protected-production-isolation-core.cs']) {
         writeFileSync(path.join(fixture, name), readFileSync(path.join(release, name)));
@@ -113,12 +237,26 @@ namespace HrMasterdata.Release {
 }`);
       const script = path.join(fixture, 'compile.ps1');
       writeFileSync(script, `param([string]$Root)
-$ErrorActionPreference='Stop';$provider=New-Object Microsoft.CSharp.CSharpCodeProvider;$parameters=New-Object CodeDom.Compiler.CompilerParameters;$parameters.GenerateExecutable=$true;$parameters.OutputAssembly=(Join-Path $Root 'host.exe');$parameters.CompilerOptions='/optimize+ /platform:x64';foreach($assembly in @('System.dll','System.Core.dll','System.Security.dll','System.Web.Extensions.dll','System.Net.Http.dll')){$null=$parameters.ReferencedAssemblies.Add($assembly)};try{$result=$provider.CompileAssemblyFromFile($parameters,[string[]]@((Join-Path $Root 'protected-file-lease.cs'),(Join-Path $Root 'protected-production-inputs.cs'),(Join-Path $Root 'production-isolation-private-runtime.cs'),(Join-Path $Root 'protected-production-isolation-host.cs'),(Join-Path $Root 'protected-production-isolation-core.cs'),(Join-Path $Root 'stubs.cs')));if($result.Errors.HasErrors){throw (($result.Errors|ForEach-Object {$_.ErrorNumber+':'+$_.Line}) -join ',')};$marker=Join-Path $Root 'private-input-marker';$assembly=[Reflection.Assembly]::LoadFile($parameters.OutputAssembly);$core=$assembly.GetType('HrMasterdata.Release.ProtectedProductionIsolationCore');$run=$core.GetMethods([Reflection.BindingFlags]'NonPublic,Static')|Where-Object {$_.Name -eq 'Run'};$invokeArguments=New-Object 'object[]' 1;$invokeArguments[0]=[string[]]@('--unsupported');$invokeExit=[int]$run.Invoke($null,$invokeArguments);if($invokeExit -eq 0 -or (Test-Path -LiteralPath $marker)){throw ('selector-refusal:'+ $invokeExit + ':' + (Test-Path -LiteralPath $marker))};$read=$core.GetMethods([Reflection.BindingFlags]'NonPublic,Static')|Where-Object {$_.Name -eq 'ReadBoundedLineAsync'};$stream=$assembly.CreateInstance('HrMasterdata.Release.SlowDripStream');$reader=New-Object IO.StreamReader($stream,[Text.Encoding]::UTF8,$false,1);$readArgs=New-Object 'object[]' 3;$readArgs[0]=$reader;$readArgs[1]=[Diagnostics.Stopwatch]::StartNew();$readArgs[2]=30;$slowRefused=$false;$slowClock=[Diagnostics.Stopwatch]::StartNew();try{$null=$read.Invoke($null,$readArgs)}catch{$slowRefused=$true}finally{$reader.Dispose()};if(-not $slowRefused -or $slowClock.ElapsedMilliseconds -gt 400){throw 'slow-drip-timeout'};$method=$core.GetMethods([Reflection.BindingFlags]'NonPublic,Static')|Where-Object {$_.Name -eq 'ValidateFinalForTest'};[string]$receipt=[IO.File]::ReadAllText((Join-Path $Root 'receipt.json'));$valid=[bool]$method.Invoke($null,[object[]]@($receipt));$invalid=$receipt.Replace('"credentialRole":"service_role"','"credentialRole":"service_role:secret"');$rejected=-not [bool]$method.Invoke($null,[object[]]@($invalid));if(-not $valid -or -not $rejected){throw ('privacy-receipt-validation:'+ $valid + ':' + $rejected)};[string]$negativeBytes=[IO.File]::ReadAllText((Join-Path $Root 'negative-receipts.json'));$negativeCases=$negativeBytes|ConvertFrom-Json;$negativeCount=0;foreach($case in $negativeCases){[string]$negativeJson=$case.valueJson;if([bool]$method.Invoke($null,[object[]]@($negativeJson))){throw ('nested-evidence-accepted:'+$case.id)};$negativeCount++};if($negativeCount -ne 67){throw 'negative-case-coverage'};@{compiled=$true;selectorRefused=$true;slowDripRefused=$true;privateInputsLoaded=$false;hostedAccess=$false;approvedEvidenceAccepted=$true;unknownSecretRejected=$true;closedNestedCasesRejected=$negativeCount}|ConvertTo-Json -Compress}finally{$provider.Dispose()}`);
+$ErrorActionPreference='Stop';$provider=New-Object Microsoft.CSharp.CSharpCodeProvider;$parameters=New-Object CodeDom.Compiler.CompilerParameters;$parameters.GenerateExecutable=$true;$parameters.OutputAssembly=(Join-Path $Root 'host.exe');$parameters.CompilerOptions='/optimize+ /platform:x64';foreach($assembly in @('System.dll','System.Core.dll','System.Security.dll','System.Web.Extensions.dll','System.Net.Http.dll')){$null=$parameters.ReferencedAssemblies.Add($assembly)};try{$result=$provider.CompileAssemblyFromFile($parameters,[string[]]@((Join-Path $Root 'protected-file-lease.cs'),(Join-Path $Root 'protected-production-inputs.cs'),(Join-Path $Root 'production-isolation-private-runtime.cs'),(Join-Path $Root 'protected-production-isolation-host.cs'),(Join-Path $Root 'protected-production-isolation-core.cs'),(Join-Path $Root 'stubs.cs')));if($result.Errors.HasErrors){throw (($result.Errors|ForEach-Object {$_.ErrorNumber+':'+$_.Line}) -join ',')};$marker=Join-Path $Root 'private-input-marker';$assembly=[Reflection.Assembly]::LoadFile($parameters.OutputAssembly);$core=$assembly.GetType('HrMasterdata.Release.ProtectedProductionIsolationCore');$run=$core.GetMethods([Reflection.BindingFlags]'NonPublic,Static')|Where-Object {$_.Name -eq 'Run'};$invokeArguments=New-Object 'object[]' 1;$invokeArguments[0]=[string[]]@('--unsupported');$invokeExit=[int]$run.Invoke($null,$invokeArguments);if($invokeExit -eq 0 -or (Test-Path -LiteralPath $marker)){throw ('selector-refusal:'+ $invokeExit + ':' + (Test-Path -LiteralPath $marker))};$read=$core.GetMethods([Reflection.BindingFlags]'NonPublic,Static')|Where-Object {$_.Name -eq 'ReadBoundedLineAsync'};$stream=$assembly.CreateInstance('HrMasterdata.Release.SlowDripStream');$reader=New-Object IO.StreamReader($stream,[Text.Encoding]::UTF8,$false,1);$readArgs=New-Object 'object[]' 3;$readArgs[0]=$reader;$readArgs[1]=[Diagnostics.Stopwatch]::StartNew();$readArgs[2]=30;$slowRefused=$false;$slowClock=[Diagnostics.Stopwatch]::StartNew();try{$null=$read.Invoke($null,$readArgs)}catch{$slowRefused=$true}finally{$reader.Dispose()};if(-not $slowRefused -or $slowClock.ElapsedMilliseconds -gt 400){throw 'slow-drip-timeout'};$method=$core.GetMethods([Reflection.BindingFlags]'NonPublic,Static')|Where-Object {$_.Name -eq 'ValidateFinalForTest'};[string]$receipt=[IO.File]::ReadAllText((Join-Path $Root 'receipt.json'));$valid=[bool]$method.Invoke($null,[object[]]@($receipt));$invalid=$receipt.Replace('"credentialRole":"service_role"','"credentialRole":"service_role:secret"');$rejected=-not [bool]$method.Invoke($null,[object[]]@($invalid));if(-not $valid -or -not $rejected){throw ('privacy-receipt-validation:'+ $valid + ':' + $rejected)};[string]$negativeBytes=[IO.File]::ReadAllText((Join-Path $Root 'negative-receipts.json'));$negativeCases=$negativeBytes|ConvertFrom-Json;$expectedNegativeCount=[int][IO.File]::ReadAllText((Join-Path $Root 'negative-count.txt'));$negativeCount=0;foreach($case in $negativeCases){[string]$negativeJson=$case.valueJson;if([bool]$method.Invoke($null,[object[]]@($negativeJson))){throw ('nested-evidence-accepted:'+$case.id)};$negativeCount++};if($negativeCount -ne $expectedNegativeCount){throw 'negative-case-coverage'};@{compiled=$true;selectorRefused=$true;slowDripRefused=$true;privateInputsLoaded=$false;hostedAccess=$false;approvedEvidenceAccepted=$true;unknownSecretRejected=$true;closedNestedCasesRejected=$negativeCount}|ConvertTo-Json -Compress}finally{$provider.Dispose()}`);
       const result = spawnSync(windowsPowerShell, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', script, fixture], { encoding: 'utf8', windowsHide: true, timeout: 30_000 });
       expect(result.error).toBeUndefined();
       expect(result.status, result.stderr).toBe(0);
-      expect(JSON.parse(result.stdout.trim())).toEqual({ compiled: true, selectorRefused: true, slowDripRefused: true, privateInputsLoaded: false, hostedAccess: false, approvedEvidenceAccepted: true, unknownSecretRejected: true, closedNestedCasesRejected: 67 });
+      expect(JSON.parse(result.stdout.trim())).toEqual({ compiled: true, selectorRefused: true, slowDripRefused: true, privateInputsLoaded: false, hostedAccess: false, approvedEvidenceAccepted: true, unknownSecretRejected: true, closedNestedCasesRejected: expectedNegativeCases });
       expect(existsSync(path.join(fixture, 'host.exe'))).toBe(true);
+      const validatePositiveScript = path.join(fixture, 'validate-positive-receipts.ps1');
+      writeFileSync(validatePositiveScript, `param([string]$Root)
+$ErrorActionPreference='Stop'
+$assembly=[Reflection.Assembly]::LoadFile((Join-Path $Root 'host.exe'))
+$core=$assembly.GetType('HrMasterdata.Release.ProtectedProductionIsolationCore')
+$method=$core.GetMethods([Reflection.BindingFlags]'NonPublic,Static')|Where-Object {$_.Name -eq 'ValidateFinalForTest'}
+$receipts=([IO.File]::ReadAllText((Join-Path $Root 'positive-receipts.json'))|ConvertFrom-Json)
+if($receipts.Count -ne 3){throw 'positive-case-coverage'}
+foreach($receipt in $receipts){[string]$text=$receipt|ConvertTo-Json -Depth 32 -Compress;if(-not [bool]$method.Invoke($null,[object[]]@($text))){throw 'positive-receipt-rejected'}}
+@{immediateAppliedAccepted=$true;exactTwentyPollsAccepted=$true;hostedAccess=$false}|ConvertTo-Json -Compress`);
+      const positiveResult = spawnSync(windowsPowerShell, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', validatePositiveScript, fixture], { encoding: 'utf8', windowsHide: true, timeout: 30_000 });
+      expect(positiveResult.error).toBeUndefined();
+      expect(positiveResult.status, positiveResult.stderr).toBe(0);
+      expect(JSON.parse(positiveResult.stdout.trim())).toEqual({ immediateAppliedAccepted: true, exactTwentyPollsAccepted: true, hostedAccess: false });
     } finally { rmSync(fixture, { recursive: true, force: true }); }
   }, 40_000);
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -248,7 +249,7 @@ namespace HrMasterdata.Release
             "schema", "relation", "credentialRole", "credentialPreflightPassed", "authenticatedReadAdmissionPassed", "relationExists", "statementTriggerInventoryComplete", "enabledStatementTriggerCount",
             "managementApiControlObserved", "dbSchema", "otherPostgrestSettingsPreserved", "dataApiDisabled", "independentFromControlObservation", "authenticatedWritePathAttempted", "denialCause", "requestDenied", "writeCommitted", "writeObserved", "requestMethod", "contentProfile", "requestContentType", "requestBody", "httpStatus", "providerErrorCode",
             "authHookEnabled", "unknownAuthHookCount", "realtimeSuspended", "serviceEnabled", "configSha256", "independentFromControlObservation", "controlMethod", "priorRealtimeServiceEnabled", "configDisableHttpStatus", "configDisabledReadbackServiceEnabled", "configDisabledReadbackSha256", "shutdownHttpStatus", "existingConnectionEstablishedBeforeIsolation", "existingSubscriptionAcknowledgedBeforeIsolation", "existingConnectionDisconnectedByService", "existingConnectionClosedByCaller", "existingConnectionEstablishedAtUtc", "existingSubscriptionAcknowledgedAtUtc", "existingConnectionDisconnectedAtUtc", "reconnectAttemptedAtUtc", "reconnectDeniedAtUtc", "connectionAttempted", "connectionDenied",
-            "dataApiPrerequisite", "dataApiControl", "dataApiDenial", "platformReadback", "realtimePriorState", "realtimeShutdownQuiescence", "poolerProbes", "networkReadbacks", "databaseDrainAggregate", "outcome", "freshReadOnlyTransactionConfirmed", "appliedConfigurationSha256", "restrictionStatus", "ipv4AllowlistCount", "ipv6AllowlistCount", "summary",
+            "dataApiPrerequisite", "dataApiControl", "dataApiDenial", "platformReadback", "realtimePriorState", "realtimeShutdownQuiescence", "poolerProbes", "networkReadbacks", "databaseDrainAggregate", "outcome", "freshReadOnlyTransactionConfirmed", "appliedConfigurationSha256", "restrictionStatus", "requestedConfigurationMatched", "previousConfigurationMatched", "ipv4AllowlistCount", "ipv6AllowlistCount", "summary",
             "allApplicableSessionsObserved", "applicableApplicationSessionCount", "inflightWriteCount", "preparedApplicationWriteCount", "existingApplicationSessionCount", "replicationSlotInventoryComplete", "activeReplicationSlotCount", "subscriptionInventoryComplete", "enabledSubscriptionCount",
             "hook_custom_access_token_enabled", "hook_mfa_verification_attempt_enabled", "hook_password_verification_attempt_enabled", "hook_send_sms_enabled", "hook_send_email_enabled", "hook_before_user_created_enabled", "hook_after_user_created_enabled"
         };
@@ -260,7 +261,7 @@ namespace HrMasterdata.Release
         };
         static readonly HashSet<string> EvidenceBooleanKeys = new HashSet<string>(StringComparer.Ordinal) {
             "controlEvidenceOnly", "encrypted", "immutable", "prerequisiteAccepted", "dbSchemaDisabled", "otherPostgrestSettingsPreserved", "suspended", "shutdownAcknowledged",
-            "exclusionApplied", "exclusionReadbackAccepted", "exclusionDenialProved", "operatorOnlyApplied", "operatorReadbackAccepted", "operatorReadOnlyAdmissionProved",
+            "requestedConfigurationMatched", "previousConfigurationMatched", "exclusionApplied", "exclusionReadbackAccepted", "exclusionDenialProved", "operatorOnlyApplied", "operatorReadbackAccepted", "operatorReadOnlyAdmissionProved",
             "existingSessionEstablished", "independentPlatformReadbackCompleted", "credentialPreflightPassed", "authenticatedReadAdmissionPassed", "relationExists", "statementTriggerInventoryComplete",
             "managementApiControlObserved", "dataApiDisabled", "independentFromControlObservation", "authenticatedWritePathAttempted", "requestDenied", "writeCommitted", "writeObserved", "realtimeSuspended", "serviceEnabled", "priorRealtimeServiceEnabled", "configDisabledReadbackServiceEnabled", "existingConnectionEstablishedBeforeIsolation", "existingSubscriptionAcknowledgedBeforeIsolation", "existingConnectionDisconnectedByService", "existingConnectionClosedByCaller", "connectionAttempted", "connectionDenied", "freshReadOnlyTransactionConfirmed", "allApplicableSessionsObserved", "replicationSlotInventoryComplete", "subscriptionInventoryComplete",
             "hook_custom_access_token_enabled", "hook_mfa_verification_attempt_enabled", "hook_password_verification_attempt_enabled", "hook_send_sms_enabled", "hook_send_email_enabled", "hook_before_user_created_enabled", "hook_after_user_created_enabled"
@@ -289,7 +290,7 @@ namespace HrMasterdata.Release
             if (key == "providerErrorCode") return value == "PGRST106" || value == "RealtimeDisabledForTenant";
             if (key == "controlMethod") return value == "supabase-management-api-realtime-disable-and-shutdown";
             if (key == "outcome") return value == "succeeded" || value == "denied_network_restriction";
-            if (key == "restrictionStatus") return value == "applied";
+            if (key == "restrictionStatus") return value == "applied" || value == "stored";
             return false;
         }
         static bool SafeEvidence(object value, int depth)
@@ -341,6 +342,17 @@ namespace HrMasterdata.Release
             var rows = value as object[]; if (rows == null) { var list = value as System.Collections.ArrayList; if (list != null) rows = list.ToArray(); }
             Require(rows != null && rows.Length == count); return rows;
         }
+        static object[] EvidenceArrayRange(object value, int minimum, int maximum)
+        {
+            var rows = value as object[]; if (rows == null) { var list = value as System.Collections.ArrayList; if (list != null) rows = list.ToArray(); }
+            Require(rows != null && rows.Length >= minimum && rows.Length <= maximum); return rows;
+        }
+        static DateTime EvidenceTime(IDictionary<string, object> map, string key)
+        {
+            DateTime value; string text = StringValue(map, key);
+            Require(DateTime.TryParseExact(text, "yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out value)); return value;
+        }
         static void ValidateNestedEvidence(JavaScriptSerializer json, IDictionary<string, object> controls, IDictionary<string, object> journal, IDictionary<string, object> observations)
         {
             var seal = BoundEvidence(json, controls["priorState"], "production-isolation-prior-state-sealed", "encrypted,immutable,ciphertextSha256");
@@ -352,14 +364,33 @@ namespace HrMasterdata.Release
             var network = EvidenceShape(json, controls["network"], "capturedAtUtc,exclusionApplied,exclusionReadbackAccepted,exclusionDenialProved,operatorOnlyApplied,operatorReadbackAccepted,operatorReadOnlyAdmissionProved");
             foreach (string key in new[] { "exclusionApplied", "exclusionReadbackAccepted", "exclusionDenialProved", "operatorOnlyApplied", "operatorReadbackAccepted", "operatorReadOnlyAdmissionProved" }) EvidenceFlag(network, key, true);
 
-            var requests = EvidenceArray(journal["requests"], 13);
-            string[] methods = { "GET", "GET", "GET", "GET", "PATCH", "GET", "PATCH", "GET", "POST", "POST", "GET", "POST", "GET" };
-            string[] paths = { "config/auth", "config/realtime", "postgrest", "network-restrictions", "postgrest", "postgrest", "config/realtime", "config/realtime", "config/realtime/shutdown", "network-restrictions/apply", "network-restrictions", "network-restrictions/apply", "network-restrictions" };
-            var requestMaps = new List<Dictionary<string, object>>();
+            // Nine fixed controls, then exactly two non-retried POSTs, each with
+            // 1..20 sequential readbacks. The controller has the same explicit
+            // poll bound and a non-resetting 20s deadline per phase.
+            var requests = EvidenceArrayRange(journal["requests"], 13, 51);
+            string[] methods = { "GET", "GET", "GET", "GET", "PATCH", "GET", "PATCH", "GET", "POST" };
+            string[] paths = { "config/auth", "config/realtime", "postgrest", "network-restrictions", "postgrest", "postgrest", "config/realtime", "config/realtime", "config/realtime/shutdown" };
+            var requestMaps = new List<Dictionary<string, object>>(); DateTime previousResponse = DateTime.MinValue;
             for (int index = 0; index < requests.Length; index++) {
                 var item = EvidenceShape(json, requests[index], "method,path,requestedAtUtc,responseAtUtc");
-                Require(StringValue(item, "method") == methods[index] && StringValue(item, "path") == paths[index]); requestMaps.Add(item);
+                DateTime requested = EvidenceTime(item, "requestedAtUtc"), responded = EvidenceTime(item, "responseAtUtc");
+                Require(previousResponse <= requested && requested <= responded); previousResponse = responded;
+                if (index < 9) Require(StringValue(item, "method") == methods[index] && StringValue(item, "path") == paths[index]);
+                requestMaps.Add(item);
             }
+            var networkGetIndexes = new List<int>(); var phaseEnds = new List<int>(); var phasePosts = new List<int>();
+            int cursor = 9;
+            for (int phase = 0; phase < 2; phase++) {
+                Require(cursor < requestMaps.Count && StringValue(requestMaps[cursor], "method") == "POST" &&
+                    StringValue(requestMaps[cursor], "path") == "network-restrictions/apply"); phasePosts.Add(cursor++);
+                int count = 0;
+                while (cursor < requestMaps.Count && StringValue(requestMaps[cursor], "method") == "GET" &&
+                       StringValue(requestMaps[cursor], "path") == "network-restrictions") {
+                    Require(++count <= 20); networkGetIndexes.Add(cursor++);
+                }
+                Require(count >= 1); phaseEnds.Add(networkGetIndexes.Count - 1);
+            }
+            Require(cursor == requestMaps.Count);
             var timing = EvidenceShape(json, journal["realtime"], "existingSessionEstablished,configDisableRequestedAtUtc,configDisableResponseAtUtc,configDisabledReadbackAtUtc,independentPlatformReadbackCompleted,shutdownRequestedAtUtc,shutdownResponseAtUtc");
             EvidenceFlag(timing, "existingSessionEstablished", true); EvidenceFlag(timing, "independentPlatformReadbackCompleted", true);
             Require(StringValue(timing, "configDisableRequestedAtUtc") == StringValue(requestMaps[6], "requestedAtUtc") &&
@@ -390,16 +421,42 @@ namespace HrMasterdata.Release
             foreach (string key in new[] { "configDisableRequestedAtUtc", "configDisableResponseAtUtc", "configDisabledReadbackAtUtc", "shutdownRequestedAtUtc", "shutdownResponseAtUtc" }) Require(StringValue(shutdown, key) == StringValue(timing, key));
 
             var poolers = EvidenceArray(observations["poolerProbes"], 3);
+            var poolerMaps = new List<Dictionary<string, object>>();
             for (int index = 0; index < poolers.Length; index++) {
                 var probe = BoundEvidence(json, poolers[index], "production-session-pooler-readonly-probe", "outcome,freshReadOnlyTransactionConfirmed");
                 Require(StringValue(probe, "outcome") == (index == 1 ? "denied_network_restriction" : "succeeded")); EvidenceFlag(probe, "freshReadOnlyTransactionConfirmed", index != 1);
+                poolerMaps.Add(probe);
             }
-            var readbacks = EvidenceArray(observations["networkReadbacks"], 2); string lastHash = null;
-            foreach (object raw in readbacks) {
-                var readback = EvidenceShape(json, raw, "capturedAtUtc,appliedConfigurationSha256,restrictionStatus,ipv4AllowlistCount,ipv6AllowlistCount");
-                EvidenceNumber(readback, "ipv4AllowlistCount", 1); EvidenceNumber(readback, "ipv6AllowlistCount", 0);
-                string currentHash = StringValue(readback, "appliedConfigurationSha256"); Require(lastHash == null || currentHash != lastHash); lastHash = currentHash;
+            Require(EvidenceTime(poolerMaps[0], "capturedAtUtc") <= EvidenceTime(requestMaps[0], "requestedAtUtc"));
+            var readbacks = EvidenceArray(observations["networkReadbacks"], networkGetIndexes.Count);
+            var readbackMaps = new List<Dictionary<string, object>>();
+            var requestedHashes = new Dictionary<string, string>(StringComparer.Ordinal);
+            for (int index = 0; index < readbacks.Length; index++) {
+                var readback = EvidenceShape(json, readbacks[index], "capturedAtUtc,appliedConfigurationSha256,restrictionStatus,requestedConfigurationMatched,previousConfigurationMatched,ipv4AllowlistCount,ipv6AllowlistCount");
+                bool requested = (bool)readback["requestedConfigurationMatched"], previous = (bool)readback["previousConfigurationMatched"];
+                string status = StringValue(readback, "restrictionStatus");
+                Require(status == "stored" ? requested : status == "applied" && (requested || previous));
+                if (requested) {
+                    EvidenceNumber(readback, "ipv4AllowlistCount", 1); EvidenceNumber(readback, "ipv6AllowlistCount", 0);
+                    string bucket = (index <= phaseEnds[0] ? "exclusion:" : "operator:") + status;
+                    string hash = StringValue(readback, "appliedConfigurationSha256"), priorHash;
+                    if (requestedHashes.TryGetValue(bucket, out priorHash)) Require(hash == priorHash);
+                    else requestedHashes.Add(bucket, hash);
+                }
+                int journalIndex = networkGetIndexes[index]; DateTime captured = EvidenceTime(readback, "capturedAtUtc");
+                DateTime upper = journalIndex + 1 < requestMaps.Count ? EvidenceTime(requestMaps[journalIndex + 1], "requestedAtUtc") : EvidenceTime(network, "capturedAtUtc");
+                Require(EvidenceTime(requestMaps[journalIndex], "responseAtUtc") <= captured && captured <= upper);
+                readbackMaps.Add(readback);
             }
+            foreach (int endIndex in phaseEnds) {
+                var final = readbackMaps[endIndex]; Require(StringValue(final, "restrictionStatus") == "applied");
+                EvidenceFlag(final, "requestedConfigurationMatched", true);
+                EvidenceNumber(final, "ipv4AllowlistCount", 1); EvidenceNumber(final, "ipv6AllowlistCount", 0);
+            }
+            Require(StringValue(readbackMaps[phaseEnds[0]], "appliedConfigurationSha256") != StringValue(readbackMaps[phaseEnds[1]], "appliedConfigurationSha256"));
+            DateTime exclusionProbe = EvidenceTime(poolerMaps[1], "capturedAtUtc"), operatorProbe = EvidenceTime(poolerMaps[2], "capturedAtUtc");
+            Require(EvidenceTime(readbackMaps[phaseEnds[0]], "capturedAtUtc") <= exclusionProbe && exclusionProbe <= EvidenceTime(requestMaps[phasePosts[1]], "requestedAtUtc"));
+            Require(EvidenceTime(readbackMaps[phaseEnds[1]], "capturedAtUtc") <= operatorProbe && operatorProbe <= EvidenceTime(network, "capturedAtUtc"));
             var drain = EvidenceShape(json, observations["databaseDrainAggregate"], "collectionStartedAtUtc,capturedAtUtc,summary");
             var summary = EvidenceShape(json, drain["summary"], "allApplicableSessionsObserved,applicableApplicationSessionCount,inflightWriteCount,preparedApplicationWriteCount,existingApplicationSessionCount,replicationSlotInventoryComplete,activeReplicationSlotCount,subscriptionInventoryComplete,enabledSubscriptionCount");
             foreach (string key in new[] { "allApplicableSessionsObserved", "replicationSlotInventoryComplete", "subscriptionInventoryComplete" }) EvidenceFlag(summary, key, true);
