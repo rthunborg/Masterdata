@@ -4,9 +4,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
-const eslintRequire = createRequire(require.resolve("eslint"));
+// Resolve through the locked package that declares semver 7; a hoisted ESLint tree may expose semver 6.
+const semverOwnerRequire = createRequire(require.resolve("@typescript-eslint/typescript-estree"));
 const vitestRequire = createRequire(require.resolve("vitest/package.json"));
-const semver = eslintRequire("semver") as {
+const semver = semverOwnerRequire("semver") as {
   subset(range: string, requirement: string): boolean;
   satisfies(version: string, range: string): boolean;
 };
@@ -16,6 +17,13 @@ const project = JSON.parse(readFileSync("package.json", "utf8")) as {
 const packages = ["next", "@vitejs/plugin-react", "jsdom", "vitest", "nodemailer"];
 
 describe("declared Node runtime compatibility", () => {
+  it("uses the declared semver 7 API in isolated and hoisted dependency layouts", () => {
+    const manifest = semverOwnerRequire("semver/package.json") as { version: string };
+    expect(manifest.version).toMatch(/^7\./u);
+    expect(semver.subset).toBeTypeOf("function");
+    expect(semver.satisfies).toBeTypeOf("function");
+  });
+
   it("admits only versions supported by every locked application and test runtime", () => {
     const manifests = packages.map((name) => JSON.parse(
       readFileSync(resolve("node_modules", name, "package.json"), "utf8")
