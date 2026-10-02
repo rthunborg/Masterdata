@@ -12,7 +12,7 @@ epic_completion_gate:
     title: 'Story 22.10 Phase B — Supabase production cutover'
     status: 'pending' # set to 'done' once executed to silence the reminder
     trigger: 'Only after Story 22.15 is locally complete, PR-reviewed, recorded at a final immutable remediation SHA, and owner-verified on staging; before any production mutation.'
-    actions: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree and green exact-head checks; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Finish clean-source full verification and review of the protected live-isolation tooling, then obtain its separate exact-package/private-admission approval before running controls. Preserve the production pause. Fresh five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+    actions: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation 9f7c52d605d823dfb8f7e33de492df5eb59c2c0d has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
     source: 'supabase/migration-baseline-manifest.json; docs/commercial-readiness/27_supabase_cutover_runbook.md; tracker E-010/E-013'
 
 sprint:
@@ -305,7 +305,7 @@ next_actions:
   - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique story tests are evidenced passing; any further review finding requires human triage. Epic 22 remains in progress for its separate production release gate.'
   - 'Historical PR #100 staging v67 was applied once and verified at 67/67 with no history repair, no pending/remote-only version, strict catalog 16/16, preserved audit rows/hash, unchanged repayment/four-permission-hash baseline, and scoped advisors of security 0 WARN-or-higher plus three classified performance WARN. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Current staging is v69 at 69/69 with no pending versions. Owner staging verification was open at that dated checkpoint and completed on 2026-09-24. Production stays paused; Story 22.15 remains in-progress and Epic 23 remains on-hold.'
 last_updated: '2026-10-02'
-updated_by: 'PR #123 staging v69 review, merge, single-forward apply, and strict post-proof synchronized; this documentation update awaits its own independent review and final-head checks.'
+updated_by: 'PR #125 reviewed staging merge and PR #126 exact implementation local gates synchronized; final-head review and private production admission remain separate gates.'
 
 pr_95_playwright_gate:
   date: 2026-09-09
@@ -319,7 +319,7 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree and green exact-head checks; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Finish clean-source full verification and review of the protected live-isolation tooling, then obtain its separate exact-package/private-admission approval before running controls. Preserve the production pause. Fresh five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation 9f7c52d605d823dfb8f7e33de492df5eb59c2c0d has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -426,7 +426,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree and green exact-head checks; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Finish clean-source full verification and review of the protected live-isolation tooling, then obtain its separate exact-package/private-admission approval before running controls. Preserve the production pause. Fresh five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation 9f7c52d605d823dfb8f7e33de492df5eb59c2c0d has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -716,7 +716,7 @@ current_runtime_floor_remediation_20261002:
   evidence: docs/commercial-readiness/evidence/production-runtime-floor-remediation-2026-10-02.md
 
 current_live_isolation_preparation_20261002:
-  status: source-prepared-full-verification-and-review-pending
+  status: local-gates-complete-private-admission-pending
   staging_base: 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128
   reviewed_dependency_head: 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368
   dependency_review_and_staging_merge: complete
@@ -724,7 +724,11 @@ current_live_isolation_preparation_20261002:
   actual_installer_invoked: false
   private_inputs_loaded: false
   hosted_access: false
-  full_suite_gate: pending-for-new-source
+  tested_implementation: 9f7c52d605d823dfb8f7e33de492df5eb59c2c0d
+  full_suite_gate: passed-current-local-source
+  full_vitest: { passed: 4679, skipped: 0, failed: 0, errors: 0, files: 386, report_seconds: 958.37, wrapper_ms: 967505 }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1122.576435, wrapper_ms: 1124702, individually_bound_historical_skips: true }
+  package_materialized_offline: { files: 109, runtime_files: 488, runtime_packages: 10, admitted: false }
   executable_package_admission: not-granted
   production: paused-no-go
   story_22_15: in-progress
