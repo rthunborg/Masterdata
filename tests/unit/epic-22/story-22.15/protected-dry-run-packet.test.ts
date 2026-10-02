@@ -1,7 +1,8 @@
+import { EventEmitter } from 'node:events';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { verifyDryRunPacket } from '../../../../src/lib/release/protected-dry-run-worker.mjs';
+import { describe, expect, it, vi } from 'vitest';
+import { verifyDryRunPacket, readProtectedDryRunPacket, PROTECTED_DRY_RUN_PREPARATION_TIMEOUT_MS, PROTECTED_DRY_RUN_PACKET_TIMEOUT_MS } from '../../../../src/lib/release/protected-dry-run-worker.mjs';
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const nonce = 'a'.repeat(64);
@@ -58,5 +59,75 @@ describe('protected dry-run signed challenge', () => {
   });
   it.each(['{', '{}', ' '.repeat(65537)])('rejects malformed or oversized envelope', text => {
     expect(() => verifyDryRunPacket(text, nonce, publicKey)).toThrow();
+  });
+});
+
+// Use the same fixed production deadlines with a controlled clock. This tests
+// delayed host preparation separately from an attacker delaying packet EOF.
+describe('protected dry-run two-phase packet receipt', () => {
+  function fixture() {
+    class Input extends EventEmitter {
+      pause = vi.fn(); resume = vi.fn(); destroy = vi.fn();
+    }
+    const input = new Input(); let clock = 100; let id = 0;
+    const timers = new Map<number, { callback: () => void; delay: number }>();
+    const setTimer = vi.fn((callback: () => void, delay: number) => { timers.set(++id, { callback, delay }); return id; });
+    const clearTimer = vi.fn((value: number) => { timers.delete(value); });
+    const options = { now: () => clock, setTimer, clearTimer };
+    return { input, timers, setTimer, options, advance: (value: number) => { clock += value; } };
+  }
+  it('accepts delayed host preparation without changing signed request validation', async () => {
+    const f = fixture(); const reading = readProtectedDryRunPacket(f.input, f.options);
+    f.advance(20_000); const text = packet(request()); f.input.emit('data', Buffer.from(text)); f.input.emit('end');
+    expect(await reading).toBe(text); expect(verifyDryRunPacket(text, nonce, publicKey)).toEqual(request());
+    expect(f.setTimer.mock.calls.map(call => call[1])).toEqual([60_000, 10_000]);
+    expect(f.timers.size).toBe(0);
+  });
+  it('rejects preparation arriving at its exact deadline even if the timer callback is delayed', async () => {
+    const f = fixture(); const rejected = expect(readProtectedDryRunPacket(f.input, f.options)).rejects.toThrow();
+    f.advance(PROTECTED_DRY_RUN_PREPARATION_TIMEOUT_MS); f.input.emit('data', Buffer.from('{}')); await rejected;
+    expect(f.input.destroy).toHaveBeenCalledOnce();
+  });
+  it('rejects missing input at the bounded preparation timer', async () => {
+    const f = fixture(); const rejected = expect(readProtectedDryRunPacket(f.input, f.options)).rejects.toThrow();
+    [...f.timers.values()][0].callback(); await rejected;
+    expect(f.input.listenerCount('data')).toBe(0); expect(f.input.destroy).toHaveBeenCalledOnce();
+  });
+  it('rejects an empty packet', async () => {
+    const f = fixture(); const rejected = expect(readProtectedDryRunPacket(f.input, f.options)).rejects.toThrow();
+    f.input.emit('end'); await rejected;
+  });
+  it('does not start or reset transmission for an empty chunk', async () => {
+    const f = fixture(); const reading = readProtectedDryRunPacket(f.input, f.options);
+    f.advance(15_000); f.input.emit('data', Buffer.alloc(0)); expect(f.setTimer).toHaveBeenCalledTimes(1);
+    f.advance(5_000); f.input.emit('data', Buffer.from('{}')); f.input.emit('end'); expect(await reading).toBe('{}');
+  });
+  it('rejects slow-drip EOF and never resets the transmission deadline', async () => {
+    const f = fixture(); const rejected = expect(readProtectedDryRunPacket(f.input, f.options)).rejects.toThrow();
+    f.advance(20_000); f.input.emit('data', Buffer.from('{')); f.advance(9_000); f.input.emit('data', Buffer.from('}'));
+    f.advance(1_000); f.input.emit('end'); await rejected;
+    expect(f.setTimer.mock.calls.map(call => call[1])).toEqual([60_000, 10_000]);
+  });
+  it('rejects a packet stalled after its first byte', async () => {
+    const f = fixture(); const rejected = expect(readProtectedDryRunPacket(f.input, f.options)).rejects.toThrow();
+    f.input.emit('data', Buffer.from('{'));
+    const timer = [...f.timers.values()].find(value => value.delay === PROTECTED_DRY_RUN_PACKET_TIMEOUT_MS)!;
+    timer.callback(); await rejected; expect(f.input.destroy).toHaveBeenCalledOnce();
+  });
+  it('enforces bytes rather than character count for oversized input', async () => {
+    const f = fixture(); const rejected = expect(readProtectedDryRunPacket(f.input, f.options)).rejects.toThrow();
+    f.input.emit('data', Buffer.from('é'.repeat(32_769))); await rejected;
+  });
+  it.each(['error', 'close'])('rejects premature stream %s', async event => {
+    const f = fixture(); const rejected = expect(readProtectedDryRunPacket(f.input, f.options)).rejects.toThrow();
+    f.input.emit(event, new Error('synthetic')); await rejected;
+  });
+  it('rejects a clock that moves backward during preparation', async () => {
+    const f = fixture(); const rejected = expect(readProtectedDryRunPacket(f.input, f.options)).rejects.toThrow();
+    f.advance(-1); f.input.emit('data', Buffer.from('{}')); await rejected;
+  });
+  it('rejects a nonfinite initial clock and destroys the stream', () => {
+    const f = fixture(); expect(() => readProtectedDryRunPacket(f.input, { ...f.options, now: () => NaN })).toThrow();
+    expect(f.input.destroy).toHaveBeenCalledOnce();
   });
 });
