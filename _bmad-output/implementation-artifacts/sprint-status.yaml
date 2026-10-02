@@ -177,7 +177,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'PR #125 candidate 3f26418027590609ed3ed7b88b38376d62efd489 has a fresh zero-finding production audit bound to renewed source/package identity, focused compatibility and quality evidence, full Vitest 4547 passed / 0 skipped / 0 failed across 373 files in 858.06s, and full Playwright 163 passed / 47 exact historical skips / 0 failed / 0 errors in 1357.77634s. The renewed pause safeguard is recorded in the same receipt. The failed 471c22f Vitest run remains historical failed evidence only. Passing local evidence grants no package, hosted, release, main, deployment, or reopening approval. A final-head review and required PR checks must be recorded for the exact merge candidate. Production remains paused/no-go. The independent gates remain controller/isolation and drain, separately approved 48-filter cleanup, 14 forwards, strict 16/16 and canonical-69 preservation, owner-ledger adoption and separately approved 55-version repair, then separate main, deployment, and reopening approvals. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #125 runtime-floor candidate cc65498745792c3727a8ecf6bb5b7da847b75841 corrects Node engines to ^20.19.0 || ^22.12.0 || >=24.0.0. Audit 0/0/0/0/0 across 280; focused 14/14 in 37.83s; Vitest 4549/0/0 across 374 files in 841.12s (wrapper 847031ms); independently bound Playwright 163/47/0/0. gates-v3 is interrupted/incomplete, never passing. October 1 3f evidence remains historical. Raw-Git manifest 0a624452642b1f4e54a3cffc14fb4e1fde0ddeeed89a3a88072278bf9e300d42 is not executable-package admission. Production paused/no-go; all isolation, cleanup, forward, catalog, repair, main/deployment/reopening gates remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -411,7 +411,7 @@ current_pr123_staging_completion_20260930:
   epic_23_status: on-hold
   evidence: docs/commercial-readiness/evidence/staging-v69-pr123-merge-apply-proof-2026-09-30.md
 
-current_dependency_release_blocker_20261001:
+historical_dependency_release_remediation_20261001:
   failed_audit_history:
     source_staging: c492c927224ed5a8f133c58b6fac2531c03e474b
     production_scoped_audit_exit: 1
@@ -452,3 +452,17 @@ current_dependency_release_blocker_20261001:
   epic_23: on-hold
   hosted_changes: false
   evidence: docs/commercial-readiness/evidence/production-dependency-remediation-2026-10-01.md
+
+current_runtime_floor_remediation_20261002:
+  source: cc65498745792c3727a8ecf6bb5b7da847b75841
+  node_engine_range: '^20.19.0 || ^22.12.0 || >=24.0.0'
+  runtime_compatibility_tests: 2
+  audit: { critical: 0, high: 0, moderate: 0, low: 0, informational: 0, dependencies: 280 }
+  full_vitest: { passed: 4549, skipped: 0, failed: 0, files: 374, report_seconds: 841.12, wrapper_ms: 847031, raw_log_sha256: '89f779389cb29afef9f6063d2a848f9aa9fbb84b98a5d722fb1ba79dd010f20e' }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1170.571249, wrapper_ms: 1181389, independently_bound: true }
+  raw_git_runtime_manifest_sha256: '0a624452642b1f4e54a3cffc14fb4e1fde0ddeeed89a3a88072278bf9e300d42'
+  package_admission: not-granted
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/production-runtime-floor-remediation-2026-10-02.md
