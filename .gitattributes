@@ -15,3 +15,7 @@ pnpm-lock.yaml text eol=lf
 # pnpm binds patch bytes; preserve hashes across Windows checkouts.
 src/lib/vendor-patches/*.patch text eol=lf whitespace=-blank-at-eol,-blank-at-eof
 pnpm-workspace.yaml text eol=lf
+
+# Isolation packages bind native PowerShell source to raw Git bytes.
+src/lib/release/*isolation*.ps1 text eol=lf
+src/lib/release/production-isolation.md text eol=lf

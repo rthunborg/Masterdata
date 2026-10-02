@@ -6,6 +6,7 @@
  * and maintains smooth 60fps scrolling performance.
  */
 
+import { waitForEmployeeDashboard } from '../../helpers/e2e-helpers';
 import { test, expect } from '@playwright/test';
 
 test.describe('Virtual Scrolling Performance (Story 12.5)', () => {
@@ -14,7 +15,7 @@ test.describe('Virtual Scrolling Performance (Story 12.5)', () => {
     await page.goto('/dashboard');
     
     // Wait for page to load
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
   });
 
   test('should enable virtual scrolling for lists with >100 items', async ({ page }) => {

@@ -10,6 +10,7 @@
  * Verifies role-based exclusion works end-to-end
  */
 
+import { waitForEmployeeDashboard } from '../../helpers/e2e-helpers';
 import { test, expect, type Page } from '@playwright/test';
 import { setupTestUser, loginAsHRAdmin } from '../../helpers/e2e-helpers';
 
@@ -47,7 +48,7 @@ test.describe('Story 16.6: HR Admin Should NOT See Banner or Highlights', () => 
 
   test('HR admin should not see change notification banner', async ({ page }) => {
     // Wait for page to fully load
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
     await page.waitForTimeout(1000);
 
     // Verify banner does NOT appear
@@ -69,7 +70,7 @@ test.describe('Story 16.6: HR Admin Should NOT See Banner or Highlights', () => 
 
   test('HR admin should not see field highlights in employee table', async ({ page }) => {
     // Wait for table to load
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
     await page.waitForTimeout(1000);
 
     // Get first employee row or card
@@ -101,7 +102,7 @@ test.describe('Story 16.6: HR Admin Should NOT See Banner or Highlights', () => 
     // For E2E, we'll verify the banner doesn't appear regardless of changes
     
     // Wait for page to fully load
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
     await page.waitForTimeout(2000);
 
     // Check for banner - should NOT be present
@@ -146,7 +147,7 @@ test.describe('Story 16.6: HR Admin Should NOT See Banner or Highlights', () => 
     // This test verifies that even after HR admin makes changes,
     // they don't see highlights (because they're HR admin, not external user)
     
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
     await page.waitForTimeout(1000);
 
     // Get first employee row

@@ -13,6 +13,14 @@ import { Page, expect, type Cookie } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
+/** Wait for the employee view itself; dashboard polling may never become idle. */
+export async function waitForEmployeeDashboard(page: Page) {
+  await expect(page).toHaveURL(/\/dashboard(?:[/?#]|$)/);
+  await expect(
+    page.locator('table, [aria-label="Employee list"]').filter({ visible: true }).first()
+  ).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('status', { name: 'Loading', exact: true })).toBeHidden();
+}
 export interface EmployeeData {
   first_name?: string;
   surname?: string;

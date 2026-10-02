@@ -11,6 +11,9 @@ const ENVIRONMENT_KEYS = [
   'EXPECTED_SUPABASE_SSL_ROOT_CERT_SHA256', 'SUPABASE_CLI_EXECUTABLE',
   'EXPECTED_SUPABASE_CLI_SHA256', 'SystemRoot', 'WINDIR', 'PATH',
 ];
+export const PROTECTED_DRY_RUN_PREPARATION_TIMEOUT_MS = 60_000;
+export const PROTECTED_DRY_RUN_PACKET_TIMEOUT_MS = 10_000;
+export const PROTECTED_DRY_RUN_PACKET_MAX_BYTES = 65_536;
 const fail = () => { throw new Error('Protected dry run refused'); };
 const exact = (value, keys) => value && !Array.isArray(value) &&
   typeof value === 'object' && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...keys].sort());
@@ -36,18 +39,98 @@ export function verifyDryRunPacket(text, nonce, publicKey) {
   return request;
 }
 
+function checkedElapsed(startedAt, limit, now) {
+  const current = now();
+  if (!Number.isFinite(current) || !Number.isFinite(startedAt) || current < startedAt || current - startedAt >= limit) fail();
+  return current;
+}
+
+export function readProtectedDryRunPacket(input, {
+  now = Date.now,
+  setTimer = setTimeout,
+  clearTimer = clearTimeout,
+} = {}) {
+  if (!input || typeof input.on !== 'function' || typeof input.removeListener !== 'function' ||
+      typeof input.pause !== 'function' || typeof input.resume !== 'function' || typeof input.destroy !== 'function') fail();
+  let preparationStartedAt;
+  try { preparationStartedAt = now(); } catch {
+    try { input.destroy(); } catch { }
+    fail();
+  }
+  if (!Number.isFinite(preparationStartedAt)) {
+    try { input.destroy(); } catch { }
+    fail();
+  }
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let preparationTimer;
+    let packetTimer;
+    let packetStartedAt;
+    let totalBytes = 0;
+    const chunks = [];
+
+    const cleanup = () => {
+      if (preparationTimer !== undefined) clearTimer(preparationTimer);
+      if (packetTimer !== undefined) clearTimer(packetTimer);
+      input.removeListener('data', onData);
+      input.removeListener('end', onEnd);
+      input.removeListener('error', onError);
+      input.removeListener('close', onClose);
+    };
+    const rejectInput = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      try { input.destroy(); } catch { }
+      reject(new Error('Protected dry run refused'));
+    };
+    const resolveInput = (text) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      input.pause();
+      resolve(text);
+    };
+    const onData = (chunk) => {
+      try {
+        const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        if (bytes.length === 0) return;
+        if (packetStartedAt === undefined) {
+          packetStartedAt = checkedElapsed(preparationStartedAt, PROTECTED_DRY_RUN_PREPARATION_TIMEOUT_MS, now);
+          clearTimer(preparationTimer);
+          preparationTimer = undefined;
+          packetTimer = setTimer(rejectInput, PROTECTED_DRY_RUN_PACKET_TIMEOUT_MS);
+        }
+        totalBytes += bytes.length;
+        if (totalBytes > PROTECTED_DRY_RUN_PACKET_MAX_BYTES) fail();
+        chunks.push(bytes);
+      } catch { rejectInput(); }
+    };
+    const onEnd = () => {
+      try {
+        if (packetStartedAt === undefined) fail();
+        checkedElapsed(packetStartedAt, PROTECTED_DRY_RUN_PACKET_TIMEOUT_MS, now);
+        resolveInput(Buffer.concat(chunks, totalBytes).toString('utf8'));
+      } catch { rejectInput(); }
+    };
+    const onError = () => rejectInput();
+    const onClose = () => rejectInput();
+
+    preparationTimer = setTimer(rejectInput, PROTECTED_DRY_RUN_PREPARATION_TIMEOUT_MS);
+    input.on('data', onData);
+    input.once('end', onEnd);
+    input.once('error', onError);
+    input.once('close', onClose);
+    input.resume();
+  });
+}
+
 async function main() {
   if (process.argv.length !== 2) fail();
   const root = fileURLToPath(new URL('../../../', import.meta.url));
   const nonce = randomBytes(32).toString('hex');
   process.stdout.write(JSON.stringify({ kind: 'protected-dry-run-ready', nonce }) + '\n');
-  let text = '';
-  const timer = setTimeout(() => process.exit(1), 10000);
-  for await (const chunk of process.stdin) {
-    text += chunk.toString('utf8');
-    if (Buffer.byteLength(text) > 65536) fail();
-  }
-  clearTimeout(timer);
+  const text = await readProtectedDryRunPacket(process.stdin);
   const publicKey = createPublicKey({ key: JSON.parse(readFileSync(path.join(root, 'bootstrap-origin.json'), 'utf8')), format: 'jwk' });
   const request = verifyDryRunPacket(text, nonce, publicKey);
   const packageBytes = readFileSync(path.join(root, 'toolchain-package.json'));
