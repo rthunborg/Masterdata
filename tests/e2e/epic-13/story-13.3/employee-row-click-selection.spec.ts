@@ -1,3 +1,4 @@
+import { waitForEmployeeDashboard } from '../../helpers/e2e-helpers';
 import { test, expect, type Page } from '@playwright/test';
 
 async function waitForEmployeeRows(page: Page) {
@@ -111,7 +112,7 @@ test.describe('Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11)'
     await page.setViewportSize({ width: 375, height: 667 });
     
     // Wait for mobile card view
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
     
     // Find employee card (mobile view uses cards instead of table rows)
     const card = page.locator('article, [role="article"]').first();

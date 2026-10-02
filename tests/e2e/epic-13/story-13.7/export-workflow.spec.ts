@@ -10,6 +10,7 @@
  * - CSV file has correct filename
  */
 
+import { waitForEmployeeDashboard } from '../../helpers/e2e-helpers';
 import { test, expect, type Page, type Locator } from "@playwright/test";
 import { createClient } from '@supabase/supabase-js';
 import { randomInt, randomUUID } from 'node:crypto';
@@ -165,7 +166,7 @@ test.describe("Story 13.7: Export Workflow E2E", () => {
   test("should keep export disabled with no selection", async ({ page }) => {
     // Ensure no employees are selected (reload page to clear selection)
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     await expect(page.getByRole('button', { name: /Exportera markerade|Export All Employees/i })).toBeDisabled();
   });
@@ -231,7 +232,7 @@ test.describe("Story 13.7: Export Workflow E2E", () => {
   test("should keep crew ready export disabled with no eligible selection", async ({ page }) => {
     // Ensure no employees are selected
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     await expect(
       page.getByRole('button', { name: /Exportera & markera besättningsklar|Export & Mark Crew Ready/i })

@@ -1,3 +1,4 @@
+import { waitForEmployeeDashboard } from '../../helpers/e2e-helpers';
 import { test, expect } from '@playwright/test';
 
 test.describe('Story 13.1: Filter Checkbox User Workflow', () => {
@@ -6,7 +7,7 @@ test.describe('Story 13.1: Filter Checkbox User Workflow', () => {
     await page.goto('/dashboard');
     
     // Wait for page to load
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
   });
 
   test('user can check "Show Archived" and see archived employees', async ({ page }) => {

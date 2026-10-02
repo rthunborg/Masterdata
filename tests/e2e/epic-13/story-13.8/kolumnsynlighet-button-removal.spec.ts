@@ -1,3 +1,4 @@
+import { waitForEmployeeDashboard } from '../../helpers/e2e-helpers';
 import { test, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
 import { randomInt, randomUUID } from 'node:crypto';
@@ -54,7 +55,7 @@ test.describe('Kolumnsynlighet Button Removal', () => {
     }
 
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
   });
 
   test.afterEach(async () => {
@@ -75,7 +76,7 @@ test.describe('Kolumnsynlighet Button Removal', () => {
   test('should not display Kolumnsynlighet button in dashboard', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     // Verify the button with "Kolumnsynlighet" text is not present
     const kolumnsynlighetButton = page.getByRole('button', { name: /kolumnsynlighet/i });
@@ -89,7 +90,7 @@ test.describe('Kolumnsynlighet Button Removal', () => {
   test('should render dashboard correctly without the button', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     // Dashboard should still render - check for table or employee list
     const table = page.locator('table');
@@ -99,7 +100,7 @@ test.describe('Kolumnsynlighet Button Removal', () => {
   test('should not have broken UI elements after button removal', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     // Check for console errors
     const errors: string[] = [];
@@ -125,7 +126,7 @@ test.describe('Kolumnsynlighet Button Removal', () => {
   test('should maintain dashboard functionality without the button', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     // Verify other dashboard elements still work
     // Check if table is visible and functional
