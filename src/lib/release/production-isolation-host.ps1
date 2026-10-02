@@ -5,9 +5,9 @@ $ErrorActionPreference='Stop'
 # no directory, target, operation, URL, source, credential, or callback.
 try {
   if($PSVersionTable.PSEdition -ne 'Desktop' -or $PSVersionTable.PSVersion.Major -ne 5){throw 'runtime'}
-  $host=[IO.Path]::Combine($PSScriptRoot,'production-isolation.exe')
-  if(-not (Test-Path -LiteralPath $host -PathType Leaf)){throw 'installation'}
-  & $host
+  $isolationHostExecutable=[IO.Path]::Combine($PSScriptRoot,'production-isolation.exe')
+  if(-not (Test-Path -LiteralPath $isolationHostExecutable -PathType Leaf)){throw 'installation'}
+  & $isolationHostExecutable
   if($LASTEXITCODE -ne 0){throw 'host'}
 } catch {
   [ordered]@{started=$false;operation='temporary-production-isolation';detailsSuppressed=$true}|ConvertTo-Json -Compress
