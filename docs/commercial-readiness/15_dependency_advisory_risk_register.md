@@ -1,6 +1,6 @@
 # Dependency Advisory Risk Register
 
-> **Current dependency release blocker — 2026-10-01.** The unchanged staging lockfile now fails the production-scoped audit: 1 critical, 6 high and 6 moderate findings, exit 1. The prior UUID acceptance expired on 2026-09-30 and is not renewed. The earlier 0-critical/high audit and prepared offline migration package do not establish application release admission. No dependency or hosted change occurred. Production remains paused/no-go; Story 22.15 in-progress; Epic 23 on hold. [Counts, affected paths and limits](evidence/production-dependency-recheck-2026-10-01.md).
+> **Current runtime-floor remediation evidence - 2026-10-02.** Candidate cc65498745792c3727a8ecf6bb5b7da847b75841 corrects Node engines to ^20.19.0 || ^22.12.0 || >=24.0.0 with two runtime compatibility tests. October 1 evidence remains historical under 3f26418027590609ed3ed7b88b38376d62efd489. Audit is zero-finding across 280 dependencies; focused compatibility passes 14/14; full Vitest passes 4549/4549 across 374 files with zero skips/failures; independently bound Playwright passes 163 with 47 classified historical skips and zero failures/errors. Raw-Git runtime manifest 0a624452642b1f4e54a3cffc14fb4e1fde0ddeeed89a3a88072278bf9e300d42 is a SHA-256 of ordered path/raw-Git-SHA256 entries, not executable-package admission. No hosted, main merge, deployment, or reopening action occurred; those production gates remain separate. Production remains paused/no-go; Story 22.15 in-progress; Epic 23 on hold. [Current evidence](evidence/production-runtime-floor-remediation-2026-10-02.md).
 
 Prepared: 2026-08-31 (Story 22.15 refresh)
 
@@ -10,7 +10,7 @@ Source evidence: `docs/commercial-readiness/evidence/dependency-audit-2026-08-31
 
 ## Historical development-inclusive audit follow-up — 2026-09-15
 
-The exact production-scoped `pnpm audit --prod --json` remains **0 critical / 0 high / 1 accepted UUID moderate**, exit `1` solely for the existing time-bounded UUID acceptance. The broader `pnpm audit --json` separately returned exit `1` with **1 critical / 16 high / 10 moderate**, including the dev-only Vitest UI advisory `GHSA-5xrq-8626-4rwp`. This is a development-tooling follow-up for review and an explicitly scoped remediation decision; Vitest UI is not launched as a production runtime component. It does not widen the production residual acceptance, waive a release gate, or authorize an unreviewed dependency upgrade. See [the current ACL-prerequisite verification record](evidence/canonical-trigger-acl-prerequisite-2026-09-15.md).
+The current candidate production-scoped `pnpm audit --prod --json` exits `0` with **0 critical / 0 high / 0 moderate** across 280 production dependencies. The October 1 1-critical/6-high/6-moderate capture and expired UUID acceptance remain historical evidence below. The candidate is restricted to the recorded Next, Nodemailer, brace-expansion, and Node-only ExcelJS remediation; it does not authorize a browser-bundle ExcelJS path or release admission.
 
 ## Historical release gate — 2026-09-10; superseded by the October 1 failure
 
@@ -43,7 +43,9 @@ Batch 3's local verification scope is complete. The 47 Playwright skips are not 
 
 ## Current Production Advisory Risk Register — 2026-10-01
 
-All 13 provider finding entries (10 distinct advisory IDs; duplicated brace-expansion identities cover different version branches/paths) are registered below. Severity and patched ranges come from the dated production-scoped audit; no dependency was changed. The technical owner remains the existing R-002 owner. October 1 is the triage/review capture date, not an acceptance or future deadline. Production pause is the only current general control recorded here; it does not establish that these paths are unreachable or compensate for a release. Every new row remains open, and the UUID acceptance is expired. Targeted remediation requires compatibility verification and a fresh production-scoped audit before release admission.
+## Historical failed-audit capture - 2026-10-01
+
+The 13 provider findings below are historical paths from the failed 1/6/6 capture. They remain retained for traceability; the current candidate fresh audit is zero-finding and its full local suites pass. Do not read their pre-remediation package versions or OPEN labels as current state. Final-head review/required PR checks must be recorded for the exact merge candidate, and production remains paused/no-go.
 
 | Package | Severity | Affected path | Reason not fixed | Owner | Review date | Compensating control | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |

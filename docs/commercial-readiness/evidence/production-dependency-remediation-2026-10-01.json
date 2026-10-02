@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "3f26418027590609ed3ed7b88b38376d62efd489",
+  "baseCommit": "33d63be227b56e64a913b768a06ec4914a2700c7",
+  "mainCommit": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "pullRequest": "https://github.com/rthunborg/Masterdata/pull/125",
+  "audit": {
+    "sourceCommit": "3f26418027590609ed3ed7b88b38376d62efd489",
+    "packageSourceIdentity": "b2b787870b3fddd0e8bb10d9c3354038a8ed422e49c21d138547be04d0622fb7",
+    "packageSourceIdentityKind": "sha256 of ordered path/raw-Git-SHA256 dependency manifest; not executable-package admission",
+    "dependencyIdentity": [
+      {
+        "path": "package.json",
+        "sha256": "87d825f4be32f9174e0b562a213f89461b84bd2fe836a78f2aea354dc937864c",
+        "workingBytesSha256": "87d825f4be32f9174e0b562a213f89461b84bd2fe836a78f2aea354dc937864c",
+        "workingComparison": "raw byte identical"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "sha256": "659266a49be6466b6166f9f6b479c29105c1f532cc65d17e114ab462b5da1705",
+        "workingBytesSha256": "659266a49be6466b6166f9f6b479c29105c1f532cc65d17e114ab462b5da1705",
+        "workingComparison": "raw byte identical"
+      },
+      {
+        "path": "pnpm-workspace.yaml",
+        "sha256": "2c430d4fa615de957ec3491c60525c38dc3fce1fda0065359a1ac494c8c8a53a",
+        "workingBytesSha256": "2c430d4fa615de957ec3491c60525c38dc3fce1fda0065359a1ac494c8c8a53a",
+        "workingComparison": "raw byte identical"
+      },
+      {
+        "path": ".gitattributes",
+        "sha256": "845247680189e656afe72aff82c19fad784f8b3630900456309424429a7d3f89",
+        "workingBytesSha256": "2e4913cbeb4c2e0ba6c520fb7aac296010bd5454d1b0a0fed82d2038a9a231a4",
+        "workingComparison": "CRLF-normalized control text"
+      },
+      {
+        "path": "src/lib/vendor-patches/exceljs@4.4.0.patch",
+        "sha256": "0dd59bf7dc730ea82e0e64be0759e20cfdc4a3c51794c7efabc06301b4924360",
+        "workingBytesSha256": "0dd59bf7dc730ea82e0e64be0759e20cfdc4a3c51794c7efabc06301b4924360",
+        "workingComparison": "raw byte identical"
+      }
+    ],
+    "identity": "3fde634990024f0848ba640645b2e931b50951253abf646b87e8d3df00b7786a",
+    "command": "pnpm@10.19.0 audit --prod --json",
+    "exitCode": 0,
+    "critical": 0,
+    "high": 0,
+    "moderate": 0,
+    "low": 0,
+    "informational": 0,
+    "productionDependencies": 280
+  },
+  "focused": {
+    "command": "pnpm@10.19.0 exec vitest run tests/unit/epic-22/story-22.15/production-collector-source-binding.test.ts tests/unit/epic-22/story-22.15/exceljs-security-compatibility.test.ts tests/unit/epic-22/story-22.15/nodemailer-compatibility.test.ts tests/unit/export-ssn-value-test.test.ts",
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "durationSeconds": 54.29,
+    "testIdentity": "3f26418027590609ed3ed7b88b38376d62efd489",
+    "fileIdentity": [
+      "tests/unit/epic-22/story-22.15/production-collector-source-binding.test.ts",
+      "tests/unit/epic-22/story-22.15/exceljs-security-compatibility.test.ts",
+      "tests/unit/epic-22/story-22.15/nodemailer-compatibility.test.ts",
+      "tests/unit/export-ssn-value-test.test.ts"
+    ],
+    "receiptSha256": "bc5ab4af1e97811bfcb9cff659336280a753ad9ac2091c6c78c42fdd5e6ee3c6"
+  },
+  "quality": {
+    "frozenInstallExitCode": 0,
+    "typescriptExitCode": 0,
+    "lintErrors": 0,
+    "lintWarnings": 304,
+    "command": "pnpm@10.19.0 install --frozen-lockfile; npx tsc --noEmit; npx eslint .",
+    "testIdentity": "3f26418027590609ed3ed7b88b38376d62efd489",
+    "receiptSha256": "4d3d47da8a477c3440ec88f8535f84d0723fda8a0b679c535272678c72c8afa4",
+    "frozenInstallLogSha256": "f7618654d58e8529450ca6cf7edc257803175048e594266c432e3f8b467cc9d5",
+    "freshCheckoutInstallLogSha256": "136fa9bb1776e64e90176e56e6cd09b1975080901e02d25e053c037793831497",
+    "typescriptLogSha256": "49a18cf30e70d1f03273d8a2f4e3e2f567140ae7356dc381629bbaee7ae2d93b"
+  },
+  "full": {
+    "vitest": {
+      "command": "npx vitest run",
+      "exitCode": 0,
+      "passed": 4547,
+      "failed": 0,
+      "skipped": 0,
+      "passedFiles": 373,
+      "failedFiles": 0,
+      "totalFiles": 373,
+      "errors": 0,
+      "durationSeconds": 858.06,
+      "wrapperDurationMs": 866927,
+      "startedAtUtc": "2026-10-01T13:45:24.834Z",
+      "testIdentity": "3f26418027590609ed3ed7b88b38376d62efd489",
+      "skipIdentity": "empty",
+      "skipClassification": "No skipped tests in this current full run.",
+      "receiptSha256": "bf13329ff9eb667f29a385a829eb6360766234bdbc70d26fa8138290b0af0d3e",
+      "rawLogSha256": "63ae8aeb73296d758329ead1913e98d92bf9103efeb768770d113b82bd4a614c"
+    },
+    "playwright": {
+      "command": "npx playwright test",
+      "exitCode": 0,
+      "passed": 163,
+      "failed": 0,
+      "skipped": 47,
+      "passedFiles": 33,
+      "failedFiles": 0,
+      "totalFiles": 41,
+      "fileCountDefinition": "distinct JUnit classnames; passingFiles have at least one passing case; skipped-only files are not passing files",
+      "errors": 0,
+      "durationSeconds": 1357.77634,
+      "wrapperDurationMs": 1369260,
+      "startedAtUtc": "2026-10-01T14:00:50.605Z",
+      "testIdentity": "3f26418027590609ed3ed7b88b38376d62efd489",
+      "skipIdentity": "f9ced59b8f1ac2e178f833e49e1353841479ed937f6de5c0aa2b654398b135de",
+      "skipClassification": "47 individually unchanged historical skips; not counted as passes. Complete identity/status/duration multiset checked against raw log and JUnit; skipped identities matched dated 2026-09-28 receipt.",
+      "skippedIdentities": [
+        "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+        "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+        "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should include employee names or \"Unassigned\" in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PWA Installation E2E › should cache static assets|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should display app in standalone mode when installed|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should handle service worker updates|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have apple touch icon|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have manifest.json linked in page head|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have theme color meta tag|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should register service worker on page load|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should show install prompt when criteria met|epic-12/story-12.4/pwa-installation.spec.ts",
+        "Prerequisites & Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+        "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+        "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13/story-13.4/export-selected-employees.spec.ts",
+        "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13/story-13.4/export-selected-employees.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13/story-13.7/export-workflow.spec.ts",
+        "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16/story-16.5/field-highlighting.spec.ts",
+        "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16/story-16.5/field-highlighting.spec.ts",
+        "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16/story-16.6/real-database-highlighting.spec.ts",
+        "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16/story-16.6/real-database-highlighting.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20/story-20.7/export-with-filters.spec.ts",
+        "Termination & Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts"
+      ],
+      "receiptSha256": "4a96e698154744bbb7283fc8e74ff568794b177d9a48dee92b1efb52ea865a34",
+      "rawLogSha256": "634ce85e4ea26adc866209f09e2d70bdc29914f413fddca78ba3986f3f5c4e72",
+      "junitSha256": "20fd80a7b23f68ace2ec2fce589b26b492cae1fb1b523aef59e98a33dfc91e91",
+      "independentBindingReceiptSha256": "6c44b834e7feec044a56debe86b92b715f95c02bfc989ce6a5db10648ebdc9d8"
+    }
+  },
+  "failedAttempts": {
+    "fullVitest": {
+      "sourceCommit": "471c22f0a71fa82df9446ff3d33ac47ce29f8764",
+      "command": "npx vitest run",
+      "exitCode": 1,
+      "passed": 4506,
+      "failed": 8,
+      "skipped": 33,
+      "passedFiles": 364,
+      "failedFiles": 9,
+      "totalFiles": 373,
+      "durationSeconds": 799.27,
+      "receiptSha256": "f64ac67e726bc508f04b08f741b452879f010eca607a8b4385e56646134abbfd",
+      "rawLogSha256": "0f63e3b46f66a268dc59cb97b49ec21b25ae52299fcbb627a876feebee8d6186",
+      "classification": "Failed historical attempt, never passing evidence. Retained local fixture was v68; one necessary forward advanced it to v69 without reset. Physical package.json CRLF/raw Git mismatch corrected to LF. Fresh local ownership/admission renewed within unchanged 15-minute bounds; late queue/tool timeout failures rerun without assertion/skip weakening.",
+      "reportedFailedSuites": 6
+    }
+  },
+  "pauseSafeguard": {
+    "sourceCommit": "3f26418027590609ed3ed7b88b38376d62efd489",
+    "artifactIdentity": "a531a83f6dfdbe9fbe5bf384a526559f4efd62c589619adba8c709ad97e6900f",
+    "files": 7,
+    "routeProbes": 9,
+    "apiAndMutationStatus": 503,
+    "noFunctionDirectory": true,
+    "noLinkage": true,
+    "crons": 0,
+    "forcedProductionBuildRefused": true,
+    "stagingAllowed": true,
+    "receiptSha256": "781d2b9aabc54644d44750c8ace24c595e9fa14b55ea6c2868419c78e3f7156f",
+    "hostedAccess": false
+  },
+  "build": {
+    "kind": "local-staging-preview-build",
+    "command": "npx next build --webpack",
+    "sourceSha": "3f26418027590609ed3ed7b88b38376d62efd489",
+    "startedAtUtc": "2026-10-01T14:02:25.011Z",
+    "sourceUnchanged": true,
+    "exitCode": 0,
+    "errorCode": null,
+    "durationMs": 53057,
+    "logSha256": "09c88012a9e2ae2057fe1889e44ad4116b764e63f7cf7930223e027fecd70183",
+    "hostedAction": false,
+    "receiptSha256": "158b39ca0c0fb48054fc9b1d34d097fe37c493bdba3cd7fc741a7042706aea32"
+  },
+  "cliMatrix": {
+    "sourceCommit": "3f26418027590609ed3ed7b88b38376d62efd489",
+    "localOnly": true,
+    "hostedAccess": false,
+    "cases": [
+      {
+        "name": "observed_guard_stop",
+        "receiptSha256": "79a5f39ad7630f640e1dd75911d0eaae56e776329a8d026996cff0cc7a90e4ad",
+        "classification": "proven_rejected_before_current_effect"
+      },
+      {
+        "name": "trigger_profile_stop_184840",
+        "receiptSha256": "18e00b19603dc9458ff0353e64e7d3987cf0d20d0fd033fda7e486faf82825f0",
+        "classification": "proven_rejected_before_current_effect"
+      },
+      {
+        "name": "trigger_profile_stop_184841",
+        "receiptSha256": "098923a84f2248acb3fb234e1de4ea41d80700898be6095b0095206dbde7e56d",
+        "classification": "proven_rejected_before_current_effect"
+      },
+      {
+        "name": "postcleanup_success",
+        "receiptSha256": "719225e452360034eec3e20cf58e9ff2ede6f4794b62aaa56cafcbf0520383d1",
+        "classification": "proven_complete_local_rehearsal"
+      },
+      {
+        "name": "implicit_history_write_failure",
+        "receiptSha256": "b5fdfe33494a09a24d4bbee02ea77a92258ebb69cc16a38b9f8cb1fc4e15cbdc",
+        "classification": "rolled_back_unrecorded_current"
+      },
+      {
+        "name": "explicit_history_write_failure",
+        "receiptSha256": "ad6c67c5546bac25075be21121706ff93b84cccaade6f126bc40af48e72ca0dd",
+        "classification": "committed_unrecorded_current"
+      },
+      {
+        "name": "explicit_history_write_timeout",
+        "receiptSha256": "9f2ad1f1cbe0e4a4b14c736656ddbee2f02a298ebe85fcca4dbba8319899356b",
+        "classification": "uncertain_current_file"
+      }
+    ],
+    "localSuccess": {
+      "forwardCount": 14,
+      "strictCatalogPassed": 16,
+      "canonicalHistoryAfterLocalRehearsal": 69,
+      "catalogUnchanged": true,
+      "preservationUnchanged": true,
+      "syntheticOnly": true,
+      "productionAdmission": false
+    }
+  },
+  "production": "paused-no-go",
+  "hostedChanges": false,
+  "historicalFailedAudit": "production-dependency-recheck-2026-10-01.json unchanged",
+  "documentationVerification": {
+    "schemaVersion": 1,
+    "kind": "dependency-remediation-final-docs-verification",
+    "testedSource": "3f26418027590609ed3ed7b88b38376d62efd489",
+    "base": "33d63be227b56e64a913b768a06ec4914a2700c7",
+    "canonicalNextActions": 5,
+    "yamlFilesParsed": 3,
+    "statusSurfaces": 5,
+    "protectedMigrationCount": 69,
+    "protectedFilesChecked": 118,
+    "frozenSpecUnchanged": true,
+    "historicalFailedAuditUnchanged": true,
+    "postTestDelta": "documentation-only",
+    "redactionPatternScanPassed": true,
+    "redactionScanScope": "added diff lines and complete new MD/JSON receipt; unchanged public runbook placeholders excluded",
+    "production": "paused-no-go",
+    "focusedDocumentationTests": {
+      "command": "pnpm@10.19.0 exec vitest run tests/unit/epic-22/story-22.15/production-readiness-migrations.test.ts",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "durationSeconds": 2.71,
+      "rawLogSha256": "588820fa37ffdaa4a3e5c079c9ecf6f2197bc4649113eebcac0c73e758a3d46b",
+      "scope": "2026-10-02 documentation-only worktree delta after tested implementation 3f26418027590609ed3ed7b88b38376d62efd489"
+    }
+  }
+}

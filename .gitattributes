@@ -12,3 +12,6 @@ supabase/migration-baseline-manifest.json text eol=lf
 # Collector source checks also pin dependency declaration bytes.
 package.json text eol=lf
 pnpm-lock.yaml text eol=lf
+# pnpm binds patch bytes; preserve hashes across Windows checkouts.
+src/lib/vendor-patches/*.patch text eol=lf whitespace=-blank-at-eol,-blank-at-eof
+pnpm-workspace.yaml text eol=lf

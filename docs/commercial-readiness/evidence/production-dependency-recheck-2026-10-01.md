@@ -1,5 +1,8 @@
 # Production dependency recheck — 2026-10-01
 
+> **Remediation follow-up - 2026-10-01.** The failed audit below remains historical. The remediated candidate and bound full-suite receipt are recorded in [production dependency remediation evidence](production-dependency-remediation-2026-10-01.md). Production remains paused/no-go; no hosted change occurred.
+
+
 The production-scoped `pnpm audit --prod --json` at 2026-10-01T07:55:38.0924485Z returned exit 1: **1 critical, 6 high, 6 moderate, 0 low, 0 informational** findings on the unchanged lockfile bound to staging `c492c927224ed5a8f133c58b6fac2531c03e474b`. These are audit findings across dependency/version paths, not 13 distinct advisory IDs or a proof of runtime exploitability. [Public receipt and affected paths](production-dependency-recheck-2026-10-01.json).
 
 The affected production paths are Next.js, Nodemailer, brace-expansion through ExcelJS, and the previously registered UUID residual. The provider ranges identify Next.js 16.3.6, Nodemailer 10.0.9, and brace-expansion 1.1.21/2.1.7 as ranges covering the captured findings. Those are remediation candidates requiring compatibility investigation and the applicable complete tests, not an instruction to perform blanket latest-major updates. The Next.js critical advisory is limited to Node ImageResponse with attacker-controlled SVG values; no runtime-reachability or exploitation claim has been made. [Maintainer advisory](https://github.com/vercel/next.js/security/advisories/GHSA-vcvr-r3jv-pc5j).
