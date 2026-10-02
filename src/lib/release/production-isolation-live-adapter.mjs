@@ -72,7 +72,7 @@ function validateRequest(request, projectRef) {
 export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability } = {}) {
   if (!PROJECT_REF.test(projectRef ?? '') || !validCapability(hostCapability)) fail();
   const { managementApiToken, fetchImpl, sealPriorState, dataApiPrerequisite, probeExcludedOperatorPooler, probeOperatorPooler, establishRealtimeSubscription, collectPlatformIsolationReadback, clock } = hostCapability;
-  const journal = []; let capturedPriorState = null; let realtimeEstablished = null; let platformReadbackCompleted = false;
+  const journal = []; let capturedPriorState = null; let realtimeEstablished = null; let platformReadbackCompleted = false; let disabledRealtimeReadback = null;
   const record = (method, path, requestedAtUtc, responseAtUtc) => journal.push(freeze({ method, path, requestedAtUtc, responseAtUtc }));
   const fixedFetch = async ({ method, path, body, signal }) => {
     if (signal.aborted) fail();
@@ -112,6 +112,7 @@ export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCap
     if (request.method === 'GET' && request.path === 'config/realtime') {
       if (body.suspend !== true) fail();
       try { await collectPlatformIsolationReadback({ context: request.context, signal: request.signal, configDisabledReadbackAtUtc: call.responseAtUtc }); } catch { fail(); }
+      disabledRealtimeReadback = call;
       platformReadbackCompleted = true;
     }
     return freeze({ status: call.response.status, body });
@@ -122,7 +123,7 @@ export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCap
     return freeze({ status: body.status, dbAllowedCidrs: [...body.config.dbAllowedCidrs], dbAllowedCidrsV6: [...body.config.dbAllowedCidrsV6] });
   };
   const hostOnly = handler => async ({ context, signal } = {}) => { if (!validContext(context, projectRef) || !validSignal(signal) || signal.aborted) fail(); try { return await handler({ context, signal }); } catch { fail(); } };
-  const getControlJournal = () => freeze({ schemaVersion: 1, kind: 'production-isolation-live-adapter-control-journal', requests: journal.map(entry => ({ ...entry })), realtime: { existingSessionEstablished: realtimeEstablished !== null, configDisableRequestedAtUtc: journal.find(entry => entry.method === 'PATCH' && entry.path === 'config/realtime')?.requestedAtUtc ?? null, configDisableResponseAtUtc: journal.find(entry => entry.method === 'PATCH' && entry.path === 'config/realtime')?.responseAtUtc ?? null, configDisabledReadbackAtUtc: journal.find(entry => entry.method === 'GET' && entry.path === 'config/realtime')?.responseAtUtc ?? null, independentPlatformReadbackCompleted: platformReadbackCompleted, shutdownRequestedAtUtc: journal.find(entry => entry.method === 'POST' && entry.path === 'config/realtime/shutdown')?.requestedAtUtc ?? null, shutdownResponseAtUtc: journal.find(entry => entry.method === 'POST' && entry.path === 'config/realtime/shutdown')?.responseAtUtc ?? null } });
+  const getControlJournal = () => freeze({ schemaVersion: 1, kind: 'production-isolation-live-adapter-control-journal', requests: journal.map(entry => ({ ...entry })), realtime: { existingSessionEstablished: realtimeEstablished !== null, configDisableRequestedAtUtc: journal.find(entry => entry.method === 'PATCH' && entry.path === 'config/realtime')?.requestedAtUtc ?? null, configDisableResponseAtUtc: journal.find(entry => entry.method === 'PATCH' && entry.path === 'config/realtime')?.responseAtUtc ?? null, configDisabledReadbackAtUtc: disabledRealtimeReadback?.responseAtUtc ?? null, independentPlatformReadbackCompleted: platformReadbackCompleted, shutdownRequestedAtUtc: journal.find(entry => entry.method === 'POST' && entry.path === 'config/realtime/shutdown')?.requestedAtUtc ?? null, shutdownResponseAtUtc: journal.find(entry => entry.method === 'POST' && entry.path === 'config/realtime/shutdown')?.responseAtUtc ?? null } });
   const adapters = freeze({ capturePriorState, sealPriorState: sealCapturedPriorState, dataApiPrerequisite: hostOnly(dataApiPrerequisite), managementRequest, readNetworkRestrictions, probeExcludedOperatorPooler: hostOnly(probeExcludedOperatorPooler), probeOperatorPooler: hostOnly(probeOperatorPooler) });
   return freeze({ adapters, getControlJournal });
 }

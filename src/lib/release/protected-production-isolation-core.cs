@@ -294,7 +294,7 @@ namespace HrMasterdata.Release
         }
         static bool SafeEvidence(object value, int depth)
         {
-            if (depth > 12 || value == null) return value == null;
+            if (depth > 12 || value == null) return false;
             var map = value as IDictionary<string, object>;
             if (map != null)
             {
@@ -307,11 +307,11 @@ namespace HrMasterdata.Release
                     if (EvidenceBooleanKeys.Contains(key)) { if (!(entry.Value is bool)) return false; continue; }
                     if (EvidenceCountKeys.Contains(key))
                     {
-                        int number; try { number = Convert.ToInt32(entry.Value); } catch { return false; }
+                        if (!(entry.Value is int)) return false; int number = (int)entry.Value;
                         if (number < 0 || number > 1000000000 || (key == "httpStatus" && (number < 100 || number > 599)) || ((key == "configDisableHttpStatus" || key == "shutdownHttpStatus") && number != 204)) return false;
                         continue;
                     }
-                    if (key == "schemaVersion") { int number; try { number = Convert.ToInt32(entry.Value); } catch { return false; } if (number != 1) return false; continue; }
+                    if (key == "schemaVersion") { if (!(entry.Value is int)) return false; int number = (int)entry.Value; if (number != 1) return false; continue; }
                     if (!SafeEvidence(entry.Value, depth + 1)) return false;
                 }
                 return true;
@@ -320,6 +320,93 @@ namespace HrMasterdata.Release
             if (sequence != null && !(value is string)) { int count = 0; foreach (object item in sequence) { if (++count > 128 || !SafeEvidence(item, depth + 1)) return false; } return true; }
             return false;
         }
+
+        static Dictionary<string, object> EvidenceShape(JavaScriptSerializer json, object value, string fields)
+        {
+            var map = ObjectMap(json, value); Require(Exact(map, fields.Split(','))); return map;
+        }
+        static Dictionary<string, object> BoundEvidence(JavaScriptSerializer json, object value, string kind, string fields)
+        {
+            var map = EvidenceShape(json, value, "schemaVersion,kind,sourceSha,targetBindingSha256,isolationPlanSha256,capturedAtUtc" + (fields.Length == 0 ? "" : "," + fields));
+            Require((int)map["schemaVersion"] == 1 && StringValue(map, "kind") == kind &&
+                StringValue(map, "sourceSha") == Installation.SourceCommit && StringValue(map, "targetBindingSha256") == Installation.TargetBindingSha256 &&
+                StringValue(map, "isolationPlanSha256") == Installation.IsolationPlanSha256); return map;
+        }
+        static void EvidenceFlag(IDictionary<string, object> map, string key, bool expected)
+        { Require(map[key] is bool && (bool)map[key] == expected); }
+        static void EvidenceNumber(IDictionary<string, object> map, string key, int expected)
+        { Require(map[key] is int && (int)map[key] == expected); }
+        static object[] EvidenceArray(object value, int count)
+        {
+            var rows = value as object[]; if (rows == null) { var list = value as System.Collections.ArrayList; if (list != null) rows = list.ToArray(); }
+            Require(rows != null && rows.Length == count); return rows;
+        }
+        static void ValidateNestedEvidence(JavaScriptSerializer json, IDictionary<string, object> controls, IDictionary<string, object> journal, IDictionary<string, object> observations)
+        {
+            var seal = BoundEvidence(json, controls["priorState"], "production-isolation-prior-state-sealed", "encrypted,immutable,ciphertextSha256");
+            EvidenceFlag(seal, "encrypted", true); EvidenceFlag(seal, "immutable", true);
+            var api = EvidenceShape(json, controls["dataApi"], "capturedAtUtc,prerequisiteAccepted,dbSchemaDisabled,otherPostgrestSettingsPreserved");
+            foreach (string key in new[] { "prerequisiteAccepted", "dbSchemaDisabled", "otherPostgrestSettingsPreserved" }) EvidenceFlag(api, key, true);
+            var realtime = EvidenceShape(json, controls["realtime"], "capturedAtUtc,suspended,shutdownAcknowledged");
+            EvidenceFlag(realtime, "suspended", true); EvidenceFlag(realtime, "shutdownAcknowledged", true);
+            var network = EvidenceShape(json, controls["network"], "capturedAtUtc,exclusionApplied,exclusionReadbackAccepted,exclusionDenialProved,operatorOnlyApplied,operatorReadbackAccepted,operatorReadOnlyAdmissionProved");
+            foreach (string key in new[] { "exclusionApplied", "exclusionReadbackAccepted", "exclusionDenialProved", "operatorOnlyApplied", "operatorReadbackAccepted", "operatorReadOnlyAdmissionProved" }) EvidenceFlag(network, key, true);
+
+            var requests = EvidenceArray(journal["requests"], 13);
+            string[] methods = { "GET", "GET", "GET", "GET", "PATCH", "GET", "PATCH", "GET", "POST", "POST", "GET", "POST", "GET" };
+            string[] paths = { "config/auth", "config/realtime", "postgrest", "network-restrictions", "postgrest", "postgrest", "config/realtime", "config/realtime", "config/realtime/shutdown", "network-restrictions/apply", "network-restrictions", "network-restrictions/apply", "network-restrictions" };
+            var requestMaps = new List<Dictionary<string, object>>();
+            for (int index = 0; index < requests.Length; index++) {
+                var item = EvidenceShape(json, requests[index], "method,path,requestedAtUtc,responseAtUtc");
+                Require(StringValue(item, "method") == methods[index] && StringValue(item, "path") == paths[index]); requestMaps.Add(item);
+            }
+            var timing = EvidenceShape(json, journal["realtime"], "existingSessionEstablished,configDisableRequestedAtUtc,configDisableResponseAtUtc,configDisabledReadbackAtUtc,independentPlatformReadbackCompleted,shutdownRequestedAtUtc,shutdownResponseAtUtc");
+            EvidenceFlag(timing, "existingSessionEstablished", true); EvidenceFlag(timing, "independentPlatformReadbackCompleted", true);
+            Require(StringValue(timing, "configDisableRequestedAtUtc") == StringValue(requestMaps[6], "requestedAtUtc") &&
+                StringValue(timing, "configDisableResponseAtUtc") == StringValue(requestMaps[6], "responseAtUtc") &&
+                StringValue(timing, "configDisabledReadbackAtUtc") == StringValue(requestMaps[7], "responseAtUtc") &&
+                StringValue(timing, "shutdownRequestedAtUtc") == StringValue(requestMaps[8], "requestedAtUtc") &&
+                StringValue(timing, "shutdownResponseAtUtc") == StringValue(requestMaps[8], "responseAtUtc"));
+
+            var prerequisite = BoundEvidence(json, observations["dataApiPrerequisite"], "production-data-api-write-probe-prerequisite", "schema,relation,credentialRole,credentialPreflightPassed,authenticatedReadAdmissionPassed,relationExists,statementTriggerInventoryComplete,enabledStatementTriggerCount");
+            foreach (string key in new[] { "credentialPreflightPassed", "authenticatedReadAdmissionPassed", "relationExists", "statementTriggerInventoryComplete" }) EvidenceFlag(prerequisite, key, true);
+            EvidenceNumber(prerequisite, "enabledStatementTriggerCount", 0);
+            var disable = BoundEvidence(json, observations["dataApiControl"], "production-data-api-disable-management-observation", "managementApiControlObserved,dbSchema,otherPostgrestSettingsPreserved,dataApiDisabled");
+            foreach (string key in new[] { "managementApiControlObserved", "otherPostgrestSettingsPreserved", "dataApiDisabled" }) EvidenceFlag(disable, key, true);
+            var denial = BoundEvidence(json, observations["dataApiDenial"], "production-data-api-denial-probe", "independentFromControlObservation,authenticatedWritePathAttempted,denialCause,requestDenied,writeCommitted,requestMethod,relation,contentProfile,requestContentType,requestBody,httpStatus,providerErrorCode");
+            foreach (string key in new[] { "independentFromControlObservation", "authenticatedWritePathAttempted", "requestDenied" }) EvidenceFlag(denial, key, true);
+            EvidenceFlag(denial, "writeCommitted", false); EvidenceNumber(denial, "httpStatus", 406);
+            Require(StringValue(denial, "denialCause") == "data-api-disabled" && StringValue(denial, "providerErrorCode") == "PGRST106");
+            var platform = BoundEvidence(json, observations["platformReadback"], "production-platform-isolation-observation", "authHookEnabled,unknownAuthHookCount,realtimeSuspended");
+            EvidenceFlag(platform, "realtimeSuspended", true); EvidenceNumber(platform, "unknownAuthHookCount", 0);
+            var hooks = EvidenceShape(json, platform["authHookEnabled"], "hook_custom_access_token_enabled,hook_mfa_verification_attempt_enabled,hook_password_verification_attempt_enabled,hook_send_sms_enabled,hook_send_email_enabled,hook_before_user_created_enabled,hook_after_user_created_enabled");
+            foreach (string key in hooks.Keys) EvidenceFlag(hooks, key, false);
+            var prior = BoundEvidence(json, observations["realtimePriorState"], "production-realtime-prior-state-observation", "serviceEnabled,configSha256"); EvidenceFlag(prior, "serviceEnabled", true);
+            var shutdown = BoundEvidence(json, observations["realtimeShutdownQuiescence"], "production-realtime-shutdown-quiescence-observation", "independentFromControlObservation,controlMethod,priorRealtimeServiceEnabled,configDisableRequestedAtUtc,configDisableResponseAtUtc,configDisableHttpStatus,configDisabledReadbackAtUtc,configDisabledReadbackServiceEnabled,configDisabledReadbackSha256,shutdownRequestedAtUtc,shutdownResponseAtUtc,shutdownHttpStatus,existingConnectionEstablishedBeforeIsolation,existingSubscriptionAcknowledgedBeforeIsolation,existingConnectionDisconnectedByService,existingConnectionClosedByCaller,existingConnectionEstablishedAtUtc,existingSubscriptionAcknowledgedAtUtc,existingConnectionDisconnectedAtUtc,reconnectAttemptedAtUtc,reconnectDeniedAtUtc,connectionAttempted,connectionDenied,writeObserved,httpStatus,providerErrorCode,denialCause");
+            foreach (string key in new[] { "independentFromControlObservation", "priorRealtimeServiceEnabled", "existingConnectionEstablishedBeforeIsolation", "existingSubscriptionAcknowledgedBeforeIsolation", "existingConnectionDisconnectedByService", "connectionAttempted", "connectionDenied" }) EvidenceFlag(shutdown, key, true);
+            foreach (string key in new[] { "configDisabledReadbackServiceEnabled", "existingConnectionClosedByCaller", "writeObserved" }) EvidenceFlag(shutdown, key, false);
+            EvidenceNumber(shutdown, "configDisableHttpStatus", 204); EvidenceNumber(shutdown, "shutdownHttpStatus", 204); EvidenceNumber(shutdown, "httpStatus", 403);
+            Require(StringValue(shutdown, "denialCause") == "realtime-disabled-for-tenant" && StringValue(shutdown, "providerErrorCode") == "RealtimeDisabledForTenant");
+            foreach (string key in new[] { "configDisableRequestedAtUtc", "configDisableResponseAtUtc", "configDisabledReadbackAtUtc", "shutdownRequestedAtUtc", "shutdownResponseAtUtc" }) Require(StringValue(shutdown, key) == StringValue(timing, key));
+
+            var poolers = EvidenceArray(observations["poolerProbes"], 3);
+            for (int index = 0; index < poolers.Length; index++) {
+                var probe = BoundEvidence(json, poolers[index], "production-session-pooler-readonly-probe", "outcome,freshReadOnlyTransactionConfirmed");
+                Require(StringValue(probe, "outcome") == (index == 1 ? "denied_network_restriction" : "succeeded")); EvidenceFlag(probe, "freshReadOnlyTransactionConfirmed", index != 1);
+            }
+            var readbacks = EvidenceArray(observations["networkReadbacks"], 2); string lastHash = null;
+            foreach (object raw in readbacks) {
+                var readback = EvidenceShape(json, raw, "capturedAtUtc,appliedConfigurationSha256,restrictionStatus,ipv4AllowlistCount,ipv6AllowlistCount");
+                EvidenceNumber(readback, "ipv4AllowlistCount", 1); EvidenceNumber(readback, "ipv6AllowlistCount", 0);
+                string currentHash = StringValue(readback, "appliedConfigurationSha256"); Require(lastHash == null || currentHash != lastHash); lastHash = currentHash;
+            }
+            var drain = EvidenceShape(json, observations["databaseDrainAggregate"], "collectionStartedAtUtc,capturedAtUtc,summary");
+            var summary = EvidenceShape(json, drain["summary"], "allApplicableSessionsObserved,applicableApplicationSessionCount,inflightWriteCount,preparedApplicationWriteCount,existingApplicationSessionCount,replicationSlotInventoryComplete,activeReplicationSlotCount,subscriptionInventoryComplete,enabledSubscriptionCount");
+            foreach (string key in new[] { "allApplicableSessionsObserved", "replicationSlotInventoryComplete", "subscriptionInventoryComplete" }) EvidenceFlag(summary, key, true);
+            // Positive drain counters remain faithful controls-only aggregates.
+            // The independent strict five-plane gate decides whether writers are absent.
+        }
+
 
         // Test-only parser hook. It does not load records, create a process, or
         // disclose a receipt; it proves that unknown keys and free-text values fail closed.
@@ -344,6 +431,7 @@ namespace HrMasterdata.Release
             var journal = ObjectMap(json, result["journal"]); Require(Exact(journal, "schemaVersion", "kind", "requests", "realtime")); Require(StringValue(journal, "kind") == "production-isolation-live-adapter-control-journal");
             var observations = ObjectMap(json, result["observations"]); Require(Exact(observations, "dataApiPrerequisite", "dataApiControl", "dataApiDenial", "platformReadback", "realtimePriorState", "realtimeShutdownQuiescence", "poolerProbes", "networkReadbacks", "databaseDrainAggregate"));
             Require(SafeEvidence(controls, 0) && SafeEvidence(journal, 0) && SafeEvidence(observations, 0));
+            ValidateNestedEvidence(json, controls, journal, observations);
             return json.Serialize(result); // parsed, schema-checked, redacted evidence only; never relay raw child text.
         }
 

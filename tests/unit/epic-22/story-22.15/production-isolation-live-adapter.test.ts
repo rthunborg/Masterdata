@@ -149,6 +149,26 @@ describe('Story 22.15 fixed live Management API adapter', () => {
     expect(releaseLock).toBe(true);
   });
 
+  it('binds the disabled readback to the second Realtime GET after the disable request', async () => {
+    let tick = 0;
+    const hostCapability = capability(mockFetch());
+    hostCapability.clock = () => new Date(Date.UTC(2026, 9, 2, 12, 0, tick++));
+    const { adapters, getControlJournal } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability });
+    const prior = await adapters.capturePriorState({ context, signal: signal() });
+    await adapters.sealPriorState({ context, priorState: prior, signal: signal() });
+    await adapters.managementRequest(request('PATCH', 'config/realtime', { suspend: true }));
+    await adapters.managementRequest(request('GET', 'config/realtime', {}));
+    await adapters.managementRequest(request('POST', 'config/realtime/shutdown', {}));
+    const journal = getControlJournal();
+    const readbacks = journal.requests.filter((entry: { method: string; path: string }) => entry.method === 'GET' && entry.path === 'config/realtime');
+    expect(readbacks).toHaveLength(2);
+    expect(journal.realtime.configDisabledReadbackAtUtc).toBe(readbacks[1].responseAtUtc);
+    expect(journal.realtime.configDisabledReadbackAtUtc).not.toBe(readbacks[0].responseAtUtc);
+    expect(Date.parse(journal.realtime.configDisableRequestedAtUtc)).toBeLessThan(Date.parse(journal.realtime.configDisabledReadbackAtUtc));
+    expect(Date.parse(journal.realtime.configDisabledReadbackAtUtc)).toBeLessThan(Date.parse(journal.realtime.shutdownRequestedAtUtc));
+  });
+
+
   it('caps an oversized response and clears captured raw settings when host sealing fails', async () => {
     const oversized = new Uint8Array(PRODUCTION_ISOLATION_LIVE_ADAPTER_MAX_RESPONSE_BYTES + 1);
     oversized.fill(65);
