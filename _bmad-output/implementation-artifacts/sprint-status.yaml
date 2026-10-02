@@ -177,7 +177,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation ac302df0bb92679d1418b658d6797a8e64628b3b has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical-69 catalog comparison and preservation precede owner adoption and separate 55-row history repair; exact 69-version history is verified after repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation cfe0ea310215d400317ea8bdfe3cd8a7ca3055cc passed complete current-source local verification (4,733 Vitest passes, zero skips/failures; 163 Playwright passes, 47 individually matched historical skips, zero failures/errors), independent cross-layer review and source Reviewbot review. Finish exact final-head review/checks and the authorized reviewed staging merge. After complete current-source verification, exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical-69 catalog comparison and preservation precede owner adoption and separate 55-row history repair; exact 69-version history is verified after repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -468,7 +468,7 @@ current_runtime_floor_remediation_20261002:
   evidence: docs/commercial-readiness/evidence/production-runtime-floor-remediation-2026-10-02.md
 
 current_live_isolation_preparation_20261002:
-  status: local-gates-complete-private-admission-pending
+  status: locally-verified-current-source-pr-final-review-and-staging-merge-pending
   staging_base: 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128
   reviewed_dependency_head: 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368
   dependency_review_and_staging_merge: complete
@@ -480,13 +480,17 @@ current_live_isolation_preparation_20261002:
   hosted_supabase_access: false
   vercel_readonly_pause_verified: true
   vercel_readonly_evidence: docs/commercial-readiness/evidence/production-pause-readonly-2026-10-02.json
-  tested_implementation: ac302df0bb92679d1418b658d6797a8e64628b3b
+  tested_implementation: cfe0ea310215d400317ea8bdfe3cd8a7ca3055cc
   full_suite_gate: passed-current-local-source
-  full_vitest: { passed: 4704, skipped: 0, failed: 0, errors: 0, files: 386, report_seconds: 1514.62, wrapper_ms: 1520409, max_workers: 1 }
-  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1045.031189, wrapper_ms: 1046900, individually_bound_historical_skips: true }
-  package_materialized_offline: { files: 109, runtime_files: 488, runtime_packages: 10, admitted: false }
+  full_vitest: { passed: 4733, skipped: 0, failed: 0, errors: 0, files: 386, max_workers: 1, report_seconds: 1591.53, wrapper_ms: 1615289, raw_log_sha256: 52a195c07297f04f51bc08c6901e116cefa6bc84223d4c6f615b17b0e89d73d2 }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1054.150993, wrapper_ms: 1065264, independently_bound: true }
+  package_materialized_offline: { source: cfe0ea310215d400317ea8bdfe3cd8a7ca3055cc, files: 109, runtime_files: 488, runtime_packages: 10, package_sha256: 4b57a8af3902799dd6b8e1c4728dc67be5b6451fa3d93f34422c97b76fe50e9a, admitted: false }
+  prior_full_verification: { source: ac302df0bb92679d1418b658d6797a8e64628b3b, evidence: docs/commercial-readiness/evidence/production-live-isolation-preparation-2026-10-02.v2.json, scope: successful-historical-source }
+  native_polling_focused: { passed: 87, skipped: 0, failed: 0, files: 4, report_seconds: 2.68, actual_windows_native_compilation: true }
+  implementation_review: { source: cfe0ea310215d400317ea8bdfe3cd8a7ca3055cc, reviewbot: clean, comment: 5957052832, independent_cross_layer: clean }
+  historical_network_propagation_focused: { source: f3c79f6b462c1a34042f1ef569f56038c588a72e, passed: 78, skipped: 0, failed: 0, new_regressions: 28, report_ms: 783, full_suite: interrupted-not-passing }
   executable_package_admission: not-granted
   production: paused-no-go
   story_22_15: in-progress
   epic_23: on-hold
-  evidence: docs/commercial-readiness/evidence/production-live-isolation-preparation-2026-10-02.md
+  evidence: docs/commercial-readiness/evidence/production-live-isolation-preparation-2026-10-02.v3.json
