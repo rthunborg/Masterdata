@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: '2026-09-28'
+last_updated: '2026-10-02'
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -177,7 +177,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'PR #125 runtime-floor candidate cc65498745792c3727a8ecf6bb5b7da847b75841 corrects Node engines to ^20.19.0 || ^22.12.0 || >=24.0.0. Audit 0/0/0/0/0 across 280; focused 14/14 in 37.83s; Vitest 4549/0/0 across 374 files in 841.12s (wrapper 847031ms); independently bound Playwright 163/47/0/0. gates-v3 is interrupted/incomplete, never passing. October 1 3f evidence remains historical. Raw-Git manifest 0a624452642b1f4e54a3cffc14fb4e1fde0ddeeed89a3a88072278bf9e300d42 is not executable-package admission. Production paused/no-go; all isolation, cleanup, forward, catalog, repair, main/deployment/reopening gates remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree and green exact-head checks; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Finish clean-source full verification and review of the protected live-isolation tooling, then obtain its separate exact-package/private-admission approval before running controls. Preserve the production pause. Fresh five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -466,3 +466,19 @@ current_runtime_floor_remediation_20261002:
   story_22_15: in-progress
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/production-runtime-floor-remediation-2026-10-02.md
+
+current_live_isolation_preparation_20261002:
+  status: source-prepared-full-verification-and-review-pending
+  staging_base: 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128
+  reviewed_dependency_head: 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368
+  dependency_review_and_staging_merge: complete
+  protected_operation: temporary-production-isolation
+  actual_installer_invoked: false
+  private_inputs_loaded: false
+  hosted_access: false
+  full_suite_gate: pending-for-new-source
+  executable_package_admission: not-granted
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/production-live-isolation-preparation-2026-10-02.md

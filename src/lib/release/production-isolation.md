@@ -1,0 +1,41 @@
+# Fixed protected production isolation capability
+
+This component prepares the separately approved temporary production-isolation operation. It does not authorize installation, hosted settings changes, database cleanup, migration execution, history repair, restoration, deployment or reopening. Production remains paused. Staging remains an application test environment.
+
+The portable application pause and its production build/deployment safeguards remain unchanged. This operation only supplies the additional database control observations required by the existing five-plane isolation gate. Its successful output is explicitly `controlEvidenceOnly`; it is not a complete isolation receipt or release admission.
+
+## Fixed operation and ordering
+
+1. Hold the complete installed/source/runtime/private/tool file leases. Validate the compiled fixed admission and runtime records before loading encrypted inputs or obtaining API credentials. Verify the signed nonce-bound packet and raw package bytes before source imports.
+2. Prove a fresh successful read-only session-pooler transaction, three-way target binding, reviewed executable/certificate integrity and an exact zero-enabled-statement-trigger inventory. Prove the fixed service-role zero-row employee read. Capture raw prior Auth, Realtime, PostgREST and network configuration privately; establish and acknowledge a real Realtime subscription; seal the prior configuration with CurrentUser DPAPI, immutable creation and restricted directory/file ACLs before the first control write.
+3. Disable exposed PostgREST schemas while preserving all other captured configuration; verify exact readback. Suspend Realtime, independently verify the existing Auth hooks are disabled and Realtime suspension is observed, then request service shutdown.
+4. Apply only the separately admitted exclusion address, read actual `applied` network status, and require the provider-specific network-restriction denial from a fresh session-pooler attempt. Always attempt the admitted operator-only restriction in `finally`, including an uncertain exclusion request; verify actual applied status and a fresh successful read-only pooler transaction. An unclassified DNS/TLS/password/timeout error never proves isolation.
+5. Require the fixed empty POST to be denied with the expected disabled-Data-API response; prove the previously established Realtime connection closed after the service control and a fresh actual WebSocket upgrade is rejected with the expected disabled-tenant response. Collect aggregate-only all-client database drain counters in a bounded read-only transaction. Caller cleanup happens after the service-disconnect evidence.
+
+No Auth/Data API/Realtime restoration or application reopening is automatic. A failure is not proof of rollback, isolation or a safe retry. Retain encrypted prior state and redacted failure evidence; the rollback owner decides any separate settings restoration after inspection.
+
+## Closed runtime and transport
+
+The installer accepts only independently reviewed package/link/admission/toolchain digests and metadata paths. It compiles the actual selector-free host and generated fixed `Installation` contract; it never decrypts inputs, obtains credentials, starts the worker or contacts hosted services. It refuses an existing installation and retains failed installations without deletion or overwrite.
+
+The public installed PowerShell wrapper has no selectors. The host has no operation/target/SQL/module/credential/endpoint arguments. Private inputs and credentials travel through bounded signed stdin packets, not arguments or logs. The fixed host job contains its worker and seal subprocess; all stderr is suppressed behind a generic failure. Raw prior settings are consumed only by the fixed sealing bridge. Public results are parsed and constrained to known aggregate fields, canonical dates, hashes and enums.
+
+The reviewed Node executable is hash-pinned at version 24.19.0. Its fixed `--import` hook admits only raw-hash-bound installed/source/runtime modules and checks both ESM and CommonJS resolution. It rejects new shadow packages and escaped/modified imports. Optional ws native modules are suppressed by fixed host environment flags and `--no-addons`; global package search is disabled. Every file in the ten exact runtime package directories is leased. An offline TypeScript 5.9.3 AST graph checks executable entry points and dependency resolution; shipped tests/comments remain hash-bound without being treated as executable entry points.
+
+Windows-only native compilation and DPAPI tests are explicitly classified as Windows-specific. A non-Windows skip is not a native gate pass. The required Windows gate must pass before review/installation admission.
+
+## Future private metadata contract
+
+All metadata is future preparation, not an assertion that existing private records already implement this schema. Do not ask the owner to paste existing passwords, project references or certificates. The fixed helper can obtain legacy project-bound API keys through the reviewed CLI login and a single fixed read-only Management endpoint, after target/record admission; it refuses redirects, unknown key types, duplicate roles and JWT role/reference mismatches.
+
+The isolation admission has exactly `schemaVersion: 1`, kind `production-temporary-isolation-admission`, and the eleven signed worker admission fields: source commit/tree/manifest, package, worker, toolchain, target, TLS, egress, isolation plan and Management capability hashes. Commit/tree identities are 40 lowercase hex characters; digests are 64 lowercase hex characters. The independently reviewed production link establishes the target-domain-separated digest; encrypted inputs cannot establish their own target authority.
+
+The toolchain record has exactly `schemaVersion`, `kind: protected-production-isolation-toolchain`, `cleanSourceRoot`, `node`, `git`, `psql`, `runtimeLeaseSha256`, `runtimeRecordPath`, `runtimeRecordSha256`, `privilegedInventoryPath`, `privilegedInventorySha256`, `tlsAdmissionPath`, `egressAdmissionPath` and `managementApiCapabilityPath`. Node has version/hash; Git and psql have fixed executable/version/hash. The frozen workspace overrides and vendor patch are part of the reviewed source closure. The clean source contains an independently approved, ignored CLI project link.
+
+The runtime record has exactly schema version 1, kind `protected-production-isolation-runtime-record`, `controlAdmission` and `probeContext`, whose exact schemas are shared by the native/worker/probe validators. The private inventory has exactly schema version 1, kind `protected-production-isolation-private-lease-inventory`, and path/hash entries under the fixed private root. It includes encrypted inputs, their integrity metadata, certificate and certificate metadata, runtime/TLS/egress/Management records. Admission, toolchain and inventory records are excluded from that inventory to avoid digest cycles; their independently approved digests are added directly to the held lease.
+
+The installer and loader bind these record bytes; they do not upgrade an unsigned or semantically incomplete TLS/egress/Management record into proof. Review actual record schemas, freshness and substantive evidence at the existing owner admission gate before approving the executable package/launcher. The generated RSA key, deployment identifiers, private references, addresses, record contents and paths are never committed.
+
+## Remaining production sequence
+
+Complete clean-source full unit/Playwright/quality/build/pause gates, package materialization and final source review. Merge only a reviewed candidate into staging under the standing authorization. Re-fetch refs and prepare the exact reviewed package and fresh private admission. Obtain the separate exact installation/control approval before hosted isolation changes. Then prove all five planes, pause/job state, post-cleanup writer correlation and final independent drain through the existing strict gate. Only then proceed through the separately gated 48-filter cleanup, fourteen reviewed forward executes, strict 16/16 catalog/canonical 69/preservation proof, owner adoption and separately authorized 55-row history repair. Main, deployment, settings restoration and reopening remain separate explicit decisions.
