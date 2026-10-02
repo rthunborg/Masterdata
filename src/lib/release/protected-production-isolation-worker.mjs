@@ -128,13 +128,12 @@ export function verifyProductionIsolationPacket(text, nonce, publicKey, packageM
 }
 
 export function classifyFixedPoolerExclusionProbe(result) {
-  const failureDiagnostics = typeof result?.stderr === 'string'
-    ? result.stderr.replace(/^(.*\bno pg_hba\.conf entry[^\r\n]*), SSL encryption[ \t]*\r?$/gimu, '$1') : '';
   if (!exact(result, ['status', 'signal', 'errorCode', 'stderr']) ||
     !Number.isSafeInteger(result.status) || result.status <= 0 || result.status > 255 || result.signal !== null ||
     result.errorCode !== null || typeof result.stderr !== 'string' || Buffer.byteLength(result.stderr) > 8192 ||
-    !/no pg_hba\.conf entry(?:\s|$)/iu.test(result.stderr) ||
-    /(?:password|authentication|certificate|ssl|tls|timed?\s*out|connection refused|could not connect|dns|resolve|host not found)/iu.test(failureDiagnostics)) fail();
+    !/no pg_hba\.conf entry(?:\s|$)/iu.test(result.stderr)) fail();
+  const failureDiagnostics = result.stderr.replace(/^(.*\bno pg_hba\.conf entry[^\r\n]*), SSL encryption[ \t]*\r?$/gimu, '$1');
+  if (/(?:password|authentication|certificate|ssl|tls|timed?\s*out|connection refused|could not connect|dns|resolve|host not found)/iu.test(failureDiagnostics)) fail();
   return Object.freeze({ denied: true, denialCause: 'network-restriction' });
 }
 

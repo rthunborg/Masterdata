@@ -108,6 +108,13 @@ describe('Story 22.15 protected production isolation packet', () => {
       const stderr = 'FATAL: no pg_hba.conf entry for host "synthetic-host", user "synthetic-user", database "postgres", SSL encryption' + diagnostic;
       expect(() => classifyFixedPoolerExclusionProbe({ status: 2, signal: null, errorCode: null, stderr })).toThrow();
     });
+  it('rejects an accessor-backed stderr before reading or normalizing it', () => {
+    let reads = 0;
+    const result = { status: 2, signal: null, errorCode: null,
+      get stderr() { reads++; throw new Error('must not execute accessor'); } };
+    expect(() => classifyFixedPoolerExclusionProbe(result)).toThrow('Protected production isolation refused');
+    expect(reads).toBe(0);
+  });
   it('accepts only explicit provider network denial, never authentication/TLS/timeout/spawn errors', () => {
     const baseline = { status: 2, signal: null, errorCode: null, stderr: 'FATAL: no pg_hba.conf entry for host' };
     expect(classifyFixedPoolerExclusionProbe(baseline)).toEqual({ denied: true, denialCause: 'network-restriction' });
