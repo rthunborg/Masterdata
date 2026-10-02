@@ -177,7 +177,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation cfe0ea310215d400317ea8bdfe3cd8a7ca3055cc passed complete current-source local verification (4,733 Vitest passes, zero skips/failures; 163 Playwright passes, 47 individually matched historical skips, zero failures/errors), independent cross-layer review and source Reviewbot review. Finish exact final-head review/checks and the authorized reviewed staging merge. After complete current-source verification, exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical-69 catalog comparison and preservation precede owner adoption and separate 55-row history repair; exact 69-version history is verified after repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #126 merged into staging a04dee73603298654cb169e071ccd4d90b83524d with its reviewed tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Narrow launcher-fix PR #127 implementation c86e112b1c1211a733afe42e2006c275907bc072 passed current-source local verification (4734 Vitest passes across 386 files with zero skips/failures, and 163 Playwright passes with 47 individually matched historical skips and zero failures/errors). Final-head review/checks and the authorized reviewed staging merge remain next. After that merge, prepare fresh staging-bound private packages and source approvals; separate owner installation/control approval remains required. Owner confirmation for the blocked production aggregate queries remains pending; collections remain unexecuted. The platform three-GET collection is held. Preserve the production pause. Five-plane isolation and target admission precede separately gated 48-filter cleanup, 14-forward execution, strict catalog 16/16/canonical-69 preservation, owner adoption and separate 55-row history repair; verify exact 69-version history after repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -467,7 +467,7 @@ current_runtime_floor_remediation_20261002:
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/production-runtime-floor-remediation-2026-10-02.md
 
-current_live_isolation_preparation_20261002:
+historical_live_isolation_preparation_20261002:
   status: locally-verified-current-source-pr-final-review-and-staging-merge-pending
   staging_base: 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128
   reviewed_dependency_head: 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368
@@ -494,3 +494,29 @@ current_live_isolation_preparation_20261002:
   story_22_15: in-progress
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/production-live-isolation-preparation-2026-10-02.v3.json
+
+current_launcher_fix_20261002:
+  status: locally-verified-current-source-pr-final-review-and-staging-merge-pending
+  tested_implementation: c86e112b1c1211a733afe42e2006c275907bc072
+  full_vitest: { passed: 4734, skipped: 0, failed: 0, errors: 0, files: 386, max_workers: 1, report_seconds: 1554.88, wrapper_ms: 1560267, raw_log_sha256: '558094eef44d4b085059d43ee50137aa60cc243226ed35aa48f5fbf0d5c1cafa', receipt_sha256: '65e30bde3699dc8e81007be54d0adfb866ae0e4b5e95b9c5303410d075d38835' }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1077.921265, wrapper_ms: 1088557, raw_log_sha256: 'd8093f6f6ac886495ea50d0a583775fda2ea2b3c1a0eb650965137d3afeaa1c5', receipt_sha256: '1b379e003944486900ffc9fd6ac1f74a714735e1c9ecbee846aab5332436427d', binding_sha256: 'c146dbe43edf1c5b86cebbedf42a0ec7b4f4c1467a3fcc8457cdec177166e14c', individually_matched_historical_skips: true }
+  prior_attempts:
+    initial_full_vitest: { passed: 4733, failed: 1, skipped: 0, files: 386, report_seconds: 1580.9, wrapper_ms: 1587565, raw_log_sha256: '755f9d4ba7089bea09f37963b0175249d2a24581252b53c62d08058404d87ee1', receipt_sha256: 'e610d748f661c7530e3d4905fa1124fded6d5d967302264aa0425f7c5be1cf06', classification: 'non-admitting-single-protected-handoff-fixture-failure-cause-unproven' }
+    focused_repeat: { passed: 1, failed: 0, skipped: 0, files: 1, report_seconds: 36.71, test_seconds: 35.955, wrapper_ms: 49730, raw_log_sha256: '0f58521a0e04d436dfa1fb29c4653ab0301ae8e53861613f110bcfbbb3331898', receipt_sha256: '3ffe48e99f2d1d853e4e1666ae422a0c07820c85ef084b8393c0ecc5708ceca9', classification: 'focused-passing-repeat-not-a-full-gate-substitute' }
+    controlled_diagnostic: { stale_admission_minutes: 16, fake_cli_calls_for_stale_packet: 0, fresh_admission_age_seconds: 60, post_ready_delay_seconds: 11, fake_cli_calls_after_fresh_delay: 2, receipt_sha256: 'cf2294a25aa48becae202851f3c69d998965abd89000dd73930b5a6576d193a5', classification: 'controlled-stale-admission-diagnostic-not-causal-proof' }
+    initial_harness_diagnostics: { receipt_sha256: '867c75fc7e8ce3139cb5b5b0e0e31bfde8c79859d57c24ba0d78c7b5b3f3481d', classification: 'initial-harness-parse-and-capture-local-diagnostics-nonproof' }
+  supporting_gates:
+    typescript: { exit_code: 0, log_sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' }
+    lint: { exit_code: 0, errors: 0, warnings: 304, log_sha256: '30d6d3e6dfe5036678b3ca579c2bba11aa48b3783d2fa1be5dc2a2581ab9e986' }
+    build: { exit_code: 0, hosted_action: false, source_unchanged: true, receipt_sha256: 'b17c37ec9446aa7cc05fe463534f8a93f98f18f610e7f0e614a961db0acc799c' }
+    package: { source_files: 109, runtime_files: 488, runtime_packages: 10, admission_granted: false, installer_executed: false, receipt_sha256: '1fbd53b2ce409220792bc1568131a7cb90fed3190a3d8d9a92f81bc8b303441d' }
+    pause: { probes: 9, artifact_cron_count: 0, functions_absent: true, hosted_access: false, receipt_sha256: '6d6da7e5c21c3f419465fd37b10b007c9111b6245df5ac6822f84ea8e77f4767' }
+    matrix: { catalog_checks: 16, synthetic_only: true, hosted_access: false, receipt_sha256: '9b4ba9b9ff1619f4e1e4e46f8c90a214e7b1699405252bbf7bc1f85206a9df04' }
+    launcher_fixture: { fixture_invoked: true, actual_protected_launcher_invoked: false, actual_installer_invoked: false, receipt_sha256: '33833e9a965d3130cf860076aa80b993a94696ff3c39d43e6119a5c6d1eaead3' }
+    supplemental: { audit_sha256: '3fde634990024f0848ba640645b2e931b50951253abf646b87e8d3df00b7786a', protected_source_sha256: '6e819d7ef75eb045ba6d757a99888618eeb3d6a57cc714897c0dcb156b2daee3', sdk_import_sha256: '3d4a94d15e3f63d45000c6125d70b03841b27d8e4bfbe93a03e38ed9dee7787f' }
+  owner_readonly_authorization: 'pending'
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  canonical_next_action: synchronized-five-current-copies
+  evidence: docs/commercial-readiness/evidence/production-live-isolation-launcher-fix-2026-10-02.json
