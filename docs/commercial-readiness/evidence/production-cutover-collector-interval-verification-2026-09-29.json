@@ -1,0 +1,723 @@
+{
+  "schemaVersion": 1,
+  "kind": "production-cutover-collector-interval-verification",
+  "observedOn": "2026-09-29",
+  "testedImplementation": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+  "sourceTree": "ffef5adf53c6addea0a0658cbce4ca8c82ecb71a",
+  "priorTestedImplementation": "5a27d77cd04dae9fef90e8f94adb8432636f0b4c",
+  "hostedActions": false,
+  "storyStatus": "in-progress",
+  "epic23Status": "on-hold",
+  "productionStatus": "paused-no-go",
+  "sourceDelta": {
+    "from": "5a27d77cd04dae9fef90e8f94adb8432636f0b4c",
+    "productionPaths": [
+      "src/lib/release/collect-production-observed-profile.mjs",
+      "src/lib/release/collect-production-staffing-pre-execute.mjs",
+      "src/lib/release/production-isolation-gate.mjs",
+      "src/lib/release/production-observed-profile.mjs",
+      "src/lib/release/production-staffing-pre-execute-contract.mjs"
+    ],
+    "testPaths": [
+      "tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+      "tests/unit/epic-22/story-22.15/collect-production-observed-profile.test.ts",
+      "tests/unit/epic-22/story-22.15/collect-production-staffing-pre-execute.test.ts",
+      "tests/unit/epic-22/story-22.15/production-isolation-gate.test.ts",
+      "tests/unit/epic-22/story-22.15/production-observed-profile.test.ts",
+      "tests/unit/epic-22/story-22.15/production-staffing-pre-execute-contract.test.ts",
+      "tests/unit/epic-22/story-22.15/protected-production-cutover-executor.test.ts",
+      "tests/unit/epic-22/story-22.15/protected-production-cutover-handoff.test.ts",
+      "tests/unit/epic-22/story-22.15/protected-production-cutover-worker.test.ts"
+    ],
+    "documentationPaths": [
+      "_bmad-output/implementation-artifacts/spec-22-15-production-readiness-remediation.md",
+      "_bmad-output/implementation-artifacts/sprint-status.yaml",
+      "docs/commercial-readiness/11_risk_register_and_open_questions.md",
+      "docs/commercial-readiness/14_evidence_index.md",
+      "docs/commercial-readiness/17_blocker_remediation_tracker.md",
+      "docs/commercial-readiness/22_supabase_security_evidence_package.md",
+      "docs/commercial-readiness/26_environment_reconciliation_inventory.md",
+      "docs/commercial-readiness/27_supabase_cutover_runbook.md",
+      "docs/commercial-readiness/28_migrations_only_change_policy.md",
+      "docs/commercial-readiness/29_production_pause_release_safeguards.md",
+      "docs/commercial-readiness/30_production_forward_bootstrap_design.md",
+      "docs/sprint-artifacts/epic-22-sprint-status.yaml",
+      "docs/sprint-artifacts/sprint-status.yaml",
+      "docs/sprint-artifacts/story-22.15-production-readiness-remediation.md"
+    ],
+    "all68MigrationSqlByteIdenticalTo": "88cf3efcf7fdb8cdbfd00d850da6082b0f6fdd65",
+    "strictCatalogVerifierByteIdenticalTo": "88cf3efcf7fdb8cdbfd00d850da6082b0f6fdd65",
+    "frozenSpecificationUnchanged": true
+  },
+  "collectorIntervalCorrection": {
+    "scope": "Observed-profile and staffing pre-execute full-query collector intervals.",
+    "packetDeadlineHostWorkerAt": "5a27d77cd04dae9fef90e8f94adb8432636f0b4c",
+    "packetDeadlineHostWorkerStillCoveredByCurrentCompleteSuites": true
+  },
+  "vitest": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-vitest-cutover",
+    "localOnly": true,
+    "command": "npx vitest run",
+    "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+    "startedAtUtc": "2026-09-29T12:12:15.299Z",
+    "durationMs": 1430831,
+    "childExitCode": 0,
+    "sourceUnchanged": true,
+    "vitestMaxWorkers": 1,
+    "initialAdmissionSha256": "93fb180f9dcf39f48fcdfe540ad36fcc6480221192787f526906976b58cee07f",
+    "initialAdmissionObservedAtUtc": "2026-09-29T12:11:52.9148153Z",
+    "initialGuardResourceIdSha256": "caafadd74da536e53a72f61ec3add7af6243df597c5f03161859c378b2dec7c4",
+    "initialGuardComposeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+    "initialGuardSystemIdentifierSha256": "da7efe6f7e2608da0ebc6d9d47e460479e62f0d7390a0de5398d94ce91490fe8",
+    "requiredMatrix": true,
+    "requiredDatabaseEvidence": true,
+    "requiredLiveAppEvidence": true,
+    "logSha256": "f98be7f71cb810362ea3dc74b0732e7da42415c0e7caa4f279fedfd52a998332",
+    "logBytes": 1211042,
+    "passed": 4502,
+    "skipped": 0,
+    "failed": 0,
+    "filesPassed": 371,
+    "durationSeconds": 1423.19
+  },
+  "playwright": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-playwright-cutover",
+    "localOnly": true,
+    "command": "npx playwright test",
+    "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+    "startedAtUtc": "2026-09-29T13:04:01.368Z",
+    "durationMs": 1016521,
+    "childExitCode": 0,
+    "signal": null,
+    "errorCode": null,
+    "sourceUnchanged": true,
+    "logSha256": "1921413100f4703b9694c2d54ab986c653fd5edf384882d95be9a427f3fbb7a7",
+    "logBytes": 170867,
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "durationSeconds": 1014.621875,
+    "independentReportBinding": {
+      "schemaVersion": 1,
+      "kind": "independent-playwright-report-binding",
+      "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+      "originalReceiptSha256": "d2494a88dfa4a343032a14c5d0c26cb1f77077bf616ed86e43c1a5ebbb998ad0",
+      "rawLogSha256": "1921413100f4703b9694c2d54ab986c653fd5edf384882d95be9a427f3fbb7a7",
+      "junitSha256": "5986c56830cf55c7ca0a8a0ad39204cd95f8a6be7f1a64bdf4ea937ca19f9cb1",
+      "receiptInterval": {
+        "startedAtUtc": "2026-09-29T13:04:01.368Z",
+        "durationMs": 1016521
+      },
+      "reportMtimeUtc": "2026-09-29T13:20:57.742Z",
+      "counts": {
+        "tests": 210,
+        "skipped": 47,
+        "failures": 0,
+        "errors": 0,
+        "time": 1014.621875
+      },
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0,
+      "exactCaseStatusAndIdentityMatch": true,
+      "individualDurationsMatchWherePresent": true,
+      "caseMatchMode": "complete identity/status/duration multiset",
+      "logOrdinalCoverageComplete": true,
+      "junitOrdinalBinding": false,
+      "provenance": "Independent post-run verification; these fields were not produced by the original wrapper. Ordinals belong to the log only; JUnit document order is not claimed to match reporter completion order."
+    },
+    "retrySupport": "final-18"
+  },
+  "browserRetryHistory": {
+    "failedFinal17": {
+      "schemaVersion": 1,
+      "kind": "failed-local-playwright-jwt-expiry",
+      "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+      "sourceUnchanged": true,
+      "command": "npx playwright test",
+      "startedAtUtc": "2026-09-29T12:36:38.131Z",
+      "durationMs": 798075,
+      "exitCode": 1,
+      "passed": 143,
+      "skipped": 44,
+      "failed": 23,
+      "errors": 0,
+      "total": 210,
+      "reportDurationSeconds": 796.0461260000001,
+      "logSha256": "c5aa89fbc34c7541d5513de79af915c28e9616585b979b307585ec6023546e4d",
+      "logBytes": 439421,
+      "junitSha256": "3402c0af40643695e28354e4496def52ce7df0193b262ea606775a9753bae02d",
+      "syntheticTokenExpiryUtc": "2026-09-29T12:45:48.000Z",
+      "commonFailure": "23 employee-creation setup failures with no enabled Stena option",
+      "observedApiCode": "PGRST303",
+      "observedApiCodeCount": 27,
+      "hostedAccess": false,
+      "acceptedAsPassingGate": false
+    },
+    "localJwtRefresh": {
+      "schemaVersion": 1,
+      "kind": "owned-local-e2e-jwt-refresh",
+      "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+      "observedAtUtc": "2026-09-29T13:01:11.531Z",
+      "beforeEnvSha256": "2b0967c37e6dab93adf10c11fd7eccdcc01862589a5d43a28bbfdc609d8b16b1",
+      "afterEnvSha256": "883a322d8c89de404024be7a07573c0a44b08c35749b3b252b4ba8867c70c036",
+      "credentials": [
+        {
+          "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+          "role": "anon",
+          "previousExpiryUtc": "2026-09-29T12:45:48.000Z",
+          "newExpiryUtc": "2026-09-29T15:01:11.000Z",
+          "previousExpired": true,
+          "unchangedRole": true,
+          "readOnlyEmptyProjectionVerified": true
+        },
+        {
+          "name": "SUPABASE_SERVICE_ROLE_KEY",
+          "role": "service_role",
+          "previousExpiryUtc": "2026-09-29T12:45:48.000Z",
+          "newExpiryUtc": "2026-09-29T15:01:11.000Z",
+          "previousExpired": true,
+          "unchangedRole": true,
+          "readOnlyEmptyProjectionVerified": true
+        }
+      ],
+      "fixtureRecipeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+      "systemIdentifierSha256": "da7efe6f7e2608da0ebc6d9d47e460479e62f0d7390a0de5398d94ce91490fe8",
+      "ownedVerified": true,
+      "readOnlySystemIdentityVerified": true,
+      "repositorySourceChanged": false,
+      "hostedSettingsChanged": false,
+      "hostedAccess": false
+    },
+    "currentEnvironmentDigestProof": {
+      "sha256": "883a322d8c89de404024be7a07573c0a44b08c35749b3b252b4ba8867c70c036",
+      "verifiedAgainstRefreshReceipt": true,
+      "provenance": "Independent post-run digest of a bounded regular local .env.test file.",
+      "launchDigestCapturedByOriginalWrapper": false
+    },
+    "onlyLocalCredentialRefresh": true
+  },
+  "build": {
+    "kind": "local-staging-preview-build",
+    "command": "npx next build --webpack",
+    "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+    "startedAtUtc": "2026-09-29T12:36:16.190Z",
+    "sourceUnchanged": true,
+    "exitCode": 0,
+    "errorCode": null,
+    "durationMs": 21762,
+    "logSha256": "efef7b453268145ec4a6fa2260f2fbce87d73364833d87bd738b67115565a772",
+    "hostedAction": false
+  },
+  "quality": {
+    "schemaVersion": 1,
+    "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+    "sourceUnchanged": true,
+    "hostedAction": false,
+    "typescript": {
+      "command": "npx tsc --noEmit",
+      "startedAtUtc": "2026-09-29T12:11:13.228Z",
+      "durationMs": 3022,
+      "exitCode": 0,
+      "logSha256": "2840e63069c808678a9c9fb6b1d51c5faea6bb4296d3105f81e8dcf30d4b467d",
+      "errorCode": null,
+      "signal": null
+    },
+    "lint": {
+      "command": "npx eslint .",
+      "startedAtUtc": "2026-09-29T12:11:16.250Z",
+      "durationMs": 15730,
+      "exitCode": 0,
+      "logSha256": "adec97e4c59d8b8b2ae7247134e29a0475a9bf04ea8d525570fcd9c6517fbf56",
+      "errorCode": null,
+      "signal": null,
+      "errors": 0,
+      "warnings": 300
+    }
+  },
+  "matrix": {
+    "passed": 8,
+    "skipped": 0,
+    "failed": 0,
+    "scenarioCount": 7,
+    "admissionTest": {
+      "passed": true,
+      "initialAdmissionSha256": "93fb180f9dcf39f48fcdfe540ad36fcc6480221192787f526906976b58cee07f",
+      "currentAdmissionSha256": "2cfb171139a88698a65c64d8dfaba5351dcf9241cd40b5d1e97c4493edf04a91",
+      "renewals": [
+        {
+          "afterAdmissionSha256": "7d5da8a704681778d8a0d846c9b2880046f35815619e48c210287c041142e6e0",
+          "beforeAdmissionSha256": "93fb180f9dcf39f48fcdfe540ad36fcc6480221192787f526906976b58cee07f",
+          "composeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+          "dockerNativeExitCode": 0,
+          "guardNativeExitCode": 0,
+          "hostedAccess": false,
+          "kind": "verified-local-guard-admission-renewal",
+          "number": 1,
+          "observedAtUtc": "2026-09-29T12:16:55.2033095Z",
+          "owned": true,
+          "readOnlySystemIdentityQuery": true,
+          "resourceIdSha256": "caafadd74da536e53a72f61ec3add7af6243df597c5f03161859c378b2dec7c4",
+          "schemaVersion": 1,
+          "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+          "systemIdentifierSha256": "da7efe6f7e2608da0ebc6d9d47e460479e62f0d7390a0de5398d94ce91490fe8",
+          "verified": true,
+          "receiptSha256": "391d7f45c9accab7bd86fd94cdb70c4abb7f38a4e61cd353da2fdb73a0ec6d39"
+        },
+        {
+          "afterAdmissionSha256": "9642991d6b8134894fa88cbf2d925e3abf70554dacbf848e65e7e451d4aefb8f",
+          "beforeAdmissionSha256": "7d5da8a704681778d8a0d846c9b2880046f35815619e48c210287c041142e6e0",
+          "composeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+          "dockerNativeExitCode": 0,
+          "guardNativeExitCode": 0,
+          "hostedAccess": false,
+          "kind": "verified-local-guard-admission-renewal",
+          "number": 2,
+          "observedAtUtc": "2026-09-29T12:21:22.2778650Z",
+          "owned": true,
+          "readOnlySystemIdentityQuery": true,
+          "resourceIdSha256": "caafadd74da536e53a72f61ec3add7af6243df597c5f03161859c378b2dec7c4",
+          "schemaVersion": 1,
+          "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+          "systemIdentifierSha256": "da7efe6f7e2608da0ebc6d9d47e460479e62f0d7390a0de5398d94ce91490fe8",
+          "verified": true,
+          "receiptSha256": "79717aaf107ef83b225e2259a7862f157217f4d40e546e48f436348774a34603"
+        },
+        {
+          "afterAdmissionSha256": "1b6714cc40807cfaa786c2b097110e9079311386daeb1677bf0b706be5124a50",
+          "beforeAdmissionSha256": "9642991d6b8134894fa88cbf2d925e3abf70554dacbf848e65e7e451d4aefb8f",
+          "composeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+          "dockerNativeExitCode": 0,
+          "guardNativeExitCode": 0,
+          "hostedAccess": false,
+          "kind": "verified-local-guard-admission-renewal",
+          "number": 3,
+          "observedAtUtc": "2026-09-29T12:27:55.3642115Z",
+          "owned": true,
+          "readOnlySystemIdentityQuery": true,
+          "resourceIdSha256": "caafadd74da536e53a72f61ec3add7af6243df597c5f03161859c378b2dec7c4",
+          "schemaVersion": 1,
+          "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+          "systemIdentifierSha256": "da7efe6f7e2608da0ebc6d9d47e460479e62f0d7390a0de5398d94ce91490fe8",
+          "verified": true,
+          "receiptSha256": "3b0b753259ee1122e097a4758379a0887d702aed083fc39ec7fcf15f8094b568"
+        },
+        {
+          "afterAdmissionSha256": "2cfb171139a88698a65c64d8dfaba5351dcf9241cd40b5d1e97c4493edf04a91",
+          "beforeAdmissionSha256": "1b6714cc40807cfaa786c2b097110e9079311386daeb1677bf0b706be5124a50",
+          "composeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+          "dockerNativeExitCode": 0,
+          "guardNativeExitCode": 0,
+          "hostedAccess": false,
+          "kind": "verified-local-guard-admission-renewal",
+          "number": 4,
+          "observedAtUtc": "2026-09-29T12:33:21.8392580Z",
+          "owned": true,
+          "readOnlySystemIdentityQuery": true,
+          "resourceIdSha256": "caafadd74da536e53a72f61ec3add7af6243df597c5f03161859c378b2dec7c4",
+          "schemaVersion": 1,
+          "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+          "systemIdentifierSha256": "da7efe6f7e2608da0ebc6d9d47e460479e62f0d7390a0de5398d94ce91490fe8",
+          "verified": true,
+          "receiptSha256": "ed3daae248eb1ea40517b4e6c87f84273a84b96f73440c3cf942767cfde0a7f3"
+        }
+      ],
+      "digestChainFromInitialToCurrent": true,
+      "initialFreshAtUnitStart": true,
+      "runtimeScenarioSourceGuardToolsAndRunIntervalBound": true
+    },
+    "durationMs": 311057,
+    "cases": [
+      {
+        "case": "observed_guard_stop",
+        "classification": "proven_rejected_before_current_effect",
+        "receiptSha256": "9a4642a7e0c178a7989435b8dce01e92dab6e10f3e53ceeba0030c10f838f3a1"
+      },
+      {
+        "case": "postcleanup_success",
+        "classification": "proven_complete_local_rehearsal",
+        "receiptSha256": "65aeb8394ef6a403af630d6ef7b877fbcc012920e937af99a04d74243152b2b3"
+      },
+      {
+        "case": "explicit_history_write_failure",
+        "classification": "committed_unrecorded_current",
+        "receiptSha256": "9ea7513a676c7b06cc4134fdcef771f22582db3eb9c9a5aa4ce7294a459fe60c"
+      },
+      {
+        "case": "implicit_history_write_failure",
+        "classification": "rolled_back_unrecorded_current",
+        "receiptSha256": "b6c03ab5d90a58e8ddc48c3f3019fc73943e7e71ab938a7c7f720057b9121edf"
+      },
+      {
+        "case": "trigger_profile_stop_184840",
+        "classification": "proven_rejected_before_current_effect",
+        "receiptSha256": "bf2ab60eae14de14af227fb3e3d1db91118a9dccf3b9822dc399fc933c337f65"
+      },
+      {
+        "case": "trigger_profile_stop_184841",
+        "classification": "proven_rejected_before_current_effect",
+        "receiptSha256": "e840d779ad7f47b79408c332446bfe975946de00d0481f0cb80911c453c60221"
+      },
+      {
+        "case": "explicit_history_write_timeout",
+        "classification": "uncertain_current_file",
+        "receiptSha256": "340b7884e47c7f01ed215dcee303d480d7c5dabbcdc19302763c29f1453879e2"
+      }
+    ],
+    "forwardCount": 13,
+    "repairCount": 55,
+    "finalHistoryCount": 68,
+    "catalogUnchangedAcrossRepair": true,
+    "preservationUnchangedAcrossRepair": true
+  },
+  "ci": {
+    "conclusion": "success",
+    "runId": 36566464846,
+    "jobId": 109399486061,
+    "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e",
+    "nodeVersion": "20.20.2",
+    "provenance": {
+      "sourceQueriedByExactCommit": true,
+      "jobBoundToRun": true,
+      "rawLogRetrievedFromJobId": 109399486061,
+      "rawLogSha256": "ec5148423193a16f425bbf7874c37780564a8efca1f6e24044aeaabfeddf937a",
+      "rawLogUtf8Bytes": 776955,
+      "publicJobUrl": "https://github.com/rthunborg/Masterdata/actions/runs/36566464846/job/109399486061",
+      "provider": "GitHub Actions workflow-job-log connector"
+    },
+    "unit": {
+      "durationSeconds": 179.88,
+      "failed": 0,
+      "filesPassed": 351,
+      "filesSkipped": 20,
+      "passed": 4308,
+      "skipped": 194,
+      "total": 4502,
+      "skipInventory": [
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts",
+          "skipped": 8,
+          "testCount": 8
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/inactive-authorization-and-atomic-delete.test.ts",
+          "skipped": 11,
+          "testCount": 11
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/saved-filter-reconciliation.test.ts",
+          "skipped": 20,
+          "testCount": 20
+        },
+        {
+          "classification": "windows-native-only",
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-handoff.test.ts",
+          "skipped": 1,
+          "testCount": 1
+        },
+        {
+          "classification": "windows-native-only",
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-native.test.ts",
+          "skipped": 2,
+          "testCount": 4
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.14/postgrest-claim-contention.test.ts",
+          "skipped": 1,
+          "testCount": 1
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.13/direct-database-authorization.test.ts",
+          "skipped": 7,
+          "testCount": 7
+        },
+        {
+          "classification": "windows-native-only",
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-installer-materialization.test.ts",
+          "skipped": 1,
+          "testCount": 1
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.10/reconciliation-evidence.test.ts",
+          "skipped": 13,
+          "testCount": 13
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/hr-admin-impersonation-export-integration.test.ts",
+          "skipped": 5,
+          "testCount": 5
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+          "skipped": 2,
+          "testCount": 2
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.7/supabase-rls-evidence.test.ts",
+          "skipped": 8,
+          "testCount": 8
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/production-saved-filter-cleanup-prerequisite.test.ts",
+          "skipped": 6,
+          "testCount": 6
+        },
+        {
+          "classification": "guarded-local-cli-admission-unavailable",
+          "file": "tests/unit/epic-22/story-22.15/production-cli-matrix-gate.test.ts",
+          "skipped": 4,
+          "testCount": 9
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts",
+          "skipped": 8,
+          "testCount": 8
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.13/runtime-column-restore.test.ts",
+          "skipped": 3,
+          "testCount": 3
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.13/atomic-user-status-transition.test.ts",
+          "skipped": 1,
+          "testCount": 1
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/column-config-checklist-column.test.ts",
+          "skipped": 2,
+          "testCount": 2
+        },
+        {
+          "classification": "windows-native-only",
+          "file": "tests/unit/epic-22/story-22.15/protected-dry-run-host.test.ts",
+          "skipped": 17,
+          "testCount": 17
+        },
+        {
+          "classification": "windows-native-only",
+          "file": "tests/unit/epic-22/story-22.15/protected-bootstrap-host.test.ts",
+          "skipped": 26,
+          "testCount": 26
+        },
+        {
+          "classification": "windows-native-only",
+          "file": "tests/unit/epic-22/story-22.15/protected-file-lease.test.ts",
+          "skipped": 26,
+          "testCount": 26
+        },
+        {
+          "classification": "windows-native-only",
+          "file": "tests/unit/epic-22/story-22.15/protected-production-inputs.test.ts",
+          "skipped": 22,
+          "testCount": 22
+        }
+      ]
+    },
+    "integration": {
+      "durationSeconds": 48.07,
+      "failed": 0,
+      "filesPassed": 93,
+      "filesSkipped": 14,
+      "passed": 827,
+      "skipped": 95,
+      "total": 922,
+      "skipInventory": [
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/hr-admin-impersonation-export-integration.test.ts",
+          "skipped": 5,
+          "testCount": 5
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/column-config-checklist-column.test.ts",
+          "skipped": 2,
+          "testCount": 2
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.10/reconciliation-evidence.test.ts",
+          "skipped": 13,
+          "testCount": 13
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.13/atomic-user-status-transition.test.ts",
+          "skipped": 1,
+          "testCount": 1
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.14/postgrest-claim-contention.test.ts",
+          "skipped": 1,
+          "testCount": 1
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.13/direct-database-authorization.test.ts",
+          "skipped": 7,
+          "testCount": 7
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.13/runtime-column-restore.test.ts",
+          "skipped": 3,
+          "testCount": 3
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.7/supabase-rls-evidence.test.ts",
+          "skipped": 8,
+          "testCount": 8
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/inactive-authorization-and-atomic-delete.test.ts",
+          "skipped": 11,
+          "testCount": 11
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts",
+          "skipped": 8,
+          "testCount": 8
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts",
+          "skipped": 8,
+          "testCount": 8
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/production-saved-filter-cleanup-prerequisite.test.ts",
+          "skipped": 6,
+          "testCount": 6
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+          "skipped": 2,
+          "testCount": 2
+        },
+        {
+          "classification": "required-local-service-or-database-fixture-unavailable",
+          "file": "tests/integration/epic-22/story-22.15/saved-filter-reconciliation.test.ts",
+          "skipped": 20,
+          "testCount": 20
+        }
+      ]
+    }
+  },
+  "reviewedCiPin": {
+    "jobId": 109399486061,
+    "publicJobUrl": "https://github.com/rthunborg/Masterdata/actions/runs/36566464846/job/109399486061",
+    "rawLogSha256": "ec5148423193a16f425bbf7874c37780564a8efca1f6e24044aeaabfeddf937a",
+    "rawLogUtf8Bytes": 776955,
+    "runId": 36566464846,
+    "sourceSha": "188bcf64f9c9dcbb5791a5bd636583a83ba8e64e"
+  },
+  "failedCorrectionHistory": {
+    "final14": {
+      "schemaVersion": 1,
+      "sourceSha": "0e014f3a8ad921b10758f186ee3afeba2601e895",
+      "command": "npx vitest run",
+      "sourceUnchanged": true,
+      "workers": 2,
+      "nativeExitCode": 1,
+      "passed": 4475,
+      "failed": 3,
+      "skipped": 0,
+      "total": 4478,
+      "filesPassed": 368,
+      "filesFailed": 3,
+      "filesTotal": 371,
+      "reportDurationSeconds": 941.16,
+      "wrapperDurationMs": 953375,
+      "buildStarted": false,
+      "playwrightStarted": false,
+      "hostedAccess": false,
+      "acceptedAsPassingGate": false,
+      "logSha256": "775ddb26cc37a53309b90bf1a213644e6f3ef17b050c3e51d304295a2420ea25",
+      "summarySha256": "289e3731434914b522925403ccea8b74137942d533ec3309cf815825ca370440"
+    },
+    "final15": {
+      "schemaVersion": 1,
+      "sourceSha": "5a27d77cd04dae9fef90e8f94adb8432636f0b4c",
+      "command": "npx vitest run",
+      "sourceUnchanged": true,
+      "workers": 1,
+      "nativeExitCode": 1,
+      "executedPassed": 4476,
+      "executedTestFailures": 0,
+      "reportedTestSkips": 0,
+      "expectedTotal": 4478,
+      "unexecutedAfterSetupFailure": 2,
+      "filesPassed": 370,
+      "filesFailed": 1,
+      "filesTotal": 371,
+      "reportDurationSeconds": 1544.82,
+      "wrapperDurationMs": 1554256,
+      "failedFile": "tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+      "failureCategory": "staffing_local_fixture_admission_invalid",
+      "matrixPassedTests": 8,
+      "matrixScenarioCount": 7,
+      "matrixIncludesRequiredAdmissionAssertion": true,
+      "buildStarted": false,
+      "playwrightStarted": false,
+      "hostedAccess": false,
+      "acceptedAsPassingGate": false,
+      "logSha256": "e471a100a4fba5095d05c150b55ff4aba9ddefff1e6f87476e475797c7cc132a",
+      "summarySha256": "3ec0bc4620bfa6cdb95d0b8b2c7a0e7763a8710f211cddff94aa4bc83002c653"
+    }
+  },
+  "interruptedFinal16": {
+    "schemaVersion": 1,
+    "kind": "interrupted-local-verification",
+    "sourceSha": "5a27d77cd04dae9fef90e8f94adb8432636f0b4c",
+    "sourceCleanWhenStopped": true,
+    "startedAtUtc": "2026-09-29T11:36:50.408Z",
+    "recordedAtUtc": "2026-09-29T11:57:24.774Z",
+    "completionReceiptAbsent": true,
+    "completedFilesReported": 95,
+    "completedTestsReported": 1028,
+    "logSha256": "241d8c00fff05e6312063ab3ec5dd99f9fbd449f8ba9cbb6179944111d75bcad",
+    "logBytes": 825290,
+    "buildStarted": false,
+    "playwrightStarted": false,
+    "reason": "Stopped after newly discovered Reviewbot collector-start chronology finding; not a complete passing gate.",
+    "reviewThreadId": "PRRT_kwDOQJmeIM6nFAQu",
+    "guardStopAccepted": true,
+    "guardLaterObservedStopped": true,
+    "hostedAccess": false,
+    "acceptedAsPassingGate": false,
+    "summarySha256": "7496102f983d9471b206617b9a5420970d2e5c40d1a853eb3b10a0dd6807a827",
+    "completePassingGate": false
+  },
+  "remainingGates": [
+    "Final documentation-head CI and clean exact-head review, then authorized staging merge.",
+    "Fresh hosted read-only source/target/tool/TLS and isolation proof before separately gated exact cleanup.",
+    "Protected13 forward attempt only after all prerequisites; independent history13, strict16/16, canonical68 and preservation proof.",
+    "Owner adoption and separately approved55 history repairs, then final history68 proof.",
+    "Main merge, production deployment, control restoration and reopening remain separate decisions; preserve the pause."
+  ]
+}

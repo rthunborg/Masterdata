@@ -188,27 +188,19 @@ describe("Export Field Selection Integration", () => {
         surname: "Doe", 
         email: "john@example.com",
         hire_date: "2023-01-01",
-        is_active: true
+        is_active: true,
+        shoe_size: "42",
+        t_shirt_size: "L",
       },
     ];
      
     vi.mocked(employeeRepository.findAll).mockResolvedValue(mockEmployees as unknown as import("@/lib/types/employee").Employee[]);
 
-    const mockCustomData = [
-      { 
-        employee_id: "emp1", 
-        data: { 
-          "shoe_size": "42", 
-          "t_shirt_size": "L" 
-        } 
-      },
-    ];
-
     const mockSupabase = {
       from: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({ data: [], error: null }),
-          in: vi.fn().mockReturnValue({ data: mockCustomData, error: null }),
+          in: vi.fn().mockReturnValue({ data: [], error: null }),
         }),
       }),
     };

@@ -1,5 +1,7 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { loginAsUser } from './helpers/e2e-helpers';
+import { createEmployeeViaUI, loginAsUser } from './helpers/e2e-helpers';
+
+let inlineSeedCounter = 0;
 
 async function firstEmployeeRow(page: Page) {
     await expect(
@@ -40,34 +42,11 @@ async function tableCellByColumn(page: Page, row: Locator, label: RegExp) {
 async function openInlineSelect(page: Page, cell: Locator, label: RegExp) {
     const editor = cell.getByRole('gridcell', { name: label }).first();
     await expect(editor).toBeVisible({ timeout: 10000 });
-
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-        await editor.scrollIntoViewIfNeeded();
-        await editor.click({ force: attempt > 0 });
-
-        const trigger = cell.getByRole('combobox').first();
-        if (await trigger.waitFor({ state: 'visible', timeout: 3000 }).then(() => true).catch(() => false)) {
-            const listbox = page.getByRole('listbox').first();
-            if (await listbox.waitFor({ state: 'visible', timeout: 1000 }).then(() => true).catch(() => false)) {
-                return listbox;
-            }
-
-            const isExpanded = (await trigger.getAttribute('aria-expanded').catch(() => null)) === 'true';
-            if (!isExpanded) {
-                await trigger.click({ force: true });
-            }
-            await expect(listbox).toBeVisible({ timeout: 10000 });
-            return listbox;
-        }
-
-        const alreadyOpen = page.getByRole('listbox').first();
-        if (await alreadyOpen.waitFor({ state: 'visible', timeout: 1000 }).then(() => true).catch(() => false)) {
-            return alreadyOpen;
-        }
-
-        await editor.press('Enter').catch(() => {});
-    }
-
+    await editor.scrollIntoViewIfNeeded();
+    await editor.click();
+    // EditableCell opens Select after the editor mounts. Once its modal list
+    // opens, Radix hides the surrounding trigger from accessibility queries;
+    // clicking that trigger races the auto-open and can wait forever.
     const listbox = page.getByRole('listbox').first();
     await expect(listbox).toBeVisible({ timeout: 10000 });
     return listbox;
@@ -83,8 +62,20 @@ async function selectInlineOption(page: Page, cell: Locator, label: RegExp, opti
 }
 
 test.describe('Inline Editing E2E', () => {
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page }, testInfo) => {
         await loginAsUser(page, 'admin@test.com', 'Test123!');
+        await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+        const seed = `${testInfo.workerIndex % 10}${testInfo.retry % 10}${String(inlineSeedCounter++ % 100).padStart(2, '0')}`;
+        await createEmployeeViaUI(page, {
+            first_name: `Inline${seed}`,
+            surname: 'Employee',
+            ssn: `19881231${seed}`,
+            rank: 'SEV',
+            gender: 'Man',
+            hire_date: '2026-01-01',
+        });
+        await page.goto('/dashboard');
         await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
     });
 
@@ -129,18 +120,21 @@ test.describe('Inline Editing E2E', () => {
 
     test('Inline edit boolean field', async ({ page }) => {
         const firstRow = await firstEmployeeRow(page);
-        const oneCell = await tableCellByColumn(page, firstRow, /\bOne\b/i);
-        const currentText = (await oneCell.textContent())?.trim() || '';
+        const specialDietCell = await tableCellByColumn(page, firstRow, /Specialkost|Special Diet/i);
+        const currentText = (await specialDietCell.textContent())?.trim() || '';
         const isCurrentlyTrue = /Klart|Ja/i.test(currentText);
-        const newValue = isCurrentlyTrue ? 'Nej' : 'Klart';
+        // special_diet is a non-checklist boolean, so its true label is "Ja".
+        // Checklist booleans use "Klart", but the column metadata intentionally
+        // distinguishes those two presentation semantics.
+        const newValue = isCurrentlyTrue ? 'Nej' : 'Ja';
 
-        await selectInlineOption(page, oneCell, /Edit one/i, newValue);
+        await selectInlineOption(page, specialDietCell, /Edit special_diet/i, newValue);
 
-        await expect(oneCell).toContainText(newValue, { timeout: 10000 });
+        await expect(specialDietCell).toContainText(newValue, { timeout: 10000 });
 
-        const originalValue = isCurrentlyTrue ? 'Klart' : 'Nej';
-        await selectInlineOption(page, oneCell, /Edit one/i, originalValue);
+        const originalValue = isCurrentlyTrue ? 'Ja' : 'Nej';
+        await selectInlineOption(page, specialDietCell, /Edit special_diet/i, originalValue);
 
-        await expect(oneCell).toContainText(originalValue, { timeout: 10000 });
+        await expect(specialDietCell).toContainText(originalValue, { timeout: 10000 });
     });
 });

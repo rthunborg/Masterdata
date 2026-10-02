@@ -2,11 +2,14 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import LoginForm from "./login-form";
+import { validateNonProductionSupabaseEnvironment } from "@/lib/env/non-production-supabase-guard";
 
 // Force dynamic rendering - this page checks auth status with cookies
 export const dynamic = 'force-dynamic';
 
 export default async function LoginPage() {
+  validateNonProductionSupabaseEnvironment();
+
   // Create server-side Supabase client
   const cookieStore = await cookies();
   const supabase = createServerClient(

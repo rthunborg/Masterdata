@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 export interface StickyScrollbarProps {
   /**
@@ -39,8 +39,11 @@ export function StickyScrollbar({
   const [contentWidth, setContentWidth] = React.useState(0);
   const [position, setPosition] = React.useState({ left: 0, width: 0 });
   const isSyncingRef = React.useRef(false);
+  const isMountedRef = React.useRef(false);
 
   const updateLayout = React.useCallback(() => {
+    if (!isMountedRef.current || typeof window === 'undefined') return;
+
     const container = containerRef.current;
     if (!container) {
       setIsVisible(false);
@@ -104,14 +107,21 @@ export function StickyScrollbar({
     const container = containerRef.current;
     if (!container) return;
 
-    requestAnimationFrame(() => {
+    isMountedRef.current = true;
+    let layoutTimeout: number | null = null;
+    let layoutAnimationFrame: number | null = requestAnimationFrame(() => {
+      layoutAnimationFrame = null;
+      if (!isMountedRef.current) return;
+
       updateLayout();
-      setTimeout(updateLayout, 100);
+      layoutTimeout = window.setTimeout(updateLayout, 100);
     });
 
-    container.addEventListener("scroll", handleContainerScroll, { passive: true });
-    window.addEventListener("scroll", updateLayout, { passive: true });
-    window.addEventListener("resize", updateLayout, { passive: true });
+    container.addEventListener('scroll', handleContainerScroll, {
+      passive: true,
+    });
+    window.addEventListener('scroll', updateLayout, { passive: true });
+    window.addEventListener('resize', updateLayout, { passive: true });
 
     const resizeObserver = new ResizeObserver(() => {
       updateLayout();
@@ -122,9 +132,16 @@ export function StickyScrollbar({
     }
 
     return () => {
-      container.removeEventListener("scroll", handleContainerScroll);
-      window.removeEventListener("scroll", updateLayout);
-      window.removeEventListener("resize", updateLayout);
+      isMountedRef.current = false;
+      if (layoutAnimationFrame !== null) {
+        cancelAnimationFrame(layoutAnimationFrame);
+      }
+      if (layoutTimeout !== null) {
+        window.clearTimeout(layoutTimeout);
+      }
+      container.removeEventListener('scroll', handleContainerScroll);
+      window.removeEventListener('scroll', updateLayout);
+      window.removeEventListener('resize', updateLayout);
       resizeObserver.disconnect();
     };
   }, [containerRef, handleContainerScroll, updateLayout]);
@@ -133,9 +150,11 @@ export function StickyScrollbar({
     const stickyScrollbar = stickyScrollbarRef.current;
     if (!stickyScrollbar || !isVisible) return;
 
-    stickyScrollbar.addEventListener("scroll", handleStickyScroll, { passive: true });
+    stickyScrollbar.addEventListener('scroll', handleStickyScroll, {
+      passive: true,
+    });
     return () => {
-      stickyScrollbar.removeEventListener("scroll", handleStickyScroll);
+      stickyScrollbar.removeEventListener('scroll', handleStickyScroll);
     };
   }, [handleStickyScroll, isVisible]);
 
@@ -153,13 +172,13 @@ export function StickyScrollbar({
     <div
       ref={stickyScrollbarRef}
       className={cn(
-        "fixed bottom-0 overflow-x-auto overflow-y-hidden",
-        "bg-background/80 backdrop-blur-sm border-t",
+        'fixed bottom-0 overflow-x-auto overflow-y-hidden',
+        'bg-background/80 backdrop-blur-sm border-t',
         className
       )}
       style={{
         zIndex,
-        height: "17px",
+        height: '17px',
         left: position.left,
         width: position.width,
       }}
@@ -169,7 +188,7 @@ export function StickyScrollbar({
       <div
         style={{
           width: contentWidth,
-          height: "1px",
+          height: '1px',
         }}
       />
     </div>

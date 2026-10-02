@@ -1,0 +1,2370 @@
+{
+  "schemaVersion": 1,
+  "kind": "local-synthetic-pinned-cli-matrix",
+  "testedImplementation": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0",
+  "stagingBase": "c193235efa3bc3a00ad3d78e152e80dec6cf382f",
+  "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "hostedAccess": false,
+  "realPrivateInputsLoaded": false,
+  "production": "paused-no-go",
+  "story": "in-progress",
+  "epic23": "on-hold",
+  "source": {
+    "schemaVersion": 1,
+    "kind": "offline-forward-subset",
+    "executable": false,
+    "privateMaterialAllowed": false,
+    "approvalAttested": false,
+    "gitExecutableSha256": "7b7971dd13f0c3a284e538601f2f9770b3a87dfaccb5fb52d68141c67ed22364",
+    "sourceCommit": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0",
+    "sourceTree": "95131a924cede096765e0e7c9b36b517eef9ef6c",
+    "sourceManifestSha256": "92cdec724eb3e084997431ec407418d7fbbc41db08d78196dfd39307b74b60fb",
+    "reviewedSupabaseCliVersion": "2.115.0",
+    "migrations": [
+      {
+        "version": "20260314000001",
+        "file": "20260314000001_add_update_staffing_need_rpc.sql",
+        "gitBlob": "a86c2adb9dfe63cbb6805aa55ec4d4fdf5ea7c38",
+        "sha256": "d636ea29891976e3890334512677dc332262ee157c5468027c0868b0ecd2f1af"
+      },
+      {
+        "version": "20260314000002",
+        "file": "20260314000002_add_headcount_upper_bound.sql",
+        "gitBlob": "3bb98538c964fa7c5e117a79a01dadfcb86edc59",
+        "sha256": "5b72336e3224eb02c3d9d4fef6af27b06732b8b5572428f1ccef235e59284b59"
+      },
+      {
+        "version": "20260614000000",
+        "file": "20260614000000_reconcile_environments_security_and_policies.sql",
+        "gitBlob": "12e35c0267ea551f5803d5b286f68a63694876fb",
+        "sha256": "746e7411a96ea79dd81313f77fae6ac19205a99b8e4a1d2676d1b70a372dabef"
+      },
+      {
+        "version": "20260615000000",
+        "file": "20260615000000_add_is_checklist_item_to_column_config.sql",
+        "gitBlob": "d6892050074100dec445b995910cb385369eaae7",
+        "sha256": "98742e05ecf953329d358f41de04be15786860eee34c98c61f12df16d3807e01"
+      },
+      {
+        "version": "20260709194903",
+        "file": "20260709194903_remediate_pr_91_security_findings.sql",
+        "gitBlob": "16c1902e19d784377ee8bb53a2743aaa1d94f6ae",
+        "sha256": "ebbb6583683f8209c6b62c4477a82985e11ea48ca0acdace98100d8e418965ae"
+      },
+      {
+        "version": "20260710144000",
+        "file": "20260710144000_atomic_external_column_presentation.sql",
+        "gitBlob": "f652ea672b2c1dd97665f0024464c43b5a05d482",
+        "sha256": "4bdd601ef225c6dd81f6f635c5a6b00c4362a26cb3f27632137634157f58e9b2"
+      },
+      {
+        "version": "20260710150000",
+        "file": "20260710150000_atomic_user_status_transition.sql",
+        "gitBlob": "2aa0b41984d0c9c40b658d9c7b1ccf5ffdf18762",
+        "sha256": "9572124f93ff3bbd9001acfdcc47bb4d5fb2274a05bebec4ba5460612032e9de"
+      },
+      {
+        "version": "20260831200026",
+        "file": "20260831200026_enforce_active_authorization_and_atomic_user_deletion.sql",
+        "gitBlob": "232391de736be0f6ed660829cb5cfceed8658003",
+        "sha256": "49f8b4060938e2ffe67f29d24a9474914b42f6326753623b3b1bc703bdc73c36"
+      },
+      {
+        "version": "20260909115242",
+        "file": "20260909115242_reconcile_saved_filters_and_room_acl.sql",
+        "gitBlob": "765121435c52809168672ea77e98f7a8f43fef34",
+        "sha256": "a360097ab13f867c775bfade5ef5aacd0e68decf0fcb53c7d554502514e97351"
+      },
+      {
+        "version": "20260910094517",
+        "file": "20260910094517_reconcile_repayment_defaults.sql",
+        "gitBlob": "45e476ac1463af1c72ee4d977ad59fe8ce174219",
+        "sha256": "8c66f17e1bff91f81e8423fff9acdfb407d4d7aeb6550a1427cd7598568a2ea3"
+      },
+      {
+        "version": "20260910115024",
+        "file": "20260910115024_reconcile_post_apply_acl_and_policy_initplans.sql",
+        "gitBlob": "f92c57fc390c56e090d214b0c8a0b1a9c5d92fff",
+        "sha256": "7b4f11898f43d88d36fbc1661fb45175629a950750350d43c3f639e959afc74d"
+      },
+      {
+        "version": "20260910184840",
+        "file": "20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql",
+        "gitBlob": "07507bd4777967d811a8e7a78270d9bd1b7fbb19",
+        "sha256": "fd4b331e61e830421516b99cac9eedb0ac55184ce4ae4216e58137012737723a"
+      },
+      {
+        "version": "20260910184841",
+        "file": "20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql",
+        "gitBlob": "1f553303303a85fc5da60bd8c6e12b81f93beee5",
+        "sha256": "03fe5979539d307ed6f5b5d9ca6f9394e5290a04f656b8b157552eaed927bd24"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "caseName": "observed_guard_stop",
+      "fixture": {
+        "schemaVersion": 1,
+        "kind": "synthetic-production-cli-matrix-fixture",
+        "variant": "observed_orphans_48",
+        "sqlSha256": "676da531d96081ace3f819c3b2c01adafa40d45fed8d4d173065180e8330ff11",
+        "bootstrapSqlSha256": "79f8b6a8076b6c1c38ede0d6b0e9a74fdc22100fef62cc875eb99ee49b8a1d96",
+        "aggregates": {
+          "employees": 73,
+          "repaymentNull": 70,
+          "repaymentTrue": 2,
+          "repaymentFalse": 1,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 48,
+          "savedFilterOrphans": 48,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0
+        },
+        "physicalPredicates": {
+          "savedFilters": {
+            "total": 48,
+            "orphanAuthReferences": 48,
+            "emptyNames": 0,
+            "overlengthNames": 0
+          },
+          "implicitChecklistColumn": {
+            "syntheticChoice": "present",
+            "status": "present_noop_possible",
+            "usableForHistoryClassification": false
+          }
+        },
+        "coverage": {
+          "syntheticOnly": true,
+          "productionRowsRead": false,
+          "productionPermissionJsonInferred": false,
+          "knownPermissionRows": [
+            "special_diet",
+            "diet_details",
+            "crewing_done"
+          ],
+          "limitations": [
+            "The remaining column_config permission maps, including repayment maps, are declared synthetic.",
+            "Representation hashes detect fixture drift only; semantic acceptance requires fresh catalog and physical observations.",
+            "Preservation projections cover the seeded public data rows only and are not a universal catalog or production-data proof.",
+            "The observed and post-cleanup variants deliberately choose an existing is_checklist_item column, but this does not establish a production mapping; their implicit history-failure outcome is indeterminate.",
+            "implicit_column_absent is a separate synthetic derivative and is not a production-profile representation."
+          ]
+        }
+      },
+      "tools": {
+        "cliVersion": "2.115.0",
+        "cliSha256": "691a3312584891204dc11893abcd12fa656dbcce186ef8d0a2782f137463f6d7",
+        "psqlVersion": "17.11",
+        "psqlSha256": "aa12e27530ac07f129e69daca953ea5f02202a7bde45d503e771abc39016536d"
+      },
+      "startedAtUtc": "2026-09-23T10:39:25.169Z",
+      "finishedAtUtc": "2026-09-23T10:40:00.612Z",
+      "classification": "proven_rejected_before_current_effect",
+      "attempts": [
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 607,
+          "outputSha256": "a3744253ca59c658b76c1510d4c755e071ff5e58146c8ddd56d2727cbff57f06",
+          "outputBytes": 1188,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "fixture_prefix_apply",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 763,
+          "outputSha256": "2eb01d22c83f985eaae7bac04d85134bb714b056f9db63cc919060d874a0e6e5",
+          "outputBytes": 1463,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026"
+          ],
+          "lastApplyingVersion": "20260831200026",
+          "sqlStates": []
+        },
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 557,
+          "outputSha256": "efe496ca89f32ac071e3e7834f40c85e97fb19ae573427da2a1a4d086bb9844b",
+          "outputBytes": 703,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "measured_apply",
+          "child": {
+            "kind": "exit",
+            "code": 1
+          },
+          "durationMs": 569,
+          "outputSha256": "b0e5be26083a44eb2d59a0efb5c7485265519df7a9dd7f54fc2cf7420ac87734",
+          "outputBytes": 1765,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": "20260909115242",
+          "sqlStates": [
+            "P0001"
+          ]
+        }
+      ],
+      "before": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000",
+          "20260615000000",
+          "20260709194903",
+          "20260710144000",
+          "20260710150000",
+          "20260831200026"
+        ],
+        "historyCount": 8,
+        "historySha256": "415e41adc35726e278746f01788d29b4d93d68f48f645e6e58a85d8dc1067bc3",
+        "catalogSha256": "da1227737d1c69a47b116b37dcd1b4cb188b4c27f6e7e5a9e66965713242755a",
+        "preservationSha256": "d4bc07a67fec9ae16ee372854889942aacc6d6b7d1dddb16e9a25f8c477fa2bc",
+        "savedFilterSha256": "def517c72ff33555856fd2c5ff047237f6f131987b56c1d74cdfb93addaee0f7",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "926d68627e59954ef54ddf3c2359ef7ffda90ff60831f7018db3245d398a65be",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "380357ac2471021cc668ce10f62eaafa01516a10fc1c54ebb6300a5e437b0c61",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 48,
+          "savedFilterOrphans": 48,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "after": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000",
+          "20260615000000",
+          "20260709194903",
+          "20260710144000",
+          "20260710150000",
+          "20260831200026"
+        ],
+        "historyCount": 8,
+        "historySha256": "415e41adc35726e278746f01788d29b4d93d68f48f645e6e58a85d8dc1067bc3",
+        "catalogSha256": "da1227737d1c69a47b116b37dcd1b4cb188b4c27f6e7e5a9e66965713242755a",
+        "preservationSha256": "d4bc07a67fec9ae16ee372854889942aacc6d6b7d1dddb16e9a25f8c477fa2bc",
+        "savedFilterSha256": "def517c72ff33555856fd2c5ff047237f6f131987b56c1d74cdfb93addaee0f7",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "926d68627e59954ef54ddf3c2359ef7ffda90ff60831f7018db3245d398a65be",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "380357ac2471021cc668ce10f62eaafa01516a10fc1c54ebb6300a5e437b0c61",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 48,
+          "savedFilterOrphans": 48,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "retained": true,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "mayContinue": false,
+      "mayRepair": false,
+      "originalLocalReceiptSha256": "015ee536e4591ae414e7894844c78d4cc60a61a0308ff0516b07e33c76f8c39c"
+    },
+    {
+      "caseName": "postcleanup_success",
+      "fixture": {
+        "schemaVersion": 1,
+        "kind": "synthetic-production-cli-matrix-fixture",
+        "variant": "postcleanup_zero_filters",
+        "sqlSha256": "3d5281ad2ca1123411a01fe05b79511c7a1d7365d15637e2ff568c14f64776fd",
+        "bootstrapSqlSha256": "79f8b6a8076b6c1c38ede0d6b0e9a74fdc22100fef62cc875eb99ee49b8a1d96",
+        "aggregates": {
+          "employees": 73,
+          "repaymentNull": 70,
+          "repaymentTrue": 2,
+          "repaymentFalse": 1,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0
+        },
+        "physicalPredicates": {
+          "savedFilters": {
+            "total": 0,
+            "orphanAuthReferences": 0,
+            "emptyNames": 0,
+            "overlengthNames": 0
+          },
+          "implicitChecklistColumn": {
+            "syntheticChoice": "present",
+            "status": "present_noop_possible",
+            "usableForHistoryClassification": false
+          }
+        },
+        "coverage": {
+          "syntheticOnly": true,
+          "productionRowsRead": false,
+          "productionPermissionJsonInferred": false,
+          "knownPermissionRows": [
+            "special_diet",
+            "diet_details",
+            "crewing_done"
+          ],
+          "limitations": [
+            "The remaining column_config permission maps, including repayment maps, are declared synthetic.",
+            "Representation hashes detect fixture drift only; semantic acceptance requires fresh catalog and physical observations.",
+            "Preservation projections cover the seeded public data rows only and are not a universal catalog or production-data proof.",
+            "The observed and post-cleanup variants deliberately choose an existing is_checklist_item column, but this does not establish a production mapping; their implicit history-failure outcome is indeterminate.",
+            "implicit_column_absent is a separate synthetic derivative and is not a production-profile representation."
+          ]
+        }
+      },
+      "tools": {
+        "cliVersion": "2.115.0",
+        "cliSha256": "691a3312584891204dc11893abcd12fa656dbcce186ef8d0a2782f137463f6d7",
+        "psqlVersion": "17.11",
+        "psqlSha256": "aa12e27530ac07f129e69daca953ea5f02202a7bde45d503e771abc39016536d"
+      },
+      "startedAtUtc": "2026-09-23T10:40:07.119Z",
+      "finishedAtUtc": "2026-09-23T10:40:27.663Z",
+      "classification": "proven_complete_local_rehearsal",
+      "attempts": [
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 610,
+          "outputSha256": "a3744253ca59c658b76c1510d4c755e071ff5e58146c8ddd56d2727cbff57f06",
+          "outputBytes": 1188,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "measured_apply",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 801,
+          "outputSha256": "2be46fca5a53261de40b8ca1d7a3f1e8ef4411729e18c063d20917767005edb6",
+          "outputBytes": 2206,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": "20260910184841",
+          "sqlStates": []
+        }
+      ],
+      "before": {
+        "complete": true,
+        "history": [],
+        "historyCount": 0,
+        "historySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "catalogSha256": "a1c078469f2ed05b2496d8e52cf1667c545315a1ad18081655481fca41d0f5d8",
+        "preservationSha256": "e257441771462a571bd5fb0319d02bbb4a5fe30f7b8171c5b1ee9d140e5822e5",
+        "savedFilterSha256": "d91957121bdf4e11e455a9092f6b6b716c5d09e8a7e0393f2576afa846e89bc3",
+        "headcountSha256": "f8e1d76874861352429c3e075bae47844bafcd8c0d144624aa88a0e478d64b29",
+        "nonCurrentHeadcountSha256": "d2fe206bd1153e3cbf53686889b16c4bd800ab6bbe0a96cba79cc0241422ea59",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "c40fd27f3becb567a8b702b255c9a23dc0f73504f33dcd2f7f00b7462a14cc60",
+        "headcountPostcondition": false,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "after": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000",
+          "20260615000000",
+          "20260709194903",
+          "20260710144000",
+          "20260710150000",
+          "20260831200026",
+          "20260909115242",
+          "20260910094517",
+          "20260910115024",
+          "20260910184840",
+          "20260910184841"
+        ],
+        "historyCount": 13,
+        "historySha256": "a71cd38d11c5eaca932b1542482ce79b5c84f3951d8839e8a7aa9f20363a990b",
+        "catalogSha256": "12b41703cfcac8a260b691935ca3e82215014039977748d7aa83508e633a9c98",
+        "preservationSha256": "e257441771462a571bd5fb0319d02bbb4a5fe30f7b8171c5b1ee9d140e5822e5",
+        "savedFilterSha256": "bea5ff0a6c84ae83491eb5a0ca304981a9d2b951e080b8219a8807d3fb0dd74f",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "c7cb58e6c79bc6d0b5140e021b1913fcd17fb34a8eeb2f7031071e09f2cf7216",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "d49b102ff65667b2a17042b3820268a3e9cf659a9736dfbffa01960c96cf0fa3",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "catalog": {
+        "count": 16,
+        "failedChecks": []
+      },
+      "retained": true,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "mayContinue": false,
+      "mayRepair": false,
+      "originalLocalReceiptSha256": "a261d8d7ad9376a83c63604401766094e3d71b9dffa2d7b6bbf12b3bffea953d"
+    },
+    {
+      "caseName": "explicit_history_write_failure",
+      "fixture": {
+        "schemaVersion": 1,
+        "kind": "synthetic-production-cli-matrix-fixture",
+        "variant": "postcleanup_zero_filters",
+        "sqlSha256": "3d5281ad2ca1123411a01fe05b79511c7a1d7365d15637e2ff568c14f64776fd",
+        "bootstrapSqlSha256": "79f8b6a8076b6c1c38ede0d6b0e9a74fdc22100fef62cc875eb99ee49b8a1d96",
+        "aggregates": {
+          "employees": 73,
+          "repaymentNull": 70,
+          "repaymentTrue": 2,
+          "repaymentFalse": 1,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0
+        },
+        "physicalPredicates": {
+          "savedFilters": {
+            "total": 0,
+            "orphanAuthReferences": 0,
+            "emptyNames": 0,
+            "overlengthNames": 0
+          },
+          "implicitChecklistColumn": {
+            "syntheticChoice": "present",
+            "status": "present_noop_possible",
+            "usableForHistoryClassification": false
+          }
+        },
+        "coverage": {
+          "syntheticOnly": true,
+          "productionRowsRead": false,
+          "productionPermissionJsonInferred": false,
+          "knownPermissionRows": [
+            "special_diet",
+            "diet_details",
+            "crewing_done"
+          ],
+          "limitations": [
+            "The remaining column_config permission maps, including repayment maps, are declared synthetic.",
+            "Representation hashes detect fixture drift only; semantic acceptance requires fresh catalog and physical observations.",
+            "Preservation projections cover the seeded public data rows only and are not a universal catalog or production-data proof.",
+            "The observed and post-cleanup variants deliberately choose an existing is_checklist_item column, but this does not establish a production mapping; their implicit history-failure outcome is indeterminate.",
+            "implicit_column_absent is a separate synthetic derivative and is not a production-profile representation."
+          ]
+        }
+      },
+      "tools": {
+        "cliVersion": "2.115.0",
+        "cliSha256": "691a3312584891204dc11893abcd12fa656dbcce186ef8d0a2782f137463f6d7",
+        "psqlVersion": "17.11",
+        "psqlSha256": "aa12e27530ac07f129e69daca953ea5f02202a7bde45d503e771abc39016536d"
+      },
+      "historyTableManuallyCreated": true,
+      "startedAtUtc": "2026-09-23T10:40:34.836Z",
+      "finishedAtUtc": "2026-09-23T10:41:07.183Z",
+      "classification": "committed_unrecorded_current",
+      "attempts": [
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 597,
+          "outputSha256": "a3744253ca59c658b76c1510d4c755e071ff5e58146c8ddd56d2727cbff57f06",
+          "outputBytes": 1188,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "fixture_prefix_apply",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 621,
+          "outputSha256": "f67b0e47cc506342f8ea36108d23657893e7beda7ef7dd3449c82929a12a30a4",
+          "outputBytes": 480,
+          "sourceVersions": [
+            "20260314000001"
+          ],
+          "lastApplyingVersion": "20260314000001",
+          "sqlStates": []
+        },
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 444,
+          "outputSha256": "06beead5dd98e22aed1cbc64204ef1d45fab5b0bd914b73acc1c8653946ad861",
+          "outputBytes": 1135,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "measured_apply",
+          "child": {
+            "kind": "exit",
+            "code": 1
+          },
+          "durationMs": 479,
+          "outputSha256": "050ad9a9b1220754f0b240b53f62fd7b91bb6992780a944a369310e4e3772631",
+          "outputBytes": 1169,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": "20260314000002",
+          "sqlStates": [
+            "P0001"
+          ]
+        }
+      ],
+      "before": {
+        "complete": true,
+        "history": [
+          "20260314000001"
+        ],
+        "historyCount": 1,
+        "historySha256": "1cbea8251adf32f11395c4d560767856cc83c71b354b615bf994e369fb0e9df7",
+        "catalogSha256": "09f24baa3fb9c98c4e2406090e7fec61ed3b6f4ceeb9aa80f27a7fe5b794c483",
+        "preservationSha256": "4048df6a77b629f8a3848bc69315e0fdd6b355d8bce626cd879431e1825a9b18",
+        "savedFilterSha256": "d91957121bdf4e11e455a9092f6b6b716c5d09e8a7e0393f2576afa846e89bc3",
+        "headcountSha256": "f8e1d76874861352429c3e075bae47844bafcd8c0d144624aa88a0e478d64b29",
+        "nonCurrentHeadcountSha256": "250e165f3b3dd0ac14e2bdc16a37fcb0260c007a98a961ac64b60ab2fd8d55fa",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "b70e0d6ef60219a2452fa2ddb602ce16acbd54cc9e862396c13bcdbc3cd49db0",
+        "headcountPostcondition": false,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "after": {
+        "complete": true,
+        "history": [
+          "20260314000001"
+        ],
+        "historyCount": 1,
+        "historySha256": "1cbea8251adf32f11395c4d560767856cc83c71b354b615bf994e369fb0e9df7",
+        "catalogSha256": "db0997ee2f8b029909b861c32ab86de9140df704defc795546fac3f21ac2c9a8",
+        "preservationSha256": "4048df6a77b629f8a3848bc69315e0fdd6b355d8bce626cd879431e1825a9b18",
+        "savedFilterSha256": "d91957121bdf4e11e455a9092f6b6b716c5d09e8a7e0393f2576afa846e89bc3",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "250e165f3b3dd0ac14e2bdc16a37fcb0260c007a98a961ac64b60ab2fd8d55fa",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "92d498b6ba0fe750ecc83e30b7196df54e476eed7a175855063c45a1b8637d58",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "hookSetupSha256": "d27d8f40bbed25920d0553863541fe71b18ce209b99db1311898615ccc44ec49",
+      "hookBefore": {
+        "armed": true,
+        "observed": false,
+        "targetVersion": "20260314000002",
+        "firingCount": 0,
+        "complete": true
+      },
+      "hookAfter": {
+        "armed": true,
+        "observed": true,
+        "targetVersion": "20260314000002",
+        "firingCount": 1,
+        "complete": true
+      },
+      "retained": true,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "mayContinue": false,
+      "mayRepair": false,
+      "originalLocalReceiptSha256": "19eb393471a594a00582efc14ce476f90080466061947908e68644b08b2b9aa5"
+    },
+    {
+      "caseName": "implicit_history_write_failure",
+      "fixture": {
+        "schemaVersion": 1,
+        "kind": "synthetic-production-cli-matrix-fixture",
+        "variant": "implicit_column_absent",
+        "sqlSha256": "4f79b5e1be458d68b0ca3f6c8a87837ad3b749b487904c7e7cdd61575395a4ae",
+        "bootstrapSqlSha256": "79f8b6a8076b6c1c38ede0d6b0e9a74fdc22100fef62cc875eb99ee49b8a1d96",
+        "aggregates": {
+          "employees": 73,
+          "repaymentNull": 70,
+          "repaymentTrue": 2,
+          "repaymentFalse": 1,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0
+        },
+        "physicalPredicates": {
+          "savedFilters": {
+            "total": 0,
+            "orphanAuthReferences": 0,
+            "emptyNames": 0,
+            "overlengthNames": 0
+          },
+          "implicitChecklistColumn": {
+            "syntheticChoice": "absent",
+            "status": "absent_before_apply",
+            "usableForHistoryClassification": true,
+            "afterApply": "present_not_null_default_false"
+          }
+        },
+        "coverage": {
+          "syntheticOnly": true,
+          "productionRowsRead": false,
+          "productionPermissionJsonInferred": false,
+          "knownPermissionRows": [
+            "special_diet",
+            "diet_details",
+            "crewing_done"
+          ],
+          "limitations": [
+            "The remaining column_config permission maps, including repayment maps, are declared synthetic.",
+            "Representation hashes detect fixture drift only; semantic acceptance requires fresh catalog and physical observations.",
+            "Preservation projections cover the seeded public data rows only and are not a universal catalog or production-data proof.",
+            "The observed and post-cleanup variants deliberately choose an existing is_checklist_item column, but this does not establish a production mapping; their implicit history-failure outcome is indeterminate.",
+            "implicit_column_absent is a separate synthetic derivative and is not a production-profile representation."
+          ]
+        }
+      },
+      "tools": {
+        "cliVersion": "2.115.0",
+        "cliSha256": "691a3312584891204dc11893abcd12fa656dbcce186ef8d0a2782f137463f6d7",
+        "psqlVersion": "17.11",
+        "psqlSha256": "aa12e27530ac07f129e69daca953ea5f02202a7bde45d503e771abc39016536d"
+      },
+      "historyTableManuallyCreated": true,
+      "startedAtUtc": "2026-09-23T10:41:13.257Z",
+      "finishedAtUtc": "2026-09-23T10:41:47.975Z",
+      "classification": "rolled_back_unrecorded_current",
+      "attempts": [
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 576,
+          "outputSha256": "a3744253ca59c658b76c1510d4c755e071ff5e58146c8ddd56d2727cbff57f06",
+          "outputBytes": 1188,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "fixture_prefix_apply",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 698,
+          "outputSha256": "6dcf8e99d19166af929555317aec821d298d4a2089d004d761f98bb23c7e1570",
+          "outputBytes": 752,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000"
+          ],
+          "lastApplyingVersion": "20260614000000",
+          "sqlStates": []
+        },
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 561,
+          "outputSha256": "4b2052a90ca9e1603c3c124f797b95bec66b2ecd3928aec767422f29423b82b1",
+          "outputBytes": 1016,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "measured_apply",
+          "child": {
+            "kind": "exit",
+            "code": 1
+          },
+          "durationMs": 497,
+          "outputSha256": "6ab915161f3700ce30a8f9c618ca47af6bd8db343f906dc9ae5eccdc5777bb5f",
+          "outputBytes": 1063,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": "20260615000000",
+          "sqlStates": [
+            "P0001"
+          ]
+        }
+      ],
+      "before": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000"
+        ],
+        "historyCount": 3,
+        "historySha256": "4bc820c242ca28633229efb7d76d82ecd62560bf089fdecf89c571ed9aed54bb",
+        "catalogSha256": "389bb22ad95a3a5d59aaa63d66835e6f0dfd392c8ab4d1758eb11f7904dd5db0",
+        "preservationSha256": "16011dc8fce04c71a3de77c06dda0c828eeed1987276851daa69f3dba9f7c922",
+        "savedFilterSha256": "9be21fe1bd6f0826b2e743aa3dbe59b795f5bef02344646931393010ab903b85",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "7f3f0c11dc1993cffa06011ac6d635640f1dd7acbc3879866bdc1602ed170379",
+        "checklistSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "nonCurrentChecklistSha256": "389bb22ad95a3a5d59aaa63d66835e6f0dfd392c8ab4d1758eb11f7904dd5db0",
+        "headcountPostcondition": true,
+        "checklistPostcondition": false,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "after": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000"
+        ],
+        "historyCount": 3,
+        "historySha256": "4bc820c242ca28633229efb7d76d82ecd62560bf089fdecf89c571ed9aed54bb",
+        "catalogSha256": "389bb22ad95a3a5d59aaa63d66835e6f0dfd392c8ab4d1758eb11f7904dd5db0",
+        "preservationSha256": "16011dc8fce04c71a3de77c06dda0c828eeed1987276851daa69f3dba9f7c922",
+        "savedFilterSha256": "9be21fe1bd6f0826b2e743aa3dbe59b795f5bef02344646931393010ab903b85",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "7f3f0c11dc1993cffa06011ac6d635640f1dd7acbc3879866bdc1602ed170379",
+        "checklistSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "nonCurrentChecklistSha256": "389bb22ad95a3a5d59aaa63d66835e6f0dfd392c8ab4d1758eb11f7904dd5db0",
+        "headcountPostcondition": true,
+        "checklistPostcondition": false,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "hookSetupSha256": "ea0f79ca2af86d3a3d33309dc0a6b8c0ad3a6294de88a8c58efe7157de7a5ce5",
+      "hookBefore": {
+        "armed": true,
+        "observed": false,
+        "targetVersion": "20260615000000",
+        "firingCount": 0,
+        "complete": true
+      },
+      "hookAfter": {
+        "armed": true,
+        "observed": true,
+        "targetVersion": "20260615000000",
+        "firingCount": 1,
+        "complete": true
+      },
+      "retained": true,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "mayContinue": false,
+      "mayRepair": false,
+      "originalLocalReceiptSha256": "42f80f0be103c74208a4c290943b20976070af3f98213d92d2d4a14857c2e0ce"
+    },
+    {
+      "caseName": "trigger_profile_stop_184840",
+      "fixture": {
+        "schemaVersion": 1,
+        "kind": "synthetic-production-cli-matrix-fixture",
+        "variant": "postcleanup_zero_filters",
+        "sqlSha256": "3d5281ad2ca1123411a01fe05b79511c7a1d7365d15637e2ff568c14f64776fd",
+        "bootstrapSqlSha256": "79f8b6a8076b6c1c38ede0d6b0e9a74fdc22100fef62cc875eb99ee49b8a1d96",
+        "aggregates": {
+          "employees": 73,
+          "repaymentNull": 70,
+          "repaymentTrue": 2,
+          "repaymentFalse": 1,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0
+        },
+        "physicalPredicates": {
+          "savedFilters": {
+            "total": 0,
+            "orphanAuthReferences": 0,
+            "emptyNames": 0,
+            "overlengthNames": 0
+          },
+          "implicitChecklistColumn": {
+            "syntheticChoice": "present",
+            "status": "present_noop_possible",
+            "usableForHistoryClassification": false
+          }
+        },
+        "coverage": {
+          "syntheticOnly": true,
+          "productionRowsRead": false,
+          "productionPermissionJsonInferred": false,
+          "knownPermissionRows": [
+            "special_diet",
+            "diet_details",
+            "crewing_done"
+          ],
+          "limitations": [
+            "The remaining column_config permission maps, including repayment maps, are declared synthetic.",
+            "Representation hashes detect fixture drift only; semantic acceptance requires fresh catalog and physical observations.",
+            "Preservation projections cover the seeded public data rows only and are not a universal catalog or production-data proof.",
+            "The observed and post-cleanup variants deliberately choose an existing is_checklist_item column, but this does not establish a production mapping; their implicit history-failure outcome is indeterminate.",
+            "implicit_column_absent is a separate synthetic derivative and is not a production-profile representation."
+          ]
+        }
+      },
+      "tools": {
+        "cliVersion": "2.115.0",
+        "cliSha256": "691a3312584891204dc11893abcd12fa656dbcce186ef8d0a2782f137463f6d7",
+        "psqlVersion": "17.11",
+        "psqlSha256": "aa12e27530ac07f129e69daca953ea5f02202a7bde45d503e771abc39016536d"
+      },
+      "startedAtUtc": "2026-09-23T10:41:54.908Z",
+      "finishedAtUtc": "2026-09-23T10:42:31.210Z",
+      "classification": "proven_rejected_before_current_effect",
+      "attempts": [
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 670,
+          "outputSha256": "a3744253ca59c658b76c1510d4c755e071ff5e58146c8ddd56d2727cbff57f06",
+          "outputBytes": 1188,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "fixture_prefix_apply",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 797,
+          "outputSha256": "23401889ca53ab86f87b600fb84f6c3a4bd055fd6255f390cfebbb7b53d5611a",
+          "outputBytes": 1882,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024"
+          ],
+          "lastApplyingVersion": "20260910115024",
+          "sqlStates": []
+        },
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 530,
+          "outputSha256": "140fcc4e2d26b05cef2c426de197f371781bb3935bd97765cdfa3e45b99f76cf",
+          "outputBytes": 519,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "measured_apply",
+          "child": {
+            "kind": "exit",
+            "code": 1
+          },
+          "durationMs": 589,
+          "outputSha256": "a47b56654d445fe7208f0cb211a930ed2a30118ee96056229b31d90bec611a01",
+          "outputBytes": 10016,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": "20260910184840",
+          "sqlStates": [
+            "P0001"
+          ]
+        }
+      ],
+      "before": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000",
+          "20260615000000",
+          "20260709194903",
+          "20260710144000",
+          "20260710150000",
+          "20260831200026",
+          "20260909115242",
+          "20260910094517",
+          "20260910115024"
+        ],
+        "historyCount": 11,
+        "historySha256": "ab618bd3e1bc2f19501c2ed47dd2ff336b8beefdbd3972940bd225da8ec9546e",
+        "catalogSha256": "940727c7fdc38a129d5709e23cd78dd0710e5dec555d75b665dda93c4c75190a",
+        "preservationSha256": "b99b715416e99b143e38ca7ffccbfbe5556640147b6dab1ce48839b322d2c8d1",
+        "savedFilterSha256": "bea5ff0a6c84ae83491eb5a0ca304981a9d2b951e080b8219a8807d3fb0dd74f",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "97f7149942e93286287cfa9e2283e9237619018c3f94bf6d6b52283ae6779792",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "d972d501f7aa97b8d7d65b44becfed4d3aba3f926848f359c190735622d9b3aa",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "after": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000",
+          "20260615000000",
+          "20260709194903",
+          "20260710144000",
+          "20260710150000",
+          "20260831200026",
+          "20260909115242",
+          "20260910094517",
+          "20260910115024"
+        ],
+        "historyCount": 11,
+        "historySha256": "ab618bd3e1bc2f19501c2ed47dd2ff336b8beefdbd3972940bd225da8ec9546e",
+        "catalogSha256": "940727c7fdc38a129d5709e23cd78dd0710e5dec555d75b665dda93c4c75190a",
+        "preservationSha256": "b99b715416e99b143e38ca7ffccbfbe5556640147b6dab1ce48839b322d2c8d1",
+        "savedFilterSha256": "bea5ff0a6c84ae83491eb5a0ca304981a9d2b951e080b8219a8807d3fb0dd74f",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "97f7149942e93286287cfa9e2283e9237619018c3f94bf6d6b52283ae6779792",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "d972d501f7aa97b8d7d65b44becfed4d3aba3f926848f359c190735622d9b3aa",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "retained": true,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "mayContinue": false,
+      "mayRepair": false,
+      "originalLocalReceiptSha256": "5b59c693c1965a1cfe75e72c335a8b63f290751006d043b849a7c23ae8086541"
+    },
+    {
+      "caseName": "trigger_profile_stop_184841",
+      "fixture": {
+        "schemaVersion": 1,
+        "kind": "synthetic-production-cli-matrix-fixture",
+        "variant": "postcleanup_zero_filters",
+        "sqlSha256": "3d5281ad2ca1123411a01fe05b79511c7a1d7365d15637e2ff568c14f64776fd",
+        "bootstrapSqlSha256": "79f8b6a8076b6c1c38ede0d6b0e9a74fdc22100fef62cc875eb99ee49b8a1d96",
+        "aggregates": {
+          "employees": 73,
+          "repaymentNull": 70,
+          "repaymentTrue": 2,
+          "repaymentFalse": 1,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0
+        },
+        "physicalPredicates": {
+          "savedFilters": {
+            "total": 0,
+            "orphanAuthReferences": 0,
+            "emptyNames": 0,
+            "overlengthNames": 0
+          },
+          "implicitChecklistColumn": {
+            "syntheticChoice": "present",
+            "status": "present_noop_possible",
+            "usableForHistoryClassification": false
+          }
+        },
+        "coverage": {
+          "syntheticOnly": true,
+          "productionRowsRead": false,
+          "productionPermissionJsonInferred": false,
+          "knownPermissionRows": [
+            "special_diet",
+            "diet_details",
+            "crewing_done"
+          ],
+          "limitations": [
+            "The remaining column_config permission maps, including repayment maps, are declared synthetic.",
+            "Representation hashes detect fixture drift only; semantic acceptance requires fresh catalog and physical observations.",
+            "Preservation projections cover the seeded public data rows only and are not a universal catalog or production-data proof.",
+            "The observed and post-cleanup variants deliberately choose an existing is_checklist_item column, but this does not establish a production mapping; their implicit history-failure outcome is indeterminate.",
+            "implicit_column_absent is a separate synthetic derivative and is not a production-profile representation."
+          ]
+        }
+      },
+      "tools": {
+        "cliVersion": "2.115.0",
+        "cliSha256": "691a3312584891204dc11893abcd12fa656dbcce186ef8d0a2782f137463f6d7",
+        "psqlVersion": "17.11",
+        "psqlSha256": "aa12e27530ac07f129e69daca953ea5f02202a7bde45d503e771abc39016536d"
+      },
+      "startedAtUtc": "2026-09-23T10:42:38.314Z",
+      "finishedAtUtc": "2026-09-23T10:43:14.693Z",
+      "classification": "proven_rejected_before_current_effect",
+      "attempts": [
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 618,
+          "outputSha256": "a3744253ca59c658b76c1510d4c755e071ff5e58146c8ddd56d2727cbff57f06",
+          "outputBytes": 1188,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "fixture_prefix_apply",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 913,
+          "outputSha256": "966890a45f364ef17285ae07f1193178390427cb8087d1b944ddab37f1016a07",
+          "outputBytes": 2037,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840"
+          ],
+          "lastApplyingVersion": "20260910184840",
+          "sqlStates": []
+        },
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 478,
+          "outputSha256": "3e0b788175434df071c3b4802caa114f2b4a7e4f57afacac19abe60f294da4d7",
+          "outputBytes": 450,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "measured_apply",
+          "child": {
+            "kind": "exit",
+            "code": 1
+          },
+          "durationMs": 535,
+          "outputSha256": "8550261da15e6b665120396c70bbd1c4942b34b3bef76feba62ecbfc183ace04",
+          "outputBytes": 9629,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": "20260910184841",
+          "sqlStates": [
+            "P0001"
+          ]
+        }
+      ],
+      "before": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000",
+          "20260615000000",
+          "20260709194903",
+          "20260710144000",
+          "20260710150000",
+          "20260831200026",
+          "20260909115242",
+          "20260910094517",
+          "20260910115024",
+          "20260910184840"
+        ],
+        "historyCount": 12,
+        "historySha256": "0286913752f02147cfc8aedc62d4c5fd38be103e0f75b4c44c8c6b94f7f60d7b",
+        "catalogSha256": "940727c7fdc38a129d5709e23cd78dd0710e5dec555d75b665dda93c4c75190a",
+        "preservationSha256": "9cb47b2010883daa173d194d74e2286b22450f0b7182d1a4a08de444ef06534f",
+        "savedFilterSha256": "bea5ff0a6c84ae83491eb5a0ca304981a9d2b951e080b8219a8807d3fb0dd74f",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "97f7149942e93286287cfa9e2283e9237619018c3f94bf6d6b52283ae6779792",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "d972d501f7aa97b8d7d65b44becfed4d3aba3f926848f359c190735622d9b3aa",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "after": {
+        "complete": true,
+        "history": [
+          "20260314000001",
+          "20260314000002",
+          "20260614000000",
+          "20260615000000",
+          "20260709194903",
+          "20260710144000",
+          "20260710150000",
+          "20260831200026",
+          "20260909115242",
+          "20260910094517",
+          "20260910115024",
+          "20260910184840"
+        ],
+        "historyCount": 12,
+        "historySha256": "0286913752f02147cfc8aedc62d4c5fd38be103e0f75b4c44c8c6b94f7f60d7b",
+        "catalogSha256": "940727c7fdc38a129d5709e23cd78dd0710e5dec555d75b665dda93c4c75190a",
+        "preservationSha256": "9cb47b2010883daa173d194d74e2286b22450f0b7182d1a4a08de444ef06534f",
+        "savedFilterSha256": "bea5ff0a6c84ae83491eb5a0ca304981a9d2b951e080b8219a8807d3fb0dd74f",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "97f7149942e93286287cfa9e2283e9237619018c3f94bf6d6b52283ae6779792",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "d972d501f7aa97b8d7d65b44becfed4d3aba3f926848f359c190735622d9b3aa",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "retained": true,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "mayContinue": false,
+      "mayRepair": false,
+      "originalLocalReceiptSha256": "9b2fa99d57687f078f190b831469dc78e2996d49eb55f0efa9e9aa4be378ba2f"
+    },
+    {
+      "caseName": "explicit_history_write_timeout",
+      "fixture": {
+        "schemaVersion": 1,
+        "kind": "synthetic-production-cli-matrix-fixture",
+        "variant": "postcleanup_zero_filters",
+        "sqlSha256": "3d5281ad2ca1123411a01fe05b79511c7a1d7365d15637e2ff568c14f64776fd",
+        "bootstrapSqlSha256": "79f8b6a8076b6c1c38ede0d6b0e9a74fdc22100fef62cc875eb99ee49b8a1d96",
+        "aggregates": {
+          "employees": 73,
+          "repaymentNull": 70,
+          "repaymentTrue": 2,
+          "repaymentFalse": 1,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0
+        },
+        "physicalPredicates": {
+          "savedFilters": {
+            "total": 0,
+            "orphanAuthReferences": 0,
+            "emptyNames": 0,
+            "overlengthNames": 0
+          },
+          "implicitChecklistColumn": {
+            "syntheticChoice": "present",
+            "status": "present_noop_possible",
+            "usableForHistoryClassification": false
+          }
+        },
+        "coverage": {
+          "syntheticOnly": true,
+          "productionRowsRead": false,
+          "productionPermissionJsonInferred": false,
+          "knownPermissionRows": [
+            "special_diet",
+            "diet_details",
+            "crewing_done"
+          ],
+          "limitations": [
+            "The remaining column_config permission maps, including repayment maps, are declared synthetic.",
+            "Representation hashes detect fixture drift only; semantic acceptance requires fresh catalog and physical observations.",
+            "Preservation projections cover the seeded public data rows only and are not a universal catalog or production-data proof.",
+            "The observed and post-cleanup variants deliberately choose an existing is_checklist_item column, but this does not establish a production mapping; their implicit history-failure outcome is indeterminate.",
+            "implicit_column_absent is a separate synthetic derivative and is not a production-profile representation."
+          ]
+        }
+      },
+      "tools": {
+        "cliVersion": "2.115.0",
+        "cliSha256": "691a3312584891204dc11893abcd12fa656dbcce186ef8d0a2782f137463f6d7",
+        "psqlVersion": "17.11",
+        "psqlSha256": "aa12e27530ac07f129e69daca953ea5f02202a7bde45d503e771abc39016536d"
+      },
+      "historyTableManuallyCreated": true,
+      "startedAtUtc": "2026-09-23T10:43:21.658Z",
+      "finishedAtUtc": "2026-09-23T10:44:08.097Z",
+      "classification": "uncertain_current_file",
+      "attempts": [
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 641,
+          "outputSha256": "a3744253ca59c658b76c1510d4c755e071ff5e58146c8ddd56d2727cbff57f06",
+          "outputBytes": 1188,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "fixture_prefix_apply",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 651,
+          "outputSha256": "f67b0e47cc506342f8ea36108d23657893e7beda7ef7dd3449c82929a12a30a4",
+          "outputBytes": 480,
+          "sourceVersions": [
+            "20260314000001"
+          ],
+          "lastApplyingVersion": "20260314000001",
+          "sqlStates": []
+        },
+        {
+          "purpose": "dry_run",
+          "child": {
+            "kind": "exit",
+            "code": 0
+          },
+          "durationMs": 516,
+          "outputSha256": "06beead5dd98e22aed1cbc64204ef1d45fab5b0bd914b73acc1c8653946ad861",
+          "outputBytes": 1135,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": null,
+          "sqlStates": []
+        },
+        {
+          "purpose": "measured_apply",
+          "child": {
+            "kind": "timeout",
+            "code": null
+          },
+          "durationMs": 1532,
+          "outputSha256": "6892698897151c3f84e4e0761194d8cf032d42d94cb2600216b40a13140c599d",
+          "outputBytes": 931,
+          "sourceVersions": [
+            "20260314000001",
+            "20260314000002",
+            "20260614000000",
+            "20260615000000",
+            "20260709194903",
+            "20260710144000",
+            "20260710150000",
+            "20260831200026",
+            "20260909115242",
+            "20260910094517",
+            "20260910115024",
+            "20260910184840",
+            "20260910184841"
+          ],
+          "lastApplyingVersion": "20260314000002",
+          "sqlStates": []
+        }
+      ],
+      "before": {
+        "complete": true,
+        "history": [
+          "20260314000001"
+        ],
+        "historyCount": 1,
+        "historySha256": "1cbea8251adf32f11395c4d560767856cc83c71b354b615bf994e369fb0e9df7",
+        "catalogSha256": "09f24baa3fb9c98c4e2406090e7fec61ed3b6f4ceeb9aa80f27a7fe5b794c483",
+        "preservationSha256": "a8a6e42ed9ff653d49e39bc0d1c3653c741268bd6df6161ccae118440f350f4b",
+        "savedFilterSha256": "d91957121bdf4e11e455a9092f6b6b716c5d09e8a7e0393f2576afa846e89bc3",
+        "headcountSha256": "f8e1d76874861352429c3e075bae47844bafcd8c0d144624aa88a0e478d64b29",
+        "nonCurrentHeadcountSha256": "250e165f3b3dd0ac14e2bdc16a37fcb0260c007a98a961ac64b60ab2fd8d55fa",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "b70e0d6ef60219a2452fa2ddb602ce16acbd54cc9e862396c13bcdbc3cd49db0",
+        "headcountPostcondition": false,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "after": {
+        "complete": true,
+        "history": [
+          "20260314000001"
+        ],
+        "historyCount": 1,
+        "historySha256": "1cbea8251adf32f11395c4d560767856cc83c71b354b615bf994e369fb0e9df7",
+        "catalogSha256": "db0997ee2f8b029909b861c32ab86de9140df704defc795546fac3f21ac2c9a8",
+        "preservationSha256": "a8a6e42ed9ff653d49e39bc0d1c3653c741268bd6df6161ccae118440f350f4b",
+        "savedFilterSha256": "d91957121bdf4e11e455a9092f6b6b716c5d09e8a7e0393f2576afa846e89bc3",
+        "headcountSha256": "29d62c1d518234ceaa21939fc6f4e52423c97529fdac04057c1cbb5ba1482da9",
+        "nonCurrentHeadcountSha256": "250e165f3b3dd0ac14e2bdc16a37fcb0260c007a98a961ac64b60ab2fd8d55fa",
+        "checklistSha256": "cf0c7cdbc19b76f43afdeb951d7dc6549e78335bd2c83e0e81210eac5f4e97e5",
+        "nonCurrentChecklistSha256": "92d498b6ba0fe750ecc83e30b7196df54e476eed7a175855063c45a1b8637d58",
+        "headcountPostcondition": true,
+        "checklistPostcondition": true,
+        "counts": {
+          "employees": 73,
+          "auditRows": 1025,
+          "auditNonNullActors": 202,
+          "auditDistinctNonNullActors": 1,
+          "unmappedActors": 0,
+          "columnConfig": 61,
+          "staffingLocations": 2,
+          "users": 1,
+          "importantDates": 1,
+          "staffingChangelog": 1,
+          "savedFilters": 0,
+          "savedFilterOrphans": 0,
+          "savedFilterEmptyNames": 0,
+          "savedFilterOverlengthNames": 0,
+          "repayment": {
+            "omcNull": 70,
+            "omcTrue": 2,
+            "pe3Null": 70,
+            "pe3True": 2,
+            "omcFalse": 1,
+            "pe3False": 1
+          }
+        }
+      },
+      "hookSetupSha256": "c78ad477ae8fdfabe01a11628ac5d0c64ee85cfc5a27bad8833c5a978af8ef2f",
+      "hookBefore": {
+        "armed": true,
+        "observed": false,
+        "targetVersion": "20260314000002",
+        "firingCount": 0,
+        "complete": true
+      },
+      "hookAfter": {
+        "armed": true,
+        "observed": true,
+        "targetVersion": "20260314000002",
+        "firingCount": 1,
+        "complete": true
+      },
+      "serverSettled": true,
+      "retained": true,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "mayContinue": false,
+      "mayRepair": false,
+      "originalLocalReceiptSha256": "39b549b3d4814ed63aab8b1c4e6c969532c2e53d398618c55d85b0950a484b7c"
+    }
+  ],
+  "focused": {
+    "passed": 174,
+    "skipped": 0,
+    "failed": 0,
+    "runnerSeconds": 2.3,
+    "sourceHead": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0"
+  },
+  "typeScript": {
+    "command": "pnpm type-check",
+    "exitCode": 0,
+    "sourceHead": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0"
+  },
+  "cleanChain": {
+    "source": {
+      "sourceHead": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0",
+      "sourcePlanSha256": "99831d087397b084cbd89e8ec2ac338ab2711df911fd0f379319addec1e49355",
+      "migrationIdentitySha256": "76e84e40d8261dda9288da38a90142d16cbb3483af8d728ebe877afa7bbdec9c",
+      "migrationCount": 68,
+      "seedSha256": "870b911c93eb5befa472812bcafd32e54872e09149bb8c9e687f6c1b5adde90b",
+      "authSchemaSha256": "b87ec767139cf02d7d53a240b7cad1bf66df692d1da30a41ad41edf89771194a"
+    },
+    "durationMs": 10414,
+    "strictCatalogCheckCount": 16,
+    "originalReceiptSha256": "f994a9eaaf234cb82a42b31d88a2fb653d2cc55421f2ad1b83324ba16b236646",
+    "retainedDatabase": true
+  },
+  "fullVitest": {
+    "passed": 3935,
+    "skipped": 0,
+    "failed": 0,
+    "files": 344,
+    "runnerSeconds": 290.39,
+    "receipt": {
+      "schemaVersion": 1,
+      "kind": "guarded-local-release-gate",
+      "localOnly": true,
+      "gate": "vitest",
+      "command": "npx vitest run",
+      "vitestMaxWorkers": 4,
+      "sourceHead": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0",
+      "sourceHeadUnchanged": true,
+      "sourceStillClean": true,
+      "sourcePlanSha256": "99831d087397b084cbd89e8ec2ac338ab2711df911fd0f379319addec1e49355",
+      "sourcePlanUnchanged": true,
+      "sourcePlanCompleteBinding": true,
+      "fixtureInputsValidated": true,
+      "ownedNext": "separate_guard_resource_verified",
+      "startedAt": "2026-09-23T10:39:16.395Z",
+      "durationMs": 299766,
+      "exitCode": 0,
+      "childExitCode": 0,
+      "signal": null,
+      "logSha256": "206acc19bd85df0df367e5befb4b02e561f4546ad9d51f8f7ef46480b6c01f1e",
+      "logBytes": 1159284
+    }
+  },
+  "fullPlaywright": {
+    "sourceHead": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0",
+    "command": "npx playwright test",
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "exitCode": 0,
+    "runnerSeconds": 1056.230892,
+    "orchestrationMs": 1074212,
+    "historical47SkipIdentitiesExactlyMatched": true,
+    "reportSha256": "a1b7aac383e41fdbc71e28ac0796dfe5018c60cc93beeafc7637ccdf68ed947d",
+    "reportBytes": 60918,
+    "skipIdentities": [
+      "capacity-management.spec.ts|Capacity Management E2E Journey â€º AC8: Capacity management workflow",
+      "concurrent-users.spec.ts|Concurrent User E2E Scenario â€º AC5: Concurrent assignment to last spot",
+      "epic-12\\story-12.4\\pwa-installation.spec.ts|PWA Installation E2E â€º should cache static assets",
+      "epic-12\\story-12.4\\pwa-installation.spec.ts|PWA Installation E2E â€º should display app in standalone mode when installed",
+      "epic-12\\story-12.4\\pwa-installation.spec.ts|PWA Installation E2E â€º should handle service worker updates",
+      "epic-12\\story-12.4\\pwa-installation.spec.ts|PWA Installation E2E â€º should have apple touch icon",
+      "epic-12\\story-12.4\\pwa-installation.spec.ts|PWA Installation E2E â€º should have manifest.json linked in page head",
+      "epic-12\\story-12.4\\pwa-installation.spec.ts|PWA Installation E2E â€º should have theme color meta tag",
+      "epic-12\\story-12.4\\pwa-installation.spec.ts|PWA Installation E2E â€º should register service worker on page load",
+      "epic-12\\story-12.4\\pwa-installation.spec.ts|PWA Installation E2E â€º should show install prompt when criteria met",
+      "epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts|Story 13.11: Employee Status Visual Indicators â€º selected + terminated shows both tints",
+      "epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts|Story 13.11: Employee Status Visual Indicators â€º terminated employees show red tint in table",
+      "epic-13\\story-13.11\\employee-status-visual-indicators.spec.ts|Story 13.11: Employee Status Visual Indicators â€º terminated employees take precedence over crew ready (red tint only)",
+      "epic-13\\story-13.4\\export-selected-employees.spec.ts|Story 13.4: Export Selected Employees Workflow â€º export crew ready only exports and marks selected employees",
+      "epic-13\\story-13.4\\export-selected-employees.spec.ts|Story 13.4: Export Selected Employees Workflow â€º export includes selected employees from multiple pages",
+      "epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts|Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) â€º employee count display shows correct number of selected employees",
+      "epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts|Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) â€º selected employees show greyish tint when crew ready filter is active",
+      "epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts|Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) â€º user activates crew ready filter and employees are auto-selected",
+      "epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts|Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) â€º user can uncheck individual employees when crew ready filter is active",
+      "epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts|Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) â€º user deactivates crew ready filter and selection clears",
+      "epic-13\\story-13.5\\crew-ready-auto-selection.spec.ts|Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) â€º user switches to another filter and selection clears",
+      "epic-13\\story-13.7\\export-workflow.spec.ts|Story 13.7: Export Workflow E2E â€º should export crew ready only selected employees",
+      "epic-13\\story-13.9\\repayment-field-visibility.spec.ts|Story 13.9: Repayment Field Visibility â€º edit modal hides repayment fields for non-terminated employees",
+      "epic-13\\story-13.9\\repayment-field-visibility.spec.ts|Story 13.9: Repayment Field Visibility â€º edit modal shows repayment fields for terminated employees",
+      "epic-13\\story-13.9\\repayment-field-visibility.spec.ts|Story 13.9: Repayment Field Visibility â€º marking employee as terminated shows repayment fields immediately",
+      "epic-13\\story-13.9\\repayment-field-visibility.spec.ts|Story 13.9: Repayment Field Visibility â€º reactivating employee hides repayment fields immediately",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should handle errors gracefully",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should handle timezone correctly (Europe/Stockholm)",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should include all affected PE3 dates in notification",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should include employee names or \"Unassigned\" in notification",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should not send duplicate notifications",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should reject unauthorized requests",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should send both notifications if both deadlines same day",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should send cancel deadline notification when deadline matches",
+      "epic-14\\story-14.2\\pe3-deadline-workflow.spec.ts|PE3 Deadline Notification Workflow â€º should send submit deadline notification when deadline matches",
+      "epic-16\\story-16.5\\field-highlighting.spec.ts|Story 16.5: Field Highlighting in Employee Table â€º highlights appear on changed fields in table view",
+      "epic-16\\story-16.5\\field-highlighting.spec.ts|Story 16.5: Field Highlighting in Employee Table â€º highlights work with inline editing",
+      "epic-16\\story-16.6\\real-database-highlighting.spec.ts|Story 16.6: Real Database - External User Highlighting â€º External user should NOT see banner or highlights when logged in as HR Admin makes changes",
+      "epic-16\\story-16.6\\real-database-highlighting.spec.ts|Story 16.6: Real Database - External User Highlighting â€º External user should see highlights for changed visible columns (real database)",
+      "epic-17\\story-17.4\\export-external-users.spec.ts|Story 17.4: Export Functionality for External Users â€º [P0] Export dialog shows only viewable fields for external users",
+      "epic-17\\story-17.4\\export-external-users.spec.ts|Story 17.4: Export Functionality for External Users â€º [P1] External user can export with permission-based field filtering",
+      "epic-17\\story-17.4\\export-external-users.spec.ts|Story 17.4: Export Functionality for External Users â€º [P2] Export dialog can be cancelled",
+      "epic-20\\story-20.7\\export-with-filters.spec.ts|Story 20.7: Export with Filters â€º AC 4.2: Crew Ready export respects filtered state",
+      "prerequisites-export.spec.ts|Prerequisites & Export E2E Journey - SKIPPED (Story 20.1) â€º AC4: Prerequisites completion and export workflow",
+      "real-time-sync.spec.ts|Real-time Sync E2E Journey â€º AC6: Real-time sync between users",
+      "room-assignment.spec.ts|Room Assignment E2E Journey â€º AC7: Room assignment workflow",
+      "termination-reactivation.spec.ts|Termination & Reactivation E2E Journey â€º Legacy termination/reactivation variants â€º skipped: old data-testid-based date restoration placeholder flows"
+    ],
+    "skipClassification": "Unchanged: 9 notification/cron authorization cases and 38 fixture/superseded debt cases. None counted as passes."
+  },
+  "build": {
+    "schemaVersion": 1,
+    "kind": "guarded-local-release-gate",
+    "localOnly": true,
+    "gate": "build",
+    "command": "pnpm run build",
+    "vitestMaxWorkers": null,
+    "sourceHead": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0",
+    "sourceHeadUnchanged": true,
+    "sourceStillClean": true,
+    "sourcePlanSha256": "99831d087397b084cbd89e8ec2ac338ab2711df911fd0f379319addec1e49355",
+    "sourcePlanUnchanged": true,
+    "sourcePlanCompleteBinding": true,
+    "fixtureInputsValidated": true,
+    "ownedNext": "not_required",
+    "startedAt": "2026-09-23T10:45:20.585Z",
+    "durationMs": 24002,
+    "exitCode": 0,
+    "childExitCode": 0,
+    "signal": null,
+    "logSha256": "d6b6d00a8d2927b9a8142af1efa03b2d3951140489ff3dc3ac05b82d16ae3482",
+    "logBytes": 4093
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 296
+  },
+  "implementationHeadCI": {
+    "head": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0",
+    "runId": 35850532129,
+    "unitAndIntegration": {
+      "passed": 3747,
+      "skipped": 188,
+      "total": 3935,
+      "passedFiles": 327,
+      "skippedFiles": 17,
+      "runnerSeconds": 250.17
+    },
+    "integrationSubset": {
+      "passed": 827,
+      "skipped": 93,
+      "total": 920,
+      "passedFiles": 93,
+      "skippedFiles": 13,
+      "runnerSeconds": 72.74
+    },
+    "skips": [
+      {
+        "file": "tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts",
+        "total": 8,
+        "skipped": 8
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.15/inactive-authorization-and-atomic-delete.test.ts",
+        "total": 11,
+        "skipped": 11
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.15/saved-filter-reconciliation.test.ts",
+        "total": 20,
+        "skipped": 20
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.14/postgrest-claim-contention.test.ts",
+        "total": 1,
+        "skipped": 1
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.13/direct-database-authorization.test.ts",
+        "total": 7,
+        "skipped": 7
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.10/reconciliation-evidence.test.ts",
+        "total": 13,
+        "skipped": 13
+      },
+      {
+        "file": "tests/integration/hr-admin-impersonation-export-integration.test.ts",
+        "total": 5,
+        "skipped": 5
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.7/supabase-rls-evidence.test.ts",
+        "total": 8,
+        "skipped": 8
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.15/production-saved-filter-cleanup-prerequisite.test.ts",
+        "total": 6,
+        "skipped": 6
+      },
+      {
+        "file": "tests/unit/epic-22/story-22.15/production-cli-matrix-gate.test.ts",
+        "total": 9,
+        "skipped": 4
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.13/runtime-column-restore.test.ts",
+        "total": 3,
+        "skipped": 3
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts",
+        "total": 8,
+        "skipped": 8
+      },
+      {
+        "file": "tests/integration/epic-22/story-22.13/atomic-user-status-transition.test.ts",
+        "total": 1,
+        "skipped": 1
+      },
+      {
+        "file": "tests/integration/epic-22/column-config-checklist-column.test.ts",
+        "total": 2,
+        "skipped": 2
+      },
+      {
+        "file": "tests/unit/epic-22/story-22.15/protected-dry-run-host.test.ts",
+        "total": 17,
+        "skipped": 17
+      },
+      {
+        "file": "tests/unit/epic-22/story-22.15/protected-bootstrap-host.test.ts",
+        "total": 26,
+        "skipped": 26
+      },
+      {
+        "file": "tests/unit/epic-22/story-22.15/protected-file-lease.test.ts",
+        "total": 26,
+        "skipped": 26
+      },
+      {
+        "file": "tests/unit/epic-22/story-22.15/protected-production-inputs.test.ts",
+        "total": 22,
+        "skipped": 22
+      }
+    ],
+    "skipClassification": {
+      "managedLocalServiceOrAdmission": 93,
+      "nativeWindowsOnly": 95,
+      "noneCountedAsPasses": true
+    }
+  },
+  "pauseSafeguardTests": {
+    "passed": 45,
+    "sourceHead": "a8634ec58992a8a474f0b16fb48f1d8d00764fd0",
+    "coveredByFullVitest": true,
+    "hostedPauseReverified": false
+  },
+  "earlierAttempts": [
+    {
+      "head": "3568634cd4870214c00c1433b9958bbb205a31c4",
+      "gate": "matrix",
+      "passed": 0,
+      "failed": 7,
+      "skipped": 0,
+      "runnerSeconds": 59.84,
+      "reason": "Initial observer key/empty-array defects stopped before CLI apply; databases retained."
+    },
+    {
+      "head": "586b661a6aab400e3288e0cf44ac7fe2ba753bba",
+      "gate": "matrix",
+      "passed": 3,
+      "failed": 4,
+      "skipped": 0,
+      "runnerSeconds": 219.5,
+      "reason": "Fixture constraints and pre-current observation boundaries incomplete; failed databases retained and not continued."
+    },
+    {
+      "head": "b185986a6ec3b019746f7e52c47d657c56b5d313",
+      "gate": "matrix",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "runnerSeconds": 316.05
+    },
+    {
+      "head": "b185986a6ec3b019746f7e52c47d657c56b5d313",
+      "gate": "full-vitest",
+      "passed": 3892,
+      "failed": 2,
+      "skipped": 0,
+      "runnerSeconds": 441.48,
+      "orchestrationMs": 469075,
+      "reason": "Protected package test deadline and live export request deadline; assertions/timeouts were not relaxed. Package-only diagnosis later passed 12/12."
+    },
+    {
+      "head": "dd4ecf14979c964a3f31624130d737ebdc09bc37",
+      "gate": "full-vitest",
+      "passed": 3928,
+      "failed": 3,
+      "failedSuites": 1,
+      "skipped": 0,
+      "runnerSeconds": 289.29,
+      "orchestrationMs": 291443,
+      "reason": "Invalidated by review preparation briefly creating an untracked folder in the live checkout; three matrix cases rejected immutable-source prerequisites and the completion guard failed. Folder subsequently moved outside. Exact removal timestamp unavailable."
+    }
+  ],
+  "audit": {
+    "production": {
+      "info": 0,
+      "low": 0,
+      "moderate": 1,
+      "high": 0,
+      "critical": 0
+    },
+    "developmentInclusive": {
+      "info": 0,
+      "low": 0,
+      "moderate": 10,
+      "high": 16,
+      "critical": 1
+    },
+    "unchangedLockfile": true,
+    "productionModerateAcceptanceExpires": "2026-09-30"
+  },
+  "scope": {
+    "implicitColumnAbsent": "Separate synthetic derivative; production column mapping is not established.",
+    "historyFaultSetup": "Manual synthetic history-table setup is not a CLI history-bootstrap proof.",
+    "catalog": "Only enumerated public object groups are fingerprinted. Full success uses the unchanged strict catalog verifier.",
+    "guard": "Fresh owned/active/verified List, selected-container IPv4 port and system-identifier hash checks. The recipe hash is not an independent daemon configuration attestation.",
+    "failedDatabases": "Retained; no reset, drop, retry, repair or continuation.",
+    "nativePlatformCoverage": "Four PowerShell tests execute on Windows and are explicitly skipped on non-Windows CI; these skips are not passing native proof."
+  },
+  "remaining": {
+    "repairLedger": {
+      "rows": 55,
+      "status": "UNPROVED unsigned"
+    },
+    "proposedExecutes": 13,
+    "separatelyGatedOrphanFilterCleanup": 48,
+    "strictProductionCatalogGroupsOpen": 7,
+    "freshHostedProofPending": true,
+    "isolationAndTargetAdmissionPending": true,
+    "separateOwnerGates": [
+      "isolation/settings",
+      "cleanup",
+      "history repair",
+      "main merge",
+      "production deployment",
+      "reopening"
+    ]
+  }
+}

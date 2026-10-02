@@ -9,14 +9,27 @@ import { columnConfigRepository } from '@/lib/server/repositories/column-config-
 import Papa from 'papaparse';
 import * as ExcelJS from 'exceljs';
 import type { Employee } from '@/lib/types/employee';
-import { createAPIClient } from '@/lib/supabase/server-api';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import type { UserRole } from '@/lib/types/user';
 import { resolveImportantDateId } from '@/lib/utils/important-date-resolver';
 import { getColumnViewRole } from '@/lib/utils/role-utils';
+import { employeeExportRequestSchema } from '@/lib/validation/export-schema';
 
 // Force Node.js runtime for cookies() support
 export const runtime = 'nodejs';
+
+function invalidExportPayloadResponse() {
+  return NextResponse.json(
+    {
+      error: {
+        code: 'INVALID_EXPORT_PAYLOAD',
+        message: 'Exportförfrågan är ogiltig.',
+        timestamp: new Date().toISOString(),
+      },
+    },
+    { status: 400 }
+  );
+}
 
 /**
  * POST /api/employees/export
@@ -33,15 +46,29 @@ export async function POST(request: NextRequest) {
     const user = await requireAuthAPI(request);
 
     // Parse request body
-    const body = await request.json();
-    const { employeeIds, fields, impersonatedRole, format = 'csv' } = body;
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return invalidExportPayloadResponse();
+    }
+
+    const parsedBody = employeeExportRequestSchema.safeParse(body);
+    const employeeIdsIssue = parsedBody.error?.issues.find(
+      (issue) => issue.path[0] === 'employeeIds'
+    );
+    const fieldsIssue = parsedBody.error?.issues.find(
+      (issue) => issue.path[0] === 'fields'
+    );
+    const formatIssue = parsedBody.error?.issues.find(
+      (issue) => issue.path[0] === 'format'
+    );
+    const impersonatedRoleIssue = parsedBody.error?.issues.find(
+      (issue) => issue.path[0] === 'impersonatedRole'
+    );
 
     // Validate: If employeeIds is empty, return error message
-    if (
-      !employeeIds ||
-      !Array.isArray(employeeIds) ||
-      employeeIds.length === 0
-    ) {
+    if (employeeIdsIssue) {
       return NextResponse.json(
         {
           error: {
@@ -55,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate: If fields is empty, return error message
-    if (!fields || !Array.isArray(fields) || fields.length === 0) {
+    if (fieldsIssue) {
       return NextResponse.json(
         {
           error: {
@@ -67,6 +94,38 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    if (formatIssue) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'INVALID_FORMAT',
+            message: "Exporteraformat måste vara antingen 'csv' eller 'xlsx'.",
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    if (impersonatedRoleIssue) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'INVALID_IMPERSONATED_ROLE',
+            message: 'Ogiltig impersonerad roll för export.',
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!parsedBody.success) {
+      return invalidExportPayloadResponse();
+    }
+
+    const { employeeIds, fields, impersonatedRole, format } = parsedBody.data;
 
     // Security: Validate impersonation permission (only HR Admins can impersonate)
     if (impersonatedRole && user.role !== 'hr_admin') {
@@ -80,20 +139,6 @@ export async function POST(request: NextRequest) {
           },
         },
         { status: 403 }
-      );
-    }
-
-    // Validate export format
-    if (format !== 'csv' && format !== 'xlsx') {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'INVALID_FORMAT',
-            message: "Exporteraformat måste vara antingen 'csv' eller 'xlsx'.",
-            timestamp: new Date().toISOString(),
-          },
-        },
-        { status: 400 }
       );
     }
 
@@ -196,28 +241,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get custom column data for selected employees
-    const supabase = createAPIClient(request);
-    const { data: customDataRows, error: customDataError } = await supabase
-      .from('custom_data')
-      .select('*')
-      .in('employee_id', employeeIds);
-
-    if (customDataError) {
-      console.error('Misslyckades att hämta anpassad data:', customDataError);
-    }
-
-    // Create a map of employee_id -> custom data
-    const customDataMap = new Map<
-      string,
-      Record<string, string | number | boolean | null>
-    >();
-    if (customDataRows) {
-      customDataRows.forEach((row) => {
-        customDataMap.set(row.employee_id, row.data || {});
-      });
-    }
-
     // Fetch all important dates to resolve date UUIDs
     // Use service role client to bypass RLS — important_dates is shared reference
     // data needed by all authenticated roles for resolving date UUID fields.
@@ -277,15 +300,17 @@ export async function POST(request: NextRequest) {
     // Prepare CSV data with only permitted fields
     const csvData = selectedEmployees.map((emp: Employee) => {
       const row: Record<string, string> = {};
+      const employeeRecord = emp as unknown as Record<string, unknown>;
 
       fieldsToExport.forEach((fieldKey) => {
         // Map db_column_name to actual Employee property if it's a masterdata field
         const actualPropertyName =
           dbColumnToEmployeeProperty[fieldKey] || fieldKey;
 
-        // Try to get value from employee object first (masterdata)
-        if (actualPropertyName in emp) {
-          const value = emp[actualPropertyName as keyof Employee];
+        // Try to get value from employee object first. Custom columns are real
+        // employee table columns, so they arrive on the selected employee row.
+        if (Object.prototype.hasOwnProperty.call(employeeRecord, actualPropertyName)) {
+          const value = employeeRecord[actualPropertyName];
 
           // Format the value appropriately
           if (value === null || value === undefined) {
@@ -309,8 +334,8 @@ export async function POST(request: NextRequest) {
             row[fieldKey] = String(value);
           }
         } else {
-          // Try custom data
-          const customData = customDataMap.get(emp.id);
+          // Legacy API responses may still include customData as a nested object.
+          const customData = emp.customData;
           if (customData && fieldKey in customData) {
             const value = customData[fieldKey];
             row[fieldKey] =

@@ -7,6 +7,7 @@ import * as supabaseServer from "@/lib/supabase/server";
 // Mock the Supabase client
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
+  createServiceRoleClient: vi.fn(),
 }));
 
 describe("ColumnConfigRepository", () => {
@@ -15,6 +16,9 @@ describe("ColumnConfigRepository", () => {
   beforeEach(() => {
     repository = new ColumnConfigRepository();
     vi.clearAllMocks();
+    vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue({
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    } as never);
   });
 
   const mockColumnConfigs: ColumnConfig[] = [
@@ -84,7 +88,6 @@ describe("ColumnConfigRepository", () => {
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
-
       const result = await repository.findAll();
 
       expect(result).toEqual(mockColumnConfigs);
@@ -304,8 +307,8 @@ describe("ColumnConfigRepository", () => {
         column_type: "text",
         is_masterdata: false,
         role_permissions: {
-          hr_admin: { view: false, edit: false },
-          sodexo: { view: true, edit: true },
+          hr_admin: { view: true, edit: true },
+          sodexo: { view: false, edit: false },
           omc: { view: false, edit: false },
           payroll: { view: false, edit: false },
           toplux: { view: false, edit: false },
@@ -331,11 +334,18 @@ describe("ColumnConfigRepository", () => {
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+      const privilegedRpc = vi.fn().mockResolvedValue({
+        data: newColumn,
+        error: null,
+      });
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue({
+        rpc: privilegedRpc,
+      } as never);
 
       const result = await repository.createCustomColumn({
         column_name: "Sodexo Team",
         column_type: "text",
-        role: UserRole.SODEXO,
+        role: UserRole.HR_ADMIN,
         db_column_name: "test_column",
         is_masterdata: false,
         category: "Recruitment",
@@ -343,13 +353,20 @@ describe("ColumnConfigRepository", () => {
 
       expect(result).toEqual(newColumn);
       expect(result.is_masterdata).toBe(false);
-      // Verify only Sodexo has permissions (HR Admin should not have permissions by default)
-      expect(result.role_permissions.sodexo).toEqual({ view: true, edit: true });
-      expect(result.role_permissions.hr_admin).toEqual({ view: false, edit: false });
-      expect(mockClient.insert).toHaveBeenCalled();
+      expect(result.role_permissions.hr_admin).toEqual({ view: true, edit: true });
+      expect(result.role_permissions.sodexo).toEqual({ view: false, edit: false });
+      expect(supabaseServer.createServiceRoleClient).toHaveBeenCalledTimes(1);
+      expect(privilegedRpc).toHaveBeenCalledWith(
+        "create_employee_column_config",
+        expect.objectContaining({
+          p_db_column_name: "test_column",
+          p_column_type: "text",
+          p_is_masterdata: false,
+        })
+      );
     });
 
-    it("should create column with only creating role permissions (not HR Admin by default)", async () => {
+    it("should reject direct repository creation by a Sodexo user", async () => {
       const newColumn: ColumnConfig = {
         id: "col-new",
         column_name: "Sodexo Team",
@@ -384,26 +401,23 @@ describe("ColumnConfigRepository", () => {
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue({
+        rpc: vi.fn().mockResolvedValue({ data: newColumn, error: null }),
+      } as never);
 
-      const result = await repository.createCustomColumn({
-        column_name: "Sodexo Team",
-        column_type: "text",
-        role: UserRole.SODEXO,
-        db_column_name: "sodexo_team",
-        is_masterdata: false,
-      });
-
-      // Verify HR Admin does NOT have permissions by default
-      expect(result.role_permissions.hr_admin).toEqual({ view: false, edit: false });
-      // Verify only creating role (Sodexo) has permissions
-      expect(result.role_permissions.sodexo).toEqual({ view: true, edit: true });
-      // Verify other roles have no permissions
-      expect(result.role_permissions.omc).toEqual({ view: false, edit: false });
-      expect(result.role_permissions.payroll).toEqual({ view: false, edit: false });
-      expect(result.role_permissions.toplux).toEqual({ view: false, edit: false });
+      await expect(
+        repository.createCustomColumn({
+          column_name: "Sodexo Team",
+          column_type: "text",
+          role: UserRole.SODEXO,
+          db_column_name: "sodexo_team",
+          is_masterdata: false,
+        })
+      ).rejects.toThrow("Endast HR Admin kan skapa nya kolumner");
+      expect(supabaseServer.createServiceRoleClient).not.toHaveBeenCalled();
     });
 
-    it("should create column with only ÖMC permissions when created by ÖMC user", async () => {
+    it("should reject direct repository creation by an ÖMC user", async () => {
       const newColumn: ColumnConfig = {
         id: "col-new",
         column_name: "ÖMC Column",
@@ -438,21 +452,20 @@ describe("ColumnConfigRepository", () => {
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue({
+        rpc: vi.fn().mockResolvedValue({ data: newColumn, error: null }),
+      } as never);
 
-      const result = await repository.createCustomColumn({
-        column_name: "ÖMC Column",
-        column_type: "text",
-        role: UserRole.OMC,
-        db_column_name: "omc_column",
-        is_masterdata: false,
-      });
-
-      // Verify HR Admin does NOT have permissions
-      expect(result.role_permissions.hr_admin).toEqual({ view: false, edit: false });
-      // Verify only ÖMC has permissions
-      expect(result.role_permissions.omc).toEqual({ view: true, edit: true });
-      // Verify other roles have no permissions
-      expect(result.role_permissions.sodexo).toEqual({ view: false, edit: false });
+      await expect(
+        repository.createCustomColumn({
+          column_name: "ÖMC Column",
+          column_type: "text",
+          role: UserRole.OMC,
+          db_column_name: "omc_column",
+          is_masterdata: false,
+        })
+      ).rejects.toThrow("Endast HR Admin kan skapa nya kolumner");
+      expect(supabaseServer.createServiceRoleClient).not.toHaveBeenCalled();
     });
 
     it("should create column with HR Admin permissions when created by HR Admin", async () => {
@@ -490,6 +503,9 @@ describe("ColumnConfigRepository", () => {
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue({
+        rpc: vi.fn().mockResolvedValue({ data: newColumn, error: null }),
+      } as never);
 
       const result = await repository.createCustomColumn({
         column_name: "HR Column",
@@ -544,12 +560,12 @@ describe("ColumnConfigRepository", () => {
           db_column_name: "sodexo_team",
           column_type: "text",
           is_masterdata: false,
-          role: UserRole.SODEXO,
+          role: UserRole.HR_ADMIN,
         })
       ).rejects.toThrow('Column with database name "sodexo_team" already exists');
     });
 
-    it("should throw error on database insert failure", async () => {
+    it("should throw error when the atomic database RPC fails", async () => {
       const mockClient = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
@@ -566,6 +582,12 @@ describe("ColumnConfigRepository", () => {
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
+      vi.mocked(supabaseServer.createServiceRoleClient).mockReturnValue({
+        rpc: vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: "Insert failed" },
+        }),
+      } as never);
 
       await expect(
         repository.createCustomColumn({
@@ -573,9 +595,9 @@ describe("ColumnConfigRepository", () => {
           db_column_name: "new_column",
           column_type: "text",
           is_masterdata: false,
-          role: UserRole.SODEXO,
+          role: UserRole.HR_ADMIN,
         })
-      ).rejects.toThrow("Misslyckades att skapa custom kolumnkonfiguration");
+      ).rejects.toThrow("Misslyckades att skapa kolumn och kolumnkonfiguration");
     });
   });
 
@@ -597,61 +619,44 @@ describe("ColumnConfigRepository", () => {
 
       const updatedColumn = { ...customColumn, category: "HR" };
 
-      const mockClient = {
-        from: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn()
-          .mockResolvedValueOnce({ data: customColumn, error: null }) // findById
-          .mockResolvedValueOnce({ data: updatedColumn, error: null }), // update
-        update: vi.fn().mockReturnThis(),
-      };
+      const rpc = vi.fn().mockResolvedValue({
+        data: updatedColumn,
+        error: null,
+      });
+      const mockClient = { rpc };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       const result = await repository.updateColumn("col-custom", "user-1", UserRole.SODEXO, { category: "HR" });
 
       expect(result.category).toBe("HR");
-      expect(mockClient.update).toHaveBeenCalled();
+      expect(rpc).toHaveBeenCalledWith("update_assigned_column_presentation", {
+        p_column_id: "col-custom",
+        p_updates: { category: "HR" },
+      });
+      expect(supabaseServer.createServiceRoleClient).not.toHaveBeenCalled();
     });
 
     it("should throw error when updating masterdata column", async () => {
-      const masterdataColumn: ColumnConfig = {
-        id: "col-master",
-        column_name: "First Name",
-        column_type: "text",
-        is_masterdata: true,
-        role_permissions: { hr_admin: { view: true, edit: true } },
-        category: null,
-        display_order: 0,
-        is_visible: true,
-        db_column_name: "first_name",
-        category_color: null,
-        created_at: "2025-10-28T00:00:00Z",
-        updated_at: "2025-10-28T00:00:00Z",      };
-
       const mockClient = {
-        from: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({ data: masterdataColumn, error: null }),
+        rpc: vi.fn().mockResolvedValue({
+          data: null,
+          error: { code: "42501", message: "Insufficient permission" },
+        }),
       };
 
       vi.mocked(supabaseServer.createClient).mockResolvedValue(mockClient as never);
 
       await expect(
         repository.updateColumn("col-master", "user-1", UserRole.HR_ADMIN, { category: "HR" })
-      ).rejects.toThrow("Kan inte uppdatera masterdata kolumn via denna endpoint");
+      ).rejects.toThrow("permission denied to update this column");
     });
 
     it("should throw error when column not found", async () => {
       const mockClient = {
-        from: vi.fn().mockReturnThis(),
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
+        rpc: vi.fn().mockResolvedValue({
           data: null,
-          error: { code: "PGRST116", message: "Not found" },
+          error: { code: "P0002", message: "Not found" },
         }),
       };
 
@@ -659,7 +664,7 @@ describe("ColumnConfigRepository", () => {
 
       await expect(
         repository.updateColumn("nonexistent", "user-1", UserRole.HR_ADMIN, { category: "HR" })
-      ).rejects.toThrow("Kolumn hittades inte");
+      ).rejects.toThrow("Column not found");
     });
   });
 

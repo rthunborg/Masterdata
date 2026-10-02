@@ -1,0 +1,2487 @@
+{
+  "schemaVersion": 1,
+  "kind": "production-cutover-ordering-correction-verification",
+  "observedOn": "2026-09-29",
+  "testedImplementation": "1a5aa61937e34fa577a317afca4bca9bca64bf9a",
+  "unitSourceSha": "1a5aa61937e34fa577a317afca4bca9bca64bf9a",
+  "applicationReleaseAndUnitSourcesByteIdentical": true,
+  "soleSourceDeltaSinceUnit": null,
+  "priorReviewedHead": "262df2f02d754c01e75f43e1842f5705b278b81b",
+  "baseStaging": "88cf3efcf7fdb8cdbfd00d850da6082b0f6fdd65",
+  "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "story": "in-progress",
+  "epic23": "on-hold",
+  "production": "paused-no-go",
+  "hostedWrites": false,
+  "hostedSettingChanges": false,
+  "operatorTriggeredDeployments": false,
+  "localTimeoutFixtureCorrection": {
+    "productionSourceByteIdenticalTo": "1ea4843ec58ee81fad94e3e39b360bb0ff7c3ef8",
+    "priorLaunchRelativeDeadlineMs": 1500,
+    "setupDeadlineMs": 60000,
+    "cancellationDelayMs": 1500,
+    "closeGraceMs": 1000,
+    "escalationGraceMs": 1000,
+    "cancellationRequiresExactFaultObserved": true,
+    "caseDeadlineMs": 120000,
+    "productionTimeoutsUnchanged": true
+  },
+  "reviewCorrection": {
+    "priority": "P1",
+    "collectorSourceBinding": {
+      "collectors": [
+        "observed-profile",
+        "managed-writers",
+        "staffing-pre-execute"
+      ],
+      "pinnedGitExecutableRequired": true,
+      "cleanSourceBeforePreflightAndBeforePsql": true,
+      "callerClaimsComparedWithGitFacts": true,
+      "rawGitRepositoryModuleDeclarationAndSqlBytesRequired": true,
+      "initialVerifiedGitSqlExecuted": true,
+      "externalRuntimeDependenciesRequireSeparateApprovedIntegrity": true
+    },
+    "builtInCliVendorProfile": "supabase",
+    "cause": "Independent freshness did not bind cleanup and later collector sessions to the final isolation/drain.",
+    "cleanupFileFields": [
+      "startedAtUtc",
+      "completedAtUtc"
+    ],
+    "signedFields": [
+      "cleanupStartedAtUtc",
+      "cleanupCompletedAtUtc"
+    ],
+    "initialControlsAndProbesBeforeCleanupStart": true,
+    "hostOuterWorkerDeadlineMs": 360000,
+    "hostNestedBudgetAndHeadroomMs": 282000,
+    "cleanupHashLeased": true,
+    "collectorTimestampAfterChildReturn": true,
+    "requiredDatabaseAndDrainIntervals": true,
+    "managedWriterRequired": true,
+    "managedWriterCollectionIntervalAfterCleanup": true,
+    "managedWriterFreshnessAgainstActualLaunch": true,
+    "strictNonOverlap": true,
+    "workerAndFactoryRechecks": true,
+    "negativeCases": [
+      "missing",
+      "equal",
+      "reversed",
+      "noncanonical",
+      "future",
+      "overlapping",
+      "collector-before-cleanup",
+      "stale-interval",
+      "managed-profile-omitted",
+      "managed-start-before-cleanup",
+      "managed-profile-stale-at-launch",
+      "managed-profile-after-database",
+      "each-initial-control-equal-or-after-cleanup-start",
+      "missing-noncanonical-cleanup-start",
+      "reversed-cleanup-interval"
+    ],
+    "initialInvalidPacketDatabaseInvocations": 0,
+    "expiredApplyPreflightApplyInvocations": 0,
+    "cliPreflightRecheckAtActualSpawn": true,
+    "versionProbeTimeoutMs": 10000,
+    "encryptedRawDiagnosticStreams": true,
+    "diagnosticContextNonceRetained": true,
+    "diagnosticRecoveryNativeDpapiProved": true,
+    "diagnosticRecoveryAuthorizesRetry": false,
+    "nonzeroApplyOutcome": "outcome_unknown",
+    "journalBoundsBytes": 8388608,
+    "rawStreamBoundsBytes": 2097152
+  },
+  "vitest": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-vitest-cutover",
+    "localOnly": true,
+    "command": "npx vitest run",
+    "sourceSha": "1a5aa61937e34fa577a317afca4bca9bca64bf9a",
+    "startedAtUtc": "2026-09-29T09:49:03.140Z",
+    "durationMs": 871976,
+    "childExitCode": 0,
+    "sourceUnchanged": true,
+    "vitestMaxWorkers": 2,
+    "requiredMatrix": true,
+    "requiredDatabaseEvidence": true,
+    "requiredLiveAppEvidence": true,
+    "logSha256": "e6a12b19a8647f62705781fd1b37caed7e2a2e92f26bf9119d51568222928368",
+    "logBytes": 1211551,
+    "passed": 4465,
+    "skipped": 0,
+    "failed": 0,
+    "filesPassed": 370,
+    "durationSeconds": 863.04
+  },
+  "playwright": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-playwright-cutover",
+    "localOnly": true,
+    "command": "npx playwright test",
+    "sourceSha": "1a5aa61937e34fa577a317afca4bca9bca64bf9a",
+    "startedAtUtc": "2026-09-29T10:04:11.291Z",
+    "durationMs": 1351399,
+    "childExitCode": 0,
+    "signal": null,
+    "errorCode": null,
+    "sourceUnchanged": true,
+    "logSha256": "c1d1c23c20647f2a5167a4e98918a272d316e1bd1369cf1c2bcc24ce548fc361",
+    "logBytes": 178783,
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "durationSeconds": 1339.960638,
+    "skippedIdentitiesMatch": true,
+    "historicalSkipComparisonNormalization": "Decode stored XML entities and normalize path separators; require the same complete identity multiset.",
+    "skippedIdentities": [
+      "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+      "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+      "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should include employee names or \"Unassigned\" in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PWA Installation E2E › should cache static assets|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should display app in standalone mode when installed|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should handle service worker updates|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have apple touch icon|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have manifest.json linked in page head|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have theme color meta tag|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should register service worker on page load|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should show install prompt when criteria met|epic-12/story-12.4/pwa-installation.spec.ts",
+      "Prerequisites & Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+      "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+      "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13/story-13.4/export-selected-employees.spec.ts",
+      "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13/story-13.4/export-selected-employees.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13/story-13.7/export-workflow.spec.ts",
+      "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16/story-16.5/field-highlighting.spec.ts",
+      "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16/story-16.5/field-highlighting.spec.ts",
+      "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16/story-16.6/real-database-highlighting.spec.ts",
+      "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16/story-16.6/real-database-highlighting.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20/story-20.7/export-with-filters.spec.ts",
+      "Termination & Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts"
+    ],
+    "junitSha256": "f706587c2caf3acc22cae9b9da6e30566c40cb2e75f1f0dc4933bc223232833d",
+    "independentReportBinding": {
+      "schemaVersion": 1,
+      "kind": "independent-playwright-report-binding",
+      "sourceSha": "1a5aa61937e34fa577a317afca4bca9bca64bf9a",
+      "originalReceiptSha256": "fc1df54f40216d55d1bbaee06215d8265087ed2c3686a6d297438daa59475dcc",
+      "rawLogSha256": "c1d1c23c20647f2a5167a4e98918a272d316e1bd1369cf1c2bcc24ce548fc361",
+      "junitSha256": "f706587c2caf3acc22cae9b9da6e30566c40cb2e75f1f0dc4933bc223232833d",
+      "receiptInterval": {
+        "startedAtUtc": "2026-09-29T10:04:11.291Z",
+        "durationMs": 1351399
+      },
+      "reportMtimeUtc": "2026-09-29T10:26:42.484Z",
+      "counts": {
+        "tests": 210,
+        "skipped": 47,
+        "failures": 0,
+        "errors": 0,
+        "time": 1339.960638
+      },
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0,
+      "exactCaseStatusAndIdentityMatch": true,
+      "individualDurationsMatchWherePresent": true,
+      "caseMatchMode": "complete identity/status/duration multiset",
+      "logOrdinalCoverageComplete": true,
+      "junitOrdinalBinding": false,
+      "skippedIdentities": [
+        "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+        "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+        "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should include employee names or \"Unassigned\" in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PWA Installation E2E › should cache static assets|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should display app in standalone mode when installed|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should handle service worker updates|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have apple touch icon|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have manifest.json linked in page head|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have theme color meta tag|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should register service worker on page load|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should show install prompt when criteria met|epic-12/story-12.4/pwa-installation.spec.ts",
+        "Prerequisites & Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+        "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+        "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13/story-13.4/export-selected-employees.spec.ts",
+        "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13/story-13.4/export-selected-employees.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13/story-13.7/export-workflow.spec.ts",
+        "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16/story-16.5/field-highlighting.spec.ts",
+        "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16/story-16.5/field-highlighting.spec.ts",
+        "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16/story-16.6/real-database-highlighting.spec.ts",
+        "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16/story-16.6/real-database-highlighting.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20/story-20.7/export-with-filters.spec.ts",
+        "Termination & Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts"
+      ],
+      "resultTuples": [
+        {
+          "ordinal": 1,
+          "project": "chromium",
+          "identity": "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 2,
+          "project": "chromium",
+          "identity": "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 3,
+          "project": "chromium",
+          "identity": "CSV Import & Validation E2E Journey › AC3: CSV import and validation journey|csv-import-export.spec.ts",
+          "status": "passed",
+          "duration": "11.4s",
+          "xmlDurationSeconds": 11.364
+        },
+        {
+          "ordinal": 4,
+          "project": "chromium",
+          "identity": "External custom-column lifecycle restrictions › hides create and delete controls while keeping presentation editing|delete-column.spec.ts",
+          "status": "passed",
+          "duration": "3.2s",
+          "xmlDurationSeconds": 3.241
+        },
+        {
+          "ordinal": 5,
+          "project": "chromium",
+          "identity": "External custom-column lifecycle restrictions › rejects direct external create and delete API calls|delete-column.spec.ts",
+          "status": "passed",
+          "duration": "4.7s",
+          "xmlDurationSeconds": 4.704
+        },
+        {
+          "ordinal": 6,
+          "project": "chromium",
+          "identity": "Employee Card - Responsive Behavior › AC4: Responsive Layout and Scrolling Tests › should expand card on narrow mobile viewport (320px)|employee-card-responsive.spec.ts",
+          "status": "passed",
+          "duration": "1.8s",
+          "xmlDurationSeconds": 1.794
+        },
+        {
+          "ordinal": 7,
+          "project": "chromium",
+          "identity": "Employee Card - Responsive Behavior › AC4: Responsive Layout and Scrolling Tests › should expand card on standard mobile viewport (375px)|employee-card-responsive.spec.ts",
+          "status": "passed",
+          "duration": "1.4s",
+          "xmlDurationSeconds": 1.354
+        },
+        {
+          "ordinal": 8,
+          "project": "chromium",
+          "identity": "Employee Card - Responsive Behavior › AC4: Responsive Layout and Scrolling Tests › should expand card on tablet viewport (768px)|employee-card-responsive.spec.ts",
+          "status": "passed",
+          "duration": "1.4s",
+          "xmlDurationSeconds": 1.409
+        },
+        {
+          "ordinal": 9,
+          "project": "chromium",
+          "identity": "Employee Card - Responsive Behavior › AC4: Responsive Layout and Scrolling Tests › should enable vertical scrolling when expanded content exceeds viewport|employee-card-responsive.spec.ts",
+          "status": "passed",
+          "duration": "1.4s",
+          "xmlDurationSeconds": 1.407
+        },
+        {
+          "ordinal": 10,
+          "project": "chromium",
+          "identity": "Employee Card - Responsive Behavior › AC4: Responsive Layout and Scrolling Tests › should maintain accessible touch targets during scroll|employee-card-responsive.spec.ts",
+          "status": "passed",
+          "duration": "1.6s",
+          "xmlDurationSeconds": 1.555
+        },
+        {
+          "ordinal": 11,
+          "project": "chromium",
+          "identity": "Employee Card - Responsive Behavior › AC4: Responsive Layout and Scrolling Tests › should have smooth or default scroll behavior|employee-card-responsive.spec.ts",
+          "status": "passed",
+          "duration": "1.7s",
+          "xmlDurationSeconds": 1.697
+        },
+        {
+          "ordinal": 12,
+          "project": "chromium",
+          "identity": "Employee Card - Responsive Behavior › AC4: Responsive Layout and Scrolling Tests › should adapt card width to screen size|employee-card-responsive.spec.ts",
+          "status": "passed",
+          "duration": "2.8s",
+          "xmlDurationSeconds": 2.792
+        },
+        {
+          "ordinal": 13,
+          "project": "chromium",
+          "identity": "Employee Card - Responsive Behavior › AC4: Responsive Layout and Scrolling Tests › should maintain readable text at all viewport sizes|employee-card-responsive.spec.ts",
+          "status": "passed",
+          "duration": "4.3s",
+          "xmlDurationSeconds": 4.277
+        },
+        {
+          "ordinal": 14,
+          "project": "chromium",
+          "identity": "Employee Card - Swipe Gestures (Story 12.2) › AC1: Swipe gesture reveals action buttons › should reveal action buttons when swiping left on employee card|employee-card-swipe.spec.ts",
+          "status": "passed",
+          "duration": "2.0s",
+          "xmlDurationSeconds": 2.034
+        },
+        {
+          "ordinal": 15,
+          "project": "chromium",
+          "identity": "Employee Card - Swipe Gestures (Story 12.2) › AC1: Swipe gesture reveals action buttons › should translate the card surface while revealing actions|employee-card-swipe.spec.ts",
+          "status": "passed",
+          "duration": "2.0s",
+          "xmlDurationSeconds": 1.953
+        },
+        {
+          "ordinal": 16,
+          "project": "chromium",
+          "identity": "Employee Card - Swipe Gestures (Story 12.2) › AC2: Action button interactions › should open archive confirmation when Archive is clicked|employee-card-swipe.spec.ts",
+          "status": "passed",
+          "duration": "2.0s",
+          "xmlDurationSeconds": 2.049
+        },
+        {
+          "ordinal": 17,
+          "project": "chromium",
+          "identity": "Employee Card - Swipe Gestures (Story 12.2) › AC2: Action button interactions › should open terminate dialog when Terminate is clicked|employee-card-swipe.spec.ts",
+          "status": "passed",
+          "duration": "2.1s",
+          "xmlDurationSeconds": 2.105
+        },
+        {
+          "ordinal": 18,
+          "project": "chromium",
+          "identity": "Employee Card - Swipe Gestures (Story 12.2) › AC2: Action button interactions › should open edit dialog when Edit is clicked|employee-card-swipe.spec.ts",
+          "status": "passed",
+          "duration": "2.2s",
+          "xmlDurationSeconds": 2.16
+        },
+        {
+          "ordinal": 19,
+          "project": "chromium",
+          "identity": "Employee Card - Swipe Gestures (Story 12.2) › AC3: Desktop device gesture handling › should render the table instead of swipe cards on desktop viewport|employee-card-swipe.spec.ts",
+          "status": "passed",
+          "duration": "2.8s",
+          "xmlDurationSeconds": 2.801
+        },
+        {
+          "ordinal": 20,
+          "project": "chromium",
+          "identity": "Employee Card - Swipe Gestures (Story 12.2) › AC4: Card state management › should return card to original position on swipe right|employee-card-swipe.spec.ts",
+          "status": "passed",
+          "duration": "2.8s",
+          "xmlDurationSeconds": 2.768
+        },
+        {
+          "ordinal": 21,
+          "project": "chromium",
+          "identity": "Employee Card - Swipe Gestures (Story 12.2) › AC4: Card state management › should close swipe actions on tap outside card|employee-card-swipe.spec.ts",
+          "status": "passed",
+          "duration": "2.3s",
+          "xmlDurationSeconds": 2.287
+        },
+        {
+          "ordinal": 22,
+          "project": "chromium",
+          "identity": "Employee Lifecycle E2E Journey › AC1: Complete employee lifecycle journey|employee-lifecycle.spec.ts",
+          "status": "passed",
+          "duration": "15.2s",
+          "xmlDurationSeconds": 15.183
+        },
+        {
+          "ordinal": 23,
+          "project": "chromium",
+          "identity": "Employee Lifecycle E2E Journey › AC1: Form validation works (required fields)|employee-lifecycle.spec.ts",
+          "status": "passed",
+          "duration": "4.0s",
+          "xmlDurationSeconds": 4.002
+        },
+        {
+          "ordinal": 24,
+          "project": "chromium",
+          "identity": "PWA Installation E2E › should register service worker on page load|epic-12/story-12.4/pwa-installation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 25,
+          "project": "chromium",
+          "identity": "PWA Installation E2E › should show install prompt when criteria met|epic-12/story-12.4/pwa-installation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 26,
+          "project": "chromium",
+          "identity": "PWA Installation E2E › should cache static assets|epic-12/story-12.4/pwa-installation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 27,
+          "project": "chromium",
+          "identity": "PWA Installation E2E › should handle service worker updates|epic-12/story-12.4/pwa-installation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 28,
+          "project": "chromium",
+          "identity": "PWA Installation E2E › should display app in standalone mode when installed|epic-12/story-12.4/pwa-installation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 29,
+          "project": "chromium",
+          "identity": "PWA Installation E2E › should have manifest.json linked in page head|epic-12/story-12.4/pwa-installation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 30,
+          "project": "chromium",
+          "identity": "PWA Installation E2E › should have theme color meta tag|epic-12/story-12.4/pwa-installation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 31,
+          "project": "chromium",
+          "identity": "PWA Installation E2E › should have apple touch icon|epic-12/story-12.4/pwa-installation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 32,
+          "project": "chromium",
+          "identity": "Virtual Scrolling Performance (Story 12.5) › should enable virtual scrolling for lists with >100 items|epic-12/story-12.5/virtual-scrolling.spec.ts",
+          "status": "passed",
+          "duration": "2.2s",
+          "xmlDurationSeconds": 2.224
+        },
+        {
+          "ordinal": 33,
+          "project": "chromium",
+          "identity": "Virtual Scrolling Performance (Story 12.5) › should render only visible items in viewport|epic-12/story-12.5/virtual-scrolling.spec.ts",
+          "status": "passed",
+          "duration": "2.2s",
+          "xmlDurationSeconds": 2.153
+        },
+        {
+          "ordinal": 34,
+          "project": "chromium",
+          "identity": "Virtual Scrolling Performance (Story 12.5) › should maintain smooth scrolling performance|epic-12/story-12.5/virtual-scrolling.spec.ts",
+          "status": "passed",
+          "duration": "3.7s",
+          "xmlDurationSeconds": 3.688
+        },
+        {
+          "ordinal": 35,
+          "project": "chromium",
+          "identity": "Virtual Scrolling Performance (Story 12.5) › should handle large dataset efficiently|epic-12/story-12.5/virtual-scrolling.spec.ts",
+          "status": "passed",
+          "duration": "2.0s",
+          "xmlDurationSeconds": 2.023
+        },
+        {
+          "ordinal": 36,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P0] Long-press on employee card shows context menu|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "24.8s",
+          "xmlDurationSeconds": 24.791
+        },
+        {
+          "ordinal": 37,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P0] Context menu closes after selecting action|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "25.0s",
+          "xmlDurationSeconds": 24.965
+        },
+        {
+          "ordinal": 38,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P1] Email link has pre-filled subject|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "24.6s",
+          "xmlDurationSeconds": 24.568
+        },
+        {
+          "ordinal": 39,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P1] Phone link opens dialer|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "24.4s",
+          "xmlDurationSeconds": 24.354
+        },
+        {
+          "ordinal": 40,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P0] FAB appears for HR Admin on mobile|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "24.3s",
+          "xmlDurationSeconds": 24.26
+        },
+        {
+          "ordinal": 41,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P0] FAB menu shows correct options|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "24.5s",
+          "xmlDurationSeconds": 24.456
+        },
+        {
+          "ordinal": 42,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P1] Search input uses type=\"search\" for mobile keyboard|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "24.3s",
+          "xmlDurationSeconds": 24.332
+        },
+        {
+          "ordinal": 43,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P1] Search debounces input (300ms delay)|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "24.6s",
+          "xmlDurationSeconds": 24.588
+        },
+        {
+          "ordinal": 44,
+          "project": "chromium",
+          "identity": "Mobile Quick Actions (Story 12.6) › [P2] Search history is saved to localStorage|epic-12/story-12.6/mobile-quick-actions.spec.ts",
+          "status": "passed",
+          "duration": "24.3s",
+          "xmlDurationSeconds": 24.322
+        },
+        {
+          "ordinal": 45,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should have proper ARIA landmarks on mobile|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "1.4s",
+          "xmlDurationSeconds": 1.425
+        },
+        {
+          "ordinal": 46,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should have accessible search input|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "1.5s",
+          "xmlDurationSeconds": 1.487
+        },
+        {
+          "ordinal": 47,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should have proper ARIA labels on employee cards|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "1.5s",
+          "xmlDurationSeconds": 1.507
+        },
+        {
+          "ordinal": 48,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should have touch targets meeting 44x44px minimum|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "1.6s",
+          "xmlDurationSeconds": 1.558
+        },
+        {
+          "ordinal": 49,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should have proper spacing between interactive elements|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "1.4s",
+          "xmlDurationSeconds": 1.442
+        },
+        {
+          "ordinal": 50,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should announce validation errors to screen readers|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "1.7s",
+          "xmlDurationSeconds": 1.736
+        },
+        {
+          "ordinal": 51,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should have aria-required on required form fields|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "1.5s",
+          "xmlDurationSeconds": 1.544
+        },
+        {
+          "ordinal": 52,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should have descriptive ARIA labels on action buttons|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "1.4s",
+          "xmlDurationSeconds": 1.356
+        },
+        {
+          "ordinal": 53,
+          "project": "chromium",
+          "identity": "Story 12.7: Mobile Accessibility › should pass automated accessibility audit (axe-core)|epic-12/story-12.7/mobile-accessibility.spec.ts",
+          "status": "passed",
+          "duration": "2.0s",
+          "xmlDurationSeconds": 1.992
+        },
+        {
+          "ordinal": 54,
+          "project": "chromium",
+          "identity": "Story 13.1: Filter Checkbox User Workflow › user can check \"Show Archived\" and see archived employees|epic-13/story-13.1/dashboard-filter-checkboxes.spec.ts",
+          "status": "passed",
+          "duration": "2.6s",
+          "xmlDurationSeconds": 2.569
+        },
+        {
+          "ordinal": 55,
+          "project": "chromium",
+          "identity": "Story 13.1: Filter Checkbox User Workflow › user can uncheck \"Show Archived\" and hide archived employees|epic-13/story-13.1/dashboard-filter-checkboxes.spec.ts",
+          "status": "passed",
+          "duration": "2.6s",
+          "xmlDurationSeconds": 2.629
+        },
+        {
+          "ordinal": 56,
+          "project": "chromium",
+          "identity": "Story 13.1: Filter Checkbox User Workflow › user can combine status filters|epic-13/story-13.1/dashboard-filter-checkboxes.spec.ts",
+          "status": "passed",
+          "duration": "2.7s",
+          "xmlDurationSeconds": 2.691
+        },
+        {
+          "ordinal": 57,
+          "project": "chromium",
+          "identity": "Story 13.1: Filter Checkbox User Workflow › checkbox visual state matches filter state|epic-13/story-13.1/dashboard-filter-checkboxes.spec.ts",
+          "status": "passed",
+          "duration": "2.6s",
+          "xmlDurationSeconds": 2.638
+        },
+        {
+          "ordinal": 58,
+          "project": "chromium",
+          "identity": "Story 13.1: Filter Checkbox User Workflow › view updates immediately on checkbox click|epic-13/story-13.1/dashboard-filter-checkboxes.spec.ts",
+          "status": "passed",
+          "duration": "2.4s",
+          "xmlDurationSeconds": 2.433
+        },
+        {
+          "ordinal": 59,
+          "project": "chromium",
+          "identity": "Prevent Unnecessary View Refreshes › should not refresh when clicking field and clicking away without change|epic-13/story-13.10/prevent-unnecessary-refreshes.spec.ts",
+          "status": "passed",
+          "duration": "3.3s",
+          "xmlDurationSeconds": 3.287
+        },
+        {
+          "ordinal": 60,
+          "project": "chromium",
+          "identity": "Prevent Unnecessary View Refreshes › should refresh when changing field value and clicking away|epic-13/story-13.10/prevent-unnecessary-refreshes.spec.ts",
+          "status": "passed",
+          "duration": "6.4s",
+          "xmlDurationSeconds": 6.407
+        },
+        {
+          "ordinal": 61,
+          "project": "chromium",
+          "identity": "Prevent Unnecessary View Refreshes › should cancel edit on Escape key without refresh|epic-13/story-13.10/prevent-unnecessary-refreshes.spec.ts",
+          "status": "passed",
+          "duration": "3.6s",
+          "xmlDurationSeconds": 3.615
+        },
+        {
+          "ordinal": 62,
+          "project": "chromium",
+          "identity": "Prevent Unnecessary View Refreshes › should not refresh when clicking search button|epic-13/story-13.10/prevent-unnecessary-refreshes.spec.ts",
+          "status": "passed",
+          "duration": "2.2s",
+          "xmlDurationSeconds": 2.212
+        },
+        {
+          "ordinal": 63,
+          "project": "chromium",
+          "identity": "Prevent Unnecessary View Refreshes › should not refresh when clicking filter checkboxes|epic-13/story-13.10/prevent-unnecessary-refreshes.spec.ts",
+          "status": "passed",
+          "duration": "2.3s",
+          "xmlDurationSeconds": 2.341
+        },
+        {
+          "ordinal": 64,
+          "project": "chromium",
+          "identity": "Prevent Unnecessary View Refreshes › should handle whitespace-only changes as no change|epic-13/story-13.10/prevent-unnecessary-refreshes.spec.ts",
+          "status": "passed",
+          "duration": "3.6s",
+          "xmlDurationSeconds": 3.611
+        },
+        {
+          "ordinal": 65,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 2.467
+        },
+        {
+          "ordinal": 66,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › crew ready employees show green tint in table|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "passed",
+          "duration": "2.7s",
+          "xmlDurationSeconds": 2.666
+        },
+        {
+          "ordinal": 67,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 2.596
+        },
+        {
+          "ordinal": 68,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 2.908
+        },
+        {
+          "ordinal": 69,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › selected + crew ready shows both tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "passed",
+          "duration": "3.1s",
+          "xmlDurationSeconds": 3.118
+        },
+        {
+          "ordinal": 70,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › visual updates are smooth when marking employee as terminated|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "passed",
+          "duration": "2.9s",
+          "xmlDurationSeconds": 2.869
+        },
+        {
+          "ordinal": 71,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › visual updates are smooth when marking employee as crew ready|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "passed",
+          "duration": "2.8s",
+          "xmlDurationSeconds": 2.755
+        },
+        {
+          "ordinal": 72,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › tints work in dark mode|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "passed",
+          "duration": "3.1s",
+          "xmlDurationSeconds": 3.056
+        },
+        {
+          "ordinal": 73,
+          "project": "chromium",
+          "identity": "Story 13.11: Employee Status Visual Indicators › mobile cards show correct tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+          "status": "passed",
+          "duration": "4.4s",
+          "xmlDurationSeconds": 4.357
+        },
+        {
+          "ordinal": 74,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should display \"Säsongsrekrytering 2026\" in header on dashboard|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "2.2s",
+          "xmlDurationSeconds": 2.173
+        },
+        {
+          "ordinal": 75,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should NOT display \"HR Masterdata\" in header|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "2.0s",
+          "xmlDurationSeconds": 2.046
+        },
+        {
+          "ordinal": 76,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should display correct header text on important dates page|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "1.9s",
+          "xmlDurationSeconds": 1.868
+        },
+        {
+          "ordinal": 77,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should display correct header text on user management page|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "5.1s",
+          "xmlDurationSeconds": 5.146
+        },
+        {
+          "ordinal": 78,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should display correct header text on column settings page|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "6.5s",
+          "xmlDurationSeconds": 6.478
+        },
+        {
+          "ordinal": 79,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should display header text correctly on mobile viewport|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "5.1s",
+          "xmlDurationSeconds": 5.095
+        },
+        {
+          "ordinal": 80,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should display header text correctly on desktop viewport|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "2.4s",
+          "xmlDurationSeconds": 2.377
+        },
+        {
+          "ordinal": 81,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should not break header layout with longer text|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "2.3s",
+          "xmlDurationSeconds": 2.292
+        },
+        {
+          "ordinal": 82,
+          "project": "chromium",
+          "identity": "Story 13.12: Header Text Display › should maintain header functionality with new text|epic-13/story-13.12/header-text.spec.ts",
+          "status": "passed",
+          "duration": "2.4s",
+          "xmlDurationSeconds": 2.359
+        },
+        {
+          "ordinal": 83,
+          "project": "chromium",
+          "identity": "Story 13.2: Employee Selection Workflow › user can check checkbox to select employee|epic-13/story-13.2/employee-selection.spec.ts",
+          "status": "passed",
+          "duration": "2.9s",
+          "xmlDurationSeconds": 2.933
+        },
+        {
+          "ordinal": 84,
+          "project": "chromium",
+          "identity": "Story 13.2: Employee Selection Workflow › user can uncheck checkbox to deselect employee|epic-13/story-13.2/employee-selection.spec.ts",
+          "status": "passed",
+          "duration": "2.9s",
+          "xmlDurationSeconds": 2.872
+        },
+        {
+          "ordinal": 85,
+          "project": "chromium",
+          "identity": "Story 13.2: Employee Selection Workflow › selected employees show greyish tint|epic-13/story-13.2/employee-selection.spec.ts",
+          "status": "passed",
+          "duration": "2.9s",
+          "xmlDurationSeconds": 2.874
+        },
+        {
+          "ordinal": 86,
+          "project": "chromium",
+          "identity": "Story 13.2: Employee Selection Workflow › multiple employees can be selected|epic-13/story-13.2/employee-selection.spec.ts",
+          "status": "passed",
+          "duration": "2.9s",
+          "xmlDurationSeconds": 2.941
+        },
+        {
+          "ordinal": 87,
+          "project": "chromium",
+          "identity": "Story 13.2: Employee Selection Workflow › selection persists during scroll|epic-13/story-13.2/employee-selection.spec.ts",
+          "status": "passed",
+          "duration": "4.3s",
+          "xmlDurationSeconds": 4.295
+        },
+        {
+          "ordinal": 88,
+          "project": "chromium",
+          "identity": "Story 13.2: Employee Selection Workflow › selection works on mobile view|epic-13/story-13.2/employee-selection.spec.ts",
+          "status": "passed",
+          "duration": "4.0s",
+          "xmlDurationSeconds": 4.024
+        },
+        {
+          "ordinal": 89,
+          "project": "chromium",
+          "identity": "Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11) › user can NOT click row to select employee (Story 9.11)|epic-13/story-13.3/employee-row-click-selection.spec.ts",
+          "status": "passed",
+          "duration": "1.9s",
+          "xmlDurationSeconds": 1.908
+        },
+        {
+          "ordinal": 90,
+          "project": "chromium",
+          "identity": "Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11) › row clicks do NOT change selection (Story 9.11)|epic-13/story-13.3/employee-row-click-selection.spec.ts",
+          "status": "passed",
+          "duration": "1.9s",
+          "xmlDurationSeconds": 1.936
+        },
+        {
+          "ordinal": 91,
+          "project": "chromium",
+          "identity": "Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11) › clicking Edit button does not change selection (Story 9.11)|epic-13/story-13.3/employee-row-click-selection.spec.ts",
+          "status": "passed",
+          "duration": "1.8s",
+          "xmlDurationSeconds": 1.838
+        },
+        {
+          "ordinal": 92,
+          "project": "chromium",
+          "identity": "Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11) › clicking inline field does not change selection (Story 9.11)|epic-13/story-13.3/employee-row-click-selection.spec.ts",
+          "status": "passed",
+          "duration": "1.9s",
+          "xmlDurationSeconds": 1.872
+        },
+        {
+          "ordinal": 93,
+          "project": "chromium",
+          "identity": "Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11) › row clicks do NOT select multiple rows (Story 9.11)|epic-13/story-13.3/employee-row-click-selection.spec.ts",
+          "status": "passed",
+          "duration": "2.0s",
+          "xmlDurationSeconds": 1.996
+        },
+        {
+          "ordinal": 94,
+          "project": "chromium",
+          "identity": "Story 13.3: Row Click Selection Workflow (REMOVED in Story 9.11) › card click does NOT work on mobile (Story 9.11)|epic-13/story-13.3/employee-row-click-selection.spec.ts",
+          "status": "passed",
+          "duration": "2.7s",
+          "xmlDurationSeconds": 2.656
+        },
+        {
+          "ordinal": 95,
+          "project": "chromium",
+          "identity": "Story 13.4: Export Selected Employees Workflow › user selects 3 employees and exports selected employees|epic-13/story-13.4/export-selected-employees.spec.ts",
+          "status": "passed",
+          "duration": "23.1s",
+          "xmlDurationSeconds": 23.127
+        },
+        {
+          "ordinal": 96,
+          "project": "chromium",
+          "identity": "Story 13.4: Export Selected Employees Workflow › user selects no employees and export is disabled|epic-13/story-13.4/export-selected-employees.spec.ts",
+          "status": "passed",
+          "duration": "21.1s",
+          "xmlDurationSeconds": 21.129
+        },
+        {
+          "ordinal": 97,
+          "project": "chromium",
+          "identity": "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13/story-13.4/export-selected-employees.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 21.863
+        },
+        {
+          "ordinal": 98,
+          "project": "chromium",
+          "identity": "Story 13.4: Export Selected Employees Workflow › unselecting employees before export excludes them|epic-13/story-13.4/export-selected-employees.spec.ts",
+          "status": "passed",
+          "duration": "26.3s",
+          "xmlDurationSeconds": 26.342
+        },
+        {
+          "ordinal": 99,
+          "project": "chromium",
+          "identity": "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13/story-13.4/export-selected-employees.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 100,
+          "project": "chromium",
+          "identity": "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 101,
+          "project": "chromium",
+          "identity": "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 102,
+          "project": "chromium",
+          "identity": "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 103,
+          "project": "chromium",
+          "identity": "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 104,
+          "project": "chromium",
+          "identity": "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 105,
+          "project": "chromium",
+          "identity": "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 106,
+          "project": "chromium",
+          "identity": "Export Field Selection › should open export dialog when employees are selected and export button is clicked|epic-13/story-13.6/export-field-selection.spec.ts",
+          "status": "passed",
+          "duration": "3.1s",
+          "xmlDurationSeconds": 3.075
+        },
+        {
+          "ordinal": 107,
+          "project": "chromium",
+          "identity": "Export Field Selection › should keep export disabled without selection|epic-13/story-13.6/export-field-selection.spec.ts",
+          "status": "passed",
+          "duration": "3.0s",
+          "xmlDurationSeconds": 2.998
+        },
+        {
+          "ordinal": 108,
+          "project": "chromium",
+          "identity": "Export Field Selection › should allow selecting fields and exporting|epic-13/story-13.6/export-field-selection.spec.ts",
+          "status": "passed",
+          "duration": "4.1s",
+          "xmlDurationSeconds": 4.057
+        },
+        {
+          "ordinal": 109,
+          "project": "chromium",
+          "identity": "Export Field Selection › should close dialog when cancel is clicked|epic-13/story-13.6/export-field-selection.spec.ts",
+          "status": "passed",
+          "duration": "3.8s",
+          "xmlDurationSeconds": 3.824
+        },
+        {
+          "ordinal": 110,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Field Selection Workflow E2E › should open export dialog when export button is clicked with selection|epic-13/story-13.7/export-field-selection-workflow.spec.ts",
+          "status": "passed",
+          "duration": "2.9s",
+          "xmlDurationSeconds": 2.936
+        },
+        {
+          "ordinal": 111,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Field Selection Workflow E2E › should pre-select visible columns in export dialog|epic-13/story-13.7/export-field-selection-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.0s",
+          "xmlDurationSeconds": 3.002
+        },
+        {
+          "ordinal": 112,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Field Selection Workflow E2E › should allow user to select/deselect fields|epic-13/story-13.7/export-field-selection-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.6s",
+          "xmlDurationSeconds": 3.592
+        },
+        {
+          "ordinal": 113,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Field Selection Workflow E2E › should generate CSV with only selected fields|epic-13/story-13.7/export-field-selection-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.6s",
+          "xmlDurationSeconds": 3.562
+        },
+        {
+          "ordinal": 114,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Field Selection Workflow E2E › should match CSV headers to selected fields|epic-13/story-13.7/export-field-selection-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.9s",
+          "xmlDurationSeconds": 3.85
+        },
+        {
+          "ordinal": 115,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Field Selection Workflow E2E › should close dialog when cancel is clicked|epic-13/story-13.7/export-field-selection-workflow.spec.ts",
+          "status": "passed",
+          "duration": "4.1s",
+          "xmlDurationSeconds": 4.056
+        },
+        {
+          "ordinal": 116,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Workflow E2E › should export only selected employees|epic-13/story-13.7/export-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.9s",
+          "xmlDurationSeconds": 3.855
+        },
+        {
+          "ordinal": 117,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Workflow E2E › should export only selected fields|epic-13/story-13.7/export-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.9s",
+          "xmlDurationSeconds": 3.944
+        },
+        {
+          "ordinal": 118,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Workflow E2E › should keep export disabled with no selection|epic-13/story-13.7/export-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.9s",
+          "xmlDurationSeconds": 3.87
+        },
+        {
+          "ordinal": 119,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Workflow E2E › should download CSV file correctly|epic-13/story-13.7/export-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.6s",
+          "xmlDurationSeconds": 3.62
+        },
+        {
+          "ordinal": 120,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Workflow E2E › should have correct filename format|epic-13/story-13.7/export-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.7s",
+          "xmlDurationSeconds": 3.676
+        },
+        {
+          "ordinal": 121,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13/story-13.7/export-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 3.16
+        },
+        {
+          "ordinal": 122,
+          "project": "chromium",
+          "identity": "Story 13.7: Export Workflow E2E › should keep crew ready export disabled with no eligible selection|epic-13/story-13.7/export-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.3s",
+          "xmlDurationSeconds": 3.33
+        },
+        {
+          "ordinal": 123,
+          "project": "chromium",
+          "identity": "Kolumnsynlighet Button Removal › should not display Kolumnsynlighet button in dashboard|epic-13/story-13.8/kolumnsynlighet-button-removal.spec.ts",
+          "status": "passed",
+          "duration": "5.4s",
+          "xmlDurationSeconds": 5.369
+        },
+        {
+          "ordinal": 124,
+          "project": "chromium",
+          "identity": "Kolumnsynlighet Button Removal › should render dashboard correctly without the button|epic-13/story-13.8/kolumnsynlighet-button-removal.spec.ts",
+          "status": "passed",
+          "duration": "5.5s",
+          "xmlDurationSeconds": 5.469
+        },
+        {
+          "ordinal": 125,
+          "project": "chromium",
+          "identity": "Kolumnsynlighet Button Removal › should not have broken UI elements after button removal|epic-13/story-13.8/kolumnsynlighet-button-removal.spec.ts",
+          "status": "passed",
+          "duration": "5.9s",
+          "xmlDurationSeconds": 5.864
+        },
+        {
+          "ordinal": 126,
+          "project": "chromium",
+          "identity": "Kolumnsynlighet Button Removal › should maintain dashboard functionality without the button|epic-13/story-13.8/kolumnsynlighet-button-removal.spec.ts",
+          "status": "passed",
+          "duration": "4.9s",
+          "xmlDurationSeconds": 4.881
+        },
+        {
+          "ordinal": 127,
+          "project": "chromium",
+          "identity": "Story 13.9: Repayment Field Visibility › non-terminated employee does not show repayment fields in table|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+          "status": "passed",
+          "duration": "3.3s",
+          "xmlDurationSeconds": 3.28
+        },
+        {
+          "ordinal": 128,
+          "project": "chromium",
+          "identity": "Story 13.9: Repayment Field Visibility › terminated employee shows repayment columns when \"Show Terminated\" filter is active|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+          "status": "passed",
+          "duration": "3.7s",
+          "xmlDurationSeconds": 3.708
+        },
+        {
+          "ordinal": 129,
+          "project": "chromium",
+          "identity": "Story 13.9: Repayment Field Visibility › non-terminated employees show empty cells for repayment columns when filter is active|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+          "status": "passed",
+          "duration": "4.8s",
+          "xmlDurationSeconds": 4.775
+        },
+        {
+          "ordinal": 130,
+          "project": "chromium",
+          "identity": "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 3.138
+        },
+        {
+          "ordinal": 131,
+          "project": "chromium",
+          "identity": "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 3.929
+        },
+        {
+          "ordinal": 132,
+          "project": "chromium",
+          "identity": "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 3.337
+        },
+        {
+          "ordinal": 133,
+          "project": "chromium",
+          "identity": "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 3.536
+        },
+        {
+          "ordinal": 134,
+          "project": "chromium",
+          "identity": "ÖMC reminder cron authorization boundary › rejects a missing authorization header without executing the reminder job|epic-14/story-14.1/omc-reminder-workflow.spec.ts",
+          "status": "passed",
+          "duration": "3.5s",
+          "xmlDurationSeconds": 3.496
+        },
+        {
+          "ordinal": 135,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 136,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 137,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 138,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should include employee names or \"Unassigned\" in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 139,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 140,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 141,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 142,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 143,
+          "project": "chromium",
+          "identity": "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 144,
+          "project": "chromium",
+          "identity": "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16/story-16.5/field-highlighting.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 5.528
+        },
+        {
+          "ordinal": 145,
+          "project": "chromium",
+          "identity": "Story 16.5: Field Highlighting in Employee Table › highlights persist after scrolling and filtering|epic-16/story-16.5/field-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "9.2s",
+          "xmlDurationSeconds": 9.239
+        },
+        {
+          "ordinal": 146,
+          "project": "chromium",
+          "identity": "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16/story-16.5/field-highlighting.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 4.023
+        },
+        {
+          "ordinal": 147,
+          "project": "chromium",
+          "identity": "Story 16.5: Field Highlighting in Employee Table › highlights work in mobile card view|epic-16/story-16.5/field-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "5.7s",
+          "xmlDurationSeconds": 5.706
+        },
+        {
+          "ordinal": 148,
+          "project": "chromium",
+          "identity": "Story 16.5: Field Highlighting in Employee Table › multiple column highlights work independently|epic-16/story-16.5/field-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "3.5s",
+          "xmlDurationSeconds": 3.477
+        },
+        {
+          "ordinal": 149,
+          "project": "chromium",
+          "identity": "Story 16.5: Field Highlighting in Employee Table › unchanged fields do not have highlights|epic-16/story-16.5/field-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "3.4s",
+          "xmlDurationSeconds": 3.37
+        },
+        {
+          "ordinal": 150,
+          "project": "chromium",
+          "identity": "Story 16.5: Field Highlighting in Employee Table › highlights use correct amber color styling|epic-16/story-16.5/field-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "3.5s",
+          "xmlDurationSeconds": 3.535
+        },
+        {
+          "ordinal": 151,
+          "project": "chromium",
+          "identity": "Story 16.6: External User Highlighting (Direct Login) › External user should see highlights for existing changes|epic-16/story-16.6/external-user-direct-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "17.1s",
+          "xmlDurationSeconds": 17.074
+        },
+        {
+          "ordinal": 152,
+          "project": "chromium",
+          "identity": "Story 16.6: External User Highlighting (Direct Login) › External user should see correct column alignment|epic-16/story-16.6/external-user-direct-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "15.0s",
+          "xmlDurationSeconds": 14.979
+        },
+        {
+          "ordinal": 153,
+          "project": "chromium",
+          "identity": "Story 16.6: External User Highlighting (Direct Login) › External user should see change notification banner when changes exist|epic-16/story-16.6/external-user-direct-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "15.7s",
+          "xmlDurationSeconds": 15.665
+        },
+        {
+          "ordinal": 154,
+          "project": "chromium",
+          "identity": "Story 16.6: External User Should See Banner and Highlights › External user should see banner when changes exist|epic-16/story-16.6/external-user-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "11.0s",
+          "xmlDurationSeconds": 11.003
+        },
+        {
+          "ordinal": 155,
+          "project": "chromium",
+          "identity": "Story 16.6: External User Should See Banner and Highlights › External user should see highlights on changed fields|epic-16/story-16.6/external-user-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "16.7s",
+          "xmlDurationSeconds": 16.71
+        },
+        {
+          "ordinal": 156,
+          "project": "chromium",
+          "identity": "Story 16.6: External User Should See Banner and Highlights › External user should see banner with correct change count|epic-16/story-16.6/external-user-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "11.1s",
+          "xmlDurationSeconds": 11.052
+        },
+        {
+          "ordinal": 157,
+          "project": "chromium",
+          "identity": "Story 16.6: External User Should See Banner and Highlights › External user should see highlights persist after page interactions|epic-16/story-16.6/external-user-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "11.9s",
+          "xmlDurationSeconds": 11.918
+        },
+        {
+          "ordinal": 158,
+          "project": "chromium",
+          "identity": "Story 16.6: HR Admin Should NOT See Banner or Highlights › HR admin should not see change notification banner|epic-16/story-16.6/hr-admin-no-banner.spec.ts",
+          "status": "passed",
+          "duration": "3.8s",
+          "xmlDurationSeconds": 3.776
+        },
+        {
+          "ordinal": 159,
+          "project": "chromium",
+          "identity": "Story 16.6: HR Admin Should NOT See Banner or Highlights › HR admin should not see field highlights in employee table|epic-16/story-16.6/hr-admin-no-banner.spec.ts",
+          "status": "passed",
+          "duration": "4.1s",
+          "xmlDurationSeconds": 4.064
+        },
+        {
+          "ordinal": 160,
+          "project": "chromium",
+          "identity": "Story 16.6: HR Admin Should NOT See Banner or Highlights › HR admin should not see banner even when employee changes exist|epic-16/story-16.6/hr-admin-no-banner.spec.ts",
+          "status": "passed",
+          "duration": "4.7s",
+          "xmlDurationSeconds": 4.694
+        },
+        {
+          "ordinal": 161,
+          "project": "chromium",
+          "identity": "Story 16.6: HR Admin Should NOT See Banner or Highlights › HR admin dashboard should render normally without banner|epic-16/story-16.6/hr-admin-no-banner.spec.ts",
+          "status": "passed",
+          "duration": "2.8s",
+          "xmlDurationSeconds": 2.755
+        },
+        {
+          "ordinal": 162,
+          "project": "chromium",
+          "identity": "Story 16.6: HR Admin Should NOT See Banner or Highlights › HR admin should not see highlights after making employee changes|epic-16/story-16.6/hr-admin-no-banner.spec.ts",
+          "status": "passed",
+          "duration": "3.9s",
+          "xmlDurationSeconds": 3.916
+        },
+        {
+          "ordinal": 163,
+          "project": "chromium",
+          "identity": "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16/story-16.6/real-database-highlighting.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 16.101
+        },
+        {
+          "ordinal": 164,
+          "project": "chromium",
+          "identity": "Story 16.6: Real Database - External User Highlighting › External user should see correct column headers matching data (column alignment)|epic-16/story-16.6/real-database-highlighting.spec.ts",
+          "status": "passed",
+          "duration": "17.8s",
+          "xmlDurationSeconds": 17.832
+        },
+        {
+          "ordinal": 165,
+          "project": "chromium",
+          "identity": "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16/story-16.6/real-database-highlighting.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 15.125
+        },
+        {
+          "ordinal": 166,
+          "project": "chromium",
+          "identity": "Story 17.4: Export Functionality for External Users › [P0] Export button is visible for external users|epic-17/story-17.4/export-external-users.spec.ts",
+          "status": "passed",
+          "duration": "4.0s",
+          "xmlDurationSeconds": 3.959
+        },
+        {
+          "ordinal": 167,
+          "project": "chromium",
+          "identity": "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17/story-17.4/export-external-users.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 3.954
+        },
+        {
+          "ordinal": 168,
+          "project": "chromium",
+          "identity": "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17/story-17.4/export-external-users.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 3.91
+        },
+        {
+          "ordinal": 169,
+          "project": "chromium",
+          "identity": "Story 17.4: Export Functionality for External Users › [P1] Export button is disabled when no employees are selected|epic-17/story-17.4/export-external-users.spec.ts",
+          "status": "passed",
+          "duration": "4.0s",
+          "xmlDurationSeconds": 4.047
+        },
+        {
+          "ordinal": 170,
+          "project": "chromium",
+          "identity": "Story 17.4: Export Functionality for External Users › [P2] Export shows error when no employees selected|epic-17/story-17.4/export-external-users.spec.ts",
+          "status": "passed",
+          "duration": "8.4s",
+          "xmlDurationSeconds": 8.352
+        },
+        {
+          "ordinal": 171,
+          "project": "chromium",
+          "identity": "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17/story-17.4/export-external-users.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 4.639
+        },
+        {
+          "ordinal": 172,
+          "project": "chromium",
+          "identity": "Story 17.4: Export Functionality for External Users › [P2] Export button text is in Swedish for external users|epic-17/story-17.4/export-external-users.spec.ts",
+          "status": "passed",
+          "duration": "3.7s",
+          "xmlDurationSeconds": 3.704
+        },
+        {
+          "ordinal": 173,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P0] Desktop navigation is hidden for sodexo user|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "2.2s",
+          "xmlDurationSeconds": 2.153
+        },
+        {
+          "ordinal": 174,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P0] Desktop navigation is hidden for omc user|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "2.3s",
+          "xmlDurationSeconds": 2.258
+        },
+        {
+          "ordinal": 175,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P0] Desktop navigation is hidden for payroll user|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "3.2s",
+          "xmlDurationSeconds": 3.217
+        },
+        {
+          "ordinal": 176,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P0] Desktop navigation is hidden for toplux user|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "2.2s",
+          "xmlDurationSeconds": 2.19
+        },
+        {
+          "ordinal": 177,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P0] Mobile navigation menu button is hidden for external users|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "2.1s",
+          "xmlDurationSeconds": 2.104
+        },
+        {
+          "ordinal": 178,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P0] Header is visible for external users|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "2.7s",
+          "xmlDurationSeconds": 2.689
+        },
+        {
+          "ordinal": 179,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P0] Dashboard content is visible for external users|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "2.3s",
+          "xmlDurationSeconds": 2.263
+        },
+        {
+          "ordinal": 180,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P1] Layout has no spacing issues when navigation is hidden|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "3.0s",
+          "xmlDurationSeconds": 2.983
+        },
+        {
+          "ordinal": 181,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Hiding for External Users › [P1] Navigation links are not accessible via direct URL for external users|epic-17/story-17.6/navigation-hiding.spec.ts",
+          "status": "passed",
+          "duration": "7.1s",
+          "xmlDurationSeconds": 7.126
+        },
+        {
+          "ordinal": 182,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Visibility for HR Admin › [P0] Desktop navigation is visible for HR Admin|epic-17/story-17.6/navigation-visibility.spec.ts",
+          "status": "passed",
+          "duration": "3.0s",
+          "xmlDurationSeconds": 3.044
+        },
+        {
+          "ordinal": 183,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Visibility for HR Admin › [P0] All navigation links are visible for HR Admin|epic-17/story-17.6/navigation-visibility.spec.ts",
+          "status": "passed",
+          "duration": "3.3s",
+          "xmlDurationSeconds": 3.311
+        },
+        {
+          "ordinal": 184,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Visibility for HR Admin › [P0] Navigation links are functional for HR Admin|epic-17/story-17.6/navigation-visibility.spec.ts",
+          "status": "passed",
+          "duration": "4.2s",
+          "xmlDurationSeconds": 4.189
+        },
+        {
+          "ordinal": 185,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Visibility for HR Admin › [P0] Mobile navigation menu is visible for HR Admin|epic-17/story-17.6/navigation-visibility.spec.ts",
+          "status": "passed",
+          "duration": "2.1s",
+          "xmlDurationSeconds": 2.099
+        },
+        {
+          "ordinal": 186,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Visibility for HR Admin › [P1] Mobile navigation menu opens and shows links for HR Admin|epic-17/story-17.6/navigation-visibility.spec.ts",
+          "status": "passed",
+          "duration": "4.7s",
+          "xmlDurationSeconds": 4.685
+        },
+        {
+          "ordinal": 187,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Visibility for HR Admin › [P1] Header is visible and functional for HR Admin|epic-17/story-17.6/navigation-visibility.spec.ts",
+          "status": "passed",
+          "duration": "2.9s",
+          "xmlDurationSeconds": 2.911
+        },
+        {
+          "ordinal": 188,
+          "project": "chromium",
+          "identity": "Story 17.6: Navigation Visibility for HR Admin › [P1] Both desktop and mobile navigation work correctly for HR Admin|epic-17/story-17.6/navigation-visibility.spec.ts",
+          "status": "passed",
+          "duration": "3.2s",
+          "xmlDurationSeconds": 3.197
+        },
+        {
+          "ordinal": 189,
+          "project": "chromium",
+          "identity": "Story 20.6: Saved Filters › AC1-3: Save filter, reload page, and apply saved filter|epic-20/story-20.6/saved-filters.spec.ts",
+          "status": "passed",
+          "duration": "15.4s",
+          "xmlDurationSeconds": 15.43
+        },
+        {
+          "ordinal": 190,
+          "project": "chromium",
+          "identity": "Story 20.6: Saved Filters › AC4: Delete saved filter with confirmation|epic-20/story-20.6/saved-filters.spec.ts",
+          "status": "passed",
+          "duration": "18.9s",
+          "xmlDurationSeconds": 18.883
+        },
+        {
+          "ordinal": 191,
+          "project": "chromium",
+          "identity": "Story 20.6: Saved Filters › AC5: Duplicate name validation|epic-20/story-20.6/saved-filters.spec.ts",
+          "status": "passed",
+          "duration": "23.3s",
+          "xmlDurationSeconds": 23.347
+        },
+        {
+          "ordinal": 192,
+          "project": "chromium",
+          "identity": "Story 20.6: Saved Filters › AC6: Empty name validation|epic-20/story-20.6/saved-filters.spec.ts",
+          "status": "passed",
+          "duration": "13.9s",
+          "xmlDurationSeconds": 13.873
+        },
+        {
+          "ordinal": 193,
+          "project": "chromium",
+          "identity": "Story 20.6: Saved Filters › AC7: Maximum 50 characters validation|epic-20/story-20.6/saved-filters.spec.ts",
+          "status": "passed",
+          "duration": "12.9s",
+          "xmlDurationSeconds": 12.944
+        },
+        {
+          "ordinal": 194,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 1.1: Export button label updates when filters are active|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "passed",
+          "duration": "22.4s",
+          "xmlDurationSeconds": 22.448
+        },
+        {
+          "ordinal": 195,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 2.1: Select All checkbox selects only filtered employees|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "passed",
+          "duration": "23.9s",
+          "xmlDurationSeconds": 23.91
+        },
+        {
+          "ordinal": 196,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 3.1: Export button label updates based on state|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "passed",
+          "duration": "25.2s",
+          "xmlDurationSeconds": 25.199
+        },
+        {
+          "ordinal": 197,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 4.1: Export respects filtered employee list|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "passed",
+          "duration": "29.9s",
+          "xmlDurationSeconds": 29.917
+        },
+        {
+          "ordinal": 198,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 5.1: Shows confirmation dialog when exporting filtered data|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "passed",
+          "duration": "28.4s",
+          "xmlDurationSeconds": 28.355
+        },
+        {
+          "ordinal": 199,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 5.2: Respects \"Don't ask again\" preference|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "passed",
+          "duration": "30.0s",
+          "xmlDurationSeconds": 30.007
+        },
+        {
+          "ordinal": 200,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 28.211
+        },
+        {
+          "ordinal": 201,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 4.3: Clear filters updates export button state|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "passed",
+          "duration": "20.0s",
+          "xmlDurationSeconds": 19.967
+        },
+        {
+          "ordinal": 202,
+          "project": "chromium",
+          "identity": "Story 20.7: Export with Filters › AC 1.2: Export count matches filtered count|epic-20/story-20.7/export-with-filters.spec.ts",
+          "status": "passed",
+          "duration": "19.4s",
+          "xmlDurationSeconds": 19.419
+        },
+        {
+          "ordinal": 203,
+          "project": "chromium",
+          "identity": "Inline Editing E2E › Inline edit text field (First Name)|inline-edit.spec.ts",
+          "status": "passed",
+          "duration": "14.2s",
+          "xmlDurationSeconds": 14.218
+        },
+        {
+          "ordinal": 204,
+          "project": "chromium",
+          "identity": "Inline Editing E2E › Inline edit dropdown field (Gender)|inline-edit.spec.ts",
+          "status": "passed",
+          "duration": "14.5s",
+          "xmlDurationSeconds": 14.46
+        },
+        {
+          "ordinal": 205,
+          "project": "chromium",
+          "identity": "Inline Editing E2E › Inline edit boolean field|inline-edit.spec.ts",
+          "status": "passed",
+          "duration": "14.4s",
+          "xmlDurationSeconds": 14.392
+        },
+        {
+          "ordinal": 206,
+          "project": "chromium",
+          "identity": "Prerequisites & Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 207,
+          "project": "chromium",
+          "identity": "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 208,
+          "project": "chromium",
+          "identity": "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        },
+        {
+          "ordinal": 209,
+          "project": "chromium",
+          "identity": "Termination & Reactivation E2E Journey › AC2: terminate and reactivate an employee from the dashboard table|termination-reactivation.spec.ts",
+          "status": "passed",
+          "duration": "20.8s",
+          "xmlDurationSeconds": 20.846
+        },
+        {
+          "ordinal": 210,
+          "project": "chromium",
+          "identity": "Termination & Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts",
+          "status": "skipped",
+          "duration": null,
+          "xmlDurationSeconds": 0
+        }
+      ],
+      "provenance": "Independent post-run verification; these fields were not produced by the original wrapper. Ordinals belong to the log only; JUnit document order is not claimed to match reporter completion order."
+    }
+  },
+  "matrix": {
+    "syntheticOnly": true,
+    "reviewedCliVersion": "2.115.0",
+    "passed": 8,
+    "skipped": 0,
+    "failed": 0,
+    "testDurationMs": 390877,
+    "forwardApplies": 13,
+    "historyRepairs": 55,
+    "finalHistoryVersions": 68,
+    "catalogUnchangedAcrossRepair": true,
+    "preservationUnchangedAcrossRepair": true
+  },
+  "quality": {
+    "sourceSha": "1a5aa61937e34fa577a317afca4bca9bca64bf9a",
+    "nativeExitCodesObservedByLead": true,
+    "typescript": {
+      "command": "npx tsc --noEmit",
+      "exitCode": 0,
+      "logSha256": "a0b272180dae64ac804cb32df18c7dac3d20fa22f88ca3e2c15ca8177d7ebf85"
+    },
+    "lint": {
+      "command": "npx eslint .",
+      "exitCode": 0,
+      "errors": 0,
+      "warnings": 300,
+      "logSha256": "e0210ade6a3d75bd57a41c20d14592854cc6edc495e22be251a1eb805aa56869"
+    },
+    "lintErrors": 0,
+    "lintWarnings": 300,
+    "stagingPreviewBuild": {
+      "kind": "local-staging-preview-build",
+      "command": "npx next build --webpack",
+      "sourceSha": "1a5aa61937e34fa577a317afca4bca9bca64bf9a",
+      "startedAtUtc": "2026-09-29T10:03:45.159Z",
+      "sourceUnchanged": true,
+      "exitCode": 0,
+      "errorCode": null,
+      "durationMs": 25872,
+      "logSha256": "a2facb058c3caadc0c4998dc74e3b737e7d742dbdca726055c1ae23ddad62ef0",
+      "hostedAction": false
+    }
+  },
+  "githubCiAtImplementation": {
+    "sourceSha": "1a5aa61937e34fa577a317afca4bca9bca64bf9a",
+    "runId": 36551532658,
+    "jobId": 109350607569,
+    "conclusion": "success",
+    "nodeVersion": "20.20.2",
+    "unit": {
+      "passed": 4271,
+      "skipped": 194,
+      "failed": 0,
+      "total": 4465,
+      "filesPassed": 350,
+      "filesSkipped": 20,
+      "durationSeconds": 270.59,
+      "skipInventory": [
+        {
+          "file": "tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/inactive-authorization-and-atomic-delete.test.ts",
+          "testCount": 11,
+          "skipped": 11,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/saved-filter-reconciliation.test.ts",
+          "testCount": 20,
+          "skipped": 20,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-handoff.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.14/postgrest-claim-contention.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-native.test.ts",
+          "testCount": 4,
+          "skipped": 2,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/direct-database-authorization.test.ts",
+          "testCount": 7,
+          "skipped": 7,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-production-cutover-installer-materialization.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.10/reconciliation-evidence.test.ts",
+          "testCount": 13,
+          "skipped": 13,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/hr-admin-impersonation-export-integration.test.ts",
+          "testCount": 5,
+          "skipped": 5,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+          "testCount": 2,
+          "skipped": 2,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.7/supabase-rls-evidence.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-saved-filter-cleanup-prerequisite.test.ts",
+          "testCount": 6,
+          "skipped": 6,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/production-cli-matrix-gate.test.ts",
+          "testCount": 9,
+          "skipped": 4,
+          "classification": "guarded-local-cli-admission-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/runtime-column-restore.test.ts",
+          "testCount": 3,
+          "skipped": 3,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/atomic-user-status-transition.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/column-config-checklist-column.test.ts",
+          "testCount": 2,
+          "skipped": 2,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-dry-run-host.test.ts",
+          "testCount": 17,
+          "skipped": 17,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-bootstrap-host.test.ts",
+          "testCount": 26,
+          "skipped": 26,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-file-lease.test.ts",
+          "testCount": 26,
+          "skipped": 26,
+          "classification": "windows-native-only"
+        },
+        {
+          "file": "tests/unit/epic-22/story-22.15/protected-production-inputs.test.ts",
+          "testCount": 22,
+          "skipped": 22,
+          "classification": "windows-native-only"
+        }
+      ]
+    },
+    "integration": {
+      "passed": 827,
+      "skipped": 95,
+      "failed": 0,
+      "total": 922,
+      "filesPassed": 93,
+      "filesSkipped": 14,
+      "durationSeconds": 72.06,
+      "skipInventory": [
+        {
+          "file": "tests/integration/hr-admin-impersonation-export-integration.test.ts",
+          "testCount": 5,
+          "skipped": 5,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/column-config-checklist-column.test.ts",
+          "testCount": 2,
+          "skipped": 2,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.10/reconciliation-evidence.test.ts",
+          "testCount": 13,
+          "skipped": 13,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/atomic-user-status-transition.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/direct-database-authorization.test.ts",
+          "testCount": 7,
+          "skipped": 7,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.13/runtime-column-restore.test.ts",
+          "testCount": 3,
+          "skipped": 3,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/inactive-authorization-and-atomic-delete.test.ts",
+          "testCount": 11,
+          "skipped": 11,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.14/postgrest-claim-contention.test.ts",
+          "testCount": 1,
+          "skipped": 1,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/post-apply-reconciliation.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-saved-filter-cleanup-prerequisite.test.ts",
+          "testCount": 6,
+          "skipped": 6,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/production-staffing-pre-execute-local-sql.test.ts",
+          "testCount": 2,
+          "skipped": 2,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.15/saved-filter-reconciliation.test.ts",
+          "testCount": 20,
+          "skipped": 20,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        },
+        {
+          "file": "tests/integration/epic-22/story-22.7/supabase-rls-evidence.test.ts",
+          "testCount": 8,
+          "skipped": 8,
+          "classification": "required-local-service-or-database-fixture-unavailable"
+        }
+      ]
+    }
+  },
+  "historicalConcurrentWorkerFailure": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-vitest-cutover",
+    "localOnly": true,
+    "command": "npx vitest run",
+    "sourceSha": "1ea4843ec58ee81fad94e3e39b360bb0ff7c3ef8",
+    "startedAtUtc": "2026-09-29T09:11:19.396Z",
+    "durationMs": 498738,
+    "childExitCode": 1,
+    "sourceUnchanged": true,
+    "requiredMatrix": true,
+    "requiredDatabaseEvidence": true,
+    "requiredLiveAppEvidence": true,
+    "logSha256": "e867308cce329e8400e1eb1195647fd8c832df06c994b6473653a21cc4463135",
+    "logBytes": 1261875,
+    "passed": 4430,
+    "failed": 2,
+    "unexecutedSetupTests": 17,
+    "reportedSkipped": 17,
+    "filesPassed": 367,
+    "filesFailed": 2,
+    "durationSeconds": 488.17,
+    "scope": "Failed full local gate. The 17 fixture tests did not execute after setup failure; they are not accepted skips or passes.",
+    "failures": [
+      "observed_guard_stop exceeded the existing 120-second test deadline; its receipt classified the outcome uncertain",
+      "postcleanup_success exceeded the existing 120-second test deadline",
+      "native protected dry-run fixture failed setup; its original error category was not retained"
+    ],
+    "diagnosis": {
+      "localOnly": true,
+      "hostedAccess": false,
+      "command": "npx vitest run tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts tests/unit/epic-22/story-22.15/protected-dry-run-host.test.ts --maxWorkers=2",
+      "sourceSha": "1ea4843ec58ee81fad94e3e39b360bb0ff7c3ef8",
+      "sourceUnchanged": true,
+      "startedAtUtc": "2026-09-29T09:27:51.537Z",
+      "durationMs": 421178,
+      "exitCode": 1,
+      "logSha256": "7cd1abd36bfc132ede071a17511b3e98e7592878de2b89bb997f3babfba1f962",
+      "passed": 24,
+      "skipped": 0,
+      "failed": 1,
+      "workers": 2,
+      "scope": "All 17 native cases and six executed matrix cases passed. The injected timeout failed because the child deadline elapsed before the exact history hook fired. This is failed diagnostic evidence, not an accepted matrix; the original native setup error remains unclassified."
+    }
+  },
+  "historicalEvidence": "production-consolidated-cutover-verification-2026-09-28.json",
+  "historicalCorrectionTestFailure": {
+    "command": "focused Vitest",
+    "exitCode": 1,
+    "passed": 241,
+    "failedSuites": 1,
+    "reason": "The new public-collector regression used an incomplete node:child_process mock under the existing browser transform. Retained the actual collector regression and fixed the mock and derived synthetic target binding; its five tests then passed. The complete final run above verifies the committed correction."
+  },
+  "historicalPlaywrightFailure": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-playwright-cutover",
+    "localOnly": true,
+    "command": "npx playwright test",
+    "sourceSha": "0cb2eabbcf01fb02791774d137006378a632656b",
+    "startedAtUtc": "2026-09-28T15:04:41.966Z",
+    "durationMs": 1303669,
+    "childExitCode": 1,
+    "signal": null,
+    "errorCode": null,
+    "sourceUnchanged": true,
+    "logSha256": "48cc4d9b4564870aa22ac5bc1deb9020122eb11940fe0bb3d95dd686dbd7f9e1",
+    "logBytes": 180090,
+    "passed": 162,
+    "skipped": 47,
+    "failed": 1,
+    "archivedXml": {
+      "sha256": "1156f0e04b4aa78e15d6dadb29991e66e005fcbb84176bd357acb07e0ef40ab9",
+      "boundToWrapper": false,
+      "provenance": "Retained archival copy only; no case-level or interval binding is claimed and its duration is not used as run evidence."
+    },
+    "reason": "The inline-edit helper force-clicked a trigger after the application auto-opened its Radix listbox and aria-hid that trigger. Fixed only the E2E helper to assert the existing automatic opening; no application, timeout, skip or persistence assertion changed."
+  },
+  "repeatedInlineSmoke": {
+    "schemaVersion": 1,
+    "kind": "guarded-inline-edit-playwright",
+    "localOnly": true,
+    "command": "npx playwright test tests/e2e/inline-edit.spec.ts --repeat-each=2",
+    "sourceSha": "302eef0fc1d459c85c2260ec1f18d5725cc1d0b2",
+    "startedAtUtc": "2026-09-28T15:30:31.629Z",
+    "durationMs": 94990,
+    "childExitCode": 0,
+    "signal": null,
+    "errorCode": null,
+    "sourceUnchanged": true,
+    "logSha256": "c5ebffd8c037ba5bc6f652a656c6bad2e4843659e44f0b1c75268fc6fee74973",
+    "logBytes": 11219,
+    "passed": 6,
+    "skipped": 0,
+    "failed": 0,
+    "repeatEach": 2
+  },
+  "historicalFullPlaywrightSuccess": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-playwright-cutover",
+    "localOnly": true,
+    "command": "npx playwright test",
+    "sourceSha": "302eef0fc1d459c85c2260ec1f18d5725cc1d0b2",
+    "startedAtUtc": "2026-09-28T15:36:43.496Z",
+    "durationMs": 1271732,
+    "childExitCode": 0,
+    "signal": null,
+    "errorCode": null,
+    "sourceUnchanged": true,
+    "logSha256": "d76e05e8b3f0e57359255c4581ab2c5bcd692cf22d095f06f09845a22c06cbe4",
+    "logBytes": 181303,
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "durationSeconds": 1269.8172960000002,
+    "independentReportBindingSha256": "e38961d35d47f9346f7917f7dc568f04f927069873c4749c1af94412d969ffec",
+    "junitSha256": "ac9ea9ee029190531a47a339a17b1f6bc18c12f1d5ad31b959cdac37d6110ae1",
+    "scope": "Successful 302eef0 run before the additional managed-writer interval/freshness/omission correction; not verification of the final release gate."
+  },
+  "historicalFullVitestSuccess": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-vitest-cutover",
+    "localOnly": true,
+    "command": "npx vitest run",
+    "sourceSha": "0cb2eabbcf01fb02791774d137006378a632656b",
+    "startedAtUtc": "2026-09-28T14:56:16.639Z",
+    "durationMs": 403063,
+    "childExitCode": 0,
+    "sourceUnchanged": true,
+    "requiredMatrix": true,
+    "requiredDatabaseEvidence": true,
+    "requiredLiveAppEvidence": true,
+    "logSha256": "3473f5a59082bd593de05bc56827f8ca2ee7486bb232fd617bf314666317f7c5",
+    "logBytes": 1240006,
+    "passed": 4387,
+    "skipped": 0,
+    "failed": 0,
+    "filesPassed": 367,
+    "durationSeconds": 393.69,
+    "scope": "Successful 0cb2eab full local run before the additional managed-writer correction; not verification of the final release gate."
+  },
+  "historicalManagedWriterFullVitestSuccess": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-vitest-cutover",
+    "localOnly": true,
+    "command": "npx vitest run",
+    "sourceSha": "8822b54832d988d9e2e9b9aa84eef625070ad9c5",
+    "startedAtUtc": "2026-09-28T16:08:53.056Z",
+    "durationMs": 408380,
+    "childExitCode": 0,
+    "sourceUnchanged": true,
+    "requiredMatrix": true,
+    "requiredDatabaseEvidence": true,
+    "requiredLiveAppEvidence": true,
+    "logSha256": "1473c2bffccadfacdff80ec7b40b7f0c0ae241942d31837c47aee9651eea0033",
+    "logBytes": 1237957,
+    "passed": 4402,
+    "skipped": 0,
+    "failed": 0,
+    "filesPassed": 367,
+    "durationSeconds": 398.95,
+    "scope": "Successful 8822b54 full local run before the CLI preflight and encrypted diagnostic corrections; not verification of the final release gate."
+  },
+  "historicalCliCorrectionSuccess": {
+    "vitest": {
+      "schemaVersion": 1,
+      "kind": "guarded-full-vitest-cutover",
+      "localOnly": true,
+      "command": "npx vitest run",
+      "sourceSha": "ec9cef94d2123a1b7b55c18de1bffb0e21096742",
+      "startedAtUtc": "2026-09-28T16:45:11.943Z",
+      "durationMs": 404789,
+      "childExitCode": 0,
+      "sourceUnchanged": true,
+      "requiredMatrix": true,
+      "requiredDatabaseEvidence": true,
+      "requiredLiveAppEvidence": true,
+      "logSha256": "6edb286f9b02e628bea23308ac5aee4e9c36d0dd5f0a208c1ade47a04b44b07c",
+      "logBytes": 1240828,
+      "passed": 4420,
+      "skipped": 0,
+      "failed": 0,
+      "filesPassed": 368,
+      "durationSeconds": 395.6
+    },
+    "build": {
+      "kind": "local-staging-preview-build",
+      "command": "npx next build --webpack",
+      "sourceSha": "ec9cef94d2123a1b7b55c18de1bffb0e21096742",
+      "startedAtUtc": "2026-09-28T16:57:17.207Z",
+      "sourceUnchanged": true,
+      "exitCode": 0,
+      "errorCode": null,
+      "durationMs": 26680,
+      "logSha256": "072608b867d9c51ffbc602c86007823f60e10bd382f6a5a2cb75ee4d1fd5f7a9",
+      "hostedAction": false
+    },
+    "scope": "Before isolation-before-cleanup and host timeout correction; no final implementation verification claim."
+  },
+  "historicalProfileFailure": {
+    "schemaVersion": 1,
+    "kind": "guarded-full-vitest-cutover",
+    "localOnly": true,
+    "command": "npx vitest run",
+    "sourceSha": "ad4646b85e8291cc6ca670448187c3c58baf2882",
+    "startedAtUtc": "2026-09-29T08:28:15.598Z",
+    "durationMs": 439219,
+    "childExitCode": 1,
+    "sourceUnchanged": true,
+    "requiredMatrix": true,
+    "requiredDatabaseEvidence": true,
+    "requiredLiveAppEvidence": true,
+    "logSha256": "c46b6752e945d3364978d583a8b57010dfe82c963911a6723d06a681a0237e14",
+    "logBytes": 1242436,
+    "passed": 4430,
+    "skipped": 0,
+    "failed": 7,
+    "filesPassed": 367,
+    "filesFailed": 1,
+    "durationSeconds": 367.79,
+    "scope": "Failed local CLI matrix; never a passing final gate.",
+    "failures": [
+      "observed_guard_stop:matrix_tool_version",
+      "six remaining executed cases:matrix_initial_dry_run"
+    ],
+    "diagnosis": {
+      "readonly": true,
+      "historyPresenceUnchanged": true,
+      "cliVersion": "2.115.0",
+      "before": {
+        "exitCode": 1,
+        "outputSha256": "911361d4f4df55c34136f0193548e7e9f6fe3830e1f91122038996078c30e567",
+        "receiptSha256": "de79e765a413327a766e03c696ce74aabf3d8d7089da7598cb419d349a3745ab"
+      },
+      "afterBuiltInProfilePin": {
+        "exitCode": 0,
+        "outputSha256": "4c7e081c080e71eca3b8a1641f775af201bca67962eb2d3582aec4cc068266e3",
+        "receiptSha256": "eb1e9fe023ea9f78d8e3a97465041b684006dad98efc87988967e72b13f01de0"
+      },
+      "versionProbeFailureCauseNotEstablished": true
+    }
+  },
+  "limits": [
+    "All database writes in this receipt are synthetic local fixture operations, not hosted production writes.",
+    "The native host/installer tests use synthetic inputs and do not establish actual production target admission.",
+    "The real 55-row repair ledger remains UNPROVED and unsigned.",
+    "Fresh hosted source/target/tool/TLS and isolation proofs precede separately gated cleanup and protected forward apply.",
+    "Owner adoption and separate history-repair approval remain required.",
+    "Main merge, deployment, control restoration and reopening remain separate owner decisions."
+  ]
+}

@@ -1,0 +1,447 @@
+{
+  "schemaVersion": 1,
+  "kind": "verified-run-3-public-verification",
+  "sourceSha": "00fd3081982ce41918f8656f21bd64c923cde901",
+  "sourceUnchanged": true,
+  "localOnly": true,
+  "hostedWriteAttempted": false,
+  "protectedSource": {
+    "sourceTree": "4150a5fc045528b076cbccdb44444da923e34014",
+    "migrationCount": 68,
+    "migrationManifestSha256": "d860f2837f0ada32c88a654a731394ce1e88c92b05abe3f8ed937f7391580f2b",
+    "protectedBlobs": {
+      "src/lib/release/production-filter-cleanup-draft.mjs": "d8a0d28a15075fef48f1010c99634f36a6f90470",
+      "src/lib/release/production-permission-profile.mjs": "25129149e63cb7680d15f6122a43f986120579c5",
+      "src/lib/release/production-observed-profile.mjs": "59ed6f5eb447e87187e48fbcc036c70118a607f6",
+      "src/lib/release/production-profile-redaction.mjs": "4eba482ce3edf8471cdd27d893bfc4baefa38580",
+      "src/lib/release/collect-production-observed-profile.mjs": "df771445c655e2741b08f7362e7737bb13777f1b",
+      "src/lib/release/production-collector-source-binding.mjs": "4e2104ccf1f3be3ac9df3970c5744b1de156c997",
+      "src/lib/release/production-observed-aggregate.sql": "ff9324932abd26746bd3a9e8cbaef40fb4e83066",
+      "src/lib/release/production-observed-schema.sql": "29e86dee42b3cf233fd15b826cecb2c491a28ed3",
+      "docs/sprint-artifacts/story-22.15-production-readiness-remediation.md": "41c59dc72cbd5591131ecd146bde8c7088ac2f8b"
+    },
+    "immutableBlobs": {
+      "supabase/migration-baseline-manifest.json": "7b9262563c7f87ba42002796c961c22c32ae73ae",
+      "supabase/verify/production-baseline-catalog.sql": "65db495df8aedba3e6c351448fb2400c2e76d459",
+      "supabase/verify/verify-production-baseline-catalog.mjs": "30c422b97a55eff39ff4bbef84f9a99179e88274",
+      "src/lib/release/production-observed-aggregate.sql": "ff9324932abd26746bd3a9e8cbaef40fb4e83066",
+      "src/lib/release/production-observed-schema.sql": "29e86dee42b3cf233fd15b826cecb2c491a28ed3"
+    },
+    "originalFrozenRegionSha256": "6dcb94e4ef41a7ded3a91ae8eb11cb991b822d16657fbdfefe5d5b50f62924bc"
+  },
+  "preFullEvidence": {
+    "sourceSha": "00fd3081982ce41918f8656f21bd64c923cde901",
+    "protectedSource": {
+      "sourceTree": "4150a5fc045528b076cbccdb44444da923e34014",
+      "migrationCount": 68,
+      "migrationManifestSha256": "d860f2837f0ada32c88a654a731394ce1e88c92b05abe3f8ed937f7391580f2b",
+      "protectedBlobs": {
+        "src/lib/release/production-filter-cleanup-draft.mjs": "d8a0d28a15075fef48f1010c99634f36a6f90470",
+        "src/lib/release/production-permission-profile.mjs": "25129149e63cb7680d15f6122a43f986120579c5",
+        "src/lib/release/production-observed-profile.mjs": "59ed6f5eb447e87187e48fbcc036c70118a607f6",
+        "src/lib/release/production-profile-redaction.mjs": "4eba482ce3edf8471cdd27d893bfc4baefa38580",
+        "src/lib/release/collect-production-observed-profile.mjs": "df771445c655e2741b08f7362e7737bb13777f1b",
+        "src/lib/release/production-collector-source-binding.mjs": "4e2104ccf1f3be3ac9df3970c5744b1de156c997",
+        "src/lib/release/production-observed-aggregate.sql": "ff9324932abd26746bd3a9e8cbaef40fb4e83066",
+        "src/lib/release/production-observed-schema.sql": "29e86dee42b3cf233fd15b826cecb2c491a28ed3",
+        "docs/sprint-artifacts/story-22.15-production-readiness-remediation.md": "41c59dc72cbd5591131ecd146bde8c7088ac2f8b"
+      },
+      "immutableBlobs": {
+        "supabase/migration-baseline-manifest.json": "7b9262563c7f87ba42002796c961c22c32ae73ae",
+        "supabase/verify/production-baseline-catalog.sql": "65db495df8aedba3e6c351448fb2400c2e76d459",
+        "supabase/verify/verify-production-baseline-catalog.mjs": "30c422b97a55eff39ff4bbef84f9a99179e88274",
+        "src/lib/release/production-observed-aggregate.sql": "ff9324932abd26746bd3a9e8cbaef40fb4e83066",
+        "src/lib/release/production-observed-schema.sql": "29e86dee42b3cf233fd15b826cecb2c491a28ed3"
+      },
+      "originalFrozenRegionSha256": "6dcb94e4ef41a7ded3a91ae8eb11cb991b822d16657fbdfefe5d5b50f62924bc"
+    },
+    "launch": {
+      "observedAtUtc": "2026-09-29T16:13:21.1769376Z",
+      "launchPinsSha256": "4564d463fcdfe41c75f01375da4b94326f414ddf2fd7931137ef468661776f79",
+      "nodeSha256": "3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237",
+      "wrappers": [
+        {
+          "file": "run-final-local-vitest.mjs",
+          "sha256": "46d31b6753e2756da41c0d2e9fd9791ce63b0b66e79e88362ea972b208a45cd5"
+        },
+        {
+          "file": "run-build-check.mjs",
+          "sha256": "98458342e96382ebb02a9262600eced05b956db3d1d99790cb6d55848f2225cb"
+        },
+        {
+          "file": "run-final-playwright.mjs",
+          "sha256": "4c2a5cf035e4492c0f4ec7e9c6b81d10de78de416ea3943841aef62b28f5c829"
+        },
+        {
+          "file": "run-quality-checks.mjs",
+          "sha256": "a0bb43c0653330123a340eea293c223a19dd64a8487f82f85a90328e2d30683a"
+        },
+        {
+          "file": "run-final-sequence.mjs",
+          "sha256": "ff0f8792ab7755d34100264131cd4428b77ec80e8fc20979e16906983b8112a8"
+        },
+        {
+          "file": "refresh-local-e2e-tokens.mjs",
+          "sha256": "1420af0d2f9e0ca4906e95a637eaa9ffd0aa91836cdbfe4c5369daede480da2f"
+        },
+        {
+          "file": "renew-local-admission.ps1",
+          "sha256": "abf0e76bdd3c23d3d15cf583a73f23915a7a9ba7b2fac72331e51f120eb43d5d"
+        },
+        {
+          "file": "bind-playwright-report.mjs",
+          "sha256": "038056ac06ad8471fd28c568c13706aa3b80fdf9bb8f622961fc94c1a6ec5920"
+        }
+      ],
+      "historicalFailedRun2ReceiptSha256": "48fa73b37e4590d814ac9d23a3a3e1d979084ea0783596bb2c6a61428d0eae81"
+    },
+    "jwtRefresh": {
+      "observedAtUtc": "2026-09-29T15:59:11.096Z",
+      "credentialCount": 3,
+      "hostedAccess": false
+    },
+    "fixture": {
+      "forwardRepair": {
+        "sourceSha": "00fd3081982ce41918f8656f21bd64c923cde901",
+        "immutableBase": "3c6dd2fc24d8686787a95289eb00e50e9a753694",
+        "migrationCount": 68,
+        "migrationIdentitySha256": "76e84e40d8261dda9288da38a90142d16cbb3483af8d728ebe877afa7bbdec9c",
+        "criticalIdentitySha256": "b1a9a3d139139f28108d778f835385cd9017aba17937eee38dc84a49bdf9d1e8",
+        "appHistoryRows": 68,
+        "appStrictCatalogCheckCount": 16,
+        "initialTemplate58HistoryFree": true,
+        "namedTemplateCounts": [
+          58,
+          68
+        ],
+        "hostedWriteAttempted": false,
+        "durationMs": 23853,
+        "repairHelperSha256": "1d5de3cfb59308c7495ede0091e0b44c2071d424f4b5dcbc2d226b003b620ca0"
+      },
+      "templateForward63": {
+        "sourceSha": "00fd3081982ce41918f8656f21bd64c923cde901",
+        "sourceTree": "4150a5fc045528b076cbccdb44444da923e34014",
+        "appliedVersions": [
+          "20260615000000",
+          "20260709194903",
+          "20260710144000",
+          "20260710150000",
+          "20260831200026"
+        ],
+        "versionDigests": [
+          "98742e05ecf953329d358f41de04be15786860eee34c98c61f12df16d3807e01",
+          "ebbb6583683f8209c6b62c4477a82985e11ea48ca0acdace98100d8e418965ae",
+          "4bdd601ef225c6dd81f6f635c5a6b00c4362a26cb3f27632137634157f58e9b2",
+          "9572124f93ff3bbd9001acfdcc47bb4d5fb2274a05bebec4ba5460612032e9de",
+          "49f8b4060938e2ffe67f29d24a9474914b42f6326753623b3b1bc703bdc73c36"
+        ],
+        "priorRepairReceiptSha256": "c44ca22efcd42105ec2f7d4f73c99b66e0a0950129ab4d407a550cddb47145c8",
+        "currentTemplate63HistoryFree": true,
+        "hostedWriteAttempted": false,
+        "durationMs": 1928,
+        "helperSha256": "7ee88baaf8d2a9a07822cc36ac6f56f0654ad0eb16046aaeac1c9446b740641d"
+      }
+    },
+    "earlyFixturePreflight": {
+      "startedAtUtc": "2026-09-29T16:01:58.573Z",
+      "childExitCode": 1,
+      "testFiles": {
+        "failed": 1,
+        "passed": 8,
+        "total": 9
+      },
+      "testsPassed": 40,
+      "reportedDurationSeconds": 27.77,
+      "wrapperDurationMs": 55110,
+      "acceptedAsGate": false,
+      "logSha256": "a6b976b35a3983387a76db02bbcbf83c550220213801774b2d9fe661054cc8f2"
+    },
+    "inactiveFixturePreflight": {
+      "startedAtUtc": "2026-09-29T16:10:58.725Z",
+      "testsPassed": 11,
+      "skipped": 0,
+      "durationMs": 3304,
+      "logSha256": "d19e30522f820682f641b541f20d39ebc0754677d084ca5591ea2488a9b91f6a"
+    },
+    "inheritedRun2Evidence": {
+      "originRun": "verified-run-2",
+      "focusedObservedAtUtc": "2026-09-29T15:20:32.822Z",
+      "focusedLogSha256": "6f2cea8f60c7c6171637101e50ebd6b3b4785234fe21d8c13c6dc9e5c1cf6bf3",
+      "qualityTypeScriptStartedAtUtc": "2026-09-29T15:17:54.013Z",
+      "qualityLintStartedAtUtc": "2026-09-29T15:18:07.110Z"
+    },
+    "publicationAttempted": false
+  },
+  "launch": {
+    "observedAtUtc": "2026-09-29T16:13:21.1769376Z",
+    "launchPinsSha256": "4564d463fcdfe41c75f01375da4b94326f414ddf2fd7931137ef468661776f79",
+    "nodeSha256": "3602f2bb1a10f2cbab4c36886218a33c1ab3db87290e73b033c46c77147d0237",
+    "wrappers": [
+      {
+        "file": "run-final-local-vitest.mjs",
+        "sha256": "46d31b6753e2756da41c0d2e9fd9791ce63b0b66e79e88362ea972b208a45cd5"
+      },
+      {
+        "file": "run-build-check.mjs",
+        "sha256": "98458342e96382ebb02a9262600eced05b956db3d1d99790cb6d55848f2225cb"
+      },
+      {
+        "file": "run-final-playwright.mjs",
+        "sha256": "4c2a5cf035e4492c0f4ec7e9c6b81d10de78de416ea3943841aef62b28f5c829"
+      },
+      {
+        "file": "run-quality-checks.mjs",
+        "sha256": "a0bb43c0653330123a340eea293c223a19dd64a8487f82f85a90328e2d30683a"
+      },
+      {
+        "file": "run-final-sequence.mjs",
+        "sha256": "ff0f8792ab7755d34100264131cd4428b77ec80e8fc20979e16906983b8112a8"
+      },
+      {
+        "file": "refresh-local-e2e-tokens.mjs",
+        "sha256": "1420af0d2f9e0ca4906e95a637eaa9ffd0aa91836cdbfe4c5369daede480da2f"
+      },
+      {
+        "file": "renew-local-admission.ps1",
+        "sha256": "abf0e76bdd3c23d3d15cf583a73f23915a7a9ba7b2fac72331e51f120eb43d5d"
+      },
+      {
+        "file": "bind-playwright-report.mjs",
+        "sha256": "038056ac06ad8471fd28c568c13706aa3b80fdf9bb8f622961fc94c1a6ec5920"
+      }
+    ],
+    "historicalFailedRun2ReceiptSha256": "48fa73b37e4590d814ac9d23a3a3e1d979084ea0783596bb2c6a61428d0eae81"
+  },
+  "renewals": {
+    "firstBeforeAdmissionSha256": "8883374303e4e646dd2b3955e658b46b7138a4f1950f2821a3ea6c405d97885e",
+    "records": [
+      {
+        "number": 1,
+        "observedAtUtc": "2026-09-29T16:22:52.9455789Z",
+        "resourceIdSha256": "f907ee84af50187ed6000539e133763f18c5e737cf3fe574e33d2464593877f6",
+        "composeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+        "systemIdentifierSha256": "ccc6d457febd9d793c55666ee33a0b6af44bdfe46bb61741fb47066a250e70f2",
+        "beforeAdmissionSha256": "8883374303e4e646dd2b3955e658b46b7138a4f1950f2821a3ea6c405d97885e",
+        "afterAdmissionSha256": "36e0670b668651f8cd388aa5d370176d9d9856622e5320eca373540ad310ec39"
+      },
+      {
+        "number": 2,
+        "observedAtUtc": "2026-09-29T16:28:10.7657037Z",
+        "resourceIdSha256": "f907ee84af50187ed6000539e133763f18c5e737cf3fe574e33d2464593877f6",
+        "composeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+        "systemIdentifierSha256": "ccc6d457febd9d793c55666ee33a0b6af44bdfe46bb61741fb47066a250e70f2",
+        "beforeAdmissionSha256": "36e0670b668651f8cd388aa5d370176d9d9856622e5320eca373540ad310ec39",
+        "afterAdmissionSha256": "e2350cdf30a24a72584168614ee14b48a682f91675b7f7ac62e8ef49851f948a"
+      },
+      {
+        "number": 3,
+        "observedAtUtc": "2026-09-29T16:33:00.6425526Z",
+        "resourceIdSha256": "f907ee84af50187ed6000539e133763f18c5e737cf3fe574e33d2464593877f6",
+        "composeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+        "systemIdentifierSha256": "ccc6d457febd9d793c55666ee33a0b6af44bdfe46bb61741fb47066a250e70f2",
+        "beforeAdmissionSha256": "e2350cdf30a24a72584168614ee14b48a682f91675b7f7ac62e8ef49851f948a",
+        "afterAdmissionSha256": "c293b7fbe7b61ced4d07fe9c4d83bdcf7f66a7ce09d71b93927a06f360294b6e"
+      }
+    ],
+    "fullRunCoverage": {
+      "firstRenewalObservedAtUtc": "2026-09-29T16:22:52.9455789Z",
+      "fullStartedAtUtc": "2026-09-29T16:13:21.214Z",
+      "fullEndedAtUtc": "2026-09-29T16:37:14.724Z",
+      "maxGapMs": 900000,
+      "coverageVerified": true
+    }
+  },
+  "fixture": {
+    "priorPreflightFailure": {
+      "completed": false,
+      "failureStage": "preflight",
+      "failureCode": "fixture_worktree_seed",
+      "databaseAccessed": false,
+      "receiptNativeExitCode": null,
+      "rootObservedNativeExitCode": 1
+    },
+    "successfulFixture": {
+      "sourceSha": "3c6dd2fc24d8686787a95289eb00e50e9a753694",
+      "sourceTree": "a29fa815c431a2f222f53531732e67d422e5e24b",
+      "migrationCount": 68,
+      "migrationIdentitySha256": "76e84e40d8261dda9288da38a90142d16cbb3483af8d728ebe877afa7bbdec9c",
+      "appStrictCatalogCheckCount": 16,
+      "templateCounts": [
+        58,
+        68
+      ],
+      "template68StrictCatalogCheckCount": 16
+    },
+    "forwardRepair": {
+      "sourceSha": "00fd3081982ce41918f8656f21bd64c923cde901",
+      "immutableBase": "3c6dd2fc24d8686787a95289eb00e50e9a753694",
+      "migrationCount": 68,
+      "migrationIdentitySha256": "76e84e40d8261dda9288da38a90142d16cbb3483af8d728ebe877afa7bbdec9c",
+      "criticalIdentitySha256": "b1a9a3d139139f28108d778f835385cd9017aba17937eee38dc84a49bdf9d1e8",
+      "appHistoryRows": 68,
+      "appStrictCatalogCheckCount": 16,
+      "initialTemplate58HistoryFree": true,
+      "namedTemplateCounts": [
+        58,
+        68
+      ],
+      "hostedWriteAttempted": false,
+      "durationMs": 23853,
+      "repairHelperSha256": "1d5de3cfb59308c7495ede0091e0b44c2071d424f4b5dcbc2d226b003b620ca0"
+    }
+  },
+  "focused": {
+    "filesPassed": 5,
+    "testsPassed": 77,
+    "reportedDurationSeconds": 0.918,
+    "durationMs": 1501,
+    "logSha256": "6f2cea8f60c7c6171637101e50ebd6b3b4785234fe21d8c13c6dc9e5c1cf6bf3"
+  },
+  "liveRouteCompile": {
+    "routeCount": 2,
+    "unauthenticatedStatusCodes": [
+      400,
+      401
+    ]
+  },
+  "fullVitest": {
+    "filesPassed": 372,
+    "testsPassed": 4516,
+    "reportedDurationSeconds": 1424.46,
+    "matrixTestsPassed": 8,
+    "startedAtUtc": "2026-09-29T16:13:21.214Z",
+    "endedAtUtc": "2026-09-29T16:37:14.724Z",
+    "durationMs": 1433510,
+    "logSha256": "12aea452f8d43bea7a2ddc7cc80f72a0cacfeb5eda9a569135fa8e5e1bd5edd9",
+    "initialAdmissionSha256": "8883374303e4e646dd2b3955e658b46b7138a4f1950f2821a3ea6c405d97885e",
+    "initialGuardResourceIdSha256": "f907ee84af50187ed6000539e133763f18c5e737cf3fe574e33d2464593877f6",
+    "initialGuardComposeSha256": "e97325b6c7990b03fef30cb346a5481e7817f902c088996c11917e4acab1d02d",
+    "initialGuardSystemIdentifierSha256": "ccc6d457febd9d793c55666ee33a0b6af44bdfe46bb61741fb47066a250e70f2"
+  },
+  "browser": {
+    "startedAtUtc": "2026-09-29T16:37:44.389Z",
+    "endedAtUtc": "2026-09-29T16:55:01.876Z",
+    "durationMs": 1037487,
+    "reportedDurationSeconds": 1033.8720819999999,
+    "logSha256": "54e21e1df8086ec8e6bcf01555fa77399186452be58211a38f243f48f2043ced",
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "junitSha256": "5f6060ac9b8fc73b65bce1f4fff54517caa73a30ee1f16a7c5c733ec4faf14e1",
+    "skippedIdentities": [
+      "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+      "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+      "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should include employee names or \"Unassigned\" in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PWA Installation E2E › should cache static assets|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should display app in standalone mode when installed|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should handle service worker updates|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have apple touch icon|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have manifest.json linked in page head|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have theme color meta tag|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should register service worker on page load|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should show install prompt when criteria met|epic-12/story-12.4/pwa-installation.spec.ts",
+      "Prerequisites & Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+      "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+      "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13/story-13.4/export-selected-employees.spec.ts",
+      "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13/story-13.4/export-selected-employees.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13/story-13.7/export-workflow.spec.ts",
+      "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16/story-16.5/field-highlighting.spec.ts",
+      "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16/story-16.5/field-highlighting.spec.ts",
+      "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16/story-16.6/real-database-highlighting.spec.ts",
+      "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16/story-16.6/real-database-highlighting.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20/story-20.7/export-with-filters.spec.ts",
+      "Termination & Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts"
+    ],
+    "skippedIdentitySha256": "f9ced59b8f1ac2e178f833e49e1353841479ed937f6de5c0aa2b654398b135de",
+    "resultTupleSha256": "ef623455481b9d6f27fda09ea96d811ad6dd63e923cb251067d2f66288bdcc74",
+    "exactHistoricalSkipIdentities": true
+  },
+  "quality": {
+    "build": {
+      "durationMs": 19460,
+      "logSha256": "09c231459e06afe6eaff0d3897dc1481bdd5673de780710e6fbbebf1e84e6367"
+    },
+    "typescript": {
+      "durationMs": 13096,
+      "logSha256": "2840e63069c808678a9c9fb6b1d51c5faea6bb4296d3105f81e8dcf30d4b467d"
+    },
+    "lint": {
+      "durationMs": 39017,
+      "logSha256": "a33b696d2c7a6ad998939849ab9cdea177d99b06b956a7cad93c622f5d3e6dba",
+      "errors": 0,
+      "warnings": 304
+    }
+  },
+  "inheritedRun2Evidence": {
+    "originRun": "verified-run-2",
+    "focusedObservedAtUtc": "2026-09-29T15:20:32.822Z",
+    "focusedLogSha256": "6f2cea8f60c7c6171637101e50ebd6b3b4785234fe21d8c13c6dc9e5c1cf6bf3",
+    "qualityTypeScriptStartedAtUtc": "2026-09-29T15:17:54.013Z",
+    "qualityLintStartedAtUtc": "2026-09-29T15:18:07.110Z"
+  },
+  "failedRun2": {
+    "receiptSha256": "a1ed9a914326ca252144f9f9a3b34868efceca1c2057141072979d8db8509877",
+    "logSha256": "0e61e5b9d31769b184df7c710ed6ab29f54758a184713df6fb2e2e5d52242a4c",
+    "sourceSha": "00fd3081982ce41918f8656f21bd64c923cde901",
+    "sourceUnchanged": true,
+    "childExitCode": 1,
+    "wrapperDurationMs": 1430634,
+    "reportedDurationSeconds": 1411.8,
+    "testFiles": {
+      "failed": 9,
+      "passed": 363,
+      "total": 372
+    },
+    "tests": {
+      "failed": 1,
+      "passed": 4465,
+      "skipped": 38,
+      "total": 4504
+    },
+    "acceptedAsGate": false
+  },
+  "historicalNonAdmittingEvidence": {
+    "productionCollectorAttempts": 5,
+    "acceptedAttempts": 0,
+    "latestPostgresJsonbDiagnosticSha256": "e3445aae77f6075cd7ff4dd779d2d25a1982106c0b7582a09014b9a47ce75550",
+    "platformReadOnlyGetObservations": 3,
+    "readinessAssessed": false,
+    "note": "Historical redacted diagnostic attempts remain non-admitting. This record adds no target authority, admission, or action authorization."
+  },
+  "unboundAgentFullSuite": {
+    "classification": "incomplete_unbound",
+    "acceptedAsGate": false,
+    "knownObservedFailureCount": 1,
+    "knownObservedSkipCount": 10,
+    "knownObservedScope": "inactive-authorization test",
+    "finalTestCounts": null,
+    "nativeExitCode": null,
+    "note": "The known inactive-authorization failure and skips are preserved. No root-bound final total or native exit code is asserted."
+  }
+}

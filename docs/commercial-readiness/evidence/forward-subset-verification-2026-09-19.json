@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "sourceHead": "01abdf707071cd3b884f7e207aaf343e5eac86d9",
+  "sourceTree": "e1cd28b7b7a84634da9515df6266361d574e4ffa",
+  "localOnly": true,
+  "hostedDatabaseAccessPerformed": false,
+  "productionExecutionEnabled": false,
+  "priorVerification": {
+    "sourceHead": "856c9331c778821b447f6201f0bbbfb7095856b5",
+    "sourceTree": "4e11ec8570ceb13dcd1d674d5eb1f6b4fb722506",
+    "vitest": {
+      "passed": 3518,
+      "skipped": 0,
+      "failed": 0,
+      "files": 323,
+      "reportDurationSeconds": 108.48
+    },
+    "playwright": {
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0,
+      "reportDurationSeconds": 1122.765434
+    },
+    "previewBuild": {
+      "durationMs": 10639,
+      "exitCode": 0
+    }
+  },
+  "priorReceipts": {
+    "full-vitest-856c933.json": {
+      "schemaVersion": 1,
+      "localOnly": true,
+      "suite": "vitest",
+      "command": "npx vitest run",
+      "sourceHead": "856c9331c778821b447f6201f0bbbfb7095856b5",
+      "sourceHeadUnchanged": true,
+      "fixtureInputsValidated": true,
+      "configuredFallbackRejected": true,
+      "startedAt": "2026-09-19T14:17:41.653Z",
+      "durationMs": 109942,
+      "exitCode": 0,
+      "signal": null,
+      "receiptSha256": "f3fa377f77ecc8f1fe4fe8c03d56b02937b29317550e8aea419e68ae5dcb17f8"
+    },
+    "full-playwright-856c933.json": {
+      "schemaVersion": 1,
+      "localOnly": true,
+      "suite": "playwright",
+      "command": "npx playwright test",
+      "sourceHead": "856c9331c778821b447f6201f0bbbfb7095856b5",
+      "sourceHeadUnchanged": true,
+      "fixtureInputsValidated": true,
+      "configuredFallbackRejected": true,
+      "startedAt": "2026-09-19T14:21:20.073Z",
+      "durationMs": 1126119,
+      "exitCode": 0,
+      "signal": null,
+      "receiptSha256": "74ab575c7d62842bd28916c1e018c7257890371f87049feed8941fe6d778a9a5"
+    },
+    "preview-build-856c933.json": {
+      "command": "pnpm build",
+      "sourceHead": "856c9331c778821b447f6201f0bbbfb7095856b5",
+      "environment": "named staging preview, isolated local fixture",
+      "exitCode": 0,
+      "durationMs": 10639,
+      "receiptSha256": "6320f455d1dbba55cde4eb8bfbc696642cc78bc991099acb33a2a2ae894381c8"
+    }
+  },
+  "latestReceipts": {
+    "full-playwright-01abdf7.json": {
+      "schemaVersion": 1,
+      "localOnly": true,
+      "suite": "playwright",
+      "command": "npx playwright test",
+      "sourceHead": "01abdf707071cd3b884f7e207aaf343e5eac86d9",
+      "sourceHeadUnchanged": true,
+      "fixtureInputsValidated": true,
+      "configuredFallbackRejected": true,
+      "startedAt": "2026-09-19T14:57:45.643Z",
+      "durationMs": 1005438,
+      "exitCode": 0,
+      "signal": null,
+      "receiptSha256": "6fb5f8784c7a00e64fffec71bb69ca8232ca1206e04c752e9d9c4fc6f31fdca0"
+    },
+    "preview-build-01abdf7.json": {
+      "command": "pnpm build",
+      "sourceHead": "01abdf707071cd3b884f7e207aaf343e5eac86d9",
+      "environment": "named staging preview, isolated local fixture",
+      "exitCode": 0,
+      "durationMs": 7420,
+      "receiptSha256": "ad97c5d0a2e3104d77bf79b8c257316ee7007d318bd49d1500069ac95d5abc02"
+    },
+    "full-vitest-01abdf7.json": {
+      "schemaVersion": 1,
+      "localOnly": true,
+      "suite": "vitest",
+      "command": "npx vitest run",
+      "sourceHead": "01abdf707071cd3b884f7e207aaf343e5eac86d9",
+      "sourceHeadUnchanged": true,
+      "fixtureInputsValidated": true,
+      "configuredFallbackRejected": true,
+      "startedAt": "2026-09-19T14:54:38.195Z",
+      "durationMs": 116007,
+      "exitCode": 0,
+      "signal": null,
+      "receiptSha256": "36481e42b92d37d9659ce0805425efcf194cfe31549d563338a602e2c5d22b50"
+    }
+  },
+  "vitest": {
+    "passed": 3519,
+    "skipped": 0,
+    "failed": 0,
+    "files": 323,
+    "reportDurationSeconds": 114.27,
+    "runnerDurationMs": 116007
+  },
+  "playwright": {
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "junitTests": 210,
+    "junitSha256": "8d24cdbf89d3b3eca43729e3025733133a3fd147e6de7c96064d35276f9b5c3f",
+    "runnerDurationMs": 1005438,
+    "skippedIdentityVerification": "47 file/title identities matched retained individually classified inventory",
+    "reportDurationSeconds": 1003.520727
+  },
+  "build": {
+    "command": "pnpm build",
+    "exitCode": 0,
+    "durationMs": 7420,
+    "receiptSha256": "ad97c5d0a2e3104d77bf79b8c257316ee7007d318bd49d1500069ac95d5abc02"
+  },
+  "cleanSqlChain": {
+    "sourceHead": "bc277c9cbb519965abe3dd0a76b782ce042d41b2",
+    "migrationCount": 68,
+    "currentRawByteMismatches": 0,
+    "seedApplied": true,
+    "localSyntheticHistory": true,
+    "notCliHistoryProof": true,
+    "catalogPassed": 16,
+    "catalogFailed": 0
+  },
+  "lint": {
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 296
+  },
+  "dependencyAudit": {
+    "exitCode": 1,
+    "critical": 0,
+    "high": 0,
+    "moderate": 1,
+    "advisory": "1119441",
+    "existingExceptionUntil": "2026-09-30"
+  },
+  "syntheticPromisorLazyFetchControl": {
+    "localOnly": true,
+    "networkAccessPerformed": false,
+    "beforeFixMarkerRemoteHelperExecuted": true,
+    "mitigation": {
+      "GIT_NO_LAZY_FETCH": "1",
+      "GIT_ALLOW_PROTOCOL": ""
+    },
+    "regression": "34th focused preparer test"
+  }
+}

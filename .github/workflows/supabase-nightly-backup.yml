@@ -15,10 +15,42 @@ env:
   BACKUP_RETENTION_DAYS: 14
 
 jobs:
+  production-pause:
+    name: Check production pause before backup or staging refresh
+    # Manual dispatch can select a branch or tag. Only the current default
+    # branch may reach the source checkout that decides whether Production is
+    # eligible for credentials; every other selected ref is an intentional skip.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      backup_allowed: ${{ steps.pause.outputs.backup_allowed }}
+      source_sha: ${{ steps.source.outputs.source_sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - name: Record checked default-branch source
+        id: source
+        run: echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Read committed production pause
+        id: pause
+        run: node src/maintenance/backup-production-pause-guard.mjs >> "$GITHUB_OUTPUT"
+
   backup-and-restore:
+    needs: production-pause
+    if: needs.production-pause.result == 'success' && needs.production-pause.outputs.backup_allowed == 'true' && needs.production-pause.outputs.source_sha != ''
     name: Backup production & restore oldest to staging
     runs-on: ubuntu-latest
     environment: Production
+    permissions:
+      contents: read
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       STAGING_SUPABASE_DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
@@ -28,6 +60,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Use exactly the source that the pause gate checked. A manual dispatch
+          # ref must never supply scripts to the secret-bearing Production job.
+          ref: ${{ needs.production-pause.outputs.source_sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -43,10 +79,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Pinned to a known-good version (was `version: latest`, which resolves over
+      # the network at setup time and was the surface that failed on 2026-06-05).
+      # Pinning makes runs reproducible and reduces transient resolution failures.
+      # The first attempt is allowed to fail (continue-on-error) so a single
+      # transient setup failure self-heals on the retry below (Story 22.12 AC2).
       - name: Setup Supabase CLI
+        id: setup_cli
+        uses: supabase/setup-cli@v1
+        continue-on-error: true
+        with:
+          version: 2.104.0
+
+      - name: Setup Supabase CLI (retry once on transient failure)
+        if: steps.setup_cli.outcome == 'failure'
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.104.0
 
       - name: Create backup output dir
         run: mkdir -p backup-output
@@ -65,8 +114,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
       - name: Dump employees and column_config only (for staging partial refresh)
-        run: pg_dump "$SUPABASE_DB_URL" --data-only --schema=public -t public.employees -t public.column_config -f backup-output/employees-column_config.sql
-        continue-on-error: true
+        run: |
+          pg_dump "$SUPABASE_DB_URL" --format=custom --data-only --schema=public --table=public.employees --table=public.column_config --file=backup-output/employees-column_config.dump
+          pg_restore --list backup-output/employees-column_config.dump > /dev/null
 
       - name: Upload backup to Supabase Storage
         run: node scripts/supabase-backup-storage.mjs upload "$(date -u +%Y-%m-%d)"
@@ -90,12 +140,140 @@ jobs:
 
       - name: Restore employees and column_config to staging (partial refresh)
         run: |
-          RESTORE_DIR="${{ github.workspace }}/backup-output/restore"
-          if [ ! -f "$RESTORE_DIR/employees-column_config.sql" ]; then
-            echo "No backup to restore (first run or no backups yet)."
-            exit 0
+          if [ "$SUPABASE_DB_URL" = "$STAGING_SUPABASE_DB_URL" ]; then
+            echo "Production and staging database targets must differ." >&2
+            exit 1
           fi
-          # Only replace employees and column_config; leave auth, users, user_filters, important_dates, etc. as-is
-          psql "$STAGING_SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "TRUNCATE public.employees, public.column_config RESTART IDENTITY CASCADE;"
-          psql "$STAGING_SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$RESTORE_DIR/employees-column_config.sql"
+          RESTORE_DIR="${{ github.workspace }}/backup-output/restore"
+          ARCHIVE="$RESTORE_DIR/employees-column_config.dump"
+          if [ ! -f "$ARCHIVE" ]; then
+            echo "Required compatible v2 backup archive is missing." >&2
+            exit 1
+          fi
+          COLUMN_CONFIG_SQL="$RESTORE_DIR/column_config-data.sql"
+          EMPLOYEES_SQL="$RESTORE_DIR/employees-data.sql"
+
+          pg_restore --data-only --no-owner --no-privileges --strict-names --schema=public --table=column_config --file="$COLUMN_CONFIG_SQL" "$ARCHIVE"
+          pg_restore --data-only --no-owner --no-privileges --strict-names --schema=public --table=employees --file="$EMPLOYEES_SQL" "$ARCHIVE"
+
+          # One transaction prevents a failed schema sync or employee COPY from
+          # leaving staging empty. public.users/auth remain intentionally untouched.
+          psql "$STAGING_SUPABASE_DB_URL" --no-psqlrc --set=ON_ERROR_STOP=1 --single-transaction \
+            -c "SET LOCAL lock_timeout = '30s';" \
+            -c "TRUNCATE public.employees, public.column_config RESTART IDENTITY CASCADE;" \
+            -f "$COLUMN_CONFIG_SQL" \
+            -f "${{ github.workspace }}/.github/backup/sync-runtime-employee-columns.sql" \
+            -f "$EMPLOYEES_SQL"
           echo "Staging: employees and column_config refreshed from oldest backup."
+
+
+  backup-failure-alert:
+    name: Alert on backup gate or execution failure
+    needs: [production-pause, backup-and-restore]
+    # Do not alert for an intentional pause or a branch/tag dispatch: both jobs
+    # are skipped or successful. Alert when either job actually failed, including
+    # a pause-gate checkout, setup, or lock-read failure before Production starts.
+    if: >-
+      always() &&
+      (needs.production-pause.result == 'failure' ||
+       needs.backup-and-restore.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      # This is deliberately checkout- and setup-free. It uses only GitHub's
+      # built-in token and fixed PII-free text, so a gate failure can still alert.
+      - name: Open or append the backup-failure issue
+        uses: actions/github-script@v9
+        env:
+          FAILED_JOB: ${{ needs.production-pause.result == 'failure' && 'production-pause' || 'backup-and-restore' }}
+        with:
+          script: |
+            const label = 'backup-failure';
+            const failedJob = process.env.FAILED_JOB === 'production-pause'
+              ? 'production-pause'
+              : 'backup-and-restore';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const dateUtc = new Date().toISOString().slice(0, 10);
+            const title = `Nightly Supabase backup failed — ${dateUtc} (run ${context.runId})`;
+            const body = [
+              'The nightly Supabase backup workflow failed.',
+              '',
+              `- Date (UTC): ${dateUtc}`,
+              `- Failed job: ${failedJob}`,
+              `- Run: ${runUrl}`,
+              `- Run ID: ${context.runId}`,
+              '',
+              'Open the run above to see which job failed and the captured logs.',
+              '',
+              'This issue was opened automatically by the guarded failure-alert job of',
+              '`.github/workflows/supabase-nightly-backup.yml` (Story 22.12). Repeated',
+              'failures append a comment to this issue rather than opening a new one.',
+            ].join('\n');
+
+            let existing;
+            try {
+              const listed = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: label,
+                state: 'open',
+                per_page: 100,
+              });
+              existing = listed.data.find((item) => !item.pull_request);
+            } catch (error) {
+              core.warning('Could not list existing backup-failure issues; opening a new issue with deduplication skipped.');
+            }
+
+            if (existing) {
+              try {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  body,
+                });
+              } catch (error) {
+                core.setFailed('Could not append the backup-failure issue comment.');
+              }
+              return;
+            }
+
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label,
+              });
+            } catch (error) {
+              if (error.status !== 404) {
+                core.warning('Could not verify the backup-failure label; attempting issue creation.');
+              }
+              if (error.status === 404) {
+                try {
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label,
+                    color: 'B60205',
+                    description: 'Automated nightly Supabase backup failure (Story 22.12)',
+                  });
+                } catch (createError) {
+                  if (createError.status !== 422) {
+                    core.warning('Could not create the backup-failure label; attempting issue creation.');
+                  }
+                }
+              }
+            }
+
+            try {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                labels: [label],
+                body,
+              });
+            } catch (error) {
+              core.setFailed('Could not open the backup-failure issue.');
+            }

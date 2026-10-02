@@ -210,17 +210,18 @@ Since the original README, the project has added or substantially improved:
 
 ### Prerequisites
 
-- Node.js 20+
-- pnpm 10+
+- Node.js 20.19+ on the 20.x line, 22.12+ on the 22.x line, or 24+ (`^20.19.0 || ^22.12.0 || >=24.0.0`), matching the application and test toolchain
+- pnpm 10.19.0 (the version pinned in `package.json`)
 - Git
 - Supabase project credentials
+- Docker Desktop with WSL2 (optional) — for the local Supabase stack and local SMTP capture
 
 ### Install
 
 ```bash
 git clone <repo-url>
 cd hr-masterdata
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
 ### Configure Environment
@@ -257,6 +258,18 @@ pnpm dev
 ```
 
 Then open `http://localhost:3000`.
+
+### Local Docker / Supabase Stack (optional)
+
+For a fully local backend (Supabase Auth/REST/Realtime/Postgres plus Mailpit for SMTP capture), see [`docs/local-docker.md`](docs/local-docker.md). The local Supabase CLI stack uses high ports (`15421` API, `15422` Postgres) to avoid collisions with other repos and agents.
+
+```bash
+pnpm supabase:start   # Local Supabase Auth/REST/Realtime/Postgres
+pnpm docker:up        # Mailpit for app SMTP at 127.0.0.1:11025, UI at 127.0.0.1:18025
+pnpm supabase:reset   # Recreate local DB schema/data from migrations
+pnpm docker:down      # Stop Compose services
+pnpm supabase:stop    # Stop this repo's Supabase stack
+```
 
 ## Documentation
 

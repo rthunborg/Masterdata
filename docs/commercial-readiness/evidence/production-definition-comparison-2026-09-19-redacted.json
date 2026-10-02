@@ -1,0 +1,1795 @@
+{
+  "phase": "production_detail_diagnosis",
+  "capturedAtUtc": "2026-09-19T12:22:32.502Z",
+  "hostedConnectionAttempted": true,
+  "hostedWriteAttempted": false,
+  "repairProofsSigned": 0,
+  "candidateSha": "51f1adbf9cf3446dd2405bc4bee57cd22a005759",
+  "manifestSha256": "92cdec724eb3e084997431ec407418d7fbbc41db08d78196dfd39307b74b60fb",
+  "repositoryMigrationCount": 68,
+  "repairCandidateCount": 55,
+  "forwardMigrationCount": 13,
+  "diagnosticSqlSha256": "152fac3dd08b9311755f5a0c3e1fa8239b534dce9af15e558617bbe67a34c6cd",
+  "toolingAndThreeWayTargetBindingVerified": true,
+  "cliVersion": "2.115.0",
+  "psqlVersion": "psql (PostgreSQL) 17.11",
+  "diagnostics": {
+    "policyCount": 7,
+    "policies": [
+      {
+        "label": "staffing_needs:SELECT",
+        "nameSha256": "da9c800a16173236cf9e0a3c400e45a9813fbc1a77222de5e574cbc61abfe8e3",
+        "permissive": true,
+        "roleCount": 1,
+        "rolesSha256": "cb1c0f48eb8782362a65b81a53e54a611303a4c01e09274c42512fecf06e4697",
+        "knownRoles": {
+          "public": false,
+          "anon": false,
+          "authenticated": true,
+          "service_role": false
+        },
+        "unknownRoleCount": 0,
+        "qual": {
+          "actualNull": false,
+          "expectedNull": false,
+          "comparison": {
+            "equal": false,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "f9850317bf515c66eb33e9ef18818a1632e7a31cc18b6847a4c0efd1a0ff1f2e",
+            "expectedTokenSha256": "e4fcc5ce87edc4674f242ff2014b3751d1450b970d55061069e18a42c205484d",
+            "actualTokenCount": 1,
+            "expectedTokenCount": 8,
+            "editSummary": {
+              "available": true,
+              "edits": [
+                {
+                  "expected": [
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "value": "get_user_role"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "is"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "not"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "null"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    }
+                  ],
+                  "actual": [
+                    {
+                      "kind": "word",
+                      "value": "true"
+                    }
+                  ]
+                }
+              ],
+              "truncated": false
+            }
+          }
+        },
+        "check": {
+          "actualNull": true,
+          "expectedNull": true,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expectedTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "actualTokenCount": 0,
+            "expectedTokenCount": 0,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        }
+      },
+      {
+        "label": "staffing_needs:UPDATE",
+        "nameSha256": "2852fb13a8931c1a8bcb56f10f50d47d51303dbff318774b5581ebe038061240",
+        "permissive": true,
+        "roleCount": 1,
+        "rolesSha256": "cb1c0f48eb8782362a65b81a53e54a611303a4c01e09274c42512fecf06e4697",
+        "knownRoles": {
+          "public": false,
+          "anon": false,
+          "authenticated": true,
+          "service_role": false
+        },
+        "unknownRoleCount": 0,
+        "qual": {
+          "actualNull": false,
+          "expectedNull": false,
+          "comparison": {
+            "equal": false,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "d96ff457456dff994d22cb6b6de8b68685680a4aa5fbabb2f259d3c25edf9c0c",
+            "expectedTokenSha256": "26f2c0c8e0b2c1385e6431b92c5fb33d76e932cdc504795238b80d8260869fcb",
+            "actualTokenCount": 52,
+            "expectedTokenCount": 19,
+            "editSummary": {
+              "available": true,
+              "edits": [
+                {
+                  "expected": [
+                    {
+                      "kind": "word",
+                      "value": "get_user_role"
+                    }
+                  ],
+                  "actual": [
+                    {
+                      "kind": "word",
+                      "sha256": "0a7e36109c3b7623ce0c613f15e2830761cef2ebc32189e5b0eebd9df6abacb3"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "value": "select"
+                    },
+                    {
+                      "kind": "number",
+                      "value": "1"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "from"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "users"
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "where"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    },
+                    {
+                      "kind": "word",
+                      "value": "auth_user_id"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "="
+                    },
+                    {
+                      "kind": "word",
+                      "value": "auth"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    }
+                  ]
+                },
+                {
+                  "expected": [],
+                  "actual": [
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    },
+                    {
+                      "kind": "word",
+                      "value": "is_active"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "="
+                    },
+                    {
+                      "kind": "word",
+                      "value": "true"
+                    }
+                  ]
+                },
+                {
+                  "expected": [],
+                  "actual": [
+                    {
+                      "kind": "word",
+                      "value": "and"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    },
+                    {
+                      "kind": "word",
+                      "value": "role"
+                    }
+                  ]
+                },
+                {
+                  "expected": [],
+                  "actual": [
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    }
+                  ]
+                }
+              ],
+              "truncated": true
+            }
+          }
+        },
+        "check": {
+          "actualNull": false,
+          "expectedNull": true,
+          "comparison": {
+            "equal": false,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "d96ff457456dff994d22cb6b6de8b68685680a4aa5fbabb2f259d3c25edf9c0c",
+            "expectedTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "actualTokenCount": 52,
+            "expectedTokenCount": 0,
+            "editSummary": {
+              "available": true,
+              "edits": [
+                {
+                  "expected": [],
+                  "actual": [
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "0a7e36109c3b7623ce0c613f15e2830761cef2ebc32189e5b0eebd9df6abacb3"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "value": "select"
+                    },
+                    {
+                      "kind": "number",
+                      "value": "1"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "from"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "users"
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "where"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    },
+                    {
+                      "kind": "word",
+                      "value": "auth_user_id"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "="
+                    },
+                    {
+                      "kind": "word",
+                      "value": "auth"
+                    }
+                  ]
+                }
+              ],
+              "truncated": true
+            }
+          }
+        }
+      },
+      {
+        "label": "staffing_needs_changelog:INSERT",
+        "nameSha256": "1cb118bbaa46eb4da66b4a77fc8f417ae6c8e7addec8c3e03a72536baade5f82",
+        "permissive": true,
+        "roleCount": 1,
+        "rolesSha256": "cb1c0f48eb8782362a65b81a53e54a611303a4c01e09274c42512fecf06e4697",
+        "knownRoles": {
+          "public": false,
+          "anon": false,
+          "authenticated": true,
+          "service_role": false
+        },
+        "unknownRoleCount": 0,
+        "qual": {
+          "actualNull": true,
+          "expectedNull": true,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expectedTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "actualTokenCount": 0,
+            "expectedTokenCount": 0,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        },
+        "check": {
+          "actualNull": false,
+          "expectedNull": false,
+          "comparison": {
+            "equal": false,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "cfc668758f0588a8bf93dbcebdd5ecba1aff1d4a51f112786faf81b9af5f6298",
+            "expectedTokenSha256": "26f2c0c8e0b2c1385e6431b92c5fb33d76e932cdc504795238b80d8260869fcb",
+            "actualTokenCount": 62,
+            "expectedTokenCount": 19,
+            "editSummary": {
+              "available": true,
+              "edits": [
+                {
+                  "expected": [
+                    {
+                      "kind": "word",
+                      "value": "get_user_role"
+                    }
+                  ],
+                  "actual": [
+                    {
+                      "kind": "word",
+                      "sha256": "0a7e36109c3b7623ce0c613f15e2830761cef2ebc32189e5b0eebd9df6abacb3"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "value": "select"
+                    },
+                    {
+                      "kind": "number",
+                      "value": "1"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "from"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "users"
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "where"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    },
+                    {
+                      "kind": "word",
+                      "value": "id"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "="
+                    },
+                    {
+                      "kind": "word",
+                      "value": "staffing_needs_changelog"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    }
+                  ]
+                },
+                {
+                  "expected": [],
+                  "actual": [
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    },
+                    {
+                      "kind": "word",
+                      "value": "is_active"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "="
+                    },
+                    {
+                      "kind": "word",
+                      "value": "true"
+                    }
+                  ]
+                },
+                {
+                  "expected": [],
+                  "actual": [
+                    {
+                      "kind": "word",
+                      "value": "and"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "sha256": "4419523edcc1b93ffa1e18301db81a7bc8b6d83cfab18bb6595d53938721b055"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "."
+                    },
+                    {
+                      "kind": "word",
+                      "value": "role"
+                    }
+                  ]
+                },
+                {
+                  "expected": [],
+                  "actual": [
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    }
+                  ]
+                }
+              ],
+              "truncated": true
+            }
+          }
+        }
+      },
+      {
+        "label": "staffing_needs_changelog:SELECT",
+        "nameSha256": "f10201ca432d8b6e9cfc194dfb385e1018ed5a3f37cffdd3d380e3e5e7a861ab",
+        "permissive": true,
+        "roleCount": 1,
+        "rolesSha256": "cb1c0f48eb8782362a65b81a53e54a611303a4c01e09274c42512fecf06e4697",
+        "knownRoles": {
+          "public": false,
+          "anon": false,
+          "authenticated": true,
+          "service_role": false
+        },
+        "unknownRoleCount": 0,
+        "qual": {
+          "actualNull": false,
+          "expectedNull": false,
+          "comparison": {
+            "equal": false,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "f9850317bf515c66eb33e9ef18818a1632e7a31cc18b6847a4c0efd1a0ff1f2e",
+            "expectedTokenSha256": "e4fcc5ce87edc4674f242ff2014b3751d1450b970d55061069e18a42c205484d",
+            "actualTokenCount": 1,
+            "expectedTokenCount": 8,
+            "editSummary": {
+              "available": true,
+              "edits": [
+                {
+                  "expected": [
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "word",
+                      "value": "get_user_role"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": "("
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "is"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "not"
+                    },
+                    {
+                      "kind": "word",
+                      "value": "null"
+                    },
+                    {
+                      "kind": "punctuation",
+                      "value": ")"
+                    }
+                  ],
+                  "actual": [
+                    {
+                      "kind": "word",
+                      "value": "true"
+                    }
+                  ]
+                }
+              ],
+              "truncated": false
+            }
+          }
+        },
+        "check": {
+          "actualNull": true,
+          "expectedNull": true,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expectedTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "actualTokenCount": 0,
+            "expectedTokenCount": 0,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        }
+      },
+      {
+        "label": "user_filters:DELETE",
+        "nameSha256": "33a12f899b02c03424407a7e26e1238f27f1e8dd86d27054caff2ce008491f31",
+        "permissive": true,
+        "roleCount": 1,
+        "rolesSha256": "1aa4e4078a74ec918eef4d54d4c9ca21c886c95e120017cee1a6bd30e1596247",
+        "knownRoles": {
+          "public": true,
+          "anon": false,
+          "authenticated": false,
+          "service_role": false
+        },
+        "unknownRoleCount": 0,
+        "qual": {
+          "actualNull": false,
+          "expectedNull": false,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "68f34298b08915715f03608808bcb5fdd62baa50d217f2f3b76e5ecfe5832fa0",
+            "expectedTokenSha256": "68f34298b08915715f03608808bcb5fdd62baa50d217f2f3b76e5ecfe5832fa0",
+            "actualTokenCount": 9,
+            "expectedTokenCount": 9,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        },
+        "check": {
+          "actualNull": true,
+          "expectedNull": true,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expectedTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "actualTokenCount": 0,
+            "expectedTokenCount": 0,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        }
+      },
+      {
+        "label": "user_filters:INSERT",
+        "nameSha256": "d3343e304efdd4e35322ebdabfde0ccca861ba8294b2770e004186d9331ea4c0",
+        "permissive": true,
+        "roleCount": 1,
+        "rolesSha256": "1aa4e4078a74ec918eef4d54d4c9ca21c886c95e120017cee1a6bd30e1596247",
+        "knownRoles": {
+          "public": true,
+          "anon": false,
+          "authenticated": false,
+          "service_role": false
+        },
+        "unknownRoleCount": 0,
+        "qual": {
+          "actualNull": true,
+          "expectedNull": true,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expectedTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "actualTokenCount": 0,
+            "expectedTokenCount": 0,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        },
+        "check": {
+          "actualNull": false,
+          "expectedNull": false,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "68f34298b08915715f03608808bcb5fdd62baa50d217f2f3b76e5ecfe5832fa0",
+            "expectedTokenSha256": "68f34298b08915715f03608808bcb5fdd62baa50d217f2f3b76e5ecfe5832fa0",
+            "actualTokenCount": 9,
+            "expectedTokenCount": 9,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        }
+      },
+      {
+        "label": "user_filters:SELECT",
+        "nameSha256": "e78ec12a5a7170ffcc154bfbd034bd958765d1f7c0f63fb03ad200a466710b45",
+        "permissive": true,
+        "roleCount": 1,
+        "rolesSha256": "1aa4e4078a74ec918eef4d54d4c9ca21c886c95e120017cee1a6bd30e1596247",
+        "knownRoles": {
+          "public": true,
+          "anon": false,
+          "authenticated": false,
+          "service_role": false
+        },
+        "unknownRoleCount": 0,
+        "qual": {
+          "actualNull": false,
+          "expectedNull": false,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "68f34298b08915715f03608808bcb5fdd62baa50d217f2f3b76e5ecfe5832fa0",
+            "expectedTokenSha256": "68f34298b08915715f03608808bcb5fdd62baa50d217f2f3b76e5ecfe5832fa0",
+            "actualTokenCount": 9,
+            "expectedTokenCount": 9,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        },
+        "check": {
+          "actualNull": true,
+          "expectedNull": true,
+          "comparison": {
+            "equal": true,
+            "valid": true,
+            "semantics": "NOT_EVALUATED",
+            "actualTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expectedTokenSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "actualTokenCount": 0,
+            "expectedTokenCount": 0,
+            "editSummary": {
+              "available": true,
+              "edits": [],
+              "truncated": false
+            }
+          }
+        }
+      }
+    ],
+    "staffing": {
+      "historical": {
+        "equal": false,
+        "valid": true,
+        "semantics": "NOT_EVALUATED",
+        "actualTokenSha256": "5a60032cb4ce7971eb4cc5829c837dc85c983e2c8868e4c085f57213b89544cd",
+        "expectedTokenSha256": "6f1f4941f081024d4de2f5a0e0c71b6172749cde2f261361c89e4574df831e81",
+        "actualTokenCount": 117,
+        "expectedTokenCount": 109,
+        "editSummary": {
+          "available": true,
+          "edits": [
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "word",
+                  "value": "p_new_value"
+                },
+                {
+                  "kind": "punctuation",
+                  "sha256": "f12fb7913b46df4f43634be5f7ffbaf2b84203fc1440fd5bd829a7a3f20bd061"
+                },
+                {
+                  "kind": "number",
+                  "sha256": "d94a525200e872bb4bc75ffc9b6cb2b53dbed0ee5b5ca89a1e360ffa1736b72e"
+                },
+                {
+                  "kind": "word",
+                  "value": "then"
+                },
+                {
+                  "kind": "word",
+                  "value": "raise"
+                },
+                {
+                  "kind": "word",
+                  "value": "exception"
+                },
+                {
+                  "kind": "string",
+                  "sha256": "33ac8fd8fd66c517ff430986103f226e4e80f9c37dceaaf74d41b37b12d2190b"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "end"
+                },
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "37d2f2c27e862b911cbe0ce1154c32a38748cdee3f2707f2e880545f012302e7"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "."
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "public"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "."
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "37d2f2c27e862b911cbe0ce1154c32a38748cdee3f2707f2e880545f012302e7"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "37d2f2c27e862b911cbe0ce1154c32a38748cdee3f2707f2e880545f012302e7"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "."
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "then"
+                },
+                {
+                  "kind": "word",
+                  "value": "raise"
+                },
+                {
+                  "kind": "word",
+                  "value": "exception"
+                },
+                {
+                  "kind": "string",
+                  "value": "'Staffing need not found for location: %'"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ","
+                },
+                {
+                  "kind": "word",
+                  "value": "p_location"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "end"
+                },
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "="
+                },
+                {
+                  "kind": "word",
+                  "value": "p_new_value"
+                }
+              ],
+              "actual": []
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "return"
+                },
+                {
+                  "kind": "word",
+                  "value": "query"
+                },
+                {
+                  "kind": "word",
+                  "value": "select"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                },
+                {
+                  "kind": "word",
+                  "value": "as"
+                },
+                {
+                  "kind": "word",
+                  "value": "old_value"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ","
+                },
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                },
+                {
+                  "kind": "word",
+                  "value": "as"
+                },
+                {
+                  "kind": "word",
+                  "value": "new_value"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                }
+              ],
+              "actual": []
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "public"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "."
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                },
+                {
+                  "kind": "word",
+                  "value": "is"
+                },
+                {
+                  "kind": "word",
+                  "value": "distinct"
+                },
+                {
+                  "kind": "word",
+                  "value": "from"
+                },
+                {
+                  "kind": "word",
+                  "value": "p_new_value"
+                },
+                {
+                  "kind": "word",
+                  "value": "then"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "public"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "."
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "return"
+                },
+                {
+                  "kind": "word",
+                  "value": "query"
+                },
+                {
+                  "kind": "word",
+                  "value": "select"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                },
+                {
+                  "kind": "word",
+                  "value": "as"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "end"
+                },
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "punctuation",
+                  "value": ","
+                },
+                {
+                  "kind": "word",
+                  "value": "p_new_value"
+                },
+                {
+                  "kind": "word",
+                  "value": "as"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "operator",
+                  "sha256": "fc807f0d3df8e8465a1b235ebc49359a1a08af0fb1bcc17a65a5d9be9ecd77eb"
+                },
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "operator",
+                  "sha256": "fc807f0d3df8e8465a1b235ebc49359a1a08af0fb1bcc17a65a5d9be9ecd77eb"
+                },
+                {
+                  "kind": "word",
+                  "value": "p_new_value"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "return"
+                },
+                {
+                  "kind": "word",
+                  "sha256": "6e48d1644e3f653e845e797622c3c99359ff91582c82d10c792e2ec5df4c2c0f"
+                }
+              ]
+            }
+          ],
+          "truncated": false
+        }
+      },
+      "later": {
+        "equal": false,
+        "valid": true,
+        "semantics": "NOT_EVALUATED",
+        "actualTokenSha256": "5a60032cb4ce7971eb4cc5829c837dc85c983e2c8868e4c085f57213b89544cd",
+        "expectedTokenSha256": "58125182be7df9ffbfc03b92c729d0c4ca793bff5885ec08d522390711fc0796",
+        "actualTokenCount": 117,
+        "expectedTokenCount": 203,
+        "editSummary": {
+          "available": true,
+          "edits": [
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_actor_id"
+                },
+                {
+                  "kind": "word",
+                  "value": "uuid"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_actor_role"
+                },
+                {
+                  "kind": "word",
+                  "value": "text"
+                }
+              ],
+              "actual": []
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "auth"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "."
+                },
+                {
+                  "kind": "word",
+                  "value": "uid"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "("
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ")"
+                },
+                {
+                  "kind": "word",
+                  "value": "is"
+                },
+                {
+                  "kind": "word",
+                  "value": "null"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "p_new_value"
+                },
+                {
+                  "kind": "punctuation",
+                  "sha256": "f12fb7913b46df4f43634be5f7ffbaf2b84203fc1440fd5bd829a7a3f20bd061"
+                },
+                {
+                  "kind": "number",
+                  "sha256": "d94a525200e872bb4bc75ffc9b6cb2b53dbed0ee5b5ca89a1e360ffa1736b72e"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "string",
+                  "value": "'Authentication required'"
+                },
+                {
+                  "kind": "word",
+                  "value": "using"
+                },
+                {
+                  "kind": "word",
+                  "value": "errcode"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "="
+                },
+                {
+                  "kind": "string",
+                  "value": "'42501'"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "string",
+                  "sha256": "33ac8fd8fd66c517ff430986103f226e4e80f9c37dceaaf74d41b37b12d2190b"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "id"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ","
+                },
+                {
+                  "kind": "word",
+                  "value": "role"
+                },
+                {
+                  "kind": "word",
+                  "value": "into"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_actor_id"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ","
+                },
+                {
+                  "kind": "word",
+                  "value": "v_actor_role"
+                },
+                {
+                  "kind": "word",
+                  "value": "from"
+                },
+                {
+                  "kind": "word",
+                  "value": "public"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "."
+                },
+                {
+                  "kind": "word",
+                  "value": "users"
+                },
+                {
+                  "kind": "word",
+                  "value": "where"
+                },
+                {
+                  "kind": "word",
+                  "value": "auth_user_id"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "="
+                },
+                {
+                  "kind": "word",
+                  "value": "auth"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "37d2f2c27e862b911cbe0ce1154c32a38748cdee3f2707f2e880545f012302e7"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "uid"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "("
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ")"
+                },
+                {
+                  "kind": "word",
+                  "value": "and"
+                },
+                {
+                  "kind": "word",
+                  "value": "is_active"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "="
+                },
+                {
+                  "kind": "word",
+                  "value": "true"
+                },
+                {
+                  "kind": "word",
+                  "value": "limit"
+                },
+                {
+                  "kind": "number",
+                  "value": "1"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_actor_id"
+                },
+                {
+                  "kind": "word",
+                  "value": "is"
+                },
+                {
+                  "kind": "word",
+                  "value": "null"
+                },
+                {
+                  "kind": "word",
+                  "value": "or"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_actor_role"
+                }
+              ],
+              "actual": []
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "37d2f2c27e862b911cbe0ce1154c32a38748cdee3f2707f2e880545f012302e7"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "37d2f2c27e862b911cbe0ce1154c32a38748cdee3f2707f2e880545f012302e7"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "."
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "then"
+                },
+                {
+                  "kind": "word",
+                  "value": "raise"
+                },
+                {
+                  "kind": "word",
+                  "value": "exception"
+                },
+                {
+                  "kind": "string",
+                  "value": "'Staffing need not found for location: %'"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ","
+                },
+                {
+                  "kind": "word",
+                  "value": "p_location"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "end"
+                },
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": "="
+                },
+                {
+                  "kind": "word",
+                  "value": "p_new_value"
+                }
+              ],
+              "actual": []
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "return"
+                },
+                {
+                  "kind": "word",
+                  "value": "query"
+                },
+                {
+                  "kind": "word",
+                  "value": "select"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ","
+                },
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                }
+              ],
+              "actual": []
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "v_actor_id"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "p_user_id"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                },
+                {
+                  "kind": "word",
+                  "value": "is"
+                },
+                {
+                  "kind": "word",
+                  "value": "distinct"
+                },
+                {
+                  "kind": "word",
+                  "value": "from"
+                },
+                {
+                  "kind": "word",
+                  "value": "p_new_value"
+                },
+                {
+                  "kind": "word",
+                  "value": "then"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "v_actor_id"
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "p_user_id"
+                }
+              ]
+            },
+            {
+              "expected": [
+                {
+                  "kind": "word",
+                  "value": "return"
+                },
+                {
+                  "kind": "word",
+                  "value": "query"
+                },
+                {
+                  "kind": "word",
+                  "value": "select"
+                },
+                {
+                  "kind": "word",
+                  "value": "v_current"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ","
+                }
+              ],
+              "actual": [
+                {
+                  "kind": "word",
+                  "value": "end"
+                },
+                {
+                  "kind": "word",
+                  "value": "if"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "old_value"
+                },
+                {
+                  "kind": "operator",
+                  "sha256": "fc807f0d3df8e8465a1b235ebc49359a1a08af0fb1bcc17a65a5d9be9ecd77eb"
+                },
+                {
+                  "kind": "word",
+                  "sha256": "55494dee95d9e12ae10b2bd47e1adcdd198939a9d8a5873cc841e2e44f125abc"
+                },
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "new_value"
+                },
+                {
+                  "kind": "operator",
+                  "sha256": "fc807f0d3df8e8465a1b235ebc49359a1a08af0fb1bcc17a65a5d9be9ecd77eb"
+                }
+              ]
+            },
+            {
+              "expected": [],
+              "actual": [
+                {
+                  "kind": "punctuation",
+                  "value": ";"
+                },
+                {
+                  "kind": "word",
+                  "value": "return"
+                },
+                {
+                  "kind": "word",
+                  "sha256": "6e48d1644e3f653e845e797622c3c99359ff91582c82d10c792e2ec5df4c2c0f"
+                }
+              ]
+            }
+          ],
+          "truncated": true
+        }
+      }
+    },
+    "acceptedCatalogProfile": false,
+    "repairProofsSigned": 0
+  },
+  "successfulVerifyFullConnection": true,
+  "passed": true,
+  "durationSeconds": 13.284
+}

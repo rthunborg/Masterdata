@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "state": "paused",
+  "purpose": "Blocks normal production application builds until the owner explicitly authorizes reopening."
+}

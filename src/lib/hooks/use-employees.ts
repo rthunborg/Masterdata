@@ -22,6 +22,7 @@ import { mutationQueueService } from "@/lib/services/mutation-queue";
 import { hasEmployeeChanged } from "@/lib/utils/employee-comparison";
 import { useNotificationBatch } from "./use-notification-batch";
 import { useOptimisticUpdates } from "./use-optimistic-updates";
+import { isExternalParty, USER_ROLES, type UserRole } from "@/lib/types/user";
 
 // ── Module-level cache ──────────────────────────────────────────────
 
@@ -32,6 +33,7 @@ interface EmployeeCache {
   timestamp: number;
 }
 const EMPLOYEE_CACHE_TTL = 2 * 60 * 1000;
+const EXTERNAL_EMPLOYEE_REFRESH_INTERVAL_MS = 30 * 1000;
 let employeeCache: EmployeeCache | null = null;
 
 /** Reset the module-level cache (exposed for tests). */
@@ -76,6 +78,13 @@ export function useEmployees({
   // Composed hooks
   const { addNotification } = useNotificationBatch();
   const { recentUpdatesRef, updateOptimistically } = useOptimisticUpdates(employees, setEmployees);
+  const resolvedUserRole = USER_ROLES.includes(userRole as UserRole)
+    ? (userRole as UserRole)
+    : null;
+  const isExternalUser =
+    resolvedUserRole !== null && isExternalParty(resolvedUserRole);
+  const canUseRawEmployeeRealtime =
+    resolvedUserRole !== null && !isExternalUser;
 
   // Track current viewState internally
   const viewStateRef = useRef<ViewState>({
@@ -106,10 +115,17 @@ export function useEmployees({
 
   // ── Fetch (with module-level caching) ─────────────────────────────
 
-  const fetchEmployees = useCallback(async () => {
+  const fetchEmployees = useCallback(async ({
+    background = false,
+    bypassCache = false,
+  }: {
+    background?: boolean;
+    bypassCache?: boolean;
+  } = {}) => {
     const filterKey = JSON.stringify(filters || {});
 
     if (
+      !bypassCache &&
       employeeCache &&
       employeeCache.filterKey === filterKey &&
       employeeCache.userRole === userRole &&
@@ -121,7 +137,7 @@ export function useEmployees({
     }
 
     try {
-      setIsLoading(true);
+      if (!background) setIsLoading(true);
       setError(null);
 
       let data: Employee[] = await employeeService.getAll(filters);
@@ -145,13 +161,36 @@ export function useEmployees({
       setError(new Error(msg));
       console.error("Misslyckades att hämta anställda:", err);
     } finally {
-      setIsLoading(false);
+      if (!background) setIsLoading(false);
     }
   }, [filters, userRole]);
 
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
+
+  const refreshExternalEmployees = useCallback(async () => {
+    employeeCache = null;
+    await fetchEmployees({ background: true, bypassCache: true });
+  }, [fetchEmployees]);
+
+  useEffect(() => {
+    if (!enableRealtime || !isExternalUser) return;
+
+    const refreshThroughFilteredApi = () => {
+      void refreshExternalEmployees();
+    };
+    const intervalId = window.setInterval(
+      refreshThroughFilteredApi,
+      EXTERNAL_EMPLOYEE_REFRESH_INTERVAL_MS
+    );
+    window.addEventListener("focus", refreshThroughFilteredApi);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refreshThroughFilteredApi);
+    };
+  }, [enableRealtime, isExternalUser, refreshExternalEmployees]);
 
   // Keep module-level cache in sync with realtime/optimistic state changes
   useEffect(() => {
@@ -174,6 +213,7 @@ export function useEmployees({
       }
 
       if (event.table !== "employees") return;
+      if (!canUseRawEmployeeRealtime) return;
 
       const performanceStart = performance.now();
 
@@ -295,7 +335,13 @@ export function useEmployees({
         console.warn(`Real-time event processing exceeded 100ms: ${elapsed.toFixed(2)}ms`);
       }
     },
-    [filters, enableNotifications, addNotification, recentUpdatesRef]
+    [
+      filters,
+      enableNotifications,
+      addNotification,
+      recentUpdatesRef,
+      canUseRawEmployeeRealtime,
+    ]
   );
 
   // Ref-stable wrapper: prevents debounce recreation when handleRealtimeEvent
@@ -321,7 +367,7 @@ export function useEmployees({
     schema: "public",
     event: "*",
     onEvent: debouncedHandleRealtimeEvent,
-    enabled: enableRealtime,
+    enabled: enableRealtime && canUseRawEmployeeRealtime,
   });
 
   useEffect(() => {

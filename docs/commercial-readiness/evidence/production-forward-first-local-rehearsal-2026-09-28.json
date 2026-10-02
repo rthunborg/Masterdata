@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "local-synthetic-production-forward-first-rehearsal",
+  "observedOn": "2026-09-28",
+  "hostedAccess": false,
+  "productionAdmission": false,
+  "sourceCommit": "88cf3efcf7fdb8cdbfd00d850da6082b0f6fdd65",
+  "reviewedSupabaseCliVersion": "2.115.0",
+  "command": "npx vitest run tests/integration/epic-22/story-22.15/production-cli-matrix.test.ts",
+  "result": {
+    "passed": 8,
+    "skipped": 0,
+    "failed": 0,
+    "exitCode": 0,
+    "runnerSeconds": 322.92,
+    "testSeconds": 321.726
+  },
+  "successfulCase": {
+    "forwardApplyVersions": 13,
+    "historyInitiallyAbsent": true,
+    "historyRepairVersions": 55,
+    "historyRepairSucceeded": 55,
+    "finalHistoryVersions": 68,
+    "catalogFingerprintUnchangedAcrossRepair": true,
+    "preservationFingerprintUnchangedAcrossRepair": true
+  },
+  "limits": [
+    "Synthetic local fixture only; it is not a production profile or target admission proof.",
+    "Does not authorize cleanup, history repair, migration apply, settings changes, deployment, main merge, or reopening.",
+    "Does not prove historical migration execution or mark any adoption-ledger row proved."
+  ],
+  "backup": {
+    "ownerAttestsNewestBackupRestoreTested": true,
+    "independentRestoreProofRecorded": false
+  }
+}

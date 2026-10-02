@@ -260,7 +260,7 @@ export async function GET(
 ) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireEmployeeManagerAPI();
+    await requireEmployeeManagerAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;
@@ -660,7 +660,7 @@ export async function DELETE(
 ) {
   try {
     // Verify HR Admin or Recruiter role
-    await requireEmployeeManagerAPI();
+    await requireEmployeeManagerAPI(request);
 
     // Await params (Next.js 15+ requirement)
     const { id } = await params;

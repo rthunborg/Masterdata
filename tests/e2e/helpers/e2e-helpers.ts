@@ -13,10 +13,20 @@ import { Page, expect, type Cookie } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
+/** Wait for the employee view itself; dashboard polling may never become idle. */
+export async function waitForEmployeeDashboard(page: Page) {
+  await expect(page).toHaveURL(/\/dashboard(?:[/?#]|$)/);
+  await expect(
+    page.locator('table, [aria-label="Employee list"]').filter({ visible: true }).first()
+  ).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('status', { name: 'Loading', exact: true })).toBeHidden();
+}
 export interface EmployeeData {
   first_name?: string;
   surname?: string;
   ssn?: string;
+  email?: string;
+  mobile?: string;
   rank?: string;
   gender?: string;
   hire_date?: string;
@@ -259,6 +269,18 @@ export async function createEmployeeViaUI(page: Page, data: Partial<EmployeeData
   await page.locator('input[name="first_name"]').fill(firstName);
   await page.locator('input[name="surname"]').fill(surname);
   await page.locator('input[name="ssn"]').fill(ssn);
+
+  if (data.email !== undefined) {
+    const emailInput = page.locator('input[name="email"]').first();
+    await emailInput.scrollIntoViewIfNeeded();
+    await emailInput.fill(data.email);
+  }
+
+  if (data.mobile !== undefined) {
+    const mobileInput = page.locator('input[name="mobile"]').first();
+    await mobileInput.scrollIntoViewIfNeeded();
+    await mobileInput.fill(data.mobile);
+  }
 
   if (data.hire_date) {
     await page.locator('input[name="hire_date"]').fill(data.hire_date);

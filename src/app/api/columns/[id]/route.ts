@@ -87,9 +87,8 @@ export async function PATCH(
 
 /**
  * DELETE /api/columns/[id]
- * Delete a custom column
- * Authorization: External party users can only delete columns they have edit permission for (their own columns)
- * HR Admin cannot use this endpoint (403) - must use admin endpoint
+ * Legacy external-party delete endpoint.
+ * Column lifecycle is HR Admin-managed; use /api/admin/columns/[id].
  */
 export async function DELETE(
   request: NextRequest,
@@ -98,25 +97,10 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    // Verify authentication and get user
-    const user = await requireAuthAPI();
-
-    // Verify user is NOT hr_admin (use admin endpoint for admin operations)
-    if (user.role === "hr_admin") {
-      return createForbiddenResponse(
-        "HR Admin cannot use this endpoint. Use admin panel to delete columns."
-      );
-    }
-
-    // Delete column via repository (includes ownership check)
-    await columnConfigRepository.deleteColumn(id, user.id, user.role);
-
-    return NextResponse.json({ 
-      data: { 
-        id,
-        message: "Column deleted successfully" 
-      } 
-    });
+    await requireAuthAPI(request);
+    return createForbiddenResponse(
+      "Endast HR Admin kan ta bort kolumner via adminpanelen"
+    );
   } catch (error) {
     // Handle permission errors
     if (error instanceof Error && error.message.includes("permission")) {

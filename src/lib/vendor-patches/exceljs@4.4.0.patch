@@ -1,0 +1,28 @@
+diff --git a/lib/xlsx/xform/sheet/cf-ext/cf-rule-ext-xform.js b/lib/xlsx/xform/sheet/cf-ext/cf-rule-ext-xform.js
+index fecfbf147b4b017be184e91bafdfd5a50d3f43e4..b36b93cfd71664f7bf3f09759fcb01d0bc385e73 100644
+--- a/lib/xlsx/xform/sheet/cf-ext/cf-rule-ext-xform.js
++++ b/lib/xlsx/xform/sheet/cf-ext/cf-rule-ext-xform.js
+@@ -1,4 +1,4 @@
+-const {v4: uuidv4} = require('uuid');
++const {randomUUID} = require('node:crypto');
+ const BaseXform = require('../../base-xform');
+ const CompositeXform = require('../../composite-xform');
+ 
+@@ -40,7 +40,7 @@ class CfRuleExtXform extends CompositeXform {
+ 
+   prepare(model) {
+     if (CfRuleExtXform.isExt(model)) {
+-      model.x14Id = `{${uuidv4()}}`.toUpperCase();
++      model.x14Id = `{${randomUUID()}}`.toUpperCase();
+     }
+   }
+ 
+@@ -74,7 +74,7 @@ class CfRuleExtXform extends CompositeXform {
+     xmlStream.openNode(this.tag, {
+       type: 'iconSet',
+       priority: model.priority,
+-      id: model.x14Id || `{${uuidv4()}}`,
++      id: model.x14Id || `{${randomUUID()}}`,
+     });
+ 
+     this.iconSetXform.render(xmlStream, model);

@@ -1,0 +1,47 @@
+{
+  "phase": "aggregates-post",
+  "commit": "1cb4b02108183eeec4fa61fa980c99f835933344",
+  "capturedAtUtc": "2026-09-17T13:58:32.622Z",
+  "hostedWriteAttempted": false,
+  "manifestSha256": "92cdec724eb3e084997431ec407418d7fbbc41db08d78196dfd39307b74b60fb",
+  "repositoryMigrationCount": 68,
+  "verificationStage": "complete",
+  "toolingTlsAndThreeWayBindingVerified": true,
+  "hostedConnectionAttempted": true,
+  "unchangedFromPriorAppliedBaseline": true,
+  "diagnostics": {
+    "repayment": {
+      "omc_null": 32,
+      "omc_true": 0,
+      "pe3_null": 32,
+      "pe3_true": 1,
+      "omc_false": 1,
+      "pe3_false": 0
+    },
+    "saved_filters": {
+      "total": 0,
+      "empty_names": 0,
+      "overlength_names": 0,
+      "orphan_auth_references": 0
+    },
+    "permission_hashes": {
+      "diet_details": {
+        "config_rows": 1,
+        "permission_hash": "608d8d6a5846555a137171568d7b82a5"
+      },
+      "special_diet": {
+        "config_rows": 1,
+        "permission_hash": "608d8d6a5846555a137171568d7b82a5"
+      },
+      "repayment_needed_omc": {
+        "config_rows": 1,
+        "permission_hash": "02b8319f6f054191fe4131b27e060f98"
+      },
+      "repayment_needed_pe3": {
+        "config_rows": 1,
+        "permission_hash": "3a274a1d25cd34f07f378195bb080f29"
+      }
+    }
+  },
+  "passed": true
+}
