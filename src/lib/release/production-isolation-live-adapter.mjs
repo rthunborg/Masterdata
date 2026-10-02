@@ -11,6 +11,33 @@ const plainJson = value => value !== null && typeof value === 'object' && !Array
 const POSTGREST_CONFIG_KEYS = Object.freeze(['db_schema', 'max_rows', 'db_extra_search_path', 'db_pool', 'db_pool_acquisition_timeout']);
 const validPostgrestConfig = value => exact(value, POSTGREST_CONFIG_KEYS) && typeof value.db_schema === 'string' && typeof value.db_extra_search_path === 'string' && Number.isSafeInteger(value.max_rows) && (value.db_pool === null || Number.isSafeInteger(value.db_pool)) && (value.db_pool_acquisition_timeout === null || Number.isSafeInteger(value.db_pool_acquisition_timeout));
 const postgrestProjection = value => Object.fromEntries(POSTGREST_CONFIG_KEYS.map(key => [key, value[key]]));
+const validNetworkConfig = value => exact(value, ['dbAllowedCidrs', 'dbAllowedCidrsV6']) &&
+  ['dbAllowedCidrs', 'dbAllowedCidrsV6'].every(key => Array.isArray(value[key]) &&
+    value[key].length <= 1_000 && value[key].every(cidr => typeof cidr === 'string' &&
+      cidr.length > 0 && cidr.length <= 64 && !/[\r\n\0]/u.test(cidr)));
+const validNetworkTimestamp = value => {
+  if (typeof value !== 'string' || value.length > 64) return false;
+  const parts = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})$/u.exec(value);
+  if (!parts || !Number.isFinite(Date.parse(value))) return false;
+  const year = Number(parts[1]), month = Number(parts[2]), day = Number(parts[3]);
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1] &&
+    Number(parts[4]) < 24 && Number(parts[5]) < 60 && (!parts[6] || Number(parts[6]) < 60);
+};
+const validNetworkResponse = value => {
+  const required = ['entitlement', 'config', 'status'];
+  const optional = ['old_config', 'updated_at', 'applied_at'];
+  if (!plainJson(value) || !required.every(key => Object.hasOwn(value, key)) ||
+      Object.keys(value).some(key => !required.includes(key) && !optional.includes(key)) ||
+      value.entitlement !== 'allowed' || !['stored', 'applied'].includes(value.status) ||
+      !validNetworkConfig(value.config)) return false;
+  if (Object.hasOwn(value, 'old_config') && !validNetworkConfig(value.old_config)) return false;
+  return ['updated_at', 'applied_at'].every(key => !Object.hasOwn(value, key) ||
+    validNetworkTimestamp(value[key]));
+};
+const sameNetworkConfig = (left, right) => JSON.stringify(left.dbAllowedCidrs) === JSON.stringify(right.dbAllowedCidrs) &&
+  JSON.stringify(left.dbAllowedCidrsV6) === JSON.stringify(right.dbAllowedCidrsV6);
 const validSignal = value => value !== null && typeof value === 'object' && typeof value.aborted === 'boolean' && typeof value.addEventListener === 'function' && typeof value.removeEventListener === 'function';
 const validContext = (value, projectRef) => exact(value, ['sourceSha', 'targetBindingSha256', 'isolationPlanSha256', 'projectRef']) && SHA40.test(value.sourceSha) && SHA256.test(value.targetBindingSha256) && SHA256.test(value.isolationPlanSha256) && value.projectRef === projectRef;
 const timestamp = clock => { const value = clock(); if (!(value instanceof Date) || Number.isNaN(value.getTime())) fail(); return value.toISOString(); };
@@ -92,7 +119,8 @@ export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCap
   const capturePriorState = async ({ context, signal } = {}) => {
     if (!validContext(context, projectRef) || !validSignal(signal) || capturedPriorState !== null) fail();
     const auth = await fixedGet('config/auth', signal); const realtime = await fixedGet('config/realtime', signal); const postgrest = await fixedGet('postgrest', signal); const networkRestrictions = await fixedGet('network-restrictions', signal);
-    if (realtime.body.suspend !== false) fail();
+    if (realtime.body.suspend !== false || !validNetworkResponse(networkRestrictions.body) ||
+        networkRestrictions.body.status !== 'applied') fail();
     const postgrestConfig = postgrestProjection(postgrest.body);
     if (!validPostgrestConfig(postgrestConfig)) fail();
     priorPostgrestConfig = freeze(postgrestConfig);
@@ -118,7 +146,11 @@ export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCap
       if (call.response.status !== 200 || priorPostgrestConfig === null || !validPostgrestConfig(body) || body.db_schema !== '' || POSTGREST_CONFIG_KEYS.slice(1).some(key => body[key] !== priorPostgrestConfig[key])) fail();
       return freeze({ status: 200, body: { db_schema: '' } });
     }
-    else if (request.method === 'POST') { if (call.response.status !== 201 || !exact(body, ['status']) || body.status !== 'stored') fail(); }
+    else if (request.method === 'POST') {
+      if (call.response.status !== 201 || !validNetworkResponse(body) || !sameNetworkConfig(body.config, request.body)) fail();
+      // Only the documented, target-config-matched response becomes an ack.
+      return freeze({ status: 201, body: { status: body.status } });
+    }
     else if (call.response.status !== 200) fail();
     if (request.method === 'GET' && request.path === 'config/realtime') {
       if (body.suspend !== true) fail();
@@ -130,7 +162,7 @@ export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCap
   };
   const readNetworkRestrictions = async ({ context, signal } = {}) => {
     if (!validContext(context, projectRef) || !validSignal(signal)) fail(); const { body } = await fixedGet('network-restrictions', signal);
-    if (!plainJson(body) || body.status !== 'applied' || !plainJson(body.config) || !Array.isArray(body.config.dbAllowedCidrs) || !Array.isArray(body.config.dbAllowedCidrsV6) || !body.config.dbAllowedCidrs.every(value => typeof value === 'string') || !body.config.dbAllowedCidrsV6.every(value => typeof value === 'string')) fail();
+    if (!validNetworkResponse(body)) fail();
     return freeze({ status: body.status, dbAllowedCidrs: [...body.config.dbAllowedCidrs], dbAllowedCidrsV6: [...body.config.dbAllowedCidrsV6] });
   };
   const hostOnly = handler => async ({ context, signal } = {}) => { if (!validContext(context, projectRef) || !validSignal(signal) || signal.aborted) fail(); try { return await handler({ context, signal }); } catch { fail(); } };

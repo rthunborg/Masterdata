@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   PRODUCTION_ISOLATION_CONTROL_TIMEOUT_MS,
+  PRODUCTION_ISOLATION_NETWORK_POLL_INTERVAL_MS,
   PRODUCTION_TEMPORARY_ISOLATION_UNCERTAIN,
   runProductionTemporaryIsolationControls,
 } from '../../../../src/lib/release/production-isolation-controls.mjs';
@@ -284,6 +285,122 @@ describe('Story 22.15 production temporary isolation controls', () => {
     expect(adapter.readNetworkRestrictions).toHaveBeenCalledOnce();
   });
 
+
+  it('waits for both stored transitions before probing or issuing the next network write', async () => {
+    vi.useFakeTimers();
+    try {
+      const { adapter } = createAdapters();
+      const state = (status: string, cidr: string) => ({ status, dbAllowedCidrs: [cidr], dbAllowedCidrsV6: [] });
+      adapter.readNetworkRestrictions.mockResolvedValueOnce(state('stored', admission.exclusionIpv4Cidr))
+        .mockResolvedValueOnce(state('stored', admission.exclusionIpv4Cidr))
+        .mockResolvedValueOnce(state('applied', admission.exclusionIpv4Cidr))
+        .mockResolvedValueOnce(state('stored', admission.operatorIpv4Cidr))
+        .mockResolvedValueOnce(state('applied', admission.operatorIpv4Cidr));
+      const pending = runProductionTemporaryIsolationControls({ context, admission, adapters: adapter, now: syntheticClock });
+      await vi.advanceTimersByTimeAsync(999);
+      expect(PRODUCTION_ISOLATION_NETWORK_POLL_INTERVAL_MS).toBe(1000);
+      expect(adapter.readNetworkRestrictions).toHaveBeenCalledOnce();
+      expect(adapter.probeExcludedOperatorPooler).not.toHaveBeenCalled();
+      expect(adapter.managementRequest.mock.calls.filter(([request]) => request.path === 'network-restrictions/apply')).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(1001);
+      expect(adapter.probeExcludedOperatorPooler).toHaveBeenCalledOnce();
+      expect(adapter.probeOperatorPooler).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1000);
+      await expect(pending).resolves.toMatchObject({ network: { operatorReadbackAccepted: true } });
+      expect(adapter.readNetworkRestrictions).toHaveBeenCalledTimes(5);
+      expect(adapter.readNetworkRestrictions.mock.calls[0][0].signal).toBe(adapter.readNetworkRestrictions.mock.calls[2][0].signal);
+      expect(adapter.probeOperatorPooler).toHaveBeenCalledOnce();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('waits through only the exactly captured stale applied profile', async () => {
+    vi.useFakeTimers();
+    try {
+      const { adapter } = createAdapters();
+      adapter.readNetworkRestrictions.mockResolvedValueOnce({ status: 'applied', ...priorState.networkRestrictions });
+      const pending = runProductionTemporaryIsolationControls({ context, admission, adapters: adapter, now: syntheticClock });
+      await vi.advanceTimersByTimeAsync(999);
+      expect(adapter.probeExcludedOperatorPooler).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1);
+      await expect(pending).resolves.toMatchObject({ network: { exclusionApplied: true } });
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('uses one non-resetting 20-second propagation bound and one recovery write', async () => {
+    vi.useFakeTimers();
+    try {
+      const { adapter } = createAdapters();
+      const original = adapter.readNetworkRestrictions.getMockImplementation()!;
+      adapter.readNetworkRestrictions.mockImplementation(async (argument) => {
+        const applies = adapter.managementRequest.mock.calls.filter(([request]) => request.path === 'network-restrictions/apply');
+        if (applies.length === 1) return { status: 'stored', dbAllowedCidrs: [admission.exclusionIpv4Cidr], dbAllowedCidrsV6: [] };
+        return original(argument);
+      });
+      const pending = runProductionTemporaryIsolationControls({ context, admission, adapters: adapter, now: syntheticClock });
+      const rejected = expect(pending).rejects.toMatchObject({ code: PRODUCTION_TEMPORARY_ISOLATION_UNCERTAIN });
+      await vi.advanceTimersByTimeAsync(19_999);
+      expect(adapter.managementRequest.mock.calls.filter(([request]) => request.path === 'network-restrictions/apply')).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(1);
+      await rejected;
+      expect(adapter.probeExcludedOperatorPooler).not.toHaveBeenCalled();
+      const writes = adapter.managementRequest.mock.calls.filter(([request]) => request.path === 'network-restrictions/apply');
+      expect(writes).toHaveLength(2);
+      expect(writes[1][0].body).toEqual({ dbAllowedCidrs: [admission.operatorIpv4Cidr], dbAllowedCidrsV6: [] });
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('settles an aborted polling GET before the operator recovery POST', async () => {
+    vi.useFakeTimers();
+    try {
+      const { adapter } = createAdapters();
+      const order: string[] = [];
+      const original = adapter.managementRequest.getMockImplementation()!;
+      adapter.managementRequest.mockImplementation(async request => {
+        if (request.path === 'network-restrictions/apply') order.push('write');
+        return original(request);
+      });
+      adapter.readNetworkRestrictions.mockImplementationOnce(({ signal }: { signal: AbortSignal }) => new Promise((_resolve, reject) => {
+        signal.addEventListener('abort', () => { order.push('read-settled'); reject(new Error('private transport')); }, { once: true });
+      }));
+      const pending = runProductionTemporaryIsolationControls({ context, admission, adapters: adapter, now: syntheticClock });
+      const rejected = expect(pending).rejects.toMatchObject({ code: PRODUCTION_TEMPORARY_ISOLATION_UNCERTAIN });
+      await vi.advanceTimersByTimeAsync(20_000);
+      await rejected;
+      expect(order).toEqual(['write', 'read-settled', 'write']);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('does not claim restoration or retry writes when the final stored state never applies', async () => {
+    vi.useFakeTimers();
+    try {
+      const { adapter } = createAdapters();
+      const original = adapter.readNetworkRestrictions.getMockImplementation()!;
+      adapter.readNetworkRestrictions.mockImplementation(async argument => {
+        const applies = adapter.managementRequest.mock.calls.filter(([request]) => request.path === 'network-restrictions/apply');
+        if (applies.length === 2) return { status: 'stored', dbAllowedCidrs: [admission.operatorIpv4Cidr], dbAllowedCidrsV6: [] };
+        return original(argument);
+      });
+      const pending = runProductionTemporaryIsolationControls({ context, admission, adapters: adapter, now: syntheticClock });
+      const rejected = expect(pending).rejects.toMatchObject({ code: PRODUCTION_TEMPORARY_ISOLATION_UNCERTAIN });
+      await vi.advanceTimersByTimeAsync(20_000);
+      await rejected;
+      expect(adapter.managementRequest.mock.calls.filter(([request]) => request.path === 'network-restrictions/apply')).toHaveLength(2);
+      expect(adapter.probeOperatorPooler).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it.each([
+    ['unknown status', { status: 'pending', dbAllowedCidrs: [admission.exclusionIpv4Cidr], dbAllowedCidrsV6: [] }],
+    ['different stored profile', { status: 'stored', dbAllowedCidrs: ['203.0.113.9/32'], dbAllowedCidrsV6: [] }],
+    ['different applied profile', { status: 'applied', dbAllowedCidrs: ['203.0.113.9/32'], dbAllowedCidrsV6: [] }],
+    ['unknown extra', { status: 'stored', dbAllowedCidrs: [admission.exclusionIpv4Cidr], dbAllowedCidrsV6: [], extra: true }],
+  ])('refuses %s without polling or probing it as accepted', async (_, state) => {
+    const { adapter } = createAdapters();
+    adapter.readNetworkRestrictions.mockResolvedValueOnce(state);
+    await expect(runProductionTemporaryIsolationControls({ context, admission, adapters: adapter, now: syntheticClock })).rejects.toMatchObject({ code: PRODUCTION_TEMPORARY_ISOLATION_UNCERTAIN });
+    expect(adapter.readNetworkRestrictions).toHaveBeenCalledTimes(2);
+    expect(adapter.probeExcludedOperatorPooler).not.toHaveBeenCalled();
+  });
   it('has no database command or unrestricted command-launch surface', async () => {
     const source = await readFile(
       resolve(process.cwd(), 'src/lib/release/production-isolation-controls.mjs'),

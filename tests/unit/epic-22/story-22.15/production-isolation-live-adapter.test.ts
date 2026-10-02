@@ -53,11 +53,11 @@ function mockFetch() {
     if (init.method === 'GET' && pathname.endsWith('/config/auth')) return new Response(JSON.stringify({ hook_send_email_enabled: false }), { status: 200 });
     if (init.method === 'GET' && pathname.endsWith('/config/realtime')) { realtimeGets += 1; return new Response(JSON.stringify({ suspend: realtimeGets > 1, private_only: false }), { status: 200 }); }
     if (init.method === 'GET' && pathname.endsWith('/postgrest')) return new Response(JSON.stringify({ ...postgrestConfig, jwt_secret: 'secret-never-returned' }), { status: 200 });
-    if (init.method === 'GET' && pathname.endsWith('/network-restrictions')) return new Response(JSON.stringify({ status: 'applied', config: { dbAllowedCidrs: ['0.0.0.0/0'], dbAllowedCidrsV6: ['::/0'] } }), { status: 200 });
+    if (init.method === 'GET' && pathname.endsWith('/network-restrictions')) return new Response(JSON.stringify({ entitlement: 'allowed', status: 'applied', config: { dbAllowedCidrs: ['0.0.0.0/0'], dbAllowedCidrsV6: ['::/0'] } }), { status: 200 });
     if (init.method === 'PATCH' && pathname.endsWith('/postgrest')) return new Response(JSON.stringify({ ...postgrestConfig, db_schema: '' }), { status: 200 });
     if (init.method === 'PATCH' && pathname.endsWith('/config/realtime')) return new Response(null, { status: 204 });
     if (init.method === 'POST' && pathname.endsWith('/config/realtime/shutdown')) return new Response(null, { status: 204 });
-    if (init.method === 'POST' && pathname.endsWith('/network-restrictions/apply')) return new Response(JSON.stringify({ status: 'stored' }), { status: 201 });
+    if (init.method === 'POST' && pathname.endsWith('/network-restrictions/apply')) return new Response(JSON.stringify({ entitlement: 'allowed', status: 'stored', config: JSON.parse(init.body as string), old_config: { dbAllowedCidrs: ['0.0.0.0/0'], dbAllowedCidrsV6: ['::/0'] }, updated_at: '2026-10-02T12:00:00.000Z' }), { status: 201 });
     throw new Error('unexpected request');
   });
 }
@@ -263,3 +263,47 @@ it.each([['unsafe max rows', { max_rows: Number.MAX_SAFE_INTEGER + 1 }], ['pool 
   expect(hostCapability.sealPriorState).not.toHaveBeenCalled();
   expect(fetchImpl.mock.calls.every(([, init]) => init.method === 'GET')).toBe(true);
 });
+ describe('documented asynchronous network restriction responses', () => {
+  const config = { dbAllowedCidrs: ['203.0.113.7/32'], dbAllowedCidrsV6: [] };
+  const documented = { entitlement: 'allowed', config, status: 'stored', old_config: { dbAllowedCidrs: ['0.0.0.0/0'], dbAllowedCidrsV6: ['::/0'] }, updated_at: '2026-10-02T12:00:00Z', applied_at: '2026-10-02T11:59:00Z' };
+  it.each(['stored', 'applied'])('validates the full %s POST before reducing its acknowledgment', async status => {
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ ...documented, status }), { status: 201 }));
+    const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability: capability(fetchImpl) });
+    await expect(adapters.managementRequest(request('POST', 'network-restrictions/apply', config))).resolves.toEqual({ status: 201, body: { status } });
+  });
+  it('returns a strictly typed stored GET so the core can await propagation', async () => {
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify(documented), { status: 200 }));
+    const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability: capability(fetchImpl) });
+    await expect(adapters.readNetworkRestrictions({ context, signal: signal() })).resolves.toEqual({ status: 'stored', ...config });
+  });
+  it.each([
+    ['status only', { status: 'stored' }],
+    ['missing entitlement', { config, status: 'stored' }],
+    ['disallowed entitlement', { ...documented, entitlement: 'disallowed' }],
+    ['unknown status', { ...documented, status: 'pending' }],
+    ['unknown field', { ...documented, extra: 'private' }],
+    ['wrong requested profile', { ...documented, config: { ...config, dbAllowedCidrs: ['203.0.113.9/32'] } }],
+    ['missing IPv6 config', { ...documented, config: { dbAllowedCidrs: config.dbAllowedCidrs } }],
+    ['unknown config field', { ...documented, config: { ...config, extra: true } }],
+    ['wrong CIDR type', { ...documented, config: { ...config, dbAllowedCidrs: [7] } }],
+    ['wrong old config', { ...documented, old_config: null }],
+    ['bad timestamp', { ...documented, updated_at: 'not-a-date' }],
+    ['impossible calendar day', { ...documented, updated_at: '2026-02-30T12:00:00Z' }],
+    ['rolled midnight', { ...documented, applied_at: '2026-10-02T24:00:00Z' }],
+    ['timestamp type', { ...documented, applied_at: 7 }],
+    ['timestamp without timezone', { ...documented, updated_at: '2026-10-02T12:00:00' }],
+  ])('rejects %s before normalization', async (_, body) => {
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify(body), { status: 201 }));
+    const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability: capability(fetchImpl) });
+    await expect(adapters.managementRequest(request('POST', 'network-restrictions/apply', config))).rejects.toMatchObject({ code: PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED });
+  });
+  it('refuses an initially pending network control before sealing or changing settings', async () => {
+    const priorFetch = mockFetch();
+    const fetchImpl = vi.fn(async (url: string, init: RequestInit) => new URL(url).pathname.endsWith('/network-restrictions') ? new Response(JSON.stringify(documented), { status: 200 }) : priorFetch(url, init));
+    const hostCapability = capability(fetchImpl);
+    const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability });
+    await expect(adapters.capturePriorState({ context, signal: signal() })).rejects.toMatchObject({ code: PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED });
+    expect(hostCapability.sealPriorState).not.toHaveBeenCalled();
+    expect(fetchImpl.mock.calls.every(([, init]) => init.method === 'GET')).toBe(true);
+  });
+ });

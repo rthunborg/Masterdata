@@ -3,6 +3,7 @@ const SHA256 = /^[a-f0-9]{64}$/u;
 const PROJECT_REF = /^[a-z0-9]{20}$/u;
 
 export const PRODUCTION_ISOLATION_CONTROL_TIMEOUT_MS = 20_000;
+export const PRODUCTION_ISOLATION_NETWORK_POLL_INTERVAL_MS = 1_000;
 export const PRODUCTION_TEMPORARY_ISOLATION_UNCERTAIN = 'production_temporary_isolation_uncertain';
 
 const fail = () => {
@@ -110,7 +111,8 @@ const validAdapters = (value) => exact(value, [
 const managementResponse = (value, status, body) =>
   exact(value, ['status', 'body']) && value.status === status && sameJson(value.body, body);
 
-const isStored = (value) => managementResponse(value, 201, { status: 'stored' });
+const isNetworkAccepted = (value) => managementResponse(value, 201, { status: 'stored' }) ||
+  managementResponse(value, 201, { status: 'applied' });
 
 const hasOnlyDbSchemaChanged = (prior, current) => {
   if (!plainJson(prior) || !plainJson(current) || current.db_schema !== '') return false;
@@ -139,6 +141,44 @@ const validNetworkReadback = (value, ipv4) => exact(value, ['status', 'dbAllowed
   value.status === 'applied' && Array.isArray(value.dbAllowedCidrs) &&
   value.dbAllowedCidrs.length === 1 && value.dbAllowedCidrs[0] === ipv4 &&
   Array.isArray(value.dbAllowedCidrsV6) && value.dbAllowedCidrsV6.length === 0;
+
+const validNetworkConfig = (value) => plainJson(value) &&
+  Array.isArray(value.dbAllowedCidrs) && value.dbAllowedCidrs.every(cidr => typeof cidr === 'string') &&
+  Array.isArray(value.dbAllowedCidrsV6) && value.dbAllowedCidrsV6.every(cidr => typeof cidr === 'string');
+
+const sameNetworkConfig = (left, right) => sameJson(left.dbAllowedCidrs, right.dbAllowedCidrs) &&
+  sameJson(left.dbAllowedCidrsV6, right.dbAllowedCidrsV6);
+
+const pollDelay = (signal, { setTimer, clearTimer }) => new Promise((resolve, reject) => {
+  if (signal.aborted) { reject(new Error('Network propagation uncertain')); return; }
+  let timer;
+  const abort = () => { clearTimer(timer); reject(new Error('Network propagation uncertain')); };
+  signal.addEventListener('abort', abort, { once: true });
+  timer = setTimer(() => { signal.removeEventListener('abort', abort); resolve(); },
+    PRODUCTION_ISOLATION_NETWORK_POLL_INTERVAL_MS);
+});
+
+const waitForExactNetworkApplied = (adapter, context, ipv4, previousConfigs, timers) =>
+  bounded(async ({ signal }) => {
+    while (!signal.aborted) {
+      // One controller/deadline covers all sequential reads and delays. A
+      // pending GET must settle after abort before any recovery POST begins.
+      const value = await adapter({ context, signal });
+      if (signal.aborted) fail();
+      if (validNetworkReadback(value, ipv4)) return value;
+      if (!exact(value, ['status', 'dbAllowedCidrs', 'dbAllowedCidrsV6']) ||
+          !validNetworkConfig(value)) fail();
+      const requested = { dbAllowedCidrs: [ipv4], dbAllowedCidrsV6: [] };
+      const pendingRequested = value.status === 'stored' && sameNetworkConfig(value, requested);
+      // A stale applied read is retryable only for the exact captured prior or
+      // our own exclusion profile. Arbitrary changed configurations are refused.
+      const previousApplied = value.status === 'applied' &&
+        previousConfigs.some(previous => sameNetworkConfig(value, previous));
+      if (!pendingRequested && !previousApplied) fail();
+      await pollDelay(signal, timers);
+    }
+    fail();
+  }, {}, timers);
 
 const validExclusionProbe = (value) => exact(value, ['denied', 'denialCause']) &&
   value.denied === true && value.denialCause === 'network-restriction';
@@ -177,6 +217,8 @@ export async function runProductionTemporaryIsolationControls({
 
   const priorState = await invoke(adapters.capturePriorState, { context });
   if (!validPriorState(priorState)) fail();
+  const priorNetworkConfig = priorState.networkRestrictions.config ?? priorState.networkRestrictions;
+  if (!validNetworkConfig(priorNetworkConfig)) fail();
   const sealedPriorState = await invoke(adapters.sealPriorState, { context, priorState });
   if (!validSealedPriorState(sealedPriorState, context)) fail();
 
@@ -227,9 +269,9 @@ export async function runProductionTemporaryIsolationControls({
       body: { dbAllowedCidrs: [admission.exclusionIpv4Cidr], dbAllowedCidrsV6: [] },
       timeoutMs: PRODUCTION_ISOLATION_CONTROL_TIMEOUT_MS,
     });
-    if (!isStored(exclusionControl)) fail();
-    exclusionReadback = await invoke(adapters.readNetworkRestrictions, { context });
-    if (!validNetworkReadback(exclusionReadback, admission.exclusionIpv4Cidr)) fail();
+    if (!isNetworkAccepted(exclusionControl)) fail();
+    exclusionReadback = await waitForExactNetworkApplied(adapters.readNetworkRestrictions,
+      context, admission.exclusionIpv4Cidr, [priorNetworkConfig], { setTimer, clearTimer });
     exclusionProbe = await invoke(adapters.probeExcludedOperatorPooler, { context });
     if (!validExclusionProbe(exclusionProbe)) fail();
   } finally {
@@ -239,10 +281,12 @@ export async function runProductionTemporaryIsolationControls({
         body: { dbAllowedCidrs: [admission.operatorIpv4Cidr], dbAllowedCidrsV6: [] },
         timeoutMs: PRODUCTION_ISOLATION_CONTROL_TIMEOUT_MS,
       });
-      if (!isStored(operatorControl)) fail();
+      if (!isNetworkAccepted(operatorControl)) fail();
+      finalReadback = await waitForExactNetworkApplied(adapters.readNetworkRestrictions,
+        context, admission.operatorIpv4Cidr,
+        [priorNetworkConfig, { dbAllowedCidrs: [admission.exclusionIpv4Cidr], dbAllowedCidrsV6: [] }],
+        { setTimer, clearTimer });
       operatorRestored = true;
-      finalReadback = await invoke(adapters.readNetworkRestrictions, { context });
-      if (!validNetworkReadback(finalReadback, admission.operatorIpv4Cidr)) fail();
     }
   }
   if (!operatorRestored) fail();
