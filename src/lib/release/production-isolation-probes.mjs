@@ -345,7 +345,10 @@ export function bindProductionDatabaseDrainObservation({ context, collectionStar
 export function classifyProductionSessionPoolerProbeResult(result) {
   const stderr = typeof result?.stderr === 'string' ? result.stderr : '';
   const explicitNetworkRefusal = /no pg_hba\.conf entry(?:\s|$)/iu.test(stderr);
-  const unrelatedFailure = /(?:password|authentication|certificate|ssl|tls|timed?\s*out|connection refused|could not connect|dns|resolve|host not found)/iu.test(stderr);
+  // PostgreSQL appends this encryption state to its HBA refusal; it is not a TLS failure.
+  // Remove only that complete line's standard suffix, leaving every other SSL/TLS diagnostic intact.
+  const failureDiagnostics = stderr.replace(/^(.*\bno pg_hba\.conf entry[^\r\n]*), SSL encryption[ \t]*\r?$/gimu, '$1');
+  const unrelatedFailure = /(?:password|authentication|certificate|ssl|tls|timed?\s*out|connection refused|could not connect|dns|resolve|host not found)/iu.test(failureDiagnostics);
   return Number.isSafeInteger(result?.status) && result.status >= 1 && result.status <= 255 && result.signal === null && !result.error &&
     explicitNetworkRefusal && !unrelatedFailure
     ? 'denied_network_restriction'

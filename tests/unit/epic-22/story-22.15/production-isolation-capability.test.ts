@@ -96,6 +96,18 @@ describe('Story 22.15 protected production isolation packet', () => {
     });
     expect(Object.isFrozen(fixedProductionIsolationModuleClosure())).toBe(true);
   });
+  it.each(['', '\n', '\r\n'])('accepts an SSL-qualified HBA refusal with %j ending at the fixed boundary', ending => {
+    const stderr = 'FATAL: no pg_hba.conf entry for host "synthetic-host", user "synthetic-user", database "postgres", SSL encryption' + ending;
+    expect(classifyFixedPoolerExclusionProbe({ status: 2, signal: null, errorCode: null, stderr }))
+      .toEqual({ denied: true, denialCause: 'network-restriction' });
+  });
+  it.each(['\nSSL certificate verification failed', '\nTLS handshake failed', '\nSSL SYSCALL error: EOF detected',
+    '\npassword authentication failed', '\ncould not resolve host', '\nconnection timed out',
+    '; SSL certificate verify failed', '; TLS handshake failed', '\nSSL encryption'])
+    ('rejects a mixed SSL-qualified HBA diagnostic %j at the fixed boundary', diagnostic => {
+      const stderr = 'FATAL: no pg_hba.conf entry for host "synthetic-host", user "synthetic-user", database "postgres", SSL encryption' + diagnostic;
+      expect(() => classifyFixedPoolerExclusionProbe({ status: 2, signal: null, errorCode: null, stderr })).toThrow();
+    });
   it('accepts only explicit provider network denial, never authentication/TLS/timeout/spawn errors', () => {
     const baseline = { status: 2, signal: null, errorCode: null, stderr: 'FATAL: no pg_hba.conf entry for host' };
     expect(classifyFixedPoolerExclusionProbe(baseline)).toEqual({ denied: true, denialCause: 'network-restriction' });

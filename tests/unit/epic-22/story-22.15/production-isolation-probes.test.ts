@@ -188,6 +188,22 @@ describe('Story 22.15 production isolation probe adapters', () => {
     ]) expect(classifyProductionSessionPoolerProbeResult(result)).toBe('denied_unclassified');
   });
 
+  it.each(['', '\n', '\r\n'])('accepts the standard SSL-qualified HBA refusal with %j ending', ending => {
+    const stderr = 'psql: error: connection to server failed: FATAL: no pg_hba.conf entry for host "synthetic-host", user "synthetic-user", database "postgres", SSL encryption' + ending;
+    expect(classifyProductionSessionPoolerProbeResult({ status: 2, signal: null, error: null, stderr }))
+      .toBe('denied_network_restriction');
+  });
+
+  it.each([
+    '\nSSL certificate verification failed', '\nTLS handshake failed', '\nSSL SYSCALL error: EOF detected',
+    '\npassword authentication failed', '\ncould not resolve host', '\nconnection timed out',
+    '; SSL certificate verify failed', '; TLS handshake failed', '\nSSL encryption',
+  ])('retains refusal for a mixed HBA/TLS or unrelated diagnostic %j', diagnostic => {
+    const stderr = 'FATAL: no pg_hba.conf entry for host "synthetic-host", user "synthetic-user", database "postgres", SSL encryption' + diagnostic;
+    expect(classifyProductionSessionPoolerProbeResult({ status: 2, signal: null, error: null, stderr }))
+      .toBe('denied_unclassified');
+  });
+
   it('keeps a real Realtime session admission separate from reconnect rejection', async () => {
     let serviceClose: (() => void) | undefined;
     const removeChannel = vi.fn(async () => undefined);
