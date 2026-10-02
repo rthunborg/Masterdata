@@ -301,3 +301,12 @@ describe('Story 22.15 production platform configuration', () => {
     expect(receipt).toMatchObject({ collectionSucceeded: false, targetBindingSha256: null });
   });
 });
+
+it('redacts the documented full PostgREST GET configuration and its optional secret', async () => {
+  const responses = supportedResponses();
+  responses[2] = response({ db_schema: '', max_rows: 1000, db_extra_search_path: 'public,extensions', db_pool: null, db_pool_acquisition_timeout: 10, jwt_secret: 'private-jwt-never-public' });
+  const receipt = await collect(vi.fn(async () => responses.shift()!));
+  expect(receipt.configurations.postgrest).toMatchObject({ observed: true, unknownKeyCount: 5 });
+  const encoded = JSON.stringify(receipt);
+  expect(encoded).not.toMatch(/private-jwt-never-public|max_rows|db_extra_search_path|db_pool|jwt_secret/);
+});

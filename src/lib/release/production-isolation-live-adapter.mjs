@@ -8,6 +8,9 @@ export const PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED = 'production_isolation_l
 const fail = () => { const error = new Error('Production isolation live adapter refused'); error.code = PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED; throw error; };
 const exact = (value, keys) => value !== null && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype && Object.getOwnPropertySymbols(value).length === 0 && Object.keys(value).length === keys.length && keys.every(key => { const descriptor = Object.getOwnPropertyDescriptor(value, key); return descriptor?.enumerable === true && Object.hasOwn(descriptor, 'value'); });
 const plainJson = value => value !== null && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype && Object.getOwnPropertySymbols(value).length === 0 && Object.values(Object.getOwnPropertyDescriptors(value)).every(descriptor => descriptor.enumerable === true && Object.hasOwn(descriptor, 'value'));
+const POSTGREST_CONFIG_KEYS = Object.freeze(['db_schema', 'max_rows', 'db_extra_search_path', 'db_pool', 'db_pool_acquisition_timeout']);
+const validPostgrestConfig = value => exact(value, POSTGREST_CONFIG_KEYS) && typeof value.db_schema === 'string' && typeof value.db_extra_search_path === 'string' && Number.isSafeInteger(value.max_rows) && (value.db_pool === null || Number.isSafeInteger(value.db_pool)) && (value.db_pool_acquisition_timeout === null || Number.isSafeInteger(value.db_pool_acquisition_timeout));
+const postgrestProjection = value => Object.fromEntries(POSTGREST_CONFIG_KEYS.map(key => [key, value[key]]));
 const validSignal = value => value !== null && typeof value === 'object' && typeof value.aborted === 'boolean' && typeof value.addEventListener === 'function' && typeof value.removeEventListener === 'function';
 const validContext = (value, projectRef) => exact(value, ['sourceSha', 'targetBindingSha256', 'isolationPlanSha256', 'projectRef']) && SHA40.test(value.sourceSha) && SHA256.test(value.targetBindingSha256) && SHA256.test(value.isolationPlanSha256) && value.projectRef === projectRef;
 const timestamp = clock => { const value = clock(); if (!(value instanceof Date) || Number.isNaN(value.getTime())) fail(); return value.toISOString(); };
@@ -72,7 +75,7 @@ function validateRequest(request, projectRef) {
 export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability } = {}) {
   if (!PROJECT_REF.test(projectRef ?? '') || !validCapability(hostCapability)) fail();
   const { managementApiToken, fetchImpl, sealPriorState, dataApiPrerequisite, probeExcludedOperatorPooler, probeOperatorPooler, establishRealtimeSubscription, collectPlatformIsolationReadback, clock } = hostCapability;
-  const journal = []; let capturedPriorState = null; let realtimeEstablished = null; let platformReadbackCompleted = false; let disabledRealtimeReadback = null;
+  const journal = []; let capturedPriorState = null; let realtimeEstablished = null; let platformReadbackCompleted = false; let disabledRealtimeReadback = null; let priorPostgrestConfig = null;
   const record = (method, path, requestedAtUtc, responseAtUtc) => journal.push(freeze({ method, path, requestedAtUtc, responseAtUtc }));
   const fixedFetch = async ({ method, path, body, signal }) => {
     if (signal.aborted) fail();
@@ -90,6 +93,9 @@ export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCap
     if (!validContext(context, projectRef) || !validSignal(signal) || capturedPriorState !== null) fail();
     const auth = await fixedGet('config/auth', signal); const realtime = await fixedGet('config/realtime', signal); const postgrest = await fixedGet('postgrest', signal); const networkRestrictions = await fixedGet('network-restrictions', signal);
     if (realtime.body.suspend !== false) fail();
+    const postgrestConfig = postgrestProjection(postgrest.body);
+    if (!validPostgrestConfig(postgrestConfig)) fail();
+    priorPostgrestConfig = freeze(postgrestConfig);
     try { realtimeEstablished = await establishRealtimeSubscription({ context, signal, priorRealtimeConfig: realtime.body, priorStateCapturedAtUtc: timestamp(clock) }); } catch { fail(); }
     capturedPriorState = freeze({ auth: auth.body, realtime: realtime.body, postgrest: postgrest.body, networkRestrictions: networkRestrictions.body });
     return capturedPriorState;
@@ -106,7 +112,12 @@ export function createFixedProductionIsolationLiveAdapters({ projectRef, hostCap
     if (request.method === 'PATCH' && request.path === 'config/realtime') { if (call.response.status !== 204) fail(); await requireEmptyCompleteBody(call.response, request.signal); return freeze({ status: 204, body: {} }); }
     if (request.method === 'POST' && request.path === 'config/realtime/shutdown') { if (call.response.status !== 204) fail(); await requireEmptyCompleteBody(call.response, request.signal); return freeze({ status: 204, body: {} }); }
     const body = await readJson(call.response, request.signal);
-    if (request.method === 'PATCH' && request.path === 'postgrest') { if (call.response.status !== 200 || !exact(body, ['db_schema']) || body.db_schema !== '') fail(); }
+    if (request.method === 'PATCH' && request.path === 'postgrest') {
+      // The documented PATCH returns five fields; the control layer receives only
+      // its fixed acknowledgment after every unrelated setting is proved unchanged.
+      if (call.response.status !== 200 || priorPostgrestConfig === null || !validPostgrestConfig(body) || body.db_schema !== '' || POSTGREST_CONFIG_KEYS.slice(1).some(key => body[key] !== priorPostgrestConfig[key])) fail();
+      return freeze({ status: 200, body: { db_schema: '' } });
+    }
     else if (request.method === 'POST') { if (call.response.status !== 201 || !exact(body, ['status']) || body.status !== 'stored') fail(); }
     else if (call.response.status !== 200) fail();
     if (request.method === 'GET' && request.path === 'config/realtime') {

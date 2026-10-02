@@ -45,15 +45,16 @@ function request(method: string, path: string, body: Record<string, unknown>, re
   return { context, method, path, body, timeoutMs: 20_000, signal: requestSignal };
 }
 
+const postgrestConfig = Object.freeze({ db_schema: 'public', max_rows: 1000, db_extra_search_path: 'public,extensions', db_pool: null, db_pool_acquisition_timeout: null });
 function mockFetch() {
   let realtimeGets = 0;
   return vi.fn(async (url: string, init: RequestInit) => {
     const pathname = new URL(url).pathname;
     if (init.method === 'GET' && pathname.endsWith('/config/auth')) return new Response(JSON.stringify({ hook_send_email_enabled: false }), { status: 200 });
     if (init.method === 'GET' && pathname.endsWith('/config/realtime')) { realtimeGets += 1; return new Response(JSON.stringify({ suspend: realtimeGets > 1, private_only: false }), { status: 200 }); }
-    if (init.method === 'GET' && pathname.endsWith('/postgrest')) return new Response(JSON.stringify({ db_schema: 'public', jwt_secret: 'secret-never-returned' }), { status: 200 });
+    if (init.method === 'GET' && pathname.endsWith('/postgrest')) return new Response(JSON.stringify({ ...postgrestConfig, jwt_secret: 'secret-never-returned' }), { status: 200 });
     if (init.method === 'GET' && pathname.endsWith('/network-restrictions')) return new Response(JSON.stringify({ status: 'applied', config: { dbAllowedCidrs: ['0.0.0.0/0'], dbAllowedCidrsV6: ['::/0'] } }), { status: 200 });
-    if (init.method === 'PATCH' && pathname.endsWith('/postgrest')) return new Response(JSON.stringify({ db_schema: '' }), { status: 200 });
+    if (init.method === 'PATCH' && pathname.endsWith('/postgrest')) return new Response(JSON.stringify({ ...postgrestConfig, db_schema: '' }), { status: 200 });
     if (init.method === 'PATCH' && pathname.endsWith('/config/realtime')) return new Response(null, { status: 204 });
     if (init.method === 'POST' && pathname.endsWith('/config/realtime/shutdown')) return new Response(null, { status: 204 });
     if (init.method === 'POST' && pathname.endsWith('/network-restrictions/apply')) return new Response(JSON.stringify({ status: 'stored' }), { status: 201 });
@@ -180,9 +181,85 @@ describe('Story 22.15 fixed live Management API adapter', () => {
     const fetchImpl = mockFetch();
     const hostCapability = capability(fetchImpl);
     hostCapability.sealPriorState.mockRejectedValueOnce(new Error('bridge failure'));
-    const { adapters, getControlJournal } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability });
+    const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability });
     const prior = await adapters.capturePriorState({ context, signal: signal() });
     await expect(adapters.sealPriorState({ context, priorState: prior, signal: signal() })).rejects.toMatchObject({ code: PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED });
     await expect(adapters.sealPriorState({ context, priorState: prior, signal: signal() })).rejects.toMatchObject({ code: PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED });
   });
+});
+describe('documented full PostgREST configuration response', () => {
+  const malformed: Array<[string, Record<string, unknown>]> = [
+    ...Object.keys(postgrestConfig).map((key): [string, Record<string, unknown>] => ['missing ' + key, Object.fromEntries(Object.entries({ ...postgrestConfig, db_schema: '' }).filter(([name]) => name !== key))]),
+    ['unknown extra', { ...postgrestConfig, db_schema: '', extra: 'private' }],
+    ['nonempty schema', { ...postgrestConfig }],
+    ['schema type', { ...postgrestConfig, db_schema: null }],
+    ['search path type', { ...postgrestConfig, db_schema: '', db_extra_search_path: [] }],
+    ['max rows null', { ...postgrestConfig, db_schema: '', max_rows: null }],
+    ['max rows fractional', { ...postgrestConfig, db_schema: '', max_rows: 1.5 }],
+    ['max rows unsafe', { ...postgrestConfig, db_schema: '', max_rows: Number.MAX_SAFE_INTEGER + 1 }],
+    ['pool string', { ...postgrestConfig, db_schema: '', db_pool: '10' }],
+    ['pool fractional', { ...postgrestConfig, db_schema: '', db_pool: 1.5 }],
+    ['pool unsafe', { ...postgrestConfig, db_schema: '', db_pool: Number.MAX_SAFE_INTEGER + 1 }],
+    ['timeout boolean', { ...postgrestConfig, db_schema: '', db_pool_acquisition_timeout: false }],
+    ['timeout fractional', { ...postgrestConfig, db_schema: '', db_pool_acquisition_timeout: 1.5 }],
+    ['timeout unsafe', { ...postgrestConfig, db_schema: '', db_pool_acquisition_timeout: Number.MAX_SAFE_INTEGER + 1 }],
+    ['max rows drift', { ...postgrestConfig, db_schema: '', max_rows: 999 }],
+    ['search path drift', { ...postgrestConfig, db_schema: '', db_extra_search_path: 'public' }],
+    ['pool drift', { ...postgrestConfig, db_schema: '', db_pool: 10 }],
+    ['timeout drift', { ...postgrestConfig, db_schema: '', db_pool_acquisition_timeout: 10 }],
+  ];
+
+  it.each(malformed)('rejects %s after the actual fixed PATCH response', async (_, responseBody) => {
+    const priorFetch = mockFetch();
+    const fetchImpl = vi.fn(async (url: string, init: RequestInit) => init.method === 'PATCH' && new URL(url).pathname.endsWith('/postgrest')
+      ? new Response(JSON.stringify(responseBody), { status: 200 }) : priorFetch(url, init));
+    const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability: capability(fetchImpl) });
+    const prior = await adapters.capturePriorState({ context, signal: signal() });
+    await adapters.sealPriorState({ context, priorState: prior, signal: signal() });
+    await expect(adapters.managementRequest(request('PATCH', 'postgrest', { db_schema: '' }))).rejects.toMatchObject({ code: PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED });
+    expect(fetchImpl.mock.calls.at(-1)?.[1]).toMatchObject({ method: 'PATCH', body: JSON.stringify({ db_schema: '' }) });
+  });
+
+  it.each([['automatic', null, null], ['explicit', 15, 10]] as const)('accepts unchanged %s pool settings and returns only the fixed acknowledgment', async (_, pool, timeout) => {
+    const config = { ...postgrestConfig, db_pool: pool, db_pool_acquisition_timeout: timeout };
+    const priorFetch = mockFetch();
+    let patched = false;
+    const fetchImpl = vi.fn(async (url: string, init: RequestInit) => {
+      if (new URL(url).pathname.endsWith('/postgrest')) {
+        if (init.method === 'PATCH') patched = true;
+        return new Response(JSON.stringify(init.method === 'PATCH' ? { ...config, db_schema: '' } : { ...config, db_schema: patched ? '' : 'public', jwt_secret: 'secret-never-returned' }), { status: 200 });
+      }
+      return priorFetch(url, init);
+    });
+    const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability: capability(fetchImpl) });
+    const prior = await adapters.capturePriorState({ context, signal: signal() });
+    await adapters.sealPriorState({ context, priorState: prior, signal: signal() });
+    const result = await adapters.managementRequest(request('PATCH', 'postgrest', { db_schema: '' }));
+    expect(result).toEqual({ status: 200, body: { db_schema: '' } });
+    expect(JSON.stringify(result)).not.toMatch(/max_rows|db_pool|secret-never-returned/);
+    const readback = await adapters.managementRequest(request('GET', 'postgrest', {}));
+    expect(readback.body).toEqual({ ...prior.postgrest, db_schema: '' });
+  });
+
+  it.each(['db_schema', 'max_rows', 'db_extra_search_path', 'db_pool', 'db_pool_acquisition_timeout'])('rejects missing prior %s before subscription or sealing', async (missing) => {
+    const priorFetch = mockFetch();
+    const fetchImpl = vi.fn(async (url: string, init: RequestInit) => new URL(url).pathname.endsWith('/postgrest')
+      ? new Response(JSON.stringify(Object.fromEntries(Object.entries(postgrestConfig).filter(([key]) => key !== missing))), { status: 200 }) : priorFetch(url, init));
+    const hostCapability = capability(fetchImpl);
+    const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability });
+    await expect(adapters.capturePriorState({ context, signal: signal() })).rejects.toMatchObject({ code: PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED });
+    expect(hostCapability.establishRealtimeSubscription).not.toHaveBeenCalled();
+    expect(hostCapability.sealPriorState).not.toHaveBeenCalled();
+    expect(fetchImpl.mock.calls.every(([, init]) => init.method === 'GET')).toBe(true);
+  });
+});
+it.each([['unsafe max rows', { max_rows: Number.MAX_SAFE_INTEGER + 1 }], ['pool type', { db_pool: '15' }]])('rejects prior %s before sealing or any write', async (_, invalid) => {
+  const priorFetch = mockFetch();
+  const fetchImpl = vi.fn(async (url: string, init: RequestInit) => new URL(url).pathname.endsWith('/postgrest')
+    ? new Response(JSON.stringify({ ...postgrestConfig, ...invalid }), { status: 200 }) : priorFetch(url, init));
+  const hostCapability = capability(fetchImpl);
+  const { adapters } = createFixedProductionIsolationLiveAdapters({ projectRef, hostCapability });
+  await expect(adapters.capturePriorState({ context, signal: signal() })).rejects.toMatchObject({ code: PRODUCTION_ISOLATION_LIVE_ADAPTER_REFUSED });
+  expect(hostCapability.sealPriorState).not.toHaveBeenCalled();
+  expect(fetchImpl.mock.calls.every(([, init]) => init.method === 'GET')).toBe(true);
 });
