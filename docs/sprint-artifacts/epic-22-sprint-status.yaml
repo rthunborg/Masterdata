@@ -12,7 +12,7 @@ epic_completion_gate:
     title: 'Story 22.10 Phase B — Supabase production cutover'
     status: 'pending' # set to 'done' once executed to silence the reminder
     trigger: 'Only after Story 22.15 is locally complete, PR-reviewed, recorded at a final immutable remediation SHA, and owner-verified on staging; before any production mutation.'
-    actions: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation 9f7c52d605d823dfb8f7e33de492df5eb59c2c0d has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+    actions: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation ac302df0bb92679d1418b658d6797a8e64628b3b has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical-69 catalog comparison and preservation precede owner adoption and separate 55-row history repair; exact 69-version history is verified after repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
     source: 'supabase/migration-baseline-manifest.json; docs/commercial-readiness/27_supabase_cutover_runbook.md; tracker E-010/E-013'
 
 sprint:
@@ -319,7 +319,7 @@ pr_95_playwright_gate:
   story_status: 'in-progress'
   epic_23_status: 'on-hold'
   evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
-  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation 9f7c52d605d823dfb8f7e33de492df5eb59c2c0d has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation ac302df0bb92679d1418b658d6797a8e64628b3b has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical-69 catalog comparison and preservation precede owner adoption and separate 55-row history repair; exact 69-version history is verified after repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
 
 historical_post_apply_staging_execution:
   captured_at: '2026-09-10T15:14:50.232Z'
@@ -426,7 +426,7 @@ consolidated_cutover_proposal_20260928:
   epic_23_status: 'on-hold'
   staging_pending_versions: []
   production_status: 'paused-no-go'
-  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation 9f7c52d605d823dfb8f7e33de492df5eb59c2c0d has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical 69 and preservation precede owner adoption and separate 55-row history repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
+  next_action: 'PR #125 reviewed head 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368 merged into staging 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128 with an identical tree; main remains 822350986f4c023948a7bbf490ddffc371185c4a. PR #126 implementation ac302df0bb92679d1418b658d6797a8e64628b3b has complete local gates. After exact final-head review and reviewed staging merge, prepare the fresh staging-bound private package/admission and obtain separate exact installation/control approval. Preserve the production pause. Full five-plane isolation and target admission precede separately gated 48-filter cleanup and reviewed 14-forward execution; strict catalog 16/16, canonical-69 catalog comparison and preservation precede owner adoption and separate 55-row history repair; exact 69-version history is verified after repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 in-progress; Epic 23 on-hold.'
   local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
   isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
 
@@ -722,12 +722,16 @@ current_live_isolation_preparation_20261002:
   dependency_review_and_staging_merge: complete
   protected_operation: temporary-production-isolation
   actual_installer_invoked: false
-  private_inputs_loaded: false
-  hosted_access: false
-  tested_implementation: 9f7c52d605d823dfb8f7e33de492df5eb59c2c0d
+  encrypted_production_inputs_decrypted: false
+  hosted_access: true
+  hosted_database_access: false
+  hosted_supabase_access: false
+  vercel_readonly_pause_verified: true
+  vercel_readonly_evidence: docs/commercial-readiness/evidence/production-pause-readonly-2026-10-02.json
+  tested_implementation: ac302df0bb92679d1418b658d6797a8e64628b3b
   full_suite_gate: passed-current-local-source
-  full_vitest: { passed: 4679, skipped: 0, failed: 0, errors: 0, files: 386, report_seconds: 958.37, wrapper_ms: 967505 }
-  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1122.576435, wrapper_ms: 1124702, individually_bound_historical_skips: true }
+  full_vitest: { passed: 4704, skipped: 0, failed: 0, errors: 0, files: 386, report_seconds: 1514.62, wrapper_ms: 1520409, max_workers: 1 }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1045.031189, wrapper_ms: 1046900, individually_bound_historical_skips: true }
   package_materialized_offline: { files: 109, runtime_files: 488, runtime_packages: 10, admitted: false }
   executable_package_admission: not-granted
   production: paused-no-go
