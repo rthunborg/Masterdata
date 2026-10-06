@@ -4,6 +4,8 @@ This component prepares the separately approved temporary production-isolation o
 
 The portable application pause and its production build/deployment safeguards remain unchanged. This operation only supplies the additional database control observations required by the existing five-plane isolation gate. Its successful output is explicitly `controlEvidenceOnly`; it is not a complete isolation receipt or release admission.
 
+The initial exact 104-routine snapshot is metadata classification only. Every routine remains semantically unresolved; `identityBaselineAvailable` is false and `executionAuthority` remains false. It neither proves isolation nor changes the later fresh-proof requirement or the administrator-equivalent `SET postgres` ingress classification.
+
 ## Fixed operation and ordering
 
 1. Hold the complete installed/source/runtime/private/tool file leases. Validate the compiled fixed admission and runtime records before loading encrypted inputs or obtaining API credentials. Verify the signed nonce-bound packet and raw package bytes before source imports.
@@ -38,4 +40,4 @@ The installer and loader bind these record bytes; they do not upgrade an unsigne
 
 ## Remaining production sequence
 
-Complete clean-source full unit/Playwright/quality/build/pause gates, package materialization and final source review. Merge only a reviewed candidate into staging under the standing authorization. Re-fetch refs and prepare the exact reviewed package and fresh private admission. Obtain the separate exact installation/control approval before hosted isolation changes. Then prove all five planes, pause/job state, post-cleanup writer correlation and final independent drain through the existing strict gate. Only then proceed through the separately gated 48-filter cleanup, fourteen reviewed forward executes, strict 16/16 catalog/canonical 69/preservation proof, owner adoption and separately authorized 55-row history repair. Main, deployment, settings restoration and reopening remain separate explicit decisions.
+Complete clean-source full unit/Playwright/quality/build/pause gates, package materialization and final source review. Merge only a reviewed candidate into staging under the standing authorization. Re-fetch refs and prepare the exact reviewed package and fresh private admission. Execute the already owner-authorized fixed installation/control operation only after the exact fresh private-admission prerequisites pass; any admission failure stops before hosted control. Then prove all five planes, pause/job state, post-cleanup writer correlation and final independent drain through the existing strict gate. Only then proceed through the separately gated 48-filter cleanup, fourteen reviewed forward executes, strict 16/16 catalog/canonical 69/preservation proof, owner adoption and separately authorized 55-row history repair. Main, deployment, settings restoration and reopening remain separate explicit decisions.
