@@ -5,7 +5,7 @@ import { isAbsolute } from 'node:path';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 import { collectProductionPlatformConfig } from './production-platform-config.mjs';
-import { productionManagedWriterProfileSha256 } from './production-managed-writer-profiles.mjs';
+import { assessProductionManagedWriterProfiles, productionManagedWriterProfileSha256 } from './production-managed-writer-profiles.mjs';
 import { verifyApprovedPsqlExecutable, verifyApprovedSslRootCertificate } from '../../../supabase/verify/verify-production-baseline-catalog.mjs';
 import { verifyConfiguredSupabaseTarget } from '../../../supabase/verify/verify-target-binding.mjs';
 
@@ -306,6 +306,8 @@ export function bindProductionPostCleanupDatabaseObservation({
       'rawUnknownLoginRoleCount', 'rawUnknownBackendCount', 'otherUnknownLoginRoleCount',
       'otherUnknownBackendCount', 'correlation',
     ])) fail();
+  const assessed=assessProductionManagedWriterProfiles(managedWriterObservation,{...verified,now:new Date(capturedAtUtc)});
+  if(assessed.disposition!=='initial_exact_routine_snapshot_classified_not_isolation'||assessed.executionAuthority!==false||assessed.routineSemanticClassification!==false||assessed.unresolvedRoutineCount!==104)fail();
   if (managedWriterObservation.sourceSha !== verified.sourceSha ||
     managedWriterObservation.targetBindingSha256 !== verified.targetBindingSha256 ||
     managedWriterObservation.capturedAtUtc > capturedAtUtc || unknownClientBackendCount !== 0 ||

@@ -6,7 +6,7 @@ import {
   PRODUCTION_ISOLATION_AUTH_HOOKS,
 } from '../../../../src/lib/release/production-isolation-gate.mjs';
 import {productionManagedWriterProfileSha256,PRODUCTION_PRE_FORWARD_CLI_PROFILE,
-  PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,PRODUCTION_PRE_FORWARD_CLI_OBJECTS}
+  PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,PRODUCTION_PRE_FORWARD_CLI_OBJECTS,PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT}
   from '../../../../src/lib/release/production-managed-writer-profiles.mjs';
 
 const sourceSha = 'a'.repeat(40);
@@ -194,7 +194,7 @@ function managedProfileEvidence() {
     sourceSha,sourceTree:'1'.repeat(40),sourceManifestSha256:'2'.repeat(64),targetBindingSha256,collectionStartedAtUtc:'2026-09-23T13:59:59.000Z',capturedAtUtc,
     cli:{presentCount:1,attributes:{...PRODUCTION_PRE_FORWARD_CLI_PROFILE},memberships:{...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP},
       database:{connect:true,create:false,temporary:true},schemas:{schemaCount:9,usageCount:1,createCount:0,ownedSchemaCount:0},
-      objects:{...PRODUCTION_PRE_FORWARD_CLI_OBJECTS},activeSessionCount:0,completeNonSecretRoleGraphSha256:databaseRoleGraphSha256},
+      objects:{...PRODUCTION_PRE_FORWARD_CLI_OBJECTS},routineSnapshot:structuredClone(PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT),activeSessionCount:0,completeNonSecretRoleGraphSha256:databaseRoleGraphSha256},
     workers:{cronLauncherCount:1,netWorkerCount:1,otherCandidateBackendCount:0,cronPreloaded:true,netPreloaded:true,
       cronDatabaseMatchesConnected:true,netDatabaseMatchesConnected:true,cronLaunchActiveJobs:true,pgCronExtensionCount:0,
       pgNetExtensionCount:0,cronJobTablePresent:false,netRequestQueueTablePresent:false,netResponseTablePresent:false},

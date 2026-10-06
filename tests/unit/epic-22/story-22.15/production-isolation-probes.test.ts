@@ -24,7 +24,7 @@ import {
 } from '../../../../src/lib/release/production-isolation-probes.mjs';
 import {
   PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,
-  PRODUCTION_PRE_FORWARD_CLI_OBJECTS,
+  PRODUCTION_PRE_FORWARD_CLI_OBJECTS, PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT,
   PRODUCTION_PRE_FORWARD_CLI_PROFILE,
   productionManagedWriterProfileSha256,
 } from '../../../../src/lib/release/production-managed-writer-profiles.mjs';
@@ -46,7 +46,7 @@ function managedObservation() {
     targetBindingSha256: 'b'.repeat(64), collectionStartedAtUtc: '2026-10-02T09:59:00.000Z', capturedAtUtc: '2026-10-02T09:59:01.000Z',
     cli: { presentCount: 1, attributes: { ...PRODUCTION_PRE_FORWARD_CLI_PROFILE }, memberships: { ...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP },
       database: { connect: true, create: false, temporary: true }, schemas: { schemaCount: 9, usageCount: 1, createCount: 0, ownedSchemaCount: 0 },
-      objects: { ...PRODUCTION_PRE_FORWARD_CLI_OBJECTS }, activeSessionCount: 0, completeNonSecretRoleGraphSha256: 'd'.repeat(64) },
+      objects: { ...PRODUCTION_PRE_FORWARD_CLI_OBJECTS }, routineSnapshot:structuredClone(PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT), activeSessionCount: 0, completeNonSecretRoleGraphSha256: 'd'.repeat(64) },
     workers: { cronLauncherCount: 1, netWorkerCount: 1, otherCandidateBackendCount: 0, cronPreloaded: true, netPreloaded: true,
       cronDatabaseMatchesConnected: true, netDatabaseMatchesConnected: true, cronLaunchActiveJobs: true, pgCronExtensionCount: 0,
       pgNetExtensionCount: 0, cronJobTablePresent: false, netRequestQueueTablePresent: false, netResponseTablePresent: false },
@@ -104,7 +104,7 @@ describe('Story 22.15 production isolation probe adapters', () => {
 
   it('keeps post-cleanup database and drain intervals separate and rejects unknown writer counts', () => {
     const observation = managedObservation();
-    const expected = context();
+    const expected = {...context(),sourceTree:observation.sourceTree,sourceManifestSha256:observation.sourceManifestSha256};
     expected.trustedBackendProfileSha256 = productionManagedWriterProfileSha256(observation);
     const database = bindProductionPostCleanupDatabaseObservation({ context: expected, managedWriterObservation: observation,
       unknownClientBackendCount: 0, unmanagedWritePathCount: 0, collectionStartedAtUtc: '2026-10-02T09:59:02.000Z', capturedAtUtc: '2026-10-02T09:59:03.000Z' });
@@ -118,6 +118,15 @@ describe('Story 22.15 production isolation probe adapters', () => {
       unknownClientBackendCount: 1, unmanagedWritePathCount: 0, collectionStartedAtUtc: '2026-10-02T09:59:02.000Z', capturedAtUtc: '2026-10-02T09:59:03.000Z' })).toThrow('production_isolation_probe_refused');
   });
 
+  it('refuses a routine substitution even when a caller recomputes the matching profile hash',()=>{
+    const observation=managedObservation();observation.cli.routineSnapshot.allRoutineOwnerSetSha256='0'.repeat(64);
+    const expected={...context(),sourceTree:observation.sourceTree,sourceManifestSha256:observation.sourceManifestSha256,trustedBackendProfileSha256:productionManagedWriterProfileSha256(observation)};
+    expect(()=>bindProductionPostCleanupDatabaseObservation({context:expected,managedWriterObservation:observation,unknownClientBackendCount:0,unmanagedWritePathCount:0,collectionStartedAtUtc:'2026-10-02T09:59:02.000Z',capturedAtUtc:'2026-10-02T09:59:03.000Z'})).toThrow('production_isolation_probe_refused');
+  });
+  it('requires independent source-tree and manifest bindings for a managed snapshot',()=>{
+    const observation=managedObservation();const expected={...context(),trustedBackendProfileSha256:productionManagedWriterProfileSha256(observation)};
+    expect(()=>bindProductionPostCleanupDatabaseObservation({context:expected,managedWriterObservation:observation,unknownClientBackendCount:0,unmanagedWritePathCount:0,collectionStartedAtUtc:'2026-10-02T09:59:02.000Z',capturedAtUtc:'2026-10-02T09:59:03.000Z'})).toThrow('production_isolation_probe_refused');
+  });
   it('parses only a single fixed aggregate trigger-inventory result', () => {
     expect(parseProductionStatementTriggerInventory(`${JSON.stringify(inventory)}\n`)).toEqual(inventory);
     expect(() => parseProductionStatementTriggerInventory('{}\n{}\n')).toThrow('production_isolation_probe_refused');

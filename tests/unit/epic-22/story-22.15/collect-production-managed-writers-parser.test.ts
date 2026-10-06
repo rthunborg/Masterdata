@@ -21,6 +21,7 @@ vi.mock('../../../../supabase/verify/verify-target-binding.mjs', () => ({
   verifyConfiguredSupabaseTarget: vi.fn(async () => {}),
 }));
 
+import {PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT} from '../../../../src/lib/release/production-managed-writer-profiles.mjs';
 import { KNOWN_PLATFORM_ROLES, KNOWN_REPLICATION_PLUGINS } from '../../../../src/lib/release/production-database-writer-classification.mjs';
 import { productionTargetBindingSha256 } from '../../../../src/lib/release/production-observed-profile.mjs';
 import {
@@ -82,7 +83,7 @@ function output({
     memberships: { directMembershipCount: 1, directPostgresMembershipCount: 1, otherDirectMembershipCount: 0, postgresDirectAdmin: false, postgresDirectInherit: false, postgresDirectSet: true, postgresMember: true, postgresUsage: false, postgresSet: true, postgresAdmin: false },
     currentDatabase: { connect: true, create: false, temporary: true },
     nonSystemSchemas: { schemaCount: 9, usageCount: 1, createCount: 0, ownedSchemaCount: 0 },
-    nonSystemObjects: { ownedRelationCount: 0, ownedRoutineCount: 0, ownedTypeCount: 0, insertCount: 0, updateCount: 0, deleteCount: 0, truncateCount: 0, sequenceUsageCount: 0, sequenceUpdateCount: 0, executeRoutineCount: 102 },
+    nonSystemObjects: { ownedRelationCount: 0, ownedRoutineCount: 0, ownedTypeCount: 0, insertCount: 0, updateCount: 0, deleteCount: 0, truncateCount: 0, sequenceUsageCount: 0, sequenceUpdateCount: 0, executeRoutineCount: 104 },
     activeSessionCount: 0, completeNonSecretRoleGraphSha256: 'e'.repeat(64), managedLoginProfileMd5: loginHash,
   };
   const workers = {
@@ -92,7 +93,7 @@ function output({
     pgCronExtensionCount: 0, pgNetExtensionCount: 0, cronJobTablePresent: false,
     netRequestQueueTablePresent: false, netResponseTablePresent: false, managedBackendProfileMd5: backendHash,
   };
-  return [cli, workers, inventory].map((value) => JSON.stringify(value)).join('\n');
+  return [cli, workers, inventory, structuredClone(PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT)].map((value) => JSON.stringify(value)).join('\n');
 }
 
 describe('managed writer raw-inventory correlation parser', () => {
@@ -122,7 +123,7 @@ describe('managed writer raw-inventory correlation parser', () => {
     const recheck = vi.fn(() => true);
     sourceBindingMock.mockReturnValue({
       workspace: process.cwd(), recheck,
-      sql: Object.fromEntries(['production-cli-principal-profile.sql', 'production-managed-worker-profile.sql', 'production-database-writer-classification.sql']
+      sql: Object.fromEntries(['production-cli-principal-profile.sql', 'production-managed-worker-profile.sql', 'production-database-writer-classification.sql','production-cli-routine-fingerprint.sql']
         .map(name => ['src/lib/release/' + name, readFileSync(resolve('src/lib/release', name), 'utf8')])),
     });
     vi.useFakeTimers({ now: startedAt });
@@ -134,11 +135,13 @@ describe('managed writer raw-inventory correlation parser', () => {
     });
     const originalEnvironment = {
       EXPECTED_SUPABASE_ENVIRONMENT: process.env.EXPECTED_SUPABASE_ENVIRONMENT,
+      SUPABASE_DB_CONNECTION_MODE:process.env.SUPABASE_DB_CONNECTION_MODE,
       EXPECTED_SUPABASE_PROJECT_REF: process.env.EXPECTED_SUPABASE_PROJECT_REF,
       SUPABASE_DB_URL: process.env.SUPABASE_DB_URL,
     };
     Object.assign(process.env, {
       EXPECTED_SUPABASE_ENVIRONMENT: 'production',
+      SUPABASE_DB_CONNECTION_MODE:'session-pooler',
       EXPECTED_SUPABASE_PROJECT_REF: 'abcdefghijklmnopqrst',
       SUPABASE_DB_URL: 'postgresql://synthetic:synthetic@synthetic.example:5432/postgres',
     });
@@ -168,11 +171,12 @@ describe('managed writer raw-inventory correlation parser', () => {
 
   it('refuses source mutation after preflight before a managed-writer psql process', async () => {
     vi.stubEnv('EXPECTED_SUPABASE_ENVIRONMENT', 'production');
+    vi.stubEnv('SUPABASE_DB_CONNECTION_MODE','session-pooler');
     vi.stubEnv('EXPECTED_SUPABASE_PROJECT_REF', 'abcdefghijklmnopqrst');
     vi.stubEnv('SUPABASE_DB_URL', 'postgresql://synthetic:synthetic@synthetic.example:5432/postgres');
     sourceBindingMock.mockReturnValue({
       workspace: process.cwd(), recheck: () => { throw new Error('source mutation'); },
-      sql: Object.fromEntries(['production-cli-principal-profile.sql', 'production-managed-worker-profile.sql', 'production-database-writer-classification.sql']
+      sql: Object.fromEntries(['production-cli-principal-profile.sql', 'production-managed-worker-profile.sql', 'production-database-writer-classification.sql','production-cli-routine-fingerprint.sql']
         .map(name => ['src/lib/release/' + name, readFileSync(resolve('src/lib/release', name), 'utf8')])),
     });
     await expect(collectProductionManagedWriters({
@@ -181,6 +185,10 @@ describe('managed writer raw-inventory correlation parser', () => {
     })).rejects.toThrow('details suppressed');
     expect(spawnSyncMock).not.toHaveBeenCalled();
   });
+
+
+  it.each(['absent','direct','transaction-pooler'])('rejects %s mode before source/tools/target/spawn',async mode=>{vi.stubEnv('EXPECTED_SUPABASE_ENVIRONMENT','production');if(mode==='absent')vi.stubEnv('SUPABASE_DB_CONNECTION_MODE',undefined);else vi.stubEnv('SUPABASE_DB_CONNECTION_MODE',mode);await expect(collectProductionManagedWriters({workspace:process.cwd(),binding:{sourceSha:binding.sourceSha,sourceTree:binding.sourceTree,sourceManifestSha256:binding.sourceManifestSha256,targetBindingSha256:binding.targetBindingSha256}})).rejects.toThrow('details suppressed');expect(sourceBindingMock).not.toHaveBeenCalled();expect(spawnSyncMock).not.toHaveBeenCalled();});
+  it.each(['missing-line','extra-line','malformed-json','extra-field','missing-owner','count-mismatch','unbalanced','reordered','duplicate','zero-unknown'])('rejects %s fourth-result corruption',kind=>{const lines=output().split('\n');if(kind==='missing-line')lines.pop();else if(kind==='extra-line')lines.push(lines[3]);else if(kind==='malformed-json')lines[3]='bad';else{const r=JSON.parse(lines[3]);if(kind==='extra-field')r.admitted=true;if(kind==='missing-owner')delete r.allRoutineOwnerSetSha256;if(kind==='count-mismatch'){r.total=105;r.unknownCategoryCount=105;r.categories[0].count++;}if(kind==='unbalanced')r.categories[0].count++;if(kind==='reordered')r.categories.reverse();if(kind==='duplicate')r.categories[1]=r.categories[0];if(kind==='zero-unknown')r.unknownCategoryCount=0;lines[3]=JSON.stringify(r);}expect(()=>parseProductionManagedWriterOutputs(lines.join('\n'),binding)).toThrow('details suppressed');});
 
   it('retains raw unknown counts only after both same-snapshot subset hashes bind', () => {
     const receipt = parseProductionManagedWriterOutputs(output(), binding);
