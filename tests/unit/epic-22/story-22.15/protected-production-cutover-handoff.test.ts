@@ -23,7 +23,14 @@ const sourceTree = 'b'.repeat(40);
 const sourceManifestSha256 = 'c'.repeat(64);
 const projectRef = 'abcdefghijklmnopqrst';
 const targetBindingSha256 = productionTargetBindingSha256(projectRef);
-const capturedAtUtc = new Date(Date.now() - 60_000).toISOString();
+const SYNTHETIC_EVIDENCE_BACKDATE_MS = 60_000;
+const SYNTHETIC_EVIDENCE_MAX_AGE_MS = 15 * 60 * 1000;
+
+function mintFixtureCapturedAtUtc(clock: () => number = Date.now) {
+  const now = clock();
+  if (!Number.isSafeInteger(now)) throw new Error('synthetic fixture clock is invalid');
+  return new Date(now - SYNTHETIC_EVIDENCE_BACKDATE_MS).toISOString();
+}
 
 function own(root: string) {
   const resolved = path.resolve(root);
@@ -53,7 +60,7 @@ function copy(root: string, relative: string) {
   copyFileSync(path.join(repository, relative), destination);
 }
 
-function staffingReceipt(receiptCapturedAtUtc = capturedAtUtc) {
+function staffingReceipt(receiptCapturedAtUtc: string) {
   return {
     schemaVersion: 1, kind: 'production-staffing-pre-execute-observation', environment: 'production', sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, reconciliationExecuteVersion: '20260930091123', collectionStartedAtUtc: receiptCapturedAtUtc, capturedAtUtc: receiptCapturedAtUtc,
     routine: { signature: PRODUCTION_STAFFING_PRE_EXECUTE_SIGNATURE, exactOverloadCount: 1, owner: 'postgres', language: 'plpgsql', kind: 'function', securityDefiner: false, config: null, nonOwnerExecuteGrantees: [...PRODUCTION_STAFFING_PRE_EXECUTE_GRANTEES], nonOwnerExecuteGrantOptions: false, nonExecuteAclPrivileges: false, returnShape: PRODUCTION_STAFFING_PRE_EXECUTE_RETURN_SHAPE, inputArguments: PRODUCTION_STAFFING_PRE_EXECUTE_INPUT_ARGUMENTS.map((value) => ({ ...value })), outputArguments: PRODUCTION_STAFFING_PRE_EXECUTE_OUTPUT_ARGUMENTS.map((value) => ({ ...value })), volatility: 'volatile', parallel: 'unsafe', strict: false, leakproof: false },
@@ -67,21 +74,21 @@ function staffingReceipt(receiptCapturedAtUtc = capturedAtUtc) {
   };
 }
 
-function preForwardReceipt(receiptCapturedAtUtc = capturedAtUtc) {
+function preForwardReceipt(receiptCapturedAtUtc: string) {
   const value = { schemaVersion: 1, kind: 'production-observed-profile', profilePhase: 'post_cleanup', collectionStartedAtUtc: receiptCapturedAtUtc, capturedAtUtc: receiptCapturedAtUtc, sourceSha, baselineSourceSha: PRODUCTION_OBSERVED_PROFILE_SOURCE_SHA, targetBindingSha256, ...structuredClone(PRODUCTION_OBSERVED_PROFILE_BASELINE) };
   Object.assign(value.aggregate.saved_filter_data, { total_count: 0, orphan_auth_reference_count: 0, row_identity_sha256: '4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945' });
   return value;
 }
 
-function rebaseFixtureTimestamps(value: unknown) {
+function rebaseFixtureTimestamps(value: unknown, freshCapturedAtUtc: string) {
   const original = Date.parse('2026-09-23T14:00:00.000Z');
-  const fresh = Date.parse(capturedAtUtc);
+  const fresh = Date.parse(freshCapturedAtUtc);
   if (!value || typeof value !== 'object') return;
   for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
     if (key.endsWith('AtUtc') && typeof child === 'string') {
       const timestamp = Date.parse(child);
       if (Number.isFinite(timestamp)) (value as Record<string, unknown>)[key] = new Date(fresh + timestamp - original).toISOString();
-    } else rebaseFixtureTimestamps(child);
+    } else rebaseFixtureTimestamps(child, freshCapturedAtUtc);
   }
 }
 
@@ -100,7 +107,7 @@ function privateDirectories(buildRoot: string, directories: string[]) {
   expect(result.status, result.stderr).toBe(0);
 }
 
-function fixture(inputLoadDelayMilliseconds = 0) {
+function fixture(inputLoadDelayMilliseconds = 0, clock: () => number = Date.now) {
   if (!Number.isSafeInteger(inputLoadDelayMilliseconds) || inputLoadDelayMilliseconds < 0 || inputLoadDelayMilliseconds >= 60_000) throw new Error('synthetic preparation delay invalid');
   const profile = process.env.USERPROFILE;
   if (!profile || !path.isAbsolute(profile)) throw new Error('test user profile is unavailable');
@@ -143,7 +150,8 @@ function fixture(inputLoadDelayMilliseconds = 0) {
   const link = path.join(linkRoot, 'production-link.txt'); writeFileSync(link, `${projectRef}\n`);
   const managedFixture = createValidManagedIsolationEvidenceFixture();
   const { isolationContext, isolationReceipts } = managedFixture;
-  rebaseFixtureTimestamps(isolationReceipts);
+  const capturedAtUtc = mintFixtureCapturedAtUtc(clock);
+  rebaseFixtureTimestamps(isolationReceipts, capturedAtUtc);
   const profileCompleted = Date.parse(capturedAtUtc);
   const cleanupStartedAtUtc = new Date(profileCompleted + 1500).toISOString();
   const cleanupCompletedAtUtc = new Date(profileCompleted + 2000).toISOString();
@@ -197,6 +205,19 @@ afterEach(() => roots.splice(0).forEach((root) => {
   if (!ownedRoots.delete(resolved)) throw new Error('refusing to remove an unowned test root');
   rmSync(resolved, { recursive: true, force: true });
 }));
+
+describe('synthetic cutover evidence timestamps', () => {
+  it('mints each fixture timestamp at construction despite a seventeen-minute runner delay', () => {
+    const firstNow = Date.parse('2026-10-06T12:00:00.000Z');
+    const secondNow = firstNow + 17 * 60 * 1000;
+    const first = mintFixtureCapturedAtUtc(() => firstNow);
+    const second = mintFixtureCapturedAtUtc(() => secondNow);
+    expect(first).not.toBe(second);
+    expect(firstNow - Date.parse(first)).toBe(SYNTHETIC_EVIDENCE_BACKDATE_MS);
+    expect(secondNow - Date.parse(second)).toBe(SYNTHETIC_EVIDENCE_BACKDATE_MS);
+    expect(SYNTHETIC_EVIDENCE_MAX_AGE_MS - SYNTHETIC_EVIDENCE_BACKDATE_MS).toBe(14 * 60 * 1000);
+  });
+});
 
 describe.skipIf(process.platform !== 'win32')('Story 22.15 protected production cutover native handoff', () => {
   it('completes an eleven-second post-ready preparation through the real worker without private inputs or a network target', () => {

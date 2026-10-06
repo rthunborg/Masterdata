@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "story-22-15-source-map-dependency-remediation",
+  "evidenceDate": "2026-10-06",
+  "historicalStagingMerge": {
+    "reviewedHead": "14bd0450a753bf2f55f7a67ee5ce0e86db5cfa69",
+    "stagingMerge": "35bde55622bea50a8e64898bae83b9fd5318e929",
+    "stagingTree": "295ccc050644d0bb3cabbf38b6e9e5853bf6b08b",
+    "main": "822350986f4c023948a7bbf490ddffc371185c4a"
+  },
+  "testedImplementation": {
+    "sourceSha": "8d9504083f7cb3a068c49f80aacb79a47535af90",
+    "changeScope": "source-map-js-1.2.1-to-1.2.2-and-test-only-handoff-timing-correction",
+    "frozenSpecChanged": false,
+    "migrationsChanged": false,
+    "manifestChanged": false,
+    "pauseChanged": false,
+    "fullVitest": {
+      "passed": 4793,
+      "skipped": 0,
+      "failed": 0,
+      "files": 387,
+      "reportSeconds": 1648.41,
+      "wrapperMilliseconds": 1658829,
+      "rawLogSha256": "31a88bfa289b685a1f81af7a80ea2b07694886e7d2700363006384e4dbe45f96",
+      "receiptSha256": "a78e109b8efcb2b97216698c1bd033418b24e0e21215bd02cc34448c7c602b71"
+    },
+    "typescript": { "exitCode": 0, "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "receiptSha256": "f5a25274499606b5fbe1f4b7622d7045abb8d33ed8a943f6d61b97603dabd413" },
+    "eslint": { "exitCode": 0, "errors": 0, "existingWarnings": 304, "logSha256": "c8d8decd818bdbee1bcc529e376bfd2c92cabca5144ec438099f2e6a335dc73e", "receiptSha256": "0f63bbf75b355cd0c3e99014ad44eb35f902071b32d00245d5bec16f6a5e6491" },
+    "build": { "sourceSha": "90c297aa63d4bc15e3e3fe76bfa8633c90d614b0", "durationMilliseconds": 47615, "sourceUnchanged": true, "receiptSha256": "ce8dd3ca2bcdde59701fef011890b22d458ef0c240aff8363bf7e7b776d0067c", "scope": "tested implementation 8d differs from source 90 only in a test file; later documentation requires fresh private package binding" },
+    "playwright": { "sourceSha": "90c297aa63d4bc15e3e3fe76bfa8633c90d614b0", "passed": 163, "skipped": 47, "failed": 0, "errors": 0, "cases": 210, "reportSeconds": 1385.30904, "wrapperMilliseconds": 1388080, "rawLogSha256": "ceb69a07ab7ab8ae7c181e990cb3682151ce5106aaa939fd769f0a178b73f4a4", "receiptSha256": "aa976332393ba1680ebaaf2cdc2a9504d140a01f40cc4d737c37a224f36c3412", "junitSha256": "8aa3a7f2c30d2b730116be4d259c7caced9e767ebb5b6154f78546cd8f3fce01", "bindingSha256": "a467bb60147ce1e8c91a8b6c1de26356cdf9964430c725036d37ab1f025b720b", "historicalSkipsIndividuallyMatched": true },
+    "admissionRenewals": { "passed": 3, "fifteenMinuteLimitUnchanged": true, "bindingSha256": "8ab216303edd326a24163d2206a6ff990d588fe75bae7b2bf0dd1b695c9170f9" }
+  },
+  "historicalNonPassingAttempt": {
+    "sourceSha": "90c297aa63d4bc15e3e3fe76bfa8633c90d614b0",
+    "passed": 4791,
+    "skipped": 0,
+    "failed": 1,
+    "files": 387,
+    "reportSeconds": 1904.30,
+    "wrapperMilliseconds": 1914807,
+    "rawLogSha256": "28df4e6a790091b7953aa8b0f3de14d3c4ba1b1c80961349cfeb6ba87d9ad3f8",
+    "classification": "non-passing-native-handoff-generic-host-failure-cause-unproven"
+  },
+  "dependencyAudit": {
+    "dependencies": 280,
+    "critical": 0,
+    "high": 0,
+    "moderate": 0,
+    "low": 0,
+    "informational": 0,
+    "receiptSha256": "d2ca1c7de61adf9f5423da62da28a7231ac68fe3fedf9579c5d55b95701c05de"
+  },
+  "boundaries": {
+    "newHostedDatabaseOrPlatformInspection": false,
+    "productionCredentialAccessDuringDependencyCorrection": false,
+    "installationAdmitted": false,
+    "isolationProved": false,
+    "hostedSettingChanged": false,
+    "manualOrProductionDeploymentOccurred": false,
+    "mainMerged": false,
+    "productionReopened": false
+  },
+  "status": {
+    "story22_15": "in-progress",
+    "epic23": "on-hold",
+    "production": "paused-no-go"
+  }
+}
