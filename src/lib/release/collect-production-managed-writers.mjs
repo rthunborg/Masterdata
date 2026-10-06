@@ -2,6 +2,7 @@ import {spawnSync} from 'node:child_process';
 import {isAbsolute} from 'node:path';
 import {assertDatabaseWriterClassificationSql,parseDatabaseWriterClassification} from './production-database-writer-classification.mjs';
 import {bindProductionCollectorSource} from './production-collector-source-binding.mjs';
+import {parseProductionCliRoutineSnapshot} from './production-managed-writer-profiles.mjs';
 import { productionTargetBindingSha256 } from './production-observed-profile.mjs';
 
 const MAX_BYTES=65536;
@@ -10,6 +11,7 @@ const SQL_RELATIVES=Object.freeze([
   'src/lib/release/production-cli-principal-profile.sql',
   'src/lib/release/production-managed-worker-profile.sql',
   'src/lib/release/production-database-writer-classification.sql',
+  'src/lib/release/production-cli-routine-fingerprint.sql',
 ]);
 const SOURCE_RELATIVES=Object.freeze([
   MODULE_RELATIVE,
@@ -18,6 +20,7 @@ const SOURCE_RELATIVES=Object.freeze([
   'src/lib/release/prepare-forward-subset.mjs',
   'src/lib/release/production-database-writer-classification.mjs',
   'src/lib/release/production-observed-profile.mjs',
+  'src/lib/release/production-managed-writer-profiles.mjs',
   'supabase/migration-baseline-manifest.json',
   'package.json',
   'pnpm-lock.yaml',
@@ -70,9 +73,9 @@ function runBoundedProductionManagedWriterCollection({
   });
 }
 
-/** Three reviewed SELECTs share one repeatable-read, read-only snapshot. */
+/** Four reviewed SELECTs share one repeatable-read, read-only snapshot. */
 export function buildProductionManagedWriterSql(parts) {
-  if(!Array.isArray(parts)||parts.length!==3) fail();
+  if(!Array.isArray(parts)||parts.length!==4) fail();
   const prefix=/^BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;\s*SET LOCAL statement_timeout = '20s';\s*SET LOCAL lock_timeout = '3s';\s*SET LOCAL idle_in_transaction_session_timeout = '30s';\s*/u;
   const bodies=parts.map(sql=>{
     assertDatabaseWriterClassificationSql(sql);
@@ -93,7 +96,7 @@ export function parseProductionManagedWriterOutputs(output,binding) {
     Date.parse(binding.collectionStartedAtUtc)>Date.parse(binding.capturedAtUtc))fail();
   if(typeof output!=='string'||Buffer.byteLength(output)>MAX_BYTES) fail();
   const lines=output.split(/\r?\n/u).filter(Boolean);
-  if(lines.length!==3) fail();
+  if(lines.length!==4) fail();
   let cli,workers;
   try {cli=JSON.parse(lines[0]);workers=JSON.parse(lines[1]);} catch {fail();}
   if(!exact(cli,['schemaVersion','kind','cliPresentCount','cliAttributes','memberships','currentDatabase',
@@ -119,6 +122,8 @@ export function parseProductionManagedWriterOutputs(output,binding) {
     !/^[a-f0-9]{32}$/u.test(workers.managedBackendProfileMd5??'')||
     !workerBooleans.every(k=>bool(workers[k]))) fail();
   const inventory=parseDatabaseWriterClassification(lines[2]);
+  let routineSnapshot;try{routineSnapshot=parseProductionCliRoutineSnapshot(JSON.parse(lines[3]));}catch{fail();}
+  if(routineSnapshot.total!==cli.nonSystemObjects.executeRoutineCount||routineSnapshot.cliPresentCount!==cli.cliPresentCount)fail();
   if(cli.managedLoginProfileMd5!==inventory.unknownLoginRoles.profileMd5||
     workers.managedBackendProfileMd5!==inventory.sessions.unknownBackendProfileMd5)fail();
   const workerFacts={...workers};delete workerFacts.managedBackendProfileMd5;
@@ -130,7 +135,7 @@ export function parseProductionManagedWriterOutputs(output,binding) {
     workers.cronLauncherCount+workers.netWorkerCount>inventory.sessions.unknownBackendCount) fail();
   return Object.freeze({schemaVersion:1,kind:'production-managed-writer-observation',environment:'production',phase:'pre_forward',
     ...binding,cli:{presentCount:cli.cliPresentCount,attributes,memberships:cli.memberships,database:cli.currentDatabase,
-      schemas:cli.nonSystemSchemas,objects:cli.nonSystemObjects,activeSessionCount:cli.activeSessionCount,
+      schemas:cli.nonSystemSchemas,objects:cli.nonSystemObjects,routineSnapshot,activeSessionCount:cli.activeSessionCount,
       completeNonSecretRoleGraphSha256:cli.completeNonSecretRoleGraphSha256},workers:workerFacts,
     correlation:{cliLoginProfileMd5:cli.managedLoginProfileMd5,rawUnknownLoginProfileMd5:inventory.unknownLoginRoles.profileMd5,
       managedBackendProfileMd5:workers.managedBackendProfileMd5,rawUnknownBackendProfileMd5:inventory.sessions.unknownBackendProfileMd5},
@@ -142,7 +147,7 @@ export function parseProductionManagedWriterOutputs(output,binding) {
 /** Caller-provided data is never a hosted proof: tool, target and TLS are checked here. */
 export async function collectProductionManagedWriters({workspace,binding,sourceOptions,environment=process.env}={}) {
   if(typeof workspace!=='string'||!isAbsolute(workspace)||environment!==process.env||
-    environment.EXPECTED_SUPABASE_ENVIRONMENT!=='production'||
+    environment.EXPECTED_SUPABASE_ENVIRONMENT!=='production'||environment.SUPABASE_DB_CONNECTION_MODE!=='session-pooler'||
     !exact(binding,['sourceSha','sourceTree','sourceManifestSha256','targetBindingSha256'])) fail();
   try {
     const bound=bindProductionCollectorSource({workspace,source:{sourceSha:binding.sourceSha,sourceTree:binding.sourceTree,

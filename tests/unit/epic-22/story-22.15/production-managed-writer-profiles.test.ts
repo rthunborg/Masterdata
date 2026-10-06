@@ -2,7 +2,7 @@ import {describe,expect,it} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {
   assessProductionManagedWriterProfiles,productionManagedWriterProfileSha256,
-  PRODUCTION_PRE_FORWARD_CLI_PROFILE,PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,PRODUCTION_PRE_FORWARD_CLI_OBJECTS,
+  PRODUCTION_PRE_FORWARD_CLI_PROFILE,PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,PRODUCTION_PRE_FORWARD_CLI_OBJECTS,PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT,
 } from '../../../../src/lib/release/production-managed-writer-profiles.mjs';
 import {buildProductionManagedWriterSql,collectProductionManagedWriters} from '../../../../src/lib/release/collect-production-managed-writers.mjs';
 
@@ -15,7 +15,7 @@ function receipt(){return {
   targetBindingSha256:context.targetBindingSha256,collectionStartedAtUtc:'2026-09-28T11:58:59.000Z',capturedAtUtc:'2026-09-28T11:59:00.000Z',
   cli:{presentCount:1,attributes:{...PRODUCTION_PRE_FORWARD_CLI_PROFILE},memberships:{...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP},
     database:{connect:true,create:false,temporary:true},schemas:{schemaCount:9,usageCount:1,createCount:0,ownedSchemaCount:0},
-    objects:{...PRODUCTION_PRE_FORWARD_CLI_OBJECTS},activeSessionCount:0,completeNonSecretRoleGraphSha256:context.databaseRoleGraphSha256},
+    objects:{...PRODUCTION_PRE_FORWARD_CLI_OBJECTS},routineSnapshot:structuredClone(PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT),activeSessionCount:0,completeNonSecretRoleGraphSha256:context.databaseRoleGraphSha256},
   workers:{cronLauncherCount:1,netWorkerCount:1,otherCandidateBackendCount:0,cronPreloaded:true,netPreloaded:true,
     cronDatabaseMatchesConnected:true,netDatabaseMatchesConnected:true,cronLaunchActiveJobs:true,pgCronExtensionCount:0,
     pgNetExtensionCount:0,cronJobTablePresent:false,netRequestQueueTablePresent:false,netResponseTablePresent:false},
@@ -26,7 +26,7 @@ function receipt(){return {
 const assess=(v=receipt())=>assessProductionManagedWriterProfiles(v,context);
 describe('exact initial managed writer profiles',()=>{
   it('classifies a postgres SET member as privileged ingress, never proof of isolation',()=>{
-    expect(assess()).toMatchObject({disposition:'initial_managed_profiles_classified_not_isolation',
+    expect(assess()).toMatchObject({disposition:'initial_exact_routine_snapshot_classified_not_isolation',
       executionAuthority:false,privilegedCliIngress:true,providerAdministrativeTrustBoundary:true,
       workerProofScope:'current_connected_database_job_substrates_absent'});
   });
@@ -77,23 +77,32 @@ describe('exact initial managed writer profiles',()=>{
     const v=receipt();v.phase='post_forward';expect(assess(v).disposition).toBe('blocked_unclassified_writer');
     v.phase='pre_forward';Object.assign(v,{binaryWriterAttested:true});expect(assess(v).disposition).toBe('blocked_unclassified_writer');
   });
+
+  it('retains unknown semantics and has no execution authority after exact snapshot adoption',()=>{
+    expect(assess()).toMatchObject({executionAuthority:false,routineSemanticClassification:false,unresolvedRoutineCount:104,identityBaselineAvailable:false});
+    expect(receipt().cli.routineSnapshot).toMatchObject({classifiedRoutineCount:0,unknownCategoryCount:104,identityBaselineAvailable:false});
+  });
+  it.each([102,103,105])('refuses aggregate-only or changed routine count %s',count=>{const v=receipt();v.cli.objects.executeRoutineCount=count;expect(assess(v).disposition).toBe('blocked_unclassified_writer');});
+  it.each(['allRoutineSetSha256','allRoutineOwnerSetSha256'])('refuses same-count changed fingerprint %s',key=>{const v=receipt();v.cli.routineSnapshot[key]='0'.repeat(64);expect(assess(v).disposition).toBe('blocked_unclassified_writer');expect(productionManagedWriterProfileSha256(v)).not.toBe(productionManagedWriterProfileSha256(receipt()));});
+  it.each(['profileSha256','count','securityDefiner','publicGrant','directCliGrant','schemaUsage','extensionMember','postgresGrant','otherGrant','kind','languageClass','schemaClass'])('refuses substituted category %s',key=>{const v=receipt();const c=v.cli.routineSnapshot.categories[0];c[key]=typeof c[key]==='boolean'?!c[key]:typeof c[key]==='number'?c[key]+1:'changed';expect(assess(v).disposition).toBe('blocked_unclassified_writer');});
+  it.each(['reordered','duplicate','missing','extra','zero-unknown','classified','baseline','no-snapshot','non-function'])('refuses %s snapshot',kind=>{const v=receipt();const s=v.cli.routineSnapshot;if(kind==='reordered')s.categories.reverse();if(kind==='duplicate')s.categories[1]=structuredClone(s.categories[0]);if(kind==='missing')s.categories.pop();if(kind==='extra')Object.assign(s,{admitted:true});if(kind==='zero-unknown')s.unknownCategoryCount=0;if(kind==='classified')s.classifiedRoutineCount=104;if(kind==='baseline')s.identityBaselineAvailable=true;if(kind==='no-snapshot')delete v.cli.routineSnapshot;if(kind==='non-function')s.categories[0].kind='a';expect(assess(v).disposition).toBe('blocked_unclassified_writer');});
   it('binds profile content while ignoring JSON key ordering',()=>{
     const v=receipt(),before=productionManagedWriterProfileSha256(v);
     v.cli.schemas={ownedSchemaCount:0,createCount:0,usageCount:1,schemaCount:9};
-    expect(assess(v).disposition).toBe('initial_managed_profiles_classified_not_isolation');
+    expect(assess(v).disposition).toBe('initial_exact_routine_snapshot_classified_not_isolation');
     expect(productionManagedWriterProfileSha256(v)).toBe(before);
     v.workers.cronJobTablePresent=true;expect(productionManagedWriterProfileSha256(v)).not.toBe(before);
   });
 });
 
 describe('managed writer collector safety',()=>{
-  const parts=()=>['production-cli-principal-profile.sql','production-managed-worker-profile.sql','production-database-writer-classification.sql']
+  const parts=()=>['production-cli-principal-profile.sql','production-managed-worker-profile.sql','production-database-writer-classification.sql','production-cli-routine-fingerprint.sql']
     .map(name=>readFileSync(new URL('../../../../src/lib/release/'+name,import.meta.url),'utf8'));
-  it('joins all three queries in one bounded read-only snapshot',()=>{
+  it('joins all four queries in one bounded read-only snapshot',()=>{
     const sql=buildProductionManagedWriterSql(parts());
     expect(sql.match(/BEGIN TRANSACTION/g)).toHaveLength(1);expect(sql.match(/ROLLBACK;/g)).toHaveLength(1);
     expect(sql).toContain('completeNonSecretRoleGraphSha256');expect(sql).toContain('otherCandidateBackendCount');
-    expect(sql).toContain('unknownLoginRoles');expect(sql).not.toContain('rolpassword');
+    expect(sql).toContain('unknownLoginRoles');expect(sql).toContain('allRoutineOwnerSetSha256');expect(sql).toContain('allRoutineSetSha256');expect(sql).not.toContain('rolpassword');
   });
   it('rejects mutations and lost transaction boundaries',()=>{
     const p=parts();p[1]=p[1].replace('ROLLBACK;','COMMIT;');expect(()=>buildProductionManagedWriterSql(p)).toThrow();

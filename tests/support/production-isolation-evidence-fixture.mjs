@@ -1,7 +1,7 @@
 import { PRODUCTION_ISOLATION_AUTH_HOOKS } from '../../src/lib/release/production-isolation-gate.mjs';
 import {
   PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP,
-  PRODUCTION_PRE_FORWARD_CLI_OBJECTS,
+  PRODUCTION_PRE_FORWARD_CLI_OBJECTS, PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT,
   PRODUCTION_PRE_FORWARD_CLI_PROFILE,
   productionManagedWriterProfileSha256,
 } from '../../src/lib/release/production-managed-writer-profiles.mjs';
@@ -111,7 +111,7 @@ export function createValidManagedIsolationEvidenceFixture() {
       memberships: { ...PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP },
       database: { connect: true, create: false, temporary: true },
       schemas: { schemaCount: 9, usageCount: 1, createCount: 0, ownedSchemaCount: 0 },
-      objects: { ...PRODUCTION_PRE_FORWARD_CLI_OBJECTS },
+      objects: { ...PRODUCTION_PRE_FORWARD_CLI_OBJECTS }, routineSnapshot:structuredClone(PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT),
       activeSessionCount: 0,
       completeNonSecretRoleGraphSha256: databaseRoleGraphSha256,
     },

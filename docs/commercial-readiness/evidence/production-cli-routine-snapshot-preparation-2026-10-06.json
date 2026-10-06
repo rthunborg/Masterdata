@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "story-22-15-cli-routine-snapshot-preparation",
+  "evidenceDate": "2026-10-06",
+  "testedImplementation": {
+    "sourceSha": "9dd7426a16dcf0ae01cf186689a07b81293e2242",
+    "sourceTree": "02b510af3beb6cb775785d1c7a280383ead73e95",
+    "fullVitest": {
+      "passed": 4787,
+      "skipped": 0,
+      "failed": 0,
+      "files": 386,
+      "reportSeconds": 1712.64,
+      "wrapperMilliseconds": 1722881,
+      "receiptSha256": "acdbed86994a62cbe3a158b90450d34ea22ff96ce17836588154bed203a14561",
+      "rawLogSha256": "33bf5c234569581d92cfdc1ce0a8f6ed2afa7c4925509c49507069fe1b81b7e7"
+    },
+    "fullPlaywright": {
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0,
+      "cases": 210,
+      "reportSeconds": 1145.507068,
+      "wrapperMilliseconds": 1157497,
+      "receiptSha256": "be04bf743cd2fd40b9b7d2e13a4d56048f6265b82f74aa657073f4fdf948dfe3",
+      "rawLogSha256": "33711faf5e2137f7dc2390c9038efa1dfc27dc54e7715d30eca1e44243a607fc",
+      "bindingSha256": "67871fab11e8ca90111efe1061ec6b027bbb4ac408f40c78ee693f18eb112880"
+    }
+  },
+  "observationBaseline": {
+    "sourceSha": "2ef0aa54c135dacc2b4c163573e518800664680f",
+    "manifestSha256": "72817587a929e19ae507c9e806f2151f214d63465df8496258edde9f26ccc0f4"
+  },
+  "routineReadOnly": {
+    "collectionStartedAtUtc": "2026-10-06T10:00:44.029Z",
+    "capturedAtUtc": "2026-10-06T10:00:44.528Z",
+    "querySha256": "607b543fe167f1eead4f46449fa79b20bc3c74b06ff0c8a5567c8002afdf0a2c",
+    "receiptSha256": "1f2f083d17abd743e169ad7529b2ccae3afa09f2009db307ffd40c37e8459ab7",
+    "total": 104,
+    "categories": 8,
+    "unknownCategoryCount": 104,
+    "classifiedRoutineCount": 0,
+    "identityBaselineAvailable": false,
+    "allRoutineSetSha256": "4b1e52ad1ce7ddb3116e641573e90c78b321f9a4bb3f183a50f7708e75a174e8",
+    "allRoutineOwnerSetSha256": "780e7025c838af0631355043a4bcede1137e321f10f7bd1ea4c8739a6cefcdaf",
+    "executionAuthority": false,
+    "hostedWriteAttempted": false,
+    "hostedSettingsChanged": false,
+    "isolationProved": false
+  },
+  "egressReadOnly": {
+    "capturedAtUtc": "2026-10-06T09:59:02.1490636Z",
+    "independentIpv4HttpsObservationsAgree": true,
+    "preferredNonLinkLocalIpv6AddressCount": 2,
+    "preferredGlobalUnicastIpv6AddressCount": 0,
+    "liveIpv6DefaultRouteCount": 0,
+    "potentialIpv6InternetRouteCount": 0,
+    "databaseSourceEgressProved": false,
+    "exclusionAddressAdmitted": false
+  },
+  "localMatrix": {
+    "syntheticOnly": true,
+    "forwards": 14,
+    "repairs": 55,
+    "finalHistory": 69,
+    "catalogChecks": 16,
+    "failedCatalogChecks": 0,
+    "receiptSha256": "1acc4888e891f1546c63c0879cee15f6e988a77b3816d51ddee789c513fc27cb"
+  },
+  "supportingChecks": {
+    "focused": { "passed": 401, "skipped": 0, "failed": 0, "files": 6, "reportMilliseconds": 7520.169, "receiptSha256": "b7465a9fe4acc5704646a0e8d9d496749cffa159140eabf464de8548dbc7f18f", "scope": "targeted correction before complete suites" },
+    "typescript": { "exitCode": 0, "scope": "fresh tested implementation" },
+    "fullEslint": { "exitCode": 0, "errors": 0, "scope": "fresh tested implementation" },
+    "build": { "exitCode": 0, "sourceSha": "9b31b89b66ad4cbe087cf44b424f0a160dd80ba5", "durationMilliseconds": 43428, "receiptSha256": "e9fd62c96bdc864b8b98cd200d0209eb04995f5b99b8f68c5cdec11f03814f49", "scope": "executable application, release, and migrations are byte-identical at the tested implementation; later documentation changes protected-package inventory bytes" },
+    "localAdmissionRenewal": { "passedRenewals": 3, "fifteenMinuteLimitUnchanged": true, "bindingSha256": "d362380b5a7a7cc449e6b6ecd3151719e945ce07285088810248c29cf044a71a" }
+  },
+  "audit": {
+    "exitCode": 1,
+    "critical": 0,
+    "high": 1,
+    "advisory": "GHSA-68fv-2mgg-jv7q",
+    "receiptSha256": "4d774926096c8e025829c72e497e4abd6f26c07495ffc7f1bee9a19d3982fe55",
+    "separateDependencyCorrectionRequired": true
+  },
+  "vercelPauseReadOnly": {
+    "exactlyTwoGets": true,
+    "readyProduction": true,
+    "autoAssignment": false,
+    "activeProjectCrons": 0,
+    "deploymentFunctions": null,
+    "deploymentCrons": null,
+    "receiptSha256": "76d85784fb9b642c08694c9697dc0f214fee299a1a83df22938dbb89605e25ad"
+  },
+  "historicalFailures": {
+    "fullVitest9b": {
+      "passed": 4774,
+      "failed": 2,
+      "skipped": 0,
+      "classification": "non-passing-retained",
+      "receiptSha256": "216733f851369d05ebc92107f9c284a852f233bd932d924bf8d395057ed4b429"
+    }
+  },
+  "toolOutputIncident": {
+    "kind": "local-fixture-admission-private-output-exposure",
+    "repositoryWrite": false,
+    "productionCredentialInvolved": false,
+    "toolOutputDisclosure": true,
+    "externalServicePostPerformed": false,
+    "reused": false,
+    "repositoryCommit": false
+  },
+  "boundaries": {
+    "installationAdmitted": false,
+    "hostedDatabaseWrite": false,
+    "projectSettingChanged": false,
+    "deploymentOccurred": false,
+    "mainMerged": false,
+    "productionReopened": false
+  },
+  "resourceLifecycle": {
+    "stopRequested": true,
+    "shutdownVerified": false,
+    "closeActorCalled": false,
+    "localDataRetained": true
+  },
+  "status": {
+    "story22_15": "in-progress",
+    "epic23": "on-hold",
+    "production": "paused-no-go"
+  }
+}

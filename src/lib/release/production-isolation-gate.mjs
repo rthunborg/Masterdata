@@ -714,7 +714,8 @@ function inspectDatabase(value, context, now) {
     const assessed=assessProductionManagedWriterProfiles(receipt.managedWriterObservation, {
       ...context, now,
     });
-    return assessed.disposition==='initial_managed_profiles_classified_not_isolation' &&
+    return assessed.disposition==='initial_exact_routine_snapshot_classified_not_isolation' &&
+      assessed.executionAuthority===false && assessed.routineSemanticClassification===false && assessed.unresolvedRoutineCount===104 &&
       canonicalUtc(receipt.managedWriterObservation.capturedAtUtc) <= receipt.capturedAt &&
       productionManagedWriterProfileSha256(receipt.managedWriterObservation)===context.trustedBackendProfileSha256 &&
       receipt.databaseRoleGraphSha256===context.databaseRoleGraphSha256 &&

@@ -37,23 +37,28 @@ describe('protected production isolation native boundary', () => {
 describe.skipIf(process.platform !== 'win32')('production isolation PowerShell launcher', () => {
   it('executes only the copied fixed relative host and suppresses child or installation failures', () => {
     const fixture = mkdtempSync(path.join(tmpdir(), 'hr-isolation-launcher-'));
-    const wrapper = path.join(fixture, 'production-isolation-host.ps1');
-    const executable = path.join(fixture, 'production-isolation.exe');
-    const compiler = path.join(fixture, 'compile-inert-host.ps1');
-    const runWrapper = () => spawnSync(windowsPowerShell, [
-      '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', wrapper,
-    ], { cwd: fixture, encoding: 'utf8', windowsHide: true, timeout: 15_000 });
-    const compile = (exitCode: number) => {
+    // Each fixed-path host is compiled once; never overwrite a just-executed PE.
+    const successFixture = mkdtempSync(path.join(fixture, 'success-'));
+    const failureFixture = mkdtempSync(path.join(fixture, 'failure-'));
+    const missingFixture = mkdtempSync(path.join(fixture, 'missing-'));
+    const hostPath = (directory: string) => path.join(directory, 'production-isolation-host.ps1');
+    const executablePath = (directory: string) => path.join(directory, 'production-isolation.exe');
+    const compilerPath = (directory: string) => path.join(directory, 'compile-inert-host.ps1');
+    const runWrapper = (directory: string) => spawnSync(windowsPowerShell, [
+      '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', hostPath(directory),
+    ], { cwd: directory, encoding: 'utf8', windowsHide: true, timeout: 15_000 });
+    const compile = (directory: string, exitCode: number) => {
       const result = spawnSync(windowsPowerShell, [
-        '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', compiler,
-        executable, String(exitCode),
-      ], { cwd: fixture, encoding: 'utf8', windowsHide: true, timeout: 15_000 });
+        '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', compilerPath(directory),
+        executablePath(directory), String(exitCode),
+      ], { cwd: directory, encoding: 'utf8', windowsHide: true, timeout: 15_000 });
       expect(result.error).toBeUndefined();
       expect(result.status, result.stderr).toBe(0);
     };
     try {
-      writeFileSync(wrapper, readFileSync(path.join(release, 'production-isolation-host.ps1')));
-      writeFileSync(compiler, `param([string]$Output,[int]$ExitCode)
+      for (const directory of [successFixture, failureFixture, missingFixture]) {
+      writeFileSync(hostPath(directory), readFileSync(path.join(release, 'production-isolation-host.ps1')));
+      writeFileSync(compilerPath(directory), `param([string]$Output,[int]$ExitCode)
 $ErrorActionPreference='Stop'
 $provider=New-Object Microsoft.CSharp.CSharpCodeProvider
 $parameters=New-Object CodeDom.Compiler.CompilerParameters
@@ -63,23 +68,24 @@ $parameters.CompilerOptions='/optimize+ /platform:x64'
 $source='using System;using System.IO;internal static class Program{static int Main(){File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"launcher-reached.txt"),"reached");return '+$ExitCode+';}}'
 try{$result=$provider.CompileAssemblyFromSource($parameters,$source);if($result.Errors.HasErrors){throw (($result.Errors|ForEach-Object {$_.ErrorNumber+':'+$_.Line}) -join ',')}}finally{$provider.Dispose()}`);
 
-      compile(0);
-      const success = runWrapper();
+      }
+      compile(successFixture, 0);
+      const success = runWrapper(successFixture);
       expect(success.error).toBeUndefined();
       expect(success.status, success.stderr).toBe(0);
       expect(success.stdout.trim()).toBe('');
-      expect(readFileSync(path.join(fixture, 'launcher-reached.txt'), 'utf8')).toBe('reached');
+      expect(readFileSync(path.join(successFixture, 'launcher-reached.txt'), 'utf8')).toBe('reached');
 
-      compile(7);
-      const childFailure = runWrapper();
+      compile(failureFixture, 7);
+      const childFailure = runWrapper(failureFixture);
       expect(childFailure.error).toBeUndefined();
       expect(childFailure.status, childFailure.stderr).toBe(1);
       expect(JSON.parse(childFailure.stdout.trim())).toEqual({
         started: false, operation: 'temporary-production-isolation', detailsSuppressed: true,
       });
 
-      rmSync(executable, { force: true });
-      const missingInstallation = runWrapper();
+      expect(existsSync(executablePath(missingFixture))).toBe(false);
+      const missingInstallation = runWrapper(missingFixture);
       expect(missingInstallation.error).toBeUndefined();
       expect(missingInstallation.status, missingInstallation.stderr).toBe(1);
       expect(JSON.parse(missingInstallation.stdout.trim())).toEqual({
