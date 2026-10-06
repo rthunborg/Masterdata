@@ -143,8 +143,11 @@ function fixture(inputLoadDelayMilliseconds = 0, clock: () => number = Date.now)
   });
   const callLog = path.join(container, 'fake-cli-calls.txt');
   const workRootMarker = path.join(container, 'fake-cli-work-root.txt');
+  const cliVersionMarker = path.join(container, 'fake-cli-version.txt');
+  const inputLoadStartMarker = path.join(container, 'input-load-start.txt');
+  const inputLoadFinishMarker = path.join(container, 'input-load-finish.txt');
   const cliSource = path.join(container, 'fake-cli.cs');
-  writeFileSync(cliSource, `using System; using System.IO; class Program { static int Main(string[] a) { if(a.Length==1 && a[0]=="--version"){Console.WriteLine("2.115.0");return 0;} File.AppendAllText(@"${callLog}", String.Join(" ",a)+"\\n");File.WriteAllText(@"${workRootMarker}",Directory.GetCurrentDirectory()); bool dry=Array.IndexOf(a,"--dry-run")>=0; if(dry){${plan.map((entry) => `Console.WriteLine("Applying migration ${entry.file}");`).join('')} } return 0; } }`);
+  writeFileSync(cliSource, `using System; using System.IO; class Program { static int Main(string[] a) { if(a.Length==1 && a[0]=="--version"){File.WriteAllText(@"${cliVersionMarker}","version");Console.WriteLine("2.115.0");return 0;} File.AppendAllText(@"${callLog}", String.Join(" ",a)+"\\n");File.WriteAllText(@"${workRootMarker}",Directory.GetCurrentDirectory()); bool dry=Array.IndexOf(a,"--dry-run")>=0; if(dry){${plan.map((entry) => `Console.WriteLine("Applying migration ${entry.file}");`).join('')} } return 0; } }`);
   compile(container, path.join(root, 'runtime', 'supabase.exe'), [cliSource]);
   const certificate = path.join(container, 'synthetic-ca.pem'); writeFileSync(certificate, 'synthetic certificate');
   const link = path.join(linkRoot, 'production-link.txt'); writeFileSync(link, `${projectRef}\n`);
@@ -192,12 +195,12 @@ function fixture(inputLoadDelayMilliseconds = 0, clock: () => number = Date.now)
   const rows = files.map(({ relative, sha }) => `{ @"${relative.replaceAll('/', '\\')}", "${sha}" }`).join(',\n');
   const inputs = path.join(container, 'synthetic-inputs.cs');
   writeFileSync(inputs, `using System;using System.Collections.Generic;namespace HrMasterdata.Release { internal sealed class ProductionInputs:IDisposable { public IDictionary<string,string> EnvironmentValues {get;private set;} ProductionInputs(){EnvironmentValues=new Dictionary<string,string>{{"EXPECTED_SUPABASE_ENVIRONMENT","production"},{"EXPECTED_SUPABASE_PROJECT_REF","${projectRef}"},{"SUPABASE_DB_CONNECTION_MODE","session-pooler"},{"EXPECTED_SUPABASE_POOLER_HOST","synthetic.pooler"},{"SUPABASE_DB_URL","postgresql://postgres.${projectRef}:synthetic@synthetic.pooler:5432/postgres?sslmode=verify-full"},{"SUPABASE_SSL_ROOT_CERT",@"${certificate}"},{"EXPECTED_SUPABASE_SSL_ROOT_CERT_SHA256","${sha256(readFileSync(certificate))}"}};} internal static ProductionInputs Load(string root){if(!String.Equals(root,@"${inputRoot}",StringComparison.Ordinal)||!System.IO.Directory.Exists(root))throw new InvalidOperationException();return new ProductionInputs();} public void Dispose(){EnvironmentValues.Clear();} } }`);
-  writeFileSync(inputs, readFileSync(inputs, 'utf8').replace('return new ProductionInputs();', `System.Threading.Thread.Sleep(${inputLoadDelayMilliseconds});return new ProductionInputs();`));
+  writeFileSync(inputs, readFileSync(inputs, 'utf8').replace('return new ProductionInputs();', `System.IO.File.WriteAllText(@"${inputLoadStartMarker}","input-load-start");System.Threading.Thread.Sleep(${inputLoadDelayMilliseconds});System.IO.File.WriteAllText(@"${inputLoadFinishMarker}","input-load-finish");return new ProductionInputs();`));
   const install = path.join(container, 'installation.cs');
   const get = (name: string) => sha256(readFileSync(evidencePaths[name]));
   writeFileSync(install, `namespace HrMasterdata.Release { internal static class Installation { internal const string Root=@"${root}";internal const string InputRoot=@"${inputRoot}";internal const string LinkPath=@"${link}";internal const string LinkSha256="${sha256(readFileSync(link))}";internal const string EvidenceRoot=@"${evidenceRoot}";internal const string StaffingReceiptPath=@"${evidencePaths.staffing}";internal const string StaffingReceiptSha256="${get('staffing')}";internal const string IsolationReceiptPath=@"${evidencePaths.isolation}";internal const string IsolationReceiptSha256="${get('isolation')}";internal const string PreForwardReceiptPath=@"${evidencePaths.preForward}";internal const string PreForwardReceiptSha256="${get('preForward')}";internal const string BackupRecordPath=@"${evidencePaths.backup}";internal const string BackupRecordSha256="${get('backup')}";internal const string CleanupRecordPath=@"${evidencePaths.cleanup}";internal const string CleanupRecordSha256="${get('cleanup')}";internal const string TargetBindingSha256="${targetBindingSha256}";internal const string OriginPrivateKey=@"${readFileSync(privateXml,'utf8').replaceAll('"','""')}";internal static readonly System.Collections.Generic.Dictionary<string,string> Files=new System.Collections.Generic.Dictionary<string,string>{${rows}}; } }`);
   compile(container, path.join(root, 'production-cutover.exe'), [path.join(root, 'src/lib/release/protected-file-lease.cs'), path.join(root, 'src/lib/release/protected-production-cutover-host.cs'), inputs, install]);
-  return { root, callLog, workRootMarker, inputRoot, preForwardPath: evidencePaths.preForward };
+  return { root, callLog, workRootMarker, cliVersionMarker, inputLoadStartMarker, inputLoadFinishMarker, inputRoot, preForwardPath: evidencePaths.preForward, capturedAtUtc };
 }
 
 afterEach(() => roots.splice(0).forEach((root) => {
@@ -223,13 +226,17 @@ describe.skipIf(process.platform !== 'win32')('Story 22.15 protected production 
   it('completes an eleven-second post-ready preparation through the real worker without private inputs or a network target', () => {
     // This synthetic input load happens after nonce-ready. It must exceed the
     // unchanged ten-second packet limit without consuming transmission time.
-    const { root, callLog, workRootMarker, inputRoot, preForwardPath } = fixture(11_000);
+    const { root, callLog, workRootMarker, cliVersionMarker, inputLoadStartMarker, inputLoadFinishMarker, inputRoot, preForwardPath, capturedAtUtc } = fixture(11_000);
     const executable = path.join(root, 'production-cutover.exe');
     expect(existsSync(workRootMarker)).toBe(false);
     const rejectedArguments = spawnSync(executable, ['--untrusted'], { encoding: 'utf8', windowsHide: true, timeout: 30_000 });
     expect(rejectedArguments.error).toBeUndefined();
     expect(rejectedArguments.status).toBe(1);
     expect(existsSync(callLog)).toBe(false);
+    expect(existsSync(workRootMarker)).toBe(false);
+    expect(existsSync(cliVersionMarker)).toBe(false);
+    expect(existsSync(inputLoadStartMarker)).toBe(false);
+    expect(existsSync(inputLoadFinishMarker)).toBe(false);
     const result = spawnSync(executable, [], { encoding: 'utf8', windowsHide: true, timeout: 120_000 });
     // The marker was absent before this run and only this fixture's fake CLI
     // writes it. Register its constrained, non-link root before assertions so
@@ -237,8 +244,23 @@ describe.skipIf(process.platform !== 'win32')('Story 22.15 protected production 
     // If the host fails before the CLI marker, retain work for diagnosis; do
     // not scan or adopt any other directory under the user profile.
     const workRoot = registerMarkedWorkRoot(workRootMarker);
-    expect(result.error).toBeUndefined();
-    expect(result.status, result.stderr).toBe(0);
+    const callCount = existsSync(callLog) ? readFileSync(callLog, 'utf8').trim().split(/\r?\n/u).filter(Boolean).length : 0;
+    const diagnostic = JSON.stringify({
+      cliVersionObserved: existsSync(cliVersionMarker),
+      inputLoadStarted: existsSync(inputLoadStartMarker),
+      inputLoadFinished: existsSync(inputLoadFinishMarker),
+      cliWorkObserved: existsSync(workRootMarker),
+      clockAgeMilliseconds: Date.now() - Date.parse(capturedAtUtc),
+      stdoutBytes: Buffer.byteLength(result.stdout ?? '', 'utf8'),
+      stderrPresent: Boolean(result.stderr),
+      callCount,
+      knownGenericError: (result.stderr ?? '').includes('Protected production cutover did not complete.'),
+    });
+    expect(result.error, diagnostic).toBeUndefined();
+    expect(result.status, diagnostic).toBe(0);
+    expect(existsSync(cliVersionMarker), diagnostic).toBe(true);
+    expect(existsSync(inputLoadStartMarker), diagnostic).toBe(true);
+    expect(existsSync(inputLoadFinishMarker), diagnostic).toBe(true);
     expect(JSON.parse(result.stdout.trim())).toMatchObject({ kind: 'protected-production-forward-14-attempt', sourceCommit: sourceSha, sourceTree, sourceManifestSha256, targetBindingSha256, versions: PRODUCTION_FORWARD_BOOTSTRAP_VERSIONS, authorizesCleanup: false, authorizesRepair: false, authorizesMain: false, authorizesDeployment: false, authorizesReopen: false });
     expect(readFileSync(callLog, 'utf8').trim().split(/\r?\n/u)).toEqual([
       'db push --dry-run --include-all --skip-vault --db-url postgresql:///postgres?sslmode=verify-full',
