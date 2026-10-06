@@ -1,10 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { createHash } from 'node:crypto';
+import { PRODUCTION_HISTORY_REPAIR_VERSIONS } from '../../../../src/lib/release/production-history-repair-baseline.mjs';
 import {
   assertInitialMatrixObservation,
   assertProtectedMatrixCliInvocation,
   buildProtectedMatrixCliInvocation,
   buildPinnedMatrixToolEnvironment,
   runProductionCliMatrixCase,
+  createPinnedMatrixToolVerifier,
 } from '../../../support/production-cli-matrix-runner.mjs';
 import { SYNTHETIC_AGGREGATES } from '../../../support/production-cli-matrix-fixture.mjs';
 
@@ -206,5 +209,76 @@ describe('local CLI matrix admission rejection', () => {
       return;
     }
     throw new Error('Expected rejection');
+  });
+});
+
+
+describe('matrix tool identity retained across individual repairs', () => {
+  const digest = (value: Buffer) => createHash('sha256').update(value).digest('hex');
+  const fixture = () => {
+    let bytes = Buffer.from('reviewed synthetic executable'); let symbolicLink = false;
+    const tool = { executablePath: process.execPath, sha256: digest(bytes) };
+    const spawn = vi.fn((...parameters: unknown[]) => { void parameters; return { status: 0, stdout: '2.115.0\n' }; });
+    const read = vi.fn((filename: string) => { void filename; return bytes; });
+    const stat = () => ({ isFile: () => true, isSymbolicLink: () => symbolicLink });
+    return { tool, spawn, read, stat, replace: (value: string) => { bytes = Buffer.from(value); },
+      link: () => { symbolicLink = true; } };
+  };
+  it('checks every repair against the version-proved bytes without extra version processes', () => {
+    const f = fixture(); const pinned = createPinnedMatrixToolVerifier(f.tool, '2.115.0', f); const recheck = pinned.recheck;
+    for (let index = 0; index < 55; index++) recheck();
+    expect(f.read).toHaveBeenCalledTimes(57); expect(f.spawn).toHaveBeenCalledTimes(1);
+    expect(f.spawn.mock.calls[0][0]).toBe(process.execPath);
+  });
+  it('refuses changed bytes even if the caller updates its expected hash', () => {
+    const f = fixture(); const pinned = createPinnedMatrixToolVerifier(f.tool, '2.115.0', f); const recheck = pinned.recheck;
+    f.replace('unreviewed replacement'); f.tool.sha256 = digest(f.read(process.execPath));
+    expect(recheck).toThrow('matrix_tool_hash'); expect(f.spawn).toHaveBeenCalledTimes(1);
+  });
+  it('retains the original path if the caller redirects the tool object', () => {
+    const f = fixture(); const pinned = createPinnedMatrixToolVerifier(f.tool, '2.115.0', f); const recheck = pinned.recheck;
+    f.tool.executablePath += '.unreviewed'; recheck();
+    expect(pinned.executablePath).toBe(process.execPath); expect(Object.isFrozen(pinned)).toBe(true);
+    expect(f.read.mock.calls.at(-1)?.[0]).toBe(process.execPath);
+  });
+  const repairContext = () => ({ workingDirectory: process.cwd(), environment: { PGHOST: '127.0.0.1',
+    PGPORT: '27442', PGDATABASE: 'cli_matrix_' + 'a'.repeat(24), PGSSLMODE: 'disable' } });
+  const repairUrl = 'postgresql://postgres@127.0.0.1:27442/cli_matrix_' + 'a'.repeat(24) + '?sslmode=disable';
+  it('the actual repair child remains bound to the original executable after caller redirection', () => {
+    const f = fixture(); const pinned = createPinnedMatrixToolVerifier(f.tool, '2.115.0', f);
+    f.tool.executablePath += '.unreviewed'; f.tool.sha256 = 'f'.repeat(64);
+    pinned.repair(PRODUCTION_HISTORY_REPAIR_VERSIONS[0], repairUrl, repairContext());
+    expect(f.spawn.mock.calls.at(-1)?.[0]).toBe(process.execPath);
+    expect(f.spawn.mock.calls.at(-1)?.[1]).toEqual(['migration', 'repair', '--db-url', repairUrl,
+      '--status', 'applied', PRODUCTION_HISTORY_REPAIR_VERSIONS[0]]);
+  });
+  it('changed executable bytes are refused before any repair child', () => {
+    const f = fixture(); const pinned = createPinnedMatrixToolVerifier(f.tool, '2.115.0', f);
+    f.replace('replaced before repair'); f.tool.sha256 = digest(f.read(process.execPath));
+    expect(() => pinned.repair(PRODUCTION_HISTORY_REPAIR_VERSIONS[0], repairUrl, repairContext())).toThrow('matrix_tool_hash');
+    expect(f.spawn).toHaveBeenCalledTimes(1);
+  });
+  it.each([repairUrl.replace('127.0.0.1', 'unreviewed-host'), repairUrl.replace('disable', 'require')])(
+    'refuses a non-fixture repair target before any repair child', url => {
+      const f = fixture(); const pinned = createPinnedMatrixToolVerifier(f.tool, '2.115.0', f);
+      expect(() => pinned.repair(PRODUCTION_HISTORY_REPAIR_VERSIONS[0], url, repairContext())).toThrow('matrix_repair_local_target');
+      expect(f.spawn).toHaveBeenCalledTimes(1);
+    });
+  it('rejects an executable replaced with a symbolic link after version verification', () => {
+    const f = fixture(); const pinned = createPinnedMatrixToolVerifier(f.tool, '2.115.0', f); const recheck = pinned.recheck;
+    f.link(); expect(recheck).toThrow('matrix_tool_hash');
+  });
+  it('rejects mutation during the initial version child', () => {
+    const f = fixture(); f.spawn.mockImplementation(() => { f.replace('changed during version'); return { status: 0, stdout: '2.115.0\n' }; });
+    expect(() => createPinnedMatrixToolVerifier(f.tool, '2.115.0', f)).toThrow('matrix_tool_hash');
+  });
+  it('rejects the wrong version', () => {
+    const f = fixture(); f.spawn.mockReturnValue({ status: 0, stdout: 'other-version' });
+    expect(() => createPinnedMatrixToolVerifier(f.tool, '2.115.0', f)).toThrow('matrix_tool_version');
+  });
+  it('rejects non-file identities before any version child', () => {
+    const f = fixture(); expect(() => createPinnedMatrixToolVerifier(f.tool, '2.115.0', { ...f,
+      stat: () => ({ isFile: () => false, isSymbolicLink: () => false }) })).toThrow('matrix_tool_hash');
+    expect(f.spawn).not.toHaveBeenCalled();
   });
 });

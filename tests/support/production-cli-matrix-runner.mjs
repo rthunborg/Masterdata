@@ -126,33 +126,45 @@ export function buildPinnedMatrixToolEnvironment(environment = process.env) {
   return env;
 }
 
-function pinnedTool(tool, version) {
-  need(
-    tool &&
-      path.isAbsolute(tool.executablePath) &&
-      /^[a-f0-9]{64}$/u.test(tool.sha256),
-    'matrix_tool_identity'
-  );
-  need(
-    lstatSync(tool.executablePath).isFile() &&
-      !lstatSync(tool.executablePath).isSymbolicLink() &&
-      hash(readFileSync(tool.executablePath)) === tool.sha256,
-    'matrix_tool_hash'
-  );
-  const env = buildPinnedMatrixToolEnvironment();
-  const result = spawnSync(tool.executablePath, ['--version'], {
-    env,
-    encoding: 'utf8',
-    timeout: 10000,
-    maxBuffer: 1024 * 1024,
-    windowsHide: true,
-    shell: false,
+/** A version is tied to exact bytes; every later repair still checks those bytes. */
+export function createPinnedMatrixToolVerifier(tool, version, {
+  read = readFileSync, stat = lstatSync, spawn = spawnSync,
+} = {}) {
+  need(tool && path.isAbsolute(tool.executablePath) && /^[a-f0-9]{64}$/u.test(tool.sha256) &&
+    typeof version === 'string' && [read, stat, spawn].every(value => typeof value === 'function'), 'matrix_tool_identity');
+  // Capture the initial identity so caller mutation cannot redirect a later recheck.
+  const executablePath = tool.executablePath; const expectedSha256 = tool.sha256;
+  const recheck = () => {
+    const information = stat(executablePath);
+    need(information.isFile() && !information.isSymbolicLink() &&
+      hash(read(executablePath)) === expectedSha256, 'matrix_tool_hash');
+  };
+  recheck();
+  const result = spawn(executablePath, ['--version'], {
+    env: buildPinnedMatrixToolEnvironment(), encoding: 'utf8', timeout: 10000,
+    maxBuffer: 1024 * 1024, windowsHide: true, shell: false,
   });
-  need(
-    !result.error && result.status === 0 && result.stdout.trim() === version,
-    'matrix_tool_version'
-  );
+  need(!result.error && result.status === 0 && typeof result.stdout === 'string' &&
+    result.stdout.trim() === version, 'matrix_tool_version');
+  recheck();
+  const repair = (version, url, { workingDirectory, environment }) => {
+    const target = new URL(url);
+    need(PRODUCTION_HISTORY_REPAIR_VERSIONS.includes(version) && target.protocol === 'postgresql:' &&
+      target.hostname === '127.0.0.1' && target.username === 'postgres' && target.password === '' &&
+      Number(target.port) >= 1024 && Number(target.port) <= 65535 && /^\/cli_matrix_[a-f0-9]{24}$/u.test(target.pathname) &&
+      target.searchParams.size === 1 && target.searchParams.get('sslmode') === 'disable' &&
+      path.isAbsolute(workingDirectory) && environment?.PGHOST === target.hostname &&
+      environment.PGPORT === target.port && environment.PGDATABASE === target.pathname.slice(1) &&
+      environment.PGSSLMODE === 'disable', 'matrix_repair_local_target');
+    recheck();
+    return spawn(executablePath, ['migration', 'repair', '--db-url', url, '--status', 'applied', version], {
+      cwd: workingDirectory, env: environment, encoding: 'utf8', windowsHide: true,
+      shell: false, timeout: 30000, maxBuffer: 1024 * 1024,
+    });
+  };
+  return Object.freeze({ executablePath, sha256: expectedSha256, recheck, repair });
 }
+function pinnedTool(tool, version) { return createPinnedMatrixToolVerifier(tool, version); }
 
 export function assertInitialMatrixObservation(initial, expected) {
   for (const key of [
@@ -220,7 +232,7 @@ export async function runProductionCliMatrixCase({
     'matrix_guard_binding'
   );
   const source = inspectForwardSource(sourceOptions);
-  pinnedTool(cli, '2.115.0');
+  const repairCli = pinnedTool(cli, '2.115.0');
   pinnedTool(psql, 'psql (PostgreSQL) 17.11');
   need(path.isAbsolute(destination), 'matrix_destination');
   const databaseName = 'cli_matrix_' + randomBytes(12).toString('hex');
@@ -516,19 +528,8 @@ export async function runProductionCliMatrixCase({
     return { child: timed.child, output: timed.output };
   }
   function repairHistory(version) {
-    pinnedTool(cli, '2.115.0');
     const started = Date.now();
-    const result = spawnSync(cli.executablePath, [
-      'migration', 'repair', '--db-url', url, '--status', 'applied', version,
-    ], {
-      cwd: source.root,
-      env,
-      encoding: 'utf8',
-      windowsHide: true,
-      shell: false,
-      timeout: 30000,
-      maxBuffer: 1024 * 1024,
-    });
+    const result = repairCli.repair(version, url, { workingDirectory: source.root, environment: env });
     const output = (result.stdout ?? '') + (result.stderr ?? '');
     const child = result.error
       ? { kind: result.error.code === 'ETIMEDOUT' ? 'timeout' : 'error', code: null }
