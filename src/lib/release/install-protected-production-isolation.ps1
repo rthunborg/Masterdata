@@ -131,8 +131,13 @@ try {
  Require-PrivateRecord $toolchain.egressAdmissionPath $admission.egressAdmissionSha256
  Require-PrivateRecord $toolchain.managementApiCapabilityPath $admission.managementApiCapabilitySha256
  $runtimeRecord=Record $toolchain.runtimeRecordPath $toolchain.runtimeRecordSha256
- Exact $runtimeRecord 'controlAdmission,kind,probeContext,schemaVersion'
- Require ($runtimeRecord.schemaVersion -eq 1 -and $runtimeRecord.kind -ceq 'protected-production-isolation-runtime-record')
+ Exact $runtimeRecord 'ciphertextBase64,kind,protection,schemaVersion'
+ Require ($runtimeRecord.schemaVersion -is [int] -and $runtimeRecord.schemaVersion -eq 1 -and
+  $runtimeRecord.kind -ceq 'protected-production-isolation-runtime-ciphertext' -and
+  $runtimeRecord.protection -ceq 'dpapi-current-user' -and $runtimeRecord.ciphertextBase64 -is [string])
+ $runtimeCiphertext=[Convert]::FromBase64String($runtimeRecord.ciphertextBase64)
+ try{Require ($runtimeCiphertext.Length -gt 0 -and $runtimeCiphertext.Length -le 65536 -and
+  [Convert]::ToBase64String($runtimeCiphertext) -ceq $runtimeRecord.ciphertextBase64)}finally{[Array]::Clear($runtimeCiphertext,0,$runtimeCiphertext.Length)}
  $linkBytes=Read-Bounded $ApprovedProductionLinkPath 65536
  Require ((Hash-Bytes $linkBytes) -ceq $ExpectedProductionLinkSha256)
  $project=(New-Object Text.UTF8Encoding($false,$true)).GetString($linkBytes).Trim()
@@ -207,8 +212,8 @@ try {
  $plan+='internal static object ReadIsolationAdmission(){var value='+(Read-Code $ApprovedIsolationAdmissionPath $ExpectedIsolationAdmissionSha256)+';'
  foreach($pair in @(@($toolchain.tlsAdmissionPath,$admission.tlsAdmissionSha256),@($toolchain.egressAdmissionPath,$admission.egressAdmissionSha256),@($toolchain.managementApiCapabilityPath,$admission.managementApiCapabilitySha256))){$plan+=(Read-Code $pair[0] $pair[1])+';'}
  $plan+='value.Remove("schemaVersion");value.Remove("kind");return value;}'
- $plan+='internal static object ReadControlAdmission(){return '+(Read-Code $toolchain.runtimeRecordPath $toolchain.runtimeRecordSha256)+'["controlAdmission"];}'
- $plan+='internal static object ReadProbeContext(){return '+(Read-Code $toolchain.runtimeRecordPath $toolchain.runtimeRecordSha256)+'["probeContext"];}'
+ $protectedRuntimeCode='ProductionIsolationPrivateRuntime.ReadProtectedRuntimeRecord('+(Literal $toolchain.runtimeRecordPath)+',"'+$toolchain.runtimeRecordSha256+'")'
+ $plan+='internal static object ReadRuntimeRecord(){return '+$protectedRuntimeCode+';}'
  $plan+='internal static object ReadSourceOptions(){return new {commit=SourceCommit,gitExecutable='+(Literal $toolchain.git.executable)+',expectedGitSha256="'+$toolchain.git.sha256+'"};}'
  $plan+='internal static object ReadPsqlTool(){return new {psqlExecutable='+(Literal $toolchain.psql.executable)+',expectedPsqlSha256="'+$toolchain.psql.sha256+'",expectedPsqlVersion='+(Literal $toolchain.psql.version)+'};}'
  $plan+='internal static string ReadManagementApiToken(){return ProductionIsolationPrivateRuntime.ReadManagementApiToken();}internal static string ReadAnonymousKey(string project){return ProductionIsolationPrivateRuntime.ReadAnonymousKey(project);}internal static string ReadServiceRoleKey(string project){return ProductionIsolationPrivateRuntime.ReadServiceRoleKey(project);}internal static object SealIsolationPriorState(string context,string prior){return ProductionIsolationPrivateRuntime.SealIsolationPriorState(context,prior);} }}'

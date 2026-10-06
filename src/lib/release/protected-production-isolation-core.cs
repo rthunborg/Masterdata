@@ -180,10 +180,14 @@ namespace HrMasterdata.Release
             return value;
         }
 
-        static Dictionary<string, object> ValidateRuntimeRecords(JavaScriptSerializer json)
+        static Dictionary<string, object> ValidateRuntimeRecords(JavaScriptSerializer json, IDictionary<string, object> admission)
         {
+            var protectedRecord = ObjectMap(json, Installation.ReadRuntimeRecord());
+            Require(Exact(protectedRecord, "schemaVersion", "kind", "controlAdmission", "probeContext") &&
+                protectedRecord["schemaVersion"] is int && (int)protectedRecord["schemaVersion"] == 1 &&
+                StringValue(protectedRecord, "kind") == "protected-production-isolation-runtime-record");
             var value = new Dictionary<string, object>(StringComparer.Ordinal) {
-                { "controlAdmission", Installation.ReadControlAdmission() }, { "probeContext", Installation.ReadProbeContext() }, { "sourceOptions", Installation.ReadSourceOptions() }, { "psqlTool", Installation.ReadPsqlTool() },
+                { "controlAdmission", protectedRecord["controlAdmission"] }, { "probeContext", protectedRecord["probeContext"] }, { "sourceOptions", Installation.ReadSourceOptions() }, { "psqlTool", Installation.ReadPsqlTool() },
             };
             var source = ObjectMap(json, value["sourceOptions"]); Require(Exact(source, "commit", "gitExecutable", "expectedGitSha256")); Require(StringValue(source, "commit") == Installation.SourceCommit); RequireHash(StringValue(source, "expectedGitSha256")); Require(!String.IsNullOrWhiteSpace(StringValue(source, "gitExecutable")));
             RequireLeasedTool(StringValue(source, "gitExecutable"), StringValue(source, "expectedGitSha256"));
@@ -191,12 +195,14 @@ namespace HrMasterdata.Release
             RequireLeasedTool(StringValue(psql, "psqlExecutable"), StringValue(psql, "expectedPsqlSha256"));
             var controls = ObjectMap(json, value["controlAdmission"]);
             Require(Exact(controls, "schemaVersion", "kind", "sourceSha", "targetBindingSha256", "isolationPlanSha256", "operatorIpv4Cidr", "exclusionIpv4Cidr", "operatorIpv6EgressUnavailable"));
-            Require(StringValue(controls, "kind") == "production-temporary-isolation-admission" && StringValue(controls, "sourceSha") == Installation.SourceCommit && StringValue(controls, "targetBindingSha256") == Installation.TargetBindingSha256 && StringValue(controls, "isolationPlanSha256") == Installation.IsolationPlanSha256 && controls["operatorIpv6EgressUnavailable"] is bool && (bool)controls["operatorIpv6EgressUnavailable"]);
+            Require(controls["schemaVersion"] is int && (int)controls["schemaVersion"] == 1 && StringValue(controls, "kind") == "production-temporary-isolation-admission" && StringValue(controls, "sourceSha") == Installation.SourceCommit && StringValue(controls, "targetBindingSha256") == Installation.TargetBindingSha256 && StringValue(controls, "isolationPlanSha256") == Installation.IsolationPlanSha256 && controls["operatorIpv6EgressUnavailable"] is bool && (bool)controls["operatorIpv6EgressUnavailable"]);
             string ipv4 = "(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)){3}/32";
             Require(Regex.IsMatch(StringValue(controls, "operatorIpv4Cidr"), "\\A" + ipv4 + "\\z") && Regex.IsMatch(StringValue(controls, "exclusionIpv4Cidr"), "\\A" + ipv4 + "\\z") && StringValue(controls, "operatorIpv4Cidr") != StringValue(controls, "exclusionIpv4Cidr") && StringValue(controls, "exclusionIpv4Cidr") != "0.0.0.0/32");
             var probe = ObjectMap(json, value["probeContext"]);
             Require(Exact(probe, "sourceSha", "sourceTree", "sourceManifestSha256", "targetBindingSha256", "isolationPlanSha256", "databaseRoleGraphSha256", "trustedBackendProfileSha256", "priorRealtimeServiceEnabled", "priorRealtimeConfigSha256"));
             Require(StringValue(probe, "sourceSha") == Installation.SourceCommit && StringValue(probe, "targetBindingSha256") == Installation.TargetBindingSha256 && StringValue(probe, "isolationPlanSha256") == Installation.IsolationPlanSha256 && probe["priorRealtimeServiceEnabled"] is bool && (bool)probe["priorRealtimeServiceEnabled"]);
+            Require(StringValue(probe, "sourceTree") == StringValue(admission, "sourceTree") &&
+                StringValue(probe, "sourceManifestSha256") == StringValue(admission, "sourceManifestSha256"));
             RequireSha40(StringValue(probe, "sourceTree")); foreach (string key in new[] { "sourceManifestSha256", "databaseRoleGraphSha256", "trustedBackendProfileSha256", "priorRealtimeConfigSha256" }) RequireHash(StringValue(probe, key));
             return value;
         }
@@ -511,6 +517,10 @@ namespace HrMasterdata.Release
                 RequireLeasedInventoryFile(Installation.Root, Installation.InstallationFiles, Installation.NodeExecutable);
                 Require(Hash(Path.Combine(root, "src", "lib", "release", "protected-production-isolation-worker.mjs")) == Installation.WorkerSha256);
                 Require(Hash(Path.Combine(Installation.CleanSourceRoot, "src", "lib", "release", "production-isolation-live-adapter.mjs")) == Installation.LiveAdapterSha256);
+                // Decrypt only the held ciphertext record and validate its full
+                // admission binding before a child, database input or API credential.
+                var json = new JavaScriptSerializer { MaxJsonLength = MaximumBytes, RecursionLimit = 32 };
+                var admission = ValidateAdmission(json); var runtimeRecords = ValidateRuntimeRecords(json, admission);
                 job = CreateJobObject(IntPtr.Zero, null); Require(job != IntPtr.Zero); activeIsolationJob = job; var limits = new JobLimits(); limits.Basic.Flags = 0x2000; // JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
                 Require(SetInformationJobObject(job, 9, ref limits, (uint)Marshal.SizeOf(typeof(JobLimits))));
                 string windows = Directory.GetParent(Environment.SystemDirectory).FullName;
@@ -519,10 +529,6 @@ namespace HrMasterdata.Release
                 child = Process.Start(start); Require(child != null && AssignProcessToJobObject(job, child.Handle));
                 Task<bool> stderr = DrainStderrBoundedAsync(child.StandardError); var clock = Stopwatch.StartNew(); string ready = ReadBoundedLineAsync(child.StandardOutput, clock, ReadyTimeoutMilliseconds);
                 var match = Regex.Match(ready ?? "", "\\A\\{\\\"kind\\\":\\\"protected-production-isolation-ready\\\",\\\"nonce\\\":\\\"([a-f0-9]{64})\\\"\\}\\z"); Require(match.Success && Nonce.IsMatch(match.Groups[1].Value)); string nonce = match.Groups[1].Value;
-                // The fixed admission and tool/probe records are validated after their
-                // leases but before decrypting credentials or reading API-key material.
-                var json = new JavaScriptSerializer { MaxJsonLength = MaximumBytes, RecursionLimit = 32 };
-                var admission = ValidateAdmission(json); var runtimeRecords = ValidateRuntimeRecords(json);
                 inputs = ProductionInputs.Load(Installation.InputRoot); var environment = new Dictionary<string, string>(inputs.EnvironmentValues, StringComparer.Ordinal) { { "EXPECTED_SUPABASE_TARGET_BINDING_SHA256", Installation.TargetBindingSha256 } }; ValidateEnvironment(environment);
                 runtimeSecrets = LoadRuntimeSecrets(runtimeRecords, Installation.ProjectRef);
                 WriteBoundedLineAsync(child.StandardInput, json.Serialize(Sign(json, new { schemaVersion = 1, operation = "temporary-production-isolation", nonce = nonce, workspace = Installation.CleanSourceRoot, environment = environment, admission = admission, runtime = runtimeSecrets })), clock);

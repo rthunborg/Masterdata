@@ -43,6 +43,43 @@ namespace HrMasterdata.Release
             finally { if (bytes != null) Array.Clear(bytes, 0, bytes.Length); }
         }
 
+        // Only ciphertext is leased or stored. Runtime addresses are decrypted
+        // after admission/leases, before credentials, and remain in memory.
+        internal static Dictionary<string, object> ReadProtectedRuntimeRecord(string fixedPath, string expectedSha256)
+        {
+            byte[] ciphertext = null, plaintext = null;
+            byte[] entropy = Encoding.UTF8.GetBytes("hr-masterdata/production/isolation-runtime/v1");
+            try
+            {
+                var envelope = ReadFixedRecord(fixedPath, expectedSha256);
+                Require(envelope.Count == 4 && envelope.ContainsKey("schemaVersion") &&
+                    envelope["schemaVersion"] is int && (int)envelope["schemaVersion"] == 1 &&
+                    envelope.ContainsKey("kind") && (envelope["kind"] as string) == "protected-production-isolation-runtime-ciphertext" &&
+                    envelope.ContainsKey("protection") && (envelope["protection"] as string) == "dpapi-current-user" &&
+                    envelope.ContainsKey("ciphertextBase64"));
+                string encoded = envelope["ciphertextBase64"] as string;
+                Require(!String.IsNullOrEmpty(encoded));
+                ciphertext = Convert.FromBase64String(encoded);
+                Require(ciphertext.Length > 0 && ciphertext.Length <= MaximumBytes && Convert.ToBase64String(ciphertext) == encoded);
+                plaintext = ProtectedData.Unprotect(ciphertext, entropy, DataProtectionScope.CurrentUser);
+                Require(plaintext.Length > 0 && plaintext.Length <= MaximumBytes);
+                var value = Json.Deserialize<Dictionary<string, object>>(new UTF8Encoding(false, true).GetString(plaintext));
+                Require(value != null && value.Count == 4 && value.ContainsKey("schemaVersion") &&
+                    value["schemaVersion"] is int && (int)value["schemaVersion"] == 1 &&
+                    value.ContainsKey("kind") && (value["kind"] as string) == "protected-production-isolation-runtime-record" &&
+                    value.ContainsKey("controlAdmission") && value["controlAdmission"] is Dictionary<string, object> &&
+                    value.ContainsKey("probeContext") && value["probeContext"] is Dictionary<string, object>);
+                return value;
+            }
+            catch { throw new InvalidOperationException("Production isolation protected runtime record refused"); }
+            finally
+            {
+                if (ciphertext != null) Array.Clear(ciphertext, 0, ciphertext.Length);
+                if (plaintext != null) Array.Clear(plaintext, 0, plaintext.Length);
+                Array.Clear(entropy, 0, entropy.Length);
+            }
+        }
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)] struct Credential
         {
             public uint Flags, Type; public IntPtr TargetName, Comment; public long LastWritten;
