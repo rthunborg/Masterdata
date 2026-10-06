@@ -1,6 +1,9 @@
 import sharp from "sharp";
 import { expect, it } from "vitest";
 
+it("pins the loaded native Sharp runtime to the audited minimum release", () => {
+  expect(sharp.versions.sharp).toBe("0.35.5");
+});
 it("decodes, resizes and encodes an image with the patched native Sharp runtime", async () => {
   const png = await sharp({
     create: { width: 16, height: 12, channels: 4, background: { r: 20, g: 90, b: 180, alpha: 0.5 } },
