@@ -249,7 +249,7 @@
     "frozenSpecificationSha256": "6dcb94e4ef41a7ded3a91ae8eb11cb991b822d16657fbdfefe5d5b50f62924bc",
     "yamlFilesParsed": 3,
     "canonicalNextActions": 5,
-    "allCurrentCopies": 9
+    "allCurrentCopies": 10
   },
   "productionReadOnly": {
     "sourceCommit": "570e78ecaf89d01532c11c31d80602af77d3c2da",
