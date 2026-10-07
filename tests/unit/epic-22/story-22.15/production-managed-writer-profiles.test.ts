@@ -79,13 +79,43 @@ describe('exact initial managed writer profiles',()=>{
   });
 
   it('retains unknown semantics and has no execution authority after exact snapshot adoption',()=>{
-    expect(assess()).toMatchObject({executionAuthority:false,routineSemanticClassification:false,unresolvedRoutineCount:104,identityBaselineAvailable:false});
-    expect(receipt().cli.routineSnapshot).toMatchObject({classifiedRoutineCount:0,unknownCategoryCount:104,identityBaselineAvailable:false});
+    expect(assess()).toMatchObject({executionAuthority:false,routineSemanticClassification:false,unresolvedRoutineCount:106,identityBaselineAvailable:false});
+    expect(receipt().cli.routineSnapshot).toMatchObject({classifiedRoutineCount:0,unknownCategoryCount:106,identityBaselineAvailable:false});
   });
-  it.each([102,103,105])('refuses aggregate-only or changed routine count %s',count=>{const v=receipt();v.cli.objects.executeRoutineCount=count;expect(assess(v).disposition).toBe('blocked_unclassified_writer');});
+  it.each([102,103,104,105,107])('refuses aggregate-only or changed routine count %s',count=>{const v=receipt();v.cli.objects.executeRoutineCount=count;expect(assess(v).disposition).toBe('blocked_unclassified_writer');});
   it.each(['allRoutineSetSha256','allRoutineOwnerSetSha256'])('refuses same-count changed fingerprint %s',key=>{const v=receipt();v.cli.routineSnapshot[key]='0'.repeat(64);expect(assess(v).disposition).toBe('blocked_unclassified_writer');expect(productionManagedWriterProfileSha256(v)).not.toBe(productionManagedWriterProfileSha256(receipt()));});
   it.each(['profileSha256','count','securityDefiner','publicGrant','directCliGrant','schemaUsage','extensionMember','postgresGrant','otherGrant','kind','languageClass','schemaClass'])('refuses substituted category %s',key=>{const v=receipt();const c=v.cli.routineSnapshot.categories[0];c[key]=typeof c[key]==='boolean'?!c[key]:typeof c[key]==='number'?c[key]+1:'changed';expect(assess(v).disposition).toBe('blocked_unclassified_writer');});
-  it.each(['reordered','duplicate','missing','extra','zero-unknown','classified','baseline','no-snapshot','non-function'])('refuses %s snapshot',kind=>{const v=receipt();const s=v.cli.routineSnapshot;if(kind==='reordered')s.categories.reverse();if(kind==='duplicate')s.categories[1]=structuredClone(s.categories[0]);if(kind==='missing')s.categories.pop();if(kind==='extra')Object.assign(s,{admitted:true});if(kind==='zero-unknown')s.unknownCategoryCount=0;if(kind==='classified')s.classifiedRoutineCount=104;if(kind==='baseline')s.identityBaselineAvailable=true;if(kind==='no-snapshot')delete v.cli.routineSnapshot;if(kind==='non-function')s.categories[0].kind='a';expect(assess(v).disposition).toBe('blocked_unclassified_writer');});
+  it.each(['reordered','duplicate','missing','extra','zero-unknown','classified','baseline','no-snapshot','non-function'])('refuses %s snapshot',kind=>{const v=receipt();const s=v.cli.routineSnapshot;if(kind==='reordered')s.categories.reverse();if(kind==='duplicate')s.categories[1]=structuredClone(s.categories[0]);if(kind==='missing')s.categories.pop();if(kind==='extra')Object.assign(s,{admitted:true});if(kind==='zero-unknown')s.unknownCategoryCount=0;if(kind==='classified')s.classifiedRoutineCount=106;if(kind==='baseline')s.identityBaselineAvailable=true;if(kind==='no-snapshot')delete v.cli.routineSnapshot;if(kind==='non-function')s.categories[0].kind='a';expect(assess(v).disposition).toBe('blocked_unclassified_writer');});
+  it('binds the 106 proposal to two exact upstream additions and an unchanged 104 remainder',()=>{
+    const evidence=JSON.parse(readFileSync(process.cwd()+'/docs/commercial-readiness/evidence/production-realtime-routine-delta-2026-10-07.json','utf8'));
+    expect(PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT).toEqual(evidence.observedRoutineSnapshot);
+    expect(evidence.original104DefinitionsAndAclsPreserved).toBe(true);
+    expect(evidence.omissionHashCandidates).toHaveLength(2);
+    expect(evidence.omissionHashCandidates.map((c:{identitySha256:string})=>c.identitySha256)).toEqual([
+      'b1e49efb223d3fafbbfd725c6dfb3936c3eeaffe7561a14815898ac12402933a',
+      'f24e1cf59e1d5fe7160d13d3fc3dace69adafec73c12b6d2713fd15a0c657da8',
+    ]);
+    for(const candidate of evidence.omissionHashCandidates){
+      expect(candidate.remainderProfileSha256).toBe(candidate.previousProfileSha256);
+      expect(candidate.currentCount).toBe(candidate.previousCount+1);
+      expect(candidate).toMatchObject({schemaClass:'realtime',providerRealtimeOwner:true,officialUpstreamBodyMatches:true,securityDefiner:false,schemaUsage:false,directCliGrant:false,volatileRoutine:true});
+    }
+    expect(assess()).toMatchObject({executionAuthority:false,routineSemanticClassification:false,unresolvedRoutineCount:106,identityBaselineAvailable:false});
+    expect(evidence.ownerSnapshotAdoptionGranted).toBe(false);
+  });
+  it('rejects a mixed historical 104 count and new 106 fingerprint',()=>{
+    const v=receipt();v.cli.objects.executeRoutineCount=104;
+    expect(assess(v).disposition).toBe('blocked_unclassified_writer');
+    v.cli.objects.executeRoutineCount=106;v.cli.routineSnapshot.total=104;
+    expect(assess(v).disposition).toBe('blocked_unclassified_writer');
+  });
+  it.each([2,4])('rejects changed hash or grant in added-routine category %s',index=>{
+    const v=receipt();v.cli.routineSnapshot.categories[index].profileSha256='0'.repeat(64);
+    expect(assess(v).disposition).toBe('blocked_unclassified_writer');
+    v.cli.routineSnapshot=structuredClone(PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT);
+    v.cli.routineSnapshot.categories[index].directCliGrant=true;
+    expect(assess(v).disposition).toBe('blocked_unclassified_writer');
+  });
   it('binds profile content while ignoring JSON key ordering',()=>{
     const v=receipt(),before=productionManagedWriterProfileSha256(v);
     v.cli.schemas={ownedSchemaCount:0,createCount:0,usageCount:1,schemaCount:9};
