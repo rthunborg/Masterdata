@@ -209,8 +209,119 @@
       "durationSeconds": 17.46
     },
     "failed": 0,
-    "testedSource": "uncommitted implementation bytes; exact commit full verification pending",
+    "testedSource": "Implementation bytes committed as 30dba2d0d41703440bae217076b8862f607784f0; exact commit full suites below",
     "files": 4,
     "passed": 345
-  }
+  },
+  "testedImplementation": "30dba2d0d41703440bae217076b8862f607784f0",
+  "globalRemainderProof": {
+    "originalAllRoutineSetMatches": true,
+    "originalAllRoutineOwnersMatch": true,
+    "completedAtUtc": "2026-10-07T15:24:44.649Z",
+    "receiptSha256": "fd4ad3a1880ef453661acb6759423a03d2f22f8a139b31d212d87556ee5c79f4",
+    "remainingRoutineCount": 104
+  },
+  "fullVerification": {
+    "vitest": {
+      "failed": 0,
+      "reportDurationSeconds": 1590.43,
+      "passed": 4804,
+      "exitCode": 0,
+      "files": 389,
+      "skipped": 0,
+      "receiptSha256": "4a570301d3204c2b2ad3dcaf23137d5bce0a978f4743805dd2b51b777c2b9d2e",
+      "wrapperDurationMs": 1595945,
+      "logSha256": "0b444e594bd808ecfdd4849edb6641efedf241878bd05cd7a1d7fcda3c81afd5"
+    },
+    "cliMatrix": {
+      "consumptionBindingSha256": "4479d5436f9058f5bee07b7b7cc707b31844b0edc433420b9a6726a676272c92",
+      "passed": 8,
+      "hostedAccess": false,
+      "maximumStartAgeSeconds": 245,
+      "cases": 7
+    },
+    "earlierFullVitestAttempt": "Failed on expired synthetic local fixture JWTs, then guard-stop requested; incomplete run, not a passed gate. Renewed only ignored local tokens with unchanged signing secret and roles; bounded local PostgREST proof returned 200. No hosted credentials or settings changed.",
+    "playwright": {
+      "matchMode": "complete identity/status/duration multiset",
+      "reportDurationSeconds": 1034.576753,
+      "failed": 0,
+      "skipped": 47,
+      "exitCode": 0,
+      "bindingReceiptSha256": "3173f4935be2202d206ebe02386145d209cccd145e10f7a00ba3d5e44d6b6e68",
+      "logSha256": "de7a0788241546eee67ce031d76cbe4dc9d82cf55413a2194781b83a6cc8736d",
+      "passed": 163,
+      "errors": 0,
+      "individualHistoricalSkipIdentitiesMatched": true,
+      "junitSha256": "5385a3d88e8aac93e2da3324616941d7447106076d20efbfe3467f2f68853bca",
+      "wrapperDurationMs": 1045684,
+      "skippedIdentities": [
+        "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+        "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+        "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should include employee names or \"Unassigned\" in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+        "PWA Installation E2E › should cache static assets|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should display app in standalone mode when installed|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should handle service worker updates|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have apple touch icon|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have manifest.json linked in page head|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should have theme color meta tag|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should register service worker on page load|epic-12/story-12.4/pwa-installation.spec.ts",
+        "PWA Installation E2E › should show install prompt when criteria met|epic-12/story-12.4/pwa-installation.spec.ts",
+        "Prerequisites & Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+        "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+        "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+        "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13/story-13.4/export-selected-employees.spec.ts",
+        "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13/story-13.4/export-selected-employees.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+        "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13/story-13.7/export-workflow.spec.ts",
+        "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+        "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16/story-16.5/field-highlighting.spec.ts",
+        "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16/story-16.5/field-highlighting.spec.ts",
+        "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16/story-16.6/real-database-highlighting.spec.ts",
+        "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16/story-16.6/real-database-highlighting.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17/story-17.4/export-external-users.spec.ts",
+        "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20/story-20.7/export-with-filters.spec.ts",
+        "Termination & Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts"
+      ],
+      "junitOrdinalBinding": false
+    },
+    "eslint": {
+      "existingWarnings": 304,
+      "durationMs": 13861,
+      "exitCode": 0,
+      "errors": 0
+    },
+    "sourceSha": "30dba2d0d41703440bae217076b8862f607784f0",
+    "typescript": {
+      "durationMs": 4463,
+      "exitCode": 0
+    },
+    "build": {
+      "sourceUnchanged": true,
+      "durationMs": 62409,
+      "exitCode": 0
+    }
+  },
+  "finalHeadReview": "pending",
+  "finalHeadChecks": "pending after documentation synchronization"
 }
