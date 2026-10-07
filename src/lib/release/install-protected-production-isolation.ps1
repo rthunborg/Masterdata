@@ -29,9 +29,9 @@ try {
   }finally{$stream.Dispose()}
  }
  function Exact($Value,[string]$Keys){Require ($null -ne $Value -and (@($Value.PSObject.Properties.Name|Sort-Object)-join ',') -ceq $Keys)}
- function Record([string]$Path,[string]$Digest){
+ function Record([string]$Path,[string]$Digest,[int]$Maximum=65536){
   Require ($Digest -cmatch '^[a-f0-9]{64}$')
-  $bytes=Read-Bounded $Path 65536;Require ((Hash-Bytes $bytes) -ceq $Digest)
+  $bytes=Read-Bounded $Path $Maximum;Require ((Hash-Bytes $bytes) -ceq $Digest)
   return (New-Object Text.UTF8Encoding($false,$true)).GetString($bytes)|ConvertFrom-Json
  }
  function Fixed-Child([string]$Root,[string]$Relative){
@@ -93,7 +93,8 @@ try {
  foreach($tool in @($toolchain.git,$toolchain.psql)){Exact $tool 'executable,sha256,version';Require ([IO.Path]::IsPathRooted($tool.executable) -and $tool.sha256 -cmatch '^[a-f0-9]{64}$' -and $tool.version -is [string] -and $tool.version -notmatch '[\r\n"]')}
  Require ($toolchain.psql.version -cmatch '^psql \(PostgreSQL\) [0-9]')
  $sourceRoot=[IO.Path]::GetFullPath($toolchain.cleanSourceRoot)
- $runtimeLease=Record (Join-Path $packageRoot 'runtime-lease-inventory.json') $toolchain.runtimeLeaseSha256
+ # The complete public SDK inventory can exceed 64 KiB; private records retain that bound.
+ $runtimeLease=Record (Join-Path $packageRoot 'runtime-lease-inventory.json') $toolchain.runtimeLeaseSha256 262144
  Exact $runtimeLease 'dependencyPackages,files,kind,nodeExecutableSha256,packageManager,schemaVersion,sourceCommit,sourceManifestSha256,sourceTree'
  Require ($runtimeLease.schemaVersion -eq 1 -and $runtimeLease.kind -ceq 'protected-production-isolation-runtime-lease-inventory' -and
   $runtimeLease.sourceCommit -ceq $manifest.sourceCommit -and $runtimeLease.sourceTree -ceq $manifest.sourceTree -and
@@ -175,7 +176,7 @@ try {
  }
  function Write-New([string]$Name,[byte[]]$Bytes){$file=Fixed-Child $root $Name;$stream=[IO.File]::Open($file,'CreateNew','Write','None');try{$stream.Write($Bytes,0,$Bytes.Length)}finally{$stream.Dispose()};$installedFiles.Add($Name,(Hash-Bytes $Bytes))}
  Write-New 'toolchain-package.json' $manifestBytes
- Write-New 'runtime-lease-inventory.json' (Read-Bounded (Join-Path $packageRoot 'runtime-lease-inventory.json') 65536)
+ Write-New 'runtime-lease-inventory.json' (Read-Bounded (Join-Path $packageRoot 'runtime-lease-inventory.json') 262144)
  Write-New 'production-isolation-host.ps1' (Read-Bounded (Join-Path $packageRoot 'src/lib/release/production-isolation-host.ps1') 65536)
  $moduleRows=@()
  foreach($group in @(@{root=$root;files=$installedFiles},@{root=$sourceRoot;files=$sourceFiles},@{root=$sourceRoot;files=$runtimeFiles})){
