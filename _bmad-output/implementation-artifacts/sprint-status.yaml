@@ -1,5 +1,5 @@
 # generated: 2026-06-04T14:44:39+02:00
-# last_updated: 2026-10-06 — encrypted-runtime and Sharp remediation synchronization; full-suite receipts, review, and staging merge remain pending.
+# last_updated: 2026-10-08 — PR #132 independent review and current local validation; publishing, current-head checks and production admission remain pending.
 # project: hr-masterdata
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-04T14:44:39+02:00
-last_updated: '2026-10-02'
+last_updated: '2026-10-08'
 project: hr-masterdata
 project_key: NOKEY
 tracking_system: file-system
@@ -57,7 +57,7 @@ development_status:
   22-12-add-backup-failure-alerting-and-decide-staging-refresh-user-backup-scope: done
   22-13-remediate-pr-91-security-and-readiness-review-findings: done
   22-14-fix-omc-masterdata-reminder-timing-digest-and-failure-semantics: done
-  22-15-production-readiness-remediation: in-progress # Current staging is the reviewed PR #131 merge 2e2819ae9130531ebbc78c2ef3a3c76bab6b34e4; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Fresh read-only production finds exactly 106 routines: two body/identity-bound upstream Realtime additions, with omission hashes preserving all prior 104 definitions and ACLs. The proposed exact 106 metadata amendment retains unresolved semantics, zero execution authority and strict rejection of unknown changes. Tested implementation 30dba2d0d41703440bae217076b8862f607784f0 passes full Vitest 4804/4804 across 389 files with zero skips/failures, exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors, TypeScript, zero-error lint and build; final-head review/checks remain pending. Reviewed PR #131 local results remain dated historical evidence. Vercel pause target, disabled automatic domain assignment and zero active project crons are reconfirmed. Finish the amendment and reviewed staging merge, then rebuild source-bound private package/runtime records and obtain applicable exact owner snapshot/private/executable admission before fixed isolation. Prove all five planes before separately gated 48-filter cleanup, fourteen forwards, strict catalog 16/16/canonical 69/preservation, owner adoption and 55-row repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 stays in-progress, Epic 23 on-hold, production paused/no-go.
+  22-15-production-readiness-remediation: in-progress # PR #132 independent review complete across three context-free layers; findings closed at unpushed local fix 7205dc4d9eea8b398f182dcb77b850fcc1bc3547. Current full Vitest 4816/4816 across 389 files with zero skips/failures, full Playwright 163 passed/47 individually matched historical skips/zero failures or errors; TypeScript, zero-error lint, build, strict local catalog 16/16 and pause safeguards pass. Current-head publishing/checks and staging merge remain pending. No new hosted verification or execution authority; fresh owner admission and five-plane isolation still required before separately gated production writes. Story 22.15 in-progress, Epic 23 on-hold, production paused/no-go.
   epic-22-retrospective: optional
   epic-23: on-hold # Explicit owner hold; do not activate or create an Epic 23 status artifact.
   # Existing Epic 23 story placeholders remain backlog-only under the epic hold; no active planning is authorized.
@@ -556,3 +556,21 @@ current_source_map_dependency_remediation_20261006:
 # Raw global-remainder receipt unavailable: historical expected set/owner hashes are labelled expectations; independent reproduction remains blocked. Full Vitest attempt interrupted, exit 1, after 8 CLI-matrix skips without fresh admission; incomplete/non-passing evidence. Guarded Playwright gate pending. Historical passing receipts are not new gates.
 # Story 22.15 in-progress; Epic 23 on-hold; production paused/no-go. No hosted, encrypted-input/backup, merge, posting, deployment, execution-authority or reopening action authorized.
 # 2026-10-08 update: original global proof receipt and SQL located, hashes verified, copied byte-for-byte and bound by tests (100/100); artifact-availability blocker resolved. Historical database aggregates remain not locally recomputed; no fresh hosted-state claim. Full local validation pending; Story22.15 in-progress, Epic23 on-hold, production paused/no-go.
+
+pr132_independent_review_20261008:
+  tested_local_fix: 7205dc4d9eea8b398f182dcb77b850fcc1bc3547
+  independent_layers_completed: 3
+  actionable_review_findings_remaining: 0
+  full_vitest: { passed: 4816, skipped: 0, failed: 0, files: 389, exit_code: 0, report_seconds: 1684.47 }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, exit_code: 0, individually_matched_historical_skips: true, log_junit_case_matches: 210, passed_duration_matches: 163 }
+  supporting: { focused: 357, pause_safeguards: 45, strict_local_catalog: 16, typescript_exit: 0, eslint_errors: 0, build_exit: 0 }
+  historical_global_aggregates_independently_recomputed: false
+  routine_execution_authority: false
+  current_head_github_checks: pending-unpushed-local-fix
+  fresh_owner_admission_and_isolation: pending
+  source_runtime_and_migrations_changed: false
+  story_22_15: in-progress
+  epic_23: on-hold
+  production: paused-no-go
+  evidence: docs/commercial-readiness/evidence/production-realtime-independent-review-2026-10-08.json
+  limitations: Prior interrupted/failed attempts remain non-passing evidence; fresh hosted proof, production writes and reopening are not authorized by local tests.

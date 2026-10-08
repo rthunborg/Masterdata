@@ -1,8 +1,8 @@
 schema: 1
 planner_title: 'Handover and Contract Readiness Planner'
 planner_status: 'Updated'
-last_updated: '2026-10-06'
-updated_by: 'Encrypted-runtime and Sharp remediation synchronization; final full-suite receipts, review, and private production admission remain separate gates.'
+last_updated: '2026-10-08'
+updated_by: 'PR #132 independent review and current local full-suite verification; publishing/current-head checks, owner admission and production isolation remain pending.'
 
 current_focus:
   active_epic: 22
@@ -570,3 +570,21 @@ current_source_map_dependency_remediation_20261006:
 # Raw global-remainder receipt unavailable: historical expected set/owner hashes are labelled expectations; independent reproduction remains blocked. Full Vitest attempt interrupted, exit 1, after 8 CLI-matrix skips without fresh admission; incomplete/non-passing evidence. Guarded Playwright gate pending. Historical passing receipts are not new gates.
 # Story 22.15 in-progress; Epic 23 on-hold; production paused/no-go. No hosted, encrypted-input/backup, merge, posting, deployment, execution-authority or reopening action authorized.
 # 2026-10-08 update: original global proof receipt and SQL located, hashes verified, copied byte-for-byte and bound by tests (100/100); artifact-availability blocker resolved. Historical database aggregates remain not locally recomputed; no fresh hosted-state claim. Full local validation pending; Story22.15 in-progress, Epic23 on-hold, production paused/no-go.
+
+pr132_independent_review_20261008:
+  tested_local_fix: 7205dc4d9eea8b398f182dcb77b850fcc1bc3547
+  independent_layers_completed: 3
+  actionable_review_findings_remaining: 0
+  full_vitest: { passed: 4816, skipped: 0, failed: 0, files: 389, exit_code: 0, report_seconds: 1684.47 }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, exit_code: 0, individually_matched_historical_skips: true, log_junit_case_matches: 210, passed_duration_matches: 163 }
+  supporting: { focused: 357, pause_safeguards: 45, strict_local_catalog: 16, typescript_exit: 0, eslint_errors: 0, build_exit: 0 }
+  historical_global_aggregates_independently_recomputed: false
+  routine_execution_authority: false
+  current_head_github_checks: pending-unpushed-local-fix
+  fresh_owner_admission_and_isolation: pending
+  source_runtime_and_migrations_changed: false
+  story_22_15: in-progress
+  epic_23: on-hold
+  production: paused-no-go
+  evidence: docs/commercial-readiness/evidence/production-realtime-independent-review-2026-10-08.json
+  limitations: Prior interrupted/failed attempts remain non-passing evidence; fresh hosted proof, production writes and reopening are not authorized by local tests.
