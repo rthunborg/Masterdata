@@ -19,3 +19,7 @@ pnpm-workspace.yaml text eol=lf
 # Isolation packages bind native PowerShell source to raw Git bytes.
 src/lib/release/*isolation*.ps1 text eol=lf
 src/lib/release/production-isolation.md text eol=lf
+
+# Preserve original diagnostic receipt and SQL hashes across platforms.
+docs/commercial-readiness/evidence/production-realtime-global-remainder-2026-10-07.json -text
+docs/commercial-readiness/evidence/production-realtime-global-remainder-2026-10-07.sql -text

@@ -551,3 +551,8 @@ current_source_map_dependency_remediation_20261006:
   story_22_15: in-progress
   epic_23: on-hold
   evidence: docs/commercial-readiness/evidence/production-source-map-dependency-remediation-2026-10-06.json
+
+# PR #132 follow-up 2026-10-08: working-tree evidence assertions now pin upstream bodies/references and historical omission hashes/counts; 12 new mutation regressions, focused Vitest 357/357, TypeScript, changed-test ESLint and full ESLint (npx eslint . --quiet) exit 0.
+# Raw global-remainder receipt unavailable: historical expected set/owner hashes are labelled expectations; independent reproduction remains blocked. Full Vitest attempt interrupted, exit 1, after 8 CLI-matrix skips without fresh admission; incomplete/non-passing evidence. Guarded Playwright gate pending. Historical passing receipts are not new gates.
+# Story 22.15 in-progress; Epic 23 on-hold; production paused/no-go. No hosted, encrypted-input/backup, merge, posting, deployment, execution-authority or reopening action authorized.
+# 2026-10-08 update: original global proof receipt and SQL located, hashes verified, copied byte-for-byte and bound by tests (100/100); artifact-availability blocker resolved. Historical database aggregates remain not locally recomputed; no fresh hosted-state claim. Full local validation pending; Story22.15 in-progress, Epic23 on-hold, production paused/no-go.

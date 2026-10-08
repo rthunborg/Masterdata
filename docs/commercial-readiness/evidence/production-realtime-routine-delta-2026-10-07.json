@@ -214,6 +214,15 @@
     "passed": 345
   },
   "testedImplementation": "30dba2d0d41703440bae217076b8862f607784f0",
+  "independentReviewReproduction": {
+    "status": "historical-global-remainder-receipt-independently-reviewed",
+    "receiptPath": "docs/commercial-readiness/evidence/production-realtime-global-remainder-2026-10-07.json",
+    "sqlPath": "docs/commercial-readiness/evidence/production-realtime-global-remainder-2026-10-07.sql",
+    "sqlSha256": "30391b1032a26650033a4c954082ad1b5726787a0215eda9278b5e55f9bb17bc",
+    "expectedRemainingRoutineSetSha256": "4b1e52ad1ce7ddb3116e641573e90c78b321f9a4bb3f183a50f7708e75a174e8",
+    "expectedRemainingRoutineOwnerSetSha256": "780e7025c838af0631355043a4bcede1137e321f10f7bd1ea4c8739a6cefcdaf",
+    "independentlyRecomputed": false
+  },
   "globalRemainderProof": {
     "originalAllRoutineSetMatches": true,
     "originalAllRoutineOwnersMatch": true,
