@@ -83,7 +83,7 @@ function output({
     memberships: { directMembershipCount: 1, directPostgresMembershipCount: 1, otherDirectMembershipCount: 0, postgresDirectAdmin: false, postgresDirectInherit: false, postgresDirectSet: true, postgresMember: true, postgresUsage: false, postgresSet: true, postgresAdmin: false },
     currentDatabase: { connect: true, create: false, temporary: true },
     nonSystemSchemas: { schemaCount: 9, usageCount: 1, createCount: 0, ownedSchemaCount: 0 },
-    nonSystemObjects: { ownedRelationCount: 0, ownedRoutineCount: 0, ownedTypeCount: 0, insertCount: 0, updateCount: 0, deleteCount: 0, truncateCount: 0, sequenceUsageCount: 0, sequenceUpdateCount: 0, executeRoutineCount: 104 },
+    nonSystemObjects: { ownedRelationCount: 0, ownedRoutineCount: 0, ownedTypeCount: 0, insertCount: 0, updateCount: 0, deleteCount: 0, truncateCount: 0, sequenceUsageCount: 0, sequenceUpdateCount: 0, executeRoutineCount: 106 },
     activeSessionCount: 0, completeNonSecretRoleGraphSha256: 'e'.repeat(64), managedLoginProfileMd5: loginHash,
   };
   const workers = {

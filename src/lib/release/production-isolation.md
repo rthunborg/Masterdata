@@ -4,7 +4,7 @@ This component prepares the separately approved temporary production-isolation o
 
 The portable application pause and its production build/deployment safeguards remain unchanged. This operation only supplies the additional database control observations required by the existing five-plane isolation gate. Its successful output is explicitly `controlEvidenceOnly`; it is not a complete isolation receipt or release admission.
 
-The initial exact 104-routine snapshot is metadata classification only. Every routine remains semantically unresolved; `identityBaselineAvailable` is false and `executionAuthority` remains false. It neither proves isolation nor changes the later fresh-proof requirement or the administrator-equivalent `SET postgres` ingress classification.
+The proposed exact 106-routine snapshot is metadata classification only. It adds only the two body-bound upstream Realtime routines; omission hashes preserve the earlier 104. Applicable exact owner snapshot/private/executable admission remains separate. Every routine remains semantically unresolved; `identityBaselineAvailable` is false and `executionAuthority` remains false. It neither proves isolation nor changes the later fresh-proof requirement or the administrator-equivalent `SET postgres` ingress classification.
 
 ## Fixed operation and ordering
 

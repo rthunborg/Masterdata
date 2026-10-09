@@ -25,16 +25,18 @@ export const PRODUCTION_PRE_FORWARD_CLI_MEMBERSHIP = Object.freeze({
 export const PRODUCTION_PRE_FORWARD_CLI_OBJECTS = Object.freeze({
   ownedRelationCount: 0, ownedRoutineCount: 0, ownedTypeCount: 0,
   insertCount: 0, updateCount: 0, deleteCount: 0, truncateCount: 0,
-  sequenceUsageCount: 0, sequenceUpdateCount: 0, executeRoutineCount: 104,
+  sequenceUsageCount: 0, sequenceUpdateCount: 0, executeRoutineCount: 106,
 });
 
 // Historical102 was aggregate-only: no saved identity inventory explains its delta.
-// Owner-approved opaque snapshot adoption retains every routine semantically unresolved.
+// The proposed 106 snapshot adds only the two body-bound upstream Realtime routines.
+// Omission hashes preserve the prior 104; owner adoption/executable admission remain separate.
+// Every routine remains semantically unresolved for isolation.
 // The historical aggregate remains evidence only; it is not an accepted profile.
 const deepFreeze = value => {if(value&&typeof value==='object'){for(const entry of Object.values(value))deepFreeze(entry);Object.freeze(value);}return value;};
 export const PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT = deepFreeze({
   "kind": "production-cli-routine-fingerprint",
-  "total": 104,
+  "total": 106,
   "categories": [
     {
       "kind": "f",
@@ -66,14 +68,14 @@ export const PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT = deepFreeze({
     },
     {
       "kind": "f",
-      "count": 13,
+      "count": 14,
       "otherGrant": true,
       "publicGrant": true,
       "schemaClass": "non_public_non_system",
       "schemaUsage": false,
       "languageClass": "plpgsql",
       "postgresGrant": true,
-      "profileSha256": "e398232a8e468bcbcbe29b93a7fe18b6938b9e83afec73cbf3695bfedc62da35",
+      "profileSha256": "b91db9351cdf4e9b51c2376f3382aca01fefa9b050c074f7647bd7c57fd241e8",
       "directCliGrant": false,
       "extensionMember": false,
       "securityDefiner": false
@@ -94,14 +96,14 @@ export const PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT = deepFreeze({
     },
     {
       "kind": "f",
-      "count": 8,
+      "count": 9,
       "otherGrant": true,
       "publicGrant": true,
       "schemaClass": "non_public_non_system",
       "schemaUsage": false,
       "languageClass": "sql",
       "postgresGrant": true,
-      "profileSha256": "2a01df6a83dd6dc0370eba2913e42a3604a1d4e0468a6f2a841990a3d95e13ed",
+      "profileSha256": "3479a088773f2ab40ef9eddf1faa10247e1ad77562b4d587928141eec24ce597",
       "directCliGrant": false,
       "extensionMember": false,
       "securityDefiner": false
@@ -151,10 +153,10 @@ export const PRODUCTION_PRE_FORWARD_CLI_ROUTINE_SNAPSHOT = deepFreeze({
   ],
   "schemaVersion": 1,
   "cliPresentCount": 1,
-  "allRoutineSetSha256": "4b1e52ad1ce7ddb3116e641573e90c78b321f9a4bb3f183a50f7708e75a174e8",
-  "unknownCategoryCount": 104,
+  "allRoutineSetSha256": "11135940db87cb309ecda55e8e49bbaad6e83c3a3fee2b16734598270995f455",
+  "unknownCategoryCount": 106,
   "classifiedRoutineCount": 0,
-  "allRoutineOwnerSetSha256": "780e7025c838af0631355043a4bcede1137e321f10f7bd1ea4c8739a6cefcdaf",
+  "allRoutineOwnerSetSha256": "347d62a758118e8e4f1b6b0085caf31c6acd1e5089c2bc02984f1356cb788ab2",
   "identityBaselineAvailable": false
 });
 const CATEGORY_KEYS=Object.freeze(['schemaClass','languageClass','kind','securityDefiner','schemaUsage','extensionMember','publicGrant','directCliGrant','postgresGrant','otherGrant','count','profileSha256']);
@@ -247,7 +249,7 @@ export function assessProductionManagedWriterProfiles(receipt, context = {}) {
   return Object.freeze({schemaVersion:1,kind:'production-managed-writer-assessment',
     disposition:'initial_exact_routine_snapshot_classified_not_isolation',executionAuthority:false,
     privilegedCliIngress:true,providerAdministrativeTrustBoundary:true,
-    routineSemanticClassification:false,unresolvedRoutineCount:104,identityBaselineAvailable:false,
+    routineSemanticClassification:false,unresolvedRoutineCount:106,identityBaselineAvailable:false,
     workerProofScope:'current_connected_database_job_substrates_absent',
     sourceSha,sourceTree,sourceManifestSha256,targetBindingSha256,
     databaseRoleGraphSha256,capturedAtUtc:receipt.capturedAtUtc,

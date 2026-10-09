@@ -307,7 +307,7 @@ export function bindProductionPostCleanupDatabaseObservation({
       'otherUnknownBackendCount', 'correlation',
     ])) fail();
   const assessed=assessProductionManagedWriterProfiles(managedWriterObservation,{...verified,now:new Date(capturedAtUtc)});
-  if(assessed.disposition!=='initial_exact_routine_snapshot_classified_not_isolation'||assessed.executionAuthority!==false||assessed.routineSemanticClassification!==false||assessed.unresolvedRoutineCount!==104)fail();
+  if(assessed.disposition!=='initial_exact_routine_snapshot_classified_not_isolation'||assessed.executionAuthority!==false||assessed.routineSemanticClassification!==false||assessed.unresolvedRoutineCount!==106)fail();
   if (managedWriterObservation.sourceSha !== verified.sourceSha ||
     managedWriterObservation.targetBindingSha256 !== verified.targetBindingSha256 ||
     managedWriterObservation.capturedAtUtc > capturedAtUtc || unknownClientBackendCount !== 0 ||
