@@ -45,9 +45,9 @@ describe('Vercel production-pause ignore command', () => {
     }
   });
 
-  it('keeps production, incomplete markers and conflicting built-in targets closed', () => {
+  it('keeps incomplete markers and conflicting built-in targets closed', () => {
     for (const [deployment, target] of [
-      ['production', 'staging'], ['preview', 'production'],
+
       ['preview', 'development'], ['development', 'staging'],
       [undefined, 'staging'], [undefined, 'preview'], ['staging', 'staging'],
       ['preview', ''], ['preview', 'production '], ['preview', 'Production'],
@@ -59,10 +59,10 @@ describe('Vercel production-pause ignore command', () => {
     }
   });
 
-  it('ignores paused production builds but continues preview builds', () => {
-    expect(run({ VERCEL: '1', VERCEL_ENV: 'production' }).status).toBe(0);
+  it('continues authorized production and preview builds', () => {
+    expect(run({ VERCEL: '1', VERCEL_ENV: 'production' }).status).toBe(1);
     expect(run({ VERCEL: '1', VERCEL_ENV: 'preview' }).status).toBe(1);
-    expect(run({ VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_TARGET_ENV: 'production' }).status).toBe(0);
+    expect(run({ VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_TARGET_ENV: 'production' }).status).toBe(1);
   });
 
   it('fails closed by ignoring missing and ambiguous Vercel target markers', () => {
@@ -70,18 +70,18 @@ describe('Vercel production-pause ignore command', () => {
     expect(run({ VERCEL_ENV: 'preview' }).status).toBe(0);
     expect(run({ VERCEL: '0', VERCEL_ENV: 'preview' }).status).toBe(0);
     expect(run({ VERCEL: '1', VERCEL_ENV: 'production ' }).status).toBe(0);
-    expect(run({ VERCEL: '1', VERCEL_ENV: 'production', VERCEL_URL: 'untrusted' }).status).toBe(0);
+    expect(run({ VERCEL: '1', VERCEL_ENV: 'production', VERCEL_URL: 'untrusted' }).status).toBe(1);
   });
 });
 
 describe('active Next.js config production guard', () => {
-  it('rejects a direct production app build before Next.js can compile', () => {
+  it('allows the authorized production app build through the active Next config', () => {
     const result = spawnSync(process.execPath, ['--input-type=module', '--eval', "import './next.config.mjs'"], {
       cwd: process.cwd(),
       env: { PATH: process.env.PATH, VERCEL: '1', VERCEL_ENV: 'production' },
       encoding: 'utf8',
     });
-    expect(result.status).not.toBe(0);
-    expect(`${result.stdout}${result.stderr}`).toContain('Production application build refused');
+    expect(result.status).toBe(0);
+
   });
 });

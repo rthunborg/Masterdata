@@ -1,0 +1,15 @@
+.env*
+*.clixml
+.next
+node_modules
+output
+test-results
+playwright-report
+.bmad-loop
+.codex
+.agents
+_bmad
+_bmad-output
+docs
+tests
+tmp

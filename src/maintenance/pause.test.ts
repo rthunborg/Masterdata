@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -6,11 +6,29 @@ import config from './output-config.json';
 import { assertNextBuildAllowed, readPausedLock } from './production-pause-next-build-policy.mjs';
 import { buildPauseArtifact, relativePathSegments } from './build.mjs';
 
+
 const root = process.cwd();
 const source = resolve(root, 'src/maintenance');
-const output = resolve(root, 'output/production-pause-vitest');
-const defaultOutput = resolve(root, 'output/production-pause');
+const fixtureRoot = resolve(root, 'output/production-pause-source-fixture');
+const output = resolve(fixtureRoot, 'output/production-pause-vitest');
+const defaultOutput = resolve(fixtureRoot, 'output/production-pause');
 
+function buildPausedFixture(value = 'output/production-pause') {
+  mkdirSync(resolve(fixtureRoot, 'src/maintenance'), { recursive: true });
+  mkdirSync(resolve(fixtureRoot, 'src/app'), { recursive: true });
+  for (const file of ['build.mjs', 'index.html', 'pause.css', 'output-config.json']) {
+    cpSync(resolve(source, file), resolve(fixtureRoot, 'src/maintenance', file));
+  }
+  for (const file of ['globals.css', 'favicon.ico']) {
+    cpSync(resolve(root, 'src/app', file), resolve(fixtureRoot, 'src/app', file));
+  }
+  writeFileSync(resolve(fixtureRoot, 'src/maintenance/production-pause-lock.json'), JSON.stringify({ version: 1, state: 'paused', purpose: 'synthetic artifact fixture' }));
+  const result = spawnSync(process.execPath, [resolve(fixtureRoot, 'src/maintenance/build.mjs')], {
+    cwd: fixtureRoot, encoding: 'utf8', env: { ...process.env, PRODUCTION_PAUSE_OUTPUT_DIR: value },
+  });
+  if (result.status !== 0) throw new Error(result.stderr);
+  return resolve(fixtureRoot, value);
+}
 type PauseRequest = { method: string; pathname: string; filesystem?: 'hit' | 'miss' };
 
 /**
@@ -38,7 +56,7 @@ function evaluateConfiguredPauseRoute({ method, pathname, filesystem = 'miss' }:
 }
 
 afterEach(() => {
-  rmSync(output, { recursive: true, force: true });
+  rmSync(fixtureRoot, { recursive: true, force: true });
   rmSync(defaultOutput, { recursive: true, force: true });
 });
 
@@ -66,7 +84,7 @@ describe('standalone production pause', () => {
     expect(config.routes.at(-1)?.dest).toBe('/index.html');
     expect(config.routes[0].headers?.['Cache-Control']).toBe('no-store');
     const rootConfig = JSON.parse(readFileSync(resolve(root, 'vercel.json'), 'utf8'));
-    expect(rootConfig.crons).toEqual([]);
+    expect(rootConfig.crons).toEqual(JSON.parse(readFileSync(resolve(source, 'application-crons-when-reopened.json'), 'utf8')).crons);
     expect(rootConfig.ignoreCommand).toContain('vercel-production-pause-guard.mjs');
   });
 
@@ -75,7 +93,7 @@ describe('standalone production pause', () => {
     writeFileSync(resolve(output, '.vercel/output/functions/stale.func'), 'stale');
     writeFileSync(resolve(output, '.vercel/project.json'), 'stale');
 
-    expect(buildPauseArtifact('output/production-pause-vitest')).toBe(output);
+    expect(buildPausedFixture('output/production-pause-vitest')).toBe(output);
     expect(existsSync(resolve(output, '.vercel/output/functions'))).toBe(false);
     expect(existsSync(resolve(output, '.vercel/project.json'))).toBe(false);
     expect(JSON.parse(readFileSync(resolve(output, '.vercel/output/config.json'), 'utf8')).crons).toEqual([]);
@@ -86,8 +104,12 @@ describe('standalone production pause', () => {
     expect(existsSync(resolve(output, 'deployment-state.json'))).toBe(false);
   });
 
+  it('refuses a new pause artifact from the reopened application source', () => {
+    expect(() => buildPauseArtifact()).toThrow(/pause lock/i);
+  });
+
   it('builds successfully to the Windows default output directory', () => {
-    expect(buildPauseArtifact()).toBe(defaultOutput);
+    expect(buildPausedFixture()).toBe(defaultOutput);
     expect(existsSync(resolve(defaultOutput, '.vercel/output/static/index.html'))).toBe(true);
   });
 
@@ -95,7 +117,7 @@ describe('standalone production pause', () => {
     expect(relativePathSegments('Output/production-pause')).toEqual(['Output', 'production-pause']);
 
     if (process.platform !== 'win32') {
-      expect(() => buildPauseArtifact('Output/production-pause')).toThrow(/must stay in this checkout/i);
+      expect(() => buildPausedFixture('Output/production-pause')).toThrow(/must stay in this checkout/i);
     }
   });
 
@@ -112,7 +134,7 @@ describe('standalone production pause', () => {
   });
 
   it('refuses generated output outside this checkout production-pause directory', () => {
-    expect(() => buildPauseArtifact('output/not-pause')).toThrow(/must stay in this checkout/i);
+    expect(() => buildPausedFixture('output/not-pause')).toThrow(/must stay in this checkout/i);
   });
 
   it.each([
@@ -139,8 +161,8 @@ describe('standalone production pause', () => {
 });
 
 describe('production pause build policy', () => {
-  it('uses a complete committed paused lock', () => {
-    expect(readPausedLock(root).state).toBe('paused');
+  it('uses a complete committed reopening authorization', () => {
+    expect(readPausedLock(root).state).toBe('reopening-authorized');
     expect(() => readPausedLock(resolve(root, 'missing-lock-root'))).toThrow(/missing or invalid/i);
 
     const malformedRoot = resolve(root, 'output/production-pause-lock-test');
@@ -154,11 +176,11 @@ describe('production pause build policy', () => {
     }
   });
 
-  it('allows local and Vercel preview builds while rejecting production and ambiguous targets', () => {
+  it('allows authorized production and preview builds while rejecting ambiguous targets', () => {
     expect(() => assertNextBuildAllowed({})).not.toThrow();
     expect(() => assertNextBuildAllowed({ VERCEL: '1', VERCEL_ENV: 'preview' })).not.toThrow();
-    expect(() => assertNextBuildAllowed({ VERCEL: '1', VERCEL_ENV: 'production' })).toThrow(/pause is active/i);
-    expect(() => assertNextBuildAllowed({ VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_TARGET_ENV: 'production' })).toThrow(/pause is active/i);
+    expect(() => assertNextBuildAllowed({ VERCEL: '1', VERCEL_ENV: 'production' })).not.toThrow();
+    expect(() => assertNextBuildAllowed({ VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_TARGET_ENV: 'production' })).not.toThrow();
     expect(() => assertNextBuildAllowed({ VERCEL_ENV: 'preview' })).toThrow(/runtime marker/i);
     expect(() => assertNextBuildAllowed({ VERCEL: '1' })).toThrow(/target/i);
     expect(() => assertNextBuildAllowed({ VERCEL: '1', VERCEL_ENV: 'production ', CI: 'attacker-value' })).toThrow(/target/i);
@@ -172,6 +194,8 @@ describe('production pause build policy', () => {
       mkdirSync(directory, { recursive: true });
       writeFileSync(resolve(directory, 'production-pause-lock.json'), '{"version":1,"state":"reopening-authorized","purpose":"owner approval required","reopeningDecision":"explicit owner authorization recorded for this release"}');
       expect(() => assertNextBuildAllowed({ VERCEL: '1', VERCEL_ENV: 'production' }, reopeningRoot)).not.toThrow();
+      writeFileSync(resolve(directory, 'production-pause-lock.json'), JSON.stringify({ version: 1, state: 'paused', purpose: 'synthetic pause fixture' }));
+      expect(() => assertNextBuildAllowed({ VERCEL: '1', VERCEL_ENV: 'production' }, reopeningRoot)).toThrow(/pause is active/i);
     } finally {
       rmSync(reopeningRoot, { recursive: true, force: true });
     }
