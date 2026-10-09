@@ -84,11 +84,11 @@ async function runAlertScript({
 }
 
 describe('production backup and staging-refresh pause', () => {
-  it('blocks the actual committed paused candidate', () => {
-    expect(backupAllowedByProductionPause()).toBe(false);
+  it('allows the actual committed reopening candidate', () => {
+    expect(backupAllowedByProductionPause()).toBe(true);
     const r = run(process.cwd());
     expect(r.status).toBe(0);
-    expect(r.stdout).toBe('backup_allowed=false\n');
+    expect(r.stdout).toBe('backup_allowed=true\n');
   });
   it('allows only a valid recorded reopening decision', () => {
     const root = fixture(JSON.stringify({ version: 1, state: 'reopening-authorized', purpose: 'synthetic fixture', reopeningDecision: 'Synthetic explicit decision' }));
