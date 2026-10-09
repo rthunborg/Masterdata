@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
 import { afterEach, vi } from 'vitest';
 import nodeFetch from 'node-fetch';
+import { selectLocalSupabaseTestUrl } from './support/select-local-supabase-test-url';
 
 // Polyfill fetch for Node.js environment with relative URL support
 const originalFetch = nodeFetch as unknown as typeof globalThis.fetch;
@@ -23,7 +24,7 @@ globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
 }) as typeof globalThis.fetch;
 
 // Mock environment variables
-process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321';
+process.env.NEXT_PUBLIC_SUPABASE_URL = selectLocalSupabaseTestUrl(process.env);
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
 

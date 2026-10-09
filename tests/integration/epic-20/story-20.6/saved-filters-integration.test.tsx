@@ -252,6 +252,7 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
   it("saves a new filter when user clicks Save Filter button", async () => {
     const { toast } = await import("sonner");
+    const user = userEvent.setup();
     const activeFilters: FilterState[] = [
       { columnId: "col-1", type: "text", textValue: "Jane" },
     ];
@@ -262,10 +263,15 @@ describe("Story 20.6: Saved Filters Integration", () => {
     await waitFor(() => {
       expect(screen.getByText("Filtrera anställda")).toBeInTheDocument();
     });
+    // FilterPanel moves focus to its close button on mount. Wait for that
+    // initialization to finish so it cannot interrupt dialog name entry.
+    await waitFor(() => {
+      expect(screen.getByTestId("close-filter-panel")).toHaveFocus();
+    });
 
     // Click Save Filter button using test-id
     const saveButton = screen.getByTestId("save-filter-button");
-    await userEvent.click(saveButton);
+    await user.click(saveButton);
 
     // Dialog should open
     await waitFor(() => {
@@ -273,13 +279,19 @@ describe("Story 20.6: Saved Filters Integration", () => {
     });
 
     // Type filter name
-    const input = screen.getByLabelText("Filternamn");
-    await userEvent.type(input, "My Test Filter");
+    const saveFilterDialog = screen.getByRole("dialog", { name: "Spara filter" });
+    const input = within(saveFilterDialog).getByLabelText("Filternamn");
+    await user.click(input);
+    await waitFor(() => expect(input).toHaveFocus());
+    await user.type(input, "My Test Filter");
+    expect(input).toHaveValue("My Test Filter");
 
-    // Click Save in dialog (use getAllByRole and find the enabled one)
-    const saveButtons = screen.getAllByRole("button", { name: /^spara filter$/i });
-    const dialogSaveButton = saveButtons.find(btn => !btn.hasAttribute("disabled"));
-    await userEvent.click(dialogSaveButton!);
+    // Scope the confirmation to the dialog so the page-level save control
+    // cannot be selected when both controls are enabled.
+    const dialogSaveButton = within(saveFilterDialog).getByRole("button", {
+      name: /^spara filter$/i,
+    });
+    await user.click(dialogSaveButton);
 
     // Verify API was called
     await waitFor(() => {
@@ -419,10 +431,13 @@ describe("Story 20.6: Saved Filters Integration", () => {
     );
 
     // Enter a name that duplicates an existing filter
-    const input = screen.getByLabelText("Filternamn");
+    const saveFilterDialog = screen.getByRole("dialog", { name: "Spara filter" });
+    const input = within(saveFilterDialog).getByLabelText("Filternamn");
     await userEvent.type(input, "New Hires");
 
-    const saveButton = screen.getByRole("button", { name: /^spara filter$/i });
+    const saveButton = within(saveFilterDialog).getByRole("button", {
+      name: /^spara filter$/i,
+    });
     await userEvent.click(saveButton);
 
     // Client-side check fires synchronously — no async chain needed
@@ -437,6 +452,10 @@ describe("Story 20.6: Saved Filters Integration", () => {
 
     renderFilterPanel(activeFilters);
 
+    await waitFor(() => {
+      expect(screen.getByTestId("close-filter-panel")).toHaveFocus();
+    });
+
     // Click Save Filter button using test-id
     const saveButton = await screen.findByTestId("save-filter-button");
     await userEvent.click(saveButton);
@@ -447,12 +466,14 @@ describe("Story 20.6: Saved Filters Integration", () => {
     });
 
     // Save button should be disabled when input is empty
-    const saveButtons = screen.getAllByRole("button", { name: /^spara filter$/i });
-    const dialogSaveButton = saveButtons.find(btn => btn.hasAttribute("disabled"));
+    const saveFilterDialog = screen.getByRole("dialog", { name: "Spara filter" });
+    const dialogSaveButton = within(saveFilterDialog).getByRole("button", {
+      name: /^spara filter$/i,
+    });
     expect(dialogSaveButton).toBeDisabled();
 
     // Type whitespace only
-    const input = screen.getByLabelText("Filternamn");
+    const input = within(saveFilterDialog).getByLabelText("Filternamn");
     await userEvent.type(input, "   ");
 
     // Save button should still be disabled

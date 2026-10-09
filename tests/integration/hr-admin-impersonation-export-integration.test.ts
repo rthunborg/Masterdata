@@ -1,292 +1,388 @@
 /**
- * Integration Tests for HR Admin Impersonation Export Feature
- * 
- * Tests the complete flow from UI interaction to API export,
- * ensuring proper role impersonation and Excel file generation.
- * 
- * NOTE: These tests require a live Supabase instance and will be skipped
- * in CI/CD environments where Supabase credentials are not available.
+ * Live integration tests for HR Admin impersonation exports.
+ *
+ * The suite is enabled only when HR_ADMIN_EXPORT_APP_BASE_URL explicitly points
+ * to a running local Next.js application. Supabase is independently pinned to
+ * this repository's high-port local stack by the Epic 22 environment helper.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { createClient } from "@supabase/supabase-js";
+import { parse as parseEnv } from "dotenv";
+import * as ExcelJS from "exceljs";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
 import type { Database } from "@/lib/types/supabase";
+import {
+  loadEpic22SupabaseTestEnvironment,
+  resolveEpic22LocalServiceRoleKey,
+} from "../helpers/epic-22-supabase-test-environment";
+import {
+  buildLocalApplicationUrl,
+  resolveLocalApplicationBaseUrl,
+} from "../helpers/local-application-test-environment";
 
-// Test configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const REQUEST_TIMEOUT_MS = 10_000;
 
-// Skip integration tests if Supabase credentials are not available
-const skipIntegrationTests = !supabaseUrl || !supabaseServiceKey;
+function loadLocalServiceRoleKey(
+  environment: ReturnType<typeof loadEpic22SupabaseTestEnvironment>
+) {
+  const dedicatedKey = process.env.EPIC_22_LOCAL_SERVICE_ROLE_KEY?.trim();
+  const legacyKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const hasUsableInProcessKey =
+    Boolean(dedicatedKey) ||
+    Boolean(legacyKey && legacyKey !== "test-service-role-key");
+  const exampleEnvironment =
+    !environment.envFilePresent && !hasUsableInProcessKey
+      ? parseEnv(readFileSync(resolve(process.cwd(), ".env.example"), "utf8"))
+      : {};
 
-describe.skipIf(skipIntegrationTests)("HR Admin Impersonation Export Integration", () => {
-  let supabase: ReturnType<typeof createClient<Database>>;
-  let testHRAdminUserId: string;
-  let testEmployeeIds: string[] = [];
-  let testColumnIds: string[] = [];
-  let skipTests = false;
+  return resolveEpic22LocalServiceRoleKey({
+    env: process.env,
+    envFilePresent: environment.envFilePresent,
+    exampleEnvironment,
+  });
+}
 
-  beforeAll(async () => {
-    try {
-      supabase = createClient<Database>(supabaseUrl!, supabaseServiceKey!);
+type CookieCapableHeaders = Headers & {
+  getSetCookie?: () => string[];
+  raw?: () => Record<string, string[]>;
+};
 
-      // Create test HR Admin user
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-        email: "test-hr-admin-export@example.com",
-        password: "test-password-123",
-        email_confirm: true,
+function extractCookieHeader(response: Response) {
+  const headers = response.headers as CookieCapableHeaders;
+  const nativeSetCookies = headers.getSetCookie?.() ?? [];
+  const setCookies =
+    nativeSetCookies.length > 0
+      ? nativeSetCookies
+      : headers.raw?.()["set-cookie"] ?? [];
+  const cookiePairs = setCookies
+    .map((setCookie) => setCookie.split(";", 1)[0]?.trim())
+    .filter((cookie): cookie is string => Boolean(cookie));
+
+  if (cookiePairs.length === 0) {
+    throw new Error("Local application login returned no session cookies");
+  }
+
+  return cookiePairs.join("; ");
+}
+
+async function responseErrorCode(response: Response) {
+  try {
+    const payload = (await response.json()) as {
+      error?: { code?: unknown };
+    };
+    return typeof payload.error?.code === "string"
+      ? payload.error.code
+      : "unknown_error";
+  } catch {
+    return "invalid_error_response";
+  }
+}
+
+const environment = loadEpic22SupabaseTestEnvironment();
+const localServiceRoleKey = loadLocalServiceRoleKey(environment);
+const appBaseUrl = resolveLocalApplicationBaseUrl(
+  process.env.HR_ADMIN_EXPORT_APP_BASE_URL
+);
+const requireLiveEvidence =
+  process.env.REQUIRE_HR_ADMIN_EXPORT_INTEGRATION === "true";
+const environmentSkipReason = !appBaseUrl
+  ? "set HR_ADMIN_EXPORT_APP_BASE_URL to the running loopback Next.js origin"
+  : !localServiceRoleKey
+    ? "provide the local Supabase service-role key"
+    : null;
+
+if (environmentSkipReason) {
+  if (requireLiveEvidence) {
+    throw new Error(
+      `[HR Admin impersonation export] ${environmentSkipReason}. ` +
+        "REQUIRE_HR_ADMIN_EXPORT_INTEGRATION=true requires all five live tests to run."
+    );
+  }
+  console.warn(
+    `[HR Admin impersonation export] Environment skip: ${environmentSkipReason}.`
+  );
+}
+
+describe.skipIf(Boolean(environmentSkipReason))(
+  "HR Admin Impersonation Export Integration",
+  () => {
+    let supabase: ReturnType<typeof createClient<Database>> | null = null;
+    let testAuthUserId: string | null = null;
+    let testHRAdminUserId: string | null = null;
+    let testEmployeeIds: string[] = [];
+    let authCookieHeader: string | null = null;
+
+    const runId = randomUUID().replaceAll("-", "").slice(0, 16);
+    const testEmail = `hr-admin-export-${runId}@example.invalid`;
+    const testPassword = `LocalOnly-${randomUUID()}!`;
+    const employeeSsnValues = [
+      `synthetic-${runId}-1`,
+      `synthetic-${runId}-2`,
+    ];
+
+    function localAppUrl(pathname: string) {
+      return buildLocalApplicationUrl(appBaseUrl!, pathname);
+    }
+
+    async function exportEmployees(body: Record<string, unknown>) {
+      if (!authCookieHeader) {
+        throw new Error("Local application session cookie is unavailable");
+      }
+
+      return fetch(localAppUrl("/api/employees/export"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: authCookieHeader,
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
+    }
 
-      if (authError) throw authError;
+    beforeAll(async () => {
+      supabase = createClient<Database>(
+        environment.apiUrl,
+        localServiceRoleKey!,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      );
+
+      const { data: authUser, error: authError } =
+        await supabase.auth.admin.createUser({
+          email: testEmail,
+          password: testPassword,
+          email_confirm: true,
+        });
+
+      if (authError || !authUser.user) {
+        throw authError ?? new Error("Local Auth user creation returned no user");
+      }
+      testAuthUserId = authUser.user.id;
 
       const { data: appUser, error: userError } = await supabase
         .from("users")
         .insert({
-          auth_user_id: authUser.user.id,
-          email: "test-hr-admin-export@example.com",
+          auth_user_id: testAuthUserId,
+          email: testEmail,
           role: "hr_admin",
           is_active: true,
         })
-        .select()
+        .select("id")
         .single();
 
-      if (userError) throw userError;
+      if (userError || !appUser) {
+        throw userError ?? new Error("Local application user insert returned no row");
+      }
       testHRAdminUserId = appUser.id;
 
-      // Create test employees
-      const { data: employees, error: empError } = await supabase
+      const { data: employees, error: employeeError } = await supabase
         .from("employees")
         .insert([
           {
             first_name: "Export",
-            surname: "Test1",
-            ssn: "111111-1111",
-            email: "export1@test.com",
+            surname: "Synthetic1",
+            ssn: employeeSsnValues[0],
+            email: `export-1-${runId}@example.invalid`,
             hire_date: "2025-01-01",
           },
           {
             first_name: "Export",
-            surname: "Test2",
-            ssn: "222222-2222",
-            email: "export2@test.com",
+            surname: "Synthetic2",
+            ssn: employeeSsnValues[1],
+            email: `export-2-${runId}@example.invalid`,
             hire_date: "2025-01-02",
           },
         ])
-        .select();
+        .select("id");
 
-      if (empError) throw empError;
-      testEmployeeIds = employees.map((e) => e.id);
+      if (employeeError || !employees || employees.length !== 2) {
+        throw (
+          employeeError ??
+          new Error("Local employee setup did not return both inserted rows")
+        );
+      }
+      testEmployeeIds = employees.map((employee) => employee.id);
 
-      // Verify column configurations exist for test
-      const { data: columns } = await supabase
+      const { data: columns, error: columnError } = await supabase
         .from("column_config")
-        .select("id")
+        .select("db_column_name")
         .in("db_column_name", ["first_name", "ssn"]);
 
-      if (columns) {
-        testColumnIds = columns.map((c) => c.id);
+      if (columnError) throw columnError;
+      const configuredColumns = new Set(
+        (columns ?? []).map((column) => column.db_column_name)
+      );
+      if (
+        !configuredColumns.has("first_name") ||
+        !configuredColumns.has("ssn")
+      ) {
+        throw new Error(
+          "Local column configuration is missing first_name or ssn"
+        );
       }
-    } catch (error) {
-      // Mark tests as skipped if Supabase connection fails
-      console.warn("Skipping HR Admin Impersonation Export integration tests: Supabase unavailable");
-      skipTests = true;
-      // Tests will be skipped via beforeEach check
-    }
-  });
 
-  beforeEach((context) => {
-    // Skip each test if setup failed
-    if (skipTests) {
-      context.skip();
-    }
-  });
+      const loginResponse = await fetch(localAppUrl("/api/auth/login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: testEmail, password: testPassword }),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
 
-  afterAll(async () => {
-    // Skip cleanup if tests were skipped
-    if (skipTests) return;
-
-    // Cleanup test data
-    if (testEmployeeIds.length > 0) {
-      await supabase.from("employees").delete().in("id", testEmployeeIds);
-    }
-
-    if (testHRAdminUserId) {
-      const { data: user } = await supabase
-        .from("users")
-        .select("auth_user_id")
-        .eq("id", testHRAdminUserId)
-        .single();
-
-      await supabase.from("users").delete().eq("id", testHRAdminUserId);
-
-      if (user?.auth_user_id) {
-        await supabase.auth.admin.deleteUser(user.auth_user_id);
+      if (!loginResponse.ok) {
+        const code = await responseErrorCode(loginResponse);
+        throw new Error(
+          `Local application login setup failed with ${loginResponse.status} (${code})`
+        );
       }
-    }
-  });
-
-  it("should export employee data with impersonated role permissions", async () => {
-    // Sign in as HR Admin
-    const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: "test-hr-admin-export@example.com",
-      password: "test-password-123",
+      authCookieHeader = extractCookieHeader(loginResponse);
     });
 
-    expect(signInError).toBeNull();
-    expect(authData.session).toBeTruthy();
+    afterAll(async () => {
+      if (!supabase) return;
 
-    // Make export request with impersonation
-    const response = await fetch(`${supabaseUrl.replace("/v1", "")}/api/employees/export`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authData.session!.access_token}`,
-      },
-      body: JSON.stringify({
+      const cleanupErrors: Error[] = [];
+      if (testEmployeeIds.length > 0) {
+        const { error } = await supabase
+          .from("employees")
+          .delete()
+          .in("id", testEmployeeIds);
+        if (error) {
+          cleanupErrors.push(
+            new Error(`Employee cleanup failed (${error.code ?? "unknown"})`)
+          );
+        }
+      }
+
+      if (testHRAdminUserId) {
+        const { error } = await supabase
+          .from("users")
+          .delete()
+          .eq("id", testHRAdminUserId);
+        if (error) {
+          cleanupErrors.push(
+            new Error(
+              `Application-user cleanup failed (${error.code ?? "unknown"})`
+            )
+          );
+        }
+      }
+
+      if (testAuthUserId) {
+        const { error } = await supabase.auth.admin.deleteUser(testAuthUserId);
+        if (error) {
+          cleanupErrors.push(
+            new Error(`Auth-user cleanup failed (${error.code ?? "unknown"})`)
+          );
+        }
+      }
+
+      if (cleanupErrors.length > 0) {
+        throw new AggregateError(
+          cleanupErrors,
+          "HR Admin impersonation export cleanup failed"
+        );
+      }
+    });
+
+    it("exports employee data with impersonated role permissions", async () => {
+      const response = await exportEmployees({
         employeeIds: testEmployeeIds,
-        fields: ["first_name"], // Only field accessible to Sodexo in this test
+        fields: ["first_name"],
         impersonatedRole: "sodexo",
         format: "xlsx",
-      }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Content-Type")).toContain("spreadsheetml");
+      expect(response.headers.get("X-Impersonated-Role")).toBe("sodexo");
+
+      const blob = await response.blob();
+      expect(blob.size).toBeGreaterThan(0);
     });
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("Content-Type")).toContain("spreadsheetml");
-    expect(response.headers.get("X-Impersonated-Role")).toBe("sodexo");
-
-    const blob = await response.blob();
-    expect(blob.size).toBeGreaterThan(0);
-
-    // Cleanup
-    await supabase.auth.signOut();
-  });
-
-  it("should reject export of restricted fields when impersonating", async () => {
-    const { data: authData } = await supabase.auth.signInWithPassword({
-      email: "test-hr-admin-export@example.com",
-      password: "test-password-123",
-    });
-
-    // Try to export SSN while impersonating Sodexo (who doesn't have permission)
-    const response = await fetch(`${supabaseUrl.replace("/v1", "")}/api/employees/export`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authData!.session!.access_token}`,
-      },
-      body: JSON.stringify({
+    it("rejects restricted fields when impersonating", async () => {
+      const response = await exportEmployees({
         employeeIds: testEmployeeIds,
-        fields: ["first_name", "ssn"], // SSN not allowed for Sodexo
+        fields: ["first_name", "ssn"],
         impersonatedRole: "sodexo",
         format: "xlsx",
-      }),
+      });
+
+      expect(response.status).toBe(403);
+      const data = (await response.json()) as {
+        error: { code: string };
+      };
+      expect(data.error.code).toBe("PERMISSION_DENIED");
     });
 
-    expect(response.status).toBe(403);
-    const data = await response.json();
-    expect(data.error.code).toBe("PERMISSION_DENIED");
-
-    await supabase.auth.signOut();
-  });
-
-  it("should generate properly formatted Excel file", async () => {
-    const { data: authData } = await supabase.auth.signInWithPassword({
-      email: "test-hr-admin-export@example.com",
-      password: "test-password-123",
-    });
-
-    const response = await fetch(`${supabaseUrl.replace("/v1", "")}/api/employees/export`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authData!.session!.access_token}`,
-      },
-      body: JSON.stringify({
+    it("generates a properly formatted Excel file", async () => {
+      const response = await exportEmployees({
         employeeIds: testEmployeeIds,
-        fields: ["first_name", "ssn"], // HR Admin can access both
+        fields: ["first_name", "ssn"],
         format: "xlsx",
-      }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Content-Type")).toContain("spreadsheetml");
+
+      const contentDisposition = response.headers.get("Content-Disposition");
+      expect(contentDisposition).toContain(".xlsx");
+      expect(contentDisposition).toContain("attachment");
+
+      const responseBytes = new Uint8Array(await response.arrayBuffer());
+      expect(
+        Array.from(responseBytes.slice(0, 4)),
+        `Unexpected XLSX prefix: ${JSON.stringify(Array.from(responseBytes.slice(0, 20)))}`
+      ).toEqual([0x50, 0x4b, 0x03, 0x04]);
+
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(Buffer.from(responseBytes));
+      const worksheet = workbook.getWorksheet("Employees");
+      expect(worksheet).toBeDefined();
+      expect(worksheet?.getRow(1).values).toEqual([
+        undefined,
+        "First Name",
+        "SSN",
+      ]);
+      expect(worksheet?.rowCount).toBeGreaterThanOrEqual(3);
     });
 
-    expect(response.status).toBe(200);
-    
-    const contentType = response.headers.get("Content-Type");
-    expect(contentType).toContain("spreadsheetml");
-    
-    const contentDisposition = response.headers.get("Content-Disposition");
-    expect(contentDisposition).toContain(".xlsx");
-    expect(contentDisposition).toContain("attachment");
-
-    const blob = await response.blob();
-    
-    // Verify Excel file has valid size (not empty)
-    expect(blob.size).toBeGreaterThan(100); // Excel files have minimum size
-
-    // Verify MIME type
-    expect(blob.type).toContain("spreadsheet");
-
-    await supabase.auth.signOut();
-  });
-
-  it("should maintain column order in exported Excel file", async () => {
-    const { data: authData } = await supabase.auth.signInWithPassword({
-      email: "test-hr-admin-export@example.com",
-      password: "test-password-123",
-    });
-
-    // Request fields in specific order
-    const orderedFields = ["ssn", "first_name"]; // Reverse alphabetical order
-
-    const response = await fetch(`${supabaseUrl.replace("/v1", "")}/api/employees/export`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authData!.session!.access_token}`,
-      },
-      body: JSON.stringify({
+    it("accepts fields in the requested column order", async () => {
+      const response = await exportEmployees({
         employeeIds: testEmployeeIds,
-        fields: orderedFields,
+        fields: ["ssn", "first_name"],
         format: "xlsx",
-      }),
+      });
+
+      expect(response.status).toBe(200);
+      const blob = await response.blob();
+      expect(blob.size).toBeGreaterThan(0);
     });
 
-    expect(response.status).toBe(200);
-
-    // Note: Full Excel parsing would require additional libraries
-    // This test verifies the export succeeds with ordered fields
-    const blob = await response.blob();
-    expect(blob.size).toBeGreaterThan(0);
-
-    await supabase.auth.signOut();
-  });
-
-  it("should include metadata in response headers", async () => {
-    const { data: authData } = await supabase.auth.signInWithPassword({
-      email: "test-hr-admin-export@example.com",
-      password: "test-password-123",
-    });
-
-    const response = await fetch(`${supabaseUrl.replace("/v1", "")}/api/employees/export`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authData!.session!.access_token}`,
-      },
-      body: JSON.stringify({
+    it("includes export metadata in response headers", async () => {
+      const response = await exportEmployees({
         employeeIds: testEmployeeIds,
         fields: ["first_name"],
         impersonatedRole: "omc",
         format: "xlsx",
-      }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("X-Impersonated-Role")).toBe("omc");
+      expect(response.headers.get("X-Employees-Exported")).toBe(
+        testEmployeeIds.length.toString()
+      );
+      expect(response.headers.get("X-Timestamp")).toBeTruthy();
     });
-
-    expect(response.status).toBe(200);
-    
-    // Verify metadata headers
-    expect(response.headers.get("X-Impersonated-Role")).toBe("omc");
-    expect(response.headers.get("X-Employees-Exported")).toBe(testEmployeeIds.length.toString());
-    expect(response.headers.get("X-Timestamp")).toBeTruthy();
-
-    await supabase.auth.signOut();
-  });
-});
+  }
+);

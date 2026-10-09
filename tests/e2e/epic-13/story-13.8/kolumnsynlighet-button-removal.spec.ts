@@ -1,18 +1,82 @@
+import { waitForEmployeeDashboard } from '../../helpers/e2e-helpers';
 import { test, expect } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
+import { randomInt, randomUUID } from 'node:crypto';
+import { assertSafeE2EDatabase } from '../../helpers/seed-data';
+
+function createFixtureClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceRoleKey) {
+    throw new Error('Story 13.8 requires the guarded local E2E Supabase configuration.');
+  }
+
+  assertSafeE2EDatabase();
+  return createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+function isUnsupportedLocalRealtimeFixtureError(message: string) {
+  const match = /^WebSocket connection to '([^']+)' failed: Error during WebSocket handshake: Unexpected response code: 404$/u.exec(message);
+  const fixtureUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!match || !fixtureUrl) return false;
+  try {
+    const socket = new URL(match[1]);
+    const fixture = new URL(fixtureUrl);
+    return socket.protocol === 'ws:' && socket.host === fixture.host &&
+      socket.pathname === '/realtime/v1/websocket' &&
+      ['localhost', '127.0.0.1'].includes(fixture.hostname);
+  } catch {
+    return false;
+  }
+}
 
 test.describe('Kolumnsynlighet Button Removal', () => {
+  let fixtureEmployeeId: string | undefined;
+
   test.beforeEach(async ({ page }) => {
-    // Mock authentication
+    fixtureEmployeeId = randomUUID();
+    const fixtureSsn = `19991231${randomInt(1000, 10000)}`;
+    const { error } = await createFixtureClient().from('employees').insert({
+      id: fixtureEmployeeId,
+      first_name: 'ColumnVisibility',
+      surname: 'E2EFixture',
+      ssn: fixtureSsn,
+      email: `column-visibility-${fixtureEmployeeId}@example.test`,
+      rank: 'SEV',
+      gender: 'Man',
+      hire_date: '2025-01-01',
+    });
+
+    if (error) {
+      throw new Error(`Failed to create the Story 13.8 employee fixture: ${error.message}`);
+    }
+
     await page.goto('/dashboard');
-    
-    // Wait for page to load
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
+  });
+
+  test.afterEach(async () => {
+    if (!fixtureEmployeeId) return;
+
+    const { error } = await createFixtureClient()
+      .from('employees')
+      .delete()
+      .eq('id', fixtureEmployeeId);
+
+    fixtureEmployeeId = undefined;
+
+    if (error) {
+      throw new Error(`Failed to delete the Story 13.8 employee fixture: ${error.message}`);
+    }
   });
 
   test('should not display Kolumnsynlighet button in dashboard', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     // Verify the button with "Kolumnsynlighet" text is not present
     const kolumnsynlighetButton = page.getByRole('button', { name: /kolumnsynlighet/i });
@@ -26,7 +90,7 @@ test.describe('Kolumnsynlighet Button Removal', () => {
   test('should render dashboard correctly without the button', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     // Dashboard should still render - check for table or employee list
     const table = page.locator('table');
@@ -36,7 +100,7 @@ test.describe('Kolumnsynlighet Button Removal', () => {
   test('should not have broken UI elements after button removal', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     // Check for console errors
     const errors: string[] = [];
@@ -49,22 +113,20 @@ test.describe('Kolumnsynlighet Button Removal', () => {
     // Wait a bit for any errors to appear
     await page.waitForTimeout(1000);
 
-    // Filter out errors related to the removed button
+    // The synthetic loopback fixture has no Realtime service. Keep all other
+    // console errors, including any concerning the removed button, actionable.
     const relevantErrors = errors.filter(
       (error) => 
-        !error.includes('Kolumnsynlighet') && 
-        !error.includes('columnVisibility') &&
-        !error.includes('Failed to load resource') // Ignore network errors
+        !isUnsupportedLocalRealtimeFixtureError(error)
     );
 
-    // Should not have errors related to the removed button
-    expect(relevantErrors.length).toBe(0);
+    expect(relevantErrors).toHaveLength(0);
   });
 
   test('should maintain dashboard functionality without the button', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
+    await waitForEmployeeDashboard(page);
 
     // Verify other dashboard elements still work
     // Check if table is visible and functional

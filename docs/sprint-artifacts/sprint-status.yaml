@@ -1,0 +1,590 @@
+schema: 1
+planner_title: 'Handover and Contract Readiness Planner'
+planner_status: 'Updated'
+last_updated: '2026-10-08'
+updated_by: 'PR #132 independent review and current local full-suite verification; publishing/current-head checks, owner admission and production isolation remain pending.'
+
+current_focus:
+  active_epic: 22
+  active_epic_status_file: 'docs/sprint-artifacts/epic-22-sprint-status.yaml'
+  active_epic_title: 'External Presentation & Handover Readiness'
+  positioning: 'Working pilot candidate, not enterprise-ready production software.'
+  required_before_serious_external_presentation:
+    - '22.1'
+    - '22.2'
+    - '22.3'
+    - '22.4'
+    - '22.5'
+
+future_focus:
+  future_epic: 23
+  future_epic_status_file: null # Not created while Epic 23 is explicitly on hold.
+  future_epic_title: 'Contract & Enterprise Readiness'
+  status: 'on-hold'
+  trigger: 'Do not start or plan into active development without a later explicit owner decision after the commercial trigger.'
+
+epics:
+  - epic: 21
+    title: 'Crewing Staffing Needs Tracker'
+    status: 'complete'
+    status_file: 'docs/sprint-artifacts/epic-21-sprint-status.yaml'
+  - epic: 22
+    title: 'External Presentation & Handover Readiness'
+    status: 'in-progress'
+    priority: 'P0/P1'
+    total_stories: 15
+    total_story_points: 53
+    status_file: 'docs/sprint-artifacts/epic-22-sprint-status.yaml'
+  - epic: 23
+    title: 'Contract & Enterprise Readiness'
+    status: 'on-hold'
+    priority: 'P2'
+    total_stories: 9
+    total_story_points: 45
+    status_file: null # Intentionally absent; do not create while on hold.
+
+next_actions:
+  - 'Current staging is the reviewed PR #131 merge 2e2819ae9130531ebbc78c2ef3a3c76bab6b34e4; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Fresh read-only production finds exactly 106 routines: two body/identity-bound upstream Realtime additions, with omission hashes preserving all prior 104 definitions and ACLs. The proposed exact 106 metadata amendment retains unresolved semantics, zero execution authority and strict rejection of unknown changes. Tested implementation 30dba2d0d41703440bae217076b8862f607784f0 passes full Vitest 4804/4804 across 389 files with zero skips/failures, exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors, TypeScript, zero-error lint and build; final-head review/checks remain pending. Reviewed PR #131 local results remain dated historical evidence. Vercel pause target, disabled automatic domain assignment and zero active project crons are reconfirmed. Finish the amendment and reviewed staging merge, then rebuild source-bound private package/runtime records and obtain applicable exact owner snapshot/private/executable admission before fixed isolation. Prove all five planes before separately gated 48-filter cleanup, fourteen forwards, strict catalog 16/16/canonical 69/preservation, owner adoption and 55-row repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 stays in-progress, Epic 23 on-hold, production paused/no-go.'
+  - 'Historical local candidate `eff0bd4e5bbcdf3e7217efd0b1b068cee2d86913` passed focused 222/222, fixture prerequisite 12/12, exact full Vitest 4544/4544 across 372 files with zero skips/failures, clean69 strict catalog 16/16, TypeScript, zero-error lint, build, portable pause verification, and exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors. The prior e50 full-Vitest failure is retained as non-admitting historical evidence: expired local fixture JWTs plus synthetic 13-count and fixture-history assumptions were corrected. PR #123 subsequently passed Reviewbot and all three checks, merged with an exact reviewed tree, and staging post-proof completed 69/69 with no pending migration. Production stays paused/no-go; Story22.15 in-progress; Epic23 on-hold. Full production isolation, filter cleanup, signed repair proof, main, deployment and reopening remain separate gates.'
+  - 'Story 22.1 is done; after the final Epic 22 PR is merged/deployed, recheck unauthenticated deployed-app diagnostic status codes for removed diagnostic endpoints as a release/readiness gate.'
+  - 'Story 22.4 is done; standing production-data presentation controls are documented.'
+  - 'Story 22.5 is done; use docs/commercial-readiness/17_blocker_remediation_tracker.md and docs/commercial-readiness/18_one_page_presentation_brief.md for controlled working-pilot positioning.'
+  - 'Story 22.6 is done after resolving all review patch findings and passing focused/full gates.'
+  - 'Story 22.7 is done; all review patch findings are resolved, 40 focused role/export/RLS evidence tests are complete, and full gates are passing.'
+  - 'Story 22.8 is done (2026-06-12): Supabase security evidence package, advisor/migration-history capture (access restored; remote migration history verified empty), SSL/network/PITR risk acceptances (owner: Rasmus Thunborg, review 2026-09-30), and a verified full restore drill into the local non-production stack are documented. New risks R-023 (hosted RLS policy drift) and confirmed R-010 are registered. Code review Round 1 closed with all 22 patch findings fixed and 2 decisions resolved; 1 pre-existing finding deferred to Story 22.10.'
+  - 'Story 22.9 is done (code review Round 1 closed 2026-06-13): the draft privacy pack exists as docs/commercial-readiness/23_privacy_annex_draft.md, 24_subprocessor_register.md, and 25_incident_breach_process.md — all marked as draft diligence material needing legal review, linked from 00_index, 14_evidence_index, and 17_blocker_remediation_tracker (E-009), and linked back to the Story 22.4 data-scope decision and Story 22.8 Supabase evidence package. Code review fixed 3 wording/marker patches (evidence-index SMTP row, Cloudflare marker, Gmail send-delay) and deferred 1 pre-existing item (operator name in owner fields). Docs-only gate waiver recorded (estimated_tests 0; hygiene search passed).'
+  - 'Stories 22.10-22.12 were added on 2026-06-11 for Story 22.8 follow-ups; Story 22.13 was added on 2026-07-09 for PR #91 remediation; Story 22.14 was added on 2026-08-29 for the ÖMC reminder incident; Story 22.15 was added on 2026-08-31 for production-readiness remediation. Epic 22 is now 15 stories / 53 estimated points (Story 22.15 is an unpointed remediation chore).'
+  - 'Story 22.10 is done. Phase A staging reconciliation remains dated 2026-06-14 (57 migrations / 19 policies); Story 22.13 resolved the historical local Playwright contradiction on 2026-07-09 with exact full npx playwright test: 162 passed / 53 skipped / 0 failed, EXIT:0. Phase B production cutover (runbook 27; R-010/R-023/R-020) remains the Epic 22 release gate.'
+  - 'Story 22.13 is done after final automatic review Round 3 of 3. All three external custom-field/realtime findings on PR #91 commit 32621fd are patched and covered by six regressions; clean reset, focused/compatibility, full Vitest, full Playwright, typecheck, and lint gates passed. Any further PR findings require human triage.'
+  - 'Story 22.14 is done after all three guarded review rounds and every required gate passed: focused reminder 129/129, required real PostgREST 1/1, full Vitest 3181 passed / 64 skipped, exact full Playwright 163 passed / 47 skipped, TypeScript, zero-error scoped ESLint, and diff checks. All 117 unique Story 22.14 tests are evidenced passing without recounting pre-existing Story 22.11 cases. Any further review finding requires human triage. No production, schema, real-recipient cron, deployment, main, or unrelated-file changes occurred. Epic 22 remains in progress for its separate production release gate.'
+  - 'Current staging is the reviewed PR #131 merge 2e2819ae9130531ebbc78c2ef3a3c76bab6b34e4; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Fresh read-only production finds exactly 106 routines: two body/identity-bound upstream Realtime additions, with omission hashes preserving all prior 104 definitions and ACLs. The proposed exact 106 metadata amendment retains unresolved semantics, zero execution authority and strict rejection of unknown changes. Tested implementation 30dba2d0d41703440bae217076b8862f607784f0 passes full Vitest 4804/4804 across 389 files with zero skips/failures, exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors, TypeScript, zero-error lint and build; final-head review/checks remain pending. Reviewed PR #131 local results remain dated historical evidence. Vercel pause target, disabled automatic domain assignment and zero active project crons are reconfirmed. Finish the amendment and reviewed staging merge, then rebuild source-bound private package/runtime records and obtain applicable exact owner snapshot/private/executable admission before fixed isolation. Prove all five planes before separately gated 48-filter cleanup, fourteen forwards, strict catalog 16/16/canonical 69/preservation, owner adoption and 55-row repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 stays in-progress, Epic 23 on-hold, production paused/no-go.'
+  - 'EPIC 22 COMPLETION GATE (E-010/E-013): Last hosted staging proof is the PR #123 v69/69 result with no pending or remote-only version and all six post phases passed, including strict catalog 16/16. Preserve the production pause and keep production, main and reopening gates separate. Historical v67 fixture/RPC acceptance passed 21/21. Production inventory, ledger, backup freshness, isolation/settings/history-repair and deployment gates remain.'
+  - 'Epic 23 is explicitly on hold. Its status file has not been created, and no Epic 23 work may be started or planned into active development without a later explicit owner decision.'
+
+notes:
+  - 'The prior sprint-status.yaml content referenced older Epic 9/13/14/18 work and was stale for current readiness planning.'
+  - 'Epic 22 handles readiness before external presentation or handover/sale discussion.'
+  - 'Epic 23 is explicitly on hold; the previously referenced status file does not exist and must not be created by this remediation.'
+  - 'Story 22.1 is done as of 2026-06-10: diagnostic route handlers are removed, focused Story 22.1 Vitest, full Vitest, full Playwright, ESLint, and type-check all exit 0. Deployed-app diagnostic verification moved to a post-merge Epic 22 release/readiness gate: after final deployment, removed diagnostic endpoints must return a non-success auth/not-found status before P0 external-presentation readiness is claimed.'
+  - 'Story 22.2 is done. Non-production Supabase guard, docs, and .env.test cleanup are applied. Lead verification passes: npx vitest run EXIT:0 and exact npx playwright test EXIT:0; the prior blocker was a 20-minute tool timeout shorter than the full serial E2E suite runtime.'
+  - 'Story 22.3 dependency remediation is historically done after code review; the historical 2026-09-09 Story 22.15 production audit found 0 critical/3 high/3 moderate. The 2026-09-10 patch returns to 0 critical/high and one accepted UUID moderate. Review patches resolved readiness-doc consistency, dev-only advisory coverage, evidence assertions, migration normalization, and E2E row visibility. Full gates pass: npx vitest run, npx eslint, npx tsc --noEmit, and exact npx playwright test all exit 0.'
+  - 'Story 22.4 is done. Standing production-data presentation controls, role/account preconditions, restricted data/view rules, and Story 22.2 non-production path boundaries are documented; targeted docs-only quality search passed.'
+  - 'Story 22.5 is done. The blocker tracker and one-page readiness brief are linked from readiness and sprint surfaces; code-review patches resolved stale diagnostic endpoint evidence and tightened Story 22.1 gate wording so disclosure alone is not treated as closure. Docs-only automated Vitest/Playwright gate was waived per estimated_tests 0 after targeted private/secret-bearing content search passed.'
+  - 'Story 22.6 is done. All eleven review patch findings are resolved: evidence/status artifacts and linked readiness documents are durably tracked, PE3 cron service-role usage is corrected, matrix parsing checks exact columns plus stale/typed/re-export rows, middleware applies the non-production Supabase guard before client creation, column_config metadata is represented, the employee_column_changes repair migration is hardened, and the evidence index gate note is current. Focused Story 22.6 matrix Vitest, focused Story 22.2 guard Vitest, npx vitest run, npx playwright test, npx eslint, and npx tsc --noEmit all exit 0. Epic 23 is explicitly on hold and must not be started from BMAD backlog auto-discovery.'
+  - 'Story 22.7 is done as of 2026-06-10. All nine review patch findings are resolved and one pre-existing risk is deferred. Automated evidence now covers role visibility/editability, external API/export field isolation, custom export fields, export Zod validation, local Supabase RLS checks, hermetic staffing seed data, and evidence-package links. Focused Story 22.7 Vitest, Story 13.7 export error handling, targeted E2E hardening, targeted FilterPanel Vitest, full Vitest, full Playwright, ESLint, and type-check all exit 0; targeted evidence hygiene search passes with no matches. Story 22.1 is done; do not overclaim P0 external-presentation readiness until the post-merge deployed-app diagnostic checks pass.'
+  - 'Story 22.14 supersedes completed Story 14.1 only for ÖMC reminder policy: the prior unbounded date >= D+3 catch-up is replaced by the bounded, weekend-adjusted retry window. Story 14.1 itself remains historical and unchanged.'
+  - 'Story 22.14 verification is complete: the required local PostgREST evidence and safe unauthorized cron E2E passed, all 117 unique story tests are evidenced passing, and the exact full Playwright suite passed with delivery and authorized cron execution disabled.'
+
+pr_95_playwright_gate:
+  date: 2026-09-09
+  tested_commit: '3b75d5e78829426edfddce3207d4c16fb767aff1'
+  command: 'npx playwright test'
+  result: '163 passed / 47 skipped / 0 failed / 0 errors'
+  exit_code: 0
+  report_duration_seconds: 1049.606579
+  cleanup_verified: true
+  hosted_supabase_action_occurred: false
+  story_status: 'in-progress'
+  epic_23_status: 'on-hold'
+  evidence: 'docs/commercial-readiness/evidence/production-readiness-pr95-playwright-2026-09-09.md'
+  next_action: 'Current staging is the reviewed PR #131 merge 2e2819ae9130531ebbc78c2ef3a3c76bab6b34e4; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Fresh read-only production finds exactly 106 routines: two body/identity-bound upstream Realtime additions, with omission hashes preserving all prior 104 definitions and ACLs. The proposed exact 106 metadata amendment retains unresolved semantics, zero execution authority and strict rejection of unknown changes. Tested implementation 30dba2d0d41703440bae217076b8862f607784f0 passes full Vitest 4804/4804 across 389 files with zero skips/failures, exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors, TypeScript, zero-error lint and build; final-head review/checks remain pending. Reviewed PR #131 local results remain dated historical evidence. Vercel pause target, disabled automatic domain assignment and zero active project crons are reconfirmed. Finish the amendment and reviewed staging merge, then rebuild source-bound private package/runtime records and obtain applicable exact owner snapshot/private/executable admission before fixed isolation. Prove all five planes before separately gated 48-filter cleanup, fourteen forwards, strict catalog 16/16/canonical 69/preservation, owner adoption and 55-row repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 stays in-progress, Epic 23 on-hold, production paused/no-go.'
+
+reconciliation_pause_candidate:
+  previous_implementation_sha: '5f60e58c9aa9a7e117bc589ec82d0b99a5846839'
+  previous_playwright_sha: '2ea1077aec62729303116bb85c49b4c44e98639f'
+  local_verification: 'Final local evidence is retained in dated evidence. PR #100 staging v67 is applied and verified at 67/67; the immutable manifest still records its one-version staging execute plan, which must not be replayed. Hosted fixture/RPC acceptance passed 21/21 on 2026-09-12 in 23.4699465s, exit 0, with zero failures or skips. Independent new connections proved fixtures absent, staffing and aggregates restored, and final catalog 16/16. Owner staging verification was open at that dated checkpoint and completed on 2026-09-24.'
+  evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-and-pause-2026-09-09.md'
+
+custom_preview_correction:
+  focused_result: '50 passed, including blank-approval rejection; zero failures/skips; TypeScript and zero-error lint pass; named staging preview build passes.'
+  full_local_gate: 'Fresh full local gates passed on c27a9ee7543b681fb9424484ee3caf7b402a33c7: Vitest 3,442 passed with zero skips; Playwright 163 passed / 47 individually classified skips / zero failures or errors; both exact commands exited 0. Named staging preview build, TypeScript and zero-error lint passed. Exact timings and report integrity are recorded in the dated preparation evidence. Fresh checks of the result-only documentation head remain open.'
+  dependency_audit: 'Patched: 0 critical, 0 high, 1 accepted moderate (uuid 8.3.2); pnpm audit exits 1 solely for the existing time-bounded acceptance through 2026-09-30.'
+
+historical_post_apply_staging_execution:
+  captured_at: '2026-09-10T15:14:50.232Z'
+  candidate_commit: '62a52e32aae8302d6c6be4b35ec39da298c5061c'
+  history_count: 66
+  pending_versions: []
+  post_apply_catalog_checks_passed: 15
+  evidence: 'docs/commercial-readiness/evidence/staging-reconciliation-completed-2026-09-10.md'
+  remaining: 'This is historical v67 evidence: no history repair, strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors of 0 security WARN-or-higher and three classified performance WARN, plus the completed 21/21 fixture/RPC acceptance. Current staging is 69/69 after PR #123 and its one authorized forward apply, with no pending/remote-only version and all six post phases passing. Owner staging verification completed on 2026-09-24; production gates remain open; production stays paused, Story 22.15 remains in-progress, and Epic 23 remains on-hold.'
+
+trigger_reconciliation_preparation:
+  diagnosis_captured_at: '2026-09-10T18:50:27.989Z'
+  diagnosis_commit: 'fb8580920f4237b41272a2e263b2147a54c61b31'
+  historical_staging_baseline_history_count: 66
+  proposed_repository_history_count: 67
+  proposed_version: '20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'
+  staging_repair_versions: []
+  staging_pending_execute_versions: [] # Historical v67 snapshot; the reviewed manifest plan remains recorded below and must not be replayed.
+  manifest_staging_execute_versions: ['20260910184841_reconcile_column_config_timestamp_and_audit_trigger.sql'] # Immutable reviewed plan, recorded applied above; never replay.
+  pre_apply_phase: 'staging_trigger_reconciliation_pre_apply'
+  post_apply_catalog_checks_expected: 16
+  tested_implementation_commit: '12e526ff36922a1ff41277bc7cb1ef2f81a2321d' # Historical v67 local implementation evidence; b4bbdb2 remains historical.
+  new_head_verification: "Historical v67 record: PR #100 merged as ad9650ccfc8be412447a03847cc7ddfb372f8666 and its authorized execute completed at 67/67 with strict catalog 16/16, preserved audit/aggregate/four-permission-hash baseline, scoped advisors, and 21/21 fixture/RPC acceptance. Current staging is 69/69 after PR #123 and its one authorized forward apply, with no pending/remote-only version and all six post phases passing. Owner staging verification completed on 2026-09-24; production gates remain open; production pause active; Story 22.15 in-progress; Epic 23 on-hold."
+  evidence: 'docs/commercial-readiness/evidence/trigger-reconciliation-preparation-2026-09-10.md'
+  status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
+
+historical_canonical_trigger_acl_prerequisite_preparation:
+  date: 2026-09-15
+  generated_version: '20260915164637_reconcile_canonical_trigger_acl_prerequisite.sql'
+  assigned_version: '20260910184840_reconcile_canonical_trigger_acl_prerequisite.sql'
+  repository_migration_count: 68
+  historical_staging_history: '68/68; no pending or remote-only version; all five post-apply phases passed, including strict catalog 16/16'
+  staging_pending_execute_versions: []
+  staging_required_command_shape: 'db push --reviewed-target --reviewed-environment staging --dry-run --include-all --skip-vault, then the same command without --dry-run'
+  production_plan: '55 repair candidates plus 13 execute candidates; 20260314000001 is execute-only before 20260314000002 because the observed staffing RPC is invoker rather than the immutable definer effect'
+  implementation_commit: '5ec0228ea8605b411d25f2d00911dcf7b62b5b10'
+  migration_sql_sha256: 'fd4b331e61e830421516b99cac9eedb0ac55184ce4ae4216e58137012737723a'
+  local_verification: 'Full Vitest 3,480/3,480 across 322 files, zero skips/failures, exit 0 (69.28s report / 72.617s wall); focused 89/89 (5.59s); saved-filter plus active-authorization 31/31; live export plus required PostgREST 6/6; TypeScript exit 0; lint 0 errors/296 warnings; clean 68+seed and preserved 66->68 fixtures each strict 16/16 on the working tree subsequently committed.'
+  verification: 'Historical PR #102 checkpoint: final review/checks, merge, six fresh pre-proofs, exact one-file dry run, and authorized v68 apply were complete at 68/68 with all five post-apply phases passing. Current staging is recorded separately as PR #123 v69/69; remaining gates are production gates.'
+  evidence: 'docs/commercial-readiness/evidence/canonical-trigger-acl-prerequisite-2026-09-15.md'
+  status: 'Story 22.15 in-progress; Epic 23 on-hold; production pause active.'
+
+forward_subset_preparation_20260919:
+  status: in-progress
+  executable: false
+  approval_attested: false
+  source_staging: 7cbbb11e7f5038a14519d89f2de524e6463dbf98
+  evidence: docs/commercial-readiness/evidence/forward-subset-preparation-2026-09-19.md
+  tested_implementation: 01abdf707071cd3b884f7e207aaf343e5eac86d9
+  full_vitest: "3519 passed; zero skipped/failed; exit 0; 114.27 seconds"
+  full_playwright: "163 passed; 47 classified skips; zero failures/errors; exit 0; 1005.438 seconds runner"
+  final_local_and_remote_gates: "Historical component gates and final-head review passed; PR #107 merged as aac11ff8527e5c6696f4cee7089ae86a7cbc87f2"
+  production: paused
+  epic_23: on-hold
+
+post_quiescence_proof_20260921:
+  staging_source: 0a8341f6cfd8fb4f2371ad26a6646b7289d0472d
+  workflow_state: disabled_manually
+  staging_history: '68/68'
+  staging_catalog: '16/16'
+  preservation_comparisons: unchanged
+  production_orphan_filters: 48
+  production_data_prerequisite: false
+  production: paused-no-go
+  story_status: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/workflow-quiescence-and-hosted-reproof-2026-09-21.md
+
+protected_toolchain_draft_20260921:
+  evidence_updated: 2026-09-22
+  new_component_cases: 44
+  complete_full_vitest_passed: true
+  status: merged
+  verification: merged-reviewed-clean
+  production: paused-no-go
+  epic_23: on-hold
+  note: 'PR #112 reviewed final e4ab223 merged as staging 8aec314 with clean required GitHub/Vercel checks and Codex review. Historical local results remain attached to the merged toolchain component. The protected dry-run component is locally verified; its exact final-head merge gates are recorded on PR #113. Story in-progress, Epic23 on-hold, production paused/no-go.'
+
+protected_toolchain_component_20260922:
+  status: merged
+  reviewed_final_head: e4ab223
+  staging_merge: 8aec314
+  github_vercel_checks: clean
+  codex_review: clean
+  scope: 'Version-only protected-toolchain component; historical local verification remains evidence for that merged component only.'
+  production: paused-no-go
+  epic_23: on-hold
+
+consolidated_cutover_proposal_20260928:
+  story_status: 'in-progress'
+  epic_23_status: 'on-hold'
+  staging_pending_versions: []
+  production_status: 'paused-no-go'
+  next_action: 'Current staging is the reviewed PR #131 merge 2e2819ae9130531ebbc78c2ef3a3c76bab6b34e4; main remains 822350986f4c023948a7bbf490ddffc371185c4a. Fresh read-only production finds exactly 106 routines: two body/identity-bound upstream Realtime additions, with omission hashes preserving all prior 104 definitions and ACLs. The proposed exact 106 metadata amendment retains unresolved semantics, zero execution authority and strict rejection of unknown changes. Tested implementation 30dba2d0d41703440bae217076b8862f607784f0 passes full Vitest 4804/4804 across 389 files with zero skips/failures, exact Playwright 163 passed/47 individually matched historical skips/zero failures or errors, TypeScript, zero-error lint and build; final-head review/checks remain pending. Reviewed PR #131 local results remain dated historical evidence. Vercel pause target, disabled automatic domain assignment and zero active project crons are reconfirmed. Finish the amendment and reviewed staging merge, then rebuild source-bound private package/runtime records and obtain applicable exact owner snapshot/private/executable admission before fixed isolation. Prove all five planes before separately gated 48-filter cleanup, fourteen forwards, strict catalog 16/16/canonical 69/preservation, owner adoption and 55-row repair. Main, deployment, settings restoration and reopening remain separate decisions. Story 22.15 stays in-progress, Epic 23 on-hold, production paused/no-go.'
+  local_matrix: 'Historical 49e708 required matrix 8/8, zero skips/failures in 386.813s; synthetic 13 applies then 55 repairs reach exactly68 with unchanged catalog/preservation. Not hosted proof.'
+  isolation_interpretation: 'Managed-principal privilege is classified ingress, not expiry denial. Realtime shutdown/denial is an alternative semantic branch and does not claim measured zero clients.'
+
+# Historical protected-production-dry-run snapshot; its embedded PR #119 next_action is superseded by consolidated_cutover_proposal_20260928.
+protected_production_dry_run_component_20260922:
+  status: local-verification-complete
+  historical_pr119_next_action: 'Story 22.15: reviewed PR #119 head 6d5a522 merged as staging 7b25f1d with an identical tree; main remains 8223509. Latest dated staging proof is 68/68 with no pending/remote-only versions and strict catalog 16/16; owner staging application verification is complete. Fresh 2026-09-28 production read-only proof retains seven strict catalog failures, 14 unchanged schema groups, seven unchanged aggregate groups, 48 orphan filters, 55 UNPROVED unsigned repair rows and 13 proposed executes. Vercel pause target, disabled automatic domain assignment and zero crons were reconfirmed; no hosted change occurred. Owner attests a restore-tested backup newer than the last write, is rollback owner, and separately approved temporary isolation on this computer and current network. Implementation c75ab10 requires independently bound prior Realtime state, strict event ordering and complete zero-client reporting, plus independent Data API credential/statement-trigger prerequisites and exact POST [] denial; focused 150/150, full Vitest 4130 passed with 47 unchanged classified skips, exact full Playwright 163 passed with 47 identical historical skips, TypeScript, zero-error lint and staging-preview build pass. Final-head checks/review/merge remain pending for this new gate. Complete Dashboard client-report access and login/backend/worker classification before fresh five-plane isolation and drain. Reconfirm all private pre-state, backup relevance, egress, tooling and target/TLS prerequisites before the first hosted change. No additional machine is required. Seek separate cleanup and signed-ledger history-repair approvals; main merge, deployment, control restoration and reopening remain separate. Story 22.15 in-progress; Epic 23 on-hold.'
+  final_head: null # Exact reviewed head is recorded by PR #113 checks/review, not self-attested here.
+  test_receipt: 'Test/evidence 602a3cd9d9c964a494bb4bcd8cc636a65e31f6cb: Vitest 3769/3769, 337 files, zero skips/failures; implementation-identical 7bc0031 Playwright 163 passed, 47 exact classified skips, zero failures/errors. Exact final-head checks/review are separate merge prerequisites recorded on PR #113.'
+  scope: 'Fixed production dry-run capability; verification used only synthetic inputs and fake CLI. No real private-input/hosted access occurred; no apply, repair, cleanup, deployment or reopening authority.'
+  external_digest_authority: 'An independently approved package digest is an external trusted-operator boundary; a caller-supplied digest is not approval.'
+  evidence: docs/commercial-readiness/evidence/protected-production-dry-run-2026-09-22.md
+  production: paused-no-go
+  epic_23: on-hold
+local_cli_matrix_component_20260923:
+  status: locally-verified-review-pending
+  pr: 114
+  tested_implementation: a8634ec58992a8a474f0b16fb48f1d8d00764fd0
+  staging_base: c193235efa3bc3a00ad3d78e152e80dec6cf382f
+  story_status: in-progress
+  epic_23_status: on-hold
+  production: paused-no-go
+  hosted_access: false
+  matrix_cases_passed: 7
+  focused_tests_passed: 174
+  full_vitest_passed: 3935
+  full_vitest_skipped: 0
+  full_vitest_failed: 0
+  playwright_passed: 163
+  playwright_skipped: 47
+  playwright_failed: 0
+  playwright_errors: 0
+  skip_identities_unchanged: true
+  evidence: docs/commercial-readiness/evidence/local-synthetic-cli-matrix-2026-09-23.md
+  remaining_gate: 'Final-head review/check/merge, fresh hosted proof, five-plane isolation, target-write admission and the separately gated production procedure. All 55 repair rows remain UNPROVED/unsigned; 13 executes are proposed; 48 filters need separately approved cleanup; seven production catalog groups remain unresolved.'
+
+pr117_local_validation_20260924:
+  status: locally-verified-review-pending
+  pr: 117
+  tested_implementation: d99b3b7a9f44682896c359058f7569cc66d86dcc
+  story_status: in-progress
+  epic_23_status: on-hold
+  production: paused-no-go
+  fixture_catalog_checks: '16/16'
+  full_vitest: '3999 passed, 47 classified skips, zero failures, exit 0'
+  full_playwright: '163 passed, 47 individually matched historical skips, zero failures/errors, exit 0'
+  first_vitest_attempt: 'Failed: two strict catalog checks against a different drifted local database; not counted as passing evidence.'
+  evidence: docs/commercial-readiness/evidence/pr117-local-validation-2026-09-24.md
+  remaining_gate: 'Final-head checks/review/merge and separate production isolation, cleanup, 55-row material-effect proof/history repair, 13 executes, main merge, deployment and reopening.'
+
+realtime_evidence_component_20260928:
+  status: locally-verified-review-pending
+  story_status: in-progress
+  epic_23_status: on-hold
+  production: paused-no-go
+  staging: 7b25f1d6a0c6a35ede2e0afe10afcbf29f789335
+  tested_implementation: c75ab101d7dfc63fe4c6041de3d4cb8a954fc4d0
+  focused_tests_passed: 150
+  full_vitest_passed: 4130
+  full_vitest_skipped: 47
+  playwright_passed: 163
+  playwright_skipped: 47
+  hosted_writes: false
+  hosted_settings_changed: false
+  isolation_proved: false
+  evidence: docs/commercial-readiness/evidence/production-realtime-preparation-2026-09-28.md
+
+# Historical 49e708/2876b7 candidate verification; locally superseded by the ordering-correction component below.
+consolidated_cutover_final_local_verification_20260928:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  staging_pending_versions: []
+  tested_implementation: 49e708ec99a8e74fb268e32d026bffc85bcb4a5c
+  playwright_source: 2876b7a7915765182602f5cf2c2111df3c317d56
+  vitest_passed: 4349
+  vitest_skipped: 0
+  vitest_failed: 0
+  playwright_passed: 163
+  playwright_skipped: 47
+  playwright_failed: 0
+  playwright_errors: 0
+  playwright_skips_match_historical: true
+  local_cli_matrix_passed: 8
+  remote_exact_head_checks_review_merge: pending
+  evidence: docs/commercial-readiness/evidence/production-consolidated-cutover-verification-2026-09-28.md
+
+consolidated_cutover_ordering_correction_20260928:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  reviewed_prior_head: 262df2f02d754c01e75f43e1842f5705b278b81b
+  actionable_finding: final-database-and-drain-must-follow-cleanup-and-completed-collectors
+  additional_reviewed_heads: [0cb2eabbcf01fb02791774d137006378a632656b, 302eef0fc1d459c85c2260ec1f18d5725cc1d0b2]
+  managed_writer_required_for_cutover: true
+  managed_writer_interval_after_cleanup: true
+  managed_writer_freshness_at_actual_launch: true
+  cli_preflight_freshness_recheck: true
+  encrypted_partial_apply_diagnostics: true
+  isolation_precedes_cleanup_start: true
+  host_timeout_headroom_verification: local-passed
+  diagnostic_recovery_verification: local-passed
+  collector_source_binding_verification: local-passed
+  cli_profile_verification: local-passed
+  local_timeout_fixture_verification: local-passed
+  latest_failed_full_source: 1ea4843ec58ee81fad94e3e39b360bb0ff7c3ef8
+  latest_failed_full_passed: 4430
+  latest_failed_full_failed: 2
+  latest_failed_full_unexecuted_native_tests: 17
+  final_verification: local-passed-final-head-review-pending
+  tested_implementation: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  vitest_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  build_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  playwright_source: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  verification_receipt: docs/commercial-readiness/evidence/production-cutover-ordering-verification-2026-09-29.json
+  vitest_passed: 4465
+  vitest_skipped: 0
+  vitest_failed: 0
+  vitest_duration_seconds: 863.04
+  playwright_passed: 163
+  playwright_skipped: 47
+  playwright_failed: 0
+  playwright_errors: 0
+  playwright_duration_seconds: 1339.960638
+  hosted_writes: false
+
+consolidated_cutover_packet_deadline_correction_20260929:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  previous_tested_implementation: 1a5aa61937e34fa577a317afca4bca9bca64bf9a
+  preparation_timeout_milliseconds: 60000
+  packet_timeout_milliseconds: 10000
+  worker_lifetime_milliseconds: 360000
+  record_scope: historical
+  superseded_by: consolidated_cutover_collector_interval_correction_20260929
+  covered_by_tested_implementation: 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e
+  covered_by_verification_receipt: docs/commercial-readiness/evidence/production-cutover-collector-interval-verification-2026-09-29.json
+  verification: historical-superseded-by-current-complete-gates
+  final_head_review: superseded-by-current-documentation-head-review
+  hosted_writes: false
+  note: 'Historical packet-deadline preparation and failed-run record; complete local gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e cover this correction. The current collector-interval component owns final-documentation-head CI/review; 1a5aa619 remains historical.'
+  historical_ordering_receipt_scope: 'Successful at 1a5aa619 only; it does not verify the later substantive 0e014f3a host/worker packet-deadline correction.'
+  latest_failed_clean_source: 0e014f3a8ad921b10758f186ee3afeba2601e895
+  latest_failed_full_passed: 4475
+  latest_failed_full_failed: 3
+  latest_failed_full_skipped: 0
+  latest_failed_full_files: 371
+  latest_failed_full_exit_code: 1
+  current_full_gate: historical-pr122-complete-new-staffing-fk-full-gates-pending
+
+
+consolidated_cutover_collector_interval_correction_20260929:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  verification: historical-188-and-pr122-local-gates-review-ci-staging-merge-complete
+  current_full_gate: historical-pr122-complete-new-staffing-fk-full-gates-pending
+  final_head_review: pr122-clean-final-head-79c1cd37e5e0d4e674bd92abb67efe0edb279cc7
+  reviewed_staging_merge: pr122-5f69f47f904b9c004b4c6bda217165a4359b3ac6
+  hosted_writes: false
+  previous_source: 5a27d77cd04dae9fef90e8f94adb8432636f0b4c
+  staffing_collection_start_required: true
+  profile_collection_start_required: true
+  cleanup_before_collector_start: true
+  full_interval_freshness_required: true
+  focused_pure_passed: 311
+  focused_native_passed: 36
+  focused_skipped: 0
+  focused_failed: 0
+  focused_clean_commit_proof: false
+  interrupted_previous_full_run: true
+  interrupted_completed_files_reported: 95
+  interrupted_completed_tests_reported: 1028
+  interrupted_accepted_as_passing_gate: false
+  note: 'Collector-interval gates at 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e remain historical. The e50 failed local run is retained as non-admitting evidence; clean candidate eff0bd4 completed its local focused/full/fixture/quality/build/Playwright gates. PR #123 review/checks, merge, and staging completion are complete; separate production gates remain pending.'
+  tested_implementation: 188bcf64f9c9dcbb5791a5bd636583a83ba8e64e
+  verification_receipt: docs/commercial-readiness/evidence/production-cutover-collector-interval-verification-2026-09-29.json
+  vitest_passed: 4502
+  vitest_skipped: 0
+  vitest_failed: 0
+  playwright_passed: 163
+  playwright_skipped: 47
+  playwright_failed: 0
+  playwright_errors: 0
+  ci_conclusion: success
+
+historical_pre_pr123_staffing_fk_preparation_20260930:
+  story_status: in-progress
+  epic_23_status: on-hold
+  production_status: paused-no-go
+  merged_staging: 5f69f47f904b9c004b4c6bda217165a4359b3ac6
+  reviewed_pr122_head: 79c1cd37e5e0d4e674bd92abb67efe0edb279cc7
+  historical_hosted_staging_last_verified_history: '68/68' # Pre-PR #123 preparation checkpoint.
+  proposed_repository_migration_count: 69
+  historical_proposed_staging_execute: ['20260930091123'] # Completed once by PR #123; never replay.
+  production_forward_count: 14
+  unchanged_repair_count: 55
+  repair_ledger: UNPROVED-unsigned
+  observed_staffing_fk_delete_action: SET-NULL
+  canonical_staffing_fk_delete_action: NO-ACTION
+  staffing_rows: 2
+  staffing_nonnull_actors: 0
+  staffing_public_orphans: 0
+  staffing_auth_orphans: 0
+  staffing_row_cleanup_required_for_capture: false
+  saved_filter_orphans: 48
+  strict_catalog_failed_groups: 7
+  draft_focused_passed: 83
+  draft_focused_failed: 0
+  draft_focused_skipped: 0
+  draft_focused_exit_code: 0
+  clean_source_release_evidence: false
+  protected_controls: v4-owner-approved-and-applied-local-only
+  vercel_inspection: fresh-readonly-pause-target-matches-autoassignment-disabled-zero-active-crons
+  historical_full_gates_review_ci: pending # Pre-PR #123 preparation state; superseded by the completed PR #123 review/check/merge.
+  hosted_writes: false
+  evidence: docs/commercial-readiness/evidence/production-staffing-fk-preparation-2026-09-30.md
+
+current_pr123_staging_completion_20260930:
+  reviewed_pr123_head: 540f020449902d9bb9384baa9ed53eac09d19671
+  merged_staging: c492c927224ed5a8f133c58b6fac2531c03e474b
+  staging_history: '69/69'
+  staging_pending_versions: []
+  staging_remote_only_versions: []
+  strict_catalog_post_apply: '16/16'
+  forward_version_applied_once: '20260930091123'
+  production_status: paused-no-go
+  story_status: in-progress
+  epic_23_status: on-hold
+  evidence: docs/commercial-readiness/evidence/staging-v69-pr123-merge-apply-proof-2026-09-30.md
+
+historical_dependency_release_remediation_20261001:
+  failed_audit_history:
+    source_staging: c492c927224ed5a8f133c58b6fac2531c03e474b
+    production_scoped_audit_exit: 1
+    critical: 1
+    high: 6
+    moderate: 6
+    prior_uuid_acceptance: expired-2026-09-30-not-renewed
+    disposition: historical-not-current
+  remediation_candidate:
+    source: 3f26418027590609ed3ed7b88b38376d62efd489
+    next_package_set: '16.3.3-to-16.3.6'
+    nodemailer: '9.1.1-to-10.0.13-with-bundled-types'
+    removed_types_package: '@types/nodemailer'
+    brace_expansion_floors: ['1.1.21', '2.1.7']
+    exceljs: '4.4.0-exact-local-node-crypto-randomUUID-patch'
+    exceljs_uuid_override: 'exceljs@4.4.0>uuid:-'
+    browser_dist_imports: unsupported-separate-remediation
+  current_production_scoped_audit:
+    identity: '3fde634990024f0848ba640645b2e931b50951253abf646b87e8d3df00b7786a'
+    package_source_identity: 'b2b787870b3fddd0e8bb10d9c3354038a8ed422e49c21d138547be04d0622fb7'
+    exit: 0
+    critical: 0
+    high: 0
+    moderate: 0
+    low: 0
+    informational: 0
+    production_dependencies: 280
+  focused_compatibility: { passed: 12, skipped: 0, failed: 0, duration_seconds: 54.29, identity: '3f26418027590609ed3ed7b88b38376d62efd489' }
+  frozen_install_exit: 0
+  typescript_exit: 0
+  lint_errors: 0
+  lint_warnings: 304
+  full_vitest: { passed: 4547, failed: 0, skipped: 0, files: '373/0/373', errors: 0, duration_seconds: 858.06, command: 'npx vitest run', identity: '3f26418027590609ed3ed7b88b38376d62efd489', receipt_sha256: 'bf13329ff9eb667f29a385a829eb6360766234bdbc70d26fa8138290b0af0d3e', skip_identity: 'empty', skip_classification: 'No skipped tests in this current full run.' }
+  full_playwright: { passed: 163, failed: 0, skipped: 47, files: '33/0/41', errors: 0, duration_seconds: 1357.77634, command: 'npx playwright test', identity: '3f26418027590609ed3ed7b88b38376d62efd489', receipt_sha256: '4a96e698154744bbb7283fc8e74ff568794b177d9a48dee92b1efb52ea865a34', skip_identity: 'f9ced59b8f1ac2e178f833e49e1353841479ed937f6de5c0aa2b654398b135de', skip_classification: '47 individually unchanged historical skips; not counted as passes. Complete identity/status/duration multiset checked against raw log and JUnit; skipped identities matched dated 2026-09-28 receipt.' }
+  dependency_advisory_gate: passed-current-audit-and-full-local-suites-final-head-review-and-merge-record-required
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  hosted_changes: false
+  evidence: docs/commercial-readiness/evidence/production-dependency-remediation-2026-10-01.md
+
+current_runtime_floor_remediation_20261002:
+  source: cc65498745792c3727a8ecf6bb5b7da847b75841
+  node_engine_range: '^20.19.0 || ^22.12.0 || >=24.0.0'
+  runtime_compatibility_tests: 2
+  audit: { critical: 0, high: 0, moderate: 0, low: 0, informational: 0, dependencies: 280 }
+  full_vitest: { passed: 4549, skipped: 0, failed: 0, files: 374, report_seconds: 841.12, wrapper_ms: 847031, raw_log_sha256: '89f779389cb29afef9f6063d2a848f9aa9fbb84b98a5d722fb1ba79dd010f20e' }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1170.571249, wrapper_ms: 1181389, independently_bound: true }
+  raw_git_runtime_manifest_sha256: '0a624452642b1f4e54a3cffc14fb4e1fde0ddeeed89a3a88072278bf9e300d42'
+  package_admission: not-granted
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/production-runtime-floor-remediation-2026-10-02.md
+
+historical_live_isolation_preparation_20261002:
+  status: locally-verified-current-source-pr-final-review-and-staging-merge-pending
+  staging_base: 7ff8a1b585bfbd28b3c2d85d2911408ab2b4c128
+  reviewed_dependency_head: 93e22f3e6ee631de955ce3d20ee11b1b2e0c9368
+  dependency_review_and_staging_merge: complete
+  protected_operation: temporary-production-isolation
+  actual_installer_invoked: false
+  encrypted_production_inputs_decrypted: false
+  hosted_access: true
+  hosted_database_access: false
+  hosted_supabase_access: false
+  vercel_readonly_pause_verified: true
+  vercel_readonly_evidence: docs/commercial-readiness/evidence/production-pause-readonly-2026-10-02.json
+  tested_implementation: cfe0ea310215d400317ea8bdfe3cd8a7ca3055cc
+  full_suite_gate: passed-current-local-source
+  full_vitest: { passed: 4733, skipped: 0, failed: 0, errors: 0, files: 386, max_workers: 1, report_seconds: 1591.53, wrapper_ms: 1615289, raw_log_sha256: 52a195c07297f04f51bc08c6901e116cefa6bc84223d4c6f615b17b0e89d73d2 }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1054.150993, wrapper_ms: 1065264, independently_bound: true }
+  package_materialized_offline: { source: cfe0ea310215d400317ea8bdfe3cd8a7ca3055cc, files: 109, runtime_files: 488, runtime_packages: 10, package_sha256: 4b57a8af3902799dd6b8e1c4728dc67be5b6451fa3d93f34422c97b76fe50e9a, admitted: false }
+  prior_full_verification: { source: ac302df0bb92679d1418b658d6797a8e64628b3b, evidence: docs/commercial-readiness/evidence/production-live-isolation-preparation-2026-10-02.v2.json, scope: successful-historical-source }
+  native_polling_focused: { passed: 87, skipped: 0, failed: 0, files: 4, report_seconds: 2.68, actual_windows_native_compilation: true }
+  implementation_review: { source: cfe0ea310215d400317ea8bdfe3cd8a7ca3055cc, reviewbot: clean, comment: 5957052832, independent_cross_layer: clean }
+  historical_network_propagation_focused: { source: f3c79f6b462c1a34042f1ef569f56038c588a72e, passed: 78, skipped: 0, failed: 0, new_regressions: 28, report_ms: 783, full_suite: interrupted-not-passing }
+  executable_package_admission: not-granted
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/production-live-isolation-preparation-2026-10-02.v3.json
+
+current_launcher_fix_20261002:
+  status: locally-verified-current-source-pr-final-review-and-staging-merge-pending
+  tested_implementation: c86e112b1c1211a733afe42e2006c275907bc072
+  full_vitest: { passed: 4734, skipped: 0, failed: 0, errors: 0, files: 386, max_workers: 1, report_seconds: 1554.88, wrapper_ms: 1560267, raw_log_sha256: '558094eef44d4b085059d43ee50137aa60cc243226ed35aa48f5fbf0d5c1cafa', receipt_sha256: '65e30bde3699dc8e81007be54d0adfb866ae0e4b5e95b9c5303410d075d38835' }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1077.921265, wrapper_ms: 1088557, raw_log_sha256: 'd8093f6f6ac886495ea50d0a583775fda2ea2b3c1a0eb650965137d3afeaa1c5', receipt_sha256: '1b379e003944486900ffc9fd6ac1f74a714735e1c9ecbee846aab5332436427d', binding_sha256: 'c146dbe43edf1c5b86cebbedf42a0ec7b4f4c1467a3fcc8457cdec177166e14c', individually_matched_historical_skips: true }
+  prior_attempts:
+    initial_full_vitest: { passed: 4733, failed: 1, skipped: 0, files: 386, report_seconds: 1580.9, wrapper_ms: 1587565, raw_log_sha256: '755f9d4ba7089bea09f37963b0175249d2a24581252b53c62d08058404d87ee1', receipt_sha256: 'e610d748f661c7530e3d4905fa1124fded6d5d967302264aa0425f7c5be1cf06', classification: 'non-admitting-single-protected-handoff-fixture-failure-cause-unproven' }
+    focused_repeat: { passed: 1, failed: 0, skipped: 0, files: 1, report_seconds: 36.71, test_seconds: 35.955, wrapper_ms: 49730, raw_log_sha256: '0f58521a0e04d436dfa1fb29c4653ab0301ae8e53861613f110bcfbbb3331898', receipt_sha256: '3ffe48e99f2d1d853e4e1666ae422a0c07820c85ef084b8393c0ecc5708ceca9', classification: 'focused-passing-repeat-not-a-full-gate-substitute' }
+    controlled_diagnostic: { stale_admission_minutes: 16, fake_cli_calls_for_stale_packet: 0, fresh_admission_age_seconds: 60, post_ready_delay_seconds: 11, fake_cli_calls_after_fresh_delay: 2, receipt_sha256: 'cf2294a25aa48becae202851f3c69d998965abd89000dd73930b5a6576d193a5', classification: 'controlled-stale-admission-diagnostic-not-causal-proof' }
+    initial_harness_diagnostics: { receipt_sha256: '867c75fc7e8ce3139cb5b5b0e0e31bfde8c79859d57c24ba0d78c7b5b3f3481d', classification: 'initial-harness-parse-and-capture-local-diagnostics-nonproof' }
+  supporting_gates:
+    typescript: { exit_code: 0, log_sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' }
+    lint: { exit_code: 0, errors: 0, warnings: 304, log_sha256: '30d6d3e6dfe5036678b3ca579c2bba11aa48b3783d2fa1be5dc2a2581ab9e986' }
+    build: { exit_code: 0, hosted_action: false, source_unchanged: true, receipt_sha256: 'b17c37ec9446aa7cc05fe463534f8a93f98f18f610e7f0e614a961db0acc799c' }
+    package: { source_files: 109, runtime_files: 488, runtime_packages: 10, admission_granted: false, installer_executed: false, receipt_sha256: '1fbd53b2ce409220792bc1568131a7cb90fed3190a3d8d9a92f81bc8b303441d' }
+    pause: { probes: 9, artifact_cron_count: 0, functions_absent: true, hosted_access: false, receipt_sha256: '6d6da7e5c21c3f419465fd37b10b007c9111b6245df5ac6822f84ea8e77f4767' }
+    matrix: { catalog_checks: 16, synthetic_only: true, hosted_access: false, receipt_sha256: '9b4ba9b9ff1619f4e1e4e46f8c90a214e7b1699405252bbf7bc1f85206a9df04' }
+    launcher_fixture: { fixture_invoked: true, actual_protected_launcher_invoked: false, actual_installer_invoked: false, receipt_sha256: '33833e9a965d3130cf860076aa80b993a94696ff3c39d43e6119a5c6d1eaead3' }
+    supplemental: { audit_sha256: '3fde634990024f0848ba640645b2e931b50951253abf646b87e8d3df00b7786a', protected_source_sha256: '6e819d7ef75eb045ba6d757a99888618eeb3d6a57cc714897c0dcb156b2daee3', sdk_import_sha256: '3d4a94d15e3f63d45000c6125d70b03841b27d8e4bfbe93a03e38ed9dee7787f' }
+  owner_readonly_authorization: 'pending'
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  canonical_next_action: synchronized-five-current-copies
+  evidence: docs/commercial-readiness/evidence/production-live-isolation-launcher-fix-2026-10-02.json
+
+historical_cli_snapshot_preparation_20261006:
+  status: locally-verified-tested-implementation-final-docs-review-ci-and-staging-merge-pending
+  tested_implementation: 9dd7426a16dcf0ae01cf186689a07b81293e2242
+  tested_tree: 02b510af3beb6cb775785d1c7a280383ead73e95
+  observation_baseline: 2ef0aa54c135dacc2b4c163573e518800664680f
+  manifest_sha256: 72817587a929e19ae507c9e806f2151f214d63465df8496258edde9f26ccc0f4
+  routine_snapshot: { total: 104, categories: 8, unknown_category_count: 104, classified_routine_count: 0, identity_baseline_available: false, execution_authority: false, collection_started_utc: '2026-10-06T10:00:44.029Z', captured_utc: '2026-10-06T10:00:44.528Z', query_sha256: 607b543fe167f1eead4f46449fa79b20bc3c74b06ff0c8a5567c8002afdf0a2c, receipt_sha256: 1f2f083d17abd743e169ad7529b2ccae3afa09f2009db307ffd40c37e8459ab7, all_routine_set_sha256: 4b1e52ad1ce7ddb3116e641573e90c78b321f9a4bb3f183a50f7708e75a174e8, all_routine_owner_set_sha256: 780e7025c838af0631355043a4bcede1137e321f10f7bd1ea4c8739a6cefcdaf }
+  full_vitest: { passed: 4787, skipped: 0, failed: 0, files: 386, report_seconds: 1712.64, wrapper_ms: 1722881, receipt_sha256: acdbed86994a62cbe3a158b90450d34ea22ff96ce17836588154bed203a14561, raw_log_sha256: 33bf5c234569581d92cfdc1ce0a8f6ed2afa7c4925509c49507069fe1b81b7e7 }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, cases: 210, report_seconds: 1145.507068, wrapper_ms: 1157497, receipt_sha256: be04bf743cd2fd40b9b7d2e13a4d56048f6265b82f74aa657073f4fdf948dfe3, raw_log_sha256: 33711faf5e2137f7dc2390c9038efa1dfc27dc54e7715d30eca1e44243a607fc, binding_sha256: 67871fab11e8ca90111efe1061ec6b027bbb4ac408f40c78ee693f18eb112880, individually_matched_historical_skips: true }
+  local_matrix: { synthetic_only: true, forwards: 14, repairs: 55, final_history: 69, catalog_checks: 16, failed_catalog_checks: 0 }
+  supporting_checks: { focused: { passed: 401, skipped: 0, failed: 0, files: 6, report_ms: 7520.169, receipt_sha256: b7465a9fe4acc5704646a0e8d9d496749cffa159140eabf464de8548dbc7f18f }, typescript_exit: 0, full_eslint: { exit_code: 0, errors: 0 }, build: { source: 9b31b89b66ad4cbe087cf44b424f0a160dd80ba5, duration_ms: 43428, receipt_sha256: e9fd62c96bdc864b8b98cd200d0209eb04995f5b99b8f68c5cdec11f03814f49, scope: executable-app-release-migrations-byte-identical-at-9dd }, renewal_binder_sha256: d362380b5a7a7cc449e6b6ecd3151719e945ce07285088810248c29cf044a71a }
+  audit: { exit_code: 1, critical: 0, high: 1, advisory: GHSA-68fv-2mgg-jv7q, separate_dependency_correction_required: true }
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/production-cli-routine-snapshot-preparation-2026-10-06.json
+
+current_source_map_dependency_remediation_20261006:
+  status: locally-verified-final-docs-review-ci-and-staging-merge-pending
+  tested_implementation: 8d9504083f7cb3a068c49f80aacb79a47535af90
+  historical_pr128_staging_merge: 35bde55622bea50a8e64898bae83b9fd5318e929
+  dependency: { package: source-map-js, from: 1.2.1, to: 1.2.2, advisory: GHSA-68fv-2mgg-jv7q, production_dependencies: 280, critical: 0, high: 0, moderate: 0, low: 0, informational: 0, receipt_sha256: d2ca1c7de61adf9f5423da62da28a7231ac68fe3fedf9579c5d55b95701c05de }
+  full_vitest: { passed: 4793, skipped: 0, failed: 0, files: 387, report_seconds: 1648.41, wrapper_ms: 1658829, raw_log_sha256: 31a88bfa289b685a1f81af7a80ea2b07694886e7d2700363006384e4dbe45f96, receipt_sha256: a78e109b8efcb2b97216698c1bd033418b24e0e21215bd02cc34448c7c602b71 }
+  historical_vitest_v1: { passed: 4791, skipped: 0, failed: 1, files: 387, classification: non-passing-native-handoff-generic-host-failure-cause-unproven, raw_log_sha256: 28df4e6a790091b7953aa8b0f3de14d3c4ba1b1c80961349cfeb6ba87d9ad3f8 }
+  playwright: { source: 90c297aa63d4bc15e3e3fe76bfa8633c90d614b0, passed: 163, skipped: 47, failed: 0, errors: 0, report_seconds: 1385.30904, wrapper_ms: 1388080, binding_sha256: a467bb60147ce1e8c91a8b6c1de26356cdf9964430c725036d37ab1f025b720b, scope: production-runtime-package-app-migration-bytes-unchanged-by-test-only-final-correction }
+  supporting: { typescript_exit: 0, eslint_errors: 0, eslint_existing_warnings: 304, build_source: 90c297aa63d4bc15e3e3fe76bfa8633c90d614b0, build_receipt_sha256: ce8dd3ca2bcdde59701fef011890b22d458ef0c240aff8363bf7e7b776d0067c, frozen_offline_install: passed, typescript_receipt_sha256: f5a25274499606b5fbe1f4b7622d7045abb8d33ed8a943f6d61b97603dabd413, lint_receipt_sha256: 0f63bbf75b355cd0c3e99014ad44eb35f902071b32d00245d5bec16f6a5e6491, renewal_binding_sha256: 8ab216303edd326a24163d2206a6ff990d588fe75bae7b2bf0dd1b695c9170f9 }
+  production: paused-no-go
+  story_22_15: in-progress
+  epic_23: on-hold
+  evidence: docs/commercial-readiness/evidence/production-source-map-dependency-remediation-2026-10-06.json
+
+# PR #132 follow-up 2026-10-08: working-tree evidence assertions now pin upstream bodies/references and historical omission hashes/counts; 12 new mutation regressions, focused Vitest 357/357, TypeScript, changed-test ESLint and full ESLint (npx eslint . --quiet) exit 0.
+# Raw global-remainder receipt unavailable: historical expected set/owner hashes are labelled expectations; independent reproduction remains blocked. Full Vitest attempt interrupted, exit 1, after 8 CLI-matrix skips without fresh admission; incomplete/non-passing evidence. Guarded Playwright gate pending. Historical passing receipts are not new gates.
+# Story 22.15 in-progress; Epic 23 on-hold; production paused/no-go. No hosted, encrypted-input/backup, merge, posting, deployment, execution-authority or reopening action authorized.
+# 2026-10-08 update: original global proof receipt and SQL located, hashes verified, copied byte-for-byte and bound by tests (100/100); artifact-availability blocker resolved. Historical database aggregates remain not locally recomputed; no fresh hosted-state claim. Full local validation pending; Story22.15 in-progress, Epic23 on-hold, production paused/no-go.
+
+pr132_independent_review_20261008:
+  tested_local_fix: 7205dc4d9eea8b398f182dcb77b850fcc1bc3547
+  independent_layers_completed: 3
+  actionable_review_findings_remaining: 0
+  full_vitest: { passed: 4816, skipped: 0, failed: 0, files: 389, exit_code: 0, report_seconds: 1684.47 }
+  full_playwright: { passed: 163, skipped: 47, failed: 0, errors: 0, exit_code: 0, individually_matched_historical_skips: true, log_junit_case_matches: 210, passed_duration_matches: 163 }
+  supporting: { focused: 357, pause_safeguards: 45, strict_local_catalog: 16, typescript_exit: 0, eslint_errors: 0, build_exit: 0 }
+  historical_global_aggregates_independently_recomputed: false
+  routine_execution_authority: false
+  current_head_github_checks: pending-unpushed-local-fix
+  fresh_owner_admission_and_isolation: pending
+  source_runtime_and_migrations_changed: false
+  story_22_15: in-progress
+  epic_23: on-hold
+  production: paused-no-go
+  evidence: docs/commercial-readiness/evidence/production-realtime-independent-review-2026-10-08.json
+  limitations: Prior interrupted/failed attempts remain non-passing evidence; fresh hosted proof, production writes and reopening are not authorized by local tests.

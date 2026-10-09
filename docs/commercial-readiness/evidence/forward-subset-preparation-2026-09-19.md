@@ -1,0 +1,67 @@
+# Offline forward-subset preparation — 2026-09-19
+
+Status: **offline component awaiting exact-head review; production NO-GO**. Story 22.15 remains in-progress; Epic 23 remains on hold. This preparatory increment does not implement or authorize the production bootstrap operation.
+
+## Source and change
+
+Freshly fetched staging is PR #106 merge `7cbbb11e7f5038a14519d89f2de524e6463dbf98`; main remains `822350986f4c023948a7bbf490ddffc371185c4a`. The merge tree `cdd26e1c69c1fd9fc8701d80a18d3158671ef599` matches reviewed design head `36599803f96d617825fcaf9e3fca032135717700`. The isolated implementation starts from that staging commit.
+
+`src/lib/release/prepare-forward-subset.mjs` materializes only the ordered execute files from an explicitly pinned, clean Git source. It verifies all 68 immutable migration files against Git bytes, excludes the 55 repair candidates, and creates an exclusive external artifact with Git blob identities, raw-byte SHA-256 values, source commit/tree and manifest hash. Verification rejects altered files, extra files, private CLI-link material, mismatched receipts and symlink/junction substitution. There is no database execution mode or hosted-runner integration. Historical SQL, the migration manifest, strict catalog, production apply block and production pause lock are unchanged.
+
+The operator must independently obtain the reviewed full source SHA and approved absolute Git executable/hash. These are trusted inputs, not discoveries or approval claims made by this utility. A matching caller-supplied digest proves integrity relative to that pin; it does not establish that the owner approved the executable or commit. The receipt explicitly records `approvalAttested: false`, `executable: false` and `privateMaterialAllowed: false`. A future hosted wrapper must establish its own reviewed source/tooling pins and all admission gates; it must never treat this receipt as authorization. Git uses an absolute verified binary, disables replacement objects, system/global configuration and filesystem monitoring, rejects direct/included local clean-filter drivers and committed/indexed gitlinks before status, and uses bounded read-only commands.
+
+This artifact is **non-secret source only**, not the private CLI working copy required by the design. POSIX file modes do not attest a Windows DACL. No credentials, project links, target references or environment files may be added. Failed/incomplete artifacts are preserved and never automatically overwritten or deleted.
+
+## Verification and exact source identities
+
+The tested implementation is `01abdf707071cd3b884f7e207aaf343e5eac86d9`, tree `e1cd28b7b7a84634da9515df6266361d574e4ffa`. The prior `856c9331c778821b447f6201f0bbbfb7095856b5` / `4e11ec8570ceb13dcd1d674d5eb1f6b4fb722506` implementation and its machine receipts remain retained as historical evidence in the verification record. Staging and main were fetched again and remained `7cbbb11e7f5038a14519d89f2de524e6463dbf98` and `822350986f4c023948a7bbf490ddffc371185c4a`. Subsequent evidence-only changes must preserve this implementation identity; fresh remote checks and exact-final-head review are separate gates.
+
+- Full exact `npx playwright test`: **163 passed, 47 skipped, zero failures/errors, exit 0**, report **1,003.520727 s**, runner **1,005.438 s**. The JUnit aggregate is 210 tests: 163 passed plus 47 skipped, with zero failures/errors. All 47 skipped file/title identities match the [retained individually classified inventory](production-readiness-pr95-playwright-2026-09-09.md#exact-skipped-test-inventory): nine notification/capture authorization cases and 38 removed/superseded flows or fixture coverage debt. No skip counts as a pass. XML SHA-256: `8d24cdbf89d3b3eca43729e3025733133a3fd147e6de7c96064d35276f9b5c3f`. The prior 856c933 Playwright receipt remains historical evidence.
+- Full exact `npx vitest run`: **3,519 passed across 323 files, zero skipped/failed, exit 0**, report duration **114.27 s**, runner duration **116.007 s**. Required Story 22.15 database and live-export gates were enabled against explicit guard-owned local fixtures. The prior 856c933 Vitest receipt remains historical evidence.
+- Offline preparer focused suite: **34/34**, zero skipped/failed, exit 0, **59.56 s**. The new 34th regression covers the synthetic promisor lazy-fetch control. The prior 33/33, 58.70 s focused result remains historical evidence. Cases include altered/missing/extra files, private material, dirty or incorrectly pinned source, index flags, junctions, hostile PATH/global configuration, direct/included clean filters, replacement objects, and committed/staged populated submodules.
+- Source-only CLI preparation and independent verification passed for exactly the **13 execute files**, excluding all **55 repair candidates**, at the tested implementation.
+- TypeScript and full lint passed. Full lint reports **zero errors and 296 existing warnings**.
+- The production dependency audit exits **1**, reporting **0 critical, 0 high and 1 moderate** finding: the existing UUID advisory `1119441`, accepted only through **2026-09-30** under the existing exception. This is an accepted threshold, not a clean audit.
+- Final-source named staging preview `pnpm build` passed on the tested implementation: exit 0, **7420 ms**. The prior 856c933 build receipt (10.639 s) and earlier successful build on `2cb1148` (16.098 s) remain historical evidence. No manual deployment or promotion was performed; Git-integrated preview checks are separate remote checks.
+
+### Local database evidence boundary
+
+A new empty guard-owned application fixture applied all **68 immutable migrations plus seed** from `bc277c9cbb519965abe3dd0a76b782ce042d41b2`. All 68 SQL blobs remain unchanged at the tested implementation. Its supporting loader explicitly records synthetic local history: this proves SQL-chain application, **not Supabase CLI transaction/history behavior**. The release catalog wrapper, using an explicit local-only transport adapter, passed **16/16**; no hosted binding or TLS proof is claimed for loopback transport.
+
+Separate guard-owned PostgreSQL fixtures prepared a 63-version baseline and a 58-version reconciliation template. The combined preparer, runbook, pause and three Story 22.15 database suites passed **125/125**, zero skipped/failed, exit 0, **47.45 s** on `2cb1148`; the later final full suite includes their renewed results. These are representative staging reconciliation fixtures, not a reproduction of the still-incomplete production pre-forward profile.
+
+The owned application fixture was interrupted once despite its retained registration. The first reacquisition ended with `RESOURCE_INTERRUPTED`; a fresh acknowledged guard request recovered the retained data, and strict catalog 16/16 and the subsequent suites passed. The cause of the interruption was not established. No unmanaged container, reset, volume deletion, or user-owned stack adoption was used to recover it.
+
+### Failed and superseded attempts
+
+The initial focused run passed 25/25. A later 28-test attempt failed 26 tests because a Windows case-insensitive PATH restoration bug in the test harness contaminated subsequent fixture setup. The corrected harness passed 28/28, zero skipped/failed, exit 0, 54.19 s. These are supporting historical results, not final-source gates.
+
+An early full `npx vitest run --maxWorkers=1` ended **3,478 passed, 33 skipped, two failed**, exit 1, 714.70 s. The two failures were strict catalog assertions in the inactive-authorization suite. This run exposed the local ownership incident below and is not a passing release gate.
+
+On `2cb1148`, full exact Vitest ended **3,509 passed, five skipped, two failed**, exit 1, 103.39 s. The failures were 15-second timeouts in real Git subprocess tests under full-suite contention. The five live-export tests lacked a running local app. A file-scoped 60-second test bound retained every assertion and the production Git subprocess's 15-second timeout. With the guarded app and required live-export flag, `fd5f411c30581b025f29bff12691544ace2e68da` passed **3,516/3,516**, zero skipped/failed, exit 0, 100.57 s. The submodule regressions add two tests and the later lazy-fetch regression adds one; the final result is above. No skip was counted as a pass.
+
+The first local preview build omitted `VERCEL=1`; the production-pause guard correctly refused the incomplete preview identity. Supplying the explicit named staging-preview markers produced the successful build above. No guard was weakened.
+
+### Local ownership incident
+
+The first full run lacked a generated local test environment, so the existing integration helper fell back to the already-running configured local database before lifecycle ownership was verified. Further database-dependent runs were stopped. The concurrency test contains committed synthetic setup and cleanup, including temporary active-admin changes; its cleanup did not report an error. A separate bounded read-only check found zero matching synthetic race rows in both application and Auth user tables. This is **not a complete before/after restoration proof**. No reset, adoption, stop or further write was attempted on that stack. Later suite wrappers required explicit guarded fixture targets, rejected configured-stack ports and created their local environment exclusively before starting the suite.
+
+### Review fixes
+
+Reviewbot's first P1 demonstrated that Git replacement objects could substitute bytes while retaining the requested source SHA in a receipt. Every source Git read now uses `--no-replace-objects`, with a real replacement-commit regression. The second P1 demonstrated that status could enter a populated submodule and execute a nested local clean filter. The preparer now rejects both committed and indexed gitlinks before status and also uses `--ignore-submodules=all`; committed/staged nested-filter regressions confirm no driver executes or artifact is created. A bounded control in the same synthetic fixture confirmed ordinary Git status executes its harmless marker-writing filter. A synthetic local promisor-repository control executed its marker remote helper before the lazy-fetch fix; `GIT_NO_LAZY_FETCH=1` and an empty `GIT_ALLOW_PROTOCOL` now prevent that helper from running. The new 34th regression proves this without network access in the synthetic control. Final-head review remains required; these fixes do not self-approve the PR.
+
+No hosted database access, write, repair, cleanup, Vercel setting change, manually initiated deployment, main merge or reopening occurred in this implementation increment. The last successful production-pause hosted observation remains dated **2026-09-15**. The connector's project-inspection argument mismatch prevented a fresh proof; no old observation is presented as current verification.
+
+## Component scope and next gates
+
+The [design ordering](../30_production_forward_bootstrap_design.md#gates-and-ordering) explicitly proposes separating this offline component from later bootstrap enablement. PR #107 may satisfy its component gate after final-head review/checks; it cannot satisfy the complete bootstrap gate. Both Reviewbot findings and the independently reproduced lazy-fetch issue are fixed; current implementation-head GitHub/Vercel checks are green, and the final evidence head still needs its own checks and review.
+
+The next diagnostic should capture one bounded, explicitly read-only production snapshot covering exact relation/column/constraint/index/policy/function/trigger tuples, extra-object counts/hashes, migration history, and four aggregate families: headcount range; saved-filter total/orphan/empty/overlength counts; audit total/non-null/mapping counts; and repayment values plus permission hashes. Unknown definitions remain unknown; no fixture field may be guessed from canonical staging. The complete timestamp-trigger/FK/ACL branch is especially important because the final two immutable migrations reject unrecognized combinations.
+
+The future bootstrap PR must reproduce that proved profile locally, demonstrate the pinned CLI 2.115.0 transaction/history boundaries and failure behavior through fresh physical/history queries, and retain strict post-apply checks. The 68-file clean chain is not a substitute. Do not replay historical CREATE/seed migrations, reconstruct weaker policies to sign a ledger, manually write hosted history, or interpret a subset receipt as authorization.
+
+All 55 repair rows remain unsigned and UNPROVED. Seven dated strict production failures remain unresolved. The proposed 48-filter cleanup still needs fresh exact proof and separate approval. Full traffic isolation must be proved before cleanup or any migration write. History repair, isolation/settings, main merge, manual deployment and reopening remain separately gated; standing authorization for reviewed migrations does not waive prerequisites.
+
+The completed test/server resources and both owned database fixtures received successful Stop acknowledgments. These acknowledge stop requests, not synchronous verified shutdown; saved state is retained. CloseActor followed by List both returned success. The final documentation-only runbook regression passed 29/29, zero skipped/failed, exit 0, 0.674 s. No user-owned stack was stopped or adopted.
+
+Machine receipt digests and exact suite/build identities are retained in [the redacted verification record](forward-subset-verification-2026-09-19.json).

@@ -11,7 +11,12 @@ export function getTodayStockholm(): string {
 }
 
 /** Fetch active HR admin and recruiter email addresses. */
-export async function getHrAdminEmails(): Promise<string[]> {
+export type HrAdminEmailLookupResult =
+  | { status: "success"; emails: string[] }
+  | { status: "error"; emails: [] };
+
+/** Fetch recipients while preserving query failure versus valid-empty state. */
+export async function getHrAdminEmailLookup(): Promise<HrAdminEmailLookupResult> {
   const supabase = createServiceRoleClient();
 
   const { data: recipients, error } = await supabase
@@ -22,9 +27,19 @@ export async function getHrAdminEmails(): Promise<string[]> {
     .eq("is_active", true);
 
   if (error) {
-    console.error("[Notifications] Failed to fetch HR admin/recruiter emails:", error);
-    return [];
+    console.error("[Notifications] Recipient lookup failed");
+    return { status: "error", emails: [] };
   }
 
-  return (recipients || []).map((user) => user.email).filter(Boolean);
+  const emails = (recipients || [])
+    .map((user) => user.email)
+    .filter((email): email is string => typeof email === "string" && email.length > 0);
+
+  return { status: "success", emails };
+}
+
+/** Backward-compatible recipient-only helper for existing notifications. */
+export async function getHrAdminEmails(): Promise<string[]> {
+  const result = await getHrAdminEmailLookup();
+  return result.emails;
 }

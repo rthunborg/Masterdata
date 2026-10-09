@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "kind": "pr127-launcher-fix-local-verification",
+  "sourceCommit": "c86e112b1c1211a733afe42e2006c275907bc072",
+  "fullVitest": {
+    "receiptSha256": "65e30bde3699dc8e81007be54d0adfb866ae0e4b5e95b9c5303410d075d38835",
+    "rawLogSha256": "558094eef44d4b085059d43ee50137aa60cc243226ed35aa48f5fbf0d5c1cafa",
+    "summary": {
+      "files": 386,
+      "passed": 4734,
+      "reportSeconds": 1554.88
+    },
+    "wrapperMs": 1560267,
+    "maxWorkers": 1,
+    "command": "npx vitest run"
+  },
+  "fullPlaywright": {
+    "receiptSha256": "1b379e003944486900ffc9fd6ac1f74a714735e1c9ecbee846aab5332436427d",
+    "rawLogSha256": "d8093f6f6ac886495ea50d0a583775fda2ea2b3c1a0eb650965137d3afeaa1c5",
+    "bindingSha256": "c146dbe43edf1c5b86cebbedf42a0ec7b4f4c1467a3fcc8457cdec177166e14c",
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "reportSeconds": 1077.921265,
+    "wrapperMs": 1088557,
+    "command": "npx playwright test",
+    "individualHistoricalSkipsMatched": true
+  },
+  "supportingGates": {
+    "typescript": {
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lint": {
+      "exitCode": 0,
+      "errors": 0,
+      "warnings": 304,
+      "logSha256": "30d6d3e6dfe5036678b3ca579c2bba11aa48b3783d2fa1be5dc2a2581ab9e986"
+    },
+    "build": {
+      "exitCode": 0,
+      "hostedAction": false,
+      "sourceUnchanged": true,
+      "receiptSha256": "b17c37ec9446aa7cc05fe463534f8a93f98f18f610e7f0e614a961db0acc799c"
+    },
+    "package": {
+      "sourceFiles": 109,
+      "runtimeFiles": 488,
+      "runtimePackages": 10,
+      "admissionGranted": false,
+      "installerExecuted": false,
+      "receiptSha256": "1fbd53b2ce409220792bc1568131a7cb90fed3190a3d8d9a92f81bc8b303441d"
+    },
+    "pause": {
+      "probes": 9,
+      "artifactCronCount": 0,
+      "functionsAbsent": true,
+      "hostedAccess": false,
+      "receiptSha256": "6d6da7e5c21c3f419465fd37b10b007c9111b6245df5ac6822f84ea8e77f4767"
+    },
+    "matrix": {
+      "catalogChecks": 16,
+      "syntheticOnly": true,
+      "hostedAccess": false,
+      "receiptSha256": "9b4ba9b9ff1619f4e1e4e46f8c90a214e7b1699405252bbf7bc1f85206a9df04"
+    },
+    "launcherFixture": {
+      "fixtureInvoked": true,
+      "actualProtectedLauncherInvoked": false,
+      "actualInstallerInvoked": false,
+      "receiptSha256": "33833e9a965d3130cf860076aa80b993a94696ff3c39d43e6119a5c6d1eaead3"
+    },
+    "supplemental": {
+      "auditSha256": "3fde634990024f0848ba640645b2e931b50951253abf646b87e8d3df00b7786a",
+      "protectedSourceSha256": "6e819d7ef75eb045ba6d757a99888618eeb3d6a57cc714897c0dcb156b2daee3",
+      "sdkImportSha256": "3d4a94d15e3f63d45000c6125d70b03841b27d8e4bfbe93a03e38ed9dee7787f"
+    }
+  },
+  "priorAttempts": {
+    "manifestSha256": "a50acaca3171a2c8cb3204103dd2ebd88ae2b1d189a5fb5bc534b91f03306600",
+    "initialFullVitest": {
+      "sourceSha": "c86e112b1c1211a733afe42e2006c275907bc072",
+      "childExitCode": 1,
+      "passed": 4733,
+      "failed": 1,
+      "skipped": 0,
+      "files": 386,
+      "reportSeconds": 1580.9,
+      "wrapperMs": 1587565,
+      "classification": "non-admitting-single-protected-handoff-fixture-failure-cause-unproven",
+      "receiptSha256": "e610d748f661c7530e3d4905fa1124fded6d5d967302264aa0425f7c5be1cf06",
+      "rawLogSha256": "755f9d4ba7089bea09f37963b0175249d2a24581252b53c62d08058404d87ee1"
+    },
+    "focusedRepeat": {
+      "sourceSha": "c86e112b1c1211a733afe42e2006c275907bc072",
+      "childExitCode": 0,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1,
+      "reportSeconds": 36.71,
+      "testSeconds": 35.955,
+      "wrapperMs": 49730,
+      "classification": "focused-passing-repeat-not-a-full-gate-substitute",
+      "receiptSha256": "3ffe48e99f2d1d853e4e1666ae422a0c07820c85ef084b8393c0ecc5708ceca9",
+      "rawLogSha256": "0f58521a0e04d436dfa1fb29c4653ab0301ae8e53861613f110bcfbbb3331898"
+    },
+    "controlledDiagnostic": {
+      "classification": "controlled-stale-admission-diagnostic-not-causal-proof",
+      "staleAdmissionMinutes": 16,
+      "fakeCliCallsForStalePacket": 0,
+      "freshAdmissionAgeSeconds": 60,
+      "postReadyDelaySeconds": 11,
+      "fakeCliCallsAfterFreshDelay": 2,
+      "receiptSha256": "cf2294a25aa48becae202851f3c69d998965abd89000dd73930b5a6576d193a5"
+    },
+    "initialHarnessDiagnostics": {
+      "classification": "initial-harness-parse-and-capture-local-diagnostics-nonproof",
+      "receiptSha256": "867c75fc7e8ce3139cb5b5b0e0e31bfde8c79859d57c24ba0d78c7b5b3f3481d"
+    }
+  },
+  "scope": {
+    "ownerReadonlyAuthorization": "pending",
+    "hostedDatabaseAccess": false,
+    "hostedPlatformControl": false,
+    "privateInputDecrypted": false,
+    "actualInstallerOrLauncherInvoked": false,
+    "launcherRegressionFixtureInvoked": true,
+    "production": "paused-no-go",
+    "story22_15": "in-progress",
+    "epic23": "on-hold"
+  }
+}

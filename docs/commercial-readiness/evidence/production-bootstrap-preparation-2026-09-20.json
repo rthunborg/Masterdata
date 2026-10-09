@@ -1,0 +1,416 @@
+{
+  "schemaVersion": 1,
+  "scope": "preparatory evidence; production admission remains blocked",
+  "productionWritePerformed": false,
+  "productionAdmission": false,
+  "historical747ImplementationVerification": {
+    "sourceCommit": "7473bb2e829966a71e52bcbeff6f24e5dc094c9f",
+    "fullVitest": {
+      "testCount": 3563,
+      "fileCount": 326,
+      "skipped": 0,
+      "failed": 0,
+      "exitCode": 0,
+      "reportedDurationSeconds": 110.37,
+      "wrapperDurationMs": 126874,
+      "receiptSha256": "f194ba9301c48f6751fe9ac12f1fb0e3392db7910f500cea4daeac9de158be67",
+      "logSha256": "d2dfdd13e550d77e1bf5de15429cc8d020c3c67131abf12dafea645dd7244504"
+    },
+    "typescriptExitCode": 0,
+    "eslint": {
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 296
+    },
+    "stagingPreviewBuild": {
+      "exitCode": 0,
+      "childExitCode": 0,
+      "durationMs": 23385,
+      "logSha256": "d161fe57c921ecc79f03e7b555e77ef0fc37f1c52423bc1e1c66c4e5483a01a9"
+    },
+    "migrationSqlAndSeedIdentityMatchesEarlierRehearsalSource": true,
+    "audits": {
+      "productionDependencies": {
+        "exitCode": 1,
+        "critical": 0,
+        "high": 0,
+        "moderate": 1,
+        "classification": "existing accepted UUID advisory through 2026-09-30",
+        "reportSha256": "7b5378f68915ba80be9b158c26da886cd9a8497bb0457a08d59217b4a00d5f00"
+      },
+      "allDependencies": {
+        "exitCode": 1,
+        "critical": 1,
+        "high": 16,
+        "moderate": 10,
+        "classification": "already registered development-follow-up advisories",
+        "reportSha256": "e792be2fd036f636b44912de78972c394108c461938960e1f09facf5ffd96aab"
+      }
+    },
+    "privateWorkspaceSmoke": {
+      "earlierExistingRootFailedClosed": true,
+      "earlierFailureArtifactCreated": false,
+      "earlierFailureAclWeakened": false,
+      "earlierFailureClassification": "explicit untrusted read-and-execute grant",
+      "failureMechanismProven": false,
+      "freshRestrictedRootPassed": true,
+      "freshRestrictedRootAclModified": false,
+      "requiresFreshAclValidationForEveryUse": true,
+      "futureAdmissionRequiresTrustedOwnerChain": true,
+      "futureAdmissionRequiresUntrustedParentOwnerNegativeTest": true,
+      "receiptSha256": "eb1a94b59d38cee120485ce8e6f63b3136f8df8c49a5d2dcc6e9c96921309801"
+    },
+    "fullPlaywright": {
+      "command": "npx playwright test",
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0,
+      "exitCode": 0,
+      "reportedDurationSeconds": 1019.871936,
+      "wrapperDurationMs": 1036888,
+      "skipInventoryMatched": true,
+      "notificationAuthorizationSkips": 9,
+      "supersededOrFixtureDebtSkips": 38,
+      "xmlSha256": "d2a9ee4215ad870e7001c957f259d69720f7c07fba4a8f4d4ee197f207ad4ac4",
+      "logSha256": "9546c0976133465c40248bf61930ccbd7cb4896c9bc3227a16478f67679f28bf",
+      "receiptSha256": "fd5cdbb90b3ada9eb067519e71525ad4dbd9634d92de17c5e8550c33b5a0c050"
+    }
+  },
+  "implementationVerification": {
+    "sourceCommit": "00dfc4d086f5d151ef25e0f1b3c2ad9bee0efd8c",
+    "focusedTests": {
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 1.11
+    },
+    "fullVitest": {
+      "testCount": 3562,
+      "fileCount": 326,
+      "skipped": 0,
+      "failed": 0,
+      "exitCode": 0,
+      "reportedDurationSeconds": 109.85,
+      "wrapperDurationMs": 118674,
+      "logSha256": "359d7d32ae895f55e190fedb5cf0d32e96efccbb9bbb3f30354e7a941b88acfd",
+      "receiptSha256": "d812e4b6ed8479fec52af7c70758e1c824e891f428e248d95b552549e5d31850"
+    },
+    "retainedFailedVitestRuns": [
+      {
+        "sourceCommit": "3c023edff981e725013505e3b5df13fbe0ad8025",
+        "passed": 3569,
+        "failed": 1,
+        "skipped": 0,
+        "passingFiles": 325,
+        "failingFiles": 1,
+        "failureClassification": "Private-workspace ACL access assertion; subsequent inspection found unexpected read-and-execute grants on fixture roots, including roots from completed cases. The writer is unknown.",
+        "externalMutationMechanismProven": false,
+        "exitCode": 1,
+        "wrapperDurationMs": 119008,
+        "logSha256": "64712b4c52d303843efe6b7e9f7b340881ea62ebe2671094a9c3af828bf7962b",
+        "receiptSha256": "50fa088ffd776943a43254c16bed251c601761acaa137b3eb97c3ff20155747a",
+        "reportedDurationSeconds": 110.11
+      },
+      {
+        "sourceCommit": "8a3984d3cfd3048e60a9613a202c2edf1f916bc8",
+        "passed": 3569,
+        "failed": 0,
+        "skipped": 0,
+        "passingFiles": 323,
+        "failingFiles": 3,
+        "failureClassification": "afterAll cleanup timeouts",
+        "exitCode": 1,
+        "wrapperDurationMs": 128511,
+        "logSha256": "6e5deaf8b997ebd83e76c55a2af2c7e918e6bbcda15d00b694b23b0ce790f406",
+        "receiptSha256": "6cf1d1cfb99f6a4542e6f8425971bb7640652c729fc6998bd6cfad6ab6fa1e5f",
+        "reportedDurationSeconds": 119.07,
+        "failedCleanupHooks": 3
+      },
+      {
+        "sourceCommit": "4b3fe4312827f84915be1265625ea06f33eaa4df",
+        "passed": 3568,
+        "failed": 1,
+        "skipped": 0,
+        "passingFiles": 325,
+        "failingFiles": 1,
+        "failureClassification": "private-workspace access assertion",
+        "exitCode": 1,
+        "wrapperDurationMs": 122588,
+        "logSha256": "ad0c4c249d3c7bacc93f5a0e713cc0ac24a8e675b1e32e55ebe938ce6d826fd2",
+        "receiptSha256": "0ceaa5e5415c9cc98f7b37da13bd9e5376a0db16cb41a7266b260128a354493c",
+        "reportedDurationSeconds": 113.54
+      }
+    ],
+    "typescript": {
+      "exitCode": 0
+    },
+    "eslint": {
+      "exitCode": 0,
+      "errors": 0,
+      "existingWarnings": 296
+    },
+    "cleanCatalog": {
+      "passed": 16,
+      "failed": 0,
+      "receiptSha256": "03cec0b32dc12dca4a81a89fd69f3afcc61387c150c9290c168c6ee85e8eaa48"
+    },
+    "migrationSqlAndSeedIdentityMatchesEarlierRehearsalSource": true,
+    "runtimeHardening": [
+      "private launcher is retired on all platforms before options access, process/import launch, or approval bypass",
+      "private-preparation receipts are rejected regardless of flags",
+      "functional private tests are replaced by unconditional denial and getter-boundary regressions"
+    ],
+    "strictAclChecksWeakened": false,
+    "privateFeature": {
+      "status": "retired fail closed"
+    },
+    "futureReadSharingDesignExperiment": {
+      "syntheticCopyOnly": true,
+      "readSharingHandleHeldDuringHashAndChildLaunch": true,
+      "writeAndRenameAttemptsRejected": true,
+      "childExitCode": 0,
+      "lockingPrimitiveFeasible": true,
+      "privateOperationPerformed": false,
+      "hostedOperationPerformed": false,
+      "ownerChainProved": false,
+      "directoryReplacementResistanceProved": false,
+      "bootstrapOriginProved": false,
+      "intendedProcessLaunchCompatibilityProved": false,
+      "receiptSha256": "bd32cb3f614906cbc447de43fab3a84cae00fd239afb72b54c012be9c556e33d"
+    },
+    "fullPlaywright": {
+      "command": "npx playwright test",
+      "passed": 163,
+      "skipped": 47,
+      "failed": 0,
+      "errors": 0,
+      "exitCode": 0,
+      "reportedDurationSeconds": 1007.659636,
+      "wrapperDurationMs": 1017141,
+      "skipInventoryMatched": true,
+      "notificationAuthorizationSkips": 9,
+      "supersededOrFixtureDebtSkips": 38,
+      "xmlSha256": "e03f5c91a0ad9dd8e87a9ccf15d72476e80fa2031d434fad87190b82a7d11121",
+      "logSha256": "e8311f5ff2040feef4ecc306c93ceb69d6c9ea5a07289bb579b039d01370fc2b",
+      "receiptSha256": "cc6327edf4b8263791a13cbdb5f1d0a859e0461bde19175fd9da77f7cf936dca"
+    },
+    "stagingPreviewBuild": {
+      "exitCode": 0,
+      "durationMs": 17414,
+      "logSha256": "cf1e2ba469f59b37c5a3e2db070af24c3cc8d1bf32c6a3651ba3d639b819b6dd",
+      "receiptSha256": "2229f0382fbf10d76cfa28a408a9891f57e1161521aa3645bf72cc115644327b"
+    },
+    "ci": {
+      "sourceCommit": "00dfc4d086f5d151ef25e0f1b3c2ad9bee0efd8c",
+      "status": "passed before final documentation commit",
+      "checks": [
+        "Run Tests",
+        "Vercel",
+        "Vercel Preview Comments"
+      ]
+    },
+    "review": {
+      "status": "pending"
+    },
+    "resourceLifecycle": {
+      "state": "actor closed; stop requests accepted",
+      "closeActorOk": true,
+      "listOk": true,
+      "synchronousShutdownClaimed": false
+    },
+    "retiredPrivateFeatureCoverage": {
+      "removedFunctionalTests": 14,
+      "replacementDenialTests": 6,
+      "waiver": false,
+      "skipsIntroduced": 0
+    },
+    "dependencyAndPauseIdentityMatchesEarlierVerification": true,
+    "retainedInterruptedPlaywright": {
+      "sourceHead": "3c023edff981e725013505e3b5df13fbe0ad8025",
+      "command": "npx playwright test",
+      "completed": false,
+      "passed": false,
+      "stopRequestedAtUtc": "2026-09-20T16:11:27Z",
+      "reason": "superseded implementation; private preparation retired pending protected bootstrap"
+    },
+    "retainedBuildPreflightFailure": {
+      "head": "00dfc4d086f5d151ef25e0f1b3c2ad9bee0efd8c",
+      "gate": "build",
+      "code": "local_gate_source_not_clean_or_pinned",
+      "observedAtUtc": "2026-09-20T16:19:31.151Z",
+      "resolution": "Affected owned checkout files were verified byte-identical to HEAD and the index; refreshing the index by adding those identical files left no staged change. The renewed build passed."
+    },
+    "documentationRegression": {
+      "passed": 29,
+      "skipped": 0,
+      "failed": 0,
+      "exitCode": 0,
+      "durationSeconds": 1.01,
+      "scope": "post-implementation documentation snapshot; tested implementation unchanged",
+      "logSha256": "e4d0b48d4837afa6ca5092a59e211e117fb973144824a7899d3b9d5f13e8e025"
+    }
+  },
+  "permissionCollection": {
+    "capturedAtUtc": "2026-09-20T14:10:16.645Z",
+    "sourceCommit": "aac11ff8527e5c6696f4cee7089ae86a7cbc87f2",
+    "sourceTree": "39defa5e7bbf7e4e0f78b91fc56ebf3f330dcdc1",
+    "durationMs": 6787,
+    "collectionSucceeded": true,
+    "previousBaselineUnchanged": true,
+    "baseline": {
+      "rowCount": 61,
+      "rowsSha256": "643a4e803cf7c607d939d370711430d70830b858f4a42e504bba36fbbdcf39f8",
+      "nonObjectCount": 0,
+      "nullColumnCount": 0,
+      "distinctColumnCount": 61,
+      "unknownRoleEntryCount": 0,
+      "invalidKnownRoleContractCount": 0
+    },
+    "roleCounts": [
+      4,
+      5
+    ],
+    "canonicalPermissionSha256": {
+      "repayment_needed_omc": "647825e1b97318ea60b1c29ff5e97132b544c5db6b442797b87006d00479eb65",
+      "repayment_needed_pe3": "070cec9b08e92fd3faa246e20eaba17de86710ae4a3e9a1f7f4f6b7d3d2676d3"
+    },
+    "receiptSha256": "e57fac2b13952c74eff3ab5a5d776e28248f21ab22094b151a50bbb43827e915",
+    "sqlSha256": "7fae1ff42fb49f33b1608a730f3ad71fd38d1e9e079251027c67c5cfb8ef7ed2"
+  },
+  "localRehearsal": {
+    "sourceCommit": "aac11ff8527e5c6696f4cee7089ae86a7cbc87f2",
+    "sourceTree": "39defa5e7bbf7e4e0f78b91fc56ebf3f330dcdc1",
+    "completed": true,
+    "startedAtUtc": "2026-09-20T14:27:58.248Z",
+    "finishedAtUtc": "2026-09-20T14:28:07.123Z",
+    "receiptSha256": "c7ce72d910fceb6771257d99c693878ae62cf1b12346e8b2fd19e6b4e4c10f17",
+    "cases": [
+      {
+        "name": "observed",
+        "dryRunExitCode": 0,
+        "applyExitCode": 1,
+        "applyDurationMs": 723,
+        "historyCount": 8,
+        "counts": {
+          "employees": 73,
+          "audit_rows": 1025,
+          "audit_nonnull": 202,
+          "filters": 48,
+          "filter_orphans": 48,
+          "config_rows": 61
+        },
+        "strictPostCatalog": null,
+        "expectedStop": {
+          "version": "20260909115242",
+          "historyPrefixCount": 8
+        }
+      },
+      {
+        "name": "postcleanup",
+        "dryRunExitCode": 0,
+        "applyExitCode": 0,
+        "applyDurationMs": 793,
+        "historyCount": 13,
+        "counts": {
+          "employees": 73,
+          "audit_rows": 1025,
+          "audit_nonnull": 202,
+          "filters": 0,
+          "filter_orphans": 0,
+          "config_rows": 61
+        },
+        "strictPostCatalog": {
+          "checkCount": 16
+        },
+        "expectedStop": null
+      }
+    ],
+    "limitations": [
+      "56 other permission maps remain synthetic",
+      "Minimal Auth emulation is not a complete Supabase platform",
+      "Local post-cleanup derivative is not production cleanup",
+      "No hosted TLS or target proof is claimed for loopback adapters"
+    ]
+  },
+  "vercelInspection": {
+    "connectorAttempt": {
+      "attemptDate": "2026-09-20",
+      "succeeded": false,
+      "errorCode": "INVALID_ARGUMENT",
+      "previousCompletePauseObservation": "2026-09-15",
+      "partialDeploymentObservation": {
+        "observedAtUtc": "2026-09-20T14:40:22.945Z",
+        "readOnly": true,
+        "recordedPauseDeploymentIdMatched": true,
+        "recordedProjectIdMatched": true,
+        "recordedPauseDeploymentReady": true,
+        "deploymentTargetIsProduction": true,
+        "aliasCount": 1,
+        "aliasErrorPresent": false,
+        "projectSettingsVerified": false,
+        "productionTargetSelectionVerified": false,
+        "activeCronDefinitionsVerified": false,
+        "automaticProductionDomainAssignmentVerified": false,
+        "projectInspectionError": "INVALID_ARGUMENT",
+        "fullPauseProof": false
+      }
+    },
+    "cliFallback": {
+      "observedAtUtc": "2026-09-20T15:02:49.673Z",
+      "readOnly": true,
+      "cliVersion": "59.11.7",
+      "projectMatchedPrivateRecord": true,
+      "productionTargetMatchedPrivatePauseRecord": true,
+      "automaticCustomDomainAssignment": false,
+      "cronDefinitionsPresent": true,
+      "cronDefinitionCount": 0,
+      "pauseSettingsProof": true,
+      "receiptSha256": "c0098b6824b145024ac1509b668e5f81fb76a637a2c5b9c6f6cbbf3bcf70c295"
+    },
+    "succeeded": true,
+    "lastCompletePauseSettingsProof": "2026-09-20"
+  },
+  "repairLedger": {
+    "rows": 55,
+    "proved": 0,
+    "signed": 0
+  },
+  "localResourceCleanup": {
+    "observedAtUtc": "2026-09-20T16:36:22.7817476Z",
+    "stopRequests": [
+      {
+        "ok": true,
+        "state": "stop_requested"
+      },
+      {
+        "ok": true,
+        "state": "stop_requested"
+      },
+      {
+        "ok": true,
+        "state": "stop_requested"
+      },
+      {
+        "ok": true,
+        "state": "stop_requested"
+      }
+    ],
+    "closeActorOk": true,
+    "listOk": true,
+    "ownedResourcesByState": [
+      {
+        "state": "stop_requested",
+        "count": 5
+      },
+      {
+        "state": "stopped",
+        "count": 123
+      }
+    ],
+    "acknowledgmentIsNotSynchronousShutdown": true,
+    "savedStateRetained": true,
+    "userOwnedResourcesUntouched": true,
+    "receiptSha256": "2bab836f3518578f7e4a7996b291be849cba35465a0ae5690f04069dc458f8ad"
+  }
+}

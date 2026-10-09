@@ -25,17 +25,14 @@ export async function GET(request: NextRequest) {
 
     const today = new Date().toISOString().split("T")[0];
     const jan1CurrentYear = getJan1CurrentYear();
-    const currentYear = new Date().getFullYear();
-
-    // Query to get available ÖMC dates
-    // Include: dates from current year (to include Jan 1 exception and all future dates)
-    // We filter by year instead of complex OR clause to ensure we get all relevant dates
+    // Query active ÖMC dates, then apply availability rules below. Filtering
+    // only by current year would hide next-season dates once the calendar has
+    // passed a recurring test/operational date such as March 8.
     const { data, error } = await supabase
       .from("important_dates")
       .select("*")
       .eq("category", "ÖMC Dates")
       .eq("is_active", true) // Only active (non-archived) dates
-      .eq("year", currentYear) // Get all dates from current year
       .order("date_value", { ascending: true });
 
     if (error) {

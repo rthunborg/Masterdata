@@ -13,6 +13,36 @@ export const mockUsers = {
     last_active_at: null,
   } as SessionUser,
 
+  recruiter: {
+    id: "recruiter-1",
+    auth_id: "auth-recruiter-1",
+    email: "recruiter@company.com",
+    role: "recruiter" as UserRole,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
+  } as SessionUser,
+
+  adminLimited: {
+    id: "admin-limited-1",
+    auth_id: "auth-admin-limited-1",
+    email: "admin-limited@company.com",
+    role: "admin_limited" as UserRole,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
+  } as SessionUser,
+
+  crewing: {
+    id: "crewing-1",
+    auth_id: "auth-crewing-1",
+    email: "crewing@company.com",
+    role: "crewing" as UserRole,
+    is_active: true,
+    created_at: "2025-01-01T00:00:00Z",
+    last_active_at: null,
+  } as SessionUser,
+
   sodexo: {
     id: "sodexo-1",
     auth_id: "auth-sodexo-1",
@@ -66,7 +96,17 @@ export const mockUsers = {
 
 // Helper to create mock user with specific role
 export function createMockUser(role: UserRole, overrides: Partial<SessionUser> = {}): SessionUser {
-  const baseUser = mockUsers[role as keyof typeof mockUsers] || mockUsers.sodexo;
+  const usersByRole: Record<UserRole, SessionUser> = {
+    hr_admin: mockUsers.hrAdmin,
+    recruiter: mockUsers.recruiter,
+    admin_limited: mockUsers.adminLimited,
+    crewing: mockUsers.crewing,
+    sodexo: mockUsers.sodexo,
+    omc: mockUsers.omc,
+    payroll: mockUsers.payroll,
+    toplux: mockUsers.toplux,
+  };
+  const baseUser = usersByRole[role];
   return {
     ...baseUser,
     ...overrides,
@@ -78,16 +118,16 @@ export const roleTestCases = {
   adminOnly: {
     allowedRoles: ["hr_admin" as UserRole],
     shouldPass: [mockUsers.hrAdmin],
-    shouldFail: [mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
+    shouldFail: [mockUsers.recruiter, mockUsers.adminLimited, mockUsers.crewing, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
   },
   externalParty: {
-    allowedRoles: ["sodexo", "omc", "payroll", "toplux"] as UserRole[],
-    shouldPass: [mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
-    shouldFail: [mockUsers.hrAdmin],
+    allowedRoles: ["sodexo", "omc", "payroll", "toplux", "crewing"] as UserRole[],
+    shouldPass: [mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux, mockUsers.crewing],
+    shouldFail: [mockUsers.hrAdmin, mockUsers.recruiter, mockUsers.adminLimited],
   },
   allRoles: {
-    allowedRoles: ["hr_admin", "sodexo", "omc", "payroll", "toplux"] as UserRole[],
-    shouldPass: [mockUsers.hrAdmin, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
+    allowedRoles: ["hr_admin", "recruiter", "admin_limited", "crewing", "sodexo", "omc", "payroll", "toplux"] as UserRole[],
+    shouldPass: [mockUsers.hrAdmin, mockUsers.recruiter, mockUsers.adminLimited, mockUsers.crewing, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
     shouldFail: [],
   },
 };
@@ -129,14 +169,14 @@ export const routeTestScenarios = [
     route: "/admin",
     description: "Admin routes should only allow hr_admin",
     allowedUsers: [mockUsers.hrAdmin],
-    forbiddenUsers: [mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
+    forbiddenUsers: [mockUsers.recruiter, mockUsers.adminLimited, mockUsers.crewing, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
     unauthenticatedShouldRedirectTo: "/login",
     forbiddenShouldRedirectTo: "/403",
   },
   {
     route: "/dashboard",
     description: "Dashboard should allow all authenticated users",
-    allowedUsers: [mockUsers.hrAdmin, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
+    allowedUsers: [mockUsers.hrAdmin, mockUsers.recruiter, mockUsers.adminLimited, mockUsers.crewing, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
     forbiddenUsers: [],
     unauthenticatedShouldRedirectTo: "/login",
   },
@@ -149,7 +189,7 @@ export const apiTestScenarios = [
     method: "GET",
     description: "Admin API should only allow hr_admin",
     allowedUsers: [mockUsers.hrAdmin],
-    forbiddenUsers: [mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
+    forbiddenUsers: [mockUsers.recruiter, mockUsers.adminLimited, mockUsers.crewing, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
     expectedStatusUnauth: 401,
     expectedStatusForbidden: 403,
     expectedStatusSuccess: 200,
@@ -158,7 +198,7 @@ export const apiTestScenarios = [
     endpoint: "/api/profile",
     method: "GET", 
     description: "Profile API should allow all authenticated users",
-    allowedUsers: [mockUsers.hrAdmin, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
+    allowedUsers: [mockUsers.hrAdmin, mockUsers.recruiter, mockUsers.adminLimited, mockUsers.crewing, mockUsers.sodexo, mockUsers.omc, mockUsers.payroll, mockUsers.toplux],
     forbiddenUsers: [],
     expectedStatusUnauth: 401,
     expectedStatusSuccess: 200,

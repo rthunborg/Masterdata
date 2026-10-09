@@ -80,7 +80,8 @@ export class EmployeeRepository {
       const { count: totalActiveCount, error: totalError } = await supabase
         .from("employees")
         .select("id", { count: "exact", head: true })
-        .eq("is_archived", false);
+        .eq("is_archived", false)
+        .eq("is_terminated", false);
 
       if (totalError) {
         console.error("Misslyckades att räkna aktiva anställda:", totalError);
@@ -91,6 +92,7 @@ export class EmployeeRepository {
         .from("employees")
         .select("id", { count: "exact", head: true })
         .eq("is_archived", false)
+        .eq("is_terminated", false)
         .eq("crewing_done", true);
 
       if (crewedError) {

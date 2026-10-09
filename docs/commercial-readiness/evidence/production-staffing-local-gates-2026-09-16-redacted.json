@@ -1,0 +1,99 @@
+{
+  "testedCodeCommit": "5f9b07dd6b914bc69af4029bd2bc14d87bb25961",
+  "vitest": {
+    "command": "npx vitest run",
+    "passed": 3485,
+    "skipped": 0,
+    "failed": 0,
+    "files": 322,
+    "exitCode": 0,
+    "reportDurationSeconds": 489.95,
+    "runnerDurationSeconds": 493.248
+  },
+  "playwright": {
+    "command": "npx playwright test",
+    "commit": "5f9b07dd6b914bc69af4029bd2bc14d87bb25961",
+    "total": 210,
+    "passed": 163,
+    "skipped": 47,
+    "failed": 0,
+    "errors": 0,
+    "exitCode": 0,
+    "reportDurationSeconds": 1045.108319,
+    "runnerDurationSeconds": 1055.68,
+    "reportSha256": "f90df0bce762c07371612880f5de91eec625b5b5fe62d4d7d68929ba0a15fdf1",
+    "exactSkippedIdentitiesMatched": true,
+    "sourceSkipReasonsUnchanged": true,
+    "notificationCronSkips": 9,
+    "removedSupersededOrFixtureDebtSkips": 38
+  },
+  "typescriptExitCode": 0,
+  "eslint": {
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 296
+  },
+  "builds": [
+    {
+      "mode": "staging",
+      "commit": "5f9b07dd6b914bc69af4029bd2bc14d87bb25961",
+      "exitCode": 0,
+      "durationSeconds": 15.834,
+      "productionPauseRefusal": false
+    },
+    {
+      "mode": "production",
+      "commit": "5f9b07dd6b914bc69af4029bd2bc14d87bb25961",
+      "exitCode": 1,
+      "durationSeconds": 0.37,
+      "productionPauseRefusal": true
+    }
+  ],
+  "dependencyAudit": {
+    "exitCode": 1,
+    "critical": 0,
+    "high": 0,
+    "moderate": 1,
+    "documentedException": "ExcelJS dependency UUID",
+    "exceptionExpiry": "2026-09-30"
+  },
+  "localCatalog": {
+    "phase": "post_apply",
+    "passed": 16,
+    "failed": 0,
+    "newCleanChainRun": false
+  },
+  "sourceIdentity": {
+    "candidate": "5f9b07dd6b914bc69af4029bd2bc14d87bb25961",
+    "rawGitBlobBytesHashed": true,
+    "migrationCount": 68,
+    "allMigrationsUnchangedFromPriorCleanChainCommit": "413b6f809b708145df0e6518f49f5afbc04ebeca",
+    "freshCleanChainRun": false,
+    "restoredMigrationSha256": "1e3ec6aa1ec00b768806743ae4cf07500fe1717efc4c399088cca11a459e003a",
+    "frozenSpecUnchanged": true,
+    "repairCandidates": 55,
+    "forwardExecutes": 13
+  },
+  "cleanupDraft": {
+    "version": 4,
+    "testsPassed": 28,
+    "skipped": 0,
+    "failed": 0,
+    "exitCode": 0,
+    "durationMilliseconds": 290.9143,
+    "productionLoaderWired": false,
+    "executedOnProduction": false,
+    "sourceSha256": "b50e6a585b0835ec0f2358d213fdf39a4c3627d7679f06d102ce5e158959c552",
+    "testsSha256": "e8e37050043fd0e86418a161f97daa451b1922455f58bb7f7100e89bc71d1baa"
+  },
+  "repairLedger": {
+    "rows": 55,
+    "rawSourceHashesIndependentlyVerified": 55,
+    "proved": 0,
+    "signed": 0
+  },
+  "hostedWritesThisFollowup": 0,
+  "freshVercelPauseInspection": false,
+  "story": "in-progress",
+  "epic23": "on-hold"
+}

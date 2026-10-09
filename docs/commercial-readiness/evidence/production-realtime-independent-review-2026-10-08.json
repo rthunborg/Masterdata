@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "kind": "pr132-independent-review-local-validation",
+  "recordedAtUtc": "2026-10-08T11:48:56.9378528Z",
+  "reviewedGithubHead": "3994857591d06a54f4e855ad252ac6b9daf6d321",
+  "baseStaging": "2e2819ae9130531ebbc78c2ef3a3c76bab6b34e4",
+  "main": "822350986f4c023948a7bbf490ddffc371185c4a",
+  "historicalTestedImplementation": "30dba2d0d41703440bae217076b8862f607784f0",
+  "testedLocalFix": "7205dc4d9eea8b398f182dcb77b850fcc1bc3547",
+  "independentLayersCompleted": 3,
+  "findingsClosed": [
+    "upstream body and provenance pins",
+    "historical omission and preservation pins",
+    "original global receipt and SQL availability and byte binding"
+  ],
+  "rawReviewerResults": [
+    {
+      "path": "C:/DEV/hr-masterdata/_bmad-output/implementation-artifacts/pr132-blind-review-raw-results.md",
+      "sha256": "92c3f38735e76c79536794e096e08c343829c13240f42fd8b824636a8a98ffb1"
+    },
+    {
+      "path": "C:/DEV/hr-masterdata/_bmad-output/implementation-artifacts/pr132-edge-review-raw-results.md",
+      "sha256": "256f456fe2923cdc17d5556472f0d9b8aa519fd4803e9a4fb895ec9b05510903"
+    },
+    {
+      "path": "C:/DEV/hr-masterdata/_bmad-output/implementation-artifacts/pr132-verification-review-raw-results.md",
+      "sha256": "dff8de4d03035c73663227231ec265df632af5ac480f589dc9086c496e0c9ce6"
+    }
+  ],
+  "vitest": {
+    "passed": 4816,
+    "failed": 0,
+    "skipped": 0,
+    "files": 389,
+    "exitCode": 0,
+    "startedAtUtc": "2026-10-08T11:18:36.148Z",
+    "completedAtUtc": "2026-10-08T11:46:41.145Z",
+    "reportSeconds": 1684.47,
+    "wrapperMilliseconds": 1684997.0,
+    "arguments": [
+      "run",
+      "--maxWorkers=1",
+      "--config",
+      "C:\\DEV\\hr-masterdata-pr132-local-validation-20261008/vitest-local-order.config.mjs",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile.json=C:\\DEV\\hr-masterdata-pr132-local-validation-20261008/vitest-final.json"
+    ],
+    "allFilesIncluded": true,
+    "existingTimeoutsUnchanged": true,
+    "ordering": "staffing and CLI age-limited admissions first",
+    "jsonSha256": "262f0bf5910683885e4c6bbc5fae499f0fa8459270c99fbcb5a861e1be0e6289",
+    "logSha256": "529bf4865d968b9c8541d67321986fdfdc033fa3ad16817ec1afcea69da928bb"
+  },
+  "playwright": {
+    "schemaVersion": 1,
+    "sourceSha": "7205dc4d9eea8b398f182dcb77b850fcc1bc3547",
+    "playwrightResult": {
+      "sourceSha": "7205dc4d9eea8b398f182dcb77b850fcc1bc3547",
+      "startedAtUtc": "2026-10-08T10:26:38.179Z",
+      "completedAtUtc": "2026-10-08T10:57:12.769Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    "tests": 210,
+    "passed": 163,
+    "skipped": 47,
+    "failures": 0,
+    "errors": 0,
+    "historicalSkipIdentityMultisetMatched": true,
+    "skippedIdentities": [
+      "Capacity Management E2E Journey › AC8: Capacity management workflow|capacity-management.spec.ts",
+      "Concurrent User E2E Scenario › AC5: Concurrent assignment to last spot|concurrent-users.spec.ts",
+      "PE3 Deadline Notification Workflow › should handle errors gracefully|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should handle timezone correctly (Europe/Stockholm)|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should include all affected PE3 dates in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should include employee names or \"Unassigned\" in notification|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should not send duplicate notifications|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should reject unauthorized requests|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send both notifications if both deadlines same day|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send cancel deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "PE3 Deadline Notification Workflow › should send submit deadline notification when deadline matches|epic-14/story-14.2/pe3-deadline-workflow.spec.ts",
+      "Prerequisites & Export E2E Journey - SKIPPED (Story 20.1) › AC4: Prerequisites completion and export workflow|prerequisites-export.spec.ts",
+      "PWA Installation E2E › should cache static assets|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should display app in standalone mode when installed|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should handle service worker updates|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have apple touch icon|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have manifest.json linked in page head|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should have theme color meta tag|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should register service worker on page load|epic-12/story-12.4/pwa-installation.spec.ts",
+      "PWA Installation E2E › should show install prompt when criteria met|epic-12/story-12.4/pwa-installation.spec.ts",
+      "Real-time Sync E2E Journey › AC6: Real-time sync between users|real-time-sync.spec.ts",
+      "Room Assignment E2E Journey › AC7: Room assignment workflow|room-assignment.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › selected + terminated shows both tints|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › terminated employees show red tint in table|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.11: Employee Status Visual Indicators › terminated employees take precedence over crew ready (red tint only)|epic-13/story-13.11/employee-status-visual-indicators.spec.ts",
+      "Story 13.4: Export Selected Employees Workflow › export crew ready only exports and marks selected employees|epic-13/story-13.4/export-selected-employees.spec.ts",
+      "Story 13.4: Export Selected Employees Workflow › export includes selected employees from multiple pages|epic-13/story-13.4/export-selected-employees.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › employee count display shows correct number of selected employees|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › selected employees show greyish tint when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user activates crew ready filter and employees are auto-selected|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user can uncheck individual employees when crew ready filter is active|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user deactivates crew ready filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.5: Crew Ready Auto-Selection Workflow - SKIPPED (Story 20.1) › user switches to another filter and selection clears|epic-13/story-13.5/crew-ready-auto-selection.spec.ts",
+      "Story 13.7: Export Workflow E2E › should export crew ready only selected employees|epic-13/story-13.7/export-workflow.spec.ts",
+      "Story 13.9: Repayment Field Visibility › edit modal hides repayment fields for non-terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › edit modal shows repayment fields for terminated employees|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › marking employee as terminated shows repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 13.9: Repayment Field Visibility › reactivating employee hides repayment fields immediately|epic-13/story-13.9/repayment-field-visibility.spec.ts",
+      "Story 16.5: Field Highlighting in Employee Table › highlights appear on changed fields in table view|epic-16/story-16.5/field-highlighting.spec.ts",
+      "Story 16.5: Field Highlighting in Employee Table › highlights work with inline editing|epic-16/story-16.5/field-highlighting.spec.ts",
+      "Story 16.6: Real Database - External User Highlighting › External user should NOT see banner or highlights when logged in as HR Admin makes changes|epic-16/story-16.6/real-database-highlighting.spec.ts",
+      "Story 16.6: Real Database - External User Highlighting › External user should see highlights for changed visible columns (real database)|epic-16/story-16.6/real-database-highlighting.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P0] Export dialog shows only viewable fields for external users|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P1] External user can export with permission-based field filtering|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 17.4: Export Functionality for External Users › [P2] Export dialog can be cancelled|epic-17/story-17.4/export-external-users.spec.ts",
+      "Story 20.7: Export with Filters › AC 4.2: Crew Ready export respects filtered state|epic-20/story-20.7/export-with-filters.spec.ts",
+      "Termination & Reactivation E2E Journey › Legacy termination/reactivation variants › skipped: old data-testid-based date restoration placeholder flows|termination-reactivation.spec.ts"
+    ],
+    "junitSha256": "398d2d365c637fa571a1d3a5e63b8cb5df2a32d77f652520f4b0634a4ecaf4ec",
+    "logSha256": "71955cfd1309e540597ee5a9cc805bf381c210682a02b2b486cbc6bfc0b51fd4",
+    "localOnly": true,
+    "productionAdmission": false,
+    "logAndJUnitIdentityStatusRecords": 210,
+    "logAndJUnitIdentityStatusDifferences": 0,
+    "logAndJUnitPassedDurationRecordsChecked": 163,
+    "logAndJUnitDurationDifferences": 0
+  },
+  "cliMatrix": [
+    {
+      "case": "explicit_history_write_failure",
+      "classification": "committed_unrecorded_current",
+      "failure": null,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "receiptSha256": "152c2100469215c04633c0f1044e0c079ae514d341b53e23725396039e597a53"
+    },
+    {
+      "case": "explicit_history_write_timeout",
+      "classification": "uncertain_current_file",
+      "failure": null,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "receiptSha256": "106d1fad6079a60d79446cc11f91d616180847f7f40273840fcc6e4b082e207e"
+    },
+    {
+      "case": "implicit_history_write_failure",
+      "classification": "rolled_back_unrecorded_current",
+      "failure": null,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "receiptSha256": "c4882fde2b2ac386c3313eb42695754ef3c1fe40da12125a2d4815854c642e18"
+    },
+    {
+      "case": "observed_guard_stop",
+      "classification": "proven_rejected_before_current_effect",
+      "failure": null,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "receiptSha256": "edc4fc87ebed5d9ca03dcc01793988c23254871f4efc95d8ddf2e2335afc0ec1"
+    },
+    {
+      "case": "postcleanup_success",
+      "classification": "proven_complete_local_rehearsal",
+      "failure": null,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "receiptSha256": "e7535c6ab969d2b0b2c130b53798087824941fb244d06f942d6fb9e5508c2ecb"
+    },
+    {
+      "case": "trigger_profile_stop_184840",
+      "classification": "proven_rejected_before_current_effect",
+      "failure": null,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "receiptSha256": "9b1935e122de47b5fb56671cfa2a089abeab6263ce7ec0411aafeca622752a14"
+    },
+    {
+      "case": "trigger_profile_stop_184841",
+      "classification": "proven_rejected_before_current_effect",
+      "failure": null,
+      "hostedAccess": false,
+      "productionAdmission": false,
+      "receiptSha256": "3539facb0a058c79235dafc797c97822829ad97182c13cb9926bd15d7efd1abd"
+    }
+  ],
+  "supportingChecks": {
+    "currentLintWarningCountNotMeasured": true,
+    "strictLocalCatalog": 16,
+    "eslintErrors": 0,
+    "typescriptExit": 0,
+    "focused": 357,
+    "pauseSafeguards": 45,
+    "buildExit": 0
+  },
+  "historicalGlobalProof": {
+    "remainingRoutineCount": 104,
+    "routineSetComparisonRecorded": true,
+    "independentlyRecomputed": false,
+    "rawRoutineMetadataPresent": false,
+    "sqlSha256": "30391b1032a26650033a4c954082ad1b5726787a0215eda9278b5e55f9bb17bc",
+    "receiptSha256": "fd4ad3a1880ef453661acb6759423a03d2f22f8a139b31d212d87556ee5c79f4",
+    "freshHostedStateClaimed": false,
+    "ownerSetComparisonRecorded": true
+  },
+  "nonPassingAttempts": [
+    "historical first full run interrupted after expired local JWTs",
+    "initial full run missing required CLI admission interrupted",
+    "matrix output inside another checkout discovered unrelated ancestor config and failed closed",
+    "nested npm full attempt lost required options/admission and was interrupted",
+    "complete direct full run: 180-second package timeout, wrong post-apply template, expired staffing admission, five live-export skips",
+    "initial local E2E setup failed before suite; corrected ignored localhost origin",
+    "initial Next build rejected inherited --env-file worker argument; corrected dotenv launcher",
+    "initial strict local catalog rejected wrong checkout seed; corrected exact source seed",
+    "initial local sequencer launcher rejected string class and ended before tests"
+  ],
+  "runtimeAndMigrationFilesChangedByLocalFix": false,
+  "migrationSqlFiles": 69,
+  "noHostedDatabaseOrVercelOperations": true,
+  "noEncryptedInputsOrBackupsAccessed": true,
+  "productionAdmission": false,
+  "routineExecutionAuthority": false,
+  "ownerSnapshotAdopted": false,
+  "story22_15": "in-progress",
+  "epic23": "on-hold",
+  "production": "paused-no-go",
+  "outputDirectory": "C:/DEV/hr-masterdata-pr132-local-validation-20261008",
+  "githubFinalHeadReadOnlyCheck": {
+    "checkedAtUtc": "2026-10-08T11:52:34.2099026Z",
+    "head": "3994857591d06a54f4e855ad252ac6b9daf6d321",
+    "state": "OPEN",
+    "checks": [
+      "Run Tests:SUCCESS",
+      "Vercel:SUCCESS",
+      "Vercel Preview Comments:SUCCESS"
+    ],
+    "reviewbotCompletedAtHead": true,
+    "reviewbotMajorIssues": 0,
+    "inlineComments": 0,
+    "localFixNotCovered": true
+  }
+}

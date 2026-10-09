@@ -1,0 +1,11 @@
+# Runtime-floor remediation evidence - 2026-10-02
+
+Candidate cc65498745792c3727a8ecf6bb5b7da847b75841 corrects Node engines to ^20.19.0 || ^22.12.0 || >=24.0.0 and adds two runtime compatibility tests. October 1 evidence remains historical under 3f26418027590609ed3ed7b88b38376d62efd489.
+
+Audit is zero-finding across 280 dependencies. Focused tests passed 14/14 in 37.83 seconds. Full Vitest passed 4549/4549 in 374 files with zero skips/failures; its report duration was 841.12 seconds and wrapper duration 847031 ms. Independently bound Playwright passed 163, skipped 47 individually classified historical cases, and had zero failures/errors. Playwright report duration was 1170.571249 seconds (wrapper 1181389 ms), with 33 passing files of 41 distinct JUnit classnames. Frozen installs, TypeScript, lint (0 errors, 304 warnings), and preview build (29.239 seconds) exited 0. The pause artifact passed 9 probes across 7 files: page GETs 200, APIs and mutations 503, no functions, linkage or crons; production application build refused and staging build allowed. The seven synthetic CLI cases retained their required classifications; the success case executed 14 forwards, passed strict catalog 16/16, and reached canonical history 69 with unchanged catalog/preservation. These local results grant no hosted admission.
+
+The gates-v3 JWT attempt is interrupted/incomplete, never passing evidence.
+
+Raw-Git manifest 0a624452642b1f4e54a3cffc14fb4e1fde0ddeeed89a3a88072278bf9e300d42 is a SHA-256 of ordered path/raw-Git-SHA256 entries, not executable-package admission. Production remains paused/no-go; Story 22.15 in-progress; Epic 23 on hold. No hosted change occurred; main/deployment/reopening gates remain separate.
+
+The subsequent documentation-only delta passed the migration-readiness regression: 29/29, zero skips/failures, exit 0, 1.01 seconds. Three YAML files parsed, five status surfaces and five canonical next actions agree; all 118 protected files (including 69 historical SQL files), the manifest, release verifiers and frozen spec remain unchanged. The October 1 Git blobs remain byte-identical; checkout CRLF conversion is recorded separately. Added lines and complete new receipts passed the redaction scan. Final-head review/checks and the staging merge receipt are still required.

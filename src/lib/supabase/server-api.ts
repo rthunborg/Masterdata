@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest } from "next/server";
+import { validateNonProductionSupabaseEnvironment } from "@/lib/env/non-production-supabase-guard";
 
 /**
  * Create Supabase client for API routes (Node runtime)
@@ -16,6 +17,8 @@ import { NextRequest } from "next/server";
  * ```
  */
 export function createAPIClient(request?: NextRequest) {
+  validateNonProductionSupabaseEnvironment();
+
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

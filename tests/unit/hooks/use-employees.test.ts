@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { useEmployees, _clearEmployeeCache } from "@/lib/hooks/use-employees";
 import type { Employee } from "@/lib/types/employee";
 
@@ -171,7 +171,9 @@ describe("useEmployees", () => {
     vi.mocked(employeeService.getAll).mockClear();
 
     // Trigger refetch
-    await result.current.refetch();
+    await act(async () => {
+      await result.current.refetch();
+    });
 
     expect(employeeService.getAll).toHaveBeenCalledTimes(1);
   });
@@ -180,6 +182,7 @@ describe("useEmployees", () => {
     const { result } = renderHook(() =>
       useEmployees({
         enableRealtime: true,
+        userRole: "hr_admin",
       })
     );
 
@@ -188,6 +191,95 @@ describe("useEmployees", () => {
     });
 
     expect(result.current.isConnected).toBe(true);
+  });
+
+  it("should disable raw employee realtime for external party users", async () => {
+    const { useRealtime } = await import("@/lib/hooks/use-realtime");
+
+    renderHook(() =>
+      useEmployees({
+        enableRealtime: true,
+        userRole: "sodexo",
+      })
+    );
+
+    await waitFor(() => {
+      expect(useRealtime).toHaveBeenLastCalledWith(
+        expect.objectContaining({ enabled: false })
+      );
+    });
+  });
+
+  it("should keep raw employee realtime disabled until the user role is known", async () => {
+    const { useRealtime } = await import("@/lib/hooks/use-realtime");
+
+    renderHook(() =>
+      useEmployees({
+        enableRealtime: true,
+        userRole: undefined,
+      })
+    );
+
+    await waitFor(() => {
+      expect(useRealtime).toHaveBeenLastCalledWith(
+        expect.objectContaining({ enabled: false })
+      );
+    });
+  });
+
+  it("should refresh external employee data through the filtered API on focus", async () => {
+    const { employeeService } = await import("@/lib/services/employee-service");
+
+    const { result } = renderHook(() =>
+      useEmployees({
+        enableRealtime: true,
+        userRole: "sodexo",
+      })
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+    vi.mocked(employeeService.getAll).mockClear();
+
+    await act(async () => {
+      window.dispatchEvent(new Event("focus"));
+    });
+
+    await waitFor(() => {
+      expect(employeeService.getAll).toHaveBeenCalledTimes(1);
+    });
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it("should periodically refresh external employee data through the filtered API", async () => {
+    const { employeeService } = await import("@/lib/services/employee-service");
+    vi.useFakeTimers();
+
+    const { result, unmount } = renderHook(() =>
+      useEmployees({
+        enableRealtime: true,
+        userRole: "sodexo",
+      })
+    );
+
+    try {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(result.current.isLoading).toBe(false);
+      vi.mocked(employeeService.getAll).mockClear();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(30_000);
+      });
+
+      expect(employeeService.getAll).toHaveBeenCalledTimes(1);
+      expect(result.current.isLoading).toBe(false);
+    } finally {
+      unmount();
+      vi.useRealTimers();
+    }
   });
 
   it("should disable real-time when requested", async () => {
