@@ -1,6 +1,5 @@
 {
-  "purpose": "Permits production application builds after the recorded reopening decision.",
-  "state": "reopening-authorized",
-  "reopeningDecision": "Owner authorized production database preparation and application reopening on 2026-10-09.",
-  "version": 1
+  "version": 1,
+  "state": "paused",
+  "purpose": "Blocks normal production application builds until the owner explicitly authorizes reopening."
 }
